@@ -3,20 +3,23 @@ package eu.hydrologis.jgrass.hortonmachine.models;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestAb;
+import eu.hydrologis.jgrass.hortonmachine.models.hm.TestAspect;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestCb;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestCurvatures;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestDrain;
+import eu.hydrologis.jgrass.hortonmachine.models.hm.TestEnergyBalance;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestEnergyIndexCalculator;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestExtractNetwork0;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestExtractNetwork1;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestFlow;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestGradient;
-import eu.hydrologis.jgrass.hortonmachine.models.hm.TestJami;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestKriging;
+import eu.hydrologis.jgrass.hortonmachine.models.hm.TestNetnumbering;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestPitfiller;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestRescaledDistance;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestShalstab;
 import eu.hydrologis.jgrass.hortonmachine.models.hm.TestTopindex;
+import eu.hydrologis.jgrass.hortonmachine.models.hm.TestWateroutlet;
 
 public class HortonTestSuite extends TestCase {
 
@@ -24,22 +27,27 @@ public class HortonTestSuite extends TestCase {
         TestSuite suite = new TestSuite();
 
         suite.addTestSuite(TestAb.class);
+        suite.addTestSuite(TestAspect.class);
         suite.addTestSuite(TestCb.class);
         suite.addTestSuite(TestCurvatures.class);
         suite.addTestSuite(TestDrain.class);
+        suite.addTestSuite(TestEnergyBalance.class);
+        suite.addTestSuite(TestEnergyIndexCalculator.class);
         suite.addTestSuite(TestExtractNetwork0.class);
         suite.addTestSuite(TestExtractNetwork1.class);
         suite.addTestSuite(TestFlow.class);
         suite.addTestSuite(TestGradient.class);
+        // suite.addTestSuite(TestJami.class);
+        suite.addTestSuite(TestKriging.class);
+        suite.addTestSuite(TestNetnumbering.class);
+
         suite.addTestSuite(TestPitfiller.class);
         suite.addTestSuite(TestRescaledDistance.class);
-        suite.addTestSuite(TestTopindex.class);
-
-        suite.addTestSuite(TestKriging.class);
-        suite.addTestSuite(TestEnergyIndexCalculator.class);
-        suite.addTestSuite(TestJami.class);
-        
         suite.addTestSuite(TestShalstab.class);
+        suite.addTestSuite(TestTopindex.class);
+        suite.addTestSuite(TestWateroutlet.class);
+
+
 
         // suite.addTestSuite(TestAspect.class);
         // suite.addTestSuite(TestD2O.class);
