@@ -1,0 +1,9 @@
+syntax: regexp
+
+.classpath
+.project
+.settings
+^hortonmachine.target
+^edc.target
+~$
+.swp$
