@@ -25,7 +25,7 @@ import java.util.HashMap;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 /**
  * The grass map named test and its values to be used in tests.

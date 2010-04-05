@@ -18,19 +18,19 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energybalance;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.C_ice;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.C_liq;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.Isc;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.Lf;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.Lv;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.Tf;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.ka;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.omega;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.rho_i;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.rho_w;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.sigma;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.tk;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.C_ice;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.C_liq;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.Isc;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.Lf;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.Lv;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.Tf;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.ka;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.omega;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.rho_i;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.rho_w;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.sigma;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.tk;
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.acos;
@@ -74,12 +74,12 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAreas;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIEnergy;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreas;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergy;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 @Description("The module for calculating the energybalance")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")

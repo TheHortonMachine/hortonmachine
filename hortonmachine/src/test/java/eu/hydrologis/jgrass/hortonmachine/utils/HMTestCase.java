@@ -18,7 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.utils;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;

@@ -12,11 +12,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestMaps;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 /**
  * It test the {@link ExtractNetwork} module with mode=1.
  * 

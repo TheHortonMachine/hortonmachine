@@ -27,8 +27,8 @@ import org.geotools.feature.FeatureIterator;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)

@@ -18,7 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.doubleNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.doubleNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -42,10 +42,6 @@ import oms3.annotations.Unit;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.joda.time.DateTime;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge.QReal;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge.QStatistic;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHCalculator;
@@ -54,8 +50,12 @@ import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.co
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.RealJeff;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.StatisticJeff;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.cb.Cb;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
-import eu.hydrologis.jgrass.hortonmachine.utils.math.ListInterpolator;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.utils.math.ListInterpolator;
 
 @Description("The Peakflow semidistributed hydrologic model.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")

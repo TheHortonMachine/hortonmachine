@@ -31,8 +31,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * The hilslope area, related to a particolar network link.

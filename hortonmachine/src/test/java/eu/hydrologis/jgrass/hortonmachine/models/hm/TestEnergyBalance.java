@@ -11,17 +11,17 @@ import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAreasReader;
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIEnergyReader;
-import eu.hydrologis.jgrass.hortonmachine.io.id2valuearray.Id2ValueArrayReader;
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader;
-import eu.hydrologis.jgrass.hortonmachine.io.timeseries.PlainId2ValueReader;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAreas;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIEnergy;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreas;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreasReader;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergy;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergyReader;
+import eu.hydrologis.jgrass.jgrassgears.io.id2valuearray.Id2ValueArrayReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.timeseries.PlainId2ValueReader;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 /**
  * Test EnergyBalance.
  * 

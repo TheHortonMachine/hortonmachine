@@ -18,8 +18,8 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.shalstab;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.doubleNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.doubleNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
 import static java.lang.Math.atan;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
@@ -39,11 +39,11 @@ import oms3.annotations.Out;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.ConstantRandomIter;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.ConstantRandomIter;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 /**
  * <p>

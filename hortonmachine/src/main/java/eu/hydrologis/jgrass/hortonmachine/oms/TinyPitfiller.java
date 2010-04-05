@@ -14,11 +14,11 @@ import oms3.Compound;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Role;
-import eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageReader;
-import eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageWriter;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
+import eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageWriter;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 
 /**
  *

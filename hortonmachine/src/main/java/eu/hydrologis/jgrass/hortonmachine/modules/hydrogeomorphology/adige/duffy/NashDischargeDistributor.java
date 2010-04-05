@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.ModelsEngine;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
 
 /**
  * @author Silvia Franceschi (www.hydrologis.com)

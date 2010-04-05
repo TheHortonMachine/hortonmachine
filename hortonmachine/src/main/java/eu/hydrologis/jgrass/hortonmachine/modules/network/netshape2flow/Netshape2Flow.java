@@ -18,7 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.network.netshape2flow;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -53,13 +53,13 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.ModelsEngine;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
-import eu.hydrologis.jgrass.hortonmachine.utils.geometry.GeometryUtilities;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.utils.geometry.GeometryUtilities;
 
 /**
  * OpenMi based netshape2flow model

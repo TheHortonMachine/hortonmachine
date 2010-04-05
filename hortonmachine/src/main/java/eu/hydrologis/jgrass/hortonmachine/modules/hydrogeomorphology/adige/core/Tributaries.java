@@ -2,7 +2,7 @@ package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core
 
 import java.util.HashMap;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 
 /**
  * Utility class for handling of tributary mappings and data retrival. 

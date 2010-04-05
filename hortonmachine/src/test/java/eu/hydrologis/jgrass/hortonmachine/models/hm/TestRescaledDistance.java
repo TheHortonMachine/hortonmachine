@@ -6,11 +6,11 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestMaps;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 /**
  * Test RescaledDistance.

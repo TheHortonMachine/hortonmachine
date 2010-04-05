@@ -18,7 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.*;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.*;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
 /**

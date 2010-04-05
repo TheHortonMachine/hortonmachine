@@ -30,7 +30,7 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
 
 /**
  * An implementation of the Runge-Kutta-Felberg algorithm for solving non-linear ordinary

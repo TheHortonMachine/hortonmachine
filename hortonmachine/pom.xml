@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>eu.hydrologis.jgrass.hortonmachine</groupId>
+	<groupId>eu.hydrologis.jgrass</groupId>
 	<artifactId>hortonmachine</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>The Horton Machine</name>
 	<url>http://www.hydrologis.eu</url>
 
@@ -64,6 +64,12 @@
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
 			<version>1.7.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.hydrologis.jgrass</groupId>
+			<artifactId>jgrassgears</artifactId>
+			<version>0.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>

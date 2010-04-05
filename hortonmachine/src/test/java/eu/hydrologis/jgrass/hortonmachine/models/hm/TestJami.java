@@ -1,7 +1,7 @@
 package eu.hydrologis.jgrass.hortonmachine.models.hm;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.TEMPERATURE;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.utcDateFormatterYYYYMMDDHHMM;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.TEMPERATURE;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.utcDateFormatterYYYYMMDDHHMM;
 
 import java.io.File;
 import java.net.URL;
@@ -14,13 +14,13 @@ import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAltimetryReader;
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAltimetry;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetry;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetryReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepReaderId2Value;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 /**
  * Test jami.
  * 

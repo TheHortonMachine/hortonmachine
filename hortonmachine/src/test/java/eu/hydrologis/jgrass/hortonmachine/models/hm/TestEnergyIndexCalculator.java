@@ -6,14 +6,14 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAltimetry;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAreas;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIEnergy;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EnergyIndexCalculator;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestMaps;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetry;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreas;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergy;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 /**
  * Test {@link EnergyIndexCalculator}.

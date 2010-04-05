@@ -33,11 +33,12 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 
 import eu.hydrologis.jgrass.hortonmachine.i18n.MessageHandler;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.ModelsEngine;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.utils.sorting.QuickSortAlgorithm;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.SplitVectors;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.sorting.QuickSortAlgorithm;
 
 /**
  * <p>

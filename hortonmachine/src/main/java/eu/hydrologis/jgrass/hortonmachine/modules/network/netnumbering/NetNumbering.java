@@ -43,12 +43,12 @@ import org.opengis.feature.type.AttributeType;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.ModelsEngine;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 /**
  * <p>
  * The openmi compliant representation of the netnumbering model. It assign

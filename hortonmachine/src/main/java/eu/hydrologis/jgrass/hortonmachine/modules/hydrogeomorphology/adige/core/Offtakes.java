@@ -21,8 +21,8 @@ package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core
 import java.io.PrintStream;
 import java.util.HashMap;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * Utility class for handling of Offtakes mappings and data retrival. 

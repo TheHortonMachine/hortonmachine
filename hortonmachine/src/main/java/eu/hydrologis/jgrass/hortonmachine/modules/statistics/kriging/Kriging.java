@@ -18,7 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.statistics.kriging;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,11 +44,11 @@ import Jama.Matrix;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIOException;
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsRuntimeException;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIOException;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsRuntimeException;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * This class is an implementation of the ordinary kriging algorithm.

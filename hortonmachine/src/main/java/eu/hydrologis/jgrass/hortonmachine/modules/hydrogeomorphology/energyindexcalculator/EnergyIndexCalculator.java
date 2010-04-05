@@ -18,9 +18,9 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.intNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.omega;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.intNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.omega;
 import static java.lang.Math.PI;
 import static java.lang.Math.acos;
 import static java.lang.Math.asin;
@@ -52,11 +52,14 @@ import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetry;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreas;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergy;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 /**
  * @author Stefano Endrizzi

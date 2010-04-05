@@ -18,10 +18,10 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
-import eu.hydrologis.jgrass.hortonmachine.utils.math.integration.ConvolutionDiffusionWidth;
-import eu.hydrologis.jgrass.hortonmachine.utils.math.integration.IntegralConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.math.integration.ConvolutionDiffusionWidth;
+import eu.hydrologis.jgrass.jgrassgears.utils.math.integration.IntegralConstants;
 
 /**
  * @author Silvia Franceschi (www.hydrologis.com)

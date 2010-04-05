@@ -18,10 +18,7 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.*;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.doubleNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.tk;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,13 +50,13 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-import eu.hydrologis.jgrass.hortonmachine.io.grass.JGrassConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMModel;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EIAltimetry;
-import eu.hydrologis.jgrass.hortonmachine.utils.sorting.QuickSortAlgorithm;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetry;
+import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.sorting.QuickSortAlgorithm;
 
 @Description("Jami - Just another meteo interpolator")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")

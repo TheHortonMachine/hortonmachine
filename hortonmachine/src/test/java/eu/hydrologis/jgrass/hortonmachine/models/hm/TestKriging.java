@@ -8,12 +8,12 @@ import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.kriging.Kriging;
 import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepReaderId2Value;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepWriterId2Value;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 /**
  * Test the kriging model.
  * 

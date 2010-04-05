@@ -5,12 +5,12 @@ import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Role;
 import oms3.control.Iteration;
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value;
-import eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.kriging.Kriging;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepReaderId2Value;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepWriterId2Value;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 
 /**
  * @author moovida

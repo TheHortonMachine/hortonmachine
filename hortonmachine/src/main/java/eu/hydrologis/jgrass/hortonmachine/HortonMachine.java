@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package eu.hydrologis.jgrass.hortonmachine.modules;
+package eu.hydrologis.jgrass.hortonmachine;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,22 +27,6 @@ import java.util.Set;
 
 import oms3.Access;
 import oms3.ComponentAccess;
-import eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageReader;
-import eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageWriter;
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAltimetryReader;
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAreasReader;
-import eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIEnergyReader;
-import eu.hydrologis.jgrass.hortonmachine.io.grass.JGrassCoverageReader;
-import eu.hydrologis.jgrass.hortonmachine.io.grass.JGrassCoverageWriter;
-import eu.hydrologis.jgrass.hortonmachine.io.id2valuearray.Id2ValueArrayReader;
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader;
-import eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureWriter;
-import eu.hydrologis.jgrass.hortonmachine.io.tiff.GeoTiffCoverageReader;
-import eu.hydrologis.jgrass.hortonmachine.io.tiff.GeoTiffCoverageWriter;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value;
-import eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value;
-import eu.hydrologis.jgrass.hortonmachine.io.timeseries.TimeseriesReaderArray;
-import eu.hydrologis.jgrass.hortonmachine.io.timeseries.TimeseriesWriterArray;
 import eu.hydrologis.jgrass.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
 import eu.hydrologis.jgrass.hortonmachine.modules.basin.topindex.TopIndex;
 import eu.hydrologis.jgrass.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
@@ -63,13 +47,29 @@ import eu.hydrologis.jgrass.hortonmachine.modules.network.netshape2flow.Netshape
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.cb.Cb;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami;
 import eu.hydrologis.jgrass.hortonmachine.modules.statistics.kriging.Kriging;
+import eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageWriter;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetryReader;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAreasReader;
+import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIEnergyReader;
+import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassCoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassCoverageWriter;
+import eu.hydrologis.jgrass.jgrassgears.io.id2valuearray.Id2ValueArrayReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureWriter;
+import eu.hydrologis.jgrass.jgrassgears.io.tiff.GeoTiffCoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.tiff.GeoTiffCoverageWriter;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepReaderId2Value;
+import eu.hydrologis.jgrass.jgrassgears.io.timedependent.TimeseriesByStepWriterId2Value;
+import eu.hydrologis.jgrass.jgrassgears.io.timeseries.TimeseriesReaderArray;
+import eu.hydrologis.jgrass.jgrassgears.io.timeseries.TimeseriesWriterArray;
 
 /**
- * Helper class for modules names and classes.
+ * Class presenting modules names and classes.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class HMModules {
+public class HortonMachine {
 
     /**
      * A {@link LinkedHashMap map} of all the classes and their simple names.

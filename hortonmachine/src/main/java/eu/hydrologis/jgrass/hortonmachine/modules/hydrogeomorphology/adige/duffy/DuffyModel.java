@@ -25,18 +25,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 
-import static eu.hydrologis.jgrass.hortonmachine.libs.models.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
-import eu.hydrologis.jgrass.hortonmachine.libs.exceptions.ModelsIllegalargumentException;
-import eu.hydrologis.jgrass.hortonmachine.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.DischargeContributor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * The duffy model.
