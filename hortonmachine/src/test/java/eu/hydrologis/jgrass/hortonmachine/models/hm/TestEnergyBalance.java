@@ -167,16 +167,15 @@ public class TestEnergyBalance extends HMTestCase {
             energyBalance.tCurrent = runningDate.toString(dF);
             energyBalance.process();
 
-            double[] pnet = energyBalance.outPnet;
-            double[] prain = energyBalance.outPrainArray;
-            double[] psnow = energyBalance.outPsnow;
+            HashMap<Integer, double[]> pnet = energyBalance.outPnet;
+            HashMap<Integer, double[]> prain = energyBalance.outPrain;
+            HashMap<Integer, double[]> psnow = energyBalance.outPsnow;
 
-            for( int i = 0; i < prain.length; i++ ) {
-                assertEquals(expectedPrain[i], prain[i], 0.0001);
-                assertEquals(expectedPnet[i], pnet[i], 0.0001);
-                assertEquals(expectedPSnow[i], psnow[i], 0.0001);
+            for( int i = 0; i < prain.size(); i++ ) {
+                assertEquals(expectedPrain[i], prain.get(i)[0], 0.0001);
+                assertEquals(expectedPnet[i], pnet.get(i)[0], 0.0001);
+                assertEquals(expectedPSnow[i], psnow.get(i)[0], 0.0001);
             }
-            
             runningDate = runningDate.plusMinutes(30);
         }
         rainReader.close();
