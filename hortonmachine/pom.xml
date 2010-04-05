@@ -67,19 +67,15 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.oms</groupId>
+			<groupId>oms</groupId>
 			<artifactId>oms</artifactId>
-			<version>3.0.xx</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/libs/oms-all.jar</systemPath>
+			<version>3-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
 			<groupId>jama</groupId>
 			<artifactId>jama</artifactId>
 			<version>1.0.2</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/libs/Jama-1.0.2.jar</systemPath>
 		</dependency>
 
 		<dependency>
@@ -147,10 +143,11 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>chip-jama</id>
-			<url>http://repo.chip.org/maven</url>
-		</repository>
+
+		  <repository>
+		    <id>oms-tmprepo</id>
+		    <url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
+		  </repository>
 	</repositories>
 
 

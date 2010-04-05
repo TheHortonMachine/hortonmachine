@@ -123,11 +123,9 @@
 			<version>1.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.oms</groupId>
+			<groupId>oms</groupId>
 			<artifactId>oms</artifactId>
-			<version>3.0.xx</version>
-			<scope>system</scope>
-			<systemPath>${basedir}/libs/oms-all.jar</systemPath>
+			<version>3-SNAPSHOT</version>
 		</dependency>
 
 
@@ -188,6 +186,11 @@
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
+		</repository>
+
+		<repository>
+		    <id>oms-tmprepo</id>
+		    <url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
 		</repository>
 	</repositories>
 </project>
