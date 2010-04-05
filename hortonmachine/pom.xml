@@ -8,7 +8,6 @@
 	<name>The Horton Machine</name>
 	<url>http://www.hydrologis.eu</url>
 	
-
 	<!-- Build configuration -->
 	<build>
 		<plugins>
