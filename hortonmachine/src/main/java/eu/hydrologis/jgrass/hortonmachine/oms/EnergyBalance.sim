@@ -1,0 +1,339 @@
+sim(name:"EnergyBalance") {
+
+    // workspace directory
+    def work1 = System.getProperty("oms3.work");
+    def work = "/Users/silli/lavori_tmp/newage/newage_oms/jami_input/";
+    def pm = new eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor(System.out, System.err);
+	def scale = new double[3];
+    scale[0] = 10000.0;
+    scale[1] = 10000.0;
+    scale[2] = 100;
+
+
+	model(iter:"readertempdata.isTicking"){
+		components{
+		
+		//kriging on precipitations
+			readerstations    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readerbasins    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readerdata    'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value'
+			kriging 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.kriging.Kriging'
+		
+		//jami for temperature, relative humidity, pressure and wind speed
+			readeralt	'eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAltimetryReader'
+			readertempstat    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readerhumstat    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readerpressstat    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readerwindstat    'eu.hydrologis.jgrass.hortonmachine.io.shapefile.ShapefileFeatureReader'
+			readertempdata    'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value'
+			readerhumdata    'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value'
+			readerpressdata    'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value'
+			readerwinddata    'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepReaderId2Value'
+			jamitemp 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			jamihum 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			jamipress 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			jamiwind 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			jamidtday 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			jamidtmonth 'eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami.Jami'
+			
+		//energy balance
+			readerarea 'eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIAreasReader'
+			readerenergy 'eu.hydrologis.jgrass.hortonmachine.io.eicalculator.EIEnergyReader'
+			energyBalance 'eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance'
+			writerprain 'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value'
+			//writerpnet 'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value'
+			//writerswe 'eu.hydrologis.jgrass.hortonmachine.io.timedependent.TimeseriesByStepWriterId2Value'
+		}
+
+		parameter{
+		
+		//kriging
+			'readerstations.file'		"$work/rainstations.shp"
+			'readerbasins.file'			"$work/basins_passirio_width.shp"
+			
+			'readerdata.file'			"$work/kriging_new_rain.csv"
+        	'readerdata.fileNovalue'		"-9999"
+        	'readerdata.novalue'			Double.NaN
+			'readerdata.idfield'			"ID"
+			'readerdata.tStart'				"2005-05-01 00:00"
+        	'readerdata.tTimestep'			60
+	        'readerdata.tEnd'				"2005-05-01 00:00"
+			
+			'kriging.fStationsid'		"id_punti_m"
+			'kriging.fInterpolateid'	"netnum"
+			'kriging.pMode'				0
+        	'kriging.pIntegralscale'	scale
+			'kriging.pVariance'			0.5;
+        	'kriging.doLogarithmic'		(false)
+        	
+		
+		//jami on all the data
+			'readeralt.file'				"$work/eicalculator_out_altimetry.csv"
+        	'readeralt.pSeparator'			"\\s+"
+
+			'readerbasins.file'				"$work/basins_passirio_width.shp"
+
+        //read temperature
+			'readertempstat.file'			"$work/temperaturestations.shp"
+			'readertempdata.file'			"$work/jami_new_temp.csv"
+        	'readertempdata.fileNovalue'	"-9999"
+        	'readertempdata.novalue'		Double.NaN
+			'readertempdata.idfield'		"ID"
+			'readertempdata.tStart'			"2005-05-01 00:00"
+        	'readertempdata.tTimestep'		60
+	        'readertempdata.tEnd'			"2005-05-01 00:00"
+		
+		//read humidity
+			'readerhumstat.file'			"$work/humiditystations.shp"
+			'readerhumdata.file'			"$work/jami_new_humidity.csv"
+	        'readerhumdata.fileNovalue'		"-9999"
+        	'readerhumdata.novalue'			Double.NaN
+			'readerhumdata.idfield'			"ID"
+			'readerhumdata.tStart'			"2005-05-01 00:00"
+        	'readerhumdata.tTimestep'		60
+	        'readerhumdata.tEnd'			"2005-05-01 00:00"
+	        
+	    //read pressure
+			'readerpressstat.file'			"$work/pressurestations.shp"
+			'readerpressdata.file'			"$work/jami_new_press.csv"
+	        'readerpressdata.fileNovalue'	"-9999"
+        	'readerpressdata.novalue'		Double.NaN
+			'readerpressdata.idfield'		"ID"
+			'readerpressdata.tStart'		"2005-05-01 00:00"
+        	'readerpressdata.tTimestep'		60
+	        'readerpressdata.tEnd'			"2005-05-01 00:00"
+	        
+	     //read wind
+			'readerwindstat.file'			"$work/windstations.shp"
+			'readerwinddata.file'			"$work/jami_new_wind.csv"
+	        'readerwinddata.fileNovalue'	"-9999"
+        	'readerwinddata.novalue'		Double.NaN
+			'readerwinddata.idfield'		"ID"
+			'readerwinddata.tStart'			"2005-05-01 00:00"
+        	'readerwinddata.tTimestep'		60
+	        'readerwinddata.tEnd'			"2005-05-01 00:00"
+	        
+	      //energybalance read area and energy
+	      	'readerarea.file'				"$work/eicalculator_out_areas.csv"
+	      	'readerarea.pSeparator'			"\\s+"
+	      	
+	      	'readerenergy.file'				"$work/eicalculator_out_energy.csv"
+	      	'readerenergy.pSeparator'		"\\s+"
+	        
+	        'energyBalance.fBasinid'		"netnum"
+	        'energyBalance.fBasinlandcover'	"uso_reclas"
+	        'energyBalance.pInitswe'		500
+	        'energyBalance.pGlacierid'		15
+	        'energyBalance.pSnowrefv'		0.95
+	        'energyBalance.pTrain'			2
+	        'energyBalance.pTsnow'			0.0
+	        'energyBalance.pInternaltimestep'			1
+	        'energyBalance.pRhosnow'		400.0
+	        'energyBalance.pInitswe'		-9999.0
+	        'energyBalance.pCanopyh'		0
+	        'energyBalance.pGlacierid'		-9999.0
+	        'energyBalance.pSnowrefv'		0.85
+	        'energyBalance.pSnowrefir'		0.65
+	        'energyBalance.pInitsafepoint'	"merda"
+	        'energyBalance.pEndsafepoint'	"merda2"
+	        
+	        
+	     //jami on temperature   
+        	'jamitemp.fStationid'		"id_punti_m"
+        	'jamitemp.fStationelev'		"quota"
+        	'jamitemp.fBasinid'			"netnum"
+        	'jamitemp.pNum'				2
+        	'jamitemp.pBins'			4
+        	'jamitemp.pType'			0
+        	'jamitemp.defaultRh'		70
+        	'jamitemp.defaultW'			1
+        	'jamitemp.pHtmin'			5
+        	'jamitemp.pHtmax'			13
+        	'jamitemp.defaultDtday'		7
+        	'jamitemp.defaultDtmonth'	7
+        	'jamitemp.defaultTolltmin'	2
+        	'jamitemp.defaultTolltmax'	2
+        	
+	     //jami on humidity   
+        	'jamihum.fStationid'		"id_punti_m"
+        	'jamihum.fStationelev'		"quota"
+        	'jamihum.fBasinid'			"netnum"
+        	'jamihum.pNum'				2
+        	'jamihum.pBins'				4
+        	'jamihum.pType'				2
+        	'jamihum.defaultRh'			70
+        	'jamihum.defaultW'			1
+        	'jamihum.pHtmin'			5
+        	'jamihum.pHtmax'			13
+        	'jamihum.defaultDtday'		7
+        	'jamihum.defaultDtmonth'	7
+        	'jamihum.defaultTolltmin'	2
+        	'jamihum.defaultTolltmax'	2        	
+
+	     //jami on pressure   
+        	'jamipress.fStationid'		"id_punti_m"
+        	'jamipress.fStationelev'	"quota"
+        	'jamipress.fBasinid'		"netnum"
+        	'jamipress.pNum'			2
+        	'jamipress.pBins'			4
+        	'jamipress.pType'			1
+        	'jamipress.defaultRh'		70
+        	'jamipress.defaultW'		1
+        	'jamipress.pHtmin'			5
+        	'jamipress.pHtmax'			13
+        	'jamipress.defaultDtday'	7
+        	'jamipress.defaultDtmonth'	7
+        	'jamipress.defaultTolltmin'	2
+        	'jamipress.defaultTolltmax'	2
+
+	     //jami on wind   
+        	'jamiwind.fStationid'		"id_punti_m"
+        	'jamiwind.fStationelev'		"quota"
+        	'jamiwind.fBasinid'			"netnum"
+        	'jamiwind.pNum'				2
+        	'jamiwind.pBins'			4
+        	'jamiwind.pType'			3
+        	'jamiwind.defaultRh'		70
+        	'jamiwind.defaultW'			1
+        	'jamiwind.pHtmin'			5
+        	'jamiwind.pHtmax'			13
+        	'jamiwind.defaultDtday'		7
+        	'jamiwind.defaultDtmonth'	7
+        	'jamiwind.defaultTolltmin'	2
+        	'jamiwind.defaultTolltmax'	2
+        	
+        //jami on dtday   
+        	'jamidtday.fStationid'			"id_punti_m"
+        	'jamidtday.fStationelev'		"quota"
+        	'jamidtday.fBasinid'			"netnum"
+        	'jamidtday.pNum'				2
+        	'jamidtday.pBins'				4
+        	'jamidtday.pType'				4
+        	'jamidtday.defaultRh'			70
+        	'jamidtday.defaultW'			1
+        	'jamidtday.pHtmin'				5
+        	'jamidtday.pHtmax'				13
+        	'jamidtday.defaultDtday'		7
+        	'jamidtday.defaultDtmonth'		7
+        	'jamidtday.defaultTolltmin'		2
+        	'jamidtday.defaultTolltmax'		2	
+        	
+        //jami on dtmonth   
+        	'jamidtmonth.fStationid'			"id_punti_m"
+        	'jamidtmonth.fStationelev'			"quota"
+        	'jamidtmonth.fBasinid'				"netnum"
+        	'jamidtmonth.pNum'					2
+        	'jamidtmonth.pBins'					4
+        	'jamidtmonth.pType'					5
+        	'jamidtmonth.defaultRh'				70
+        	'jamidtmonth.defaultW'				1
+        	'jamidtmonth.pHtmin'				5
+        	'jamidtmonth.pHtmax'				13
+        	'jamidtmonth.defaultDtday'			7
+        	'jamidtmonth.defaultDtmonth'		7
+        	'jamidtmonth.defaultTolltmin'		2
+        	'jamidtmonth.defaultTolltmax'		2	
+        	
+        //writer
+        	'writerprain.file'					"$work/energy_balance_out_prain.csv"
+        	'writerprain.tablename'				"prain"
+        	//'writerpnet.file'					"$work/energy_balance_out_pnet.csv"
+        	//'writerpnet.tablename'				"pnet"
+        	//'writerswe.file'					"$work/energy_balance_out_pswe.csv"
+        	//'writerswe.tablename'				"swe"
+        	
+
+		//all the pms        	
+			'kriging.pm' pm
+        	'readeralt.pm' pm;        	
+        	'jamitemp.pm' pm
+        	'jamihum.pm' pm
+        	'jamipress.pm' pm
+        	'jamiwind.pm' pm
+        	'jamidtday.pm' pm
+        	'jamidtmonth.pm' pm
+        	
+        	'readerarea.pm' pm
+        	'readerenergy.pm' pm
+        	'energyBalance.pm' pm
+		}
+	
+		connect{
+		
+			//kriging on precipitations
+			'readerstations.geodata' 'kriging.inStations'
+			'readerbasins.geodata' 'kriging.inInterpolate'
+			'readerdata.data' 'kriging.inData'
+		
+			//jami on temperature
+			'readertempstat.geodata' 'jamitemp.inStations'
+			'readerbasins.geodata' 'jamitemp.inInterpolate'
+			'readertempdata.data' 'jamitemp.inMeteo'
+			'readeralt.outAltimetry' 'jamitemp.inAltimetry'
+			'readertempdata.tCurrent' 'jamitemp.tCurrent'
+			
+			//jami on relative humidity
+			'readerhumstat.geodata' 'jamihum.inStations'
+			'readerbasins.geodata' 'jamihum.inInterpolate'
+			'readerhumdata.data' 'jamihum.inMeteo'
+			'readeralt.outAltimetry' 'jamihum.inAltimetry'
+			'readerhumdata.tCurrent' 'jamihum.tCurrent'
+			
+			//jami on pressure
+			'readerpressstat.geodata' 'jamipress.inStations'
+			'readerbasins.geodata' 'jamipress.inInterpolate'
+			'readerpressdata.data' 'jamipress.inMeteo'
+			'readeralt.outAltimetry' 'jamipress.inAltimetry'
+			'readerpressdata.tCurrent' 'jamipress.tCurrent'
+			
+			//jami on wind speed
+			'readerwindstat.geodata' 'jamiwind.inStations'
+			'readerbasins.geodata' 'jamiwind.inInterpolate'
+			'readerwinddata.data' 'jamiwind.inMeteo'
+			'readeralt.outAltimetry' 'jamiwind.inAltimetry'
+			'readerwinddata.tCurrent' 'jamiwind.tCurrent'
+			
+			//jami on dtday
+			'readertempstat.geodata' 'jamidtday.inStations'
+			'readerbasins.geodata' 'jamidtday.inInterpolate'
+			'readertempdata.data' 'jamidtday.inMeteo'
+			'readeralt.outAltimetry' 'jamidtday.inAltimetry'
+			'readertempdata.tCurrent' 'jamidtday.tCurrent'
+			
+			//jami on dtmonth
+			'readertempstat.geodata' 'jamidtmonth.inStations'
+			'readerbasins.geodata' 'jamidtmonth.inInterpolate'
+			'readertempdata.data' 'jamidtmonth.inMeteo'
+			'readeralt.outAltimetry' 'jamidtmonth.inAltimetry'
+			'readertempdata.tCurrent' 'jamidtmonth.tCurrent'
+			
+			//energybalance
+			'readerbasins.geodata' 'energyBalance.inBasins'
+			'kriging.outData' 'energyBalance.inRain'
+			'jamitemp.outInterpolated' 'energyBalance.inTemp'
+			'jamihum.outInterpolated' 'energyBalance.inRh'
+			'jamipress.outInterpolated' 'energyBalance.inPressure'
+			'jamiwind.outInterpolated' 'energyBalance.inWind'
+			'jamidtday.outInterpolated' 'energyBalance.inDtday'
+			'jamidtmonth.outInterpolated' 'energyBalance.inDtmonth'
+			'readerarea.outAreas' 'energyBalance.inAreas'
+			'readerenergy.outEnergy' 'energyBalance.inEnergy'
+			'readertempdata.tCurrent' 'energyBalance.tCurrent'
+			'readertempdata.tTimestep' 'energyBalance.tTimestep'
+			'energyBalance.outPrain' 'writerprain.data'
+			'readertempdata.tStart' 'writerprain.tStart'
+			'energyBalance.tTimestep' 'writerprain.tTimestep'
+			//'energyBalance.outPnet' 'writerpnet.data'
+			//'readertempdata.tStart' 'writerpnet.tStart'
+			//'energyBalance.tTimestep' 'writerpnet.tTimestep'
+			//'energyBalance.outSwe' 'writerswe.data'
+			//'readertempdata.tStart' 'writerswe.tStart'
+			//'energyBalance.tTimestep' 'writerswe.tTimestep'
+			
+			
+		}
+		
+		
+	}
+	
+}

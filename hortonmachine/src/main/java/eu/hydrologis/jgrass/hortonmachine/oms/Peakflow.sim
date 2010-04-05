@@ -1,0 +1,110 @@
+sim(name:"Peakflow") {
+
+    // workspace directory
+    def work = System.getProperty("oms3.work");
+    def pm = new eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor(System.out, System.err);
+    def dummy = eu.hydrologis.jgrass.hortonmachine.utils.coverage.CoverageUtilities.buildDummyCoverage();
+    def dummyList = new ArrayList();
+    def dummyMap = new HashMap();
+
+	model{
+		components{
+			reader    'eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageReader'
+			writer    'eu.hydrologis.jgrass.hortonmachine.io.timeseries.TimeseriesWriterArray'
+			pitfiller 'eu.hydrologis.jgrass.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller'
+			flowDirections 'eu.hydrologis.jgrass.hortonmachine.modules.geomorphology.flow.FlowDirections'
+			drainDir 'eu.hydrologis.jgrass.hortonmachine.modules.geomorphology.draindir.DrainDir'
+			extractNetwork 'eu.hydrologis.jgrass.hortonmachine.modules.network.extractnetwork.ExtractNetwork'
+			rescaledDistanceSup 'eu.hydrologis.jgrass.hortonmachine.modules.basin.rescaleddistance.RescaledDistance'
+			rescaledDistanceSub 'eu.hydrologis.jgrass.hortonmachine.modules.basin.rescaleddistance.RescaledDistance'
+			topIndex 'eu.hydrologis.jgrass.hortonmachine.modules.basin.topindex.TopIndex'
+			gradient 'eu.hydrologis.jgrass.hortonmachine.modules.geomorphology.gradient.Gradient'
+			aB 'eu.hydrologis.jgrass.hortonmachine.modules.geomorphology.ab.Ab'
+			curvatures 'eu.hydrologis.jgrass.hortonmachine.modules.geomorphology.curvatures.Curvatures'
+			peakflow 'eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow'
+		}
+
+		parameter{
+			'reader.file'				"$work/src/test/resources/dtm_test.asc"
+			'reader.fileNovalue'		"-9999.0"
+			'reader.geodataNovalue'		Double.NaN
+			
+	        'writer.file'				"$work/peak_sim.csv"
+	        'writer.tablename'			"discharge"
+	        'writer.doDates'			(false)
+	        'writer.columns'			"time,discharge"
+	        'writer.metadata'			dummyMap
+	        
+			'drainDir.doLad'			(true)
+			'drainDir.pLambda'			1
+			
+			'extractNetwork.pMode'		0
+	        'extractNetwork.pThres'		5
+	        'extractNetwork.doNetfc'	(false)
+	        
+	        'rescaledDistanceSup.pRatio'	10
+	        'rescaledDistanceSub.pRatio'	100
+	        
+	        'peakflow.pA'				50
+	        'peakflow.pN'				0.3
+	        'peakflow.pCelerity'		2
+	        'peakflow.pDiffusion'		1000
+	        'peakflow.pSat'				30
+	        
+	        'peakflow.inTimestamps'		dummyList
+	        'peakflow.inRainfall'		dummyList
+	        'drainDir.inFlownet' dummy
+	        'extractNetwork.inSlope' dummy
+	        'extractNetwork.inTc3' dummy
+	        
+	        'pitfiller.pm' pm
+			'flowDirections.pm' pm
+			'drainDir.pm' pm
+			'extractNetwork.pm' pm
+			'gradient.pm' pm
+			'aB.pm' pm
+			'curvatures.pm' pm
+			'topIndex.pm' pm
+			'rescaledDistanceSup.pm' pm
+			'rescaledDistanceSub.pm' pm
+			'peakflow.pm' pm
+		}
+	
+		connect{
+		//pit
+			'reader.geodata' 'pitfiller.inDem'
+		//flow	
+			'pitfiller.outPit' 'flowDirections.inPit'
+		//drain	
+			'flowDirections.outFlow' 'drainDir.inFlow'
+			'pitfiller.outPit' 'drainDir.inPit'
+			'drainDir.outFlow' 'extractNetwork.inFlow'
+			'drainDir.outTca' 'extractNetwork.inTca'
+		//gradient	
+			'pitfiller.outPit' 'gradient.inDem'
+		//curvatures	
+			'pitfiller.outPit' 'curvatures.inDem'
+		//ab	
+			'drainDir.outTca' 'aB.inTca'
+			'curvatures.outPlan' 'aB.inPlan'
+		//topindex	
+			'aB.outAb' 'topIndex.inTca'
+			'gradient.outSlope' 'topIndex.inSlope'
+		//rescaled distance sup	
+			'drainDir.outFlow' 'rescaledDistanceSup.inFlow'
+			'extractNetwork.outNet' 'rescaledDistanceSup.inNet'
+		//rescaled distance sup	
+			'drainDir.outFlow' 'rescaledDistanceSub.inFlow'
+			'extractNetwork.outNet' 'rescaledDistanceSub.inNet'
+		//peakflow	
+			'rescaledDistanceSup.outRescaled' 'peakflow.inRescaledsup'
+			'rescaledDistanceSub.outRescaled' 'peakflow.inRescaledsub'
+			'topIndex.outTopindex' 'peakflow.inTopindex'
+			'peakflow.outDischarge' 'writer.data'
+			'peakflow.outTimestamps' 'writer.timestamps'
+			
+		}
+		
+	}
+	
+}

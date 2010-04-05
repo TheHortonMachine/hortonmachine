@@ -1,0 +1,20 @@
+sim(name:"KrigingTest") {
+
+    // workspace directory
+    def work = System.getProperty("oms3.work");
+
+    model(classname:"eu.hydrologis.jgrass.hortonmachine.oms.KrigingIteration") {
+       parameter {
+            startDate "2000-01-01 00:00"
+            endDate "2000-01-01 01:00"
+            timestep 60
+            rainFilePath "$work/src/test/resources/rain_test.csv"
+            stationsPath "$work/src/test/resources/rainstations.shp"
+            interpolatedPointsPath "$work/src/test/resources/basins_passirio_width0.shp"
+            interpolatedRainPath "$work/src/test/resources/kriging_out.csv"
+       }
+
+		
+   }
+}
+
