@@ -4,7 +4,7 @@
 	<groupId>eu.hydrologis.edc</groupId>
 	<artifactId>edc</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>Environmental Data Center</name>
 	<url>http://www.hydrologis.eu</url>
 
