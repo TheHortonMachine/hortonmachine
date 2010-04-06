@@ -22,6 +22,7 @@ import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalu
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -115,8 +116,6 @@ public class Netshape2Flow extends HMModel {
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
-        ModelsEngine modelsEngine = new ModelsEngine();
-
         HashMap<String, Double> regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
         double res = regionMap.get(CoverageUtilities.XRES);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
@@ -217,7 +216,7 @@ public class Netshape2Flow extends HMModel {
                      * if the two analized points are equal, the point will be added at the next
                      * round
                      */
-                    if (firstOnRaster.equals(secondOnRaster)) {
+                    if (Arrays.equals(firstOnRaster, secondOnRaster)) {
                         runningLength = runningLength + res;
                         continue;
                     }
@@ -225,7 +224,7 @@ public class Netshape2Flow extends HMModel {
                     // after it
                     int rowDiff = secondOnRaster[0] - firstOnRaster[0];
                     int colDiff = secondOnRaster[1] - firstOnRaster[1];
-                    int flowDirection = modelsEngine.getFlowDirection(rowDiff, colDiff);
+                    int flowDirection = ModelsEngine.getFlowDirection(rowDiff, colDiff);
 
                     if (isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
                         flowIter.setSample(firstOnRaster[1], firstOnRaster[0], 0, flowDirection);
