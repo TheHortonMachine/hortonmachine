@@ -28,15 +28,11 @@ public class QScs implements DischargeCalculator {
 
     private double[][] jeffsup = null;
     private double[][] jeffsub = null;
-    private ParameterBox parambox = null;
-    private IUHCalculator iuhCalculator = null;
     private double[][] qTot = null;
     private double tpmax = 0f;
     // private int timestep = 1;
 
     public QScs( double[][] jeff, ParameterBox _parambox, IUHCalculator iuhCalc ) {
-        parambox = _parambox;
-        iuhCalculator = iuhCalc;
 
         // create jsup, jsub
         jeffsup = new double[jeff.length][2];

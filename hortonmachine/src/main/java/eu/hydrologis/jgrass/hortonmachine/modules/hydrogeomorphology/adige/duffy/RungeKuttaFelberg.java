@@ -270,7 +270,7 @@ public class RungeKuttaFelberg {
                 }
             }
 
-            if (targetTimeInMinutes == intervalEndTimeInMinutes) {
+            if (Math.abs(targetTimeInMinutes - intervalEndTimeInMinutes) < .0000001) {
                 break;
             }
 

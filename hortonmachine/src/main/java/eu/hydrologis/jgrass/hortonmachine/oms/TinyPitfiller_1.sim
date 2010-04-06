@@ -5,8 +5,8 @@ sim(name:"Pit") {
 
     model {
         components  {
-          reader    'eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageReader'
-          writer    'eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageWriter'
+          reader    'eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageReader'
+          writer    'eu.hydrologis.jgrass.jgrassgears.io.arcgrid.ArcgridCoverageWriter'
           pitfiller 'eu.hydrologis.jgrass.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller'
         }
 
@@ -15,7 +15,7 @@ sim(name:"Pit") {
            'writer.file' "$work/src/test/resources/pit_test.asc"
            'reader.fileNovalue' 	(-9999.0)
            'reader.geodataNovalue'	(-9999.0)
-           'pitfiller.pm' new eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor(System.out, System.err)
+           'pitfiller.pm' new eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor(System.out, System.err)
         }
 
         connect {

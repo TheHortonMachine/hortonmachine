@@ -203,9 +203,6 @@ public class DrainDir extends HMModel {
         QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
         t.sort(orderedelev, indexes);
 
-        // free the memory
-        orderedelev = null;
-
         pm.message(msg.message("draindir.initializematrix"));
 
         // Initialize new RasterData and set value

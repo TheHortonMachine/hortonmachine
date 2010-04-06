@@ -17,8 +17,8 @@ public class TinyPitfillerLauncher {
     // and start this file in debug mode.
 
     public static void main( String[] args ) throws Exception {
-//        System.setProperty("oms3.work", "D:/development/hortonmachine-svn/trunk/hortonmachine/src/test/resources");
-        System.setProperty("oms3.work", "/Users/silli/workspace/hortonmachine/hortonmachine/");
+        System.setProperty("oms3.work", "/home/moovida/development/jgrasstools-hg/jgrasstools/hortonmachine/");
+//        System.setProperty("oms3.work", "/Users/silli/workspace/hortonmachine/hortonmachine/");
 //        System.setProperty("oms3.work", "D:/development/hortonmachine-svn/trunk/hortonmachine");
 //        System.setProperty("oms3.work", "/od/software/hm/trunk/hortonmachine");
         String f = CLI.readFile(System.getProperty("oms3.work") +"/src/main/java/eu/hydrologis/jgrass/hortonmachine/oms/TinyPitfiller_1.sim");

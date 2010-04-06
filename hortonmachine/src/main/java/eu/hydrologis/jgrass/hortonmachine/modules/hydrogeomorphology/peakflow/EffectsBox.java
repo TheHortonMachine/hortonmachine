@@ -25,7 +25,6 @@ public class EffectsBox {
     private double[][] ampi = null;
     private double[][] ampi_sub = null;
     private double[][] ampi_help_sub = null;
-    private double[][] rain_Data = null;
 
     private boolean isSubsuperficial = false;
     private boolean rainDataExists;

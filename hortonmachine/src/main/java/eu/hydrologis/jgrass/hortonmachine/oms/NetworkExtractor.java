@@ -58,7 +58,6 @@ public class NetworkExtractor extends Compound {
     private FlowDirections flow = new FlowDirections();
     private DrainDir drain = new DrainDir();
     private ExtractNetwork network = new ExtractNetwork();
-    private CoverageViewer cv = new CoverageViewer();
 
     @Initialize
     public void init() {

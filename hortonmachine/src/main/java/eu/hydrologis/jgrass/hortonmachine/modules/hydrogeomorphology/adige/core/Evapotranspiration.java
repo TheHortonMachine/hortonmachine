@@ -24,21 +24,21 @@ package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core
  */
 public class Evapotranspiration {
 
-    private final double Z0_SNOW = 0.010;
-    private final double CLOSURE = 4000.0;
-    private final double RSMAX = 5000.0; // Pa
-    private final double VPDMINFACTOR = 0.1;
-    private final double A_SVP = 0.61078;
-    private final double B_SVP = 17.269;
-    private final double C_SVP = 237.3;
-    private final double CP_PM = 1013.0; /* specific heat of moist air J/kg/C (Handbook of Hydrology) */
-    // private final double PS_PM = 101300.0; /* sea level air pressure in Pa */
-    // private final double LAPSE_PM = -0.006; /* environmental lapse rate in C/m */
-    // private final int SECPHOUR = 3600; /* seconds per hour */
-    private final int SEC_PER_DAY = 86400; /* seconds per day */
-    private final double HUGE_RESIST = 1.e20; /* largest allowable double number */
-    private final double VON_K = 0.41; /* Von Karman constant for evapotranspiration */
-    private final double ZREF = 2.0; // reference height for wind speed
+    private static final double Z0_SNOW = 0.010;
+    private static final double CLOSURE = 4000.0;
+    private static final double RSMAX = 5000.0; // Pa
+    private static final double VPDMINFACTOR = 0.1;
+    private static final double A_SVP = 0.61078;
+    private static final double B_SVP = 17.269;
+    private static final double C_SVP = 237.3;
+    private static final double CP_PM = 1013.0; /* specific heat of moist air J/kg/C (Handbook of Hydrology) */
+    // private static final double PS_PM = 101300.0; /* sea level air pressure in Pa */
+    // private static final double LAPSE_PM = -0.006; /* environmental lapse rate in C/m */
+    // private static final int SECPHOUR = 3600; /* seconds per hour */
+    private static final int SEC_PER_DAY = 86400; /* seconds per day */
+    private static final double HUGE_RESIST = 1.e20; /* largest allowable double number */
+    private static final double VON_K = 0.41; /* Von Karman constant for evapotranspiration */
+    private static final double ZREF = 2.0; // reference height for wind speed
 
     public Evapotranspiration() {
     }
