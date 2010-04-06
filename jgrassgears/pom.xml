@@ -78,6 +78,11 @@
 			<version>2.6-SNAPSHOT</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.googlecode.jaitools</groupId>
+			<artifactId>jiffle</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 
 		<dependency>
@@ -138,8 +143,16 @@
 			</snapshots>
 		</repository>
 		<repository>
-		    <id>oms-tmprepo</id>
-		    <url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
+			<id>oms-tmprepo</id>
+			<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
+		</repository>
+		<repository>
+			<id>jaitools-snapshots</id>
+			<name>jaitools snapshots</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
