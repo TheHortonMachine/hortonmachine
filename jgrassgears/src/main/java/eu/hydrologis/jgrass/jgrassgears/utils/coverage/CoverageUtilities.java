@@ -267,9 +267,6 @@ public class CoverageUtilities {
     public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage,
             HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
 
-        GridSampleDimension band = new GridSampleDimension(name);
-        band = band.geophysics(true);
-
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
         double east = envelopeParams.get(EAST);
@@ -292,9 +289,6 @@ public class CoverageUtilities {
      */
     public static GridCoverage2D buildCoverage( String name, WritableRaster writableRaster,
             HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
-
-        GridSampleDimension band = new GridSampleDimension(name);
-        band = band.geophysics(true);
 
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);

@@ -444,8 +444,8 @@ public class JGrassGridCoverage2D {
             east = writeRegion.getEast();
             north = writeRegion.getNorth();
             south = writeRegion.getSouth();
-            rows = writeRegion.getRows();
-            cols = writeRegion.getCols();
+            // rows = writeRegion.getRows();
+            // cols = writeRegion.getCols();
         } else {
             rows = raster.getHeight();
             cols = raster.getWidth();

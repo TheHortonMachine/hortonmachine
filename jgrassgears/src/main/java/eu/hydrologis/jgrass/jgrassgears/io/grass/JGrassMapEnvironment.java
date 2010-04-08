@@ -665,15 +665,14 @@ public class JGrassMapEnvironment {
      * @throws IOException
      */
     public double[] getRangeFromMapScan() throws IOException {
-        double[] dataRange = new double[2];
         /*
-         * if the raneg file doesn't exist, the only way is to scan the whole map.
+         * if the range file doesn't exist, the only way is to scan the whole map.
          */
         GrassCoverageReader coverageReader = new GrassCoverageReader(PixelInCell.CELL_CENTER, null,
                 false, false, null);
         coverageReader.setInput(getCELL());
         coverageReader.read(null);
-        dataRange = coverageReader.getRange();
+        double[] dataRange = coverageReader.getRange();
 
         // write the range to disk
         OutputStream cell_miscRangeStream = new FileOutputStream(getCELLMISC_RANGE());

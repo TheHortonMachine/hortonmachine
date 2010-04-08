@@ -362,10 +362,6 @@ public class FeatureUtilities {
         } else {
             file = new File(name + ".shp");
         }
-        // Create a Map object used by our DataStore Factory
-        // NOTE: file.toURI().toURL() is used because file.toURL() is
-        // deprecated
-        Map<String, Serializable> map = Collections.singletonMap("url", (Serializable) file.toURI().toURL());
 
         ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
         Map<String, Serializable> create = new HashMap<String, Serializable>();

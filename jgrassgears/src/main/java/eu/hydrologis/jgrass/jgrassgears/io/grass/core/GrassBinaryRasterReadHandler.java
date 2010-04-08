@@ -344,7 +344,6 @@ public class GrassBinaryRasterReadHandler {
         // prepare for reading
         rasterByteBuffer.rewind();
 
-        rowDataCache = null;
         rowCacheRow = -1;
         nullRow = null;
 
