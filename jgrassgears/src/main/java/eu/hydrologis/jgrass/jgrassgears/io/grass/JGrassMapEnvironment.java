@@ -283,7 +283,7 @@ public class JGrassMapEnvironment {
         CELLMISC_FORMAT = new File(cellMiscPath + JGrassConstants.CELLMISC_FORMAT);
         CELLMISC_QUANT = new File(cellMiscPath + JGrassConstants.CELLMISC_QUANT);
         CELLMISC_RANGE = new File(cellMiscPath + JGrassConstants.CELLMISC_RANGE);
-        
+
         RECLASSEDENVIRONMENT = this;
     }
 
@@ -550,36 +550,40 @@ public class JGrassMapEnvironment {
          * the cats directory.
          */
         BufferedReader rdr = new BufferedReader(new FileReader(getCATS()));
-        /* Instantiate attribute table */
-        AttributeTable attTable = new AttributeTable();
-        /* Ignore first 4 lines. */
-        rdr.readLine();
-        rdr.readLine();
-        rdr.readLine();
-        rdr.readLine();
-        /* Read next n lines */
-        String line;
-        while( (line = rdr.readLine()) != null ) {
-            /* All lines other than '0:no data' are processed */
-            //            if (line.indexOf("0:no data") == -1) { //$NON-NLS-1$
-            JlsTokenizer tk = new JlsTokenizer(line, ":"); //$NON-NLS-1$
-            if (tk.countTokens() == 2) {
-                float f = Float.parseFloat(tk.nextToken());
-                String att = tk.nextToken().trim();
-                attTable.addAttribute(f, att);
-            } else if (tk.countTokens() == 3) {
-                float f0 = Float.parseFloat(tk.nextToken());
-                float f1 = Float.parseFloat(tk.nextToken());
-                String att = tk.nextToken().trim();
-                attTable.addAttribute(f0, f1, att);
+        try {
+            /* Instantiate attribute table */
+            AttributeTable attTable = new AttributeTable();
+            /* Ignore first 4 lines. */
+            rdr.readLine();
+            rdr.readLine();
+            rdr.readLine();
+            rdr.readLine();
+            /* Read next n lines */
+            String line;
+            while( (line = rdr.readLine()) != null ) {
+                /* All lines other than '0:no data' are processed */
+                //            if (line.indexOf("0:no data") == -1) { //$NON-NLS-1$
+                JlsTokenizer tk = new JlsTokenizer(line, ":"); //$NON-NLS-1$
+                if (tk.countTokens() == 2) {
+                    float f = Float.parseFloat(tk.nextToken());
+                    String att = tk.nextToken().trim();
+                    attTable.addAttribute(f, att);
+                } else if (tk.countTokens() == 3) {
+                    float f0 = Float.parseFloat(tk.nextToken());
+                    float f1 = Float.parseFloat(tk.nextToken());
+                    String att = tk.nextToken().trim();
+                    attTable.addAttribute(f0, f1, att);
+                }
+                // }
             }
-            // }
-        }
 
-        Enumeration<CellAttribute> categories = attTable.getCategories();
-        while( categories.hasMoreElements() ) {
-            AttributeTable.CellAttribute object = categories.nextElement();
-            categoriesList.add(object.toString());
+            Enumeration<CellAttribute> categories = attTable.getCategories();
+            while( categories.hasMoreElements() ) {
+                AttributeTable.CellAttribute object = categories.nextElement();
+                categoriesList.add(object.toString());
+            }
+        } finally {
+            rdr.close();
         }
 
         return categoriesList;
@@ -719,11 +723,15 @@ public class JGrassMapEnvironment {
         if (projWtkFile.exists()) {
             BufferedReader crsReader = new BufferedReader(new FileReader(projWtkFile));
             StringBuffer wtkString = new StringBuffer();
-            String line = null;
-            while( (line = crsReader.readLine()) != null ) {
-                wtkString.append(line.trim());
-            }
+            try {
+                String line = null;
+                while( (line = crsReader.readLine()) != null ) {
+                    wtkString.append(line.trim());
+                }
 
+            } finally {
+                crsReader.close();
+            }
             CoordinateReferenceSystem readCrs = null;
             try {
                 readCrs = CRS.parseWKT(wtkString.toString());

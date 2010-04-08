@@ -72,54 +72,56 @@ public class GrassColorTable extends ColorTable {
 
             BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(
                     colrFile)));
-            String line = rdr.readLine();
-            if (line == null) {
-                colorTableEmpty = true;
-                rdr.close();
-                if (colrFile.delete()) {
-                    System.out.println("removed empty color file"); //$NON-NLS-1$
+            try {
+                String line = rdr.readLine();
+                if (line == null) {
+                    colorTableEmpty = true;
+                    if (colrFile.delete()) {
+                        System.out.println("removed empty color file"); //$NON-NLS-1$
+                    }
+                    return;
                 }
-                return;
-            }
-            line = line.trim();
-            /*
-             * Read first line and if it starts with # then it is a 3.x color map. If it starts with %
-             * then it it a 4.x/5.x color map
-             */
-            if (line == null)
-                return;
-            if (line.charAt(0) == '%') {
-                String[] stringValues = line.split("\\s+"); //$NON-NLS-1$
-                if (stringValues.length == 4) {
-                    try {
-                        alpha = Integer.parseInt(stringValues[3]);
-                    } catch (NumberFormatException e) {
+                line = line.trim();
+                /*
+                 * Read first line and if it starts with # then it is a 3.x color map. If it starts with %
+                 * then it it a 4.x/5.x color map
+                 */
+                if (line == null)
+                    return;
+                if (line.charAt(0) == '%') {
+                    String[] stringValues = line.split("\\s+"); //$NON-NLS-1$
+                    if (stringValues.length == 4) {
+                        try {
+                            alpha = Integer.parseInt(stringValues[3]);
+                        } catch (NumberFormatException e) {
+                            alpha = 255;
+                        }
+                    } else {
                         alpha = 255;
                     }
+                    /* Read all the color rules */
+                    while( (line = rdr.readLine()) != null ) {
+                        if (line.charAt(0) != '%')
+                            processGrass4ColorRule(line.trim());
+                    }
+                } else if (line.charAt(0) == '#') {
+                    int catNumber = Integer.parseInt(line.substring(1, 2));
+                    /* Read second line which is the background colour */
+                    processGrass3ColorRule(-1, rdr.readLine());
+                    /* Now read the rest of the lines */
+                    while( (line = rdr.readLine()) != null ) {
+                        processGrass3ColorRule(catNumber++, line.trim());
+                    }
                 } else {
-                    alpha = 255;
+                    int catNumber = 0;
+                    /* Now read the rest of the lines */
+                    while( (line = rdr.readLine()) != null ) {
+                        processGrass3ColorRule(catNumber++, line.trim());
+                    }
                 }
-                /* Read all the color rules */
-                while( (line = rdr.readLine()) != null ) {
-                    if (line.charAt(0) != '%')
-                        processGrass4ColorRule(line.trim());
-                }
-            } else if (line.charAt(0) == '#') {
-                int catNumber = Integer.parseInt(line.substring(1, 2));
-                /* Read second line which is the background colour */
-                processGrass3ColorRule(-1, rdr.readLine());
-                /* Now read the rest of the lines */
-                while( (line = rdr.readLine()) != null ) {
-                    processGrass3ColorRule(catNumber++, line.trim());
-                }
-            } else {
-                int catNumber = 0;
-                /* Now read the rest of the lines */
-                while( (line = rdr.readLine()) != null ) {
-                    processGrass3ColorRule(catNumber++, line.trim());
-                }
+            } finally {
+                rdr.close();
             }
-            rdr.close();
             colorTableEmpty = false;
         } catch (NumberFormatException e) {
             e.printStackTrace();

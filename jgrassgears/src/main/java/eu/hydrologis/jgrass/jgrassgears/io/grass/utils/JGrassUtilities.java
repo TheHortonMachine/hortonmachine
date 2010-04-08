@@ -605,7 +605,7 @@ public class JGrassUtilities {
         long freeMemory = Runtime.getRuntime().freeMemory();
         int tileSizeY = 256;
         int tileSizeX = 256;
-        if (freeMemory > 8 * cols) {
+        if (freeMemory > 8L * cols) {
             tileSizeX = cols;
             tileSizeY = (int) (freeMemory / 8) / cols;
             if (tileSizeY > rows) {

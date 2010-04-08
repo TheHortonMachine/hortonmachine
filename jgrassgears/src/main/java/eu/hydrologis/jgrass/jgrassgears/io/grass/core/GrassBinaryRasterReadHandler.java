@@ -24,6 +24,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -195,8 +196,9 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    public WritableRaster readRaster( ImageReadParam param, boolean useSubSamplingAsRequestedRowcols, boolean castDoubleToFloating, IHMProgressMonitor monitor ) throws IOException,
-            DataFormatException {
+    public WritableRaster readRaster( ImageReadParam param,
+            boolean useSubSamplingAsRequestedRowcols, boolean castDoubleToFloating,
+            IHMProgressMonitor monitor ) throws IOException, DataFormatException {
         this.useSubSamplingAsRequestedRowcols = useSubSamplingAsRequestedRowcols;
         this.castDoubleToFloating = castDoubleToFloating;
         this.monitor = monitor;
@@ -219,7 +221,8 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    public WritableRaster readRaster( ImageReadParam param ) throws IOException, DataFormatException {
+    public WritableRaster readRaster( ImageReadParam param ) throws IOException,
+            DataFormatException {
 
         JGrassRegion activeReadRegion = null;
         if (param != null) {
@@ -245,7 +248,8 @@ public class GrassBinaryRasterReadHandler {
             double newNorth = nativeRasterRegion.getNorth() - minY * yRes;
             double newSouth = newNorth - srcRegion.height * yRes;
 
-            activeReadRegion = new JGrassRegion(newWest, newEast, newSouth, newNorth, intRealRowsToRead, intRealColsToRead);
+            activeReadRegion = new JGrassRegion(newWest, newEast, newSouth, newNorth,
+                    intRealRowsToRead, intRealColsToRead);
             int colsAtMaxRes = activeReadRegion.getCols();
             int rowsAtMaxRes = activeReadRegion.getRows();
 
@@ -272,14 +276,18 @@ public class GrassBinaryRasterReadHandler {
         final WritableRaster raster;
         if (numberOfBytesPerValue == 8) {
             if (!castDoubleToFloating) {
-                raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_DOUBLE, rasterMapWidth, rasterMapHeight, 1, null);
+                raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_DOUBLE, rasterMapWidth,
+                        rasterMapHeight, 1, null);
             } else {
-                raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, rasterMapWidth, rasterMapHeight, 1, null);
+                raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, rasterMapWidth,
+                        rasterMapHeight, 1, null);
             }
         } else if (numberOfBytesPerValue == 4 && readerMapType < 0) {
-            raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, rasterMapWidth, rasterMapHeight, 1, null);
+            raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, rasterMapWidth,
+                    rasterMapHeight, 1, null);
         } else if (readerMapType > -1) {
-            raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_INT, rasterMapWidth, rasterMapHeight, 1, null);
+            raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_INT, rasterMapWidth,
+                    rasterMapHeight, 1, null);
         } else {
             throw new IOException("Raster type not supported."); //$NON-NLS-1$
         }
@@ -430,13 +438,15 @@ public class GrassBinaryRasterReadHandler {
              * is then open the data file and continue as per usual.
              */
             if ((line = cellhead.readLine()) == null) {
-                throw new IOException("The cellhead file seems to be corrupted: " + cellhd.getAbsolutePath());
+                throw new IOException("The cellhead file seems to be corrupted: "
+                        + cellhd.getAbsolutePath());
             }
             if (line.trim().equalsIgnoreCase("reclass")) { //$NON-NLS-1$
                 /* The next two lines hold the orginal map file amd mapset */
                 for( int i = 0; i < 2; i++ ) {
                     if ((line = cellhead.readLine()) == null) {
-                        throw new IOException("The cellhead file seems to be corrupted: " + cellhd.getAbsolutePath());
+                        throw new IOException("The cellhead file seems to be corrupted: "
+                                + cellhd.getAbsolutePath());
                     }
                     String[] lineSplit = line.split(":");
                     if (lineSplit.length == 2) {
@@ -450,7 +460,8 @@ public class GrassBinaryRasterReadHandler {
                 reclassTable = new Vector<Object>();
                 /* The next line holds the start value for categories */
                 if ((line = cellhead.readLine()) == null) {
-                    throw new IOException("The cellhead file seems to be corrupted: " + cellhd.getAbsolutePath());
+                    throw new IOException("The cellhead file seems to be corrupted: "
+                            + cellhd.getAbsolutePath());
                 }
                 if (line.charAt(0) == '#') {
                     int reclassFirstCategory = Integer.parseInt(line.trim().substring(1));
@@ -469,7 +480,8 @@ public class GrassBinaryRasterReadHandler {
                 // set new reclass environment and check for new reclass header
                 readerGrassEnv.setReclassed(reclassedMapset, reclassedFile);
                 if (!cellhd.exists()) {
-                    throw new IOException("The reclassed cellhead file doesn't seems to exist: " + cellhd.getAbsolutePath());
+                    throw new IOException("The reclassed cellhead file doesn't seems to exist: "
+                            + cellhd.getAbsolutePath());
                 }
                 cellhead = new BufferedReader(new FileReader(cellhd));
             } else {
@@ -502,7 +514,8 @@ public class GrassBinaryRasterReadHandler {
                     value = Double.parseDouble(degrees);
 
                     String minutes = lineSplit[2];
-                    if (minutes.lastIndexOf('N') != -1 || minutes.lastIndexOf('S') != -1 || minutes.lastIndexOf('E') != -1 || minutes.lastIndexOf('W') != -1) {
+                    if (minutes.lastIndexOf('N') != -1 || minutes.lastIndexOf('S') != -1
+                            || minutes.lastIndexOf('E') != -1 || minutes.lastIndexOf('W') != -1) {
                         if (minutes.lastIndexOf('S') != -1 || minutes.lastIndexOf('W') != -1) {
                             value = value * -1;
                         }
@@ -514,7 +527,8 @@ public class GrassBinaryRasterReadHandler {
                     // seconds available?
                     if (lineSplit.length == 4) {
                         String seconds = lineSplit[3];
-                        if (seconds.lastIndexOf('N') != -1 || seconds.lastIndexOf('S') != -1 || seconds.lastIndexOf('E') != -1 || seconds.lastIndexOf('W') != -1) {
+                        if (seconds.lastIndexOf('N') != -1 || seconds.lastIndexOf('S') != -1
+                                || seconds.lastIndexOf('E') != -1 || seconds.lastIndexOf('W') != -1) {
                             if (seconds.lastIndexOf('S') != -1 || seconds.lastIndexOf('W') != -1) {
                                 value = value * -1;
                             }
@@ -525,7 +539,8 @@ public class GrassBinaryRasterReadHandler {
                     }
 
                     if (key.indexOf("resol") != -1)
-                        readerFileHeaderMap.put(key.replaceAll("resol", "res"), String.valueOf(value));
+                        readerFileHeaderMap.put(key.replaceAll("resol", "res"), String
+                                .valueOf(value));
                     else
                         readerFileHeaderMap.put(key, String.valueOf(value));
                 }
@@ -536,14 +551,23 @@ public class GrassBinaryRasterReadHandler {
              * file data.
              */
             if (readerFileHeaderMap.containsKey("n-s res")) {
-                nativeRasterRegion = new JGrassRegion(Double.parseDouble(readerFileHeaderMap.get("west")), Double.parseDouble(readerFileHeaderMap.get("east")), Double.parseDouble(readerFileHeaderMap
-                        .get("south")), Double.parseDouble(readerFileHeaderMap.get("north")), Double.parseDouble(readerFileHeaderMap.get("e-w res")), Double.parseDouble(readerFileHeaderMap
-                        .get("n-s res")));
+                nativeRasterRegion = new JGrassRegion(Double.parseDouble(readerFileHeaderMap
+                        .get("west")), Double.parseDouble(readerFileHeaderMap.get("east")), Double
+                        .parseDouble(readerFileHeaderMap.get("south")), Double
+                        .parseDouble(readerFileHeaderMap.get("north")), Double
+                        .parseDouble(readerFileHeaderMap.get("e-w res")), Double
+                        .parseDouble(readerFileHeaderMap.get("n-s res")));
             } else if (readerFileHeaderMap.containsKey("cols")) {
-                nativeRasterRegion = new JGrassRegion(Double.parseDouble(readerFileHeaderMap.get("west")), Double.parseDouble(readerFileHeaderMap.get("east")), Double.parseDouble(readerFileHeaderMap
-                        .get("south")), Double.parseDouble(readerFileHeaderMap.get("north")), Integer.parseInt(readerFileHeaderMap.get("rows")), Integer.parseInt(readerFileHeaderMap.get("cols")));
+                nativeRasterRegion = new JGrassRegion(Double.parseDouble(readerFileHeaderMap
+                        .get("west")), Double.parseDouble(readerFileHeaderMap.get("east")), Double
+                        .parseDouble(readerFileHeaderMap.get("south")), Double
+                        .parseDouble(readerFileHeaderMap.get("north")), Integer
+                        .parseInt(readerFileHeaderMap.get("rows")), Integer
+                        .parseInt(readerFileHeaderMap.get("cols")));
             } else {
-                throw new IOException("The map window file seems to be corrupted. Unable to read file region: " + cellhd.getAbsolutePath());
+                throw new IOException(
+                        "The map window file seems to be corrupted. Unable to read file region: "
+                                + cellhd.getAbsolutePath());
             }
 
             if (!readerFileHeaderMap.get("format").equals("")) {
@@ -562,7 +586,8 @@ public class GrassBinaryRasterReadHandler {
                     /* Check if null file exists. */
                     imageNullFileIS = null;
                     if (readerGrassEnv.getCELLMISC_NULL().exists()) {
-                        imageNullFileIS = ImageIO.createImageInputStream(readerGrassEnv.getCELLMISC_NULL());
+                        imageNullFileIS = ImageIO.createImageInputStream(readerGrassEnv
+                                .getCELLMISC_NULL());
                         if (imageNullFileIS == null) {
                             isOldIntegerMap = false;
                         } else {
@@ -579,7 +604,8 @@ public class GrassBinaryRasterReadHandler {
                          * if the file f_format exists, then we are talking
                          * about floating maps
                          */
-                        BufferedReader cellmiscformat = new BufferedReader(new FileReader(readerGrassEnv.getCELLMISC_FORMAT()));
+                        BufferedReader cellmiscformat = new BufferedReader(new FileReader(
+                                readerGrassEnv.getCELLMISC_FORMAT()));
                         while( (line = cellmiscformat.readLine()) != null ) {
                             StringTokenizer tokk = new StringTokenizer(line, ":");
                             if (tokk.countTokens() == 2) {
@@ -597,25 +623,30 @@ public class GrassBinaryRasterReadHandler {
                                 readerMapType = -1;
                                 numberOfBytesPerValue = 4;
                             } else {
-                                throw new IOException("Wrong number type in format file: " + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
+                                throw new IOException("Wrong number type in format file: "
+                                        + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
                             }
                         } else {
-                            throw new IOException("Wrong number type in format file: " + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
+                            throw new IOException("Wrong number type in format file: "
+                                    + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
                         }
                         cellmiscformat.close();
                     } else {
-                        throw new IOException("Missing required format file: " + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
+                        throw new IOException("Missing required format file: "
+                                + readerGrassEnv.getCELLMISC_FORMAT().getAbsolutePath());
                     }
                     isOldIntegerMap = false;
                     /* Instantiate cell file and null file objects */
                     imageIS = ImageIO.createImageInputStream(readerGrassEnv.getFCELL());
                     imageNullFileIS = null;
                     if (readerGrassEnv.getCELLMISC_NULL().exists()) {
-                        imageNullFileIS = ImageIO.createImageInputStream(readerGrassEnv.getCELLMISC_NULL());
+                        imageNullFileIS = ImageIO.createImageInputStream(readerGrassEnv
+                                .getCELLMISC_NULL());
                     }
                 }
             } else {
-                throw new IOException("The cellhead file seems to be corrupted: " + cellhd.getAbsolutePath());
+                throw new IOException("The cellhead file seems to be corrupted: "
+                        + cellhd.getAbsolutePath());
             }
 
             if (!readerFileHeaderMap.get("compressed").equals("")) {
@@ -623,7 +654,8 @@ public class GrassBinaryRasterReadHandler {
                 int cmpr = Integer.parseInt(readerFileHeaderMap.get("compressed"));
                 compressed = cmpr == 1 ? true : false;
             } else {
-                throw new IOException("The cellhead file seems to be corrupted: " + cellhd.getAbsolutePath());
+                throw new IOException("The cellhead file seems to be corrupted: "
+                        + cellhd.getAbsolutePath());
             }
 
             cellhead.close();
@@ -679,7 +711,9 @@ public class GrassBinaryRasterReadHandler {
                 addressesOfRows[i] = fileHeader.getLong();
             }
         } else {
-            throw new IOException("The first byte of the GRASS file header is not 4 and not 8. Unknown case for file: " + readerGrassEnv.getCELL().getAbsolutePath());
+            throw new IOException(
+                    "The first byte of the GRASS file header is not 4 and not 8. Unknown case for file: "
+                            + readerGrassEnv.getCELL().getAbsolutePath());
         }
     }
 
@@ -700,7 +734,8 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    private boolean readRasterRow( int currentfilerow, byte[] rowDataCache, JGrassRegion activeReadRegion ) throws IOException, DataFormatException {
+    private boolean readRasterRow( int currentfilerow, byte[] rowDataCache,
+            JGrassRegion activeReadRegion ) throws IOException, DataFormatException {
         ByteBuffer rowBuffer = ByteBuffer.wrap(rowDataCache);
         /*
          * Read the correct approximated row from the file. The row contents as
@@ -720,7 +755,8 @@ public class GrassBinaryRasterReadHandler {
         // fileWindow.getRows()="+fileWindow.getRows());
 
         /* Reset row cache and read new row data */
-        ByteBuffer rowCache = ByteBuffer.allocate(nativeRasterRegion.getCols() * ((readerMapType == -2) ? 8 : 4));
+        ByteBuffer rowCache = ByteBuffer.allocate(nativeRasterRegion.getCols()
+                * ((readerMapType == -2) ? 8 : 4));
         // rowCache.rewind();
         getMapRow(currentfilerow, rowCache);
         // rowCacheRow = currentfilerow;
@@ -846,7 +882,8 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    private void getMapRow( int currentrow, ByteBuffer rowdata ) throws IOException, DataFormatException {
+    private void getMapRow( int currentrow, ByteBuffer rowdata ) throws IOException,
+            DataFormatException {
         if (compressed) {
             /* Compressed maps */
             if (readerMapType == -2) {
@@ -885,7 +922,8 @@ public class GrassBinaryRasterReadHandler {
      * @throws DataFormatException
      * @throws IOException
      */
-    private void readCompressedFPRowByNumber( ByteBuffer rowdata, int currentrow ) throws DataFormatException, IOException {
+    private void readCompressedFPRowByNumber( ByteBuffer rowdata, int currentrow )
+            throws DataFormatException, IOException {
         // System.out.println("row: " + (currentrow+1) + " position: " + addressesOfRows[currentrow
         // + 1]);
 
@@ -926,9 +964,10 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    private void readUncompressedFPRowByNumber( ByteBuffer rowdata, int currentrow ) throws IOException, DataFormatException {
+    private void readUncompressedFPRowByNumber( ByteBuffer rowdata, int currentrow )
+            throws IOException, DataFormatException {
         int datanumber = nativeRasterRegion.getCols() * numberOfBytesPerValue;
-        imageIS.seek((currentrow * datanumber));
+        imageIS.seek((currentrow * (long) datanumber));
         imageIS.read(rowdata.array());
     }
 
@@ -945,7 +984,8 @@ public class GrassBinaryRasterReadHandler {
      *            the index of the row to read.
      * @throws IOException
      */
-    private void readCompressedIntegerRowByNumber( ByteBuffer rowdata, int currentrow ) throws IOException, DataFormatException {
+    private void readCompressedIntegerRowByNumber( ByteBuffer rowdata, int currentrow )
+            throws IOException, DataFormatException {
         int offset = (int) (addressesOfRows[currentrow + 1] - addressesOfRows[currentrow]);
 
         imageIS.seek(addressesOfRows[currentrow]);
@@ -1046,7 +1086,8 @@ public class GrassBinaryRasterReadHandler {
      * @throws IOException
      * @throws DataFormatException
      */
-    private void readUncompressedIntegerRowByNumber( ByteBuffer rowdata, int currentrow ) throws IOException, DataFormatException {
+    private void readUncompressedIntegerRowByNumber( ByteBuffer rowdata, int currentrow )
+            throws IOException, DataFormatException {
         int cellValue = 0;
         ByteBuffer cell = ByteBuffer.allocate(readerMapType);
 
@@ -1054,7 +1095,7 @@ public class GrassBinaryRasterReadHandler {
         int filerowsize = nativeRasterRegion.getCols() * readerMapType;
 
         /* Position the file pointer to read the row */
-        imageIS.seek((currentrow * filerowsize));
+        imageIS.seek((currentrow * (long) filerowsize));
 
         /* Read the row of data from the file */
         ByteBuffer tmpBuffer = ByteBuffer.allocate(filerowsize);
@@ -1102,7 +1143,8 @@ public class GrassBinaryRasterReadHandler {
      *            index of the column.
      * @return true if it is a novalue.
      */
-    private boolean readNullValueAtRowCol( int currentfilerow, int currentfilecol ) throws IOException {
+    private boolean readNullValueAtRowCol( int currentfilerow, int currentfilecol )
+            throws IOException {
         /*
          * If the null file doesn't exist and the map is an integer, than it is
          * an old integer-map format, where the novalues are the cells that
@@ -1174,15 +1216,17 @@ public class GrassBinaryRasterReadHandler {
      * </p>
      * 
      * @return the attribute table as read in the categories file
+     * @throws IOException 
      */
-    public List<String> getCategories() {
+    public List<String> getCategories() throws IOException {
 
+        /*
+        * File is a standard file where the categories values are stored in
+        * the cats directory.
+        */
+        BufferedReader rdr = new BufferedReader(new FileReader(readerGrassEnv.getCATS()));
         try {
-            /*
-             * File is a standard file where the categories values are stored in
-             * the cats directory.
-             */
-            BufferedReader rdr = new BufferedReader(new FileReader(readerGrassEnv.getCATS()));
+
             /* Instantiate attribute table */
             AttributeTable attTable = new AttributeTable();
             /* Ignore first 4 lines. */
@@ -1217,9 +1261,9 @@ public class GrassBinaryRasterReadHandler {
             }
 
             return attrs;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+
+        } finally {
+            rdr.close();
         }
     }
 
@@ -1312,17 +1356,21 @@ public class GrassBinaryRasterReadHandler {
         String locationPath = readerGrassEnv.getLOCATION().getAbsolutePath();
         CoordinateReferenceSystem readCrs = null;
         String projWtkFilePath;
-        projWtkFilePath = locationPath + File.separator + JGrassConstants.PERMANENT_MAPSET + File.separator + JGrassConstants.PROJ_WKT;
+        projWtkFilePath = locationPath + File.separator + JGrassConstants.PERMANENT_MAPSET
+                + File.separator + JGrassConstants.PROJ_WKT;
         File projWtkFile = new File(projWtkFilePath);
         if (projWtkFile.exists()) {
 
             BufferedReader crsReader = new BufferedReader(new FileReader(projWtkFile));
             StringBuffer wtkString = new StringBuffer();
-            String line = null;
-            while( (line = crsReader.readLine()) != null ) {
-                wtkString.append(line.trim());
+            try {
+                String line = null;
+                while( (line = crsReader.readLine()) != null ) {
+                    wtkString.append(line.trim());
+                }
+            } finally {
+                crsReader.close();
             }
-
             try {
                 readCrs = CRS.parseWKT(wtkString.toString());
             } catch (FactoryException e) {
@@ -1348,14 +1396,18 @@ public class GrassBinaryRasterReadHandler {
         if (sampleModel == null) {
             if (numberOfBytesPerValue == 8) {
                 if (!castDoubleToFloating) {
-                    sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_DOUBLE, rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
+                    sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_DOUBLE,
+                            rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
                 } else {
-                    sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_FLOAT, rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
+                    sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_FLOAT,
+                            rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
                 }
             } else if (numberOfBytesPerValue == 4 && readerMapType < 0) {
-                sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_FLOAT, rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
+                sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_FLOAT, rasterMapWidth,
+                        rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
             } else if (readerMapType > -1) {
-                sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_INT, rasterMapWidth, rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
+                sampleModel = new ComponentSampleModelJAI(DataBuffer.TYPE_INT, rasterMapWidth,
+                        rasterMapHeight, 1, rasterMapWidth, bands, bandOffsets);
             }
         }
         return sampleModel;

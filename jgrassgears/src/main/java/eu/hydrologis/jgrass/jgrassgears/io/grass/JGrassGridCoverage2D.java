@@ -318,6 +318,7 @@ public class JGrassGridCoverage2D {
         double east = -1.0;
         double north = -1.0;
         double south = -1.0;
+        raster = builder.raster;
         JGrassRegion writeRegion = builder.writeRegion;
         if (writeRegion != null) {
             west = writeRegion.getWest();
@@ -339,7 +340,6 @@ public class JGrassGridCoverage2D {
             north = rows;
         }
 
-        raster = builder.raster;
         if (raster == null)
             raster = RasterFactory.createBandedRaster(builder.databufferType, cols, rows, 1, null);
 
@@ -447,8 +447,8 @@ public class JGrassGridCoverage2D {
             // rows = writeRegion.getRows();
             // cols = writeRegion.getCols();
         } else {
-            rows = raster.getHeight();
-            cols = raster.getWidth();
+            rows = renderedImage.getHeight();
+            cols = renderedImage.getWidth();
             west = 0;
             east = cols;
             south = 0;

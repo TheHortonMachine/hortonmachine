@@ -105,7 +105,7 @@ public class GrassBinaryRasterWriteHandler {
     private boolean jump = false;
 
     private boolean abortRequired;
-    
+
     private JGrassRegion writeRegion = null;
 
     private IHMProgressMonitor monitor = new DummyProgressMonitor();
@@ -187,7 +187,7 @@ public class GrassBinaryRasterWriteHandler {
         }
         return writeRegion;
     }
-    
+
     public void setWriteRegion( JGrassRegion writeRegion ) {
         this.writeRegion = writeRegion;
     }
@@ -443,11 +443,14 @@ public class GrassBinaryRasterWriteHandler {
 
             BufferedReader crsReader = new BufferedReader(new FileReader(projWtkFile));
             StringBuffer wtkString = new StringBuffer();
-            String line = null;
-            while( (line = crsReader.readLine()) != null ) {
-                wtkString.append(line.trim());
+            try {
+                String line = null;
+                while( (line = crsReader.readLine()) != null ) {
+                    wtkString.append(line.trim());
+                }
+            } finally {
+                crsReader.close();
             }
-
             try {
                 readCrs = CRS.parseWKT(wtkString.toString());
             } catch (FactoryException e) {

@@ -113,7 +113,7 @@ public class GrassBinaryImageWriter extends ImageWriter {
         // final RectIter iterator = RectIterFactory.create(data, null);
 
         // writing
-        noDataValue = new Double(rasterWriter.getNoData());
+        noDataValue = rasterWriter.getNoData();
         writeRegion.setCols(renderedImage.getWidth());
         writeRegion.setRows(renderedImage.getHeight());
         int nColumns = writeRegion.getCols();
