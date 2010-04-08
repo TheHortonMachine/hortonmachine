@@ -25,11 +25,11 @@ public class TestReprojectors extends HMTestCase {
                 elevationData, envelopeParams, crs);
 
         CoverageReprojector reprojector = new CoverageReprojector();
-        reprojector.inMap = elevationCoverage;
+        reprojector.inGeodata = elevationCoverage;
         reprojector.pCode = "EPSG:4326";
         reprojector.process();
 
-        GridCoverage2D outMap = reprojector.outMap;
+        GridCoverage2D outMap = reprojector.outGeodata;
 
         HashMap<String, Double> regionMap = CoverageUtilities
                 .getRegionParamsFromGridCoverage(outMap);
