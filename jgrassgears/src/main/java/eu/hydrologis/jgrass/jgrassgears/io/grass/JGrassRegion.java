@@ -543,8 +543,8 @@ public class JGrassRegion {
                     "The number of subregions has to be smaller than the number of rows and columns.");
         }
 
-        int subregRows = (int) Math.floor(tmpR / subregionsNum);
-        int subregCols = (int) Math.floor(tmpC / subregionsNum);
+        int subregRows = (int) Math.floor(tmpR / (double) subregionsNum);
+        int subregCols = (int) Math.floor(tmpC / (double) subregionsNum);
 
         List<JGrassRegion> regions = new ArrayList<JGrassRegion>();
 
@@ -578,7 +578,6 @@ public class JGrassRegion {
 
         return regions;
     }
-
     /**
      * Reads a region file and sets a given region to the supplied region file.
      * 

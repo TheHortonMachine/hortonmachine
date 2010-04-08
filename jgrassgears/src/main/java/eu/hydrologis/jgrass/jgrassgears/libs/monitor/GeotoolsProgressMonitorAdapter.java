@@ -80,7 +80,7 @@ public class GeotoolsProgressMonitorAdapter implements IHMProgressMonitor {
         if (totalWork != -1) {
             runningWork = runningWork + work;
             // calculate %
-            float percentage = 100 * runningWork / totalWork;
+            float percentage = 100 * runningWork / (float) totalWork;
             if (percentage % 10 == 0 && percentage != lastPercentage) {
                 geotoolsMonitor.progress(percentage);
                 lastPercentage = percentage;
