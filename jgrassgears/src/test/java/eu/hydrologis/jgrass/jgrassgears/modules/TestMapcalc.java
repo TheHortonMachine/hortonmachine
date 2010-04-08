@@ -9,7 +9,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.modules.mapcalc.Mapcalc;
+import eu.hydrologis.jgrass.jgrassgears.modules.r.mapcalc.Mapcalc;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
 import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
