@@ -45,7 +45,7 @@ public class CoverageReprojector extends HMModel {
 
     @Description("The coverage that has to be reprojected.")
     @In
-    public GridCoverage2D inMap;
+    public GridCoverage2D inGeodata;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @In
@@ -55,13 +55,13 @@ public class CoverageReprojector extends HMModel {
     @In
     public int pInterpolation = 0;
 
-    @Description("The resulting map.")
+    @Description("The reprojected coverage.")
     @Out
-    public GridCoverage2D outMap = null;
+    public GridCoverage2D outGeodata = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outMap == null, doReset)) {
+        if (!concatOr(outGeodata == null, doReset)) {
             return;
         }
 
@@ -79,7 +79,7 @@ public class CoverageReprojector extends HMModel {
             interpolationType = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         }
 
-        outMap = (GridCoverage2D) Operations.DEFAULT.resample(inMap, targetCrs, null,
+        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, targetCrs, null,
                 interpolationType);
 
     }
