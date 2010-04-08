@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.Map.Entry;
 
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
@@ -878,10 +880,9 @@ public class JGrassRegion {
 
         /* Now write the data back to the file */
         StringBuffer data = new StringBuffer(512);
-        Iterator<String> it = store.keySet().iterator();
-        while( it.hasNext() ) {
-            String key = it.next();
-            data.append(key + ":   " + store.get(key) + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        Set<Entry<String, String>> entrySet = store.entrySet();
+        for( Entry<String, String> entry : entrySet ) {
+            data.append(entry.getKey() + ":   " + entry.getValue() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
         }
 
         BufferedWriter windWriter = new BufferedWriter(new FileWriter(file));
