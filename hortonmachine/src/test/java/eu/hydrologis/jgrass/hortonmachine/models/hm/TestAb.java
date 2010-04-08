@@ -28,7 +28,7 @@ public class TestAb extends HMTestCase {
         GridCoverage2D planCoverage = CoverageUtilities.buildCoverage("plan", planData,
                 envelopeParams, crs);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         Ab ab = new Ab();
         ab.inTca = tcaCoverage;
