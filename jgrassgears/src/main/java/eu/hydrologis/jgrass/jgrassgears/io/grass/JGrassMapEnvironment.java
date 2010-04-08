@@ -283,6 +283,8 @@ public class JGrassMapEnvironment {
         CELLMISC_FORMAT = new File(cellMiscPath + JGrassConstants.CELLMISC_FORMAT);
         CELLMISC_QUANT = new File(cellMiscPath + JGrassConstants.CELLMISC_QUANT);
         CELLMISC_RANGE = new File(cellMiscPath + JGrassConstants.CELLMISC_RANGE);
+        
+        RECLASSEDENVIRONMENT = this;
     }
 
     /**
