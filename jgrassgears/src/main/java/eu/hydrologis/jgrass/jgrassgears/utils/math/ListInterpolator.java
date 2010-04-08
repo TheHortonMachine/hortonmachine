@@ -52,7 +52,7 @@ public class ListInterpolator {
         for( int i = 0; i < xList.size(); i++ ) {
             Double x2 = xList.get(i);
             // if equal to a number in the list
-            if (x2 == xValue) {
+            if (x2.equals(xValue)) {
                 return yList.get(i);
             }// else interpolate
             else if (x2 > xValue) {
@@ -83,7 +83,7 @@ public class ListInterpolator {
         for( int i = 0; i < yList.size(); i++ ) {
             Double y2 = yList.get(i);
             // if equal to a number in the list
-            if (y2 == yValue) {
+            if (y2.equals(yValue)) {
                 return xList.get(i);
             }// else interpolate
             else if (y2 > yValue) {
