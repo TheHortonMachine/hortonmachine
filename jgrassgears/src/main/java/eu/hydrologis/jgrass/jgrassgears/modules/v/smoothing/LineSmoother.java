@@ -19,6 +19,7 @@
 package eu.hydrologis.jgrass.jgrassgears.modules.v.smoothing;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -49,9 +50,10 @@ import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.utils.features.FeatureGeometrySubstitutor;
 import eu.hydrologis.jgrass.jgrassgears.utils.geometry.GeometryUtilities;
 
-@Description("McMaster's Sliding Averaging Algorithm. The new position of each point " +
-		"is the average of the pLookahead  points around. Parameter pSlide is used for " +
-		"linear interpolation between old and new position.")
+@Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
+        + "Algorithm. The new position of each point "
+        + "is the average of the pLookahead  points around. Parameter pSlide is used for "
+        + "linear interpolation between old and new position.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Smoothing, Vector")
 @Status(Status.DRAFT)
@@ -61,6 +63,10 @@ public class LineSmoother extends HMModel {
     @Description("The features to be smoothed.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inFeatures;
+
+    @Description("The smoothing type: McMasters smoothing average (0 = default).")
+    @In
+    public int pType = 0;
 
     @Description("The number of points to consider in every smoothing step.")
     @In
@@ -80,7 +86,6 @@ public class LineSmoother extends HMModel {
 
     private GeometryFactory gF = GeometryUtilities.gf();
 
-    
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFeatures == null, doReset)) {
@@ -93,7 +98,6 @@ public class LineSmoother extends HMModel {
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
 
         int id = 0;
-
         int size = inFeatures.size();
         pm.beginTask("Smoothing features...", size);
         while( inFeatureIterator.hasNext() ) {
@@ -108,8 +112,15 @@ public class LineSmoother extends HMModel {
             List<LineString> lsList = new ArrayList<LineString>();
             for( int i = 0; i < numGeometries; i++ ) {
                 Geometry geometryN = geometry.getGeometryN(i);
-                FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
-                List<Coordinate> smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
+
+                List<Coordinate> smoothedCoords = Collections.emptyList();;
+                switch( pType ) {
+                case 0:
+                default:
+                    FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
+                    smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
+                    break;
+                }
 
                 Coordinate[] smoothedArray = null;
                 if (smoothedCoords != null) {
