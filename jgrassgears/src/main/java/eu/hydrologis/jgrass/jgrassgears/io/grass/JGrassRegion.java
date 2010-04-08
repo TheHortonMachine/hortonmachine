@@ -211,7 +211,8 @@ public class JGrassRegion {
      * @param nsres
      *            the north -south resolution.
      */
-    public JGrassRegion( double west, double east, double south, double north, double weres, double nsres ) {
+    public JGrassRegion( double west, double east, double south, double north, double weres,
+            double nsres ) {
         this.west = west;
         this.east = east;
         this.south = south;
@@ -273,7 +274,8 @@ public class JGrassRegion {
      * @param ewres the x resolution string.
      * @param nsres the y resolution string.
      */
-    public JGrassRegion( String west, String east, String south, String north, String ewres, String nsres ) {
+    public JGrassRegion( String west, String east, String south, String north, String ewres,
+            String nsres ) {
 
         double[] nsew = nsewStringsToNumbers(north, south, east, west);
         double[] xyRes = xyResStringToNumbers(ewres, nsres);
@@ -356,7 +358,9 @@ public class JGrassRegion {
 
     @SuppressWarnings("nls")
     public String toString() {
-        return ("region:\nwest=" + west + "\neast=" + east + "\nsouth=" + south + "\nnorth=" + north + "\nwe_res=" + we_res + "\nns_res=" + ns_res + "\nrows=" + rows + "\ncols=" + cols);
+        return ("region:\nwest=" + west + "\neast=" + east + "\nsouth=" + south + "\nnorth="
+                + north + "\nwe_res=" + we_res + "\nns_res=" + ns_res + "\nrows=" + rows
+                + "\ncols=" + cols);
     }
 
     /**
@@ -375,13 +379,15 @@ public class JGrassRegion {
      *             exception that may be thrown when applying the
      *             transformation.
      */
-    public JGrassRegion reproject( CoordinateReferenceSystem sourceCRS, CoordinateReferenceSystem targetCRS, boolean lenient ) throws Exception {
+    public JGrassRegion reproject( CoordinateReferenceSystem sourceCRS,
+            CoordinateReferenceSystem targetCRS, boolean lenient ) throws Exception {
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS, lenient);
         Envelope envelope = getEnvelope();
         Envelope targetEnvelope = JTS.transform(envelope, transform);
 
-        return new JGrassRegion(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(), targetEnvelope.getMaxY(), getRows(), getCols());
+        return new JGrassRegion(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope
+                .getMinY(), targetEnvelope.getMaxY(), getRows(), getCols());
 
     }
 
@@ -426,7 +432,8 @@ public class JGrassRegion {
      *            the active window from which to take the grid.
      * @return the snapped coordinate.
      */
-    public static Coordinate snapToNextHigherInRegionResolution( double x, double y, JGrassRegion region ) {
+    public static Coordinate snapToNextHigherInRegionResolution( double x, double y,
+            JGrassRegion region ) {
 
         double minx = region.getRectangle().getBounds2D().getMinX();
         double ewres = region.getWEResolution();
@@ -464,7 +471,8 @@ public class JGrassRegion {
      *            the active region.
      * @throws IOException
      */
-    public static void writeWINDToMapset( String mapsetPath, JGrassRegion activeRegion ) throws IOException {
+    public static void writeWINDToMapset( String mapsetPath, JGrassRegion activeRegion )
+            throws IOException {
         writeRegionToFile(mapsetPath + File.separator + JGrassConstants.WIND, activeRegion);
     }
 
@@ -477,8 +485,10 @@ public class JGrassRegion {
      *            a region.
      * @throws IOException
      */
-    public static void writeDEFAULTWINDToLocation( String locationPath, JGrassRegion region ) throws IOException {
-        writeRegionToFile(locationPath + File.separator + JGrassConstants.PERMANENT_MAPSET + File.separator + JGrassConstants.DEFAULT_WIND, region);
+    public static void writeDEFAULTWINDToLocation( String locationPath, JGrassRegion region )
+            throws IOException {
+        writeRegionToFile(locationPath + File.separator + JGrassConstants.PERMANENT_MAPSET
+                + File.separator + JGrassConstants.DEFAULT_WIND, region);
     }
 
     /**
@@ -500,11 +510,16 @@ public class JGrassRegion {
      * @return a new region, created from the envelope bounds snapped to the
      *         region grid.
      */
-    public static JGrassRegion adaptActiveRegionToEnvelope( Envelope sourceEnvelope, JGrassRegion sourceRegion ) {
-        Coordinate eastNorth = JGrassRegion.snapToNextHigherInRegionResolution(sourceEnvelope.getMaxX(), sourceEnvelope.getMaxY(), sourceRegion);
-        Coordinate westsouth = JGrassRegion.snapToNextHigherInRegionResolution(sourceEnvelope.getMinX() - sourceRegion.getWEResolution(), sourceEnvelope.getMinY() - sourceRegion.getNSResolution(),
-                sourceRegion);
-        JGrassRegion newRegion = new JGrassRegion(westsouth.x, eastNorth.x, westsouth.y, eastNorth.y, sourceRegion.getWEResolution(), sourceRegion.getNSResolution());
+    public static JGrassRegion adaptActiveRegionToEnvelope( Envelope sourceEnvelope,
+            JGrassRegion sourceRegion ) {
+        Coordinate eastNorth = JGrassRegion.snapToNextHigherInRegionResolution(sourceEnvelope
+                .getMaxX(), sourceEnvelope.getMaxY(), sourceRegion);
+        Coordinate westsouth = JGrassRegion.snapToNextHigherInRegionResolution(sourceEnvelope
+                .getMinX()
+                - sourceRegion.getWEResolution(), sourceEnvelope.getMinY()
+                - sourceRegion.getNSResolution(), sourceRegion);
+        JGrassRegion newRegion = new JGrassRegion(westsouth.x, eastNorth.x, westsouth.y,
+                eastNorth.y, sourceRegion.getWEResolution(), sourceRegion.getNSResolution());
         return newRegion;
     }
 
@@ -522,7 +537,8 @@ public class JGrassRegion {
         double tmpNSRes = getNSResolution();
 
         if (subregionsNum > tmpR || subregionsNum > tmpC) {
-            throw new IllegalArgumentException("The number of subregions has to be smaller than the number of rows and columns.");
+            throw new IllegalArgumentException(
+                    "The number of subregions has to be smaller than the number of rows and columns.");
         }
 
         int subregRows = (int) Math.floor(tmpR / subregionsNum);
@@ -584,13 +600,19 @@ public class JGrassRegion {
                 String mapName = windReader.readLine().trim().split(":")[1].trim();
                 String mapsetName = windReader.readLine().trim().split(":")[1].trim();
                 File f = new File(filePath).getParentFile().getParentFile().getParentFile();
-                File reclassMap = new File(f, mapsetName + "/" + JGrassConstants.CELLHD + "/" + mapName);
+                File reclassMap = new File(f, mapsetName + "/" + JGrassConstants.CELLHD + "/"
+                        + mapName);
                 if (!reclassMap.exists()) {
-                    throw new IOException("The reclass cellhead file doesn't seem to exist. Unable to read the file region.");
+                    throw new IOException(
+                            "The reclass cellhead file doesn't seem to exist. Unable to read the file region.");
                 }
                 windReader.close();
                 windReader = new BufferedReader(new FileReader(reclassMap));
                 line = windReader.readLine();
+            }
+
+            if (line == null) {
+                throw new IOException("Wrong reclass file format");
             }
 
             String[] lineSplit = line.split(":", 2);
@@ -788,7 +810,8 @@ public class JGrassRegion {
      *            the region to be written to file
      * @throws IOException
      */
-    private static void writeRegionToFile( String regionFilePath, JGrassRegion region ) throws IOException {
+    private static void writeRegionToFile( String regionFilePath, JGrassRegion region )
+            throws IOException {
 
         String line;
         File file = new File(regionFilePath);
