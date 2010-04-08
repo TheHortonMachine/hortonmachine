@@ -66,7 +66,7 @@ public class Mapcalc extends HMModel {
 
     @Description("The function to process.")
     @In
-    public String inFunction;
+    public String pFunction;
 
     @Description("The progress monitor.")
     @In
@@ -117,23 +117,23 @@ public class Mapcalc extends HMModel {
         /*
          * prepare the function to be used by jiffle
          */
-        inFunction = inFunction.replaceAll(MAPWRAPPER, "");
+        pFunction = pFunction.replaceAll(MAPWRAPPER, "");
         String script = null;
         String regex = result + "[\\s+]=";
-        String[] split = inFunction.split(regex);
+        String[] split = pFunction.split(regex);
         if (split.length > 1) {
             /*
              * if there is the result inside the function,
              * then 
              */
-            script = inFunction + "\n";
+            script = pFunction + "\n";
         } else {
             /*
              * if there is no result inside, then we
              * assume a form of:
              * result = function
              */
-            script = result + "=" + inFunction + "\n";
+            script = result + "=" + pFunction + "\n";
         }
         previousProgress = 0;
 

@@ -1,8 +1,5 @@
 package eu.hydrologis.jgrass.jgrassgears.modules;
 
-import static java.lang.Double.NaN;
-
-import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -32,7 +29,7 @@ public class TestMapcalc extends HMTestCase {
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.pm = pm;
         mapcalc.inMaps = maps;
-        mapcalc.inFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\"";
+        mapcalc.pFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\"";
 
         mapcalc.process();
 
