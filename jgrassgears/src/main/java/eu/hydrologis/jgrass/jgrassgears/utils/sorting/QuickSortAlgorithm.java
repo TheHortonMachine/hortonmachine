@@ -57,7 +57,7 @@ public class QuickSortAlgorithm {
     private void quicksort( int low, int high ) {
         int i = low, j = high;
         // Get the pivot element from the middle of the list
-        double pivot = valuesToSort[(low + high) / 2];
+        double pivot = valuesToSort[(low + high) >>> 1];
 
         // Divide into two lists
         while( i <= j ) {
