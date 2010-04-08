@@ -907,7 +907,7 @@ public class Format {
                     result.append(new Format(t).form((Character) param));
                 } else if (param instanceof Double) {
                     result.append(new Format(t).form((Double) param));
-                } else if (param instanceof Double) {
+                } else if (param instanceof Float) {
                     result.append(new Format(t).form((Float) param));
                 } else {
                     result.append(new Format(t).form(param.toString()));

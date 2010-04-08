@@ -597,8 +597,14 @@ public class JGrassRegion {
                  * it is a reclass map and we are reading the cellhead file.
                  * Need to redirect to the original cellhead file.
                  */
-                String mapName = windReader.readLine().trim().split(":")[1].trim();
-                String mapsetName = windReader.readLine().trim().split(":")[1].trim();
+                String mapLine = windReader.readLine();
+                String mapsetLine = windReader.readLine();
+                if (mapLine == null || mapsetLine == null) {
+                    throw new IOException("Wrong reclass file format");
+                }
+
+                String mapName = mapLine.trim().split(":")[1].trim();
+                String mapsetName = mapsetLine.trim().split(":")[1].trim();
                 File f = new File(filePath).getParentFile().getParentFile().getParentFile();
                 File reclassMap = new File(f, mapsetName + "/" + JGrassConstants.CELLHD + "/"
                         + mapName);
