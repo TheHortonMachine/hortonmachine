@@ -37,7 +37,7 @@ public class MessageHandler {
     private MessageHandler() {
     }
 
-    public static MessageHandler getInstance() {
+    public synchronized static MessageHandler getInstance() {
         if (messageHandler == null) {
             messageHandler = new MessageHandler();
             messageHandler.initResourceBundle();
