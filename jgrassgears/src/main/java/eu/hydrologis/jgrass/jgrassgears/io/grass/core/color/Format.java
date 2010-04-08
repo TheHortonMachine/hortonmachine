@@ -301,12 +301,13 @@ public class Format {
         }
 
         double factor = 1;
-        String leadingZeroes = "";
 
+        StringBuffer buf = new StringBuffer();
         for( int i = 1; i <= precision && factor <= 0x7FFFFFFFFFFFFFFFL; i++ ) {
             factor *= 10;
-            leadingZeroes = leadingZeroes + "0";
+            buf.append("0");
         }
+        String leadingZeroes = buf.toString();
 
         long l = (long) (factor * fr /*+ 0.5*/); // no rounding
 
@@ -443,7 +444,8 @@ public class Format {
 
         if (leadingZeroes) {
             w = width;
-        } else if ((fmt == 'u' || fmt == 'd' || fmt == 'i' || fmt == 'x' || fmt == 'X' || fmt == 'o') && precision > 0) {
+        } else if ((fmt == 'u' || fmt == 'd' || fmt == 'i' || fmt == 'x' || fmt == 'X' || fmt == 'o')
+                && precision > 0) {
             w = precision;
         }
 
