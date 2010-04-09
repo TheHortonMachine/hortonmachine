@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -30,6 +32,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
@@ -53,6 +56,7 @@ import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy.DischargeDistributor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyModel;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy.RungeKuttaFelberg;
+import eu.hydrologis.jgrass.jgrassgears.io.adige.AdigeBoundaryCondition;
 import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassConstants;
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIOException;
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
@@ -124,6 +128,38 @@ public class Adige extends HMModel {
     @Description("The average speed for sub-superficial runoff.")
     @In
     public double pV_sub = -1;
+
+    @Description("The rainfall data.")
+    @In
+    public HashMap<Integer, Double> inRain;
+
+    @Description("The radiation data.")
+    @In
+    public HashMap<Integer, Double> inNetradiation;
+
+    @Description("The netshort radiation data.")
+    @In
+    public HashMap<Integer, Double> inShortradiation;
+
+    @Description("The temperature data.")
+    @In
+    public HashMap<Integer, Double> inTemperature;
+
+    @Description("The humidity data.")
+    @In
+    public HashMap<Integer, Double> inHumidity;
+
+    @Description("The windspeed data.")
+    @In
+    public HashMap<Integer, Double> inWindspeed;
+
+    @Description("The pressure data.")
+    @In
+    public HashMap<Integer, Double> inPressure;
+
+    @Description("The snow water equivalent data.")
+    @In
+    public HashMap<Integer, Double> inSwe;
 
     @Description("The hydrometers monitoring points.")
     @In
@@ -215,9 +251,37 @@ public class Adige extends HMModel {
     @In
     public String tEnd = null;
 
+    @Description("Switch to write final boundary conditions.")
+    @In
+    public boolean doBoundary = false;
+
+    @Description("The initial conditions of the model.")
+    @In
+    public HashMap<Integer, AdigeBoundaryCondition> inInitialconditions = null;
+
     @Description("The progress monitor.")
     @In
     public IHMProgressMonitor pm = new DummyProgressMonitor();
+
+    @Description("The superficial discharge for every basin id.")
+    @Out
+    public HashMap<Integer, Double> outDischarge;
+
+    @Description("The sub-superficial discharge for every basin id.")
+    @Out
+    public HashMap<Integer, Double> outSubdischarge;
+
+    @Description("The water content in non saturated soil for every basin id.")
+    @Out
+    public HashMap<Integer, Double> outS1;
+
+    @Description("The water content in saturated soil for every basin id.")
+    @Out
+    public HashMap<Integer, Double> outS2;
+
+    @Description("The final conditions of the model to persist.")
+    @In
+    public HashMap<Integer, AdigeBoundaryCondition> outFinalconditions = null;
 
     // public String startDateArg = null;
     // public String endDateArg = null;
@@ -228,8 +292,6 @@ public class Adige extends HMModel {
      */
     // private Date startDate;
     // private Date endDate;
-    private double deltaTinMilliSeconds;
-    private double deltaTinMinutes = -1;
 
     /** the running rain array */
     private double[] rainArray = null;
@@ -277,7 +339,9 @@ public class Adige extends HMModel {
     private DateTime startTimestamp;
     private DateTime endTimestamp;
     private DateTime currentTimstamp;
-    private DateTime rainEndTimstamp;
+    private DateTime rainEndTimestamp;
+
+    private List<String> pfaffsList;
 
     @SuppressWarnings("nls")
     @Execute
@@ -289,7 +353,7 @@ public class Adige extends HMModel {
             currentTimstamp = startTimestamp;
             if (pRainintensity != -1) {
                 if (pRainduration != -1) {
-                    rainEndTimstamp = startTimestamp.plusMinutes(pRainduration);
+                    rainEndTimestamp = startTimestamp.plusMinutes(pRainduration);
                 } else {
                     throw new ModelsIllegalargumentException(
                             "In the case of usage of a constant rainintensity it is necessary to define also its duration.\nCheck your arguments, probably the --rainduration flag is missing.",
@@ -510,7 +574,7 @@ public class Adige extends HMModel {
                 hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor
                         .createDischargeDistributor(DischargeDistributor.DISTRIBUTOR_TYPE_NASH,
                                 startTimestamp.getMillis(), endTimestamp.getMillis(),
-                                (long) deltaTinMilliSeconds, params));
+                                (long) tTimestep * 60L * 1000L, params));
                 pm.worked(1);
             }
             pm.done();
@@ -534,26 +598,19 @@ public class Adige extends HMModel {
              */
             initialConditions = new double[hillsSlopeNum * 4];
 
-            ScalarSet boundaryInputSet = null;
-            if (boundaryInputLink != null) {
-                boundaryInputSet = ModelsConstants.getScalarSetFromLink(boundaryInputLink, time,
-                        err);
-            }
-
-            if (boundaryInputSet != null) {
-                int dataIndex = 0;
-                for( int i = 0; i < (boundaryInputSet.size() - 1) / 5; i++ ) {
-                    Double idHillslope = boundaryInputSet.get(dataIndex + 1);
-                    Integer index = basinid2Index.get(idHillslope.intValue());
+            if (inInitialconditions != null) {
+                Set<Entry<Integer, AdigeBoundaryCondition>> entries = inInitialconditions
+                        .entrySet();
+                for( Entry<Integer, AdigeBoundaryCondition> entry : entries ) {
+                    Integer hillslopeId = entry.getKey();
+                    Integer index = basinid2Index.get(hillslopeId);
                     if (index == null)
                         continue;
-                    initialConditions[index] = boundaryInputSet.get(dataIndex + 2);
-                    initialConditions[index + hillsSlopeNum] = boundaryInputSet.get(dataIndex + 3);
-                    initialConditions[index + 2 * hillsSlopeNum] = boundaryInputSet
-                            .get(dataIndex + 4);
-                    initialConditions[index + 3 * hillsSlopeNum] = boundaryInputSet
-                            .get(dataIndex + 5);
-                    dataIndex = dataIndex + 5;
+                    AdigeBoundaryCondition condition = entry.getValue();
+                    initialConditions[index] = condition.discharge;
+                    initialConditions[index + hillsSlopeNum] = condition.dischargeSub;
+                    initialConditions[index + 2 * hillsSlopeNum] = condition.S1;
+                    initialConditions[index + 3 * hillsSlopeNum] = condition.S2;
                 }
             } else {
                 double dischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
@@ -586,7 +643,7 @@ public class Adige extends HMModel {
                         + initialConditions[i + 3 * hillsSlopeNum]);
             }
 
-            rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., out, doLog);
+            rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., pm, doLog);
 
         } else {
             currentTimstamp = currentTimstamp.plusMinutes(tTimestep);
@@ -604,20 +661,17 @@ public class Adige extends HMModel {
              * The only thing that changes, is that after the rainEndDate, the rain intensity is
              * set to 0.
              */
-            if (runningDateInMinutes > rainEndDateInMinutes) {
-                rainArray = new double[netPfaffsList.size()];
-                Arrays.fill(rainArray, 0);
-            } else {
+            if (currentTimstamp.isBefore(rainEndTimestamp)) {
                 rainArray = new double[netPfaffsList.size()];
                 Arrays.fill(rainArray, pRainintensity);
+            } else {
+                rainArray = new double[netPfaffsList.size()];
+                Arrays.fill(rainArray, 0);
             }
 
         } else {
             // read rainfall from input link scalar set and transform into a rainfall intensity
             // [mm/h]
-            ScalarSet rainfallScalarSet = ModelsConstants.getScalarSetFromLink(rainfallInputLink,
-                    time, err);
-
             rainArray = new double[hillsSlopeNum];
             radiationArray = new double[hillsSlopeNum];
             netshortArray = new double[hillsSlopeNum];
@@ -626,217 +680,83 @@ public class Adige extends HMModel {
             windspeedArray = new double[hillsSlopeNum];
             pressureArray = new double[hillsSlopeNum];
             snowWaterEquivalentArray = new double[hillsSlopeNum];
-            for( int i = 1; i < rainfallScalarSet.size(); i = i + 9 ) {
-                // rain
-                Double basinId = rainfallScalarSet.get(i);
-                Integer index = basinid2Index.get(basinId.intValue());
-                if (index == null) {
-                    // System.out.println("Per il bacino " + basinId
-                    // + " non e' stata trovata una corrispondenza tra rete e bacini.");
-                    continue;
-                }
-                double rValue = rainfallScalarSet.get(i + 1);
-                if (JGrassConstants.isNovalue(rValue)) {
-                    rValue = 0.0;
-                }
-                rainArray[index] = rValue / (deltaTinMinutes / 60.0);
-                // radiation
-                rValue = rainfallScalarSet.get(i + 2);
-                radiationArray[index] = rValue;
-                // netshort
-                rValue = rainfallScalarSet.get(i + 3);
-                netshortArray[index] = rValue;
-                // temperature
-                rValue = rainfallScalarSet.get(i + 4);
-                temperatureArray[index] = rValue;
-                // humidity
-                rValue = rainfallScalarSet.get(i + 5);
-                humidityArray[index] = rValue;
-                // windspeed
-                rValue = rainfallScalarSet.get(i + 6);
-                windspeedArray[index] = rValue;
-                // pressure
-                rValue = rainfallScalarSet.get(i + 7);
-                pressureArray[index] = rValue;
-                // snow water equivalent
-                rValue = rainfallScalarSet.get(i + 8);
-                snowWaterEquivalentArray[index] = rValue;
-            }
 
+            setDataArray(inRain, rainArray);
+            setDataArray(inNetradiation, radiationArray);
+            setDataArray(inShortradiation, netshortArray);
+            setDataArray(inTemperature, temperatureArray);
+            setDataArray(inHumidity, humidityArray);
+            setDataArray(inWindspeed, windspeedArray);
+            setDataArray(inPressure, pressureArray);
+            setDataArray(inSwe, snowWaterEquivalentArray);
         }
 
+        long runningDateInMinutes = currentTimstamp.getMillis() / 1000L / 60L;
         double intervalStartTimeInMinutes = runningDateInMinutes;
-        double intervalEndTimeInMinutes = runningDateInMinutes + deltaTinMinutes;
+        double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
 
         rainRunoffRaining.solve(intervalStartTimeInMinutes, intervalEndTimeInMinutes, 1,
                 initialConditions, rainArray, radiationArray, netshortArray, temperatureArray,
                 humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray);
         initialConditions = rainRunoffRaining.getFinalCond();
-        rainRunoffRaining.setBasicTimeStep(10 / 60.);
+        rainRunoffRaining.setBasicTimeStep(10. / 60.);
 
-        // return the output link -> create a chart with average rainfall and outlet discharge
-        if (linkID.equals(dischargeOutputLink.getID())) {
-            // Calculate the average rain on the basin
-            double avgRain = 0;
-            for( int i = 0; i < rainArray.length; i++ ) {
-                avgRain = avgRain + rainArray[i];
-            }
-            avgRain = avgRain / rainArray.length;
+        // Calculate the average rain on the basin
+        double avgRain = 0;
+        for( int i = 0; i < rainArray.length; i++ ) {
+            avgRain = avgRain + rainArray[i];
+        }
+        avgRain = avgRain / rainArray.length;
 
-            ScalarSet ret = new ScalarSet();
-            if (pPfafids != null) {
-                int outNum = pPfafids.length;
-                ret.add((double) (outNum + 1));
-
-                if (indexesArray == null) {
-                    indexesArray = new int[outNum];
-                    for( int i = 0; i < pPfafids.length; i++ ) {
-                        String pfaf = pPfafids[i];
-                        indexesArray[i] = pfaff2Index.get(pfaf);
-                    }
-                }
-                int pfafindex = 0;
-                for( int index : indexesArray ) {
-                    double dischargeToPrint = initialConditions[index]
-                            + initialConditions[index + hillsSlopeNum];
-                    ret.add(dischargeToPrint);
-                    double supdischargetoprint = initialConditions[index];
-                    ret.add(supdischargetoprint);
-                    double subdischargetoprint = initialConditions[index + hillsSlopeNum];
-                    ret.add(subdischargetoprint);
-                    System.out.println("Bacino: " + pPfafids[pfafindex] + " Outlet Discharge "
-                            + initialConditions[index] + " qsub "
-                            + initialConditions[index + hillsSlopeNum] + " S1 "
-                            + initialConditions[index + 2 * hillsSlopeNum] + " S2 "
-                            + initialConditions[index + 3 * hillsSlopeNum] + " rain "
-                            + rainArray[index]);
-                    pfafindex++;
-                }
-            } else {
-                ret.add(4.0);
-                if (indexesArray == null) {
-                    indexesArray = new int[1];
-                    indexesArray[0] = basinid2Index.get(outletHillslopeId);
-                }
-                ret.add(initialConditions[indexesArray[0]]
-                        + initialConditions[indexesArray[0] + hillsSlopeNum]);
-                double supdischargetoprint = initialConditions[indexesArray[0]];
-                ret.add(supdischargetoprint);
-                double subdischargetoprint = initialConditions[indexesArray[0] + hillsSlopeNum];
-                ret.add(subdischargetoprint);
-                System.out.println("Outlet Discharge " + initialConditions[indexesArray[0]]
-                        + " qsub " + initialConditions[indexesArray[0] + hillsSlopeNum] + " S1 "
-                        + initialConditions[indexesArray[0] + 2 * hillsSlopeNum] + " S2 "
-                        + initialConditions[indexesArray[0] + 3 * hillsSlopeNum] + " rain "
-                        + avgRain);
+        if (pPfafids == null) {
+            pPfafids = String.valueOf(outletHillslopeId);
+        }
+        if (pfaffsList == null) {
+            String[] split = pPfafids.split(",");
+            for( int i = 0; i < split.length; i++ ) {
+                split[i] = split[i].trim();
             }
-
-            // add also the average rainfall
-            // ret.add(avgRain);
-            return ret;
-        } else if (boundaryOutputLink != null && linkID.equals(boundaryOutputLink.getID())) {
-            ScalarSet outputBoundarySet = new ScalarSet();
-            outputBoundarySet.add((initialConditions.length / 4.0) * 5.0);
-            for( int i = 0; i < initialConditions.length / 4; i++ ) {
-                Integer basinId = index2Basinid.get(i);
-                outputBoundarySet.add(basinId.doubleValue());
-                outputBoundarySet.add(initialConditions[i]);
-                outputBoundarySet.add(initialConditions[i + hillsSlopeNum]);
-                outputBoundarySet.add(initialConditions[i + 2 * hillsSlopeNum]);
-                outputBoundarySet.add(initialConditions[i + 3 * hillsSlopeNum]);
-            }
-            return outputBoundarySet;
-        } else if (s1OutputLink != null && linkID.equals(s1OutputLink.getID())) {
-            ScalarSet outputS1Set = new ScalarSet();
-            if (pPfafids != null) {
-                int outNum = pPfafids.length;
-                outputS1Set.add((double) (outNum));
-                if (indexesArray == null) {
-                    indexesArray = new int[outNum];
-                    for( int i = 0; i < pPfafids.length; i++ ) {
-                        String pfaf = pPfafids[i];
-                        indexesArray[i] = pfaff2Index.get(pfaf);
-                    }
-                }
-                for( int index : indexesArray ) {
-                    outputS1Set.add(initialConditions[index + 2 * hillsSlopeNum]);
-                }
-            } else {
-                outputS1Set.add(1.0);
-                Integer outletIndex = basinid2Index.get(outletHillslopeId);
-                outputS1Set.add(initialConditions[outletIndex + 2 * hillsSlopeNum]);
-            }
-            return outputS1Set;
-        } else if (s2OutputLink != null && linkID.equals(s2OutputLink.getID())) {
-            ScalarSet outputS2Set = new ScalarSet();
-            if (pPfafids != null) {
-                int outNum = pPfafids.length;
-                outputS2Set.add((double) (outNum));
-                if (indexesArray == null) {
-                    indexesArray = new int[outNum];
-                    for( int i = 0; i < pPfafids.length; i++ ) {
-                        String pfaf = pPfafids[i];
-                        indexesArray[i] = pfaff2Index.get(pfaf);
-                    }
-                }
-                for( int index : indexesArray ) {
-                    outputS2Set.add(initialConditions[index + 3 * hillsSlopeNum]);
-                }
-            } else {
-                outputS2Set.add(1.0);
-                Integer outletIndex = basinid2Index.get(outletHillslopeId);
-                outputS2Set.add(initialConditions[outletIndex + 3 * hillsSlopeNum]);
-            }
-            return outputS2Set;
-        } else if (s3OutputLink != null && linkID.equals(s3OutputLink.getID())) {
-            ScalarSet outputS3Set = new ScalarSet();
-            if (pPfafids != null) {
-                int outNum = pPfafids.length;
-                outputS3Set.add((double) (outNum));
-                if (indexesArray == null) {
-                    indexesArray = new int[outNum];
-                    for( int i = 0; i < pPfafids.length; i++ ) {
-                        String pfaf = pPfafids[i];
-                        indexesArray[i] = pfaff2Index.get(pfaf);
-                    }
-                }
-                for( int index : indexesArray ) {
-                    HillSlope hillSlope = orderedHillslopes.get(index);
-                    outputS3Set.add(hillSlope.parameters.getS2Param()
-                            * (initialConditions[index + 3 * hillsSlopeNum]));
-                }
-            } else {
-                outputS3Set.add(1.0);
-                Integer outletIndex = basinid2Index.get(outletHillslopeId);
-                HillSlope hillSlope = orderedHillslopes.get(outletIndex);
-                outputS3Set.add(hillSlope.parameters.getS2Param()
-                        * (initialConditions[outletIndex + 3 * hillsSlopeNum]));
-            }
-            return outputS3Set;
-        } else if (basinrainOutputLink != null && linkID.equals(basinrainOutputLink.getID())) {
-            ScalarSet basinrainSet = new ScalarSet();
-            if (pPfafids != null) {
-                int outNum = pPfafids.length;
-                basinrainSet.add((double) (outNum));
-                if (indexesArray == null) {
-                    indexesArray = new int[outNum];
-                    for( int i = 0; i < pPfafids.length; i++ ) {
-                        String pfaf = pPfafids[i];
-                        indexesArray[i] = pfaff2Index.get(pfaf);
-                    }
-                }
-                for( int index : indexesArray ) {
-                    basinrainSet.add(rainArray[index]);
-                }
-            } else {
-                basinrainSet.add(1.0);
-                Integer outletIndex = basinid2Index.get(outletHillslopeId);
-                basinrainSet.add(rainArray[outletIndex + 3 * hillsSlopeNum]);
-            }
-            return basinrainSet;
+            pfaffsList = Arrays.asList(split);
         }
 
-        return null;
+        if (doBoundary)
+            outFinalconditions = new HashMap<Integer, AdigeBoundaryCondition>();
+        for( String pfaf : pfaffsList ) {
+            int index = pfaff2Index.get(pfaf);
+            Integer basinId = index2Basinid.get(index);
+            double discharge = initialConditions[index];
+            double subdischarge = initialConditions[index + hillsSlopeNum];
+            double s1 = initialConditions[index + 2 * hillsSlopeNum];
+            double s2 = initialConditions[index + 3 * hillsSlopeNum];
+            outDischarge.put(basinId, discharge);
+            outSubdischarge.put(basinId, subdischarge);
+            outS1.put(basinId, s1);
+            outS2.put(basinId, s2);
+            if (doBoundary) {
+                AdigeBoundaryCondition bc = new AdigeBoundaryCondition();
+                bc.discharge = discharge;
+                bc.dischargeSub = subdischarge;
+                bc.S1 = s1;
+                bc.S2 = s2;
+                outFinalconditions.put(basinId, bc);
+            }
+        }
+    }
+
+    private void setDataArray( HashMap<Integer, Double> dataMap, double[] endArray ) {
+        Set<Entry<Integer, Double>> entries = dataMap.entrySet();
+        for( Entry<Integer, Double> entry : entries ) {
+            Integer id = entry.getKey();
+            double value = entry.getValue();
+            Integer index = basinid2Index.get(id);
+            if (index == null) {
+                continue;
+            }
+            if (isNovalue(value)) {
+                value = 0.0;
+            }
+            endArray[index] = value / (tTimestep / 60.0);
+        }
     }
 
     private HashMap<Integer, Double> fillParameters( HillSlope hillSlope ) {
@@ -873,137 +793,130 @@ public class Adige extends HMModel {
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUB);
         attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sub)).doubleValue();
         params.put(DischargeDistributor.PARAMS_VAR_SUB, attribute);
-        try {
-            double vsup = Double.parseDouble(pV_sup);
-            params.put(DischargeDistributor.PARAMS_V_SUP, vsup);
-            double vsub = Double.parseDouble(pV_sub);
-            params.put(DischargeDistributor.PARAMS_V_SUB, vsub);
-        } catch (NumberFormatException e) {
-            throw new ModelsIllegalargumentException(
-                    "The speed parameters need to be a valid number. Check your syntax.", this);
-        }
+        params.put(DischargeDistributor.PARAMS_V_SUP, pV_sup);
+        params.put(DischargeDistributor.PARAMS_V_SUB, pV_sub);
         return params;
     }
 
-    private void readVegetationLibrary( ScalarSet vegetationLibScalarSet,
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap,
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap,
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap,
-            HashMap<Integer, Double> vegindex2RGLMap, HashMap<Integer, Double> vegindex2rsMap,
-            HashMap<Integer, Double> vegindex2rarcMap ) throws ModelsIOException {
-        Double columns = vegetationLibScalarSet.get(0);
-        int vegIndexesNum = 56;
-        if (columns != vegIndexesNum) {
-            throw new ModelsIOException(
-                    "The vegetation library scalarset contains a wrong number of columns. Check your data.",
-                    this.getClass().getSimpleName());
-        }
-        for( int i = 1; i < vegetationLibScalarSet.size(); i = i + vegIndexesNum ) {
-            // 0-id,1-architectural_resistance,2-min_stomatal_resistance,
-            int id = vegetationLibScalarSet.get(i + 0).intValue();
-            double archResistance = vegetationLibScalarSet.get(i + 1);
-            vegindex2rarcMap.put(id, archResistance);
-            double minStomatalResistance = vegetationLibScalarSet.get(i + 2);
-            vegindex2rsMap.put(id, minStomatalResistance);
-            // 3-lai_jan,4-lai_feb,5-lai_mar,6-lai_apr,7-lai_maj,8-lai_jun,
-            // 9-lai_jul,9-lai_aug,11-lai_sep,12-lai_oct,13-lai_nov,14-lai_dec
-            double laiJan = vegetationLibScalarSet.get(i + 3);
-            double laiFeb = vegetationLibScalarSet.get(i + 4);
-            double laiMar = vegetationLibScalarSet.get(i + 5);
-            double laiApr = vegetationLibScalarSet.get(i + 6);
-            double laiMay = vegetationLibScalarSet.get(i + 7);
-            double laiGiu = vegetationLibScalarSet.get(i + 8);
-            double laiJul = vegetationLibScalarSet.get(i + 9);
-            double laiAug = vegetationLibScalarSet.get(i + 10);
-            double laiSep = vegetationLibScalarSet.get(i + 11);
-            double laiOct = vegetationLibScalarSet.get(i + 12);
-            double laiNov = vegetationLibScalarSet.get(i + 13);
-            double laiDec = vegetationLibScalarSet.get(i + 14);
-            HashMap<Integer, Double> laiMap = new HashMap<Integer, Double>();
-            laiMap.put(1, laiJan);
-            laiMap.put(2, laiFeb);
-            laiMap.put(3, laiMar);
-            laiMap.put(4, laiApr);
-            laiMap.put(5, laiMay);
-            laiMap.put(6, laiGiu);
-            laiMap.put(7, laiJul);
-            laiMap.put(8, laiAug);
-            laiMap.put(9, laiSep);
-            laiMap.put(10, laiOct);
-            laiMap.put(11, laiNov);
-            laiMap.put(12, laiDec);
-            vegindex2laiMap.put(id, laiMap);
-            // ALBEDO - for now not used
-            // ,15-jan_albedo,16-feb_albedo,
-            // 17-mar_albedo,18-apr_albedo,19-maj_albedo,20-jun_albedo,21-jul_albedo,
-            // 22-ago_albedo,23-sep_albedo,24-oct_albedo,25-nov_albedo,26-dec_albedo,
-
-            // 27-rough_jan,28-rough_feb,29-rough_mar,30-rough_apr,31-rough_maj,
-            // 32-rough_jun,33-rough_jul,34-rough_ago,35-rough_sep,36-rough_oct,
-            // 37-rough_nov,38-rough_dec
-            double roughnessJan = vegetationLibScalarSet.get(i + 27);
-            double roughnessFeb = vegetationLibScalarSet.get(i + 28);
-            double roughnessMar = vegetationLibScalarSet.get(i + 29);
-            double roughnessApr = vegetationLibScalarSet.get(i + 30);
-            double roughnessMay = vegetationLibScalarSet.get(i + 31);
-            double roughnessGiu = vegetationLibScalarSet.get(i + 32);
-            double roughnessJul = vegetationLibScalarSet.get(i + 33);
-            double roughnessAug = vegetationLibScalarSet.get(i + 34);
-            double roughnessSep = vegetationLibScalarSet.get(i + 35);
-            double roughnessOct = vegetationLibScalarSet.get(i + 36);
-            double roughnessNov = vegetationLibScalarSet.get(i + 37);
-            double roughnessDec = vegetationLibScalarSet.get(i + 38);
-            HashMap<Integer, Double> roughnessMap = new HashMap<Integer, Double>();
-            roughnessMap.put(1, roughnessJan);
-            roughnessMap.put(2, roughnessFeb);
-            roughnessMap.put(3, roughnessMar);
-            roughnessMap.put(4, roughnessApr);
-            roughnessMap.put(5, roughnessMay);
-            roughnessMap.put(6, roughnessGiu);
-            roughnessMap.put(7, roughnessJul);
-            roughnessMap.put(8, roughnessAug);
-            roughnessMap.put(9, roughnessSep);
-            roughnessMap.put(10, roughnessOct);
-            roughnessMap.put(11, roughnessNov);
-            roughnessMap.put(12, roughnessDec);
-            vegindex2roughnessMap.put(id, roughnessMap);
-
-            // 39-displ_jan,40-displ_feb,41-displ_mar,
-            // 42-displ_apr,43-displ_maj,44-displ_jun,45-displ_jul,46-displ_ago,
-            // 47-displ_sep,48-displ_oct,49-displ_nov,50-displ_dec,
-            double displacementJan = vegetationLibScalarSet.get(i + 39);
-            double displacementFeb = vegetationLibScalarSet.get(i + 40);
-            double displacementMar = vegetationLibScalarSet.get(i + 41);
-            double displacementApr = vegetationLibScalarSet.get(i + 42);
-            double displacementMay = vegetationLibScalarSet.get(i + 43);
-            double displacementGiu = vegetationLibScalarSet.get(i + 44);
-            double displacementJul = vegetationLibScalarSet.get(i + 45);
-            double displacementAug = vegetationLibScalarSet.get(i + 46);
-            double displacementSep = vegetationLibScalarSet.get(i + 47);
-            double displacementOct = vegetationLibScalarSet.get(i + 48);
-            double displacementNov = vegetationLibScalarSet.get(i + 49);
-            double displacementDec = vegetationLibScalarSet.get(i + 50);
-            HashMap<Integer, Double> displacementMap = new HashMap<Integer, Double>();
-            displacementMap.put(1, displacementJan);
-            displacementMap.put(2, displacementFeb);
-            displacementMap.put(3, displacementMar);
-            displacementMap.put(4, displacementApr);
-            displacementMap.put(5, displacementMay);
-            displacementMap.put(6, displacementGiu);
-            displacementMap.put(7, displacementJul);
-            displacementMap.put(8, displacementAug);
-            displacementMap.put(9, displacementSep);
-            displacementMap.put(10, displacementOct);
-            displacementMap.put(11, displacementNov);
-            displacementMap.put(12, displacementDec);
-            vegindex2displacementMap.put(id, displacementMap);
-
-            // 51-wind_height,
-            // 52-rgl
-            double rgl = vegetationLibScalarSet.get(i + 52);
-            vegindex2RGLMap.put(id, rgl);
-            // 53-rad_atten,54-wind_atten,55-trunk_ratio,
-        }
-    }
+    // private void readVegetationLibrary( ScalarSet vegetationLibScalarSet,
+    // HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap,
+    // HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap,
+    // HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap,
+    // HashMap<Integer, Double> vegindex2RGLMap, HashMap<Integer, Double> vegindex2rsMap,
+    // HashMap<Integer, Double> vegindex2rarcMap ) throws ModelsIOException {
+    // Double columns = vegetationLibScalarSet.get(0);
+    // int vegIndexesNum = 56;
+    // if (columns != vegIndexesNum) {
+    // throw new ModelsIOException(
+    // "The vegetation library scalarset contains a wrong number of columns. Check your data.",
+    // this.getClass().getSimpleName());
+    // }
+    // for( int i = 1; i < vegetationLibScalarSet.size(); i = i + vegIndexesNum ) {
+    // // 0-id,1-architectural_resistance,2-min_stomatal_resistance,
+    // int id = vegetationLibScalarSet.get(i + 0).intValue();
+    // double archResistance = vegetationLibScalarSet.get(i + 1);
+    // vegindex2rarcMap.put(id, archResistance);
+    // double minStomatalResistance = vegetationLibScalarSet.get(i + 2);
+    // vegindex2rsMap.put(id, minStomatalResistance);
+    // // 3-lai_jan,4-lai_feb,5-lai_mar,6-lai_apr,7-lai_maj,8-lai_jun,
+    // // 9-lai_jul,9-lai_aug,11-lai_sep,12-lai_oct,13-lai_nov,14-lai_dec
+    // double laiJan = vegetationLibScalarSet.get(i + 3);
+    // double laiFeb = vegetationLibScalarSet.get(i + 4);
+    // double laiMar = vegetationLibScalarSet.get(i + 5);
+    // double laiApr = vegetationLibScalarSet.get(i + 6);
+    // double laiMay = vegetationLibScalarSet.get(i + 7);
+    // double laiGiu = vegetationLibScalarSet.get(i + 8);
+    // double laiJul = vegetationLibScalarSet.get(i + 9);
+    // double laiAug = vegetationLibScalarSet.get(i + 10);
+    // double laiSep = vegetationLibScalarSet.get(i + 11);
+    // double laiOct = vegetationLibScalarSet.get(i + 12);
+    // double laiNov = vegetationLibScalarSet.get(i + 13);
+    // double laiDec = vegetationLibScalarSet.get(i + 14);
+    // HashMap<Integer, Double> laiMap = new HashMap<Integer, Double>();
+    // laiMap.put(1, laiJan);
+    // laiMap.put(2, laiFeb);
+    // laiMap.put(3, laiMar);
+    // laiMap.put(4, laiApr);
+    // laiMap.put(5, laiMay);
+    // laiMap.put(6, laiGiu);
+    // laiMap.put(7, laiJul);
+    // laiMap.put(8, laiAug);
+    // laiMap.put(9, laiSep);
+    // laiMap.put(10, laiOct);
+    // laiMap.put(11, laiNov);
+    // laiMap.put(12, laiDec);
+    // vegindex2laiMap.put(id, laiMap);
+    // // ALBEDO - for now not used
+    // // ,15-jan_albedo,16-feb_albedo,
+    // // 17-mar_albedo,18-apr_albedo,19-maj_albedo,20-jun_albedo,21-jul_albedo,
+    // // 22-ago_albedo,23-sep_albedo,24-oct_albedo,25-nov_albedo,26-dec_albedo,
+    //
+    // // 27-rough_jan,28-rough_feb,29-rough_mar,30-rough_apr,31-rough_maj,
+    // // 32-rough_jun,33-rough_jul,34-rough_ago,35-rough_sep,36-rough_oct,
+    // // 37-rough_nov,38-rough_dec
+    // double roughnessJan = vegetationLibScalarSet.get(i + 27);
+    // double roughnessFeb = vegetationLibScalarSet.get(i + 28);
+    // double roughnessMar = vegetationLibScalarSet.get(i + 29);
+    // double roughnessApr = vegetationLibScalarSet.get(i + 30);
+    // double roughnessMay = vegetationLibScalarSet.get(i + 31);
+    // double roughnessGiu = vegetationLibScalarSet.get(i + 32);
+    // double roughnessJul = vegetationLibScalarSet.get(i + 33);
+    // double roughnessAug = vegetationLibScalarSet.get(i + 34);
+    // double roughnessSep = vegetationLibScalarSet.get(i + 35);
+    // double roughnessOct = vegetationLibScalarSet.get(i + 36);
+    // double roughnessNov = vegetationLibScalarSet.get(i + 37);
+    // double roughnessDec = vegetationLibScalarSet.get(i + 38);
+    // HashMap<Integer, Double> roughnessMap = new HashMap<Integer, Double>();
+    // roughnessMap.put(1, roughnessJan);
+    // roughnessMap.put(2, roughnessFeb);
+    // roughnessMap.put(3, roughnessMar);
+    // roughnessMap.put(4, roughnessApr);
+    // roughnessMap.put(5, roughnessMay);
+    // roughnessMap.put(6, roughnessGiu);
+    // roughnessMap.put(7, roughnessJul);
+    // roughnessMap.put(8, roughnessAug);
+    // roughnessMap.put(9, roughnessSep);
+    // roughnessMap.put(10, roughnessOct);
+    // roughnessMap.put(11, roughnessNov);
+    // roughnessMap.put(12, roughnessDec);
+    // vegindex2roughnessMap.put(id, roughnessMap);
+    //
+    // // 39-displ_jan,40-displ_feb,41-displ_mar,
+    // // 42-displ_apr,43-displ_maj,44-displ_jun,45-displ_jul,46-displ_ago,
+    // // 47-displ_sep,48-displ_oct,49-displ_nov,50-displ_dec,
+    // double displacementJan = vegetationLibScalarSet.get(i + 39);
+    // double displacementFeb = vegetationLibScalarSet.get(i + 40);
+    // double displacementMar = vegetationLibScalarSet.get(i + 41);
+    // double displacementApr = vegetationLibScalarSet.get(i + 42);
+    // double displacementMay = vegetationLibScalarSet.get(i + 43);
+    // double displacementGiu = vegetationLibScalarSet.get(i + 44);
+    // double displacementJul = vegetationLibScalarSet.get(i + 45);
+    // double displacementAug = vegetationLibScalarSet.get(i + 46);
+    // double displacementSep = vegetationLibScalarSet.get(i + 47);
+    // double displacementOct = vegetationLibScalarSet.get(i + 48);
+    // double displacementNov = vegetationLibScalarSet.get(i + 49);
+    // double displacementDec = vegetationLibScalarSet.get(i + 50);
+    // HashMap<Integer, Double> displacementMap = new HashMap<Integer, Double>();
+    // displacementMap.put(1, displacementJan);
+    // displacementMap.put(2, displacementFeb);
+    // displacementMap.put(3, displacementMar);
+    // displacementMap.put(4, displacementApr);
+    // displacementMap.put(5, displacementMay);
+    // displacementMap.put(6, displacementGiu);
+    // displacementMap.put(7, displacementJul);
+    // displacementMap.put(8, displacementAug);
+    // displacementMap.put(9, displacementSep);
+    // displacementMap.put(10, displacementOct);
+    // displacementMap.put(11, displacementNov);
+    // displacementMap.put(12, displacementDec);
+    // vegindex2displacementMap.put(id, displacementMap);
+    //
+    // // 51-wind_height,
+    // // 52-rgl
+    // double rgl = vegetationLibScalarSet.get(i + 52);
+    // vegindex2RGLMap.put(id, rgl);
+    // // 53-rad_atten,54-wind_atten,55-trunk_ratio,
+    // }
+    // }
 
 }

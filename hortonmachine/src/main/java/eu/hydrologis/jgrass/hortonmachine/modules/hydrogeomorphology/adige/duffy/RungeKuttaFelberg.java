@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
 /**
  * An implementation of the Runge-Kutta-Felberg algorithm for solving non-linear ordinary
@@ -56,12 +57,12 @@ public class RungeKuttaFelberg {
     private double[] c = {37. / 378., 0., 250. / 621., 125. / 594., 0., 512. / 1771.};
     private double[] cStar = {2825. / 27648., 0., 18575. / 48384., 13525. / 55296., 277. / 14336.,
             1. / 4.};
-    private final PrintStream outputStream;
 
     private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm"); //$NON-NLS-1$
     private final boolean doLog;
 
     private boolean isAtFinalSubtimestep = true;
+    private IHMProgressMonitor outputStream;
 
     /**
      * Creates new RKF
@@ -71,7 +72,7 @@ public class RungeKuttaFelberg {
      * @param basTs The step size
      * @param doLog
      */
-    public RungeKuttaFelberg( IBasicFunction fu, double eps, double basTs, PrintStream out,
+    public RungeKuttaFelberg( IBasicFunction fu, double eps, double basTs, IHMProgressMonitor out,
             boolean doLog ) {
         theFunction = fu;
         epsilon = eps;
@@ -302,7 +303,7 @@ public class RungeKuttaFelberg {
 
             thisDate.setTime((long) (currentTimeInMinutes * 60.0 * 1000.0));
             if (doLog)
-                outputStream.println("->  "
+                outputStream.message("->  "
                         + dateFormatter.format(thisDate)
                         + " / "
                         + dateFormatter.format(new Date(
@@ -355,13 +356,13 @@ public class RungeKuttaFelberg {
             sum = sum / rainArray.length;
             int hillslopeNum = rainArray.length;
             double currentDischarge = initialConditions[0] + initialConditions[hillslopeNum];
-            outputStream.println(dateFormatter.format(thisDate)
+            outputStream.message(dateFormatter.format(thisDate)
                     + " / "
                     + dateFormatter
                             .format(new Date((long) (intervalEndTimeInMinutes * 60. * 1000.)))
                     + " " + currentDischarge + " with avg rain: " + sum);
         } else {
-            outputStream.println("WARNING, UNEXPECTED");
+            outputStream.errorMessage("WARNING, UNEXPECTED");
         }
 
         finalCond = initialConditions;
