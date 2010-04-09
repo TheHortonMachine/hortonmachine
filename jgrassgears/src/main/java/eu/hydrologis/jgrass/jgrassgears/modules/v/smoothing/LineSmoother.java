@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
