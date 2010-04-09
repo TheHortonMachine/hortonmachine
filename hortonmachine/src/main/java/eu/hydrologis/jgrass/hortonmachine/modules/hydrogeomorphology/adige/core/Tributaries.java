@@ -12,7 +12,7 @@ import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 public class Tributaries implements DischargeContributor {
 
     private final HashMap<String, Integer> tributary_pfaff2idMap;
-    private final HashMap<Integer, Double> tributary_id2valuesQMap;
+    private HashMap<Integer, Double> tributary_id2valuesQMap;
 
     /**
      * Constructor.
@@ -21,10 +21,8 @@ public class Tributaries implements DischargeContributor {
      *                      tributary points id.
      * @param tributary_id2valuesQMap map of tributary points id versus discharge value.
      */
-    public Tributaries( HashMap<String, Integer> tributary_pfaff2idMap,
-            HashMap<Integer, Double> tributary_id2valuesQMap ) {
+    public Tributaries( HashMap<String, Integer> tributary_pfaff2idMap ) {
         this.tributary_pfaff2idMap = tributary_pfaff2idMap;
-        this.tributary_id2valuesQMap = tributary_id2valuesQMap;
     }
 
     public Double getDischarge( String pNum, double inputDischarge ) {
@@ -37,6 +35,10 @@ public class Tributaries implements DischargeContributor {
             }
         }
         return HMConstants.doubleNovalue;
+    }
+
+    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+        tributary_id2valuesQMap = currentDataMap;
     }
 
 }

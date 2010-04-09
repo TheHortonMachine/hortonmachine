@@ -30,19 +30,16 @@ import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 public class Hydrometers implements DischargeContributor {
 
     private final HashMap<String, Integer> hydrometer_pfaff2idMap;
-    private final HashMap<Integer, Double> hydrometer_id2valuesMap;
+    private HashMap<Integer, Double> hydrometer_id2valuesMap;
 
     /**
      * Constructor.
      * 
      * @param hydrometer_pfaff2idMap {@link HashMap map} of pfafstetter numbers versus
      *                      hydrometers points id.
-     * @param hydrometer_id2valuesMap map of hydrometer points id versus discharge value.
      */
-    public Hydrometers( HashMap<String, Integer> hydrometer_pfaff2idMap,
-            HashMap<Integer, Double> hydrometer_id2valuesMap ) {
+    public Hydrometers( HashMap<String, Integer> hydrometer_pfaff2idMap ) {
         this.hydrometer_pfaff2idMap = hydrometer_pfaff2idMap;
-        this.hydrometer_id2valuesMap = hydrometer_id2valuesMap;
     }
 
     public Double getDischarge( String pfafstetterNumber, double inputDischarge ) {
@@ -54,6 +51,10 @@ public class Hydrometers implements DischargeContributor {
             }
         }
         return HMConstants.doubleNovalue;
+    }
+
+    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+        hydrometer_id2valuesMap = currentDataMap;
     }
 
 }

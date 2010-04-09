@@ -32,7 +32,7 @@ import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 public class Offtakes implements DischargeContributor {
 
     private final HashMap<String, Integer> offtakes_pfaff2idMap;
-    private final HashMap<Integer, Double> offtakes_id2valuesQMap;
+    private HashMap<Integer, Double> offtakes_id2valuesQMap;
     private final IHMProgressMonitor out;
 
     /**
@@ -40,13 +40,10 @@ public class Offtakes implements DischargeContributor {
      * 
      * @param offtakes_pfaff2idMap {@link HashMap map} of pfafstetter numbers versus
      *                      offtakes points id.
-     * @param offtakes_id2valuesQMap map of offtakes points id versus discharge value.
      * @param out {@link PrintStream} for warning handling.
      */
-    public Offtakes( HashMap<String, Integer> offtakes_pfaff2idMap,
-            HashMap<Integer, Double> offtakes_id2valuesQMap, IHMProgressMonitor out ) {
+    public Offtakes( HashMap<String, Integer> offtakes_pfaff2idMap, IHMProgressMonitor out ) {
         this.offtakes_pfaff2idMap = offtakes_pfaff2idMap;
-        this.offtakes_id2valuesQMap = offtakes_id2valuesQMap;
         this.out = out;
     }
 
@@ -67,6 +64,10 @@ public class Offtakes implements DischargeContributor {
             }
         }
         return HMConstants.doubleNovalue;
+    }
+
+    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+        offtakes_id2valuesQMap = currentDataMap;
     }
 
 }

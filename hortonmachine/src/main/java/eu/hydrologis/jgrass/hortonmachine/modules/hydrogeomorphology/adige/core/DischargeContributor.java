@@ -18,6 +18,8 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core;
 
+import java.util.HashMap;
+
 /**
  * Interface for all those objects that can supply a discharge in a given point of the network.
  * 
@@ -37,5 +39,7 @@ public interface DischargeContributor {
      *                      returned for invalid values.
      */
     public abstract Double getDischarge( String pfafstetterNumber, double inputDischarge );
+
+    public abstract void setCurrentData( HashMap<Integer, Double> currentDataMap );
 
 }
