@@ -24,9 +24,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.feature.FeatureCollection;
@@ -53,14 +58,15 @@ import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIOException;
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 
-/**
- * The adige model.
- * 
- * @author Silvia Franceschi (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
- */
+@Description("The Adige model.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
+@Keywords("Hydrology")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Adige extends HMModel {
 
     @Description("The hillslope data.")
@@ -119,21 +125,37 @@ public class Adige extends HMModel {
     @In
     public double pV_sub = -1;
 
-    @Description("The hydrometers monitoring point data.")
+    @Description("The hydrometers monitoring points.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inHydrometers;
 
-    @Description("The dams monitoring point data.")
+    @Description("The hydrometers data.")
+    @In
+    public HashMap<Integer, Double> inHydrometerdata;
+
+    @Description("The dams monitoring points.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inDams;
 
-    @Description("The tributary monitoring point data.")
+    @Description("The dams data.")
+    @In
+    public HashMap<Integer, Double> inDamsdata;
+
+    @Description("The tributary monitoring points.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inTributary;
 
-    @Description("The offtakes monitoring point data.")
+    @Description("The tributary data.")
+    @In
+    public HashMap<Integer, Double> inTributarydata;
+
+    @Description("The offtakes monitoring points.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inOfftakes;
+
+    @Description("The offtakes data.")
+    @In
+    public HashMap<Integer, Double> inOfftakesdata;
 
     @Description("Comma separated list of pfafstetter ids, in which to generate the output")
     @In
@@ -174,7 +196,7 @@ public class Adige extends HMModel {
     @Description("The duration of the constant rain in minutes.")
     @Unit("min")
     @In
-    public double pRainduration;
+    public int pRainduration;
 
     @Role(Role.PARAMETER)
     @Description("Switch to activate additional logging to file.")
@@ -193,10 +215,10 @@ public class Adige extends HMModel {
     @In
     public String tEnd = null;
 
-    @Description("The current time variable.")
+    @Description("The progress monitor.")
     @In
-    public String tCurrent;
-    
+    public IHMProgressMonitor pm = new DummyProgressMonitor();
+
     // public String startDateArg = null;
     // public String endDateArg = null;
     // public double deltaTArg = null;
@@ -206,7 +228,6 @@ public class Adige extends HMModel {
      */
     // private Date startDate;
     // private Date endDate;
-    private double rainEndDateInMinutes = -1;
     private double deltaTinMilliSeconds;
     private double deltaTinMinutes = -1;
 
@@ -229,22 +250,18 @@ public class Adige extends HMModel {
     // hydrometers
     private DischargeContributor hydrometersHandler;
     private HashMap<String, Integer> hydrometer_pfaff2idMap;
-    private HashMap<Integer, Double> hydrometer_id2valuesMap;
 
     // dams
     private DischargeContributor damsHandler;
     private HashMap<String, Integer> dams_pfaff2idMap;
-    private HashMap<Integer, Double> dams_id2valuesQMap;
 
     // tributaries
     private DischargeContributor tributaryHandler;
     private HashMap<String, Integer> tributary_pfaff2idMap;
-    private HashMap<Integer, Double> tributary_id2valuesQMap;
 
     // offtakes
     private DischargeContributor offtakesHandler;
     private HashMap<String, Integer> offtakes_pfaff2idMap;
-    private HashMap<Integer, Double> offtakes_id2valuesQMap;
 
     private HashMap<Integer, Integer> basinid2Index;
     private HashMap<Integer, Integer> index2Basinid;
@@ -256,19 +273,30 @@ public class Adige extends HMModel {
     private List<HillSlope> orderedHillslopes;
 
     private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
-    
-    public void executeAdige() throws Exception {
-        
-        
-        
-        if (pRainintensity != -1) {
-            if (pRainduration != -1) {
-                rainEndDateInMinutes = startDate.getTime() * MStM + pRainduration;
-            } else {
-                throw new ModelsIllegalargumentException(
-                        "In the case of usage of a constant rainintensity it is necessary to define also its duration.\nCheck your arguments, probably the --rainduration flag is missing.",
-                        this.getClass().getSimpleName());
+
+    private DateTime startTimestamp;
+    private DateTime endTimestamp;
+    private DateTime currentTimstamp;
+    private DateTime rainEndTimstamp;
+
+    @Execute
+    public void process() throws Exception {
+
+        if (startTimestamp == null) {
+            startTimestamp = formatter.parseDateTime(tStart);
+            endTimestamp = formatter.parseDateTime(tEnd);
+            currentTimstamp = startTimestamp;
+            if (pRainintensity != -1) {
+                if (pRainduration != -1) {
+                    rainEndTimstamp = startTimestamp.plusMinutes(pRainduration);
+                } else {
+                    throw new ModelsIllegalargumentException(
+                            "In the case of usage of a constant rainintensity it is necessary to define also its duration.\nCheck your arguments, probably the --rainduration flag is missing.",
+                            this.getClass().getSimpleName());
+                }
             }
+        } else {
+            currentTimstamp = currentTimstamp.plusMinutes(tTimestep);
         }
 
         if (fNetnum == null || fNetnum.length() < 1) {
@@ -296,534 +324,349 @@ public class Adige extends HMModel {
                     this.getClass().getSimpleName());
         }
 
-        // hydrometers input
-        vegetationInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        netpfafInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this, null);
-        hillslopeInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this, null);
-        hydrometersFeaturesInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this,
-                null);
-        hydrometersDataInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        damsFeaturesInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this, null);
-        damsOverflowDischargeInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        tributaryFeaturesInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this,
-                null);
-        tributaryDischargeInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        offtakesFeaturesInputEI = ModelsConstants.createFeatureCollectionInputExchangeItem(this,
-                null);
-        offtakesDischargeInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        rainfallInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        boundaryInputEI = ModelsConstants.createDummyInputExchangeItem(this);
-        boundaryOutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-        dischargeOutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-        s1OutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-        s2OutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-        s3OutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-        basinrainOutputEI = ModelsConstants.createDummyOutputExchangeItem(this);
-    }
+        // hydrometers
+        if (inHydrometers != null && inHydrometerdata != null) {
+            if (hydrometersHandler == null) {
+                pm.message("Reading hydrometers geometries and mapping them to the network...");
+                hydrometer_pfaff2idMap = new HashMap<String, Integer>();
+                hydrometersHandler = new Hydrometers(hydrometer_pfaff2idMap, inHydrometerdata);
 
-    public IValueSet safeGetValues( ITime time, String linkID ) throws Exception {
-        double runningDateInMinutes = -1;
-        HydrologisDate tmpTime = null;
-        if (time instanceof HydrologisDate) {
-            tmpTime = (HydrologisDate) time;
-        } else {
-            throw new ModelsIllegalargumentException(
-                    "The model was launched without time interval or something is wrong in the time setting.",
-                    this);
+                FeatureIterator<SimpleFeature> hydrometersIterator = inHydrometers.features();
+                int pfaffIndex = -1;
+                int monIdIndex = -1;
+                while( hydrometersIterator.hasNext() ) {
+                    SimpleFeature hydrometer = hydrometersIterator.next();
+                    if (pfaffIndex == -1) {
+                        SimpleFeatureType featureType = hydrometer.getFeatureType();
+                        pfaffIndex = featureType.indexOf(fPfaff);
+                        if (pfaffIndex == -1) {
+                            throw new ModelsIllegalargumentException(
+                                    "The hydrometer features are missing the pafaffstetter attribute field: "
+                                            + fPfaff, this.getClass().getSimpleName());
+                        }
+                        monIdIndex = featureType.indexOf(fMonpointid);
+                        if (monIdIndex == -1) {
+                            throw new ModelsIllegalargumentException(
+                                    "The hydrometer features are missing the id attribute field: "
+                                            + fMonpointid, this.getClass().getSimpleName());
+                        }
+                    }
+
+                    String pNumberStr = (String) hydrometer.getAttribute(pfaffIndex);
+                    int id = ((Number) hydrometer.getAttribute(monIdIndex)).intValue();
+                    hydrometer_pfaff2idMap.put(pNumberStr, id);
+                }
+            }
         }
-        /*
-         * check if the time is null or if it is the first implementation of the new timestep
-         */
-        if (tCurrent == null || !(tmpTime.compareTo(tCurrent) == 0)) {
-            tCurrent = new HydrologisDate();
-            tCurrent.setTime(tmpTime.getTime());
-            runningDateInMinutes = ((HydrologisDate) tCurrent).getTime() * MStM;
 
-            // hydrometers
-            if (hydrometersFeaturesInputLink != null && hydrometersDataInputLink != null) {
-                if (hydrometersHandler == null) {
-                    out
-                            .println("Reading hydrometers geometries and mapping them to the network...");
-                    hydrometer_pfaff2idMap = new HashMap<String, Integer>();
-                    hydrometer_id2valuesMap = new HashMap<Integer, Double>();
-                    hydrometersHandler = new Hydrometers(hydrometer_pfaff2idMap,
-                            hydrometer_id2valuesMap);
+        // dams
+        if (inDams != null && inDamsdata != null) {
+            if (damsHandler == null) {
+                pm.message("Reading dams geometries and mapping them to the network...");
+                dams_pfaff2idMap = new HashMap<String, Integer>();
+                damsHandler = new Dams(dams_pfaff2idMap, inDamsdata);
 
-                    IValueSet hydrometersValueSet = hydrometersFeaturesInputLink
-                            .getSourceComponent().getValues(null,
-                                    hydrometersFeaturesInputLink.getID());
-                    if (hydrometersValueSet instanceof JGrassFeatureValueSet) {
-                        hydrometersFeatureCollection = ((JGrassFeatureValueSet) hydrometersValueSet)
-                                .getFeatureCollection();
-                    } else {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while retrieving the hydrometers data at date: "
-                                        + dateFormatter.format(time), this);
-                    }
-                    if (hydrometersFeatureCollection == null) {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while reading the hydrometers geometries", this);
-                    }
-                    FeatureIterator<SimpleFeature> hydrometersIterator = hydrometersFeatureCollection
-                            .features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( hydrometersIterator.hasNext() ) {
-                        SimpleFeature hydrometer = hydrometersIterator.next();
+                FeatureIterator<SimpleFeature> damsIterator = inDams.features();
+                int pfaffIndex = -1;
+                int monIdIndex = -1;
+                while( damsIterator.hasNext() ) {
+                    SimpleFeature dam = damsIterator.next();
+                    if (pfaffIndex == -1) {
+                        SimpleFeatureType featureType = dam.getFeatureType();
+                        pfaffIndex = featureType.indexOf(fPfaff);
                         if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = hydrometer.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the pafaffstetter attribute field: "
-                                                + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the id attribute field: "
-                                                + fMonpointid, this);
-                            }
+                            throw new ModelsIllegalargumentException(
+                                    "The dams features are missing the pfaffstetter attribute field: "
+                                            + fPfaff, this.getClass().getSimpleName());
                         }
+                        monIdIndex = featureType.indexOf(fMonpointid);
+                        if (monIdIndex == -1) {
+                            throw new ModelsIllegalargumentException(
+                                    "The dams features are missing the id attribute field: "
+                                            + fMonpointid, this.getClass().getSimpleName());
+                        }
+                    }
 
-                        String pNumberStr = (String) hydrometer.getAttribute(pfaffIndex);
-                        int id = ((Number) hydrometer.getAttribute(monIdIndex)).intValue();
-                        hydrometer_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-                // hydrometers values
-                IValueSet hydrometerValueSet = hydrometersDataInputLink.getSourceComponent()
-                        .getValues(time, hydrometersDataInputLink.getID());
-                if (hydrometerValueSet != null && hydrometerValueSet instanceof ScalarSet) {
-                    hydrometerScalarSet = (ScalarSet) hydrometerValueSet;
-                    hydrometer_id2valuesMap.clear();
-                    for( int i = 1; i < hydrometerScalarSet.size(); i = i + 2 ) {
-                        int id = hydrometerScalarSet.get(i).intValue();
-                        Double value = hydrometerScalarSet.get(i + 1);
-                        hydrometer_id2valuesMap.put(id, value);
-                    }
-                } else {
-                    throw new ModelsIllegalargumentException(
-                            "An error occurred while retrieving the hydrometers data at date: "
-                                    + dateFormatter.format(time), this);
+                    String pNumberStr = (String) dam.getAttribute(pfaffIndex);
+                    int id = ((Number) dam.getAttribute(monIdIndex)).intValue();
+                    dams_pfaff2idMap.put(pNumberStr, id);
                 }
             }
+        }
 
-            // dams
-            if (damsFeaturesInputLink != null) {
-                if (damsHandler == null) {
-                    out.println("Reading dams geometries and mapping them to the network...");
-                    dams_pfaff2idMap = new HashMap<String, Integer>();
-                    dams_id2valuesQMap = new HashMap<Integer, Double>();
-                    damsHandler = new Dams(dams_pfaff2idMap, dams_id2valuesQMap);
+        // tributary
+        if (inTributary != null && inTributarydata != null) {
+            if (tributaryHandler == null) {
+                pm.message("Reading tributary geometries and mapping them to the network...");
+                tributary_pfaff2idMap = new HashMap<String, Integer>();
+                tributaryHandler = new Tributaries(tributary_pfaff2idMap, inTributarydata);
 
-                    IValueSet damsValueSet = damsFeaturesInputLink.getSourceComponent().getValues(
-                            null, damsFeaturesInputLink.getID());
-                    if (damsValueSet instanceof JGrassFeatureValueSet) {
-                        damsFeatureCollection = ((JGrassFeatureValueSet) damsValueSet)
-                                .getFeatureCollection();
-                    } else {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while retrieving the dams data at date: "
-                                        + dateFormatter.format(time), this);
-                    }
-                    if (damsFeatureCollection == null) {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while reading the dams geometries", this);
-                    }
-                    FeatureIterator<SimpleFeature> damsIterator = damsFeatureCollection.features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( damsIterator.hasNext() ) {
-                        SimpleFeature dam = damsIterator.next();
+                FeatureIterator<SimpleFeature> tributaryIterator = inTributary.features();
+                int pfaffIndex = -1;
+                int monIdIndex = -1;
+                while( tributaryIterator.hasNext() ) {
+                    SimpleFeature tributary = tributaryIterator.next();
+                    if (pfaffIndex == -1) {
+                        SimpleFeatureType featureType = tributary.getFeatureType();
+                        pfaffIndex = featureType.indexOf(fPfaff);
                         if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = dam.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The dams features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The dams features are missing the id attribute field: "
-                                                + fMonpointid, this);
-                            }
+                            throw new ModelsIllegalargumentException(
+                                    "The tributary features are missing the pfaffstetter attribute field: "
+                                            + fPfaff, this.getClass().getSimpleName());
                         }
+                        monIdIndex = featureType.indexOf(fMonpointid);
+                        if (monIdIndex == -1) {
+                            throw new ModelsIllegalargumentException(
+                                    "The tributary features are missing the id attribute field: "
+                                            + fMonpointid, this.getClass().getSimpleName());
+                        }
+                    }
 
-                        String pNumberStr = (String) dam.getAttribute(pfaffIndex);
-                        int id = ((Number) dam.getAttribute(monIdIndex)).intValue();
-                        dams_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-                // dams discharge values
-                IValueSet damsDischargeValueSet = damsOverflowDischargeInputLink
-                        .getSourceComponent().getValues(time,
-                                damsOverflowDischargeInputLink.getID());
-                if (damsDischargeValueSet != null && damsDischargeValueSet instanceof ScalarSet) {
-                    damsQScalarSet = (ScalarSet) damsDischargeValueSet;
-                    dams_id2valuesQMap.clear();
-                    for( int i = 1; i < damsQScalarSet.size(); i = i + 2 ) {
-                        int id = damsQScalarSet.get(i).intValue();
-                        Double value = damsQScalarSet.get(i + 1);
-                        dams_id2valuesQMap.put(id, value);
-                    }
-                } else {
-                    throw new ModelsIllegalargumentException(
-                            "An error occurred while retrieving the dams discharge data at date: "
-                                    + dateFormatter.format(time), this);
+                    String pNumberStr = (String) tributary.getAttribute(pfaffIndex);
+                    int id = ((Number) tributary.getAttribute(monIdIndex)).intValue();
+                    tributary_pfaff2idMap.put(pNumberStr, id);
                 }
             }
+        }
 
-            // tributary
-            if (tributaryFeaturesInputLink != null) {
-                if (tributaryHandler == null) {
-                    out.println("Reading tributary geometries and mapping them to the network...");
-                    tributary_pfaff2idMap = new HashMap<String, Integer>();
-                    tributary_id2valuesQMap = new HashMap<Integer, Double>();
-                    tributaryHandler = new Tributaries(tributary_pfaff2idMap,
-                            tributary_id2valuesQMap);
+        // offtakes
+        if (inOfftakes != null && inOfftakesdata != null) {
+            if (offtakesHandler == null) {
+                pm.message("Reading offtakes geometries and mapping them to the network...");
+                offtakes_pfaff2idMap = new HashMap<String, Integer>();
+                offtakesHandler = new Offtakes(offtakes_pfaff2idMap, inOfftakesdata, pm);
 
-                    IValueSet tributaryValueSet = tributaryFeaturesInputLink.getSourceComponent()
-                            .getValues(null, tributaryFeaturesInputLink.getID());
-                    if (tributaryValueSet instanceof JGrassFeatureValueSet) {
-                        tributaryFeatureCollection = ((JGrassFeatureValueSet) tributaryValueSet)
-                                .getFeatureCollection();
-                    } else {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while retrieving the tributary data at date: "
-                                        + dateFormatter.format(time), this);
-                    }
-                    if (tributaryFeatureCollection == null) {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while reading the tributary geometries", this);
-                    }
-                    FeatureIterator<SimpleFeature> tributaryIterator = tributaryFeatureCollection
-                            .features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( tributaryIterator.hasNext() ) {
-                        SimpleFeature tributary = tributaryIterator.next();
+                FeatureIterator<SimpleFeature> offtakesIterator = inOfftakes.features();
+                int pfaffIndex = -1;
+                int monIdIndex = -1;
+                while( offtakesIterator.hasNext() ) {
+                    SimpleFeature offtakes = offtakesIterator.next();
+                    if (pfaffIndex == -1) {
+                        SimpleFeatureType featureType = offtakes.getFeatureType();
+                        pfaffIndex = featureType.indexOf(fPfaff);
                         if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = tributary.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the id attribute field: "
-                                                + fMonpointid, this);
-                            }
+                            throw new ModelsIllegalargumentException(
+                                    "The offtakes features are missing the pfaffstetter attribute field: "
+                                            + fPfaff, this.getClass().getSimpleName());
                         }
-
-                        String pNumberStr = (String) tributary.getAttribute(pfaffIndex);
-                        int id = ((Number) tributary.getAttribute(monIdIndex)).intValue();
-                        tributary_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-                // dams discharge values
-                IValueSet tributaryDischargeValueSet = tributaryDischargeInputLink
-                        .getSourceComponent().getValues(time, tributaryDischargeInputLink.getID());
-                if (tributaryDischargeValueSet != null
-                        && tributaryDischargeValueSet instanceof ScalarSet) {
-                    tributaryQScalarSet = (ScalarSet) tributaryDischargeValueSet;
-                    tributary_id2valuesQMap.clear();
-                    for( int i = 1; i < tributaryQScalarSet.size(); i = i + 2 ) {
-                        int id = tributaryQScalarSet.get(i).intValue();
-                        Double value = tributaryQScalarSet.get(i + 1);
-                        tributary_id2valuesQMap.put(id, value);
-                    }
-                } else {
-                    throw new ModelsIllegalargumentException(
-                            "An error occurred while retrieving the tributary discharge data at date: "
-                                    + dateFormatter.format(time), this);
-                }
-            }
-
-            // offtakes
-            if (offtakesFeaturesInputLink != null) {
-                if (offtakesHandler == null) {
-                    out.println("Reading offtakes geometries and mapping them to the network...");
-                    offtakes_pfaff2idMap = new HashMap<String, Integer>();
-                    offtakes_id2valuesQMap = new HashMap<Integer, Double>();
-                    offtakesHandler = new Offtakes(offtakes_pfaff2idMap, offtakes_id2valuesQMap,
-                            out);
-
-                    IValueSet offtakesValueSet = offtakesFeaturesInputLink.getSourceComponent()
-                            .getValues(null, offtakesFeaturesInputLink.getID());
-                    if (offtakesValueSet instanceof JGrassFeatureValueSet) {
-                        offtakesFeatureCollection = ((JGrassFeatureValueSet) offtakesValueSet)
-                                .getFeatureCollection();
-                    } else {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while retrieving the offtakes data at date: "
-                                        + dateFormatter.format(time), this);
-                    }
-                    if (offtakesFeatureCollection == null) {
-                        throw new ModelsIllegalargumentException(
-                                "An error occurred while reading the offtakes geometries", this);
-                    }
-                    FeatureIterator<SimpleFeature> offtakesIterator = offtakesFeatureCollection
-                            .features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( offtakesIterator.hasNext() ) {
-                        SimpleFeature offtakes = offtakesIterator.next();
-                        if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = offtakes.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the id attribute field: "
-                                                + fMonpointid, this);
-                            }
+                        monIdIndex = featureType.indexOf(fMonpointid);
+                        if (monIdIndex == -1) {
+                            throw new ModelsIllegalargumentException(
+                                    "The offtakes features are missing the id attribute field: "
+                                            + fMonpointid, this.getClass().getSimpleName());
                         }
+                    }
 
-                        String pNumberStr = (String) offtakes.getAttribute(pfaffIndex);
-                        int id = ((Number) offtakes.getAttribute(monIdIndex)).intValue();
-                        offtakes_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-                // dams discharge values
-                IValueSet offtakesDischargeValueSet = offtakesDischargeInputLink
-                        .getSourceComponent().getValues(time, offtakesDischargeInputLink.getID());
-                if (offtakesDischargeValueSet != null
-                        && offtakesDischargeValueSet instanceof ScalarSet) {
-                    offtakesQScalarSet = (ScalarSet) offtakesDischargeValueSet;
-                    offtakes_id2valuesQMap.clear();
-                    for( int i = 1; i < offtakesQScalarSet.size(); i = i + 2 ) {
-                        int id = offtakesQScalarSet.get(i).intValue();
-                        Double value = offtakesQScalarSet.get(i + 1);
-                        offtakes_id2valuesQMap.put(id, value);
-                    }
-                } else {
-                    throw new ModelsIllegalargumentException(
-                            "An error occurred while retrieving the offtakes discharge data at date: "
-                                    + dateFormatter.format(time), this);
+                    String pNumberStr = (String) offtakes.getAttribute(pfaffIndex);
+                    int id = ((Number) offtakes.getAttribute(monIdIndex)).intValue();
+                    offtakes_pfaff2idMap.put(pNumberStr, id);
                 }
             }
+        }
 
-            // netpfaf
-            inNetwork = ModelsConstants.getFeatureCollectionFromLink(netpfafInputLink, time, err);
-            // hillslope
-            hillslopeFeatureCollection = ModelsConstants.getFeatureCollectionFromLink(
-                    hillslopeInputLink, time, err);
-            hillsSlopeNum = hillslopeFeatureCollection.size();
+        hillsSlopeNum = inHillslope.size();
 
-            if (netPfaffsList == null) {
-                ScalarSet vegetationLibScalarSet = ModelsConstants.getScalarSetFromLink(
-                        vegetationInputLink, time, err);
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap = new HashMap<Integer, HashMap<Integer, Double>>();
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap = new HashMap<Integer, HashMap<Integer, Double>>();
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap = new HashMap<Integer, HashMap<Integer, Double>>();
-                HashMap<Integer, Double> vegindex2RGLMap = new HashMap<Integer, Double>();
-                HashMap<Integer, Double> vegindex2rsMap = new HashMap<Integer, Double>();
-                HashMap<Integer, Double> vegindex2rarcMap = new HashMap<Integer, Double>();
+        if (netPfaffsList == null) {
+            ScalarSet vegetationLibScalarSet = ModelsConstants.getScalarSetFromLink(
+                    vegetationInputLink, time, err);
+            HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap = new HashMap<Integer, HashMap<Integer, Double>>();
+            HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap = new HashMap<Integer, HashMap<Integer, Double>>();
+            HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap = new HashMap<Integer, HashMap<Integer, Double>>();
+            HashMap<Integer, Double> vegindex2RGLMap = new HashMap<Integer, Double>();
+            HashMap<Integer, Double> vegindex2rsMap = new HashMap<Integer, Double>();
+            HashMap<Integer, Double> vegindex2rarcMap = new HashMap<Integer, Double>();
 
-                readVegetationLibrary(vegetationLibScalarSet, vegindex2laiMap,
-                        vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
-                        vegindex2rsMap, vegindex2rarcMap);
+            readVegetationLibrary(vegetationLibScalarSet, vegindex2laiMap,
+                    vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
+                    vegindex2rsMap, vegindex2rarcMap);
 
-                // at the first round create the hillslopes and network hierarchy
-                NetBasinsManager nbMan = new NetBasinsManager();
-                orderedHillslopes = nbMan.operateOnLayers(inNetwork, hillslopeFeatureCollection,
-                        fNetnum, fPfaff, fNetelevstart, fNetelevend, fBaricenter, fVegetation, out);
-                HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor = new HashMap<Integer, DischargeDistributor>();
-                outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
-                netPfaffsList = new ArrayList<PfafstetterNumber>();
-                pfaff2Index = new HashMap<String, Integer>();
-                basinid2Index = new HashMap<Integer, Integer>();
-                index2Basinid = new HashMap<Integer, Integer>();
-                PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(out);
-                pm.beginTask("Analaysing hillslopes and calculating distribution curves...",
-                        orderedHillslopes.size());
-                for( int i = 0; i < orderedHillslopes.size(); i++ ) {
-                    HillSlope hillSlope = orderedHillslopes.get(i);
-                    if (vegindex2laiMap.size() > 0)
-                        hillSlope.parameters.setVegetationLibrary(vegindex2laiMap,
-                                vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
-                                vegindex2rsMap, vegindex2rarcMap);
-                    PfafstetterNumber pfafstetterNumber = hillSlope.getPfafstetterNumber();
-                    netPfaffsList.add(pfafstetterNumber);
-                    int hillslopeId = hillSlope.getHillslopeId();
-                    basinid2Index.put(hillslopeId, i);
-                    index2Basinid.put(i, hillslopeId);
-                    pfaff2Index.put(pfafstetterNumber.toString(), i);
-                    // the distributor
-                    HashMap<Integer, Double> params = fillParameters(hillSlope);
-                    System.out.println("Bacino: " + hillslopeId);
-                    hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor
-                            .createDischargeDistributor(DischargeDistributor.DISTRIBUTOR_TYPE_NASH,
-                                    startDate.getTime(), endDate.getTime(),
-                                    (long) deltaTinMilliSeconds, params));
-                    pm.worked(1);
-                }
-                pm.done();
+            // at the first round create the hillslopes and network hierarchy
+            NetBasinsManager nbMan = new NetBasinsManager();
+            orderedHillslopes = nbMan.operateOnLayers(inNetwork, hillslopeFeatureCollection,
+                    fNetnum, fPfaff, fNetelevstart, fNetelevend, fBaricenter, fVegetation, out);
+            HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor = new HashMap<Integer, DischargeDistributor>();
+            outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
+            netPfaffsList = new ArrayList<PfafstetterNumber>();
+            pfaff2Index = new HashMap<String, Integer>();
+            basinid2Index = new HashMap<Integer, Integer>();
+            index2Basinid = new HashMap<Integer, Integer>();
+            PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(out);
+            pm.beginTask("Analaysing hillslopes and calculating distribution curves...",
+                    orderedHillslopes.size());
+            for( int i = 0; i < orderedHillslopes.size(); i++ ) {
+                HillSlope hillSlope = orderedHillslopes.get(i);
+                if (vegindex2laiMap.size() > 0)
+                    hillSlope.parameters.setVegetationLibrary(vegindex2laiMap,
+                            vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
+                            vegindex2rsMap, vegindex2rarcMap);
+                PfafstetterNumber pfafstetterNumber = hillSlope.getPfafstetterNumber();
+                netPfaffsList.add(pfafstetterNumber);
+                int hillslopeId = hillSlope.getHillslopeId();
+                basinid2Index.put(hillslopeId, i);
+                index2Basinid.put(i, hillslopeId);
+                pfaff2Index.put(pfafstetterNumber.toString(), i);
+                // the distributor
+                HashMap<Integer, Double> params = fillParameters(hillSlope);
+                System.out.println("Bacino: " + hillslopeId);
+                hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor
+                        .createDischargeDistributor(DischargeDistributor.DISTRIBUTOR_TYPE_NASH,
+                                startDate.getTime(), endDate.getTime(),
+                                (long) deltaTinMilliSeconds, params));
+                pm.worked(1);
+            }
+            pm.done();
 
-                duffyEvaluator = new DuffyModel(orderedHillslopes, pRouting, out, deltaTinMinutes,
-                        doLog);
-                if (hydrometersHandler != null) {
-                    duffyEvaluator.addDischargeContributor(hydrometersHandler);
-                }
-                if (damsHandler != null) {
-                    duffyEvaluator.addDischargeContributor(damsHandler);
-                }
-                if (tributaryHandler != null) {
-                    duffyEvaluator.addDischargeContributor(tributaryHandler);
-                }
-                if (offtakesHandler != null) {
-                    duffyEvaluator.addDischargeContributor(offtakesHandler);
-                }
-                duffyEvaluator.addDischargeDistributor(hillslopeId2DischargeDistributor);
-                /*
-                 * read the initial conditions. 
-                 */
-                initialConditions = new double[hillsSlopeNum * 4];
-                ScalarSet boundaryInputSet = null;
-                if (boundaryInputLink != null) {
-                    boundaryInputSet = ModelsConstants.getScalarSetFromLink(boundaryInputLink,
-                            time, err);
-                }
-
-                if (boundaryInputSet != null) {
-                    int dataIndex = 0;
-                    for( int i = 0; i < (boundaryInputSet.size() - 1) / 5; i++ ) {
-                        Double idHillslope = boundaryInputSet.get(dataIndex + 1);
-                        Integer index = basinid2Index.get(idHillslope.intValue());
-                        if (index == null)
-                            continue;
-                        initialConditions[index] = boundaryInputSet.get(dataIndex + 2);
-                        initialConditions[index + hillsSlopeNum] = boundaryInputSet
-                                .get(dataIndex + 3);
-                        initialConditions[index + 2 * hillsSlopeNum] = boundaryInputSet
-                                .get(dataIndex + 4);
-                        initialConditions[index + 3 * hillsSlopeNum] = boundaryInputSet
-                                .get(dataIndex + 5);
-                        dataIndex = dataIndex + 5;
-                    }
-                } else {
-                    double dischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
-                    for( int i = 0; i < orderedHillslopes.size(); i++ ) {
-                        HillSlope currentHillslope = orderedHillslopes.get(i);
-                        // initialize with a default discharge per unit of drainage area in km2
-                        double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null)
-                                / 1000000.0 * dischargePerUnitArea;
-                        initialConditions[i] = 0.3 * hillslopeTotalDischarge;
-                        // initial subsuperficial flow is setted at a percentage of the total
-                        // discharge
-                        initialConditions[i + hillsSlopeNum] = 0.7 * hillslopeTotalDischarge;
-                        // initial water content in the saturated hillslope volume is setted to
-                        // have:
-                        // saturation surface at the 10% of the total area
-                        double maxSaturatedVolume = currentHillslope.parameters.getS2max();
-                        // initial water content in the non saturated hillslope volume is setted to
-                        initialConditions[i + 2 * hillsSlopeNum] = 0.2 * maxSaturatedVolume;
-                        initialConditions[i + 3 * hillsSlopeNum] = 0.25 * maxSaturatedVolume;
-                    }
-                }
-
-                // print of the initial conditions values, just for check
-                System.out.println("bacino\tQ\tQs\tS1\tS2");
-                for( int i = 0; i < hillsSlopeNum; i++ ) {
-                    int currentBasinId = index2Basinid.get(i);
-                    System.out.println(currentBasinId + "\t" + initialConditions[i] + "\t"
-                            + initialConditions[i + hillsSlopeNum] + "\t"
-                            + initialConditions[i + 2 * hillsSlopeNum] + "\t"
-                            + initialConditions[i + 3 * hillsSlopeNum]);
-                }
-
-                rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., out,
-                        doLog);
+            duffyEvaluator = new DuffyModel(orderedHillslopes, pRouting, out, deltaTinMinutes,
+                    doLog);
+            if (hydrometersHandler != null) {
+                duffyEvaluator.addDischargeContributor(hydrometersHandler);
+            }
+            if (damsHandler != null) {
+                duffyEvaluator.addDischargeContributor(damsHandler);
+            }
+            if (tributaryHandler != null) {
+                duffyEvaluator.addDischargeContributor(tributaryHandler);
+            }
+            if (offtakesHandler != null) {
+                duffyEvaluator.addDischargeContributor(offtakesHandler);
+            }
+            duffyEvaluator.addDischargeDistributor(hillslopeId2DischargeDistributor);
+            /*
+             * read the initial conditions. 
+             */
+            initialConditions = new double[hillsSlopeNum * 4];
+            ScalarSet boundaryInputSet = null;
+            if (boundaryInputLink != null) {
+                boundaryInputSet = ModelsConstants.getScalarSetFromLink(boundaryInputLink, time,
+                        err);
             }
 
-            // deal with rain
-            if (pRainintensity != -1) {
-                /*
-                 * in the case of constant rain the array is build once and then used every time.
-                 * The only thing that changes, is that after the rainEndDate, the rain intensity is
-                 * set to 0.
-                 */
-                if (runningDateInMinutes > rainEndDateInMinutes) {
-                    rainArray = new double[netPfaffsList.size()];
-                    Arrays.fill(rainArray, 0);
-                } else {
-                    rainArray = new double[netPfaffsList.size()];
-                    Arrays.fill(rainArray, pRainintensity);
-                }
-
-            } else {
-                // read rainfall from input link scalar set and transform into a rainfall intensity
-                // [mm/h]
-                ScalarSet rainfallScalarSet = ModelsConstants.getScalarSetFromLink(
-                        rainfallInputLink, time, err);
-
-                rainArray = new double[hillsSlopeNum];
-                radiationArray = new double[hillsSlopeNum];
-                netshortArray = new double[hillsSlopeNum];
-                temperatureArray = new double[hillsSlopeNum];
-                humidityArray = new double[hillsSlopeNum];
-                windspeedArray = new double[hillsSlopeNum];
-                pressureArray = new double[hillsSlopeNum];
-                snowWaterEquivalentArray = new double[hillsSlopeNum];
-                for( int i = 1; i < rainfallScalarSet.size(); i = i + 9 ) {
-                    // rain
-                    Double basinId = rainfallScalarSet.get(i);
-                    Integer index = basinid2Index.get(basinId.intValue());
-                    if (index == null) {
-                        // System.out.println("Per il bacino " + basinId
-                        // + " non e' stata trovata una corrispondenza tra rete e bacini.");
+            if (boundaryInputSet != null) {
+                int dataIndex = 0;
+                for( int i = 0; i < (boundaryInputSet.size() - 1) / 5; i++ ) {
+                    Double idHillslope = boundaryInputSet.get(dataIndex + 1);
+                    Integer index = basinid2Index.get(idHillslope.intValue());
+                    if (index == null)
                         continue;
-                    }
-                    double rValue = rainfallScalarSet.get(i + 1);
-                    if (JGrassConstants.isNovalue(rValue)) {
-                        rValue = 0.0;
-                    }
-                    rainArray[index] = rValue / (deltaTinMinutes / 60.0);
-                    // radiation
-                    rValue = rainfallScalarSet.get(i + 2);
-                    radiationArray[index] = rValue;
-                    // netshort
-                    rValue = rainfallScalarSet.get(i + 3);
-                    netshortArray[index] = rValue;
-                    // temperature
-                    rValue = rainfallScalarSet.get(i + 4);
-                    temperatureArray[index] = rValue;
-                    // humidity
-                    rValue = rainfallScalarSet.get(i + 5);
-                    humidityArray[index] = rValue;
-                    // windspeed
-                    rValue = rainfallScalarSet.get(i + 6);
-                    windspeedArray[index] = rValue;
-                    // pressure
-                    rValue = rainfallScalarSet.get(i + 7);
-                    pressureArray[index] = rValue;
-                    // snow water equivalent
-                    rValue = rainfallScalarSet.get(i + 8);
-                    snowWaterEquivalentArray[index] = rValue;
+                    initialConditions[index] = boundaryInputSet.get(dataIndex + 2);
+                    initialConditions[index + hillsSlopeNum] = boundaryInputSet.get(dataIndex + 3);
+                    initialConditions[index + 2 * hillsSlopeNum] = boundaryInputSet
+                            .get(dataIndex + 4);
+                    initialConditions[index + 3 * hillsSlopeNum] = boundaryInputSet
+                            .get(dataIndex + 5);
+                    dataIndex = dataIndex + 5;
                 }
-
+            } else {
+                double dischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
+                for( int i = 0; i < orderedHillslopes.size(); i++ ) {
+                    HillSlope currentHillslope = orderedHillslopes.get(i);
+                    // initialize with a default discharge per unit of drainage area in km2
+                    double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null)
+                            / 1000000.0 * dischargePerUnitArea;
+                    initialConditions[i] = 0.3 * hillslopeTotalDischarge;
+                    // initial subsuperficial flow is setted at a percentage of the total
+                    // discharge
+                    initialConditions[i + hillsSlopeNum] = 0.7 * hillslopeTotalDischarge;
+                    // initial water content in the saturated hillslope volume is setted to
+                    // have:
+                    // saturation surface at the 10% of the total area
+                    double maxSaturatedVolume = currentHillslope.parameters.getS2max();
+                    // initial water content in the non saturated hillslope volume is setted to
+                    initialConditions[i + 2 * hillsSlopeNum] = 0.2 * maxSaturatedVolume;
+                    initialConditions[i + 3 * hillsSlopeNum] = 0.25 * maxSaturatedVolume;
+                }
             }
 
-            double intervalStartTimeInMinutes = runningDateInMinutes;
-            double intervalEndTimeInMinutes = runningDateInMinutes + deltaTinMinutes;
+            // print of the initial conditions values, just for check
+            System.out.println("bacino\tQ\tQs\tS1\tS2");
+            for( int i = 0; i < hillsSlopeNum; i++ ) {
+                int currentBasinId = index2Basinid.get(i);
+                System.out.println(currentBasinId + "\t" + initialConditions[i] + "\t"
+                        + initialConditions[i + hillsSlopeNum] + "\t"
+                        + initialConditions[i + 2 * hillsSlopeNum] + "\t"
+                        + initialConditions[i + 3 * hillsSlopeNum]);
+            }
 
-            rainRunoffRaining.solve(intervalStartTimeInMinutes, intervalEndTimeInMinutes, 1,
-                    initialConditions, rainArray, radiationArray, netshortArray, temperatureArray,
-                    humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray);
-            initialConditions = rainRunoffRaining.getFinalCond();
-            rainRunoffRaining.setBasicTimeStep(10 / 60.);
+            rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., out, doLog);
         }
+
+        // deal with rain
+        if (pRainintensity != -1) {
+            /*
+             * in the case of constant rain the array is build once and then used every time.
+             * The only thing that changes, is that after the rainEndDate, the rain intensity is
+             * set to 0.
+             */
+            if (runningDateInMinutes > rainEndDateInMinutes) {
+                rainArray = new double[netPfaffsList.size()];
+                Arrays.fill(rainArray, 0);
+            } else {
+                rainArray = new double[netPfaffsList.size()];
+                Arrays.fill(rainArray, pRainintensity);
+            }
+
+        } else {
+            // read rainfall from input link scalar set and transform into a rainfall intensity
+            // [mm/h]
+            ScalarSet rainfallScalarSet = ModelsConstants.getScalarSetFromLink(rainfallInputLink,
+                    time, err);
+
+            rainArray = new double[hillsSlopeNum];
+            radiationArray = new double[hillsSlopeNum];
+            netshortArray = new double[hillsSlopeNum];
+            temperatureArray = new double[hillsSlopeNum];
+            humidityArray = new double[hillsSlopeNum];
+            windspeedArray = new double[hillsSlopeNum];
+            pressureArray = new double[hillsSlopeNum];
+            snowWaterEquivalentArray = new double[hillsSlopeNum];
+            for( int i = 1; i < rainfallScalarSet.size(); i = i + 9 ) {
+                // rain
+                Double basinId = rainfallScalarSet.get(i);
+                Integer index = basinid2Index.get(basinId.intValue());
+                if (index == null) {
+                    // System.out.println("Per il bacino " + basinId
+                    // + " non e' stata trovata una corrispondenza tra rete e bacini.");
+                    continue;
+                }
+                double rValue = rainfallScalarSet.get(i + 1);
+                if (JGrassConstants.isNovalue(rValue)) {
+                    rValue = 0.0;
+                }
+                rainArray[index] = rValue / (deltaTinMinutes / 60.0);
+                // radiation
+                rValue = rainfallScalarSet.get(i + 2);
+                radiationArray[index] = rValue;
+                // netshort
+                rValue = rainfallScalarSet.get(i + 3);
+                netshortArray[index] = rValue;
+                // temperature
+                rValue = rainfallScalarSet.get(i + 4);
+                temperatureArray[index] = rValue;
+                // humidity
+                rValue = rainfallScalarSet.get(i + 5);
+                humidityArray[index] = rValue;
+                // windspeed
+                rValue = rainfallScalarSet.get(i + 6);
+                windspeedArray[index] = rValue;
+                // pressure
+                rValue = rainfallScalarSet.get(i + 7);
+                pressureArray[index] = rValue;
+                // snow water equivalent
+                rValue = rainfallScalarSet.get(i + 8);
+                snowWaterEquivalentArray[index] = rValue;
+            }
+
+        }
+
+        double intervalStartTimeInMinutes = runningDateInMinutes;
+        double intervalEndTimeInMinutes = runningDateInMinutes + deltaTinMinutes;
+
+        rainRunoffRaining.solve(intervalStartTimeInMinutes, intervalEndTimeInMinutes, 1,
+                initialConditions, rainArray, radiationArray, netshortArray, temperatureArray,
+                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray);
+        initialConditions = rainRunoffRaining.getFinalCond();
+        rainRunoffRaining.setBasicTimeStep(10 / 60.);
+
         // return the output link -> create a chart with average rainfall and outlet discharge
         if (linkID.equals(dischargeOutputLink.getID())) {
             // Calculate the average rain on the basin
@@ -1153,168 +996,6 @@ public class Adige extends HMModel {
             double rgl = vegetationLibScalarSet.get(i + 52);
             vegindex2RGLMap.put(id, rgl);
             // 53-rad_atten,54-wind_atten,55-trunk_ratio,
-        }
-    }
-    public void addLink( ILink link ) {
-        String id = link.getID();
-
-        if (id.equals(dischargeOutputID)) {
-            dischargeOutputLink = link;
-        } else if (id.equals(hydrometersDataInputID)) {
-            hydrometersDataInputLink = link;
-        } else if (id.equals(hydrometersFeaturesInputID)) {
-            hydrometersFeaturesInputLink = link;
-        } else if (id.equals(netpfafInputID)) {
-            netpfafInputLink = link;
-        } else if (id.equals(hillslopeInputID)) {
-            hillslopeInputLink = link;
-        } else if (id.equals(rainfallInputID)) {
-            rainfallInputLink = link;
-        } else if (id.equals(boundaryInputID)) {
-            boundaryInputLink = link;
-        } else if (id.equals(boundaryOutputID)) {
-            boundaryOutputLink = link;
-        } else if (id.equals(damsFeaturesInputID)) {
-            damsFeaturesInputLink = link;
-        } else if (id.equals(damsOverflowDischargeInputID)) {
-            damsOverflowDischargeInputLink = link;
-        } else if (id.equals(tributaryFeaturesInputID)) {
-            tributaryFeaturesInputLink = link;
-        } else if (id.equals(tributaryDischargeInputID)) {
-            tributaryDischargeInputLink = link;
-        } else if (id.equals(offtakesFeaturesInputLink)) {
-            offtakesFeaturesInputLink = link;
-        } else if (id.equals(offtakesDischargeInputID)) {
-            offtakesDischargeInputLink = link;
-        } else if (id.equals(vegetationInputID)) {
-            vegetationInputLink = link;
-        } else if (id.equals(s1OutputID)) {
-            s1OutputLink = link;
-        } else if (id.equals(s2OutputID)) {
-            s2OutputLink = link;
-        } else if (id.equals(s3OutputID)) {
-            s3OutputLink = link;
-        } else if (id.equals(basinrainOutputID)) {
-            basinrainOutputLink = link;
-        }
-    }
-
-    public void finish() {
-    }
-
-    public IInputExchangeItem getInputExchangeItem( int inputExchangeItemIndex ) {
-        if (inputExchangeItemIndex == 0) {
-            return hillslopeInputEI;
-        }
-        if (inputExchangeItemIndex == 1) {
-            return netpfafInputEI;
-        }
-        if (inputExchangeItemIndex == 2) {
-            return rainfallInputEI;
-        }
-        if (inputExchangeItemIndex == 3) {
-            return boundaryInputEI;
-        }
-        if (inputExchangeItemIndex == 4) {
-            return hydrometersDataInputEI;
-        }
-        if (inputExchangeItemIndex == 5) {
-            return hydrometersFeaturesInputEI;
-        }
-        if (inputExchangeItemIndex == 6) {
-            return damsOverflowDischargeInputEI;
-        }
-        if (inputExchangeItemIndex == 7) {
-            return damsFeaturesInputEI;
-        }
-        if (inputExchangeItemIndex == 8) {
-            return tributaryDischargeInputEI;
-        }
-        if (inputExchangeItemIndex == 9) {
-            return tributaryFeaturesInputEI;
-        }
-        if (inputExchangeItemIndex == 10) {
-            return offtakesDischargeInputEI;
-        }
-        if (inputExchangeItemIndex == 11) {
-            return offtakesFeaturesInputEI;
-        }
-        if (inputExchangeItemIndex == 12) {
-            return vegetationInputEI;
-        }
-        return null;
-    }
-
-    public int getInputExchangeItemCount() {
-        return 13;
-    }
-
-    public String getModelDescription() {
-        return modelParameters;
-    }
-
-    public IOutputExchangeItem getOutputExchangeItem( int outputExchangeItemIndex ) {
-        if (outputExchangeItemIndex == 0) {
-            return dischargeOutputEI;
-        } else if (outputExchangeItemIndex == 1) {
-            return boundaryOutputEI;
-        } else if (outputExchangeItemIndex == 2) {
-            return s1OutputEI;
-        } else if (outputExchangeItemIndex == 3) {
-            return s2OutputEI;
-        } else if (outputExchangeItemIndex == 4) {
-            return s3OutputEI;
-        } else if (outputExchangeItemIndex == 5) {
-            return basinrainOutputEI;
-        } else {
-            return null;
-        }
-
-    }
-
-    public int getOutputExchangeItemCount() {
-        return 6;
-    }
-
-    public void removeLink( String linkID ) {
-        if (linkID.equals(hydrometersDataInputLink.getID())) {
-            hydrometersDataInputLink = null;
-        } else if (linkID.equals(hydrometersFeaturesInputLink.getID())) {
-            hydrometersFeaturesInputLink = null;
-        } else if (linkID.equals(dischargeOutputLink.getID())) {
-            dischargeOutputLink = null;
-        } else if (linkID.equals(netpfafInputLink.getID())) {
-            netpfafInputLink = null;
-        } else if (linkID.equals(hillslopeInputLink.getID())) {
-            hillslopeInputLink = null;
-        } else if (linkID.equals(rainfallInputLink.getID())) {
-            rainfallInputLink = null;
-        } else if (linkID.equals(boundaryInputLink.getID())) {
-            boundaryInputLink = null;
-        } else if (linkID.equals(boundaryOutputLink.getID())) {
-            boundaryOutputLink = null;
-        } else if (linkID.equals(damsFeaturesInputLink.getID())) {
-            damsFeaturesInputLink = null;
-        } else if (linkID.equals(damsOverflowDischargeInputLink.getID())) {
-            damsOverflowDischargeInputLink = null;
-        } else if (linkID.equals(tributaryDischargeInputLink.getID())) {
-            tributaryDischargeInputLink = null;
-        } else if (linkID.equals(tributaryFeaturesInputLink.getID())) {
-            tributaryFeaturesInputLink = null;
-        } else if (linkID.equals(offtakesFeaturesInputLink.getID())) {
-            offtakesFeaturesInputLink = null;
-        } else if (linkID.equals(offtakesDischargeInputLink.getID())) {
-            offtakesDischargeInputLink = null;
-        } else if (linkID.equals(vegetationInputLink.getID())) {
-            vegetationInputLink = null;
-        } else if (linkID.equals(s1OutputLink.getID())) {
-            s1OutputLink = null;
-        } else if (linkID.equals(s2OutputLink.getID())) {
-            s2OutputLink = null;
-        } else if (linkID.equals(s3OutputLink.getID())) {
-            s3OutputLink = null;
-        } else if (linkID.equals(basinrainOutputLink.getID())) {
-            basinrainOutputLink = null;
         }
     }
 
