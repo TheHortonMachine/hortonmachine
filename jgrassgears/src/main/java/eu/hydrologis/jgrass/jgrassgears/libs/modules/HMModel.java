@@ -59,7 +59,7 @@ public class HMModel implements Process {
      * </p>
      */
     @Out
-    public boolean isTicking = false;
+    public boolean doProcess = false;
 
     /**
      * A switch that can enable module resetting.

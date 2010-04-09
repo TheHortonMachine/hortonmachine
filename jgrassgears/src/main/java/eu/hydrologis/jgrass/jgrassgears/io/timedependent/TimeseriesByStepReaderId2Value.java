@@ -107,7 +107,7 @@ public class TimeseriesByStepReaderId2Value extends HMModel {
     @Initialize
     public void startTicking() {
         // activate time
-        isTicking = true;
+        doProcess = true;
     }
 
     private void ensureOpen() throws IOException {
@@ -167,11 +167,11 @@ System.out.println();
 
         // time ran out
         if (tEnd != null && tCurrent.equals(tEnd)) {
-            isTicking = false;
+            doProcess = false;
         }
         // data ran out
         if (!rowsIterator.hasNext()) {
-            isTicking = false;
+            doProcess = false;
         }
     }
 

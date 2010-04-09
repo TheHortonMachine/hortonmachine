@@ -63,7 +63,7 @@ public class FeatureReprojector extends HMModel {
 
     @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
     @In
-    public boolean bLenient = true;
+    public boolean doLenient = true;
 
     @Description("The progress monitor.")
     @In
@@ -85,7 +85,7 @@ public class FeatureReprojector extends HMModel {
         CoordinateReferenceSystem dataCRS = featureType.getCoordinateReferenceSystem();
         CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
 
-        MathTransform transform = CRS.findMathTransform(dataCRS, targetCrs, bLenient);
+        MathTransform transform = CRS.findMathTransform(dataCRS, targetCrs, doLenient);
 
         FeatureIterator<SimpleFeature> inFeatureIterator = inGeodata.features();
         int id = 0;

@@ -91,7 +91,7 @@ public class TestKriging extends HMTestCase {
         writer.tTimestep = reader.tTimestep;
 
         
-        while( reader.isTicking ) {
+        while( reader.doProcess ) {
             reader.nextRecord();
             HashMap<Integer, double[]> id2ValueMap = reader.data;
             kriging.inData = id2ValueMap;
