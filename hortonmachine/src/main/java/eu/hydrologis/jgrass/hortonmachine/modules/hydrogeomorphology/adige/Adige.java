@@ -18,9 +18,10 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige;
 
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -44,7 +45,6 @@ import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.*;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.Dams;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.DischargeContributor;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
@@ -57,14 +57,12 @@ import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyModel;
 import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.adige.duffy.RungeKuttaFelberg;
 import eu.hydrologis.jgrass.jgrassgears.io.adige.AdigeBoundaryCondition;
-import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassConstants;
-import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIOException;
+import eu.hydrologis.jgrass.jgrassgears.io.adige.VegetationLibraryRecord;
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 
 @Description("The Adige model.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
@@ -192,6 +190,10 @@ public class Adige extends HMModel {
     @Description("The offtakes data.")
     @In
     public HashMap<Integer, Double> inOfftakesdata;
+
+    @Description("The vegetation library.")
+    @In
+    public HashMap<Integer, VegetationLibraryRecord> inVegetation;
 
     @Description("Comma separated list of pfafstetter ids, in which to generate the output")
     @In
@@ -331,7 +333,6 @@ public class Adige extends HMModel {
     private int hillsSlopeNum;
     private int outletHillslopeId = -1;
     private HashMap<String, Integer> pfaff2Index;
-    private int[] indexesArray;
     private List<HillSlope> orderedHillslopes;
 
     private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
@@ -531,19 +532,6 @@ public class Adige extends HMModel {
 
             hillsSlopeNum = inHillslope.size();
 
-            // FIXME read vegetation library
-            // ScalarSet vegetationLibScalarSet = ModelsConstants.getScalarSetFromLink(
-            // vegetationInputLink, time, err);
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap = new HashMap<Integer, HashMap<Integer, Double>>();
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap = new HashMap<Integer, HashMap<Integer, Double>>();
-            HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap = new HashMap<Integer, HashMap<Integer, Double>>();
-            HashMap<Integer, Double> vegindex2RGLMap = new HashMap<Integer, Double>();
-            HashMap<Integer, Double> vegindex2rsMap = new HashMap<Integer, Double>();
-            HashMap<Integer, Double> vegindex2rarcMap = new HashMap<Integer, Double>();
-            // readVegetationLibrary(vegetationLibScalarSet, vegindex2laiMap,
-            // vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
-            // vegindex2rsMap, vegindex2rarcMap);
-
             // at the first round create the hillslopes and network hierarchy
             NetBasinsManager nbMan = new NetBasinsManager();
             orderedHillslopes = nbMan.operateOnLayers(inNetwork, inHillslope, fNetnum, fPfaff,
@@ -558,10 +546,8 @@ public class Adige extends HMModel {
                     orderedHillslopes.size());
             for( int i = 0; i < orderedHillslopes.size(); i++ ) {
                 HillSlope hillSlope = orderedHillslopes.get(i);
-                if (vegindex2laiMap.size() > 0)
-                    hillSlope.parameters.setVegetationLibrary(vegindex2laiMap,
-                            vegindex2displacementMap, vegindex2roughnessMap, vegindex2RGLMap,
-                            vegindex2rsMap, vegindex2rarcMap);
+                if (inVegetation != null)
+                    hillSlope.parameters.setVegetationLibrary(inVegetation);
                 PfafstetterNumber pfafstetterNumber = hillSlope.getPfafstetterNumber();
                 netPfaffsList.add(pfafstetterNumber);
                 int hillslopeId = hillSlope.getHillslopeId();

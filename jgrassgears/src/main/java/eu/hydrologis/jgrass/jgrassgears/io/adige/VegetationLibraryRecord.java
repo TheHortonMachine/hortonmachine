@@ -27,7 +27,7 @@ import java.util.Arrays;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class VegetationLibraryRecord {
+public class VegetationLibraryRecord {  
     private final int id;
     private final double architecturalResistance;
     private final double minStomatalResistanc;
@@ -67,7 +67,7 @@ public class VegetationLibraryRecord {
         return architecturalResistance;
     }
 
-    public double getMinStomatalResistanc() {
+    public double getMinStomatalResistance() {
         return minStomatalResistanc;
     }
 
@@ -97,7 +97,7 @@ public class VegetationLibraryRecord {
      * @param month the month (jan = 1, dec = 12)
      * @return roughness for the given month.
      */
-    public double getRough( int month ) {
+    public double getRoughness( int month ) {
         return roughMonths[month - 1];
     }
 
@@ -107,7 +107,7 @@ public class VegetationLibraryRecord {
      * @param month the month (jan = 1, dec = 12)
      * @return displ for the given month.
      */
-    public double getDispl( int month ) {
+    public double getDisplacement( int month ) {
         return displMonths[month - 1];
     }
 

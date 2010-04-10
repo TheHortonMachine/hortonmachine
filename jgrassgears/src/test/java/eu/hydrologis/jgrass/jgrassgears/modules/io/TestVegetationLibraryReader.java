@@ -32,7 +32,7 @@ public class TestVegetationLibraryReader extends HMTestCase {
         assertEquals(record.getRgl(), 30.0);
 
         assertEquals(record.getArchitecturalResistance(), 60.0);
-        assertEquals(record.getMinStomatalResistanc(), 250.0);
+        assertEquals(record.getMinStomatalResistance(), 250.0);
         assertEquals(record.getLai(1), 5.12);
         assertEquals(record.getLai(2), 5.12);
         

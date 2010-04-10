@@ -31,6 +31,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
+import eu.hydrologis.jgrass.jgrassgears.io.adige.VegetationLibraryReader;
+import eu.hydrologis.jgrass.jgrassgears.io.adige.VegetationLibraryRecord;
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 
@@ -475,12 +477,8 @@ public class HillSlope implements Comparator<HillSlope> {
         private final double s1residual;
         private final double s2residual;
 
-        private HashMap<Integer, Double> laiMap;
-        private HashMap<Integer, Double> displacementMap;
-        private HashMap<Integer, Double> roughnessMap;
-        private double RGL;
-        private double rs;
-        private double rarc;
+        private VegetationLibraryRecord vegetation;
+
         private double qsupmin;
         private double qsubmin;
 
@@ -515,47 +513,17 @@ public class HillSlope implements Comparator<HillSlope> {
         /**
          * Set the vegetation library parameters.
          * 
-         * @param laiMap The {@link HashMap map} of vegetation id versus lai 
-         *                  (leaf area index) HashMap.
-         *                  <p>The key of the map is the vegetation id. The 
-         *                  value of the map is the HashMap of lai defined 
-         *                  differently for every month.</p>
-         * @param displacementMap The {@link HashMap map} of the vegetation id 
-         *                  versus the vegetation displacement height.
-         *                  <p>The key of the map is the vegetation id. The 
-         *                  value of the map is the HashMap of displacement defined 
-         *                  differently for every month.</p>
-         * @param roughnessMap The {@link HashMap map} of the vegetation id
-         *                  versus the vegetation roughness.
-         *                  <p>The key of the map is the vegetation id. The 
-         *                  value of the map is the HashMap of roughness defined 
-         *                  differently for every month.</p>
-         * @param RGL the {@link HashMap} of the minimum incoming shortwave 
-         *                  radiation at which there will be transpiration. The key
-         *                  of the map is the vegetation id.
-         * @param rs the {@link HashMap} of the minimum stomatal resistance 
-         *                  function of vegetation type 0 for bare soil. The key
-         *                  of the map is the vegetation id.
-         * @param rarc the {@link HashMap} of the architectural resistance of 
-         *                  the vegetation. The key of the map is the vegetation id.
+         * @param vegetationLibrary the map of vegetation index versus 
+         *          vegetation parameters.
          */
         public void setVegetationLibrary(
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap,
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap,
-                HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap,
-                HashMap<Integer, Double> vegindex2RGLMap, HashMap<Integer, Double> vegindex2rsMap,
-                HashMap<Integer, Double> vegindex2rarcMap ) {
+                HashMap<Integer, VegetationLibraryRecord> vegetationLibrary ) {
             if (vegetationIdFieldIndex != -1) {
                 int vegetationId = ((Number) hillslopeFeature.getAttribute(vegetationIdFieldIndex))
                         .intValue();
                 if (vegetationId != -1) {
                     hasVegetation = true;
-                    this.laiMap = vegindex2laiMap.get(vegetationId);
-                    this.displacementMap = vegindex2displacementMap.get(vegetationId);
-                    this.roughnessMap = vegindex2roughnessMap.get(vegetationId);
-                    this.RGL = vegindex2RGLMap.get(vegetationId);
-                    this.rs = vegindex2rsMap.get(vegetationId);
-                    this.rarc = vegindex2rarcMap.get(vegetationId);
+                    vegetation = vegetationLibrary.get(vegetationId);
                 }
             }
         }
@@ -582,10 +550,11 @@ public class HillSlope implements Comparator<HillSlope> {
                         "Evapotranspiration can be calculated only if the vegetation library has been defined. check your syntax...",
                         this.getClass().getSimpleName());
             }
-            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation, rs, rarc,
-                    laiMap.get(month), RGL, displacementMap.get(month), roughnessMap.get(month),
-                    s2max, pressure, temperature, shortRadiaton, relativeHumidity, windSpeed,
-                    soilMoisture, snowWaterEquivalent);
+            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation,
+                    vegetation.getMinStomatalResistance(), vegetation.getArchitecturalResistance(),
+                    vegetation.getLai(month), vegetation.getRgl(), vegetation.getDisplacement(month),
+                    vegetation.getRoughness(month), s2max, pressure, temperature, shortRadiaton,
+                    relativeHumidity, windSpeed, soilMoisture, snowWaterEquivalent);
             return evap;
         }
 
@@ -634,27 +603,27 @@ public class HillSlope implements Comparator<HillSlope> {
         }
 
         public double getLai( int month ) {
-            return laiMap.get(month);
+            return vegetation.getLai(month);
         }
 
         public double getDisplacement( int month ) {
-            return displacementMap.get(month);
+            return vegetation.getDisplacement(month);
         }
 
         public double getRoughness( int month ) {
-            return roughnessMap.get(month);
+            return vegetation.getRoughness(month);
         }
 
         public double getRGL() {
-            return RGL;
+            return vegetation.getRgl();
         }
 
         public double getRs() {
-            return rs;
+            return vegetation.getMinStomatalResistance();
         }
 
         public double getRarc() {
-            return rarc;
+            return vegetation.getArchitecturalResistance();
         }
 
         // public double So() {
