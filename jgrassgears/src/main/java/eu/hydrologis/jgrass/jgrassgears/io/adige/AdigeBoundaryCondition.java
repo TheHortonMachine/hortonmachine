@@ -24,6 +24,7 @@ package eu.hydrologis.jgrass.jgrassgears.io.adige;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class AdigeBoundaryCondition {
+    public int basinId = -1;
     public double discharge = Double.NaN;
     public double dischargeSub = Double.NaN;
     public double S1 = Double.NaN;
