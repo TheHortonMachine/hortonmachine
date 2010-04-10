@@ -49,7 +49,7 @@ public class IdValuesArray2IdValuesConverter {
     public HashMap<Integer, Double> outData;
 
     @Execute
-    public void readNextLine() throws IOException {
+    public void convert() throws IOException {
         if (outData==null) {
             outData = new HashMap<Integer, Double>();
         }
