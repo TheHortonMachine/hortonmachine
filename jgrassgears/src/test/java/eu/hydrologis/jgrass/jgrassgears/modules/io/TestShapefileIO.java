@@ -34,11 +34,12 @@ public class TestShapefileIO extends HMTestCase {
         b.add("the_geom", Point.class);
         b.add("id", Integer.class);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections.newCollection();
+        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+                .newCollection();
         SimpleFeatureType type = b.buildFeatureType();
         for( int i = 0; i < 2; i++ ) {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            
+
             Point point = GeometryUtilities.gf().createPoint(new Coordinate(i, i));
             Object[] values = new Object[]{point, i};
             builder.addAll(values);
@@ -47,25 +48,28 @@ public class TestShapefileIO extends HMTestCase {
         }
 
         File tmpShape = File.createTempFile("testshp", ".shp");
+        if (tmpShape.exists()) {
+            tmpShape.delete();
+        }
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = tmpShape.getAbsolutePath();
         writer.geodata = newCollection;
         writer.writeFeatureCollection();
-        
+
         // now read it again
         ShapefileFeatureReader reader = new ShapefileFeatureReader();
         reader.file = tmpShape.getAbsolutePath();
         reader.readFeatureCollection();
         FeatureCollection<SimpleFeatureType, SimpleFeature> readFC = reader.geodata;
-        
+
         FeatureIterator<SimpleFeature> featureIterator = readFC.features();
         while( featureIterator.hasNext() ) {
             SimpleFeature f = featureIterator.next();
-            
-            int id = ((Number)f.getAttribute("id")).intValue();
+
+            int id = ((Number) f.getAttribute("id")).intValue();
             Geometry geometry = (Geometry) f.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
-            
+
             if (id == 0) {
                 assertEquals(coordinate.x, 0.0);
                 assertEquals(coordinate.y, 0.0);
@@ -79,7 +83,9 @@ public class TestShapefileIO extends HMTestCase {
                 assertEquals(coordinate.y, 2.0);
             }
         }
-        
-        
+
+        if (tmpShape.exists()) {
+            tmpShape.delete();
+        }
     }
 }

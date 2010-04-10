@@ -43,7 +43,7 @@ import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestReprojectors extends HMTestCase {
-    public void testReprojectors() throws Exception {
+    public void testCoverageReprojector() throws Exception {
 
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
