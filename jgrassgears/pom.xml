@@ -8,6 +8,9 @@
 	<name>JGrass Gears</name>
 	<url>http://www.hydrologis.eu</url>
 
+	<properties>
+		<gt.version>2.6-SNAPSHOT</gt.version>
+	</properties>
 
 	<!-- Build configuration -->
 	<build>
@@ -27,27 +30,27 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-shapefile</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-coverage</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-geotiff</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-arcgrid</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-process</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -75,7 +78,7 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-swing</artifactId>
-			<version>2.6-SNAPSHOT</version>
+			<version>${gt.version}</version>
 		</dependency>
 
 		<dependency>
