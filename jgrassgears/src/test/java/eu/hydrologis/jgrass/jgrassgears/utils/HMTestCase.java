@@ -32,6 +32,9 @@ import javax.media.jai.iterator.RectIterFactory;
 import junit.framework.TestCase;
 
 public class HMTestCase extends TestCase {
+    public void testDummy(){
+        // done to not make the maven test fail
+    }
 
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
