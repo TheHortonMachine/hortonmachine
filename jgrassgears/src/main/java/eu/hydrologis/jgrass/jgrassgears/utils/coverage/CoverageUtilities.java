@@ -18,6 +18,7 @@
  */
 package eu.hydrologis.jgrass.jgrassgears.utils.coverage;
 
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
@@ -41,12 +42,19 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.parameter.Parameter;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -153,6 +161,23 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
+    public HashMap<String, Double> generalParameterValues2RegionParamsMap(
+            GeneralParameterValue[] params ) {
+        GridGeometry2D gg = null;
+        if (params != null) {
+            for( int i = 0; i < params.length; i++ ) {
+                final ParameterValue< ? > param = (ParameterValue< ? >) params[i];
+                final String name = param.getDescriptor().getName().getCode();
+                if (name.equals(AbstractGridFormat.READ_GRIDGEOMETRY2D.getName().toString())) {
+                    gg = (GridGeometry2D) param.getValue();
+                    break;
+                }
+            }
+        }
+        HashMap<String, Double> regionParams = gridGeometry2RegionParamsMap(gg);
+        return regionParams;
+    }
+
     public static HashMap<String, Double> gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
         HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
 
@@ -218,6 +243,33 @@ public class CoverageUtilities {
         return gridGeometry2D;
 
     }
+
+    /**
+     * Utility method to create read parameters for {@link GridCoverageReader} 
+     * 
+     * @param width the needed number of columns.
+     * @param height the needed number of columns.
+     * @param north the northern boundary.
+     * @param south the southern boundary.
+     * @param east the eastern boundary.
+     * @param west the western boundary.
+     * @param crs the {@link CoordinateReferenceSystem}. 
+     * @return the {@link GeneralParameterValue array of parameters}.
+     */
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( int width,
+            int height, double north, double south, double east, double west,
+            CoordinateReferenceSystem crs ) {
+        GeneralParameterValue[] readParams = new GeneralParameterValue[1];
+        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(
+                AbstractGridFormat.READ_GRIDGEOMETRY2D);
+        GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
+        ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, crs);
+        readGG.setValue(new GridGeometry2D(gridEnvelope, env));
+        readParams[0] = readGG;
+
+        return readParams;
+    }
+
     /**
      * Create a {@link WritableRaster} from a double matrix.
      * 

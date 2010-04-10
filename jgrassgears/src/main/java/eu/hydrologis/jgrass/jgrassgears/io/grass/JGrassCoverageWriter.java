@@ -18,9 +18,7 @@
  */
 package eu.hydrologis.jgrass.jgrassgears.io.grass;
 
-import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,12 +30,17 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.gce.grassraster.JGrassMapEnvironment;
+import org.geotools.gce.grassraster.JGrassRegion;
+import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.opengis.coverage.grid.GridCoverageWriter;
+import org.opengis.parameter.GeneralParameterValue;
 
-import eu.hydrologis.jgrass.jgrassgears.io.grass.spi.GrassBinaryImageWriterSpi;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 @Description("Utility class for writing geotools coverages to grass rasters.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -65,24 +68,26 @@ public class JGrassCoverageWriter extends HMModel {
     private boolean hasWritten = false;
 
     @Execute
-    public void writeCoverage() throws IOException {
+    public void writeCoverage() throws Exception {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
-
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
 
-        GrassBinaryImageWriterSpi writerSpi = new GrassBinaryImageWriterSpi();
-        GrassBinaryImageWriter writer = new GrassBinaryImageWriter(writerSpi, pm);
-        RenderedImage renderedImage = geodata.view(ViewType.GEOPHYSICS).getRenderedImage();
+        AbstractGridFormat format = (AbstractGridFormat) new GrassCoverageFormatFactory()
+                .createFormat();
+        GridCoverageWriter writer = format.getWriter(mapEnvironment.getCELL());
+
+        GeneralParameterValue[] readParams = null;
         if (doActive) {
-            writer.setOutput(mapEnvironment.getCELL(), mapEnvironment.getActiveRegion());
-        } else {
-            writer.setOutput(mapEnvironment.getCELL());
+            JGrassRegion activeRegion = mapEnvironment.getActiveRegion();
+            readParams = CoverageUtilities.createGridGeometryGeneralParameter(activeRegion
+                    .getCols(), activeRegion.getRows(), activeRegion.getWest(), activeRegion
+                    .getEast(), activeRegion.getSouth(), activeRegion.getNorth(), mapEnvironment
+                    .getCoordinateReferenceSystem());
         }
-        writer.write(renderedImage);
-        writer.dispose();
-        
+
+        writer.write(geodata, readParams);
         hasWritten = true;
     }
 }

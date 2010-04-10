@@ -31,18 +31,30 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.gce.grassraster.JGrassMapEnvironment;
+import org.geotools.gce.grassraster.JGrassRegion;
+import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.parameter.Parameter;
+import org.opengis.coverage.grid.GridCoverageReader;
+import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 @Description("Utility class for reading grass rasters to geotools coverages.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class JGrassCoverageReader extends HMModel{
+public class JGrassCoverageReader extends HMModel {
     @Description("The file to the map to be read (the cell file).")
     @In
     public String file = null;
@@ -51,8 +63,8 @@ public class JGrassCoverageReader extends HMModel{
     @In
     public IHMProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("Flag that defines if the map should be read as a whole (false) or" + 
-                 " on the active region (true and default).")
+    @Description("Flag that defines if the map should be read as a whole (false) or"
+            + " on the active region (true and default).")
     @In
     public boolean doActive = true;
 
@@ -61,23 +73,27 @@ public class JGrassCoverageReader extends HMModel{
     public GridCoverage2D geodata = null;
 
     @Execute
-    public void readCoverage() throws IOException {
+    public void readCoverage() throws Exception {
         if (!concatOr(geodata == null, doReset)) {
             return;
         }
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
-
-        GrassCoverageReader tmp = new GrassCoverageReader(null, null, true, false, pm);
-        tmp.setInput(mapEnvironment.getCELL());
-
+        CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         JGrassRegion jGrassRegion = null;
         if (doActive) {
             jGrassRegion = mapEnvironment.getActiveRegion();
         } else {
             jGrassRegion = mapEnvironment.getFileRegion();
         }
-        GrassCoverageReadParam gcReadParam = new GrassCoverageReadParam(jGrassRegion);
-        geodata = tmp.read(gcReadParam);
+
+        GeneralParameterValue[] readParams = CoverageUtilities.createGridGeometryGeneralParameter(
+                jGrassRegion.getCols(), jGrassRegion.getRows(), jGrassRegion.getWest(),
+                jGrassRegion.getEast(), jGrassRegion.getSouth(), jGrassRegion.getNorth(), crs);
+
+        AbstractGridFormat format = (AbstractGridFormat) new GrassCoverageFormatFactory()
+                .createFormat();
+        GridCoverageReader reader = format.getReader(mapEnvironment.getCELL());
+        geodata = ((GridCoverage2D) reader.read(readParams));
         geodata = geodata.view(ViewType.GEOPHYSICS);
     }
 }

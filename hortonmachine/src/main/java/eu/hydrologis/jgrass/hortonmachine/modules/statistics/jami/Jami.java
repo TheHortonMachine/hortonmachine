@@ -18,7 +18,16 @@
  */
 package eu.hydrologis.jgrass.hortonmachine.modules.statistics.jami;
 
-import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.*;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.DTDAY;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.DTMONTH;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.GAMMA;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.HUMIDITY;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.PRESSURE;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.TEMPERATURE;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.WIND;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.doubleNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.isNovalue;
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.tk;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +60,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import eu.hydrologis.jgrass.jgrassgears.io.eicalculator.EIAltimetry;
-import eu.hydrologis.jgrass.jgrassgears.io.grass.JGrassConstants;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
