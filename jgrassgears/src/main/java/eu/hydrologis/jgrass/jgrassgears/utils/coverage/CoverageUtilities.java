@@ -271,6 +271,43 @@ public class CoverageUtilities {
     }
 
     /**
+     * Utility method to create read parameters for {@link GridCoverageReader} 
+     * 
+     * @param xres the X resolution.
+     * @param yres the Y resolution.
+     * @param north the northern boundary.
+     * @param south the southern boundary.
+     * @param east the eastern boundary.
+     * @param west the western boundary.
+     * @param crs the {@link CoordinateReferenceSystem}. 
+     * @return the {@link GeneralParameterValue array of parameters}.
+     */
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( double xres,
+            double yres, double north, double south, double east, double west,
+            CoordinateReferenceSystem crs ) {
+        // make sure the resolution gives integer rows and cols
+        int height = (int) Math.round((north - south) / yres);
+        if (height < 1)
+            height = 1;
+        int width = (int) Math.round((east - west) / xres);
+        if (width < 1)
+            width = 1;
+        // in case re-evaluate the resolutions
+        xres = (east - west) / width;
+        yres = (north - south) / height;
+
+        GeneralParameterValue[] readParams = new GeneralParameterValue[1];
+        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(
+                AbstractGridFormat.READ_GRIDGEOMETRY2D);
+        GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
+        ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, crs);
+        readGG.setValue(new GridGeometry2D(gridEnvelope, env));
+        readParams[0] = readGG;
+
+        return readParams;
+    }
+
+    /**
      * Create a {@link WritableRaster} from a double matrix.
      * 
      * @param matrix the matrix to take the data from.
