@@ -123,58 +123,55 @@ public class SourcesDirectionCalculator extends HMModel {
                 if (env.contains(coordinate.x, coordinate.y)) {
                     // source is in this dem, process it
                     GridCoverage2D dem = entry.getValue();
-                    GridGeometry2D gridGeometry = dem.getGridGeometry();
-                    AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
-                    double xRes = XAffineTransform.getScaleX0(gridToCRS);
-                    double yRes = XAffineTransform.getScaleY0(gridToCRS);
-                    if (xRes != pRes) {
-                        dem = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(dem,
-                                xRes / pRes, yRes / pRes);
+                    double[] res = resFromCoverage(dem);
+                    if (res[0] != pRes) {
+                        dem = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(dem, res[0]
+                                / pRes, res[0] / pRes);
                     }
 
                     GridCoordinates2D centerGC = dem.getGridGeometry().worldToGrid(
                             new DirectPosition2D(coordinate.x, coordinate.y));
 
                     /*
-                     * a11 | a12 | a13
+                     * c11 | c12 | c13
                      * ---------------
-                     * a21 | cen | a23
+                     * c21 | cen | c23
                      * ---------------
-                     * a31 | a32 | a33
+                     * c31 | c32 | c33
                      */
-                    GridCoordinates2D a11 = new GridCoordinates2D(centerGC.x - 1, centerGC.y + 1);
-                    GridCoordinates2D a12 = new GridCoordinates2D(centerGC.x, centerGC.y + 1);
-                    GridCoordinates2D a13 = new GridCoordinates2D(centerGC.x + 1, centerGC.y + 1);
+                    GridCoordinates2D c11 = new GridCoordinates2D(centerGC.x - 1, centerGC.y - 1);
+                    GridCoordinates2D c12 = new GridCoordinates2D(centerGC.x, centerGC.y - 1);
+                    GridCoordinates2D c13 = new GridCoordinates2D(centerGC.x + 1, centerGC.y - 1);
 
-                    GridCoordinates2D a21 = new GridCoordinates2D(centerGC.x - 1, centerGC.y);
-                    GridCoordinates2D a23 = new GridCoordinates2D(centerGC.x + 1, centerGC.y);
+                    GridCoordinates2D c21 = new GridCoordinates2D(centerGC.x - 1, centerGC.y);
+                    GridCoordinates2D c23 = new GridCoordinates2D(centerGC.x + 1, centerGC.y);
 
-                    GridCoordinates2D a31 = new GridCoordinates2D(centerGC.x - 1, centerGC.y - 1);
-                    GridCoordinates2D a32 = new GridCoordinates2D(centerGC.x, centerGC.y - 1);
-                    GridCoordinates2D a33 = new GridCoordinates2D(centerGC.x + 1, centerGC.y - 1);
+                    GridCoordinates2D c31 = new GridCoordinates2D(centerGC.x - 1, centerGC.y + 1);
+                    GridCoordinates2D c32 = new GridCoordinates2D(centerGC.x, centerGC.y + 1);
+                    GridCoordinates2D c33 = new GridCoordinates2D(centerGC.x + 1, centerGC.y + 1);
 
                     double[] center = dem.evaluate((GridCoordinates2D) centerGC, (double[]) null);
-                    double[] v11 = dem.evaluate((GridCoordinates2D) a11, (double[]) null);
-                    double[] v12 = dem.evaluate((GridCoordinates2D) a12, (double[]) null);
-                    double[] v13 = dem.evaluate((GridCoordinates2D) a13, (double[]) null);
-                    double[] v21 = dem.evaluate((GridCoordinates2D) a21, (double[]) null);
-                    double[] v23 = dem.evaluate((GridCoordinates2D) a23, (double[]) null);
-                    double[] v31 = dem.evaluate((GridCoordinates2D) a31, (double[]) null);
-                    double[] v32 = dem.evaluate((GridCoordinates2D) a32, (double[]) null);
-                    double[] v33 = dem.evaluate((GridCoordinates2D) a33, (double[]) null);
+                    double[] v11 = dem.evaluate((GridCoordinates2D) c11, (double[]) null);
+                    double[] v12 = dem.evaluate((GridCoordinates2D) c12, (double[]) null);
+                    double[] v13 = dem.evaluate((GridCoordinates2D) c13, (double[]) null);
+                    double[] v21 = dem.evaluate((GridCoordinates2D) c21, (double[]) null);
+                    double[] v23 = dem.evaluate((GridCoordinates2D) c23, (double[]) null);
+                    double[] v31 = dem.evaluate((GridCoordinates2D) c31, (double[]) null);
+                    double[] v32 = dem.evaluate((GridCoordinates2D) c32, (double[]) null);
+                    double[] v33 = dem.evaluate((GridCoordinates2D) c33, (double[]) null);
 
-                    double t11 = (center[0] - v11[0]) / pRes / sqrt(2);
-                    double t12 = (center[0] - v12[0]) / pRes;
-                    double t13 = (center[0] - v13[0]) / pRes / sqrt(2);
-                    double t21 = (center[0] - v21[0]) / pRes;
-                    double t23 = (center[0] - v23[0]) / pRes;
-                    double t31 = (center[0] - v31[0]) / pRes / sqrt(2);
-                    double t32 = (center[0] - v32[0]) / pRes;
-                    double t33 = (center[0] - v33[0]) / pRes / sqrt(2);
+                    double dz11 = (center[0] - v11[0]) / sqrt(2);
+                    double dz12 = (center[0] - v12[0]);
+                    double dz13 = (center[0] - v13[0]) / sqrt(2);
+                    double dz21 = (center[0] - v21[0]);
+                    double dz23 = (center[0] - v23[0]);
+                    double dz31 = (center[0] - v31[0]) / sqrt(2);
+                    double dz32 = (center[0] - v32[0]);
+                    double dz33 = (center[0] - v33[0]) / sqrt(2);
 
-                    GridCoordinates2D[] cArray = new GridCoordinates2D[]{a11, a12, a13, a21, a23,
-                            a31, a32, a33};
-                    double[] tArray = new double[]{t11, t12, t13, t21, t23, t31, t32, t33};
+                    GridCoordinates2D[] cArray = new GridCoordinates2D[]{c31, c32, c33, c21, c23,
+                            c11, c12, c13};
+                    double[] tArray = new double[]{dz31, dz32, dz33, dz21, dz23, dz11, dz12, dz13};
 
                     QuickSortAlgorithmObjects qSobj = new QuickSortAlgorithmObjects(null);
                     qSobj.sort(tArray, cArray);
@@ -194,5 +191,13 @@ public class SourcesDirectionCalculator extends HMModel {
         }
         pm.done();
 
+    }
+
+    private double[] resFromCoverage( GridCoverage2D dem ) {
+        GridGeometry2D gridGeometry = dem.getGridGeometry();
+        AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
+        double[] res = new double[]{XAffineTransform.getScaleX0(gridToCRS),
+                XAffineTransform.getScaleY0(gridToCRS)};
+        return res;
     }
 }

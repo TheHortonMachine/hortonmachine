@@ -776,6 +776,24 @@ public class HMTestMaps {
 
     };
 
+    
+    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFcFromPoint(Coordinate point, CoordinateReferenceSystem crs){
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("test");
+        b.setCRS(crs);
+        b.add("the_geom", Point.class);
+        b.add("cat", Integer.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        GeometryFactory gf = GeometryUtilities.gf();
+        Object[] nw = new Object[]{gf.createPoint(point), 1};
+        builder.addAll(nw);
+        SimpleFeature pointFeature = builder.buildFeature(type.getTypeName() + ".1"); //$NON-NLS-1$
+        testFC = FeatureCollections.newCollection();
+        testFC.add(pointFeature);
+        return testFC;
+    }
+ 
     // public static void main( String[] args ) {
     // double radtodeg = 360.0 / (2 * Math.PI);
     //

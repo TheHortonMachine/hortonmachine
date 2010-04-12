@@ -2,6 +2,7 @@ package eu.hydrologis.jgrass.jgrassgears;
 
 import eu.hydrologis.jgrass.jgrassgears.modules.TestMapcalc;
 import eu.hydrologis.jgrass.jgrassgears.modules.TestReprojectors;
+import eu.hydrologis.jgrass.jgrassgears.modules.TestSourceDirection;
 import eu.hydrologis.jgrass.jgrassgears.modules.io.TestAdigeBoundaryConditions;
 import eu.hydrologis.jgrass.jgrassgears.modules.io.TestId2ValueConverters;
 import eu.hydrologis.jgrass.jgrassgears.modules.io.TestId2ValueReader;
@@ -25,6 +26,7 @@ public class FullTestSuite extends TestCase {
         // modules
         suite.addTestSuite(TestMapcalc.class);
         suite.addTestSuite(TestReprojectors.class);
+        suite.addTestSuite(TestSourceDirection.class);
 
         return suite;
     }
