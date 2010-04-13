@@ -30,6 +30,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import eu.hydrologis.jgrass.jgrassgears.io.coveragereader.CoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureWriter;
 import eu.hydrologis.jgrass.jgrassgears.modules.v.sourcesdirection.SourcesDirectionCalculator;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
@@ -73,5 +76,40 @@ public class TestSourceDirection extends HMTestCase {
         assertEquals(270.0, azimuth);
 
     }
+
+//    public void testRealCase() throws Exception {
+//        String shape = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/sorgenti.shp";
+//        String adfFolder = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/DTM/1m/dtm000022_WGS.ASC";
+//        // String adfFolder =
+//        // "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/EsriGrid";
+//
+//        String outshape = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/sorgenti_plus.shp";
+//
+//        CoverageReader cr = new CoverageReader();
+//        cr.file = adfFolder;
+//        cr.pType = "asc";
+//        // cr.pType = "adf";
+//        cr.process();
+//        List<GridCoverage2D> geodatalist = cr.geodatalist;
+//
+//        ShapefileFeatureReader shpReader = new ShapefileFeatureReader();
+//        shpReader.file = shape;
+//        shpReader.readFeatureCollection();
+//        FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = shpReader.geodata;
+//
+//        SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
+//        sourceDirection.inSources = pointFC;
+//        sourceDirection.inDems = geodatalist;
+//        sourceDirection.pRes = 10.0;
+//        sourceDirection.process();
+//
+//        FeatureCollection<SimpleFeatureType, SimpleFeature> outSources = sourceDirection.outSources;
+//
+//        ShapefileFeatureWriter shpWriter = new ShapefileFeatureWriter();
+//        shpWriter.file = outshape;
+//        shpWriter.geodata = outSources;
+//        shpWriter.writeFeatureCollection();
+//
+//    }
 
 }

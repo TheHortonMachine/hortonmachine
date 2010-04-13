@@ -91,7 +91,7 @@ public class CoverageReader extends HMModel {
 
     @Description("In case of data folder the list of read output coverage maps.")
     @Out
-    public List<GridCoverage2D> geodatalist = null;
+    public List<GridCoverage2D> geodatalist = new ArrayList<GridCoverage2D>();
 
     public static final String AIG = "adf";
     public static final String ESRIGRID = "asc";
@@ -99,7 +99,7 @@ public class CoverageReader extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(geodata == null, geodatalist == null, doReset)) {
+        if (!concatOr(geodata == null, geodatalist.size() == 0, doReset)) {
             return;
         }
         if (pType == null) {

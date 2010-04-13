@@ -22,6 +22,7 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.sqrt;
 
 import java.awt.geom.AffineTransform;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.feature.FeatureCollection;
@@ -46,8 +48,10 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.geometry.DirectPosition;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -105,8 +109,11 @@ public class SourcesDirectionCalculator extends HMModel {
 
         outSources = FeatureCollections.newCollection();
 
-        FeatureExtender fExt = new FeatureExtender(inSources.getSchema(), new String[]{"azimuth"},
-                new Class< ? >[]{Double.class});
+        FeatureExtender fExt = new FeatureExtender(inSources.getSchema(), new String[]{"azimuth",
+                "availpixels", "c11", "c12", "c13", "c21", "c22", "c23", "c31", "c32", "c33"},
+                new Class< ? >[]{Double.class, Integer.class, Double.class, Double.class,
+                        Double.class, Double.class, Double.class, Double.class, Double.class,
+                        Double.class, Double.class});
 
         int id = 0;
         int size = inSources.size();
@@ -129,8 +136,13 @@ public class SourcesDirectionCalculator extends HMModel {
                                 / pRes, res[0] / pRes);
                     }
 
-                    GridCoordinates2D centerGC = dem.getGridGeometry().worldToGrid(
-                            new DirectPosition2D(coordinate.x, coordinate.y));
+                    GridGeometry2D gridGeometry = dem.getGridGeometry();
+                    GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+                    int cols = gridRange.width;
+                    int rows = gridRange.height;
+
+                    GridCoordinates2D centerGC = gridGeometry.worldToGrid(new DirectPosition2D(
+                            coordinate.x, coordinate.y));
 
                     /*
                      * c11 | c12 | c13
@@ -138,6 +150,8 @@ public class SourcesDirectionCalculator extends HMModel {
                      * c21 | cen | c23
                      * ---------------
                      * c31 | c32 | c33
+                     * 
+                     * where c23 = row 2, col 3
                      */
                     GridCoordinates2D c11 = new GridCoordinates2D(centerGC.x - 1, centerGC.y - 1);
                     GridCoordinates2D c12 = new GridCoordinates2D(centerGC.x, centerGC.y - 1);
@@ -151,23 +165,56 @@ public class SourcesDirectionCalculator extends HMModel {
                     GridCoordinates2D c33 = new GridCoordinates2D(centerGC.x + 1, centerGC.y + 1);
 
                     double[] center = dem.evaluate((GridCoordinates2D) centerGC, (double[]) null);
-                    double[] v11 = dem.evaluate((GridCoordinates2D) c11, (double[]) null);
-                    double[] v12 = dem.evaluate((GridCoordinates2D) c12, (double[]) null);
-                    double[] v13 = dem.evaluate((GridCoordinates2D) c13, (double[]) null);
-                    double[] v21 = dem.evaluate((GridCoordinates2D) c21, (double[]) null);
-                    double[] v23 = dem.evaluate((GridCoordinates2D) c23, (double[]) null);
-                    double[] v31 = dem.evaluate((GridCoordinates2D) c31, (double[]) null);
-                    double[] v32 = dem.evaluate((GridCoordinates2D) c32, (double[]) null);
-                    double[] v33 = dem.evaluate((GridCoordinates2D) c33, (double[]) null);
+                    double dz11 = -10000;
+                    double dz12 = -10000;
+                    double dz13 = -10000;
+                    double dz21 = -10000;
+                    double dz23 = -10000;
+                    double dz31 = -10000;
+                    double dz32 = -10000;
+                    double dz33 = -10000;
 
-                    double dz11 = (center[0] - v11[0]) / sqrt(2);
-                    double dz12 = (center[0] - v12[0]);
-                    double dz13 = (center[0] - v13[0]) / sqrt(2);
-                    double dz21 = (center[0] - v21[0]);
-                    double dz23 = (center[0] - v23[0]);
-                    double dz31 = (center[0] - v31[0]) / sqrt(2);
-                    double dz32 = (center[0] - v32[0]);
-                    double dz33 = (center[0] - v33[0]) / sqrt(2);
+                    int pixelNum = 0;
+                    double[] v11 = getPixelValue(dem, cols, rows, c11);
+                    if (v11 != null) {
+                        pixelNum++;
+                        dz11 = (center[0] - v11[0]) / sqrt(2);
+                    }
+                    double[] v12 = getPixelValue(dem, cols, rows, c12);
+                    if (v12 != null) {
+                        pixelNum++;
+                        dz12 = (center[0] - v12[0]);
+                    }
+                    double[] v13 = getPixelValue(dem, cols, rows, c13);
+                    if (v13 != null) {
+                        pixelNum++;
+                        dz13 = (center[0] - v13[0]) / sqrt(2);
+                    }
+                    double[] v21 = getPixelValue(dem, cols, rows, c21);
+                    if (v21 != null) {
+                        pixelNum++;
+                        dz21 = (center[0] - v21[0]);
+                    }
+                    double[] v23 = getPixelValue(dem, cols, rows, c23);
+                    if (v23 != null) {
+                        pixelNum++;
+                        dz23 = (center[0] - v23[0]);
+                    }
+                    double[] v31 = getPixelValue(dem, cols, rows, c31);
+                    if (v31 != null) {
+                        pixelNum++;
+                        dz31 = (center[0] - v31[0]) / sqrt(2);
+                    }
+                    double[] v32 = getPixelValue(dem, cols, rows, c32);
+                    if (v32 != null) {
+                        pixelNum++;
+                        dz32 = (center[0] - v32[0]);
+                    }
+                    double[] v33 = getPixelValue(dem, cols, rows, c33);
+                    if (v33 != null) {
+                        pixelNum++;
+                        dz33 = (center[0] - v33[0]) / sqrt(2);
+                    }
 
                     GridCoordinates2D[] cArray = new GridCoordinates2D[]{c31, c32, c33, c21, c23,
                             c11, c12, c13};
@@ -178,19 +225,38 @@ public class SourcesDirectionCalculator extends HMModel {
 
                     GridCoordinates2D steepestCoord = cArray[cArray.length - 1];
 
-                    double azimuth = GeometryUtilities.azimuth(new Coordinate(centerGC.x,
-                            centerGC.y), new Coordinate(steepestCoord.x, steepestCoord.y));
+                    DirectPosition steepestWorldCoord = gridGeometry.gridToWorld(steepestCoord);
+                    double[] c = steepestWorldCoord.getCoordinate();
+                    DirectPosition centerCoordOnGrid = gridGeometry.gridToWorld(centerGC);
+                    double[] cent = centerCoordOnGrid.getCoordinate();
+                    double azimuth = GeometryUtilities.azimuth(new Coordinate(cent[0], cent[1]),
+                            new Coordinate(c[0], c[1]));
 
-                    SimpleFeature azimuthFeature = fExt.extendFeature(feature,
-                            new Object[]{azimuth}, id++);
+                    SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{
+                            azimuth, pixelNum, getValue(v11), getValue(v12), getValue(v13),
+                            getValue(v21), getValue(center), getValue(v23), getValue(v31),
+                            getValue(v32), getValue(v33)}, id++);
                     outSources.add(azimuthFeature);
-
                 }
             }
             pm.worked(1);
         }
         pm.done();
 
+    }
+
+    private double getValue( double[] array ) {
+        return array != null ? array[0] : -9999.0;
+    }
+
+    private double[] getPixelValue( GridCoverage2D dem, int cols, int rows,
+            GridCoordinates2D gridCoordinate ) {
+        if (gridCoordinate.x >= 0 && gridCoordinate.x < cols && gridCoordinate.y >= 0
+                && gridCoordinate.y < rows) {
+            double[] value = dem.evaluate((GridCoordinates2D) gridCoordinate, (double[]) null);
+            return value;
+        }
+        return null;
     }
 
     private double[] resFromCoverage( GridCoverage2D dem ) {
