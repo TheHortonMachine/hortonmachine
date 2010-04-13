@@ -126,7 +126,7 @@ public class CoverageReader extends HMModel {
                     readGeotiff(file, true);
                 }
             }
-        } else if (pType.equals(AIG)) {
+        } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
             if (!mapFile.isDirectory()) {
                 readAig(mapFile, false);
             } else {

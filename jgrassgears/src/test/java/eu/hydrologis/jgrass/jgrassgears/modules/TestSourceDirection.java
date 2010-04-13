@@ -30,6 +30,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
+import eu.hydrologis.jgrass.jgrassgears.io.coveragereader.CoverageReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureReader;
+import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureWriter;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.modules.v.sourcesdirection.SourcesDirectionCalculator;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
@@ -41,36 +45,68 @@ import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestSourceDirection extends HMTestCase {
-    public void testSourceDirection() throws Exception {
+    // public void testSourceDirection() throws Exception {
+    //
+    // double[][] elevationData = HMTestMaps.mapData;
+    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+    // CoordinateReferenceSystem crs = HMTestMaps.crs;
+    //        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", //$NON-NLS-1$
+    // elevationData, envelopeParams, crs);
+    //
+    // List<GridCoverage2D> demList = new ArrayList<GridCoverage2D>();
+    // demList.add(elevationCoverage);
+    //
+    // double res = 30.0;
+    // double newRes = 60.0;
+    //
+    // double n = 5140020.0 - 4 * res; // 4 pixels down
+    // double w = 1640650.0 + 5 * res; // 5 pixels right
+    // Coordinate coord = new Coordinate(w, n);
+    // FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = HMTestMaps.createFcFromPoint(
+    // coord, crs);
+    //
+    // SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
+    // sourceDirection.inSources = pointFC;
+    // sourceDirection.inDems = demList;
+    // sourceDirection.pRes = newRes;
+    // sourceDirection.process();
+    //
+    // FeatureCollection<SimpleFeatureType, SimpleFeature> outSources = sourceDirection.outSources;
+    // SimpleFeature feature = outSources.features().next();
+    //        double azimuth = ((Number) feature.getAttribute("azimuth")).doubleValue(); //$NON-NLS-1$
+    // assertEquals(270.0, azimuth);
+    //
+    // }
 
-        double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", //$NON-NLS-1$
-                elevationData, envelopeParams, crs);
+    public void testRealCase() throws Exception {
+        String shape = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/sorgenti.shp";
+        String adfFolder = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/DTM/1m/dtm000022_WGS.ASC";
+        // String adfFolder =
+        // "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/EsriGrid";
 
-        List<GridCoverage2D> demList = new ArrayList<GridCoverage2D>();
-        demList.add(elevationCoverage);
+        String outshape = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/sorgenti_plus.shp";
 
-        double res = 30.0;
-        double newRes = 60.0;
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        double n = 5140020.0 - 4 * res; // 4 pixels down
-        double w = 1640650.0 + 5 * res; // 5 pixels right
-        Coordinate coord = new Coordinate(w, n);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = HMTestMaps.createFcFromPoint(
-                coord, crs);
+        ShapefileFeatureReader shpReader = new ShapefileFeatureReader();
+        shpReader.file = shape;
+        shpReader.readFeatureCollection();
+        FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = shpReader.geodata;
 
         SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
+        sourceDirection.pm = pm;
+        sourceDirection.file = adfFolder;
+        sourceDirection.pType = "asc";
         sourceDirection.inSources = pointFC;
-        sourceDirection.inDems = demList;
-        sourceDirection.pRes = newRes;
+        sourceDirection.pRes = 10.0;
         sourceDirection.process();
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> outSources = sourceDirection.outSources;
-        SimpleFeature feature = outSources.features().next();
-        double azimuth = ((Number) feature.getAttribute("azimuth")).doubleValue(); //$NON-NLS-1$
-        assertEquals(270.0, azimuth);
+
+        ShapefileFeatureWriter shpWriter = new ShapefileFeatureWriter();
+        shpWriter.file = outshape;
+        shpWriter.geodata = outSources;
+        shpWriter.writeFeatureCollection();
 
     }
 

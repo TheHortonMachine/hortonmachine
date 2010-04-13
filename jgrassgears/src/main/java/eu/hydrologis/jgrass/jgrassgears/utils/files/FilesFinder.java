@@ -17,8 +17,9 @@
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package eu.hydrologis.jgrass.jgrassgears.utils.files;
-import java.util.*;
-import java.io.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
 * Find files in folders and subfolders, given a particular regex pattern.
@@ -27,21 +28,17 @@ import java.io.*;
 public final class FilesFinder {
 
     private List<File> filesList = new ArrayList<File>();
-    private final File folder;
+    private final File file;
     private final String regex;
 
-    public static void main( String... aArgs ) throws FileNotFoundException {
-        File startingDirectory = new File("/home/moovida/data/adf");
-        List<File> files = new FilesFinder(startingDirectory, ".adf").process();
-
-        // print out all file names, in the the order of File.compareTo()
-        for( File file : files ) {
-            System.out.println(file);
-        }
-    }
-
-    public FilesFinder( File folder, String regex ) {
-        this.folder = folder;
+    /**
+     * Constructor of {@link FilesFinder}.
+     * 
+     * @param file a file or folder to start from.
+     * @param regex a regex to which to match the files names to.
+     */
+    public FilesFinder( File file, String regex ) {
+        this.file = file;
         this.regex = regex;
     }
 
@@ -50,11 +47,17 @@ public final class FilesFinder {
     }
 
     public List<File> process() {
-        if (folder == null || !folder.exists() || !folder.isDirectory() || !folder.canRead()) {
+        if (!file.isDirectory()) {
+            if (file.getName().matches(".*" + regex + ".*")) {
+                filesList.add(file);
+                return filesList;
+            }
+        }
+        if (file == null || !file.exists() || !file.canRead()) {
             throw new IllegalArgumentException("Directory not readable.");
         }
 
-        addToList(folder);
+        addToList(file);
 
         return filesList;
     }
