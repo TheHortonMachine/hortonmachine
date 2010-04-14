@@ -18,14 +18,11 @@
  */
 package eu.hydrologis.edc.oms.csv;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -33,7 +30,6 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.io.DataIO;
