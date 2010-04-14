@@ -27,6 +27,7 @@ import eu.hydrologis.edc.annotatedclasses.UnitsTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
 import eu.hydrologis.edc.utils.Constants;
+import eu.hydrologis.jgrass.jgrassgears.utils.math.ListInterpolator;
 
 @SuppressWarnings("nls")
 public class HydrometerSeriesReader implements ITimeseriesAggregator {
@@ -67,6 +68,8 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
     private LinkedHashMap<DateTime, Double> timestamp2Data;
     private DateTimeFormatter formatter = Constants.utcDateFormatterYYYYMMDDHHMM;
 
+    private ListInterpolator dischargeScaleInterpolator;
+
     public void getData() {
         if (outData != null) {
             return;
@@ -88,7 +91,10 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
 
             if (dischargeScale != null) {
                 value = dischargeScale.get(value);
-                // TODO if null need to interpolate
+
+                if (value == null) {
+                    value = getInterpolated(dischargeScale, value);
+                }
             }
 
             timestamp2Data.put(dateTime, value);
@@ -114,6 +120,23 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
         default:
             break;
         }
+    }
+
+    private Double getInterpolated( LinkedHashMap<Double, Double> dischargeScale, Double value ) {
+        if (dischargeScaleInterpolator == null) {
+            List<Double> yList = new ArrayList<Double>();
+            List<Double> xList = new ArrayList<Double>();
+            Set<Entry<Double, Double>> entrySet = dischargeScale.entrySet();
+            for( Entry<Double, Double> entry : entrySet ) {
+                Double v1 = entry.getKey();
+                Double v2 = entry.getValue();
+                xList.add(v1);
+                xList.add(v2);
+            }
+            dischargeScaleInterpolator = new ListInterpolator(xList, yList);
+        }
+        Double newValue = dischargeScaleInterpolator.linearInterpolateY(value);
+        return newValue;
     }
 
     private LinkedHashMap<Double, Double> getDischargeScale() {
