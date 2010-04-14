@@ -43,75 +43,59 @@ public class AggregatedResult {
     private List<Integer> validDataNumber = null;
 
     /**
-     * The mean of the aggregated data.
+     * List of variances.
      */
-    private double mean = NaN;
+    private final List<Double> varList;
 
     /**
-     * The variance of the aggregated data.
+     * List of quantiles [q10, q25, q50, q75, q90]
      */
-    private double variance = NaN;
-
-    /**
-     * The 10-Quantile. 
-     */
-    private double quantile10 = NaN;
-
-    /**
-     * The 25-Quantile. 
-     */
-    private double quantile25 = NaN;
-
-    /**
-     * The 75-Quantile. 
-     */
-    private double quantile75 = NaN;
-
-    /**
-     * The 90-Quantile. 
-     */
-    private double quantile90 = NaN;
+    private final List<double[]> quantilesList;
 
     public AggregatedResult( LinkedHashMap<DateTime, Double> timestamp2ValueMap,
-            List<Integer> validDataNumber ) {
+            List<Integer> validDataNumber, List<Double> varList, List<double[]> quantilesList ) {
         this.timestamp2ValueMap = timestamp2ValueMap;
         this.validDataNumber = validDataNumber;
-
-        /*
-         * TODO calculate mean etc
-         */
+        this.varList = varList;
+        this.quantilesList = quantilesList;
     }
 
+    /**
+     * Returns the map of aggregated data in time.
+     * 
+     * @return the map of aggregated data.
+     */
     public LinkedHashMap<DateTime, Double> getTimestamp2ValueMap() {
         return timestamp2ValueMap;
     }
 
+    /**
+     * Returns the number of valid data that were used for aggregation of a timeframe.
+     * 
+     * @return number of valid data.
+     */
     public List<Integer> getValidDataNumber() {
         return validDataNumber;
     }
-
-    public double getMean() {
-        return mean;
+    
+    /**
+     * Returns the list of variance ordered the same way as the {@link #getTimestamp2ValueMap()}.
+     * 
+     * @return the list of variances.
+     */
+    public List<Double> getVariance() {
+        return varList;
     }
-
-    public double getVariance() {
-        return variance;
+    
+    /**
+     * Returns the list of quantiles ordered the same way as the {@link #getTimestamp2ValueMap()}.
+     * 
+     * The array of quantiles is ordered as follows: [q10, q25, q50, q75, q90].
+     * 
+     * @return the list of quantiles.
+     */
+    public List<double[]> getQuantiles() {
+        return quantilesList;
     }
-
-    public double getQuantile10() {
-        return quantile10;
-    }
-
-    public double getQuantile25() {
-        return quantile25;
-    }
-
-    public double getQuantile75() {
-        return quantile75;
-    }
-
-    public double getQuantile90() {
-        return quantile90;
-    }
-
+    
 }

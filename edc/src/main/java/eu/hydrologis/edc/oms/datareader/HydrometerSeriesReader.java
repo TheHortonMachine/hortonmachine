@@ -1,6 +1,9 @@
 package eu.hydrologis.edc.oms.datareader;
 
+import static java.lang.Math.pow;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +30,12 @@ import eu.hydrologis.edc.annotatedclasses.ScaleTypeTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
 import eu.hydrologis.edc.utils.Constants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.SplitVectors;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.utils.math.ListInterpolator;
+import eu.hydrologis.jgrass.jgrassgears.utils.sorting.QuickSortAlgorithm;
 
 @SuppressWarnings("nls")
 public class HydrometerSeriesReader implements ITimeseriesAggregator {
@@ -188,6 +196,8 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
     private AggregatedResult getAggregation( int type ) {
         LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
         List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
+        List<Double> varList = new ArrayList<Double>();
+        List<double[]> quantilesList = new ArrayList<double[]>();
 
         Set<Entry<DateTime, Double>> entrySet = timestamp2Data.entrySet();
 
@@ -204,6 +214,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 current = lastFromBefore;
             }
             Entry<DateTime, Double> previous = null;
+            List<Double> valuesInTimeframe = new ArrayList<Double>();
             double mean = 0;
             int count = 0;
             while( iterator.hasNext() ) {
@@ -251,22 +262,86 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                         break;
                     }
                 }
-
+                valuesInTimeframe.add(value);
                 mean = mean + value;
                 count++;
 
                 previous = current;
                 current = null;
             }
+
+            // mean
             mean = mean / count;
+
+            int size = valuesInTimeframe.size();
+            double[] valuesArray = new double[size];
+            for( int i = 0; i < size; i++ ) {
+                valuesArray[i] = valuesInTimeframe.get(i);
+            }
+
+            // variance
+            double var = calculateVariance(valuesArray, mean);
+            varList.add(var);
+
+            double[] quantiles = calculateQuantiles(valuesArray);
+            quantilesList.add(quantiles);
 
             DateTime timestamp = previous.getKey();
             aggregatedMap.put(timestamp, mean);
             numberOfValuesUsed.add(count);
         }
 
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed);
+        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList, quantilesList);
         return result;
+    }
+
+    private double[] calculateQuantiles( double[] valuesArray ) {
+        ModelsEngine modelsEngine = new ModelsEngine();
+        IHMProgressMonitor pm = new DummyProgressMonitor();
+        QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
+        t.sort(valuesArray, null);
+        SplitVectors theSplit = new SplitVectors();
+        int num_max = 1000;
+        modelsEngine.split2realvectors(valuesArray, valuesArray, theSplit, 100, num_max, pm);
+
+        double[][] outCb = new double[theSplit.splitIndex.length][3];
+        double maxCum = 0;
+        for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
+            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
+                    (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+            outCb[h][1] = theSplit.splitIndex[h];
+            if (h == 0) {
+                outCb[h][2] = theSplit.splitIndex[h];
+            } else {
+                outCb[h][2] = outCb[h - 1][2] + theSplit.splitIndex[h];
+            }
+            maxCum = outCb[h][2];
+        }
+
+        List<Double> cumNormalizedList = new ArrayList<Double>();
+        List<Double> valueList = new ArrayList<Double>();
+        for( double[] record : outCb ) {
+            cumNormalizedList.add(record[2] / maxCum);
+            valueList.add(record[0]);
+        }
+
+        ListInterpolator listInterpolator = new ListInterpolator(cumNormalizedList, valueList);
+
+        Double quantile10 = listInterpolator.linearInterpolateY(0.1);
+        Double quantile25 = listInterpolator.linearInterpolateY(0.25);
+        Double quantile50 = listInterpolator.linearInterpolateY(0.50);
+        Double quantile75 = listInterpolator.linearInterpolateY(0.75);
+        Double quantile90 = listInterpolator.linearInterpolateY(0.90);
+        double[] q = new double[]{quantile10, quantile25, quantile50, quantile75, quantile90};
+        return q;
+    }
+
+    private double calculateVariance( double[] valuesArray, double mean ) {
+        double var = 0;
+        for( double value : valuesArray ) {
+            var = var + pow(value - mean, 2.0);
+        }
+        return var / (valuesArray.length + 1);
     }
 
     public AggregatedResult getHourlyAggregation() {
