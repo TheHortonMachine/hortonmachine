@@ -127,6 +127,11 @@
 			<artifactId>oms</artifactId>
 			<version>3-SNAPSHOT</version>
 		</dependency>
+		<dependency>
+			<groupId>eu.hydrologis.jgrass</groupId>
+			<artifactId>jgrassgears</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
 
 
 		<dependency>
@@ -189,8 +194,8 @@
 		</repository>
 
 		<repository>
-		    <id>oms-tmprepo</id>
-		    <url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
+			<id>oms-tmprepo</id>
+			<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
 		</repository>
 	</repositories>
 </project>
