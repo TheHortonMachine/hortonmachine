@@ -17,6 +17,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
@@ -70,6 +72,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
 
     private ListInterpolator dischargeScaleInterpolator;
 
+    @Execute
     public void getData() {
         if (outData != null) {
             return;
@@ -179,6 +182,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
         return seriesData;
     }
 
+    @Finalize
     public void close() {
         session.close();
     }
@@ -212,7 +216,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 if (previous != null) {
                     DateTime currentDateTime = current.getKey();
                     int cHour = currentDateTime.getHourOfDay();
-                    DateTime previousDateTime = current.getKey();
+                    DateTime previousDateTime = previous.getKey();
                     int pHour = previousDateTime.getHourOfDay();
                     if (cHour != pHour) {
                         /*
@@ -220,6 +224,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                          * to keep that value for the next cycle
                          */
                         lastFromBefore = current;
+                        current = null;
                         break;
                     }
                 }
@@ -228,10 +233,11 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 count++;
 
                 previous = current;
+                current = null;
             }
             mean = mean / count;
 
-            DateTime timestamp = current.getKey();
+            DateTime timestamp = previous.getKey();
             aggregatedMap.put(timestamp, mean);
             numberOfValuesUsed.add(count);
         }
@@ -269,7 +275,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 if (previous != null) {
                     DateTime currentDateTime = current.getKey();
                     int cDay = currentDateTime.getDayOfMonth();
-                    DateTime previousDateTime = current.getKey();
+                    DateTime previousDateTime = previous.getKey();
                     int pDay = previousDateTime.getDayOfMonth();
                     if (cDay != pDay) {
                         /*
@@ -277,6 +283,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                          * to keep that value for the next cycle
                          */
                         lastFromBefore = current;
+                        current = null;
                         break;
                     }
                 }
@@ -285,10 +292,11 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 count++;
 
                 previous = current;
+                current = null;
             }
             mean = mean / count;
 
-            DateTime timestamp = current.getKey();
+            DateTime timestamp = previous.getKey();
             aggregatedMap.put(timestamp, mean);
             numberOfValuesUsed.add(count);
         }
@@ -326,7 +334,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 if (previous != null) {
                     DateTime currentDateTime = current.getKey();
                     int cMonth = currentDateTime.getMonthOfYear();
-                    DateTime previousDateTime = current.getKey();
+                    DateTime previousDateTime = previous.getKey();
                     int pMonth = previousDateTime.getMonthOfYear();
                     if (cMonth != pMonth) {
                         /*
@@ -334,6 +342,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                          * to keep that value for the next cycle
                          */
                         lastFromBefore = current;
+                        current = null;
                         break;
                     }
                 }
@@ -342,10 +351,11 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 count++;
 
                 previous = current;
+                current = null;
             }
             mean = mean / count;
 
-            DateTime timestamp = current.getKey();
+            DateTime timestamp = previous.getKey();
             aggregatedMap.put(timestamp, mean);
             numberOfValuesUsed.add(count);
         }
@@ -383,7 +393,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 if (previous != null) {
                     DateTime currentDateTime = current.getKey();
                     int cYear = currentDateTime.getYear();
-                    DateTime previousDateTime = current.getKey();
+                    DateTime previousDateTime = previous.getKey();
                     int pYear = previousDateTime.getYear();
                     if (cYear != pYear) {
                         /*
@@ -391,6 +401,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                          * to keep that value for the next cycle
                          */
                         lastFromBefore = current;
+                        current = null;
                         break;
                     }
                 }
@@ -399,10 +410,11 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 count++;
 
                 previous = current;
+                current = null;
             }
             mean = mean / count;
 
-            DateTime timestamp = current.getKey();
+            DateTime timestamp = previous.getKey();
             aggregatedMap.put(timestamp, mean);
             numberOfValuesUsed.add(count);
         }
