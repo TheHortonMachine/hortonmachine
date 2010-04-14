@@ -1,12 +1,17 @@
 package eu.hydrologis.edc.oms.datareader;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
+
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.Finalize;
+import oms3.annotations.In;
+import oms3.annotations.Out;
 
 import org.hibernate.Criteria;
 import org.hibernate.classic.Session;
@@ -16,16 +21,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.Finalize;
-import oms3.annotations.In;
-import oms3.annotations.Out;
-import oms3.annotations.Role;
 import eu.hydrologis.edc.annotatedclasses.HydrometersDischargeScalesTable;
 import eu.hydrologis.edc.annotatedclasses.HydrometersTable;
 import eu.hydrologis.edc.annotatedclasses.ScaleTypeTable;
-import eu.hydrologis.edc.annotatedclasses.UnitsTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
 import eu.hydrologis.edc.utils.Constants;
@@ -187,7 +185,7 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
         session.close();
     }
 
-    public AggregatedResult getHourlyAggregation() {
+    private AggregatedResult getAggregation( int type ) {
         LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
         List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
 
@@ -215,10 +213,35 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
                 Double value = current.getValue();
                 if (previous != null) {
                     DateTime currentDateTime = current.getKey();
-                    int cHour = currentDateTime.getHourOfDay();
                     DateTime previousDateTime = previous.getKey();
-                    int pHour = previousDateTime.getHourOfDay();
-                    if (cHour != pHour) {
+                    int currentT;
+                    int previousT;
+                    switch( type ) {
+                    case 0:
+                        // 0 = hour
+                        currentT = currentDateTime.getHourOfDay();
+                        previousT = previousDateTime.getHourOfDay();
+                        break;
+                    case 1:
+                        // 1 = day
+                        currentT = currentDateTime.getDayOfMonth();
+                        previousT = previousDateTime.getDayOfMonth();
+                        break;
+                    case 2:
+                        // 2 = month
+                        currentT = currentDateTime.getMonthOfYear();
+                        previousT = previousDateTime.getMonthOfYear();
+                        break;
+                    case 3:
+                        // 3 = year
+                        currentT = currentDateTime.getYear();
+                        previousT = previousDateTime.getYear();
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Aggregation type not valid");
+                    }
+
+                    if (currentT != previousT) {
                         /*
                          * we read from the next date, so we need 
                          * to keep that value for the next cycle
@@ -244,183 +267,22 @@ public class HydrometerSeriesReader implements ITimeseriesAggregator {
 
         AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed);
         return result;
+    }
+
+    public AggregatedResult getHourlyAggregation() {
+        return getAggregation(0);
     }
 
     public AggregatedResult getDailyAggregation() {
-        LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
-        List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
-
-        Set<Entry<DateTime, Double>> entrySet = timestamp2Data.entrySet();
-
-        Iterator<Entry<DateTime, Double>> iterator = entrySet.iterator();
-        Entry<DateTime, Double> lastFromBefore = null;
-        while( iterator.hasNext() ) {
-
-            Entry<DateTime, Double> current = null;
-            if (lastFromBefore != null) {
-                /*
-                 * from the second cycle on there is the last from the 
-                 * cycle before that needs to be considered
-                 */
-                current = lastFromBefore;
-            }
-            Entry<DateTime, Double> previous = null;
-            double mean = 0;
-            int count = 0;
-            while( iterator.hasNext() ) {
-                if (current == null) {
-                    current = iterator.next();
-                }
-                Double value = current.getValue();
-                if (previous != null) {
-                    DateTime currentDateTime = current.getKey();
-                    int cDay = currentDateTime.getDayOfMonth();
-                    DateTime previousDateTime = previous.getKey();
-                    int pDay = previousDateTime.getDayOfMonth();
-                    if (cDay != pDay) {
-                        /*
-                         * we read from the next date, so we need 
-                         * to keep that value for the next cycle
-                         */
-                        lastFromBefore = current;
-                        current = null;
-                        break;
-                    }
-                }
-
-                mean = mean + value;
-                count++;
-
-                previous = current;
-                current = null;
-            }
-            mean = mean / count;
-
-            DateTime timestamp = previous.getKey();
-            aggregatedMap.put(timestamp, mean);
-            numberOfValuesUsed.add(count);
-        }
-
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed);
-        return result;
+        return getAggregation(1);
     }
 
     public AggregatedResult getMonthlyAggregation() {
-        LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
-        List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
-
-        Set<Entry<DateTime, Double>> entrySet = timestamp2Data.entrySet();
-
-        Iterator<Entry<DateTime, Double>> iterator = entrySet.iterator();
-        Entry<DateTime, Double> lastFromBefore = null;
-        while( iterator.hasNext() ) {
-
-            Entry<DateTime, Double> current = null;
-            if (lastFromBefore != null) {
-                /*
-                 * from the second cycle on there is the last from the 
-                 * cycle before that needs to be considered
-                 */
-                current = lastFromBefore;
-            }
-            Entry<DateTime, Double> previous = null;
-            double mean = 0;
-            int count = 0;
-            while( iterator.hasNext() ) {
-                if (current == null) {
-                    current = iterator.next();
-                }
-                Double value = current.getValue();
-                if (previous != null) {
-                    DateTime currentDateTime = current.getKey();
-                    int cMonth = currentDateTime.getMonthOfYear();
-                    DateTime previousDateTime = previous.getKey();
-                    int pMonth = previousDateTime.getMonthOfYear();
-                    if (cMonth != pMonth) {
-                        /*
-                         * we read from the next date, so we need 
-                         * to keep that value for the next cycle
-                         */
-                        lastFromBefore = current;
-                        current = null;
-                        break;
-                    }
-                }
-
-                mean = mean + value;
-                count++;
-
-                previous = current;
-                current = null;
-            }
-            mean = mean / count;
-
-            DateTime timestamp = previous.getKey();
-            aggregatedMap.put(timestamp, mean);
-            numberOfValuesUsed.add(count);
-        }
-
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed);
-        return result;
+        return getAggregation(2);
     }
 
     public AggregatedResult getYearlyAggregation() {
-        LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
-        List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
-
-        Set<Entry<DateTime, Double>> entrySet = timestamp2Data.entrySet();
-
-        Iterator<Entry<DateTime, Double>> iterator = entrySet.iterator();
-        Entry<DateTime, Double> lastFromBefore = null;
-        while( iterator.hasNext() ) {
-
-            Entry<DateTime, Double> current = null;
-            if (lastFromBefore != null) {
-                /*
-                 * from the second cycle on there is the last from the 
-                 * cycle before that needs to be considered
-                 */
-                current = lastFromBefore;
-            }
-            Entry<DateTime, Double> previous = null;
-            double mean = 0;
-            int count = 0;
-            while( iterator.hasNext() ) {
-                if (current == null) {
-                    current = iterator.next();
-                }
-                Double value = current.getValue();
-                if (previous != null) {
-                    DateTime currentDateTime = current.getKey();
-                    int cYear = currentDateTime.getYear();
-                    DateTime previousDateTime = previous.getKey();
-                    int pYear = previousDateTime.getYear();
-                    if (cYear != pYear) {
-                        /*
-                         * we read from the next date, so we need 
-                         * to keep that value for the next cycle
-                         */
-                        lastFromBefore = current;
-                        current = null;
-                        break;
-                    }
-                }
-
-                mean = mean + value;
-                count++;
-
-                previous = current;
-                current = null;
-            }
-            mean = mean / count;
-
-            DateTime timestamp = previous.getKey();
-            aggregatedMap.put(timestamp, mean);
-            numberOfValuesUsed.add(count);
-        }
-
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed);
-        return result;
+        return getAggregation(3);
     }
 
 }
