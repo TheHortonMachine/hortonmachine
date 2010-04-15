@@ -102,6 +102,7 @@ public class ContourLinesLabeler extends HMModel {
         b.add("the_geom", Point.class);
         b.add("elevation", Double.class);
         b.add("azimuth", Double.class);
+        b.add("minus90", Double.class);
         SimpleFeatureType outType = b.buildFeatureType();
         int count = 0;
 
@@ -129,13 +130,18 @@ public class ContourLinesLabeler extends HMModel {
                     Coordinate second = coordinates[1];
 
                     double azimuth = GeometryUtilities.azimuth(first, second);
+                    double azimuthFrom90 = azimuth - 90.0;
+                    if (azimuthFrom90 < 0) {
+                        azimuthFrom90 = 360.0 + azimuthFrom90;
+                    }
                     double elevation = ((Number) contour.getAttribute(fElevation)).doubleValue();
                     Point labelPoint = GeometryUtilities.gf().createPoint(first);
 
                     SimpleFeatureBuilder builder = new SimpleFeatureBuilder(outType);
-                    Object[] values = new Object[]{labelPoint, elevation, azimuth};
+                    Object[] values = new Object[]{labelPoint, elevation, azimuth, azimuthFrom90};
                     builder.addAll(values);
-                    SimpleFeature pointFeature = builder.buildFeature(outType.getTypeName() + "." + count++);
+                    SimpleFeature pointFeature = builder.buildFeature(outType.getTypeName() + "."
+                            + count++);
                     outPoints.add(pointFeature);
                 }
 
