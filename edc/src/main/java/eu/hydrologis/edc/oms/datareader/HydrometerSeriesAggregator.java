@@ -1,7 +1,7 @@
 package eu.hydrologis.edc.oms.datareader;
 
 import static java.lang.Math.pow;
-
+import static java.lang.Double.NaN;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,10 +55,6 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     @In
     public String tEnd;
 
-    // @Description("The timestep (in minutes) filter for the fetched data.")
-    // @In
-    // public int tTimestep;
-
     @Description("The scaletype to do level to discharge conversions and corrections.")
     @In
     public long pTypeid;
@@ -66,6 +62,10 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     @Description("The aggregation type of the fetched data. (0 = hour, 1 = day, 2 = month, 3 = year)")
     @In
     public int pAggregation;
+
+    @Description("The progress monitor.")
+    @In
+    public IHMProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The result of the data aggregation")
     @Out
@@ -89,10 +89,13 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         DateTime startDateTime = formatter.parseDateTime(tStart);
         DateTime endDateTime = formatter.parseDateTime(tEnd);
 
+        pm.message("Getting hydrometers series data...");
         List<SeriesHydrometersTable> seriesData = getSeriesData(startDateTime, endDateTime);
         timestamp2Data = new LinkedHashMap<DateTime, Double>();
+        pm.message("Getting discharge scale data...");
         LinkedHashMap<Double, Double> dischargeScale = getDischargeScale();
 
+        pm.message("Correct/convert data...");
         for( SeriesHydrometersTable seriesHydrometersTable : seriesData ) {
             DateTime timestampUtc = seriesHydrometersTable.getTimestampUtc();
             DateTime dateTime = timestampUtc.toDateTime(DateTimeZone.UTC);
@@ -109,6 +112,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             timestamp2Data.put(dateTime, value);
         }
 
+        pm.message("Aggregating data...");
         switch( pAggregation ) {
         case 0:
             // 0 = hour
@@ -283,7 +287,9 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             double var = calculateVariance(valuesArray, mean);
             varList.add(var);
 
-            double[] quantiles = calculateQuantiles(valuesArray);
+            double[] quantiles = new double[]{NaN, NaN, NaN, NaN, NaN};
+            if (valuesArray.length > 10)
+                quantiles = calculateQuantiles(valuesArray);
             quantilesList.add(quantiles);
 
             DateTime timestamp = previous.getKey();
@@ -302,13 +308,12 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         t.sort(valuesArray, null);
         SplitVectors theSplit = new SplitVectors();
         int num_max = 1000;
-        modelsEngine.split2realvectors(valuesArray, valuesArray, theSplit, 100, num_max, pm);
+        modelsEngine.split2realvectors(valuesArray, valuesArray, theSplit, 10, num_max, pm);
 
         double[][] outCb = new double[theSplit.splitIndex.length][3];
         double maxCum = 0;
         for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
-                    (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
             outCb[h][1] = theSplit.splitIndex[h];
             if (h == 0) {
                 outCb[h][2] = theSplit.splitIndex[h];
