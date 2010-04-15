@@ -56,7 +56,7 @@ import eu.hydrologis.jgrass.jgrassgears.utils.geometry.GeometryUtilities;
 @Keywords("Contourlines, Vector")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CountourLinesLabeler extends HMModel {
+public class ContourLinesLabeler extends HMModel {
 
     @Description("The contour lines.")
     @In
