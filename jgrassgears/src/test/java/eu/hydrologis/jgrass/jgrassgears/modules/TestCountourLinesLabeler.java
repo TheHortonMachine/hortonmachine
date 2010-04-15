@@ -69,7 +69,7 @@ public class TestCountourLinesLabeler extends HMTestCase {
         labeler.inContour = contoursFC;
         labeler.inLines = linesFC;
         labeler.fElevation = "CONTOUR";
-        labeler.buffer = 20.0;
+        labeler.buffer = 10.0;
         labeler.process();
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> outPoints = labeler.outPoints;
