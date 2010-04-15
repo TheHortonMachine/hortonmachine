@@ -1,59 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>eu.hydrologis.edc</groupId>
+
+  <parent>
+    <groupId>eu.hydrologis.jgrass</groupId>
+    <artifactId>jgrasstools</artifactId>
+    <version>0.1-SNAPSHOT</version>
+  </parent>
+
+	<groupId>eu.hydrologis.jgrass</groupId>
 	<artifactId>edc</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1-SNAPSHOT</version>
 	<name>Environmental Data Center</name>
-	<url>http://www.hydrologis.eu</url>
-
-	<!-- Build configuration -->
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 	<!-- Project dependencies -->
 	<dependencies>
-		<!--
-			<dependency> <groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId> <version>1.1.116</version> </dependency>
-			<dependency> <groupId>h2spatial</groupId>
-			<artifactId>h2spatial</artifactId> <version>1.0-SNAPSHOT</version>
-			<scope>runtime</scope> </dependency>
-		-->
 		<dependency>
 			<groupId>org.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>1.1.118</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-shapefile</artifactId>
-			<version>2.6-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-epsg-h2</artifactId>
-			<version>2.6-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools.jdbc</groupId>
-			<artifactId>gt-jdbc-h2</artifactId>
-			<version>2.6-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.geotools.jdbc</groupId>
-			<artifactId>gt-jdbc-postgis</artifactId>
-			<version>2.6-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -84,18 +49,8 @@
 		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-			<version>1.6</version>
-		</dependency>
-		<dependency>
-			<groupId>joda-time</groupId>
 			<artifactId>joda-time-hibernate</artifactId>
 			<version>1.1</version>
-		</dependency>
-		<dependency>
-			<groupId>com.vividsolutions</groupId>
-			<artifactId>jts</artifactId>
-			<version>1.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -122,80 +77,22 @@
 			<artifactId>commons-logging</artifactId>
 			<version>1.1</version>
 		</dependency>
-		<dependency>
-			<groupId>oms</groupId>
-			<artifactId>oms</artifactId>
-			<version>3-SNAPSHOT</version>
-		</dependency>
+        <dependency>                                                                             
+                <groupId>org.geotools.jdbc</groupId>                                             
+                <artifactId>gt-jdbc-h2</artifactId>                                              
+                <version>${gt.version}</version>                                                  
+        </dependency>                                                                            
+        <dependency>                                                                             
+                <groupId>org.geotools.jdbc</groupId>                                             
+                <artifactId>gt-jdbc-postgis</artifactId>                                         
+                <version>${gt.version}</version>                                                  
+        </dependency>     
+
 		<dependency>
 			<groupId>eu.hydrologis.jgrass</groupId>
 			<artifactId>jgrassgears</artifactId>
-			<version>0.1-SNAPSHOT</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.0</version>
-			<scope>test</scope>
+			<version>${jgt.version}</version>
 		</dependency>
 	</dependencies>
 
-
-	<repositories>
-		<repository>
-			<id>jboss</id>
-			<url>http://repository.jboss.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>jboss-snapshot</id>
-			<url>http://snapshots.jboss.org/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-			<id>opengeo</id>
-			<name>OpenGeo Maven Repository</name>
-			<url>http://repo.opengeo.org</url>
-		</repository>
-		<repository>
-			<id>GeoTools repo</id>
-			<url>http://maven.geotools.fr/repository</url>
-		</repository>
-		<repository>
-			<id>Geosolutions</id>
-			<url>http://mvn.geo-solutions.it/</url>
-		</repository>
-		<repository>
-			<id>Hibernate Spatial repo</id>
-			<url>http://www.hibernatespatial.org/repository</url>
-		</repository>
-		<repository>
-			<id>jaitools-snapshots</id>
-			<name>jaitools snapshots</name>
-			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>oms-tmprepo</id>
-			<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
-		</repository>
-	</repositories>
 </project>
