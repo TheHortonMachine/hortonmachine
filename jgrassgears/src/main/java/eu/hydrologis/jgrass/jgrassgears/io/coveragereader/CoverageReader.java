@@ -50,7 +50,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.ViewType;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
-import org.geotools.coverageio.gdal.aig.EsriAigReader;
+import org.geotools.coverageio.gdal.aig.AIGReader;
 import org.geotools.factory.Hints;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
@@ -159,7 +159,7 @@ public class CoverageReader extends HMModel {
 
         final URL url = mapFile.toURI().toURL();
         final Object source = url;
-        final BaseGDALGridCoverage2DReader reader = new EsriAigReader(source, hints);
+        final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
         GridCoverage2D coverage = (GridCoverage2D) reader.read(null);
 
         if (addToList) {
