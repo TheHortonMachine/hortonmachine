@@ -2,12 +2,17 @@ package eu.hydrologis.edc.oms.datareader;
 
 import static java.lang.Math.pow;
 import static java.lang.Double.NaN;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import oms3.annotations.Description;
@@ -278,6 +283,10 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             mean = mean / count;
 
             int size = valuesInTimeframe.size();
+            if (size < 2) {
+                // no data available
+                continue;
+            }
             double[] valuesArray = new double[size];
             for( int i = 0; i < size; i++ ) {
                 valuesArray[i] = valuesInTimeframe.get(i);
@@ -297,7 +306,8 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             numberOfValuesUsed.add(count);
         }
 
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList, quantilesList);
+        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList,
+                quantilesList);
         return result;
     }
 
@@ -313,7 +323,8 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         double[][] outCb = new double[theSplit.splitIndex.length][3];
         double maxCum = 0;
         for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
+                    (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
             outCb[h][1] = theSplit.splitIndex[h];
             if (h == 0) {
                 outCb[h][2] = theSplit.splitIndex[h];
@@ -363,6 +374,106 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     public AggregatedResult getYearlyAggregation() {
         return getAggregation(3);
+    }
+
+    public void printReport() throws IOException {
+        AggregatedResult monthlyAggregation = getMonthlyAggregation();
+        AggregatedResult yearlyAggregation = getYearlyAggregation();
+
+        LinkedHashMap<DateTime, Double> timestamp2ValueMap = monthlyAggregation
+                .getTimestamp2ValueMap();
+        Set<Entry<DateTime, Double>> entrySet = timestamp2ValueMap.entrySet();
+        List<Integer> numList = monthlyAggregation.getValidDataNumber();
+        Iterator<Integer> numIter = numList.iterator();
+
+        TreeMap<Integer, YearResult> reportMap = new TreeMap<Integer, YearResult>();
+
+        // first add month info
+        for( Entry<DateTime, Double> entry : entrySet ) {
+            DateTime dt = entry.getKey();
+
+            int year = dt.getYear();
+
+            YearResult yearResult = reportMap.get(year);
+            if (yearResult == null) {
+                yearResult = new YearResult();
+                reportMap.put(year, yearResult);
+            }
+
+            int monthOfYear = dt.getMonthOfYear();
+            Double monthlyMean = entry.getValue();
+            Integer monthlyNum = numIter.next();
+
+            yearResult.year = year;
+            yearResult.monthmean[monthOfYear - 1] = monthlyMean;
+            yearResult.validnums[monthOfYear - 1] = monthlyNum;
+        }
+
+        timestamp2ValueMap = yearlyAggregation.getTimestamp2ValueMap();
+        entrySet = timestamp2ValueMap.entrySet();
+        numList = yearlyAggregation.getValidDataNumber();
+        numIter = numList.iterator();
+
+        // then years info
+        for( Entry<DateTime, Double> entry : entrySet ) {
+            DateTime dt = entry.getKey();
+
+            int year = dt.getYear();
+
+            YearResult yearResult = reportMap.get(year);
+            if (yearResult == null) {
+                continue;
+            }
+
+            Double yearlyMean = entry.getValue();
+            Integer yearlyNum = numIter.next();
+
+            yearResult.yearmean = yearlyMean;
+            yearResult.yearvalidnums = yearlyNum;
+        }
+
+        StringBuilder sB = new StringBuilder();
+        sB
+                .append("year, jan, dd, feb, dd, mar, dd, apr, dd, may, dd, jun, dd, jul, dd, aug, dd, sep, dd, oct, dd, nov, dd, dec, dd, yearly, dd\n");
+        Set<Entry<Integer, YearResult>> reportSet = reportMap.entrySet();
+        for( Entry<Integer, YearResult> report : reportSet ) {
+            String string = report.getValue().toString();
+            sB.append(string);
+        }
+
+        System.out.println(sB.toString());
+    }
+
+    private class YearResult {
+        int year = -1;
+        double yearmean = NaN;
+        int yearvalidnums = -1;
+        double[] monthmean = new double[]{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                NaN};
+        int[] validnums = new int[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+
+        @Override
+        public String toString() {
+            StringBuilder sB = new StringBuilder();
+            // sB.append("year, jan, dd, feb, dd, mar, dd, apr, dd, may, dd, jun, dd, jul, dd, aug, dd, sep, dd, oct, dd, nov, dd, dec, dd, yearly, dd\n");
+            sB.append(year).append(",");
+            sB.append(monthmean[0]).append(",").append(validnums[0]).append(",");
+            sB.append(monthmean[1]).append(",").append(validnums[1]).append(",");
+            sB.append(monthmean[2]).append(",").append(validnums[2]).append(",");
+            sB.append(monthmean[3]).append(",").append(validnums[3]).append(",");
+            sB.append(monthmean[4]).append(",").append(validnums[4]).append(",");
+            sB.append(monthmean[5]).append(",").append(validnums[5]).append(",");
+            sB.append(monthmean[6]).append(",").append(validnums[6]).append(",");
+            sB.append(monthmean[7]).append(",").append(validnums[7]).append(",");
+            sB.append(monthmean[8]).append(",").append(validnums[8]).append(",");
+            sB.append(monthmean[9]).append(",").append(validnums[9]).append(",");
+            sB.append(monthmean[10]).append(",").append(validnums[10]).append(",");
+            sB.append(monthmean[11]).append(",").append(validnums[11]).append(",");
+            sB.append(yearmean).append(",").append(yearvalidnums).append("\n");
+
+            return sB.toString();
+        }
+
     }
 
 }
