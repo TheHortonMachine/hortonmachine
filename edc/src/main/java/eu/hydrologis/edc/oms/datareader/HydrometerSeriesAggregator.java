@@ -38,7 +38,7 @@ import eu.hydrologis.jgrass.jgrassgears.utils.math.ListInterpolator;
 import eu.hydrologis.jgrass.jgrassgears.utils.sorting.QuickSortAlgorithm;
 
 @SuppressWarnings("nls")
-public class HydrometerSeriesReader implements ITimeseriesAggregator {
+public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     @Description("The EDC instance to use.")
     @In
     public EdcSessionFactory edcSessionFactory = null;
