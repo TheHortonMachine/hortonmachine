@@ -395,7 +395,7 @@ public class ModelsEngine {
             int num_max, IHMProgressMonitor pm ) {
 
         double delta = 0, min, max;
-        int i, count, count1, minposition = 0, maxposition, bin_vuoti;
+        int i, count = 0, count1, minposition = 0, maxposition, bin_vuoti;
         int[] bins;
         int head = 0;
 
@@ -437,35 +437,45 @@ public class ModelsEngine {
 
             delta = (max - min) / (N - 1);
 
-            int index = 0;
+            if (delta != 0) {
+                int index = 0;
 
-            count1 = minposition; // the novalues are already left aside
-            count = minposition;
-            bin_vuoti = 0;
+                count1 = minposition; // the novalues are already left aside
+                count = minposition;
+                bin_vuoti = 0;
 
-            while( count < maxposition ) {
+                while( count < maxposition ) {
 
-                if (U[count] < min + 0.5 * delta) {
-                    while( U[count] < min + 0.5 * delta && count < maxposition ) {
+                    if (U[count] < min + 0.5 * delta) {
+                        while( U[count] < min + 0.5 * delta && count < maxposition ) {
+                            count++;
+                        }
+
+                        bins[index] = count - count1; // number of values
+                        // contained in the bin
+                        index++; // starts from position 1!!!
+
+                        head++;
+                        count1 = count;
+                        count++;
+
+                    } else {
+                        bin_vuoti++;
+                    }
+                    min += delta;
+                }
+
+                if (bin_vuoti != 0) {
+                    pm.message(bin_vuoti + " empty bins where found");
+                }
+            } else {
+                for( double tmpValue : U ) {
+                    if (!isNovalue(tmpValue)) {
                         count++;
                     }
-
-                    bins[index] = count - count1; // number of values
-                    // contained in the bin
-                    index++; // starts from position 1!!!
-
-                    head++;
-                    count1 = count;
-                    count++;
-
-                } else {
-                    bin_vuoti++;
                 }
-                min += delta;
-            }
-
-            if (bin_vuoti != 0) {
-                pm.message(bin_vuoti + " empty bins where found");
+                bins[0] = count;
+                head = count;
             }
 
         }
