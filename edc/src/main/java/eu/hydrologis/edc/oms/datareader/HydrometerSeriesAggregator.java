@@ -105,12 +105,16 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             DateTime timestampUtc = seriesHydrometersTable.getTimestampUtc();
             DateTime dateTime = timestampUtc.toDateTime(DateTimeZone.UTC);
             Double value = seriesHydrometersTable.getValue();
+            Double toPrincipal = seriesHydrometersTable.getUnit().getToPrincipal();
+            value = value * toPrincipal;
 
             if (dischargeScale != null) {
-                value = dischargeScale.get(value);
+                Double tmpvalue = dischargeScale.get(value);
 
-                if (value == null) {
+                if (tmpvalue == null) {
                     value = getInterpolated(dischargeScale, value);
+                }else{
+                    value = tmpvalue;
                 }
             }
 
@@ -377,8 +381,19 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     }
 
     public void printReport() throws IOException {
-        AggregatedResult monthlyAggregation = getMonthlyAggregation();
-        AggregatedResult yearlyAggregation = getYearlyAggregation();
+        AggregatedResult monthlyAggregation;
+        AggregatedResult yearlyAggregation;
+
+        if (pAggregation == 2) {
+            monthlyAggregation = outData;
+        } else {
+            monthlyAggregation = getMonthlyAggregation();
+        }
+        if (pAggregation == 3) {
+            yearlyAggregation = outData;
+        } else {
+            yearlyAggregation = getYearlyAggregation();
+        }
 
         LinkedHashMap<DateTime, Double> timestamp2ValueMap = monthlyAggregation
                 .getTimestamp2ValueMap();
@@ -444,7 +459,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         System.out.println(sB.toString());
     }
 
-    private class YearResult {
+    private static class YearResult {
         int year = -1;
         double yearmean = NaN;
         int yearvalidnums = -1;
