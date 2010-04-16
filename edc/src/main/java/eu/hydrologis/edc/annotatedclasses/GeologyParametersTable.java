@@ -26,6 +26,8 @@ import static eu.hydrologis.edc.utils.Constants.NAME;
 import static eu.hydrologis.edc.utils.Constants.PROCESSES_ID;
 import static eu.hydrologis.edc.utils.Constants.UNITS_ID;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -46,7 +48,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = GEOLOGYPARAMETERS, schema = EDC_SCHEMA)
-public class GeologyParametersTable {
+public class GeologyParametersTable implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     /**
      * The unique id of the geology parameter.
      */

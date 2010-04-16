@@ -98,8 +98,8 @@ public class ExistingPostgresSessionFactory implements DatabaseSessionFactory {
                     "Missing password definition in properties. (PASS=...)");
         }
 
-        String showSql = properties.getProperty(SHOW_SQL);
-        String formatSql = properties.getProperty(FORMAT_SQL);
+        // String showSql = properties.getProperty(SHOW_SQL);
+        // String formatSql = properties.getProperty(FORMAT_SQL);
 
         String port = properties.getProperty(PORT);
         if (port == null) {

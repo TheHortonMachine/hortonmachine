@@ -22,6 +22,8 @@ import static eu.hydrologis.edc.utils.Constants.EDC_SCHEMA;
 import static eu.hydrologis.edc.utils.Constants.GEOLOGYCATEGORIES;
 import static eu.hydrologis.edc.utils.Constants.ID;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -35,7 +37,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = GEOLOGYCATEGORIES, schema = EDC_SCHEMA)
-public class GeologyCategoriesTable {
+public class GeologyCategoriesTable implements Serializable{
+    private static final long serialVersionUID = 1L;
+
     /**
      * The unique id of the geology category.
      */

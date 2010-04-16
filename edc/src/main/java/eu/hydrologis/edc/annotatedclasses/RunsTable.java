@@ -37,6 +37,8 @@ import static eu.hydrologis.edc.utils.Constants.TIMESTEP;
 import static eu.hydrologis.edc.utils.Constants.TITLE;
 import static eu.hydrologis.edc.utils.Constants.USERS_ID;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -61,7 +63,9 @@ import org.joda.time.DateTime;
  */
 @Entity
 @Table(name = RUNS, schema = EDC_SCHEMA)
-public class RunsTable {
+public class RunsTable implements Serializable{
+    private static final long serialVersionUID = 1L;
+
     /**
      * The unique id of the run.
      */

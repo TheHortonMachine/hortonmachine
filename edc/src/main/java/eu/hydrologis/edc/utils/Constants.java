@@ -614,7 +614,7 @@ public class Constants {
      * @return the map of tables mapped to their classes.
      * @throws Exception
      */
-    public static Map<String, Class> getEdcSeriesTables2ClassesMap() {
+    public synchronized static Map<String, Class> getEdcSeriesTables2ClassesMap() {
         if (edcSeriesTables2ClassesMap != null) {
             return edcSeriesTables2ClassesMap;
         }

@@ -6,6 +6,7 @@ import java.io.PrintStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -85,7 +86,7 @@ public class Main {
                             String tableName = file.getName().replaceFirst(".csv", "");
                             out.println("Insert table: " + tableName);
                             edc.insertFromCsv(tableName, file);
-                        }else{
+                        } else {
                             out.println("File doesn't exist: " + file.getAbsolutePath());
                         }
                     }
@@ -130,7 +131,7 @@ public class Main {
             String geometryPrintId = properties.getProperty(Constants.PRINTGEOMETRYID);
             String geometryPrintEpsg = properties.getProperty(Constants.PRINTGEOMETRYEPSG);
             String geometryPrintHas3d = properties.getProperty(Constants.PRINTGEOMETRYHAS3D);
-            Boolean has3D = new Boolean(geometryPrintHas3d);
+            Boolean has3D = Boolean.parseBoolean(geometryPrintHas3d);
             if (geometryPrintSchema != null && geometryPrintTable != null) {
                 QueryHandler queryHandler = edc.getEdcSessionFactory().getQueryHandler();
 
@@ -150,10 +151,12 @@ public class Main {
                 }
 
                 out.println(geometryPrintSchema + "." + geometryPrintTable);
-                Set<Long> keySet = geometryMap.keySet();
-                for( Long id : keySet ) {
+
+                Set<Entry<Long, Geometry>> entrySet = geometryMap.entrySet();
+                for( Entry<Long, Geometry> entry : entrySet ) {
+                    Long id = entry.getKey();
                     out.println("id = " + id);
-                    Geometry geometry = geometryMap.get(id);
+                    Geometry geometry = entry.getValue();
                     Coordinate[] coordinates = geometry.getCoordinates();
                     for( Coordinate coordinate : coordinates ) {
                         out.println(coordinate.x + " / " + coordinate.y + " / " + coordinate.z);
