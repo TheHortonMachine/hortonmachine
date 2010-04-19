@@ -35,6 +35,8 @@ import eu.hydrologis.edc.annotatedclasses.ScaleTypeTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
 import eu.hydrologis.edc.utils.Constants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
+import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
 import eu.hydrologis.jgrass.jgrassgears.libs.modules.SplitVectors;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
@@ -113,7 +115,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
                 if (tmpvalue == null) {
                     value = getInterpolated(dischargeScale, value);
-                }else{
+                } else {
                     value = tmpvalue;
                 }
             }
@@ -146,14 +148,14 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     private Double getInterpolated( LinkedHashMap<Double, Double> dischargeScale, Double value ) {
         if (dischargeScaleInterpolator == null) {
-            List<Double> yList = new ArrayList<Double>();
             List<Double> xList = new ArrayList<Double>();
+            List<Double> yList = new ArrayList<Double>();
             Set<Entry<Double, Double>> entrySet = dischargeScale.entrySet();
             for( Entry<Double, Double> entry : entrySet ) {
                 Double v1 = entry.getKey();
                 Double v2 = entry.getValue();
                 xList.add(v1);
-                xList.add(v2);
+                yList.add(v2);
             }
             dischargeScaleInterpolator = new ListInterpolator(xList, yList);
         }
@@ -292,8 +294,12 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
                 continue;
             }
             double[] valuesArray = new double[size];
+            boolean allNaN = true;
             for( int i = 0; i < size; i++ ) {
                 valuesArray[i] = valuesInTimeframe.get(i);
+                if (!HMConstants.isNovalue(valuesArray[i])) {
+                    allNaN = false;
+                }
             }
 
             // variance
@@ -301,8 +307,9 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             varList.add(var);
 
             double[] quantiles = new double[]{NaN, NaN, NaN, NaN, NaN};
-            if (valuesArray.length > 10)
+            if (valuesArray.length > 10 && !allNaN) {
                 quantiles = calculateQuantiles(valuesArray);
+            }
             quantilesList.add(quantiles);
 
             DateTime timestamp = previous.getKey();
@@ -310,8 +317,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             numberOfValuesUsed.add(count);
         }
 
-        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList,
-                quantilesList);
+        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList, quantilesList);
         return result;
     }
 
@@ -327,8 +333,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         double[][] outCb = new double[theSplit.splitIndex.length][3];
         double maxCum = 0;
         for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
-                    (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+            outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
             outCb[h][1] = theSplit.splitIndex[h];
             if (h == 0) {
                 outCb[h][2] = theSplit.splitIndex[h];
@@ -395,8 +400,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             yearlyAggregation = getYearlyAggregation();
         }
 
-        LinkedHashMap<DateTime, Double> timestamp2ValueMap = monthlyAggregation
-                .getTimestamp2ValueMap();
+        LinkedHashMap<DateTime, Double> timestamp2ValueMap = monthlyAggregation.getTimestamp2ValueMap();
         Set<Entry<DateTime, Double>> entrySet = timestamp2ValueMap.entrySet();
         List<Integer> numList = monthlyAggregation.getValidDataNumber();
         Iterator<Integer> numIter = numList.iterator();
@@ -463,8 +467,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         int year = -1;
         double yearmean = NaN;
         int yearvalidnums = -1;
-        double[] monthmean = new double[]{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
-                NaN};
+        double[] monthmean = new double[]{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN};
         int[] validnums = new int[]{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
         @Override
