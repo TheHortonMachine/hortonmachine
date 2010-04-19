@@ -146,14 +146,14 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     private Double getInterpolated( LinkedHashMap<Double, Double> dischargeScale, Double value ) {
         if (dischargeScaleInterpolator == null) {
-            List<Double> yList = new ArrayList<Double>();
             List<Double> xList = new ArrayList<Double>();
+            List<Double> yList = new ArrayList<Double>();
             Set<Entry<Double, Double>> entrySet = dischargeScale.entrySet();
             for( Entry<Double, Double> entry : entrySet ) {
                 Double v1 = entry.getKey();
                 Double v2 = entry.getValue();
                 xList.add(v1);
-                xList.add(v2);
+                yList.add(v2);
             }
             dischargeScaleInterpolator = new ListInterpolator(xList, yList);
         }

@@ -32,6 +32,9 @@ public class ListInterpolator {
     private final List<Double> yList;
 
     public ListInterpolator( List<Double> xList, List<Double> yList ) {
+        if (xList.size() != yList.size()) {
+            throw new IllegalArgumentException("The lists have to be of the same length.");
+        }
         this.xList = xList;
         this.yList = yList;
     }
