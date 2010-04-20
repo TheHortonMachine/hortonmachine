@@ -18,8 +18,10 @@
  */
 package eu.hydrologis.jgrass.jgrassgears.modules.v.rasterize;
 
+import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.doubleNovalue;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.COLS;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.ROWS;
+import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.XRES;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
 
 import java.awt.image.WritableRaster;
@@ -52,6 +54,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsIllegalargumentException;
+import eu.hydrologis.jgrass.jgrassgears.libs.exceptions.ModelsRuntimeException;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
@@ -97,22 +100,29 @@ public class Rasterizer {
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
+    private HashMap<String, Double> paramsMap;
+
+    private double xRes;
+
     @Execute
     public void process() throws Exception {
         if (outWR == null) {
-            if (pGrid != null) {
-                HashMap<String, Double> paramsMap = gridGeometry2RegionParamsMap(pGrid);
-                height = paramsMap.get(ROWS).intValue();
-                width = paramsMap.get(COLS).intValue();
-            }
+            paramsMap = gridGeometry2RegionParamsMap(pGrid);
+            height = paramsMap.get(ROWS).intValue();
+            width = paramsMap.get(COLS).intValue();
+            xRes = paramsMap.get(XRES);
 
-            outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+            outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null,
+                    doubleNovalue);
         }
 
         String geometryType = inGeodata.getSchema().getGeometryDescriptor().getType().toString();
         if (geometryType.matches(".*[Pp][Oo][Ii][Nn][Tt].*")) {
+            throw new ModelsRuntimeException("Not implemented yet for points", this.getClass()
+                    .getSimpleName());
         } else if (geometryType.matches(".*[Ll][Ii][Nn][Ee].*")) {
-            // rasterizeLine(newCollection, outIter);
+            throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass()
+                    .getSimpleName());
         } else if (geometryType.matches(".*[Pp][Oo][Ll][Yy][Gg][Oo][Nn].*")) {
             rasterizepolygon(inGeodata, outWR, pGrid, fCat, pValue);
         } else {
@@ -120,6 +130,9 @@ public class Rasterizer {
                     "Couldn't recognize the geometry type of the file.", this.getClass()
                             .getSimpleName());
         }
+
+        outGeodata = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inGeodata
+                .getSchema().getCoordinateReferenceSystem());
 
     }
 
@@ -137,7 +150,7 @@ public class Rasterizer {
             SimpleFeature feature = featureIterator.next();
             Polygon polygon = (Polygon) feature.getDefaultGeometry();
 
-            double delta = 0;// active.getWEResolution() / 4.0;
+            double delta = xRes / 4.0;
 
             for( int r = 0; r < h; r++ ) {
                 // do scan line to fill the polygon
