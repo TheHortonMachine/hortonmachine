@@ -1,36 +1,30 @@
 package eu.hydrologis.jgrass.jgrassgears.modules;
 
+import java.util.HashMap;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import eu.hydrologis.jgrass.jgrassgears.io.shapefile.ShapefileFeatureWriter;
-import eu.hydrologis.jgrass.jgrassgears.io.tiff.GeoTiffCoverageReader;
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.modules.r.marchingsquares.MarchingSquaresVectorializer;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
+import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
+import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
 
 public class TestMarchingSquares extends HMTestCase {
     public void testMarchingSquares() throws Exception {
-
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        String tiff = "/home/moovida/data/geosolutions/datitest/WSM_SS_20100416_233249_4676_2.dim.tif";
 
-        GeoTiffCoverageReader reader = new GeoTiffCoverageReader();
-        reader.file = tiff;
-        reader.pm = pm;
-
-        reader.readCoverage();
-
-        GridCoverage2D geodata = reader.geodata;
-
-        // double[][] extractNet1Data = HMTestMaps.extractNet1Data;
-        // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        // CoordinateReferenceSystem crs = HMTestMaps.crs;
-        // GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-        // extractNet1Data, envelopeParams, crs);
-        // GridCoverage2D geodata = elevationCoverage;
+        double[][] extractNet1Data = HMTestMaps.extractNet1Data;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net",
+                extractNet1Data, envelopeParams, crs);
+        GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;

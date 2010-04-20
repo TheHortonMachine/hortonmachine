@@ -25,10 +25,8 @@ import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.XRES;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.YRES;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
-import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.renderedImage2WritableRaster;
 
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,7 +51,6 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.DirectPosition;
@@ -64,7 +60,6 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
@@ -115,7 +110,6 @@ public class MarchingSquaresVectorializer {
     public void process() throws Exception {
         if (iter == null) {
             RenderedImage inputRI = inGeodata.getRenderedImage();
-            // WritableRaster inputWR = renderedImage2WritableRaster(inputRI, true);
             iter = RandomIterFactory.create(inputRI, null);
 
             HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inGeodata);
@@ -123,11 +117,7 @@ public class MarchingSquaresVectorializer {
             width = regionMap.get(COLS).intValue();
             xRes = regionMap.get(XRES);
             yRes = regionMap.get(YRES);
-            // crs = inGeodata.getCoordinateReferenceSystem();
-
-            crs = CRS.decode("EPSG:3031");
-
-            System.out.println(width + "/" + height + "/" + xRes + "/" + yRes);
+            crs = inGeodata.getCoordinateReferenceSystem();
 
             bitSet = new BitSet(width * height);
 
@@ -136,19 +126,12 @@ public class MarchingSquaresVectorializer {
 
         List<Polygon> geometriesList = new ArrayList<Polygon>();
 
-        // for( int j = 0; j < height; j++ ) {
-        // for( int i = 0; i < width; i++ ) {
-        // double v = iter.getSampleDouble(i, j, 0);
-        // System.out.print(v + " ");
-        // }
-        // System.out.println();
-        // }
         pm.beginTask("Extracting vectors...", height);
         for( int row = 0; row < height; row++ ) {
             for( int col = 0; col < width; col++ ) {
                 double value = iter.getSampleDouble(col, row, 0);
                 if (!isNovalue(value) && value == pValue && !bitSet.get(row * width + col)) {
-                    // trace the vector
+
                     Polygon polygon = identifyPerimeter(col, row);
                     if (polygon != null) {
                         geometriesList.add(polygon);
@@ -360,12 +343,10 @@ public class MarchingSquaresVectorializer {
         if (isOutsideGrid) {
             return false;
         }
-        // boolean isValid = data[(y - 1) * width + (x - 1)] != 0;
         double value = iter.getSampleDouble(x, y, 0);
         if (!isNovalue(value)) {
             // mark the used position
             bitSet.set(y * width + x);
-            // iter.setSample(x, y, 0, doubleNovalue);
         } else {
             return false;
         }
@@ -374,8 +355,5 @@ public class MarchingSquaresVectorializer {
             return true;
         }
         return false;
-
-        // boolean isValid = data[(y - 1) * width + (x - 1)] != 0;
-        // return isOutsideGrid ? false : isValid;
     }
 }
