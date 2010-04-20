@@ -42,7 +42,6 @@
     <modules>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
-        <module>edc</module>
     </modules>
 
 
