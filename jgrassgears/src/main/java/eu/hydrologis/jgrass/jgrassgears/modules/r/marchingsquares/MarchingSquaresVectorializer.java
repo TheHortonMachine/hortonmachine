@@ -34,6 +34,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -53,9 +54,11 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -64,6 +67,8 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
+import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
 import eu.hydrologis.jgrass.jgrassgears.utils.geometry.GeometryUtilities;
 
 @Description("Module for raster to vector conversion")
@@ -82,11 +87,15 @@ public class MarchingSquaresVectorializer {
     @In
     public double pValue = doubleNovalue;
 
+    @Description("The progress monitor.")
+    @In
+    public IHMProgressMonitor pm = new DummyProgressMonitor();
+
     @Description("The extracted features.")
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
 
-    private WritableRandomIter iter = null;
+    private RandomIter iter = null;
 
     private double xRes;
 
@@ -100,18 +109,23 @@ public class MarchingSquaresVectorializer {
 
     private BitSet bitSet = null;
 
+    private CoordinateReferenceSystem crs;
+
     @Execute
     public void process() throws Exception {
         if (iter == null) {
             RenderedImage inputRI = inGeodata.getRenderedImage();
-            WritableRaster inputWR = renderedImage2WritableRaster(inputRI, true);
-            iter = RandomIterFactory.createWritable(inputWR, null);
+            // WritableRaster inputWR = renderedImage2WritableRaster(inputRI, true);
+            iter = RandomIterFactory.create(inputRI, null);
 
             HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inGeodata);
             height = regionMap.get(ROWS).intValue();
             width = regionMap.get(COLS).intValue();
             xRes = regionMap.get(XRES);
             yRes = regionMap.get(YRES);
+            // crs = inGeodata.getCoordinateReferenceSystem();
+
+            crs = CRS.decode("EPSG:3031");
 
             System.out.println(width + "/" + height + "/" + xRes + "/" + yRes);
 
@@ -129,9 +143,9 @@ public class MarchingSquaresVectorializer {
         // }
         // System.out.println();
         // }
-
-        for( int col = 0; col < width; col++ ) {
-            for( int row = 0; row < height; row++ ) {
+        pm.beginTask("Extracting vectors...", height);
+        for( int row = 0; row < height; row++ ) {
+            for( int col = 0; col < width; col++ ) {
                 double value = iter.getSampleDouble(col, row, 0);
                 if (!isNovalue(value) && value == pValue && !bitSet.get(row * width + col)) {
                     // trace the vector
@@ -141,11 +155,13 @@ public class MarchingSquaresVectorializer {
                     }
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("raster2vector");
-        b.setCRS(inGeodata.getCoordinateReferenceSystem());
+        b.setCRS(crs);
         b.add("the_geom", Polygon.class);
         b.add("cat", Integer.class);
         SimpleFeatureType type = b.buildFeatureType();
@@ -153,6 +169,8 @@ public class MarchingSquaresVectorializer {
         outGeodata = FeatureCollections.newCollection();
         int index = 0;
         for( Polygon polygon : geometriesList ) {
+            System.out.println(index);
+
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             Object[] values = new Object[]{polygon, index};
             builder.addAll(values);
@@ -311,6 +329,8 @@ public class MarchingSquaresVectorializer {
 
         GeometryFactory gf = GeometryUtilities.gf();
 
+        coordinateList.add(startCoordinate);
+
         Coordinate[] coordinateArray = (Coordinate[]) coordinateList
                 .toArray(new Coordinate[coordinateList.size()]);
         LinearRing linearRing = gf.createLinearRing(coordinateArray);
@@ -336,7 +356,7 @@ public class MarchingSquaresVectorializer {
     }
 
     private boolean isSet( int x, int y ) {
-        boolean isOutsideGrid = x <= 0 || x > width || y <= 0 || y > height;
+        boolean isOutsideGrid = x < 0 || x >= width || y < 0 || y >= height;
         if (isOutsideGrid) {
             return false;
         }
