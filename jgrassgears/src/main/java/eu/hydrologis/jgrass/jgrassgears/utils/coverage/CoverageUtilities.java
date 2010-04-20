@@ -161,7 +161,7 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
-    public HashMap<String, Double> generalParameterValues2RegionParamsMap(
+    public static HashMap<String, Double> generalParameterValues2RegionParamsMap(
             GeneralParameterValue[] params ) {
         GridGeometry2D gg = null;
         if (params != null) {
