@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package eu.hydrologis.jgrass.jgrassgears.modules.r.rasterizer;
+package eu.hydrologis.jgrass.jgrassgears.modules.r.scanline;
 
 import static eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants.doubleNovalue;
 import static eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities.COLS;
@@ -66,7 +66,7 @@ import eu.hydrologis.jgrass.jgrassgears.utils.geometry.GeometryUtilities;
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
-public class Rasterizer {
+public class ScanLineRasterizer {
 
     @Description("The features to rasterize.")
     @In

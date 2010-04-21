@@ -28,7 +28,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.modules.r.rasterizer.Rasterizer;
+import eu.hydrologis.jgrass.jgrassgears.modules.r.scanline.ScanLineRasterizer;
 import eu.hydrologis.jgrass.jgrassgears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
@@ -63,7 +63,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         /*
          * and rasterize back again
          */
-        Rasterizer rasterizer = new Rasterizer();
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
         rasterizer.pGrid = geodata.getGridGeometry();
