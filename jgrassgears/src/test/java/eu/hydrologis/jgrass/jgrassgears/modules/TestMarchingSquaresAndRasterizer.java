@@ -28,8 +28,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import eu.hydrologis.jgrass.jgrassgears.libs.monitor.PrintStreamProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.modules.r.marchingsquares.MarchingSquaresVectorializer;
-import eu.hydrologis.jgrass.jgrassgears.modules.v.rasterize.Rasterizer;
+import eu.hydrologis.jgrass.jgrassgears.modules.r.rasterizer.Rasterizer;
+import eu.hydrologis.jgrass.jgrassgears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestCase;
 import eu.hydrologis.jgrass.jgrassgears.utils.HMTestMaps;
 import eu.hydrologis.jgrass.jgrassgears.utils.coverage.CoverageUtilities;
