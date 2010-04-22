@@ -1,13 +1,10 @@
 package eu.hydrologis.edc.oms.datareader;
 
-import static java.lang.Math.pow;
 import static java.lang.Double.NaN;
+import static java.lang.Math.pow;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,6 +22,13 @@ import org.hibernate.Criteria;
 import org.hibernate.classic.Session;
 import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.ModelsEngine;
+import org.jgrasstools.gears.libs.modules.SplitVectors;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.utils.math.ListInterpolator;
+import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -35,14 +39,6 @@ import eu.hydrologis.edc.annotatedclasses.ScaleTypeTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
 import eu.hydrologis.edc.utils.Constants;
-import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMConstants;
-import eu.hydrologis.jgrass.jgrassgears.libs.modules.HMModel;
-import eu.hydrologis.jgrass.jgrassgears.libs.modules.ModelsEngine;
-import eu.hydrologis.jgrass.jgrassgears.libs.modules.SplitVectors;
-import eu.hydrologis.jgrass.jgrassgears.libs.monitor.DummyProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.libs.monitor.IHMProgressMonitor;
-import eu.hydrologis.jgrass.jgrassgears.utils.math.ListInterpolator;
-import eu.hydrologis.jgrass.jgrassgears.utils.sorting.QuickSortAlgorithm;
 
 @SuppressWarnings("nls")
 public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
@@ -297,7 +293,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             boolean allNaN = true;
             for( int i = 0; i < size; i++ ) {
                 valuesArray[i] = valuesInTimeframe.get(i);
-                if (!HMConstants.isNovalue(valuesArray[i])) {
+                if (!JGTConstants.isNovalue(valuesArray[i])) {
                     allNaN = false;
                 }
             }

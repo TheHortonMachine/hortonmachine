@@ -23,7 +23,7 @@ import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1025,9 +1025,9 @@ public class ModelsEngine {
                 if (!isNovalue(netRandomIter.getSampleDouble(k, l, 0)))
                     subbRandomIter.setSample(k, l, 0, netNumberRandomIter.getSampleDouble(k, l, 0));
                 if (netNumberRandomIter.getSampleDouble(k, l, 0) == 0)
-                    netNumberRandomIter.setSample(k, l, 0, HMConstants.doubleNovalue);
+                    netNumberRandomIter.setSample(k, l, 0, JGTConstants.doubleNovalue);
                 if (subbRandomIter.getSampleDouble(k, l, 0) == 0)
-                    subbRandomIter.setSample(k, l, 0, HMConstants.doubleNovalue);
+                    subbRandomIter.setSample(k, l, 0, JGTConstants.doubleNovalue);
             }
         }
 

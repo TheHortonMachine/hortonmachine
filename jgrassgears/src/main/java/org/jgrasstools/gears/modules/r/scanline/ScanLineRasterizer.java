@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.modules.r.scanline;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;

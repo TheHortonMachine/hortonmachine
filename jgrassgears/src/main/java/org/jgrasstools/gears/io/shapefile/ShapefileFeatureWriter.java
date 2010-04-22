@@ -39,7 +39,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -48,7 +48,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Keywords("IO, Shapefile, Feature, Vector, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ShapefileFeatureWriter extends HMModel {
+public class ShapefileFeatureWriter extends JGTModel {
     @Description("The shapefile to which to write to.")
     @In
     public String file = null;

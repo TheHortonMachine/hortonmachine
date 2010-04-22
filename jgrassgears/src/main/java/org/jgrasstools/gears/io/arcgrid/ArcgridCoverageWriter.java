@@ -34,7 +34,7 @@ import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.gce.arcgrid.ArcGridFormat;
 import org.geotools.gce.arcgrid.ArcGridWriteParams;
 import org.geotools.gce.arcgrid.ArcGridWriter;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 
@@ -43,7 +43,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Keywords("IO, Arcgrid, Coverage, Raster, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ArcgridCoverageWriter extends HMModel{
+public class ArcgridCoverageWriter extends JGTModel{
     @Description("The coverage map that needs to be written.")
     @In
     public GridCoverage2D geodata = null;

@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.utils.sorting;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;

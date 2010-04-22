@@ -36,7 +36,7 @@ import oms3.annotations.Status;
 import oms3.io.DataIO;
 import oms3.io.MemoryTable;
 
-import org.jgrasstools.gears.libs.modules.HMConstants;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormatter;
@@ -77,8 +77,8 @@ public class TimeseriesWriterArray {
 
     private MemoryTable memoryTable;
 
-    private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
-    private String formatterPattern = HMConstants.utcDateFormatterYYYYMMDDHHMM_string;
+    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    private String formatterPattern = JGTConstants.utcDateFormatterYYYYMMDDHHMM_string;
 
     private void ensureOpen() throws IOException {
         if (memoryTable == null) {

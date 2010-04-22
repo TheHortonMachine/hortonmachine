@@ -34,7 +34,7 @@ import oms3.annotations.Status;
 import oms3.io.DataIO;
 import oms3.io.MemoryTable;
 
-import org.jgrasstools.gears.libs.modules.HMConstants;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -58,7 +58,7 @@ public class AdigeBoundaryConditionWriter {
 
     private MemoryTable memoryTable;
 
-    private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
 
     private void ensureOpen() throws IOException {
         if (memoryTable == null) {

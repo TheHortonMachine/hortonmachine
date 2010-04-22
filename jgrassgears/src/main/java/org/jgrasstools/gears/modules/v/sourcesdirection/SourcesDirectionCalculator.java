@@ -49,7 +49,7 @@ import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.jgrasstools.gears.io.coveragereader.CoverageReader;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Raster, Vector")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SourcesDirectionCalculator extends HMModel {
+public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The source point features.")
     @In

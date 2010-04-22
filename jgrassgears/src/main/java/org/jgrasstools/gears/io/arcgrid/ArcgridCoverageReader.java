@@ -18,8 +18,8 @@
  */
 package org.jgrasstools.gears.io.arcgrid;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -43,7 +43,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.ViewType;
 import org.geotools.gce.arcgrid.ArcGridReader;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Utility class for reading arcgrids to geotools coverages.")
@@ -51,7 +51,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Keywords("IO, Arcgrid, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ArcgridCoverageReader extends HMModel {
+public class ArcgridCoverageReader extends JGTModel {
     @Description("The arcgrid file path.")
     @In
     public String file = null;

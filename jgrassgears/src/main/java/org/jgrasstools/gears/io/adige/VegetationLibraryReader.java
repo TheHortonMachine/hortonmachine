@@ -36,14 +36,14 @@ import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
 
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description("Utility class for reading data from a OMS formatted csv file assumed to be containing the Vegetation library data.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class VegetationLibraryReader extends HMModel {
+public class VegetationLibraryReader extends JGTModel {
     @Description("The csv file to read from.")
     @In
     public String file = null;

@@ -34,7 +34,7 @@ import oms3.annotations.Status;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Keywords("Smoothing, Vector")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LineSmoother extends HMModel {
+public class LineSmoother extends JGTModel {
 
     @Description("The features to be smoothed.")
     @In

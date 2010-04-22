@@ -35,7 +35,7 @@ import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -48,7 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Keywords("IO, Grass, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class JGrassCoverageReader extends HMModel {
+public class JGrassCoverageReader extends JGTModel {
     @Description("The file to the map to be read (the cell file).")
     @In
     public String file = null;

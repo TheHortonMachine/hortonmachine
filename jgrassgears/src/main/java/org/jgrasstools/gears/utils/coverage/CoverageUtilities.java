@@ -47,7 +47,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
-import org.jgrasstools.gears.libs.modules.HMConstants;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -424,12 +424,12 @@ public class CoverageUtilities {
         writableRaster.setDataElements(0, 0, data);
         if (nullBorders) {
             for( int c = 0; c < width; c++ ) {
-                writableRaster.setSample(c, 0, 0, HMConstants.doubleNovalue);
-                writableRaster.setSample(c, height - 1, 0, HMConstants.doubleNovalue);
+                writableRaster.setSample(c, 0, 0, JGTConstants.doubleNovalue);
+                writableRaster.setSample(c, height - 1, 0, JGTConstants.doubleNovalue);
             }
             for( int r = 0; r < height; r++ ) {
-                writableRaster.setSample(0, r, 0, HMConstants.doubleNovalue);
-                writableRaster.setSample(width - 1, r, 0, HMConstants.doubleNovalue);
+                writableRaster.setSample(0, r, 0, JGTConstants.doubleNovalue);
+                writableRaster.setSample(width - 1, r, 0, JGTConstants.doubleNovalue);
             }
         }
 
@@ -446,12 +446,12 @@ public class CoverageUtilities {
         int height = raster.getHeight();
 
         for( int c = 0; c < width; c++ ) {
-            raster.setSample(c, 0, 0, HMConstants.doubleNovalue);
-            raster.setSample(c, height - 1, 0, HMConstants.doubleNovalue);
+            raster.setSample(c, 0, 0, JGTConstants.doubleNovalue);
+            raster.setSample(c, height - 1, 0, JGTConstants.doubleNovalue);
         }
         for( int r = 0; r < height; r++ ) {
-            raster.setSample(0, r, 0, HMConstants.doubleNovalue);
-            raster.setSample(width - 1, r, 0, HMConstants.doubleNovalue);
+            raster.setSample(0, r, 0, JGTConstants.doubleNovalue);
+            raster.setSample(width - 1, r, 0, JGTConstants.doubleNovalue);
         }
     }
 

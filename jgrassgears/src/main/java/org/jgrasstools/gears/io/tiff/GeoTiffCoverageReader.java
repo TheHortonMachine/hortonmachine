@@ -34,7 +34,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.ViewType;
 import org.geotools.gce.geotiff.GeoTiffReader;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 
@@ -43,7 +43,7 @@ import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 @Keywords("IO, Geotiff, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class GeoTiffCoverageReader extends HMModel{
+public class GeoTiffCoverageReader extends JGTModel{
     @Role(Role.PARAMETER)
     @Description("The geotiff file.")
     @In

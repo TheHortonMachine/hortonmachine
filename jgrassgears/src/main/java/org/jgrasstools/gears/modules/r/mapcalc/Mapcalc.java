@@ -46,7 +46,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -56,7 +56,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Keywords("Mapcalc, Raster")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Mapcalc extends HMModel {
+public class Mapcalc extends JGTModel {
 
     @Description("The maps that are used in the calculation.")
     @In

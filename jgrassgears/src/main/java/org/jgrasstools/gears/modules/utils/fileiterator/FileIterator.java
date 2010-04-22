@@ -32,14 +32,14 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description("A module that iterates over files in a folder")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Iterator, File")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class FileIterator extends HMModel {
+public class FileIterator extends JGTModel {
 
     @Description("The folder on which to iterate")
     @In

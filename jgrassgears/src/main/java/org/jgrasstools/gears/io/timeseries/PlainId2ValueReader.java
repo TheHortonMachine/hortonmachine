@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.io.timeseries;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

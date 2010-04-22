@@ -41,7 +41,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Point;
 @Keywords("Azimuth, Vector")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SourcesAzimuth extends HMModel {
+public class SourcesAzimuth extends JGTModel {
 
     @Description("The feature collection of points to analize.")
     @In

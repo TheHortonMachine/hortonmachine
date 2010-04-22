@@ -34,7 +34,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Point;
 @Keywords("Contourlines, Vector")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ContourLinesLabeler extends HMModel {
+public class ContourLinesLabeler extends JGTModel {
 
     @Description("The contour lines.")
     @In

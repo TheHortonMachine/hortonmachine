@@ -37,7 +37,7 @@ import org.geotools.coverage.grid.io.imageio.GeoToolsWriteParams;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 import org.opengis.parameter.GeneralParameterValue;
@@ -48,7 +48,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Keywords("IO, Geotiff, Coverage, Raster, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class GeoTiffCoverageWriter extends HMModel {
+public class GeoTiffCoverageWriter extends JGTModel {
     @Role(Role.PARAMETER)
     @Description("The coverage map that needs to be written.")
     @In

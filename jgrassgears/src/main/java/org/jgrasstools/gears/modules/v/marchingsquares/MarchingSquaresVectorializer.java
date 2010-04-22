@@ -18,8 +18,8 @@
  */
 package org.jgrasstools.gears.modules.v.marchingsquares;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;

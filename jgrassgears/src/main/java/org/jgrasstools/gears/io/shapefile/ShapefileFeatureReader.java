@@ -34,7 +34,7 @@ import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -43,7 +43,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ShapefileFeatureReader extends HMModel{
+public class ShapefileFeatureReader extends JGTModel{
     @Description("The shapefile.")
     @In
     public String file = null;

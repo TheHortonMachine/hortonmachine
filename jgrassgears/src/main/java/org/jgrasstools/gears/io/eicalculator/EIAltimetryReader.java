@@ -35,7 +35,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 
@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
 @Keywords("IO, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EIAltimetryReader extends HMModel {
+public class EIAltimetryReader extends JGTModel {
     @Description("The csv file to read from.")
     @In
     public String file = null;

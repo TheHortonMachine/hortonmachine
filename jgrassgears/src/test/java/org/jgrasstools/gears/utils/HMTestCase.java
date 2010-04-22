@@ -17,7 +17,7 @@
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jgrasstools.gears.utils;
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;

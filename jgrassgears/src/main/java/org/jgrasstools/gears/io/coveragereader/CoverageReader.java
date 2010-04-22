@@ -18,8 +18,8 @@
  */
 package org.jgrasstools.gears.io.coveragereader;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
@@ -55,7 +55,7 @@ import org.geotools.factory.Hints;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FilesFinder;
 @Description("Generic geotools coverage reader.")
@@ -63,7 +63,7 @@ import org.jgrasstools.gears.utils.files.FilesFinder;
 @Keywords("IO, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CoverageReader extends HMModel {
+public class CoverageReader extends JGTModel {
     @Description("The coverage file path or a data folder, which will be browsed.")
     @In
     public String file = null;

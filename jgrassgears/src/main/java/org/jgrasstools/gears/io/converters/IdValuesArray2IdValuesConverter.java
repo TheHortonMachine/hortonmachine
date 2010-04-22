@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.io.converters;
 
-import static org.jgrasstools.gears.libs.modules.HMConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.IOException;
 import java.util.HashMap;

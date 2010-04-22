@@ -37,8 +37,8 @@ import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
 
-import org.jgrasstools.gears.libs.modules.HMConstants;
-import org.jgrasstools.gears.libs.modules.HMModel;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -47,7 +47,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Keywords("IO, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TimeseriesReaderArray extends HMModel {
+public class TimeseriesReaderArray extends JGTModel {
     @Description("The csv file to read from.")
     @In
     public String file = null;
@@ -60,7 +60,7 @@ public class TimeseriesReaderArray extends HMModel {
     @Role(Role.PARAMETER)
     @Description("The internal novalue to use (usually not changed).")
     @In
-    public double novalue = HMConstants.doubleNovalue;
+    public double novalue = JGTConstants.doubleNovalue;
 
     @Description("The list of timestamps read.")
     @Out
@@ -74,7 +74,7 @@ public class TimeseriesReaderArray extends HMModel {
 
     private CSTable table;
 
-    private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
 
     private void ensureOpen() throws IOException {
         if (table == null) {
