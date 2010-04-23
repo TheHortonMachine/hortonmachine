@@ -1,8 +1,8 @@
 syntax: regexp
 
-.classpath
-.project
-.settings
+\.classpath
+\.project
+\.settings
 ^hortonmachine.target
 ^jgrassgears.target
 ^edc.target
