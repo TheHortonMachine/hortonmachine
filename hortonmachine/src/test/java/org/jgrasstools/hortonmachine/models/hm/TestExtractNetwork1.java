@@ -28,11 +28,11 @@ public class TestExtractNetwork1 extends HMTestCase{
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs);
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] tcaData = HMTestMaps.tcaData;
-        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs);
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
         double[][] slopeData = HMTestMaps.slopeData;
-        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs);
+        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

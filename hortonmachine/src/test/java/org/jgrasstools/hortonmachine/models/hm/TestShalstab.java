@@ -22,9 +22,9 @@ public class TestShalstab extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
         double[][] slopeData = HMTestMaps.slopeData;
-        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs);
+        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs, true);
         double[][] abData = HMTestMaps.abData;
-        GridCoverage2D abCoverage = CoverageUtilities.buildCoverage("ab", abData, envelopeParams, crs);
+        GridCoverage2D abCoverage = CoverageUtilities.buildCoverage("ab", abData, envelopeParams, crs, true);
         
         Shalstab shalstab = new Shalstab();
         shalstab.inSlope = slopeCoverage;

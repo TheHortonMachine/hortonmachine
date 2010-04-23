@@ -49,7 +49,7 @@ public class TestReprojectors extends HMTestCase {
         int origCols = envelopeParams.get(CoverageUtilities.COLS).intValue();
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-                elevationData, envelopeParams, crs);
+                elevationData, envelopeParams, crs, true);
 
         CoverageReprojector reprojector = new CoverageReprojector();
         reprojector.inGeodata = elevationCoverage;

@@ -21,7 +21,7 @@ public class TestFlow extends HMTestCase {
         double[][] pitfillerData = HMTestMaps.pitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller", pitfillerData, envelopeParams, crs);
+        GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller", pitfillerData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

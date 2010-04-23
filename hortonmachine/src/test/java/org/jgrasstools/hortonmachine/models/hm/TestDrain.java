@@ -23,10 +23,10 @@ public class TestDrain extends HMTestCase {
 
         double[][] pitfillerData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller",
-                pitfillerData, envelopeParams, crs);
+                pitfillerData, envelopeParams, crs, true);
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-                envelopeParams, crs);
+                envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 

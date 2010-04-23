@@ -17,7 +17,7 @@ public class TestMapcalc extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-                elevationData, envelopeParams, crs);
+                elevationData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 

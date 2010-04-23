@@ -20,7 +20,7 @@ public class TestAspect extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs);
+        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
@@ -40,7 +40,7 @@ public class TestAspect extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs);
+        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
         
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

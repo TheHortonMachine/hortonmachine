@@ -21,9 +21,9 @@ public class TestNetnumbering extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs);
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet1Data;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs);
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         
@@ -47,11 +47,11 @@ public class TestNetnumbering extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         
         double[][] flowData = HMTestMaps.mflowDataBorder;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs);
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet1Data;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs);
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
         double[][] tcaData = HMTestMaps.tcaData;
-        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs);
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

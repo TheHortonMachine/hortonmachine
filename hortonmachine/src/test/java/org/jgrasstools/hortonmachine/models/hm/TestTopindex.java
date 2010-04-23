@@ -21,9 +21,9 @@ public class TestTopindex extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
         double[][] tcaData = HMTestMaps.tcaData;
-        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs);
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
         double[][] slopeData = HMTestMaps.slopeData;
-        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("plan", slopeData, envelopeParams, crs);
+        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("plan", slopeData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

@@ -41,7 +41,7 @@ public class TestCurvatures extends HMTestCase {
 
         double[][] pitfillerData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller",
-                pitfillerData, envelopeParams, crs);
+                pitfillerData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 

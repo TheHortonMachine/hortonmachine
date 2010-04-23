@@ -111,4 +111,19 @@ public class ArcgridCoverageReader extends JGTModel {
 
     }
 
+    /**
+     * Utility method to quickly read a grid.
+     * 
+     * @param path the path to the file.
+     * @return the read coverage.
+     * @throws Exception
+     */
+    public static GridCoverage2D readCoverage( String path ) throws Exception {
+        ArcgridCoverageReader reader = new ArcgridCoverageReader();
+        reader.file = path;
+        reader.process();
+        GridCoverage2D geodata = reader.geodata;
+        return geodata;
+    }
+
 }

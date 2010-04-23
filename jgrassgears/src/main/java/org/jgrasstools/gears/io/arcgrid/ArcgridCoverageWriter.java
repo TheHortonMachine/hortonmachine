@@ -43,7 +43,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Keywords("IO, Arcgrid, Coverage, Raster, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ArcgridCoverageWriter extends JGTModel{
+public class ArcgridCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
     @In
     public GridCoverage2D geodata = null;
@@ -53,19 +53,36 @@ public class ArcgridCoverageWriter extends JGTModel{
     public String file = null;
 
     private boolean hasWritten = false;
-    
+
     @Execute
     public void writeCoverage() throws IOException {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
-        
+
         final ArcGridFormat format = new ArcGridFormat();
         final ArcGridWriteParams wp = new ArcGridWriteParams();
         final ParameterValueGroup paramWrite = format.getWriteParameters();
-        paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
+        paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString())
+                .setValue(wp);
         ArcGridWriter gtw = (ArcGridWriter) format.getWriter(new File(file));
-        gtw.write(geodata, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
+        gtw.write(geodata, (GeneralParameterValue[]) paramWrite.values().toArray(
+                new GeneralParameterValue[1]));
         hasWritten = true;
     }
+
+    /**
+     * Utility method to quickly write a grid.
+     * 
+     * @param path the path to the new file.
+     * @param coverage the coverage to write.
+     * @throws Exception
+     */
+    public static void writeCoverage( String path, GridCoverage2D coverage ) throws Exception {
+        ArcgridCoverageWriter writer = new ArcgridCoverageWriter();
+        writer.file = path;
+        writer.geodata = coverage;
+        writer.writeCoverage();
+    }
+
 }

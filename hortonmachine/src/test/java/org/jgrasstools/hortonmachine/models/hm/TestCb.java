@@ -45,7 +45,7 @@ public class TestCb extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         
-        GridCoverage2D map1 = CoverageUtilities.buildCoverage("map1", HMTestMaps.mapData, envelopeParams, crs);
+        GridCoverage2D map1 = CoverageUtilities.buildCoverage("map1", HMTestMaps.mapData, envelopeParams, crs, true);
         GridCoverage2D map2 = map1;
         
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);

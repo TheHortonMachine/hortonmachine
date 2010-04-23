@@ -46,7 +46,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data,
-                envelopeParams, crs);
+                envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();

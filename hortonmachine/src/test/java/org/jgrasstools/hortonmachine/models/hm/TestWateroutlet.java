@@ -22,7 +22,7 @@ public class TestWateroutlet extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-                envelopeParams, crs);
+                envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 

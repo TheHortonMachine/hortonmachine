@@ -160,7 +160,7 @@ public class FlowDirections extends JGTModel {
             }
         }
 
-        outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap, inPit.getCoordinateReferenceSystem());
+        outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap, inPit.getCoordinateReferenceSystem(), true);
     }
 
     /**

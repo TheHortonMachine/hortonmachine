@@ -23,9 +23,9 @@ public class TestRescaledDistance extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
         double[][] flowData = HMTestMaps.flowData;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs);
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet0Data;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs);
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         

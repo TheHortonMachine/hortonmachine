@@ -22,10 +22,10 @@ public class TestAb extends HMTestCase {
 
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData,
-                envelopeParams, crs);
+                envelopeParams, crs, true);
         double[][] planData = HMTestMaps.planData;
         GridCoverage2D planCoverage = CoverageUtilities.buildCoverage("plan", planData,
-                envelopeParams, crs);
+                envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 

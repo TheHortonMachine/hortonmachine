@@ -307,17 +307,61 @@ public class CoverageUtilities {
      * Create a {@link WritableRaster} from a double matrix.
      * 
      * @param matrix the matrix to take the data from.
+     * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the produced raster.
      */
-    public static WritableRaster createWritableRasterFromMatrix( double[][] matrix ) {
+    public static WritableRaster createWritableRasterFromMatrix( double[][] matrix,
+            boolean matrixIsRowCol ) {
         int height = matrix.length;
         int width = matrix[0].length;
+        if (!matrixIsRowCol) {
+            int tmp = height;
+            height = width;
+            width = tmp;
+        }
         WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
 
         WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
-                disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                if (matrixIsRowCol) {
+                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                } else {
+                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                }
+            }
+        }
+        disckRandomIter.done();
+
+        return writableRaster;
+    }
+
+    /**
+     * Create a {@link WritableRaster} from a float matrix.
+     * 
+     * @param matrix the matrix to take the data from.
+     * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
+     * @return the produced raster.
+     */
+    public static WritableRaster createWritableRasterFromMatrix( float[][] matrix,
+            boolean matrixIsRowCol ) {
+        int height = matrix.length;
+        int width = matrix[0].length;
+        if (!matrixIsRowCol) {
+            int tmp = height;
+            height = width;
+            width = tmp;
+        }
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+
+        WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                if (matrixIsRowCol) {
+                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                } else {
+                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                }
             }
         }
         disckRandomIter.done();
@@ -332,11 +376,30 @@ public class CoverageUtilities {
      * @param dataMatrix the matrix containing the data.
      * @param envelopeParams the map of boundary parameters.
      * @param crs the {@link CoordinateReferenceSystem}.
+     * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the {@link GridCoverage2D coverage}.
      */
     public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
-        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix);
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs,
+            boolean matrixIsRowCol ) {
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
+        return buildCoverage(name, writableRaster, envelopeParams, crs);
+    }
+
+    /**
+     * Creates a {@link GridCoverage2D coverage} from a float[][] matrix and the necessary geographic Information.
+     * 
+     * @param name the name of the coverage.
+     * @param dataMatrix the matrix containing the data.
+     * @param envelopeParams the map of boundary parameters.
+     * @param crs the {@link CoordinateReferenceSystem}.
+     * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
+     * @return the {@link GridCoverage2D coverage}.
+     */
+    public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix,
+            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs,
+            boolean matrixIsRowCol ) {
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverage(name, writableRaster, envelopeParams, crs);
     }
 
@@ -403,7 +466,7 @@ public class CoverageUtilities {
         envelopeParams.put(COLS, 1.0);
         double[][] dataMatrix = new double[1][1];
         dataMatrix[0][0] = 0;
-        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix);
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, true);
         return buildCoverage("dummy", writableRaster, envelopeParams, DefaultGeographicCRS.WGS84);
     }
 

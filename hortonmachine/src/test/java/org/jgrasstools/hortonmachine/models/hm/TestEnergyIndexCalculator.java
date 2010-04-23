@@ -33,15 +33,15 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
         
         double[][] aspectData = HMTestMaps.aspectDataRadiants;
-        GridCoverage2D aspectCoverage = CoverageUtilities.buildCoverage("aspect", aspectData, envelopeParams, crs);
+        GridCoverage2D aspectCoverage = CoverageUtilities.buildCoverage("aspect", aspectData, envelopeParams, crs, true);
         double[][] nablaData = HMTestMaps.nablaData0;
-        GridCoverage2D nablaCoverage = CoverageUtilities.buildCoverage("nabla", nablaData, envelopeParams, crs);
+        GridCoverage2D nablaCoverage = CoverageUtilities.buildCoverage("nabla", nablaData, envelopeParams, crs, true);
         double[][] pitData = HMTestMaps.pitData;
-        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs);
+        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
         double[][] slopeData = HMTestMaps.slopeData;
-        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs);
+        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs, true);
         double[][] subbasinsData = HMTestMaps.basinDataNN0;
-        GridCoverage2D subbasinsCoverage = CoverageUtilities.buildCoverage("subbasins", subbasinsData, envelopeParams, crs);
+        GridCoverage2D subbasinsCoverage = CoverageUtilities.buildCoverage("subbasins", subbasinsData, envelopeParams, crs, true);
 
         EnergyIndexCalculator eiCalculator = new EnergyIndexCalculator();
         eiCalculator.inAspect = aspectCoverage;
