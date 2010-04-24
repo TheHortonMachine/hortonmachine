@@ -66,6 +66,7 @@ import com.vividsolutions.jts.geom.LineSegment;
  * @author Andrea Antonello - www.hydrologis.com
  * @since 1.1.0
  */
+@SuppressWarnings("deprecation")
 public class CoverageUtilities {
     public static final String NORTH = "NORTH";
     public static final String SOUTH = "SOUTH";
@@ -366,6 +367,30 @@ public class CoverageUtilities {
         }
         disckRandomIter.done();
 
+        return writableRaster;
+    }
+
+    /**
+     * Create a {@link WritableRaster} from a int array.
+     * 
+     * @param width the width of the raster to create.
+     * @param height the height of the raster to create.
+     * @param pixels the array of data.
+     * @return the produced raster.
+     */
+    public static WritableRaster createWritableRasterFromArray( int width, int height, int[] pixels ) {
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        int index = 0;
+        for( int y = 0; y < height; y++ ) {
+            for( int x = 0; x < width; x++ ) {
+                double value = (double) pixels[index];
+                if (value == 0) {
+                    value = JGTConstants.doubleNovalue;
+                }
+                writableRaster.setSample(x, y, 0, value);
+                index++;
+            }
+        }
         return writableRaster;
     }
 

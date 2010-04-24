@@ -98,4 +98,14 @@ public class ShapefileFeatureWriter extends JGTModel {
 
         hasWritten = true;
     }
+
+    public static void writeShapefile( String path,
+            FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection )
+            throws IOException {
+        ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
+        writer.file = path;
+        writer.geodata = featureCollection;
+        writer.writeFeatureCollection();
+    }
+
 }
