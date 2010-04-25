@@ -27,7 +27,7 @@ import org.opengis.util.ProgressListener;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeotoolsProgressMonitorAdapter implements IHMProgressMonitor {
+public class GeotoolsProgressMonitorAdapter implements IJGTProgressMonitor {
 
     private final ProgressListener geotoolsMonitor;
     private int totalWork;

@@ -37,7 +37,7 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Utility class for reading energy data from csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -56,7 +56,7 @@ public class EIEnergyReader extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The read data.")
     @Out

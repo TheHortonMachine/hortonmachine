@@ -49,7 +49,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.i18n.MessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -106,7 +106,7 @@ public class ModelsEngine {
      * @throws TransformException
      */
     public FeatureCollection<SimpleFeatureType, SimpleFeature> net2ShapeOnly( RenderedImage flowImage,
-            WritableRaster netNumImage, GridGeometry2D gridGeometry, List<Integer> nstream, IHMProgressMonitor pm )
+            WritableRaster netNumImage, GridGeometry2D gridGeometry, List<Integer> nstream, IJGTProgressMonitor pm )
             throws IOException, TransformException {
 
         int activecols = flowImage.getWidth();
@@ -379,7 +379,7 @@ public class ModelsEngine {
      * @param out
      * @return
      */
-    public double split2realvectors( double[] U, double[] T, SplitVectors theSplit, int N, int num_max, IHMProgressMonitor pm ) {
+    public double split2realvectors( double[] U, double[] T, SplitVectors theSplit, int N, int num_max, IJGTProgressMonitor pm ) {
 
         double delta = 0, min = 0, max;
         int i, count = 0, count1, minposition = 0, maxposition = 0, bin_vuoti;
@@ -507,7 +507,7 @@ public class ModelsEngine {
         return delta;
     }
 
-    public double doubleNMoment( double[] m, int nh, double mean, double NN, IHMProgressMonitor pm ) {
+    public double doubleNMoment( double[] m, int nh, double mean, double NN, IJGTProgressMonitor pm ) {
         double moment = 0.0, n;
 
         n = 0;
@@ -570,7 +570,7 @@ public class ModelsEngine {
      * this method numerating every stream
      */
     public WritableRaster netNumbering( List<Integer> nstream, RandomIter flowIter, RandomIter networkIter, int width,
-            int height, IHMProgressMonitor pm ) {
+            int height, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
         WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
@@ -635,7 +635,7 @@ public class ModelsEngine {
      * greater than a threshold
      */
     public WritableRaster netNumberingWithTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            RandomIter tcaRandomIter, int cols, int rows, double tcaTh, IHMProgressMonitor pm ) {
+            RandomIter tcaRandomIter, int cols, int rows, double tcaTh, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
 
@@ -715,7 +715,7 @@ public class ModelsEngine {
      */
     public WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
             int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
-            IHMProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
+            IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
         WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
@@ -849,7 +849,7 @@ public class ModelsEngine {
      */
     public WritableRaster netNumberingWithPointsAndTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
             RandomIter tcaRandomIter, double tcaTh, int rows, int cols, List<HashMap<String, ? >> attributePoints,
-            List<Geometry> geomVect, GridGeometry2D gridGeometry, IHMProgressMonitor pm ) throws InvalidGridGeometryException,
+            List<Geometry> geomVect, GridGeometry2D gridGeometry, IJGTProgressMonitor pm ) throws InvalidGridGeometryException,
             TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
@@ -1007,7 +1007,7 @@ public class ModelsEngine {
      * @return the map of subbasin
      */
     public WritableRaster extractSubbasins( WritableRandomIter flowRandomIter, RandomIter netRandomIter,
-            WritableRandomIter netNumberRandomIter, int rows, int cols, IHMProgressMonitor pm ) {
+            WritableRandomIter netNumberRandomIter, int rows, int cols, IJGTProgressMonitor pm ) {
 
         for( int l = 0; l < rows; l++ ) {
             for( int k = 0; k < cols; k++ ) {
@@ -1039,7 +1039,7 @@ public class ModelsEngine {
      * @param att
      * @param dist
      */
-    public WritableRaster go2channel( RandomIter mRandomIter, RandomIter attRandomIter, int cols, int rows, IHMProgressMonitor pm ) {
+    public WritableRaster go2channel( RandomIter mRandomIter, RandomIter attRandomIter, int cols, int rows, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         double value = 0.0;
 

@@ -56,7 +56,7 @@ import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -162,7 +162,7 @@ public class Jami extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The current time variable.")
     @In

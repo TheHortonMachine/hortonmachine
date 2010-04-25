@@ -37,7 +37,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -66,7 +66,7 @@ public class FeatureReprojector extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The reprojected feature collection.")
     @Out

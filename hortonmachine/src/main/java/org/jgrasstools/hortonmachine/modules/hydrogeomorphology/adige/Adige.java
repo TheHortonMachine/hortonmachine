@@ -46,7 +46,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Dams;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.DischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
@@ -261,7 +261,7 @@ public class Adige extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The superficial discharge for every basin id.")
     @Out

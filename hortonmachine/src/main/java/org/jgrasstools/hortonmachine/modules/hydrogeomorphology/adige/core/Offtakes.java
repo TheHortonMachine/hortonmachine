@@ -22,7 +22,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 /**
  * Utility class for handling of Offtakes mappings and data retrival. 
@@ -33,7 +33,7 @@ public class Offtakes implements DischargeContributor {
 
     private final HashMap<String, Integer> offtakes_pfaff2idMap;
     private HashMap<Integer, Double> offtakes_id2valuesQMap;
-    private final IHMProgressMonitor out;
+    private final IJGTProgressMonitor out;
 
     /**
      * Constructor.
@@ -42,7 +42,7 @@ public class Offtakes implements DischargeContributor {
      *                      offtakes points id.
      * @param out {@link PrintStream} for warning handling.
      */
-    public Offtakes( HashMap<String, Integer> offtakes_pfaff2idMap, IHMProgressMonitor out ) {
+    public Offtakes( HashMap<String, Integer> offtakes_pfaff2idMap, IJGTProgressMonitor out ) {
         this.offtakes_pfaff2idMap = offtakes_pfaff2idMap;
         this.out = out;
     }

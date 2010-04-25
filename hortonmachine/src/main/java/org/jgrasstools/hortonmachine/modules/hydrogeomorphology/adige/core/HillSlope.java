@@ -27,7 +27,7 @@ import java.util.Random;
 
 import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -203,7 +203,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @param doMonitor
      * @return
      */
-    public Geometry getGeometry( List<PfafstetterNumber> limit, IHMProgressMonitor pm,
+    public Geometry getGeometry( List<PfafstetterNumber> limit, IJGTProgressMonitor pm,
             boolean doMonitor ) {
 
         if (limit == null && totalGeometryUpstream != null) {

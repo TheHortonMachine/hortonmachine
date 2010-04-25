@@ -48,7 +48,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -105,7 +105,7 @@ public class Netshape2Flow extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     private List<Coordinate> problemPointsList = new ArrayList<Coordinate>();
 

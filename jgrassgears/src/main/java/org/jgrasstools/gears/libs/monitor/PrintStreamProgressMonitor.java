@@ -23,13 +23,13 @@ import java.io.PrintStream;
 /**
  * A progress monitor for printstream based applications, i.e. console or commandline.
  * 
- * <p>This implements both {@link IHMProgressMonitor} and 
+ * <p>This implements both {@link IJGTProgressMonitor} and 
  * {@link IProgressMonitor} in order to be used also in the part of
  * the code that needs to stay clean of rcp code.</p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class PrintStreamProgressMonitor implements IHMProgressMonitor {
+public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
 
     protected boolean cancelled = false;
     protected final PrintStream outStream;

@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh;
 
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.integration.ConvolutionExponentialPeakflow;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
@@ -37,9 +37,9 @@ public class IUHSubSurface {
     private double yres = 0f;
     private double npixel_sub = 0f;
     private double resid_time = 0f;
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
-    public IUHSubSurface( double[][] _ampi, ParameterBox fixedParameters, IHMProgressMonitor pm ) {
+    public IUHSubSurface( double[][] _ampi, ParameterBox fixedParameters, IJGTProgressMonitor pm ) {
         ampi_help = _ampi;
         this.pm = pm;
         ampi_sub = new double[ampi_help.length][ampi_help[0].length];

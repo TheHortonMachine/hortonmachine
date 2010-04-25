@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHCalculator;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.RealJeff;
@@ -47,7 +47,7 @@ public class QReal implements DischargeCalculator {
 
     private double[][] Qtot = null;
 
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
     private ModelsEngine modelsEngine = new ModelsEngine();
 
@@ -55,7 +55,7 @@ public class QReal implements DischargeCalculator {
      * Calculate the discharge with rainfall data
      */
     public QReal( ParameterBox fixedParameters, IUHCalculator iuhC, RealJeff jeffC,
-            IHMProgressMonitor pm ) {
+            IJGTProgressMonitor pm ) {
         this.jeffC = jeffC;
 
         this.fixedParams = fixedParameters;

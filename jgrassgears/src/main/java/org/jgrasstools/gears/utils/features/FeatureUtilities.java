@@ -44,7 +44,7 @@ import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
@@ -207,7 +207,7 @@ public class FeatureUtilities {
      */
     @SuppressWarnings("nls")
     public static FeatureCollection<SimpleFeatureType, SimpleFeature> csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs, LinkedHashMap<String, Integer> fieldsAndTypesIndex,
-            String separator, IHMProgressMonitor pm ) throws Exception {
+            String separator, IJGTProgressMonitor pm ) throws Exception {
         GeometryFactory gf = new GeometryFactory();
         Map<String, Class< ? >> typesMap = JGrassConstants.CSVTYPESCLASSESMAP;
         String[] typesArray = JGrassConstants.CSVTYPESARRAY;

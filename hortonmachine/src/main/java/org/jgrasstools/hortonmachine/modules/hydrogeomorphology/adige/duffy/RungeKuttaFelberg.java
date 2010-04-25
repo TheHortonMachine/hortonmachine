@@ -30,7 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 /**
  * An implementation of the Runge-Kutta-Felberg algorithm for solving non-linear ordinary
@@ -61,7 +61,7 @@ public class RungeKuttaFelberg {
     private final boolean doLog;
 
     private boolean isAtFinalSubtimestep = true;
-    private IHMProgressMonitor outputStream;
+    private IJGTProgressMonitor outputStream;
 
     /**
      * Creates new RKF
@@ -71,7 +71,7 @@ public class RungeKuttaFelberg {
      * @param basTs The step size
      * @param doLog
      */
-    public RungeKuttaFelberg( IBasicFunction fu, double eps, double basTs, IHMProgressMonitor out,
+    public RungeKuttaFelberg( IBasicFunction fu, double eps, double basTs, IJGTProgressMonitor out,
             boolean doLog ) {
         theFunction = fu;
         epsilon = eps;

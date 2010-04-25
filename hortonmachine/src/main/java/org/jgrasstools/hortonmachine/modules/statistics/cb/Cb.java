@@ -36,7 +36,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 /**
  * <p>
@@ -107,7 +107,7 @@ public class Cb extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Role(Role.PARAMETER)
     @Description("The number of bins into which divide the data range.")

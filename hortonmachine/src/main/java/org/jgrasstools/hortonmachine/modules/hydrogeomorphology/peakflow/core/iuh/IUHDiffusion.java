@@ -20,7 +20,7 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.i
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.EffectsBox;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 /**
@@ -38,7 +38,7 @@ public class IUHDiffusion implements IUHCalculator {
     private double[][] ampisubsurface = null;
     private double[][] ampidiffsurface = null;
 
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
     private ModelsEngine modelsEngine = new ModelsEngine();
 
@@ -47,7 +47,7 @@ public class IUHDiffusion implements IUHCalculator {
      * @param fixedParams
      * @param pm
      */
-    public IUHDiffusion( EffectsBox effectsBox, ParameterBox fixedParams, IHMProgressMonitor pm ) {
+    public IUHDiffusion( EffectsBox effectsBox, ParameterBox fixedParams, IJGTProgressMonitor pm ) {
 
         this.pm = pm;
         double n_idf = fixedParams.getN_idf();

@@ -26,7 +26,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.ListInterpolator;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
@@ -68,7 +68,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The result of the data aggregation")
     @Out
@@ -319,7 +319,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     private double[] calculateQuantiles( double[] valuesArray ) {
         ModelsEngine modelsEngine = new ModelsEngine();
-        IHMProgressMonitor pm = new DummyProgressMonitor();
+        IJGTProgressMonitor pm = new DummyProgressMonitor();
         QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
         t.sort(valuesArray, null);
         SplitVectors theSplit = new SplitVectors();

@@ -23,7 +23,7 @@ package org.jgrasstools.gears.libs.monitor;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class DummyProgressMonitor implements IHMProgressMonitor {
+public class DummyProgressMonitor implements IJGTProgressMonitor {
 
     public void beginTask( String name, int totalWork ) {
     }

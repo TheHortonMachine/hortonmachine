@@ -51,7 +51,7 @@ import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.jgrasstools.gears.io.coveragereader.CoverageReader;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.files.FilesFinder;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -88,7 +88,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The source point features with the added azimuth angle.")
     @Out

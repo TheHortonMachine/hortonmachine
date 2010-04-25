@@ -21,14 +21,14 @@ package org.jgrasstools.gears.utils.sorting;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class QuickSortAlgorithm {
     private double[] valuesToSort;
     private int number;
     private double[] valuesToFollow;
-    private IHMProgressMonitor monitor = new DummyProgressMonitor();
+    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
-    public QuickSortAlgorithm( IHMProgressMonitor monitor ) {
+    public QuickSortAlgorithm( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
     }

@@ -25,7 +25,7 @@ import java.util.List;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -54,7 +54,7 @@ public class NetBasinsManager {
             FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
             FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection,
             String netnumAttr, String pfafAttr, String startelevAttr, String endelevAttr,
-            String baricenterAttr, String vegetationAttributeName, IHMProgressMonitor out )
+            String baricenterAttr, String vegetationAttributeName, IJGTProgressMonitor out )
             throws Exception {
 
         SimpleFeatureType fT = netFeatureCollection.getSchema();

@@ -43,7 +43,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.ListInterpolator;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge.QReal;
@@ -89,7 +89,7 @@ public class Peakflow extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The map of Topindex.")
     @In

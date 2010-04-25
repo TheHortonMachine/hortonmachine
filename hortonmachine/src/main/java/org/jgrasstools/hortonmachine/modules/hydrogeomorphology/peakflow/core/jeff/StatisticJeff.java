@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff;
 
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
 /**
@@ -28,14 +28,14 @@ public class StatisticJeff {
 
     private ParameterBox fixedParams = null;
     private double tpmax = 0f;
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
     /**
      * @param fixedParameters
      * @param tp_max
      * @param pm
      */
-    public StatisticJeff( ParameterBox fixedParameters, double tp_max, IHMProgressMonitor pm ) {
+    public StatisticJeff( ParameterBox fixedParameters, double tp_max, IJGTProgressMonitor pm ) {
         fixedParams = fixedParameters;
         tpmax = tp_max;
         this.pm = pm;

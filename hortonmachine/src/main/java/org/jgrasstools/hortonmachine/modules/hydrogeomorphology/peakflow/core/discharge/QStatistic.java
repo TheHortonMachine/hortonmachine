@@ -19,7 +19,7 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHCalculator;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.StatisticJeff;
@@ -45,7 +45,7 @@ public class QStatistic implements DischargeCalculator {
 
     private ModelsEngine modelsEngine = new ModelsEngine();
 
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
     /**
      * This class calculates maximum discharge and discharge.
@@ -56,7 +56,7 @@ public class QStatistic implements DischargeCalculator {
      * @param pm
      */
     public QStatistic( ParameterBox fixedParameters, IUHCalculator iuhC, StatisticJeff jeffC,
-            IHMProgressMonitor pm ) {
+            IJGTProgressMonitor pm ) {
         this.fixedParams = fixedParameters;
 
         this.iuhC = iuhC;

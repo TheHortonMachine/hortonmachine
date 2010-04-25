@@ -21,7 +21,7 @@ package org.jgrasstools.gears.utils.sorting;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 /**
  * Sorting of a double array with an array of objects following.
  * 
@@ -32,9 +32,9 @@ public class QuickSortAlgorithmObjects {
     private double[] valuesToSort;
     private int number;
     private Object[] valuesToFollow;
-    private IHMProgressMonitor monitor = new DummyProgressMonitor();
+    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
-    public QuickSortAlgorithmObjects( IHMProgressMonitor monitor ) {
+    public QuickSortAlgorithmObjects( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
     }

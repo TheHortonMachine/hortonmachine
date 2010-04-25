@@ -19,7 +19,7 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.EffectsBox;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
@@ -50,7 +50,7 @@ public class IUHKinematic implements IUHCalculator {
      * @param fixedParams
      * @param out printstream for info purposes
      */
-    public IUHKinematic( EffectsBox effectsBox, ParameterBox fixedParams, IHMProgressMonitor pm ) {
+    public IUHKinematic( EffectsBox effectsBox, ParameterBox fixedParams, IJGTProgressMonitor pm ) {
 
         double area = fixedParams.getArea();
         double area_sub = fixedParams.getArea_sub();

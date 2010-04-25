@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh;
 
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.integration.ConvolutionDiffusionWidth;
 import org.jgrasstools.gears.utils.math.integration.IntegralConstants;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
@@ -37,14 +37,14 @@ public class IUHDiffusionSurface {
     private double xres = 0f;
     private double yres = 0f;
     private double npixel = 0f;
-    private final IHMProgressMonitor pm;
+    private final IJGTProgressMonitor pm;
 
     /**
      * @param out 
     * 
     */
     public IUHDiffusionSurface( double[][] _ampi, ParameterBox fixedParameters,
-            IHMProgressMonitor pm ) {
+            IJGTProgressMonitor pm ) {
         ampi = _ampi;
         this.pm = pm;
         delta = fixedParameters.getDelta();

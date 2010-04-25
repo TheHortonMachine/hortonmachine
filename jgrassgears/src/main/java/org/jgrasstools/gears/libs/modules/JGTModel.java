@@ -33,7 +33,7 @@ import oms3.annotations.Out;
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.util.ProgressListener;
 
 /**
@@ -78,10 +78,10 @@ public class JGTModel implements Process {
      * 
      * <p>Modules can use that internally to exit, if necessary.</p>
      * 
-     * @param pm the {@link IHMProgressMonitor progress monitor}.
+     * @param pm the {@link IJGTProgressMonitor progress monitor}.
      * @return true if the process was stopped.
      */
-    protected boolean isCanceled( IHMProgressMonitor pm ) {
+    protected boolean isCanceled( IJGTProgressMonitor pm ) {
         if (pm.isCanceled()) {
             pm.done();
             return true;

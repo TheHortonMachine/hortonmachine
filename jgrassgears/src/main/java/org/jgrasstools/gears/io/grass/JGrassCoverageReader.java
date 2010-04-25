@@ -37,7 +37,7 @@ import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IHMProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.parameter.GeneralParameterValue;
@@ -55,7 +55,7 @@ public class JGrassCoverageReader extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IHMProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("Flag that defines if the map should be read as a whole (false) or"
             + " on the active region (true and default).")
