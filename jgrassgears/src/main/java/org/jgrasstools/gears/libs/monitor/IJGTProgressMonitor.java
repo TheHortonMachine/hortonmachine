@@ -28,7 +28,7 @@ package org.jgrasstools.gears.libs.monitor;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public interface IHMProgressMonitor {
+public interface IJGTProgressMonitor {
     /**
      * Constant indicating an unknown amount of work.
      */
