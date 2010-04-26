@@ -261,4 +261,25 @@ public class GeometryUtilities {
         return false;
     }
 
+    /**
+     * Calculates the area of a polygon from its vertices.
+     * 
+     * @param x the array of x coordinates.
+     * @param y the array of y coordinates.
+     * @param N the number of sides of the polygon.
+     * @return the area of the polygon.
+     */
+    public static double getPolygonArea( int[] x, int[] y, int N ) {
+        int i, j;
+        double area = 0;
+
+        for( i = 0; i < N; i++ ) {
+            j = (i + 1) % N;
+            area += x[i] * y[j];
+            area -= y[i] * x[j];
+        }
+
+        area /= 2;
+        return (area < 0 ? -area : area);
+    }
 }

@@ -45,21 +45,18 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
@@ -67,6 +64,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
+
 @Description("Module for raster to vector conversion")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
@@ -82,6 +80,10 @@ public class MarchingSquaresVectorializer extends JGTModel {
     @Description("The value to use to trace the polygons.")
     @In
     public double pValue = doubleNovalue;
+
+    @Description("A threshold on cell number to filter away polygons with cells less than that.")
+    @In
+    public double pThres = 0;
 
     @Description("The progress monitor.")
     @In
@@ -139,16 +141,16 @@ public class MarchingSquaresVectorializer extends JGTModel {
         for( int row = 0; row < height; row++ ) {
             for( int col = 0; col < width; col++ ) {
                 double value = iter.getSampleDouble(col, row, 0);
-                if (!isNovalue(value)  && !bitSet.get(row * width + col)) {
+                if (!isNovalue(value) && !bitSet.get(row * width + col)) {
 
-                	if(value == pValue){
-	                    java.awt.Polygon awtPolygon = new java.awt.Polygon();
-	                    Polygon polygon = identifyPerimeter(col, row, awtPolygon);
-	                    if (polygon != null) {
-	                        geometriesList.add(polygon);
-		                    awtGeometriesList.add(awtPolygon);
-	                    }
-                	}
+                    if (value == pValue) {
+                        java.awt.Polygon awtPolygon = new java.awt.Polygon();
+                        Polygon polygon = identifyPerimeter(col, row, awtPolygon);
+                        if (polygon != null) {
+                            geometriesList.add(polygon);
+                            awtGeometriesList.add(awtPolygon);
+                        }
+                    }
                 }
             }
             pm.worked(1);
@@ -176,7 +178,8 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
     }
 
-    private Polygon identifyPerimeter( int initialX, int initialY, java.awt.Polygon awtPolygon ) throws TransformException {
+    private Polygon identifyPerimeter( int initialX, int initialY, java.awt.Polygon awtPolygon )
+            throws TransformException {
         if (initialX < 0 || initialX > width - 1 || initialY < 0 || initialY > height - 1)
             throw new IllegalArgumentException("Coordinate outside the bounds.");
 
@@ -190,10 +193,11 @@ public class MarchingSquaresVectorializer extends JGTModel {
             // not a border pixel
             return null;
         }
-        
-        final Point2D worldPosition = new Point2D.Double(initialX,initialY);
-        gridGeometry.getGridToCRS2D().transform(worldPosition,worldPosition);
-        Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0, worldPosition.getY() - yRes / 2.0);
+
+        final Point2D worldPosition = new Point2D.Double(initialX, initialY);
+        gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
+        Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0,
+                worldPosition.getY() - yRes / 2.0);
         List<Coordinate> coordinateList = new ArrayList<Coordinate>(200);
         coordinateList.add(startCoordinate);
 
@@ -305,6 +309,12 @@ public class MarchingSquaresVectorializer extends JGTModel {
             awtPolygon.addPoint(x, y);
         } while( x != initialX || y != initialY );
 
+        double polygonArea = GeometryUtilities.getPolygonArea(awtPolygon.xpoints,
+                awtPolygon.ypoints, coordinateList.size() - 1);
+        if (polygonArea < pThres) {
+            return null;
+        }
+
         GeometryFactory gf = GeometryUtilities.gf();
 
         coordinateList.add(startCoordinate);
@@ -351,4 +361,5 @@ public class MarchingSquaresVectorializer extends JGTModel {
         }
         return false;
     }
+
 }
