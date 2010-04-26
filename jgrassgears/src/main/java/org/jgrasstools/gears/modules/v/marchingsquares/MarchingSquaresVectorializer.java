@@ -88,7 +88,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
     @Description("The extracted features.")
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
-    
+
     @Description("The extracted polygons in the image space.")
     @Out
     public List<java.awt.Polygon> awtGeometriesList;
@@ -139,23 +139,12 @@ public class MarchingSquaresVectorializer extends JGTModel {
                 double value = iter.getSampleDouble(col, row, 0);
                 if (!isNovalue(value) && value == pValue && !bitSet.get(row * width + col)) {
 
-                    List<Integer> xGrid = new ArrayList<Integer>();
-                    List<Integer> yGrid = new ArrayList<Integer>();
-                    Polygon polygon = identifyPerimeter(col, row, xGrid, yGrid);
+                    java.awt.Polygon awtPolygon = new java.awt.Polygon();
+                    Polygon polygon = identifyPerimeter(col, row, awtPolygon);
                     if (polygon != null) {
                         geometriesList.add(polygon);
                     }
-                    if (xGrid.size() > 3 && yGrid.size() > 3) {
-                        int[] xCoords = new int[xGrid.size()];
-                        int[] yCoords = new int[yGrid.size()];
-                        for( int i = 0; i < xCoords.length; i++ ) {
-                            xCoords[i] = xGrid.get(i);
-                            yCoords[i] = yGrid.get(i);
-                        }
-                        java.awt.Polygon awtPolygon = new java.awt.Polygon(xCoords, yCoords,
-                                xCoords.length);
-                        awtGeometriesList.add(awtPolygon);
-                    }
+                    awtGeometriesList.add(awtPolygon);
 
                 }
             }
@@ -185,8 +174,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
     }
 
-    public Polygon identifyPerimeter( int initialX, int initialY, List<Integer> xGrid,
-            List<Integer> yGrid ) throws TransformException {
+    private Polygon identifyPerimeter( int initialX, int initialY, java.awt.Polygon awtPolygon ) throws TransformException {
         if (initialX < 0 || initialX > width - 1 || initialY < 0 || initialY > height - 1)
             throw new IllegalArgumentException("Coordinate outside the bounds.");
 
@@ -212,8 +200,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
         double currentY = startCoordinate.y;
         int x = initialX;
         int y = initialY;
-        xGrid.add(x);
-        yGrid.add(y);
+        awtPolygon.addPoint(x, y);
 
         boolean previousWentNorth = false;
         boolean previousWentEast = false;
@@ -314,8 +301,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
             x = x + dx;
             y = y + dy;
 
-            xGrid.add(x);
-            yGrid.add(y);
+            awtPolygon.addPoint(x, y);
         } while( x != initialX || y != initialY );
 
         GeometryFactory gf = GeometryUtilities.gf();
