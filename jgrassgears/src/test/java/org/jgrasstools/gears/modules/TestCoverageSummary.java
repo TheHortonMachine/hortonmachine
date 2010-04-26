@@ -16,14 +16,15 @@ public class TestCoverageSummary extends HMTestCase {
         double[][] inData = HMTestMaps.extractNet0Data;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data",
-                inData, envelopeParams, crs, true);
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams,
+                crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         CoverageSummary summary = new CoverageSummary();
         summary.pm = pm;
         summary.inMap = inCoverage;
+        summary.pBins = 100;
         summary.process();
 
         double min = summary.outMin;
@@ -32,10 +33,15 @@ public class TestCoverageSummary extends HMTestCase {
         double sdev = summary.outSdev;
         double range = summary.outRange;
         double sum = summary.outSum;
-        //        double approxMedian = summary.outApproxmedian;
-        
+        // double approxMedian = summary.outApproxmedian;
+
+        double[][] cb = summary.outCb;
+        for( int i = 0; i < cb.length; i++ ) {
+            System.out.println(cb[i][0] + "\t" + cb[i][1] + "\t" + cb[i][2] + "%");
+        }
+
         System.out.println();
-        
+
     }
 
 }

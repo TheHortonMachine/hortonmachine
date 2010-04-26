@@ -30,28 +30,23 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import tilecachetool.TCTool;
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestMarchingSquaresAndRasterizer extends HMTestCase {
     public void testMarchingSquaresAndRasterizer() throws Exception {
-    	
 
-    	final JAI jai = JAI.getDefaultInstance();
-    	jai.getTileCache().setMemoryCapacity(256*1024*1024);
-    	jai.getTileCache().setMemoryThreshold(1.0f);
-    	
-//    	final TCTool tctool= new TCTool();
-    	
-    	
+        final JAI jai = JAI.getDefaultInstance();
+        jai.getTileCache().setMemoryCapacity(256 * 1024 * 1024);
+        jai.getTileCache().setMemoryThreshold(1.0f);
+
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
          * extract vectors
          */
         CoverageReader reader = new CoverageReader();
-        reader.file = "/media/ext_hd_01_/work/data/geotiff/digitalglobe/test.TIF";
+        reader.file = "C:\\Users\\moovida\\Desktop\\datitest\\3bandsRED.tif";
         reader.pType = "tiff";
         reader.process();
         GridCoverage2D geodata = reader.geodata;
@@ -65,10 +60,10 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
-        ShapefileFeatureWriter.writeShapefile("/media/ext_hd_01_/work/data/geotiff/digitalglobe/test.shp",
-                outGeodata);
+        ShapefileFeatureWriter.writeShapefile(
+                "C:\\Users\\moovida\\Desktop\\datitest\\out4.shp", outGeodata);
     }
-    
+
     // public void testMarchingSquaresAndRasterizer() throws Exception {
     // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
     //        
