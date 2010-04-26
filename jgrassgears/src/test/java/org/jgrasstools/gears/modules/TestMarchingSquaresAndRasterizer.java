@@ -23,6 +23,8 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
+import org.jgrasstools.gears.io.coveragereader.CoverageReader;
+import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
@@ -42,39 +44,64 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         /*
          * extract vectors
          */
-        double[][] extractNet1Data = HMTestMaps.extractNet1Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data,
-                envelopeParams, crs, true);
-        GridCoverage2D geodata = netCoverage;
+        CoverageReader reader = new CoverageReader();
+        reader.file = "C:\\Users\\moovida\\Desktop\\datitest\\3bandsRED.tif";
+        reader.pType = "tiff";
+        reader.process();
+        GridCoverage2D geodata = reader.geodata;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 0;
         squares.pm = pm;
 
         squares.process();
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
-        /*
-         * and rasterize back again
-         */
-        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
-        rasterizer.inGeodata = outGeodata;
-        rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
-        rasterizer.pValue = 2.0;
-        rasterizer.process();
-
-        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
-
-        RenderedImage renderedImage = outGeodata2.getRenderedImage();
-
-        // should be the same as before
-        checkMatrixEqual(renderedImage, extractNet1Data, 0);
-
+        ShapefileFeatureWriter.writeShapefile("C:\\Users\\moovida\\Desktop\\datitest\\out2.shp",
+                outGeodata);
     }
+    
+    // public void testMarchingSquaresAndRasterizer() throws Exception {
+    // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    //        
+    // /*
+    // * extract vectors
+    // */
+    // double[][] extractNet1Data = HMTestMaps.extractNet1Data;
+    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+    // CoordinateReferenceSystem crs = HMTestMaps.crs;
+    // GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data,
+    // envelopeParams, crs, true);
+    // GridCoverage2D geodata = netCoverage;
+    //        
+    // MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+    // squares.inGeodata = geodata;
+    // squares.pValue = 2;
+    // squares.pm = pm;
+    //        
+    // squares.process();
+    //        
+    // FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+    //        
+    // /*
+    // * and rasterize back again
+    // */
+    // ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+    // rasterizer.inGeodata = outGeodata;
+    // rasterizer.pm = pm;
+    // rasterizer.pGrid = geodata.getGridGeometry();
+    // rasterizer.pValue = 2.0;
+    // rasterizer.process();
+    //        
+    // GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+    //        
+    // RenderedImage renderedImage = outGeodata2.getRenderedImage();
+    //        
+    // // should be the same as before
+    // checkMatrixEqual(renderedImage, extractNet1Data, 0);
+    //        
+    // }
 
 }

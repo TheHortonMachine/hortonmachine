@@ -88,6 +88,10 @@ public class MarchingSquaresVectorializer extends JGTModel {
     @Description("The extracted features.")
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
+    
+    @Description("The extracted polygons in the image space.")
+    @Out
+    public List<java.awt.Polygon> awtGeometriesList;
 
     private RandomIter iter = null;
 
@@ -127,6 +131,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
         }
 
         List<Polygon> geometriesList = new ArrayList<Polygon>();
+        awtGeometriesList = new ArrayList<java.awt.Polygon>();
 
         pm.beginTask("Extracting vectors...", height);
         for( int row = 0; row < height; row++ ) {
@@ -134,10 +139,24 @@ public class MarchingSquaresVectorializer extends JGTModel {
                 double value = iter.getSampleDouble(col, row, 0);
                 if (!isNovalue(value) && value == pValue && !bitSet.get(row * width + col)) {
 
-                    Polygon polygon = identifyPerimeter(col, row);
+                    List<Integer> xGrid = new ArrayList<Integer>();
+                    List<Integer> yGrid = new ArrayList<Integer>();
+                    Polygon polygon = identifyPerimeter(col, row, xGrid, yGrid);
                     if (polygon != null) {
                         geometriesList.add(polygon);
                     }
+                    if (xGrid.size() > 3 && yGrid.size() > 3) {
+                        int[] xCoords = new int[xGrid.size()];
+                        int[] yCoords = new int[yGrid.size()];
+                        for( int i = 0; i < xCoords.length; i++ ) {
+                            xCoords[i] = xGrid.get(i);
+                            yCoords[i] = yGrid.get(i);
+                        }
+                        java.awt.Polygon awtPolygon = new java.awt.Polygon(xCoords, yCoords,
+                                xCoords.length);
+                        awtGeometriesList.add(awtPolygon);
+                    }
+
                 }
             }
             pm.worked(1);
@@ -166,7 +185,8 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
     }
 
-    public Polygon identifyPerimeter( int initialX, int initialY ) throws TransformException {
+    public Polygon identifyPerimeter( int initialX, int initialY, List<Integer> xGrid,
+            List<Integer> yGrid ) throws TransformException {
         if (initialX < 0 || initialX > width - 1 || initialY < 0 || initialY > height - 1)
             throw new IllegalArgumentException("Coordinate outside the bounds.");
 
@@ -192,6 +212,8 @@ public class MarchingSquaresVectorializer extends JGTModel {
         double currentY = startCoordinate.y;
         int x = initialX;
         int y = initialY;
+        xGrid.add(x);
+        yGrid.add(y);
 
         boolean previousWentNorth = false;
         boolean previousWentEast = false;
@@ -203,113 +225,97 @@ public class MarchingSquaresVectorializer extends JGTModel {
             int v = value(x, y);
             switch( v ) {
             case 1:
-                dy = -1;
+                dy = -1; // N
                 currentY = currentY + yRes;
-                direction = new Coordinate(currentX, currentY); // N;
                 previousWentNorth = true;
                 break;
             case 2:
-                dx = +1;
+                dx = +1; // E
                 currentX = currentX + xRes;
-                direction = new Coordinate(currentX, currentY); // E;
                 previousWentEast = true;
                 break;
             case 3:
-                dx = +1;
+                dx = +1; // E
                 currentX = currentX + xRes;
-                direction = new Coordinate(currentX, currentY); // E;
                 previousWentEast = true;
                 break;
             case 4:
-                dx = -1;
+                dx = -1; // W
                 currentX = currentX - xRes;
-                direction = new Coordinate(currentX, currentY); // W;
                 previousWentEast = false;
                 break;
             case 5:
-                dy = -1;
+                dy = -1; // N
                 currentY = currentY + yRes;
-                direction = new Coordinate(currentX, currentY); // N;
                 previousWentNorth = true;
                 break;
             case 6:
-                if (!previousWentNorth) {
+                if (!previousWentNorth) {// W
                     dx = -1;
                     currentX = currentX - xRes;
-                    direction = new Coordinate(currentX, currentY); // W;
                     previousWentEast = false;
                 } else {
-                    dx = +1;
+                    dx = +1;// E
                     currentX = currentX + xRes;
-                    direction = new Coordinate(currentX, currentY); // E;
                     previousWentEast = true;
                 }
-                // direction = previous == N ? W : E;
                 break;
             case 7:
-                dx = +1;
+                dx = +1; // E
                 currentX = currentX + xRes;
-                direction = new Coordinate(currentX, currentY); // E;
                 previousWentEast = true;
                 break;
             case 8:
-                dy = +1;
+                dy = +1; // S
                 currentY = currentY - yRes;
-                direction = new Coordinate(currentX, currentY); // S;
                 previousWentNorth = false;
                 break;
             case 9:
                 if (previousWentEast) {
-                    dy = -1;
+                    dy = -1; // N
                     currentY = currentY + yRes;
-                    direction = new Coordinate(currentX, currentY); // N;
                     previousWentNorth = true;
                 } else {
-                    dy = +1;
+                    dy = +1; // S
                     currentY = currentY - yRes;
-                    direction = new Coordinate(currentX, currentY); // S;
                     previousWentNorth = false;
                 }
-                // direction = previous == E ? N : S;
                 break;
             case 10:
-                dy = +1;
+                dy = +1; // S
                 currentY = currentY - yRes;
-                direction = new Coordinate(currentX, currentY); // S;
                 previousWentNorth = false;
                 break;
             case 11:
-                dy = +1;
+                dy = +1; // S
                 currentY = currentY - yRes;
-                direction = new Coordinate(currentX, currentY); // S;
                 previousWentNorth = false;
                 break;
             case 12:
-                dx = -1;
+                dx = -1; // W
                 currentX = currentX - xRes;
-                direction = new Coordinate(currentX, currentY); // W;
                 previousWentEast = false;
                 break;
             case 13:
-                dy = -1;
+                dy = -1; // N
                 currentY = currentY + yRes;
-                direction = new Coordinate(currentX, currentY); // N;
                 previousWentNorth = true;
                 break;
             case 14:
-                dx = -1;
+                dx = -1; // W
                 currentX = currentX - xRes;
-                direction = new Coordinate(currentX, currentY); // W;
                 previousWentEast = false;
                 break;
             default:
                 throw new IllegalStateException("Illegat state: " + v);
             }
-
+            direction = new Coordinate(currentX, currentY);
             coordinateList.add(direction);
-
             x = x + dx;
             y = y + dy;
+
+            xGrid.add(x);
+            yGrid.add(y);
         } while( x != initialX || y != initialY );
 
         GeometryFactory gf = GeometryUtilities.gf();
