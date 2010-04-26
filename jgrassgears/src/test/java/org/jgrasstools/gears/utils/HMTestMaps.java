@@ -390,7 +390,8 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
-            {NaN, 2, NaN, NaN, NaN, NaN, NaN, 2, NaN, NaN}, {NaN, NaN, 2, 2, 2, 2, 2, 2, NaN, NaN},
+            {NaN, 2, NaN, NaN, NaN, NaN, NaN, 2, NaN, NaN}, 
+            {NaN, NaN, 2, 2, 2, 2, 2, 2, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};

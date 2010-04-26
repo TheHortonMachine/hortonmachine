@@ -1,3 +1,21 @@
+/*
+ * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Foundation, Inc., 59
+ * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.jgrasstools.gears.modules;
 
 import java.util.HashMap;
@@ -5,17 +23,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.filter.text.cql2.CQL;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
 import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class TestRasterCatToFeatureAttribute extends HMTestCase {
