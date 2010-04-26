@@ -26,7 +26,12 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 
@@ -57,14 +62,14 @@ public class GeometryUtilities {
         }
         return (precModel);
     }
-    
+
     /**
      * Create a simple polygon (no holes).
      * 
      * @param coords the coords of the polygon.
      * @return the {@link Polygon}.
      */
-    public static Polygon createSimplePolygon(Coordinate[] coords){
+    public static Polygon createSimplePolygon( Coordinate[] coords ) {
         LinearRing linearRing = gf().createLinearRing(coords);
         return gf().createPolygon(linearRing, null);
     }
@@ -74,25 +79,19 @@ public class GeometryUtilities {
      * 
      * @return a dummy {@link Polygon}.
      */
-    public static Polygon createDummyPolygon(){
-        Coordinate[] c = new Coordinate[]{
-                new Coordinate(0.0,0.0),
-                new Coordinate(1.0,1.0),
-                new Coordinate(1.0,0.0),
-                new Coordinate(0.0,0.0)
-        };
+    public static Polygon createDummyPolygon() {
+        Coordinate[] c = new Coordinate[]{new Coordinate(0.0, 0.0), new Coordinate(1.0, 1.0),
+                new Coordinate(1.0, 0.0), new Coordinate(0.0, 0.0)};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
     }
 
-    public static Polygon createPolygonFromEnvelope(Envelope env){
-        Coordinate[] c = new Coordinate[]{
-                new Coordinate(env.getMinX(),env.getMinY()),
-                new Coordinate(env.getMinX(),env.getMaxY()),
-                new Coordinate(env.getMaxX(),env.getMaxY()),
-                new Coordinate(env.getMaxX(),env.getMinY()),
-                new Coordinate(env.getMinX(),env.getMinY())
-        };
+    public static Polygon createPolygonFromEnvelope( Envelope env ) {
+        Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
+                new Coordinate(env.getMinX(), env.getMaxY()),
+                new Coordinate(env.getMaxX(), env.getMaxY()),
+                new Coordinate(env.getMaxX(), env.getMinY()),
+                new Coordinate(env.getMinX(), env.getMinY())};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
     }
@@ -112,8 +111,10 @@ public class GeometryUtilities {
         // use the cosine law to calculate angle between
 
         // transform line segments tail to tail, originating at (0,0)
-        LineSegment tls1 = new LineSegment(new Coordinate(0, 0), new Coordinate(l1.p1.x - l1.p0.x, l1.p1.y - l1.p0.y));
-        LineSegment tls2 = new LineSegment(new Coordinate(0, 0), new Coordinate(l2.p1.x - l2.p0.x, l2.p1.y - l2.p0.y));
+        LineSegment tls1 = new LineSegment(new Coordinate(0, 0), new Coordinate(l1.p1.x - l1.p0.x,
+                l1.p1.y - l1.p0.y));
+        LineSegment tls2 = new LineSegment(new Coordinate(0, 0), new Coordinate(l2.p1.x - l2.p0.x,
+                l2.p1.y - l2.p0.y));
 
         // line segment for third side of triangle
         LineSegment ls3 = new LineSegment(tls1.p1, tls2.p1);
@@ -180,6 +181,84 @@ public class GeometryUtilities {
         }
 
         return Double.NaN;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link Point}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a {@link Point}.
+     */
+    public static boolean isPoint( Geometry geometry ) {
+        if (geometry instanceof Point) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link MultiPoint}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a {@link MultiPoint}.
+     */
+    public static boolean isMultiPoint( Geometry geometry ) {
+        if (geometry instanceof MultiPoint) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link LineString}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a line.
+     */
+    public static boolean isLineString( Geometry geometry ) {
+        if (geometry instanceof LineString) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link MultiLineString}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a multiline.
+     */
+    public static boolean isMultiLineString( Geometry geometry ) {
+        if (geometry instanceof MultiLineString) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link Polygon}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a {@link Polygon}.
+     */
+    public static boolean isPolygon( Geometry geometry ) {
+        if (geometry instanceof Polygon) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link Geometry} is of type {@link MultiPolygon}. 
+     * 
+     * @param geometry the geometry to check.
+     * @return true if the geometry is a {@link MultiPolygon}.
+     */
+    public static boolean isMultiPolygon( Geometry geometry ) {
+        if (geometry instanceof MultiPolygon) {
+            return true;
+        }
+        return false;
     }
 
 }

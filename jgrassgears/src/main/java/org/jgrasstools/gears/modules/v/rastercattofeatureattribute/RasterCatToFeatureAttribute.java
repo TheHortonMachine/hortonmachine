@@ -18,18 +18,15 @@
  */
 package org.jgrasstools.gears.modules.v.rastercattofeatureattribute;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isLineString;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiLineString;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiPoint;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiPolygon;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isPoint;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isPolygon;
 
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
@@ -47,23 +44,24 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.feature.AttributeTypeBuilder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.DirectPosition2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
+import org.opengis.feature.type.AttributeDescriptor;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LinearRing;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+
 @Description("Module that extracts raster categories and adds them to a feature collection.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
@@ -84,9 +82,9 @@ public class RasterCatToFeatureAttribute {
     @In
     public String fNew = "new";
 
-    @Description("The value to use to trace the polygons.")
+    @Description("The position of the coordinate to take in the case of multi geometries.")
     @In
-    public double pValue = doubleNovalue;
+    public String pPos = MIDDLE;
 
     @Description("The progress monitor.")
     @In
@@ -96,36 +94,93 @@ public class RasterCatToFeatureAttribute {
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
 
-    private RandomIter iter = null;
+    private static final String MIDDLE = "middle";
+    private static final String START = "start";
+    private static final String END = "end";
 
-    private double xRes;
-
-    private double yRes;
+    private RandomIter inIter = null;
 
     private GridGeometry2D gridGeometry;
 
-    private int height;
-
-    private int width;
-
-    private CoordinateReferenceSystem crs;
-
     @Execute
     public void process() throws Exception {
-        if (iter == null) {
+        if (inIter == null) {
             RenderedImage inputRI = inCoverage.getRenderedImage();
-            iter = RandomIterFactory.create(inputRI, null);
+            inIter = RandomIterFactory.create(inputRI, null);
 
-            HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inCoverage);
-            height = regionMap.get(ROWS).intValue();
-            width = regionMap.get(COLS).intValue();
-            xRes = regionMap.get(XRES);
-            yRes = regionMap.get(YRES);
-            crs = inCoverage.getCoordinateReferenceSystem();
+            // HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inCoverage);
+            // height = regionMap.get(ROWS).intValue();
+            // width = regionMap.get(COLS).intValue();
+            // xRes = regionMap.get(XRES);
+            // yRes = regionMap.get(YRES);
 
             gridGeometry = inCoverage.getGridGeometry();
         }
 
-    }
+        SimpleFeatureType featureType = inFC.getSchema();
+        List<AttributeDescriptor> oldAttributes = featureType.getAttributeDescriptors();
+        // create the new attribute
+        AttributeTypeBuilder build = new AttributeTypeBuilder();
+        build.setNillable(true);
+        build.setBinding(Double.class);
+        AttributeDescriptor descriptor = build.buildDescriptor(fNew);
 
+        List<AttributeDescriptor> newAttributesList = new ArrayList<AttributeDescriptor>();
+        newAttributesList.addAll(oldAttributes);
+        newAttributesList.add(descriptor);
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("rc2attr");
+        b.addAll(newAttributesList);
+        SimpleFeatureType type = b.buildFeatureType();
+
+        outGeodata = FeatureCollections.newCollection();
+        FeatureIterator<SimpleFeature> featureIterator = inFC.features();
+        int all = inFC.size();
+        int id = 0;
+        pm.beginTask("Extracting raster information...", all);
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            double value = -1;
+            Coordinate c;
+            Coordinate[] coordinates = geometry.getCoordinates();
+            if (isPoint(geometry) || isMultiPoint(geometry)) {
+                c = coordinates[0];
+            } else if (isLineString(geometry) || isMultiLineString(geometry)) {
+                if (pPos.trim().equalsIgnoreCase(START)) {
+                    c = coordinates[0];
+                } else if (pPos.trim().equalsIgnoreCase(END)) {
+                    c = coordinates[coordinates.length - 1];
+                } else {// (pPos.trim().equalsIgnoreCase(MIDDLE)) {
+                    c = coordinates[coordinates.length / 2];
+                }
+            } else if (isPolygon(geometry) || isMultiPolygon(geometry)) {
+                Point centroid = geometry.getCentroid();
+                if (geometry.contains(centroid)) {
+                    c = centroid.getCoordinate();
+                } else {
+                    c = coordinates[0];
+                }
+            } else {
+                throw new ModelsIllegalargumentException("The Geometry type is not supported.",
+                        this.getClass().getSimpleName());
+            }
+            GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
+            value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
+
+            Object[] attributes = feature.getAttributes().toArray();
+            Object[] newAttributes = new Object[attributes.length + 1];
+            System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
+            newAttributes[newAttributes.length - 1] = value;
+
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+            builder.addAll(newAttributes);
+            SimpleFeature newFeature = builder.buildFeature(type.getTypeName() + "." + id++);
+            outGeodata.add(newFeature);
+            pm.worked(1);
+        }
+        pm.done();
+
+    }
 }

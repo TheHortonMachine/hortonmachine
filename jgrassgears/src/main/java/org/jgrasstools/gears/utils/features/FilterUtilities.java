@@ -84,4 +84,9 @@ public class FilterUtilities {
         return bboxFilter;
     }
 
+    public static Filter getCQLFilter( String expression ) throws CQLException {
+        Filter cqlFilter = CQL.toFilter(expression);
+        return cqlFilter;
+    }
+
 }

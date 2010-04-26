@@ -47,7 +47,7 @@ public class HMTestMaps {
     public static CoordinateReferenceSystem crs = null;
 
     public static FeatureCollection<SimpleFeatureType, SimpleFeature> testFC;
-    
+
     static {
         double n = 5140020.0;
         double s = 5139780.0;
@@ -76,15 +76,24 @@ public class HMTestMaps {
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         GeometryFactory gf = GeometryUtilities.gf();
+
         Object[] nw = new Object[]{gf.createPoint(new Coordinate(w, n)), 1};
         builder.addAll(nw);
         SimpleFeature nwFeature = builder.buildFeature(type.getTypeName() + ".1");
+
         Object[] se = new Object[]{gf.createPoint(new Coordinate(e, s)), 2};
         builder.addAll(se);
         SimpleFeature seFeature = builder.buildFeature(type.getTypeName() + ".2");
+
+        Object[] center = new Object[]{
+                gf.createPoint(new Coordinate(w + (e - w) / 2, s + (n - s) / 2)), 3};
+        builder.addAll(center);
+        SimpleFeature centerFeature = builder.buildFeature(type.getTypeName() + ".3");
+
         testFC = FeatureCollections.newCollection();
         testFC.add(nwFeature);
         testFC.add(seFeature);
+        testFC.add(centerFeature);
     }
 
     /**
@@ -381,8 +390,7 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
-            {NaN, 2, NaN, NaN, NaN, NaN, NaN, 2, NaN, NaN}, 
-            {NaN, NaN, 2, 2, 2, 2, 2, 2, NaN, NaN},
+            {NaN, 2, NaN, NaN, NaN, NaN, NaN, 2, NaN, NaN}, {NaN, NaN, 2, 2, 2, 2, 2, 2, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
@@ -390,10 +398,8 @@ public class HMTestMaps {
     public static double[][] extractNet1Data = new double[][]{
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
-            {NaN, NaN, 2, NaN, NaN, NaN, NaN, 2, 2, NaN},
-            {NaN, 2, 2, 2, 2, 2, NaN, 2, 2, NaN},
-            {NaN, NaN, 2, 2, 2, 2, 2, 2, 2, NaN}, 
-            {NaN, NaN, 2, 2, 2, NaN, NaN, 2, 2, NaN},
+            {NaN, NaN, 2, NaN, NaN, NaN, NaN, 2, 2, NaN}, {NaN, 2, 2, 2, 2, 2, NaN, 2, 2, NaN},
+            {NaN, NaN, 2, 2, 2, 2, 2, 2, 2, NaN}, {NaN, NaN, 2, 2, 2, NaN, NaN, 2, 2, NaN},
             {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
 
@@ -777,8 +783,8 @@ public class HMTestMaps {
 
     };
 
-    
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFcFromPoint(Coordinate point, CoordinateReferenceSystem crs){
+    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFcFromPoint(
+            Coordinate point, CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("test");
         b.setCRS(crs);
@@ -794,7 +800,7 @@ public class HMTestMaps {
         testFC.add(pointFeature);
         return testFC;
     }
- 
+
     // public static void main( String[] args ) {
     // double radtodeg = 360.0 / (2 * Math.PI);
     //
