@@ -90,8 +90,8 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
  * two arrays, like in the files derived from a DEM.
  * </p>
  */
-@Description("Calculates the histogram of a set of data contained in a matrix " +
-             "with respect to the set of data contained in another matrix")
+@Description("Calculates the histogram of a set of data contained in a matrix "
+        + "with respect to the set of data contained in another matrix")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Histogram, Geomorphology, Statistic")
 @Status(Status.TESTED)
@@ -124,80 +124,34 @@ public class Cb extends JGTModel {
     @In
     public int pLast;
 
-    @Description("A matrix containing " +
-                 "1) the mean value of the data in abscissa; " +
-                 "2) the number of elements in each interval; " +
-                 "3) the mean value of the data in ordinate; " +
-                 "n+2) the n-esimal moment of the data in ordinate.")
+    @Description("A matrix containing " + "1) the mean value of the data in abscissa; "
+            + "2) the number of elements in each interval; "
+            + "3) the mean value of the data in ordinate; "
+            + "n+2) the n-esimal moment of the data in ordinate.")
     @Out
     public double[][] outCb;
-
-    private MessageHandler msg = MessageHandler.getInstance();
 
     private int binmode = 1;
 
     // private int bintype;
     // private float base;
 
-    private SplitVectors theSplit;
-
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outCb == null, doReset)) {
             return;
         }
-        
+
         RenderedImage map1RI = inMap1.getRenderedImage();
         RenderedImage map2RI = null;
         if (inMap2 == null) {
             map2RI = map1RI;
-        }else{
+        } else {
             map2RI = inMap2.getRenderedImage();
         }
 
-        pm.message(msg.message("cb.vectorize"));
-        double[] U = modelsEngine.vectorizeDoubleMatrix(map1RI);
-        double[] T = null;
-        QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
-        if (inMap2 == null) {
-            T = U;
-            t.sort(U, null);
-        }else{
-            T = modelsEngine.vectorizeDoubleMatrix(map2RI);
-            t.sort(U, T);
-        }
+        cb(map1RI, map2RI, pBins, pFirst, pLast, pm);
 
-        theSplit = new SplitVectors();
-
-        int num_max = 1000;
-        /*
-         * if (bintype == 1) {
-         */
-        pm.message(msg.message("cb.splitvector"));
-        modelsEngine.split2realvectors(U, T, theSplit, pBins, num_max, pm);
-        /*
-         * } else { delta = FluidUtils.exponentialsplit2realvectors(U, T,
-         * theSplit, N, num_max, base); }
-         */
-
-        pm.message(msg.message("cb.creatematrix"));
-        outCb = new double[theSplit.splitIndex.length][pLast - pFirst + 3];
-        if (binmode == 1) // always true for now, other modes not implemented yet
-        {
-            for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-                outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
-                outCb[h][1] = theSplit.splitIndex[h];
-                outCb[h][2] = modelsEngine.doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
-                if (pFirst == 1)
-                    pFirst++;
-                for( int k = pFirst; k <= pLast; k++ ) {
-                    outCb[h][k - pFirst + 3] = modelsEngine.doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], outCb[h][1], (double) k, pm);
-                }
-            }
-        }
-        
         // else if (binmode == 2) // why is this exactly the same as the mode
         // // 'H' ???
         // {
@@ -218,6 +172,60 @@ public class Cb extends JGTModel {
         // }
         // }
         // }
+    }
+
+    public double[][] cb( RenderedImage map1RI, RenderedImage map2RI, int pBins, int pFirst,
+            int pLast, IJGTProgressMonitor pm ) {
+        if (map2RI == null) {
+            map2RI = map1RI;
+        }
+        ModelsEngine modelsEngine = new ModelsEngine();
+        MessageHandler msg = MessageHandler.getInstance();
+
+        pm.message(msg.message("cb.vectorize"));
+        double[] U = modelsEngine.vectorizeDoubleMatrix(map1RI);
+        double[] T = null;
+        QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
+        if (map2RI == null) {
+            T = U;
+            t.sort(U, null);
+        } else {
+            T = modelsEngine.vectorizeDoubleMatrix(map2RI);
+            t.sort(U, T);
+        }
+
+        SplitVectors theSplit = new SplitVectors();
+        int num_max = 1000;
+        /*
+         * if (bintype == 1) {
+         */
+        pm.message(msg.message("cb.splitvector"));
+        modelsEngine.split2realvectors(U, T, theSplit, pBins, num_max, pm);
+        /*
+         * } else { delta = FluidUtils.exponentialsplit2realvectors(U, T,
+         * theSplit, N, num_max, base); }
+         */
+
+        pm.message(msg.message("cb.creatematrix"));
+        double[][] outCb = new double[theSplit.splitIndex.length][pLast - pFirst + 3];
+        if (binmode == 1) // always true for now, other modes not implemented yet
+        {
+            for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
+                outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
+                        (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                outCb[h][1] = theSplit.splitIndex[h];
+                outCb[h][2] = modelsEngine.doubleNMoment(theSplit.splitValues2[h],
+                        (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                if (pFirst == 1)
+                    pFirst++;
+                for( int k = pFirst; k <= pLast; k++ ) {
+                    outCb[h][k - pFirst + 3] = modelsEngine.doubleNMoment(theSplit.splitValues2[h],
+                            (int) theSplit.splitIndex[h], outCb[h][1], (double) k, pm);
+                }
+            }
+        }
+
+        return outCb;
     }
 
 }
