@@ -82,7 +82,7 @@ public class SourcesDirectionCalculator extends JGTModel {
     @In
     public String file = null;
 
-    @Description("The novalue wanted in the coverage.")
+    @Description("A regex to match the files names to.")
     @In
     public String pType = null;
 

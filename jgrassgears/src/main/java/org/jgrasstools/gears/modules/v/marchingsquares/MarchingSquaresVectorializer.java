@@ -51,6 +51,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -70,7 +71,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
-public class MarchingSquaresVectorializer {
+public class MarchingSquaresVectorializer extends JGTModel {
 
     @Description("The coverage that has to be converted.")
     @In
@@ -106,6 +107,9 @@ public class MarchingSquaresVectorializer {
 
     @Execute
     public void process() throws Exception {
+        if (!concatOr(outGeodata == null, doReset)) {
+            return;
+        }
         if (iter == null) {
             RenderedImage inputRI = inGeodata.getRenderedImage();
             iter = RandomIterFactory.create(inputRI, null);
