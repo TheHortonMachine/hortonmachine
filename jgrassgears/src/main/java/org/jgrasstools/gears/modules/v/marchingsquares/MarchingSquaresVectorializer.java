@@ -26,6 +26,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
+import java.awt.geom.Point2D;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -51,6 +52,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -137,15 +139,16 @@ public class MarchingSquaresVectorializer extends JGTModel {
         for( int row = 0; row < height; row++ ) {
             for( int col = 0; col < width; col++ ) {
                 double value = iter.getSampleDouble(col, row, 0);
-                if (!isNovalue(value) && value == pValue && !bitSet.get(row * width + col)) {
+                if (!isNovalue(value)  && !bitSet.get(row * width + col)) {
 
-                    java.awt.Polygon awtPolygon = new java.awt.Polygon();
-                    Polygon polygon = identifyPerimeter(col, row, awtPolygon);
-                    if (polygon != null) {
-                        geometriesList.add(polygon);
-                    }
-                    awtGeometriesList.add(awtPolygon);
-
+                	if(value == pValue){
+	                    java.awt.Polygon awtPolygon = new java.awt.Polygon();
+	                    Polygon polygon = identifyPerimeter(col, row, awtPolygon);
+	                    if (polygon != null) {
+	                        geometriesList.add(polygon);
+		                    awtGeometriesList.add(awtPolygon);
+	                    }
+                	}
                 }
             }
             pm.worked(1);
@@ -162,7 +165,6 @@ public class MarchingSquaresVectorializer extends JGTModel {
         outGeodata = FeatureCollections.newCollection();
         int index = 0;
         for( Polygon polygon : geometriesList ) {
-            System.out.println(index);
 
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             Object[] values = new Object[]{polygon, index};
@@ -188,11 +190,10 @@ public class MarchingSquaresVectorializer extends JGTModel {
             // not a border pixel
             return null;
         }
-
-        DirectPosition worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(initialX,
-                initialY));
-        double[] start = worldPosition.getCoordinate();
-        Coordinate startCoordinate = new Coordinate(start[0] + xRes / 2.0, start[1] - yRes / 2.0);
+        
+        final Point2D worldPosition = new Point2D.Double(initialX,initialY);
+        gridGeometry.getGridToCRS2D().transform(worldPosition,worldPosition);
+        Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0, worldPosition.getY() - yRes / 2.0);
         List<Coordinate> coordinateList = new ArrayList<Coordinate>(200);
         coordinateList.add(startCoordinate);
 
