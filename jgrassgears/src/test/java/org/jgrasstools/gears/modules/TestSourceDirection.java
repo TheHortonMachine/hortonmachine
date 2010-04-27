@@ -18,7 +18,9 @@
  */
 package org.jgrasstools.gears.modules;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
+import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -68,7 +70,7 @@ public class TestSourceDirection extends HMTestCase {
 
     public void testRealCase() throws Exception {
         String shape = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/sorgenti.shp";
-        String adfFolder = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/DTM/1m/dtm000022_WGS.ASC";
+        String coveragePath = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/DTM/1m/dtm000022_WGS.ASC";
         // String adfFolder =
         // "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/EsriGrid";
 
@@ -80,11 +82,14 @@ public class TestSourceDirection extends HMTestCase {
         shpReader.file = shape;
         shpReader.readFeatureCollection();
         FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = shpReader.geodata;
-
+        
+        GridCoverage2D coverage = ArcgridCoverageReader.readCoverage(coveragePath);
+        
+        
+        
         SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
         sourceDirection.pm = pm;
-        sourceDirection.file = adfFolder;
-        sourceDirection.pType = "asc";
+        sourceDirection.inCoverage = coverage;
         sourceDirection.inSources = pointFC;
         sourceDirection.pRes = 10.0;
         sourceDirection.process();

@@ -22,11 +22,6 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.sqrt;
 
 import java.awt.geom.AffineTransform;
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -48,12 +43,10 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
-import org.jgrasstools.gears.io.coveragereader.CoverageReader;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
-import org.jgrasstools.gears.utils.files.FilesFinder;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithmObjects;
 import org.opengis.feature.simple.SimpleFeature;
@@ -78,13 +71,9 @@ public class SourcesDirectionCalculator extends JGTModel {
     @In
     public double pRes = NaN;
 
-    @Description("The coverage file path or a data folder, which will be browsed.")
+    @Description("The input coverage.")
     @In
-    public String file = null;
-
-    @Description("A regex to match the files names to.")
-    @In
-    public String pType = null;
+    public GridCoverage2D inCoverage = null;
 
     @Description("The progress monitor.")
     @In
@@ -94,15 +83,11 @@ public class SourcesDirectionCalculator extends JGTModel {
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outSources;
 
-    private HashMap<File, Envelope2D> file2Envelope = new HashMap<File, Envelope2D>();
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outSources == null, doReset)) {
             return;
         }
-
-        List<File> filesList = new FilesFinder(new File(file), pType).process();
 
         FeatureIterator<SimpleFeature> inFeatureIterator = inSources.features();
 
@@ -123,57 +108,19 @@ public class SourcesDirectionCalculator extends JGTModel {
 
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
-
-            GridCoverage2D dem = null;
-            // first check in the cached envelopes
-            Set<Entry<File, Envelope2D>> entrySet = file2Envelope.entrySet();
-            for( Entry<File, Envelope2D> entry : entrySet ) {
-                Envelope2D env = entry.getValue();
-                if (env.contains(coordinate.x, coordinate.y)) {
-                    File file = entry.getKey();
-                    CoverageReader cr = new CoverageReader();
-                    cr.file = file.getAbsolutePath();
-                    cr.pType = pType;
-                    cr.process();
-                    dem = cr.geodata;
-                    break;
-                }
-            }
-
-            if (dem == null) {
-                for( File file : filesList ) {
-                    if (!file2Envelope.containsKey(file)) {
-                        CoverageReader cr = new CoverageReader();
-                        cr.file = file.getAbsolutePath();
-                        cr.pType = pType;
-                        cr.process();
-                        dem = cr.geodata;
-
-                        Envelope2D env = dem.getEnvelope2D();
-                        file2Envelope.put(file, env);
-
-                        if (env.contains(coordinate.x, coordinate.y)) {
-                            break;
-                        } else {
-                            dem = null;
-                        }
-                    }
-                }
-
-            }
-
-            if (dem == null) {
+            Envelope2D env = inCoverage.getEnvelope2D();
+            if (env.contains(coordinate.x, coordinate.y)) {
                 continue;
             }
 
             // source is in this dem, process it
-            double[] res = resFromCoverage(dem);
+            double[] res = resFromCoverage(inCoverage);
             if (res[0] != pRes) {
-                dem = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(dem, res[0] / pRes,
-                        res[0] / pRes);
+                inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage,
+                        res[0] / pRes, res[0] / pRes);
             }
 
-            GridGeometry2D gridGeometry = dem.getGridGeometry();
+            GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
             GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
             int cols = gridRange.width;
             int rows = gridRange.height;
@@ -201,7 +148,7 @@ public class SourcesDirectionCalculator extends JGTModel {
             GridCoordinates2D c32 = new GridCoordinates2D(centerGC.x, centerGC.y + 1);
             GridCoordinates2D c33 = new GridCoordinates2D(centerGC.x + 1, centerGC.y + 1);
 
-            double[] center = dem.evaluate((GridCoordinates2D) centerGC, (double[]) null);
+            double[] center = inCoverage.evaluate((GridCoordinates2D) centerGC, (double[]) null);
             double dz11 = -10000;
             double dz12 = -10000;
             double dz13 = -10000;
@@ -212,42 +159,42 @@ public class SourcesDirectionCalculator extends JGTModel {
             double dz33 = -10000;
 
             int pixelNum = 0;
-            double[] v11 = getPixelValue(dem, cols, rows, c11);
+            double[] v11 = getPixelValue(inCoverage, cols, rows, c11);
             if (v11 != null) {
                 pixelNum++;
                 dz11 = (center[0] - v11[0]) / sqrt(2);
             }
-            double[] v12 = getPixelValue(dem, cols, rows, c12);
+            double[] v12 = getPixelValue(inCoverage, cols, rows, c12);
             if (v12 != null) {
                 pixelNum++;
                 dz12 = (center[0] - v12[0]);
             }
-            double[] v13 = getPixelValue(dem, cols, rows, c13);
+            double[] v13 = getPixelValue(inCoverage, cols, rows, c13);
             if (v13 != null) {
                 pixelNum++;
                 dz13 = (center[0] - v13[0]) / sqrt(2);
             }
-            double[] v21 = getPixelValue(dem, cols, rows, c21);
+            double[] v21 = getPixelValue(inCoverage, cols, rows, c21);
             if (v21 != null) {
                 pixelNum++;
                 dz21 = (center[0] - v21[0]);
             }
-            double[] v23 = getPixelValue(dem, cols, rows, c23);
+            double[] v23 = getPixelValue(inCoverage, cols, rows, c23);
             if (v23 != null) {
                 pixelNum++;
                 dz23 = (center[0] - v23[0]);
             }
-            double[] v31 = getPixelValue(dem, cols, rows, c31);
+            double[] v31 = getPixelValue(inCoverage, cols, rows, c31);
             if (v31 != null) {
                 pixelNum++;
                 dz31 = (center[0] - v31[0]) / sqrt(2);
             }
-            double[] v32 = getPixelValue(dem, cols, rows, c32);
+            double[] v32 = getPixelValue(inCoverage, cols, rows, c32);
             if (v32 != null) {
                 pixelNum++;
                 dz32 = (center[0] - v32[0]);
             }
-            double[] v33 = getPixelValue(dem, cols, rows, c33);
+            double[] v33 = getPixelValue(inCoverage, cols, rows, c33);
             if (v33 != null) {
                 pixelNum++;
                 dz33 = (center[0] - v33[0]) / sqrt(2);
@@ -274,11 +221,11 @@ public class SourcesDirectionCalculator extends JGTModel {
                     getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)},
                     id++);
             outSources.add(azimuthFeature);
-            
+
         }
         pm.done();
     }
-    
+
     private double getValue( double[] array ) {
         return array != null ? array[0] : -9999.0;
     }

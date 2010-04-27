@@ -180,4 +180,13 @@ public class JGTConstants {
      * Costante di Stefan-Boltzmann [W/(m2 K4)].
      */
     public final static double sigma = 5.67E-8; /* costante di Stefan-Boltzmann [W/(m2 K4)]*/
+    
+    /*
+     * FILE EXTENTIONS
+     */
+    public static final String AIG = "adf";
+    public static final String ESRIGRID = "asc";
+    public static final String GEOTIFF = "tiff";
+
+    
 }

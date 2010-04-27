@@ -43,7 +43,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ShapefileFeatureReader extends JGTModel{
+public class ShapefileFeatureReader extends JGTModel {
     @Description("The shapefile.")
     @In
     public String file = null;
@@ -61,6 +61,23 @@ public class ShapefileFeatureReader extends JGTModel{
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = store.getFeatureSource();
         geodata = featureSource.getFeatures();
+    }
+
+    /**
+     * Fast read access mode. 
+     * 
+     * @param path the shapefile path.
+     * @return the read {@link FeatureCollection}.
+     * @throws IOException
+     */
+    public static FeatureCollection<SimpleFeatureType, SimpleFeature> readShapefile( String path )
+            throws IOException {
+
+        ShapefileFeatureReader reader = new ShapefileFeatureReader();
+        reader.file = path;
+        reader.readFeatureCollection();
+
+        return reader.geodata;
     }
 
 }

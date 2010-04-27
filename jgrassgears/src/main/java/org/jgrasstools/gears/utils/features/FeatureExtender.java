@@ -46,9 +46,8 @@ public class FeatureExtender {
      * @throws FactoryRegistryException 
      * @throws SchemaException
      */
-    @SuppressWarnings("deprecation")
     public FeatureExtender( SimpleFeatureType oldFeatureType, String[] fieldArray,
-            Class[] classesArray ) throws FactoryRegistryException, SchemaException {
+            Class<?>[] classesArray ) throws FactoryRegistryException, SchemaException {
 
         List<AttributeDescriptor> oldAttributeDescriptors = oldFeatureType
                 .getAttributeDescriptors();
@@ -70,6 +69,7 @@ public class FeatureExtender {
         // create the feature type
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(oldFeatureType.getName());
+        b.setCRS(oldFeatureType.getCoordinateReferenceSystem());
         b.addAll(newAttributesTypesList);
         newFeatureType = b.buildFeatureType();
     }

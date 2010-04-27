@@ -85,4 +85,11 @@ public class GeoTiffCoverageWriter extends JGTModel {
 
         hasWritten = true;
     }
+
+    public static void writeGeotiff( String path, GridCoverage2D coverage ) throws IOException {
+        GeoTiffCoverageWriter writer = new GeoTiffCoverageWriter();
+        writer.file = path;
+        writer.geodata = coverage;
+        writer.writeCoverage();
+    }
 }

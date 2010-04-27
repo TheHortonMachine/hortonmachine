@@ -78,7 +78,7 @@ public class ArcgridCoverageWriter extends JGTModel {
      * @param coverage the coverage to write.
      * @throws Exception
      */
-    public static void writeCoverage( String path, GridCoverage2D coverage ) throws Exception {
+    public static void writeArcgrid( String path, GridCoverage2D coverage ) throws Exception {
         ArcgridCoverageWriter writer = new ArcgridCoverageWriter();
         writer.file = path;
         writer.geodata = coverage;

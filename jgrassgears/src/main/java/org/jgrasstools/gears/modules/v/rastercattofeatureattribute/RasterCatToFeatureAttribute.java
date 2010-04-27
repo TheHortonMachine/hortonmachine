@@ -18,12 +18,10 @@
  */
 package org.jgrasstools.gears.modules.v.rastercattofeatureattribute;
 
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
-import java.awt.geom.Point2D;
 import java.awt.image.RenderedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -37,24 +35,22 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.feature.AttributeTypeBuilder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -113,6 +109,9 @@ public class RasterCatToFeatureAttribute {
             // yRes = regionMap.get(YRES);
 
             gridGeometry = inCoverage.getGridGeometry();
+            // GridSampleDimension[] sampleDimensions = inCoverage.getSampleDimensions();
+            // double[] noDataValues = sampleDimensions[0].getNoDataValues();
+            // System.out.println(noDataValues);
         }
 
         SimpleFeatureType featureType = inFC.getSchema();
@@ -164,11 +163,17 @@ public class RasterCatToFeatureAttribute {
             GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
             value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
 
+            // TODO make this better
+            if (isNovalue(value) || value >= Float.MAX_VALUE || value <= -Float.MAX_VALUE) {
+                value = -9999.0;
+            }
+
             SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value}, id++);
-            
+
             outGeodata.add(extendedFeature);
             pm.worked(1);
         }
+        inFC.close(featureIterator);
         pm.done();
 
     }

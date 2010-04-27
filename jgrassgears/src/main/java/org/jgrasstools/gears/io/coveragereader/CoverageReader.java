@@ -18,6 +18,9 @@
  */
 package org.jgrasstools.gears.io.coveragereader;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -91,10 +94,6 @@ public class CoverageReader extends JGTModel {
     @Out
     public List<GridCoverage2D> geodatalist = new ArrayList<GridCoverage2D>();
 
-    public static final String AIG = "adf";
-    public static final String ESRIGRID = "asc";
-    public static final String GEOTIFF = "tiff";
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(geodata == null, geodatalist.size() == 0, doReset)) {
@@ -135,7 +134,7 @@ public class CoverageReader extends JGTModel {
                         decimatedList.add(file);
                     }
                 }
-                
+
                 for( File file : decimatedList ) {
                     readAig(file, true);
                 }
@@ -169,7 +168,7 @@ public class CoverageReader extends JGTModel {
     }
 
     private void readGeotiff( File mapFile, boolean addToList ) throws IOException {
-        GeoTiffReader geoTiffReader = new GeoTiffReader(new File(file));
+        GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
         GridCoverage2D coverage = geoTiffReader.read(null);
         coverage = coverage.view(ViewType.GEOPHYSICS);
         if (addToList) {
