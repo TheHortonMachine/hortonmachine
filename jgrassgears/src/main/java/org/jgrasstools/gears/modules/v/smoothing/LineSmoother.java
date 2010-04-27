@@ -66,9 +66,9 @@ public class LineSmoother extends JGTModel {
     @In
     public int pType = 0;
 
-    @Description("The number of points to consider in every smoothing step.")
+    @Description("The number of points to consider in every smoothing step (default = 7).")
     @In
-    public int pLookahead;
+    public int pLookahead = 7;
 
     @Description("Slide parameter.")
     @In
