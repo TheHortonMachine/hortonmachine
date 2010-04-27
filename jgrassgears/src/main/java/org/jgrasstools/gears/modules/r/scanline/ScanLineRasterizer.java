@@ -19,11 +19,12 @@
 package org.jgrasstools.gears.modules.r.scanline;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
-
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
@@ -51,6 +52,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.GeometryType;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -115,14 +117,17 @@ public class ScanLineRasterizer {
                     doubleNovalue);
         }
 
-        String geometryType = inGeodata.getSchema().getGeometryDescriptor().getType().toString();
-        if (geometryType.matches(".*[Pp][Oo][Ii][Nn][Tt].*")) {
+        GeometryType type = inGeodata.getSchema().getGeometryDescriptor().getType();
+        if (getGeometryType(type) == GEOMETRYTYPE.POINT
+                || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
             throw new ModelsRuntimeException("Not implemented yet for points", this.getClass()
                     .getSimpleName());
-        } else if (geometryType.matches(".*[Ll][Ii][Nn][Ee].*")) {
+        } else if (getGeometryType(type) == GEOMETRYTYPE.LINE
+                || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass()
                     .getSimpleName());
-        } else if (geometryType.matches(".*[Pp][Oo][Ll][Yy][Gg][Oo][Nn].*")) {
+        } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON
+                || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
             rasterizepolygon(inGeodata, outWR, pGrid, fCat, pValue);
         } else {
             throw new ModelsIllegalargumentException(

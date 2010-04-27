@@ -18,12 +18,7 @@
  */
 package org.jgrasstools.gears.modules.v.rastercattofeatureattribute;
 
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isLineString;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiLineString;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiPoint;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isMultiPolygon;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isPoint;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.isPolygon;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
@@ -145,9 +140,11 @@ public class RasterCatToFeatureAttribute {
             double value = -1;
             Coordinate c;
             Coordinate[] coordinates = geometry.getCoordinates();
-            if (isPoint(geometry) || isMultiPoint(geometry)) {
+            if (getGeometryType(geometry) == GEOMETRYTYPE.POINT
+                    || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOINT) {
                 c = coordinates[0];
-            } else if (isLineString(geometry) || isMultiLineString(geometry)) {
+            } else if (getGeometryType(geometry) == GEOMETRYTYPE.LINE
+                    || getGeometryType(geometry) == GEOMETRYTYPE.MULTILINE) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
                 } else if (pPos.trim().equalsIgnoreCase(END)) {
@@ -155,7 +152,8 @@ public class RasterCatToFeatureAttribute {
                 } else {// (pPos.trim().equalsIgnoreCase(MIDDLE)) {
                     c = coordinates[coordinates.length / 2];
                 }
-            } else if (isPolygon(geometry) || isMultiPolygon(geometry)) {
+            } else if (getGeometryType(geometry) == GEOMETRYTYPE.POLYGON
+                    || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOLYGON) {
                 Point centroid = geometry.getCentroid();
                 if (geometry.contains(centroid)) {
                     c = centroid.getCoordinate();

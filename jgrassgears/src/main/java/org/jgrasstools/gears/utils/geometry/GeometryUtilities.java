@@ -21,6 +21,8 @@ package org.jgrasstools.gears.utils.geometry;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
+import org.opengis.feature.type.GeometryType;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -41,6 +43,13 @@ import com.vividsolutions.jts.geom.PrecisionModel;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GeometryUtilities {
+
+    /**
+     * Geometry types used by the utility.
+     */
+    public static enum GEOMETRYTYPE {
+        POINT, MULTIPOINT, LINE, MULTILINE, POLYGON, MULTIPOLYGON, UNKNOWN
+    }
 
     private static GeometryFactory geomFactory;
     private static PrecisionModel precModel;
@@ -184,81 +193,53 @@ public class GeometryUtilities {
     }
 
     /**
-     * Checks if the given {@link Geometry} is of type {@link Point}. 
+     * Returns the {@link GEOMETRYTYPE} for a given {@link Geometry}. 
      * 
      * @param geometry the geometry to check.
-     * @return true if the geometry is a {@link Point}.
+     * @return the type.
      */
-    public static boolean isPoint( Geometry geometry ) {
-        if (geometry instanceof Point) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link Geometry} is of type {@link MultiPoint}. 
-     * 
-     * @param geometry the geometry to check.
-     * @return true if the geometry is a {@link MultiPoint}.
-     */
-    public static boolean isMultiPoint( Geometry geometry ) {
-        if (geometry instanceof MultiPoint) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link Geometry} is of type {@link LineString}. 
-     * 
-     * @param geometry the geometry to check.
-     * @return true if the geometry is a line.
-     */
-    public static boolean isLineString( Geometry geometry ) {
+    public static GEOMETRYTYPE getGeometryType( Geometry geometry ) {
         if (geometry instanceof LineString) {
-            return true;
+            return GEOMETRYTYPE.LINE;
+        } else if (geometry instanceof MultiLineString) {
+            return GEOMETRYTYPE.MULTILINE;
+        } else if (geometry instanceof Point) {
+            return GEOMETRYTYPE.POINT;
+        } else if (geometry instanceof MultiPoint) {
+            return GEOMETRYTYPE.MULTIPOINT;
+        } else if (geometry instanceof Polygon) {
+            return GEOMETRYTYPE.POLYGON;
+        } else if (geometry instanceof MultiPolygon) {
+            return GEOMETRYTYPE.MULTIPOLYGON;
+        } else {
+            return null;
         }
-        return false;
     }
 
     /**
-     * Checks if the given {@link Geometry} is of type {@link MultiLineString}. 
+     * Returns the {@link GEOMETRYTYPE} for a given {@link GeometryType}. 
      * 
-     * @param geometry the geometry to check.
-     * @return true if the geometry is a multiline.
+     * @param geometryType the geometry type to check.
+     * @return the type.
      */
-    public static boolean isMultiLineString( Geometry geometry ) {
-        if (geometry instanceof MultiLineString) {
-            return true;
-        }
-        return false;
-    }
+    public static GEOMETRYTYPE getGeometryType( GeometryType geometryType ) {
+        Class< ? > binding = geometryType.getBinding();
 
-    /**
-     * Checks if the given {@link Geometry} is of type {@link Polygon}. 
-     * 
-     * @param geometry the geometry to check.
-     * @return true if the geometry is a {@link Polygon}.
-     */
-    public static boolean isPolygon( Geometry geometry ) {
-        if (geometry instanceof Polygon) {
-            return true;
+        if (binding == LineString.class) {
+            return GEOMETRYTYPE.LINE;
+        } else if (binding == MultiLineString.class) {
+            return GEOMETRYTYPE.MULTILINE;
+        } else if (binding == Point.class) {
+            return GEOMETRYTYPE.POINT;
+        } else if (binding == MultiPoint.class) {
+            return GEOMETRYTYPE.MULTIPOINT;
+        } else if (binding == Polygon.class) {
+            return GEOMETRYTYPE.POLYGON;
+        } else if (binding == MultiPolygon.class) {
+            return GEOMETRYTYPE.MULTIPOLYGON;
+        } else {
+            return null;
         }
-        return false;
-    }
-
-    /**
-     * Checks if the given {@link Geometry} is of type {@link MultiPolygon}. 
-     * 
-     * @param geometry the geometry to check.
-     * @return true if the geometry is a {@link MultiPolygon}.
-     */
-    public static boolean isMultiPolygon( Geometry geometry ) {
-        if (geometry instanceof MultiPolygon) {
-            return true;
-        }
-        return false;
     }
 
     /**
