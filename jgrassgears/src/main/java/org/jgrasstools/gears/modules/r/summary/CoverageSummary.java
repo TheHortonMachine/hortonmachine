@@ -107,9 +107,14 @@ public class CoverageSummary extends JGTModel {
         pb.setSource("dataImage", inRI);
         // pb.setSource("zoneImage", null);
 
-        Statistic[] stats = {Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SDEV,
-        // Statistic.APPROX_MEDIAN,
-                Statistic.RANGE, Statistic.SUM};
+        Statistic[] stats = {
+                Statistic.MIN, 
+                Statistic.MAX, 
+                Statistic.MEAN, 
+                Statistic.SDEV,
+                  Statistic.APPROX_MEDIAN,
+                Statistic.RANGE, 
+                Statistic.SUM};
         pb.setParameter("stats", stats);
 
         RenderedOp op = JAI.create("ZonalStats", pb);

@@ -138,13 +138,13 @@
 		<dependency>
 			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>jiffle</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>zonalstats</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.1</version>
 		</dependency>
 
 		<dependency>
@@ -209,14 +209,14 @@
 			<url>http://mvn.geo-solutions.it/</url>
 		</repository>
 
-		<repository>
+		<!--<repository>
 			<id>jaitools-snapshots</id>
 			<name>jaitools snapshots</name>
 			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-		</repository>
+		</repository>-->
 
 		<repository>
 			<id>jgrasstools</id>
