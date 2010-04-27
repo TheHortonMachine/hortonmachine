@@ -20,6 +20,7 @@ package org.jgrasstools.gears.modules.v.rastercattofeatureattribute;
 
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 
+import java.awt.geom.Point2D;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,11 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -113,22 +116,11 @@ public class RasterCatToFeatureAttribute {
         }
 
         SimpleFeatureType featureType = inFC.getSchema();
-        List<AttributeDescriptor> oldAttributes = featureType.getAttributeDescriptors();
-        // create the new attribute
-        AttributeTypeBuilder build = new AttributeTypeBuilder();
-        build.setNillable(true);
-        build.setBinding(Double.class);
-        AttributeDescriptor descriptor = build.buildDescriptor(fNew);
 
-        List<AttributeDescriptor> newAttributesList = new ArrayList<AttributeDescriptor>();
-        newAttributesList.addAll(oldAttributes);
-        newAttributesList.add(descriptor);
+        FeatureExtender fExt = new FeatureExtender(featureType, new String[]{fNew},
+                new Class< ? >[]{Double.class});
 
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("rc2attr");
-        b.addAll(newAttributesList);
-        SimpleFeatureType type = b.buildFeatureType();
-
+        Envelope2D inCoverageEnvelope = inCoverage.getEnvelope2D();
         outGeodata = FeatureCollections.newCollection();
         FeatureIterator<SimpleFeature> featureIterator = inFC.features();
         int all = inFC.size();
@@ -164,18 +156,17 @@ public class RasterCatToFeatureAttribute {
                 throw new ModelsIllegalargumentException("The Geometry type is not supported.",
                         this.getClass().getSimpleName());
             }
+
+            if (!inCoverageEnvelope.contains(c.x, c.y)) {
+                continue;
+            }
+
             GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
             value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
 
-            Object[] attributes = feature.getAttributes().toArray();
-            Object[] newAttributes = new Object[attributes.length + 1];
-            System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
-            newAttributes[newAttributes.length - 1] = value;
-
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            builder.addAll(newAttributes);
-            SimpleFeature newFeature = builder.buildFeature(type.getTypeName() + "." + id++);
-            outGeodata.add(newFeature);
+            SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value}, id++);
+            
+            outGeodata.add(extendedFeature);
             pm.worked(1);
         }
         pm.done();
