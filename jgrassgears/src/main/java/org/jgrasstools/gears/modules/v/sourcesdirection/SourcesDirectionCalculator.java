@@ -101,6 +101,18 @@ public class SourcesDirectionCalculator extends JGTModel {
                         Double.class, Double.class, Double.class, Double.class, Double.class,
                         Double.class, Double.class});
 
+        // resample dem to required resolution
+        double[] res = resFromCoverage(inCoverage);
+        if (res[0] != pRes) {
+            double scaleX = res[0] / pRes;
+            double scaleY = res[1] / pRes;
+            System.out.println(res[0] + "/" + res[1] + "/" + scaleX + "/" + scaleY);
+            inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage,
+                    scaleX, scaleY);
+        }
+        Envelope2D env = inCoverage.getEnvelope2D();
+        GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
+        
         int id = 0;
         int size = inSources.size();
         pm.beginTask("Extracting azimuth...", size);
@@ -111,18 +123,11 @@ public class SourcesDirectionCalculator extends JGTModel {
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
 
-            // source is in this dem, process it
-            double[] res = resFromCoverage(inCoverage);
-            if (res[0] != pRes) {
-                inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage,
-                        res[0] / pRes, res[0] / pRes);
-            }
-            Envelope2D env = inCoverage.getEnvelope2D();
             if (!env.contains(coordinate.x, coordinate.y)) {
                 continue;
             }
+            // source is in this dem, process it
 
-            GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
             GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
             int cols = gridRange.width;
             int rows = gridRange.height;
