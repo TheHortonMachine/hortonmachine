@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.utils.coverage;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -40,6 +41,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -54,6 +56,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -608,6 +611,23 @@ public class CoverageUtilities {
         iter.done();
 
         return distanceValueAbsolute;
+    }
+
+    /**
+     * Utility to tranform row/col to easting/westing.
+     * 
+     * @param gridGeometry
+     * @param x
+     * @param y
+     * @return the world easting and northing.
+     * @throws InvalidGridGeometryException
+     * @throws TransformException
+     */
+    public static Point2D gridToWorld( GridGeometry2D gridGeometry, int x, int y )
+            throws InvalidGridGeometryException, TransformException {
+        final Point2D worldPosition = new Point2D.Double(x, y);
+        gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
+        return worldPosition;
     }
 
 }

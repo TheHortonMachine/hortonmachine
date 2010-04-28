@@ -20,8 +20,10 @@ package org.jgrasstools.gears.modules.v.sourcesdirection;
 
 import static java.lang.Double.NaN;
 import static java.lang.Math.sqrt;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Point2D;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -108,16 +110,16 @@ public class SourcesDirectionCalculator extends JGTModel {
 
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
-            Envelope2D env = inCoverage.getEnvelope2D();
-            if (env.contains(coordinate.x, coordinate.y)) {
-                continue;
-            }
 
             // source is in this dem, process it
             double[] res = resFromCoverage(inCoverage);
             if (res[0] != pRes) {
                 inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage,
                         res[0] / pRes, res[0] / pRes);
+            }
+            Envelope2D env = inCoverage.getEnvelope2D();
+            if (!env.contains(coordinate.x, coordinate.y)) {
+                continue;
             }
 
             GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
@@ -159,45 +161,62 @@ public class SourcesDirectionCalculator extends JGTModel {
             double dz33 = -10000;
 
             int pixelNum = 0;
+            boolean oneIsNull = false;
             double[] v11 = getPixelValue(inCoverage, cols, rows, c11);
             if (v11 != null) {
                 pixelNum++;
                 dz11 = (center[0] - v11[0]) / sqrt(2);
+            } else {
+                oneIsNull = true;
             }
             double[] v12 = getPixelValue(inCoverage, cols, rows, c12);
             if (v12 != null) {
                 pixelNum++;
                 dz12 = (center[0] - v12[0]);
+            } else {
+                oneIsNull = true;
             }
             double[] v13 = getPixelValue(inCoverage, cols, rows, c13);
             if (v13 != null) {
                 pixelNum++;
                 dz13 = (center[0] - v13[0]) / sqrt(2);
+            } else {
+                oneIsNull = true;
             }
             double[] v21 = getPixelValue(inCoverage, cols, rows, c21);
             if (v21 != null) {
                 pixelNum++;
                 dz21 = (center[0] - v21[0]);
+            } else {
+                oneIsNull = true;
             }
             double[] v23 = getPixelValue(inCoverage, cols, rows, c23);
             if (v23 != null) {
                 pixelNum++;
                 dz23 = (center[0] - v23[0]);
+            } else {
+                oneIsNull = true;
             }
             double[] v31 = getPixelValue(inCoverage, cols, rows, c31);
             if (v31 != null) {
                 pixelNum++;
                 dz31 = (center[0] - v31[0]) / sqrt(2);
+            } else {
+                oneIsNull = true;
             }
             double[] v32 = getPixelValue(inCoverage, cols, rows, c32);
             if (v32 != null) {
                 pixelNum++;
                 dz32 = (center[0] - v32[0]);
+            } else {
+                oneIsNull = true;
             }
             double[] v33 = getPixelValue(inCoverage, cols, rows, c33);
             if (v33 != null) {
                 pixelNum++;
                 dz33 = (center[0] - v33[0]) / sqrt(2);
+            } else {
+                oneIsNull = true;
             }
 
             GridCoordinates2D[] cArray = new GridCoordinates2D[]{c31, c32, c33, c21, c23, c11, c12,
@@ -209,12 +228,16 @@ public class SourcesDirectionCalculator extends JGTModel {
 
             GridCoordinates2D steepestCoord = cArray[cArray.length - 1];
 
-            DirectPosition steepestWorldCoord = gridGeometry.gridToWorld(steepestCoord);
-            double[] c = steepestWorldCoord.getCoordinate();
-            DirectPosition centerCoordOnGrid = gridGeometry.gridToWorld(centerGC);
-            double[] cent = centerCoordOnGrid.getCoordinate();
-            double azimuth = GeometryUtilities.azimuth(new Coordinate(cent[0], cent[1]),
-                    new Coordinate(c[0], c[1]));
+            Point2D steepestWorldCoord = gridToWorld(gridGeometry, steepestCoord.x, steepestCoord.y);
+            double[] c = new double[]{steepestWorldCoord.getX(), steepestWorldCoord.getY()};
+            Point2D centerCoordOnGrid = gridToWorld(gridGeometry, centerGC.x, centerGC.y);
+            double[] cent = new double[]{centerCoordOnGrid.getX(), centerCoordOnGrid.getY()};
+
+            double azimuth = -9999.0;
+            if (!oneIsNull) {
+                azimuth = GeometryUtilities.azimuth(new Coordinate(cent[0], cent[1]),
+                        new Coordinate(c[0], c[1]));
+            }
 
             SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth,
                     pixelNum, getValue(v11), getValue(v12), getValue(v13), getValue(v21),
