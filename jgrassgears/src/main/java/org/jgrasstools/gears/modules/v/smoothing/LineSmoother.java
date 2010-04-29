@@ -134,7 +134,7 @@ public class LineSmoother extends JGTModel {
 
             MultiLineString mlString = gF.createMultiLineString(lsArray);
 
-            SimpleFeature newFeature = fGS.extendFeature(feature, mlString, id);
+            SimpleFeature newFeature = fGS.substituteGeometry(feature, mlString, id);
             id++;
 
             outFeatures.add(newFeature);

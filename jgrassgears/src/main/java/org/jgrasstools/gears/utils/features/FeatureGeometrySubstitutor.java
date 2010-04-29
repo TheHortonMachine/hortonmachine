@@ -61,7 +61,7 @@ public class FeatureGeometrySubstitutor {
      * @param index the index for the feature id creation.
      * @return the new created feature, as merged from the old feature plus the new attributes.
      */
-    public SimpleFeature extendFeature( SimpleFeature oldFeature, Geometry newGeometry, int index ) {
+    public SimpleFeature substituteGeometry( SimpleFeature oldFeature, Geometry newGeometry, int index ) {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);

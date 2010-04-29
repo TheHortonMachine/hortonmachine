@@ -130,7 +130,7 @@ public class GeometrySimplifier extends JGTModel {
                 newGeometry = new GeometryCollection(geomArray, gF);
             }
 
-            SimpleFeature newFeature = fGS.extendFeature(feature, newGeometry, id);
+            SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry, id);
             id++;
 
             outFeatures.add(newFeature);
