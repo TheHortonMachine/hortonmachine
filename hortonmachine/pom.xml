@@ -41,7 +41,7 @@
 					<mainClass>org.jgrasstools.gears.oms.ScriptLauncher</mainClass>
 				  </configuration>
 				  <goals>
-					<goal>one-jar</goal>
+					<goal>all</goal>
 				  </goals>
 				</execution>
 			  </executions>
