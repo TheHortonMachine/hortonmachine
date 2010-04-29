@@ -112,7 +112,7 @@ public class CoverageSummary extends JGTModel {
                 Statistic.MAX, 
                 Statistic.MEAN, 
                 Statistic.SDEV,
-                  Statistic.APPROX_MEDIAN,
+//                Statistic.APPROX_MEDIAN,
                 Statistic.RANGE, 
                 Statistic.SUM};
         pb.setParameter("stats", stats);

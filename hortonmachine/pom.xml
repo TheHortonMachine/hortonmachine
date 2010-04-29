@@ -38,10 +38,10 @@
 			  <executions>
 				<execution>
 				  <configuration>
-					<mainClass>org.jgrasstools.gears.oms.ScriptLauncher</mainClass>
+					<mainClass>org.jgrasstools.hortonmachine.oms.ScriptLauncher</mainClass>
 				  </configuration>
 				  <goals>
-					<goal>all</goal>
+					<goal>one-jar</goal>
 				  </goals>
 				</execution>
 			  </executions>

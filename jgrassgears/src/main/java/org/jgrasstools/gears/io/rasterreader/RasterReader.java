@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.coveragereader;
+package org.jgrasstools.gears.io.rasterreader;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
@@ -66,7 +66,7 @@ import org.jgrasstools.gears.utils.files.FilesFinder;
 @Keywords("IO, Coverage, Raster, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CoverageReader extends JGTModel {
+public class RasterReader extends JGTModel {
     @Description("The coverage file path or a data folder, which will be browsed.")
     @In
     public String file = null;
