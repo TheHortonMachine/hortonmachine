@@ -82,8 +82,8 @@ public class H2SessionFactory implements DatabaseSessionFactory {
         dbProps.put(Environment.USER, user);
         dbProps.put(Environment.PASS, passwd);
         dbProps.put(Environment.DIALECT, H2_DIALECT);
-        dbProps.put(Environment.SHOW_SQL, logSql);
-        dbProps.put(Environment.FORMAT_SQL, formatSql);
+        dbProps.put(Environment.SHOW_SQL, String.valueOf(logSql));
+        dbProps.put(Environment.FORMAT_SQL, String.valueOf(formatSql));
 
         annotationConfiguration = new AnnotationConfiguration();
 
