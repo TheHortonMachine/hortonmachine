@@ -63,6 +63,7 @@ import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFe
 import org.jgrasstools.gears.modules.v.simplifier.GeometrySimplifier;
 import org.jgrasstools.gears.modules.v.smoothing.LineSmoother;
 import org.jgrasstools.gears.modules.v.sourcesdirection.SourcesDirectionCalculator;
+import org.jgrasstools.gears.ui.CoverageViewer;
 
 /**
  * Class presenting modules names and classes.
@@ -140,6 +141,11 @@ public class JGrassGears {
         moduleName2Class.put("TimeseriesReaderArray", TimeseriesReaderArray.class);
         moduleName2Class.put("TimeseriesWriterArray", TimeseriesWriterArray.class);
         moduleName2Class.put("Id2ValueArrayReader", Id2ValueArrayReader.class);
+        
+        /*
+         * GUI
+         */
+        moduleName2Class.put("CoverageViewer", CoverageViewer.class);
 
         Set<String> moduleNames = moduleName2Class.keySet();
 
