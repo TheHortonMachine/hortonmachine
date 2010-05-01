@@ -23,7 +23,6 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.RenderingHints;
@@ -189,6 +188,7 @@ public class RasterReader extends JGTModel {
         GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
         GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
         geodata = (GridCoverage2D) reader.read(generalParameter);
+        checkNovalues();
     }
 
     private void readAig( File mapFile ) throws IllegalArgumentException, IOException {
@@ -202,22 +202,26 @@ public class RasterReader extends JGTModel {
         final Object source = url;
         final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
         GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
-        coverage = coverage.view(ViewType.GEOPHYSICS);
-        geodata = coverage;
+        geodata = coverage.view(ViewType.GEOPHYSICS);
+        checkNovalues();
     }
 
     private void readGeotiff( File mapFile ) throws IOException {
         GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
         GridCoverage2D coverage = geoTiffReader.read(generalParameter);
-        coverage = coverage.view(ViewType.GEOPHYSICS);
-        geodata = coverage;
+        geodata = coverage.view(ViewType.GEOPHYSICS);
+        checkNovalues();
     }
 
     private void readArcGrid( File mapFile ) throws IllegalArgumentException, IOException {
         ArcGridReader arcGridReader = new ArcGridReader(mapFile);
         GridCoverage2D coverage = arcGridReader.read(generalParameter);
         geodata = coverage.view(ViewType.GEOPHYSICS);
+        checkNovalues();
+    }
 
+    private void checkNovalues() {
+        // TODO make this nice, this can't be the way
         if (fileNovalue == null || geodataNovalue == null) {
             return;
         }
@@ -225,7 +229,6 @@ public class RasterReader extends JGTModel {
             return;
         }
         if (fileNovalue != geodataNovalue) {
-            // need to adapt it, for now do it dirty
             HashMap<String, Double> params = CoverageUtilities
                     .getRegionParamsFromGridCoverage(geodata);
             int height = params.get(CoverageUtilities.ROWS).intValue();
@@ -246,7 +249,7 @@ public class RasterReader extends JGTModel {
                     }
                 }
             }
-            geodata = CoverageUtilities.buildCoverage("newcoverage", tmpWR, params, coverage //$NON-NLS-1$
+            geodata = CoverageUtilities.buildCoverage("newcoverage", tmpWR, params, geodata
                     .getCoordinateReferenceSystem());
         }
     }
