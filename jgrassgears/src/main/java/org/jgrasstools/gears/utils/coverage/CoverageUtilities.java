@@ -253,7 +253,7 @@ public class CoverageUtilities {
      * @param south the southern boundary.
      * @param east the eastern boundary.
      * @param west the western boundary.
-     * @param crs the {@link CoordinateReferenceSystem}. 
+     * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.
      * @return the {@link GeneralParameterValue array of parameters}.
      */
     public static GeneralParameterValue[] createGridGeometryGeneralParameter( int width,
@@ -263,7 +263,14 @@ public class CoverageUtilities {
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(
                 AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
-        ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, crs);
+        Envelope env;
+        if (crs != null) {
+            env = new ReferencedEnvelope(west, east, south, north, crs);
+        } else {
+            DirectPosition2D minDp = new DirectPosition2D(west, south);
+            DirectPosition2D maxDp = new DirectPosition2D(east, north);
+            env = new Envelope2D(minDp, maxDp);
+        }
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
 
@@ -279,7 +286,7 @@ public class CoverageUtilities {
      * @param south the southern boundary.
      * @param east the eastern boundary.
      * @param west the western boundary.
-     * @param crs the {@link CoordinateReferenceSystem}. 
+     * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.  
      * @return the {@link GeneralParameterValue array of parameters}.
      */
     public static GeneralParameterValue[] createGridGeometryGeneralParameter( double xres,
@@ -292,19 +299,11 @@ public class CoverageUtilities {
         int width = (int) Math.round((east - west) / xres);
         if (width < 1)
             width = 1;
-        // in case re-evaluate the resolutions
-        xres = (east - west) / width;
-        yres = (north - south) / height;
 
-        GeneralParameterValue[] readParams = new GeneralParameterValue[1];
-        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(
-                AbstractGridFormat.READ_GRIDGEOMETRY2D);
-        GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
-        ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, crs);
-        readGG.setValue(new GridGeometry2D(gridEnvelope, env));
-        readParams[0] = readGG;
+        GeneralParameterValue[] generalParameter = createGridGeometryGeneralParameter(width,
+                height, north, south, east, west, crs);
 
-        return readParams;
+        return generalParameter;
     }
 
     /**
