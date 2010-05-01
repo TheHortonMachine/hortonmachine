@@ -30,15 +30,15 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.gce.grassraster.GrassCoverageWriter;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
+import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.coverage.grid.GridCoverageWriter;
 import org.opengis.parameter.GeneralParameterValue;
 
 @Description("Utility class for writing geotools coverages to grass rasters.")
@@ -73,9 +73,8 @@ public class JGrassCoverageWriter extends JGTModel {
         }
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
 
-        AbstractGridFormat format = (AbstractGridFormat) new GrassCoverageFormatFactory()
-                .createFormat();
-        GridCoverageWriter writer = format.getWriter(mapEnvironment.getCELL());
+        GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+        GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL());
 
         GeneralParameterValue[] readParams = null;
         if (doActive) {
@@ -88,5 +87,13 @@ public class JGrassCoverageWriter extends JGTModel {
 
         writer.write(geodata, readParams);
         hasWritten = true;
+    }
+    
+    
+    public static void writeGrassRaster(String path, GridCoverage2D coverage) throws Exception {
+        JGrassCoverageWriter writer = new JGrassCoverageWriter();
+        writer.geodata = coverage;
+        writer.file = path;
+        writer.writeCoverage();
     }
 }
