@@ -37,8 +37,6 @@ import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 
@@ -52,11 +50,6 @@ public class GeoTiffCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
     @In
     public GridCoverage2D geodata = null;
-
-    @Role(Role.PARAMETER)
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Role(Role.PARAMETER)
     @Description("The output geotiff file.")

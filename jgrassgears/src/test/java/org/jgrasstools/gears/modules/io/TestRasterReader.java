@@ -1,7 +1,5 @@
 package org.jgrasstools.gears.modules.io;
 
-import static java.lang.Double.NaN;
-
 import java.io.File;
 import java.net.URL;
 
