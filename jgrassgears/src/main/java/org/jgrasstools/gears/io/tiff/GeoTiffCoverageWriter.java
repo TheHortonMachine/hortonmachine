@@ -27,7 +27,6 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
@@ -61,7 +60,7 @@ public class GeoTiffCoverageWriter extends JGTModel {
 
     @Role(Role.PARAMETER)
     @Description("The output geotiff file.")
-    @Out
+    @In
     public String file = null;
 
     private boolean hasWritten = false;
