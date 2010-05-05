@@ -32,6 +32,7 @@ import oms3.annotations.Out;
 
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.util.ProgressListener;
@@ -140,6 +141,21 @@ public class JGTModel implements Process {
             isTrue = isTrue || statements[i];
         }
         return isTrue;
+    }
+
+    /**
+     * Checks if the passed objects are all != null and if one is null, throws Exception.
+     * 
+     * @param objects the objects to check.
+     */
+    protected void checkNull( Object... objects ) {
+        for( Object object : objects ) {
+            if (object == null) {
+                throw new ModelsIllegalargumentException(
+                        "Mandatory input argument is missing. Check your syntax...", this
+                                .getClass().getSimpleName());
+            }
+        }
     }
 
 }
