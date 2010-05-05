@@ -18,18 +18,8 @@
  */
 package org.jgrasstools.gears.modules.r.coveragereconverter;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
-
-import java.awt.RenderingHints;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-
-import javax.media.jai.ImageLayout;
-import javax.media.jai.JAI;
-
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -40,13 +30,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.ViewType;
-import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
-import org.geotools.coverageio.gdal.aig.AIGReader;
-import org.geotools.factory.Hints;
-import org.geotools.gce.arcgrid.ArcGridReader;
-import org.geotools.gce.geotiff.GeoTiffReader;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
+import org.jgrasstools.gears.io.grass.JGrassCoverageWriter;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.tiff.GeoTiffCoverageWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -73,58 +59,24 @@ public class CoverageConverter extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        File mapFile = new File(inputFile);
-        GridCoverage2D coverage = null;
-
         // read
-        if (inputFile.toLowerCase().endsWith(ESRIGRID)) {
-            coverage = readArcGrid(mapFile, false);
-        } else if (inputFile.toLowerCase().endsWith(GEOTIFF)) {
-            coverage = readGeotiff(mapFile, false);
-        } else if (inputFile.toLowerCase().endsWith(AIG)) {
-            coverage = readAig(mapFile, false);
-        } else {
-            throw new ModelsIllegalargumentException("Data type not supported.", this.getClass()
-                    .getSimpleName());
-        }
+        RasterReader reader = new RasterReader();
+        reader.file = inputFile;
+        reader.process();
+        GridCoverage2D coverage = reader.geodata;
 
         // write
         if (pType.equals(ESRIGRID)) {
             ArcgridCoverageWriter.writeArcgrid(outputFile, coverage);
         } else if (pType.equals(GEOTIFF)) {
             GeoTiffCoverageWriter.writeGeotiff(outputFile, coverage);
+        } else if (pType.equals(GRASSRASTER)) {
+            JGrassCoverageWriter.writeGrassRaster(outputFile, coverage);
         } else {
             throw new ModelsIllegalargumentException("Output data type not supported: " + pType,
                     this.getClass().getSimpleName());
         }
 
-    }
-
-    private GridCoverage2D readAig( File mapFile, boolean addToList )
-            throws IllegalArgumentException, IOException {
-        final ImageLayout l = new ImageLayout();
-        l.setTileGridXOffset(0).setTileGridYOffset(0).setTileHeight(512).setTileWidth(512);
-
-        Hints hints = new Hints();
-        hints.add(new RenderingHints(JAI.KEY_IMAGE_LAYOUT, l));
-
-        final URL url = mapFile.toURI().toURL();
-        final Object source = url;
-        final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
-        return (GridCoverage2D) reader.read(null);
-    }
-
-    private GridCoverage2D readGeotiff( File mapFile, boolean addToList ) throws IOException {
-        GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
-        GridCoverage2D coverage = geoTiffReader.read(null);
-        return coverage.view(ViewType.GEOPHYSICS);
-    }
-
-    private GridCoverage2D readArcGrid( File mapFile, boolean addToList )
-            throws IllegalArgumentException, IOException {
-        ArcGridReader arcGridReader = new ArcGridReader(mapFile);
-        GridCoverage2D coverage = arcGridReader.read(null);
-        return coverage.view(ViewType.GEOPHYSICS);
     }
 
 }

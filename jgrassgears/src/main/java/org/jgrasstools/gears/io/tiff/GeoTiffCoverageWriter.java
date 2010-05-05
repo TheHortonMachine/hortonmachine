@@ -27,7 +27,6 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
@@ -38,8 +37,6 @@ import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 
@@ -55,13 +52,8 @@ public class GeoTiffCoverageWriter extends JGTModel {
     public GridCoverage2D geodata = null;
 
     @Role(Role.PARAMETER)
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-
-    @Role(Role.PARAMETER)
     @Description("The output geotiff file.")
-    @Out
+    @In
     public String file = null;
 
     private boolean hasWritten = false;

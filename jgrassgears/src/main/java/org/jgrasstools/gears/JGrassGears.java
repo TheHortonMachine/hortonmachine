@@ -17,7 +17,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine;
+package org.jgrasstools.gears;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -29,14 +29,19 @@ import java.util.Set;
 import oms3.Access;
 import oms3.ComponentAccess;
 
+import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;
+import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionWriter;
+import org.jgrasstools.gears.io.adige.VegetationLibraryReader;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
+import org.jgrasstools.gears.io.dbf.DbfTableReader;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
 import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
 import org.jgrasstools.gears.io.eicalculator.EIEnergyReader;
 import org.jgrasstools.gears.io.grass.JGrassCoverageReader;
 import org.jgrasstools.gears.io.grass.JGrassCoverageWriter;
 import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayReader;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.io.tiff.GeoTiffCoverageReader;
@@ -45,33 +50,27 @@ import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
 import org.jgrasstools.gears.io.timeseries.TimeseriesReaderArray;
 import org.jgrasstools.gears.io.timeseries.TimeseriesWriterArray;
-import org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
-import org.jgrasstools.hortonmachine.modules.basin.topindex.TopIndex;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
-import org.jgrasstools.hortonmachine.modules.geomorphology.ab.Ab;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.Aspect;
-import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.Curvatures;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
-import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EnergyIndexCalculator;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.shalstab.Shalstab;
-import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
-import org.jgrasstools.hortonmachine.modules.network.netnumbering.NetNumbering;
-import org.jgrasstools.hortonmachine.modules.network.netshape2flow.Netshape2Flow;
-import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
-import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
-import org.jgrasstools.hortonmachine.modules.statistics.kriging.Kriging;
+import org.jgrasstools.gears.modules.r.coveragereconverter.CoverageConverter;
+import org.jgrasstools.gears.modules.r.coveragereprojector.CoverageReprojector;
+import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
+import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.summary.CoverageSummary;
+import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
+import org.jgrasstools.gears.modules.v.attributesjoiner.AttributesJoiner;
+import org.jgrasstools.gears.modules.v.featurereprojector.FeatureReprojector;
+import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
+import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
+import org.jgrasstools.gears.modules.v.simplifier.GeometrySimplifier;
+import org.jgrasstools.gears.modules.v.smoothing.LineSmoother;
+import org.jgrasstools.gears.modules.v.sourcesdirection.SourcesDirectionCalculator;
+import org.jgrasstools.gears.ui.CoverageViewer;
 
 /**
  * Class presenting modules names and classes.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class HortonMachine {
+public class JGrassGears {
 
     /**
      * A {@link LinkedHashMap map} of all the classes and their simple names.
@@ -97,40 +96,56 @@ public class HortonMachine {
         /*
          * define all modules available
          */
-        // basin
-        moduleName2Class.put("RescaledDistance", RescaledDistance.class);
-        moduleName2Class.put("TopIndex", TopIndex.class);
+        // r
+        moduleName2Class.put("CoverageConverter", CoverageConverter.class);
+        moduleName2Class.put("CoverageReprojector", CoverageReprojector.class);
+        moduleName2Class.put("Mapcalc", Mapcalc.class);
+        moduleName2Class.put("ScanLineRasterizer", ScanLineRasterizer.class);
+        moduleName2Class.put("CoverageSummary", CoverageSummary.class);
+
+        // utils
+        moduleName2Class.put("FileIterator", FileIterator.class);
         
-        // demmanip
-        moduleName2Class.put("Pitfiller", Pitfiller.class);
-        moduleName2Class.put("Wateroutlet", Wateroutlet.class);
+        // v
+        moduleName2Class.put("AttributesJoiner", AttributesJoiner.class);
+        moduleName2Class.put("FeatureReprojector", FeatureReprojector.class);
+        moduleName2Class.put("MarchingSquaresVectorializer", MarchingSquaresVectorializer.class);
+        moduleName2Class.put("RasterCatToFeatureAttribute", RasterCatToFeatureAttribute.class);
+        moduleName2Class.put("GeometrySimplifier", GeometrySimplifier.class);
+        moduleName2Class.put("LineSmoother", LineSmoother.class);
+        moduleName2Class.put("SourcesDirectionCalculator", SourcesDirectionCalculator.class);
 
-        // geomorphology
-        moduleName2Class.put("Ab", Ab.class);
-        moduleName2Class.put("Aspect", Aspect.class);
-        moduleName2Class.put("Curvatures", Curvatures.class);
-        moduleName2Class.put("DrainDir", DrainDir.class);
-        moduleName2Class.put("FlowDirections", FlowDirections.class);
-        moduleName2Class.put("Gradient", Gradient.class);
-
-        // hillslope
+        /*
+         * I/O
+         */
+        moduleName2Class.put("AdigeBoundaryConditionReader", AdigeBoundaryConditionReader.class);
+        moduleName2Class.put("AdigeBoundaryConditionWriter", AdigeBoundaryConditionWriter.class);
+        moduleName2Class.put("VegetationLibraryReader", VegetationLibraryReader.class);
+        moduleName2Class.put("ArcgridCoverageReader", ArcgridCoverageReader.class);
+        moduleName2Class.put("ArcgridCoverageWriter", ArcgridCoverageWriter.class);
+        moduleName2Class.put("RasterReader", RasterReader.class);
+        moduleName2Class.put("DbfTableReader", DbfTableReader.class);
+        moduleName2Class.put("EIAltimetryReader", EIAltimetryReader.class);
+        moduleName2Class.put("EIAreasReader", EIAreasReader.class);
+        moduleName2Class.put("EIEnergyReader", EIEnergyReader.class);
+        moduleName2Class.put("JGrassCoverageReader", JGrassCoverageReader.class);
+        moduleName2Class.put("JGrassCoverageWriter", JGrassCoverageWriter.class);
+        moduleName2Class.put("ShapefileFeatureReader", ShapefileFeatureReader.class);
+        moduleName2Class.put("ShapefileFeatureWriter", ShapefileFeatureWriter.class);
+        moduleName2Class.put("GeoTiffCoverageReader", GeoTiffCoverageReader.class);
+        moduleName2Class.put("GeoTiffCoverageWriter", GeoTiffCoverageWriter.class);
+        moduleName2Class
+                .put("TimeseriesByStepReaderId2Value", TimeseriesByStepReaderId2Value.class);
+        moduleName2Class
+                .put("TimeseriesByStepWriterId2Value", TimeseriesByStepWriterId2Value.class);
+        moduleName2Class.put("TimeseriesReaderArray", TimeseriesReaderArray.class);
+        moduleName2Class.put("TimeseriesWriterArray", TimeseriesWriterArray.class);
+        moduleName2Class.put("Id2ValueArrayReader", Id2ValueArrayReader.class);
         
-        // hydrogeo
-        // moduleName2Class.put("Adige", Adige.class);
-        moduleName2Class.put("EnergyBalance", EnergyBalance.class);
-        moduleName2Class.put("EnergyIndexCalculator", EnergyIndexCalculator.class);
-        moduleName2Class.put("Peakflow", Peakflow.class);
-        moduleName2Class.put("Shalstab", Shalstab.class);
-
-        // network
-        moduleName2Class.put("ExtractNetwork", ExtractNetwork.class);
-        moduleName2Class.put("NetNumbering", NetNumbering.class);
-        moduleName2Class.put("Netshape2Flow", Netshape2Flow.class);
-
-        // statistics
-        moduleName2Class.put("Cb", Cb.class);
-        moduleName2Class.put("Jami", Jami.class);
-        moduleName2Class.put("Kriging", Kriging.class);
+        /*
+         * GUI
+         */
+        moduleName2Class.put("CoverageViewer", CoverageViewer.class);
 
         Set<String> moduleNames = moduleName2Class.keySet();
 

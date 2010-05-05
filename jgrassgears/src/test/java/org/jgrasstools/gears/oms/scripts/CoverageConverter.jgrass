@@ -1,0 +1,24 @@
+sim(name:"ConvertAsciiToGeotiff") {
+
+	// your folder here
+	def folder = "C:/TMP/";
+ 
+    model {
+        components  {
+          reader    'RasterReader'
+          writer    'GeoTiffCoverageWriter'
+        }
+
+        parameter {
+           'reader.file' "$folder/dtm_test.asc"
+           'writer.file' "$folder/dtm_test.tiff"
+           'reader.fileNovalue' 	"-9999.0"
+           'reader.geodataNovalue'	Double.NaN
+        }
+
+        connect {
+          'reader.geodata' 'writer.geodata'
+        }
+
+    }
+}

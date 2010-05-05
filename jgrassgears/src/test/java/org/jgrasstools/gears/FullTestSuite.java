@@ -10,6 +10,7 @@ import org.jgrasstools.gears.modules.TestSourceDirection;
 import org.jgrasstools.gears.modules.io.TestAdigeBoundaryConditions;
 import org.jgrasstools.gears.modules.io.TestId2ValueConverters;
 import org.jgrasstools.gears.modules.io.TestId2ValueReader;
+import org.jgrasstools.gears.modules.io.TestRasterReader;
 import org.jgrasstools.gears.modules.io.TestShapefileIO;
 import org.jgrasstools.gears.modules.io.TestVegetationLibraryReader;
 
@@ -19,11 +20,12 @@ public class FullTestSuite extends TestCase {
         TestSuite suite = new TestSuite();
 
         // IO
+        suite.addTestSuite(TestAdigeBoundaryConditions.class);
+        suite.addTestSuite(TestId2ValueConverters.class);
         suite.addTestSuite(TestId2ValueReader.class);
+        suite.addTestSuite(TestRasterReader.class);
         suite.addTestSuite(TestShapefileIO.class);
         suite.addTestSuite(TestVegetationLibraryReader.class);
-        suite.addTestSuite(TestId2ValueConverters.class);
-        suite.addTestSuite(TestAdigeBoundaryConditions.class);
 
         // modules
         suite.addTestSuite(TestMapcalc.class);
