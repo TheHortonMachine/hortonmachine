@@ -3,6 +3,7 @@ package org.jgrasstools.gears;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import org.jgrasstools.gears.modules.TestFeatureFilter;
 import org.jgrasstools.gears.modules.TestMapcalc;
 import org.jgrasstools.gears.modules.TestMarchingSquaresAndRasterizer;
 import org.jgrasstools.gears.modules.TestReprojectors;
@@ -28,10 +29,11 @@ public class FullTestSuite extends TestCase {
         suite.addTestSuite(TestVegetationLibraryReader.class);
 
         // modules
+        suite.addTestSuite(TestFeatureFilter.class);
         suite.addTestSuite(TestMapcalc.class);
+        suite.addTestSuite(TestMarchingSquaresAndRasterizer.class);
         suite.addTestSuite(TestReprojectors.class);
         suite.addTestSuite(TestSourceDirection.class);
-        suite.addTestSuite(TestMarchingSquaresAndRasterizer.class);
 
         return suite;
     }

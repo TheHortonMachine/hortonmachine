@@ -28,6 +28,8 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -67,7 +69,16 @@ public class FeatureFilter extends JGTModel {
         checkNull(inFeatures, pCql);
 
         Filter cqlFilter = FilterUtilities.getCQLFilter(pCql);
-        outFeatures = inFeatures.subCollection(cqlFilter);
+        FeatureCollection<SimpleFeatureType, SimpleFeature> subCollection = inFeatures
+                .subCollection(cqlFilter);
+        
+        outFeatures = FeatureCollections.newCollection();
+        FeatureIterator<SimpleFeature> iterator = subCollection.features();
+        while( iterator.hasNext() ) {
+            SimpleFeature feature = iterator.next();
+            outFeatures.add(feature);
+        }
+        subCollection.close(iterator);
     }
 
 }

@@ -20,6 +20,7 @@ package org.jgrasstools.gears.utils.features;
 
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.filter.text.ecql.ECQL;
 import org.opengis.filter.Filter;
 import org.opengis.geometry.BoundingBox;
 
@@ -85,7 +86,7 @@ public class FilterUtilities {
     }
 
     public static Filter getCQLFilter( String expression ) throws CQLException {
-        Filter cqlFilter = CQL.toFilter(expression);
+        Filter cqlFilter = ECQL.toFilter(expression);
         return cqlFilter;
     }
 
