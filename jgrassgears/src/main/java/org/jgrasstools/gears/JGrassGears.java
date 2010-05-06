@@ -57,6 +57,7 @@ import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.modules.r.summary.CoverageSummary;
 import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
 import org.jgrasstools.gears.modules.v.attributesjoiner.AttributesJoiner;
+import org.jgrasstools.gears.modules.v.attributesrounder.AttributesRounder;
 import org.jgrasstools.gears.modules.v.featurereprojector.FeatureReprojector;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
@@ -70,6 +71,7 @@ import org.jgrasstools.gears.ui.CoverageViewer;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
+@SuppressWarnings("nls")
 public class JGrassGears {
 
     /**
@@ -108,6 +110,7 @@ public class JGrassGears {
         
         // v
         moduleName2Class.put("AttributesJoiner", AttributesJoiner.class);
+        moduleName2Class.put("AttributesRounder", AttributesRounder.class);
         moduleName2Class.put("FeatureReprojector", FeatureReprojector.class);
         moduleName2Class.put("MarchingSquaresVectorializer", MarchingSquaresVectorializer.class);
         moduleName2Class.put("RasterCatToFeatureAttribute", RasterCatToFeatureAttribute.class);
