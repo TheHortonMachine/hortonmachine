@@ -20,7 +20,6 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.v.featurefilter.FeatureFilter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -33,9 +32,8 @@ import org.opengis.feature.simple.SimpleFeatureType;
  */
 public class TestFeatureFilter extends HMTestCase {
 
+    @SuppressWarnings("nls")
     public void testFeatureFilter() throws Exception {
-
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         FeatureCollection<SimpleFeatureType, SimpleFeature> testFC = HMTestMaps.testFC;
 
