@@ -1,0 +1,25 @@
+sim(name:"Reshape") {
+	
+	// your folder here
+	def folder = "/home/moovida/TMP/review/";
+ 
+    model {
+        components  {
+          reader    			'ShapefileFeatureReader'
+          featureReshaper    	'FeatureReshaper'
+          writer    			'ShapefileFeatureWriter'
+        }
+
+        parameter {
+           'reader.file'			"$folder/sorgenti_azim.shp"
+           'writer.file'			"$folder/sorgenti_azim_minus90.shp"
+           'featureReshaper.pCql'	"azimuth90=azimuth - 90"
+        }
+
+        connect {
+          'reader.geodata' 'featureReshaper.inFeatures' 
+          'featureReshaper.outFeatures' 'writer.geodata'
+        }
+
+    }
+}

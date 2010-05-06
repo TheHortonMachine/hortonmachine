@@ -18,8 +18,6 @@
  */
 package org.jgrasstools.gears.modules.v.attributesjoiner;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -39,16 +37,11 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
-import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
 
 @Description("Module that joins attributes from one featurecollection into another based on a common field.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")

@@ -58,9 +58,11 @@ import org.jgrasstools.gears.modules.r.summary.CoverageSummary;
 import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
 import org.jgrasstools.gears.modules.v.attributesjoiner.AttributesJoiner;
 import org.jgrasstools.gears.modules.v.attributesrounder.AttributesRounder;
+import org.jgrasstools.gears.modules.v.featurefilter.FeatureFilter;
 import org.jgrasstools.gears.modules.v.featurereprojector.FeatureReprojector;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
+import org.jgrasstools.gears.modules.v.reshape.FeatureReshaper;
 import org.jgrasstools.gears.modules.v.simplifier.GeometrySimplifier;
 import org.jgrasstools.gears.modules.v.smoothing.LineSmoother;
 import org.jgrasstools.gears.modules.v.sourcesdirection.SourcesDirectionCalculator;
@@ -101,9 +103,9 @@ public class JGrassGears {
         // r
         moduleName2Class.put("CoverageConverter", CoverageConverter.class);
         moduleName2Class.put("CoverageReprojector", CoverageReprojector.class);
+        moduleName2Class.put("CoverageSummary", CoverageSummary.class);
         moduleName2Class.put("Mapcalc", Mapcalc.class);
         moduleName2Class.put("ScanLineRasterizer", ScanLineRasterizer.class);
-        moduleName2Class.put("CoverageSummary", CoverageSummary.class);
 
         // utils
         moduleName2Class.put("FileIterator", FileIterator.class);
@@ -111,11 +113,13 @@ public class JGrassGears {
         // v
         moduleName2Class.put("AttributesJoiner", AttributesJoiner.class);
         moduleName2Class.put("AttributesRounder", AttributesRounder.class);
+        moduleName2Class.put("FeatureFilter", FeatureFilter.class);
         moduleName2Class.put("FeatureReprojector", FeatureReprojector.class);
-        moduleName2Class.put("MarchingSquaresVectorializer", MarchingSquaresVectorializer.class);
-        moduleName2Class.put("RasterCatToFeatureAttribute", RasterCatToFeatureAttribute.class);
+        moduleName2Class.put("FeatureReshaper", FeatureReshaper.class);
         moduleName2Class.put("GeometrySimplifier", GeometrySimplifier.class);
         moduleName2Class.put("LineSmoother", LineSmoother.class);
+        moduleName2Class.put("MarchingSquaresVectorializer", MarchingSquaresVectorializer.class);
+        moduleName2Class.put("RasterCatToFeatureAttribute", RasterCatToFeatureAttribute.class);
         moduleName2Class.put("SourcesDirectionCalculator", SourcesDirectionCalculator.class);
 
         /*
