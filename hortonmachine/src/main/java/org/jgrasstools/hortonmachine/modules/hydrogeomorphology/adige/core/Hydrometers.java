@@ -30,7 +30,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 public class Hydrometers implements DischargeContributor {
 
     private final HashMap<String, Integer> hydrometer_pfaff2idMap;
-    private HashMap<Integer, Double> hydrometer_id2valuesMap;
+    private HashMap<Integer, double[]> hydrometer_id2valuesMap;
 
     /**
      * Constructor.
@@ -45,15 +45,15 @@ public class Hydrometers implements DischargeContributor {
     public Double getDischarge( String pfafstetterNumber, double inputDischarge ) {
         Integer hydroId = hydrometer_pfaff2idMap.get(pfafstetterNumber);
         if (hydroId != null) {
-            Double value = hydrometer_id2valuesMap.get(hydroId);
+            double[] value = hydrometer_id2valuesMap.get(hydroId);
             if (value != null) {
-                return value;
+                return value[0];
             }
         }
         return JGTConstants.doubleNovalue;
     }
 
-    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+    public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         hydrometer_id2valuesMap = currentDataMap;
     }
 

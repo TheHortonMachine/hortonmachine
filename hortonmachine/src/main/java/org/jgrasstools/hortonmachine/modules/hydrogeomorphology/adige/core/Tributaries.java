@@ -5,14 +5,14 @@ import java.util.HashMap;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 
 /**
- * Utility class for handling of tributary mappings and data retrival. 
+ * Utility class for handling of tributary mappings and data retrieval. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class Tributaries implements DischargeContributor {
 
     private final HashMap<String, Integer> tributary_pfaff2idMap;
-    private HashMap<Integer, Double> tributary_id2valuesQMap;
+    private HashMap<Integer, double[]> tributary_id2valuesQMap;
 
     /**
      * Constructor.
@@ -28,16 +28,16 @@ public class Tributaries implements DischargeContributor {
     public Double getDischarge( String pNum, double inputDischarge ) {
         Integer damId = tributary_pfaff2idMap.get(pNum);
         if (damId != null) {
-            Double discharge = tributary_id2valuesQMap.get(damId);
+            double[] discharge = tributary_id2valuesQMap.get(damId);
             if (discharge != null) {
                 // sum restituzione discharge to the input discharge
-                return discharge + inputDischarge;
+                return discharge[0] + inputDischarge;
             }
         }
         return JGTConstants.doubleNovalue;
     }
 
-    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+    public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         tributary_id2valuesQMap = currentDataMap;
     }
 

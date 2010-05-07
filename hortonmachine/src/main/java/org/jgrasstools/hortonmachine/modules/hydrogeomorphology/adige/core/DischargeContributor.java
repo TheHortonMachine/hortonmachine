@@ -23,7 +23,7 @@ import java.util.HashMap;
 /**
  * Interface for all those objects that can supply a discharge in a given point of the network.
  * 
- * <p>The point of the network is defined by its pafafstetter number.</p>
+ * <p>The point of the network is defined by its pfafstetter number.</p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -40,6 +40,6 @@ public interface DischargeContributor {
      */
     public abstract Double getDischarge( String pfafstetterNumber, double inputDischarge );
 
-    public abstract void setCurrentData( HashMap<Integer, Double> currentDataMap );
+    public abstract void setCurrentData( HashMap<Integer, double[]> currentDataMap );
 
 }

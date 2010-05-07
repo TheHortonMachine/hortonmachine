@@ -19,6 +19,7 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 
 import java.io.PrintStream;
+import java.text.MessageFormat;
 import java.util.HashMap;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -32,7 +33,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class Offtakes implements DischargeContributor {
 
     private final HashMap<String, Integer> offtakes_pfaff2idMap;
-    private HashMap<Integer, Double> offtakes_id2valuesQMap;
+    private HashMap<Integer, double[]> offtakes_id2valuesQMap;
     private final IJGTProgressMonitor out;
 
     /**
@@ -50,15 +51,16 @@ public class Offtakes implements DischargeContributor {
     public Double getDischarge( String pNum, double inputDischarge ) {
         Integer damId = offtakes_pfaff2idMap.get(pNum);
         if (damId != null) {
-            Double discharge = offtakes_id2valuesQMap.get(damId);
+            double[] discharge = offtakes_id2valuesQMap.get(damId);
             if (discharge != null) {
-                if (inputDischarge >= discharge) {
-                    return inputDischarge - discharge;
+                if (inputDischarge >= discharge[0]) {
+                    return inputDischarge - discharge[0];
                 } else {
                     out
-                            .errorMessage("WARNING: offtake discharge at "
-                                    + pNum
-                                    + " is greater than the river discharge. Offtake discharge set to 0 to continue.");
+                            .errorMessage(MessageFormat
+                                    .format(
+                                            "WARNING: offtake discharge at {0} is greater than the river discharge. Offtake discharge set to 0 to continue.",
+                                            pNum));
                     return inputDischarge;
                 }
             }
@@ -66,7 +68,7 @@ public class Offtakes implements DischargeContributor {
         return JGTConstants.doubleNovalue;
     }
 
-    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+    public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         offtakes_id2valuesQMap = currentDataMap;
     }
 

@@ -30,7 +30,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 public class Dams implements DischargeContributor {
 
     private final HashMap<String, Integer> dams_pfaff2idMap;
-    private HashMap<Integer, Double> dams_id2valuesQMap;
+    private HashMap<Integer, double[]> dams_id2valuesQMap;
 
     /**
      * Constructor.
@@ -45,15 +45,15 @@ public class Dams implements DischargeContributor {
     public Double getDischarge( String pNum, double inputDischarge ) {
         Integer damId = dams_pfaff2idMap.get(pNum);
         if (damId != null) {
-            Double discharge = dams_id2valuesQMap.get(damId);
+            double[] discharge = dams_id2valuesQMap.get(damId);
             if (discharge != null) {
-                return discharge;
+                return discharge[0];
             }
         }
         return JGTConstants.doubleNovalue;
     }
 
-    public void setCurrentData( HashMap<Integer, Double> currentDataMap ) {
+    public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         dams_id2valuesQMap = currentDataMap;
     }
 

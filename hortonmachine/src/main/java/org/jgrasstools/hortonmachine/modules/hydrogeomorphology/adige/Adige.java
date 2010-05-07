@@ -127,35 +127,35 @@ public class Adige extends JGTModel {
 
     @Description("The rainfall data.")
     @In
-    public HashMap<Integer, Double> inRain;
+    public HashMap<Integer, double[]> inRain;
 
     @Description("The radiation data.")
     @In
-    public HashMap<Integer, Double> inNetradiation;
+    public HashMap<Integer, double[]> inNetradiation;
 
     @Description("The netshort radiation data.")
     @In
-    public HashMap<Integer, Double> inShortradiation;
+    public HashMap<Integer, double[]> inShortradiation;
 
     @Description("The temperature data.")
     @In
-    public HashMap<Integer, Double> inTemperature;
+    public HashMap<Integer, double[]> inTemperature;
 
     @Description("The humidity data.")
     @In
-    public HashMap<Integer, Double> inHumidity;
+    public HashMap<Integer, double[]> inHumidity;
 
     @Description("The windspeed data.")
     @In
-    public HashMap<Integer, Double> inWindspeed;
+    public HashMap<Integer, double[]> inWindspeed;
 
     @Description("The pressure data.")
     @In
-    public HashMap<Integer, Double> inPressure;
+    public HashMap<Integer, double[]> inPressure;
 
     @Description("The snow water equivalent data.")
     @In
-    public HashMap<Integer, Double> inSwe;
+    public HashMap<Integer, double[]> inSwe;
 
     @Description("The hydrometers monitoring points.")
     @In
@@ -163,7 +163,7 @@ public class Adige extends JGTModel {
 
     @Description("The hydrometers data.")
     @In
-    public HashMap<Integer, Double> inHydrometerdata;
+    public HashMap<Integer, double[]> inHydrometerdata;
 
     @Description("The dams monitoring points.")
     @In
@@ -171,7 +171,7 @@ public class Adige extends JGTModel {
 
     @Description("The dams data.")
     @In
-    public HashMap<Integer, Double> inDamsdata;
+    public HashMap<Integer, double[]> inDamsdata;
 
     @Description("The tributary monitoring points.")
     @In
@@ -179,7 +179,7 @@ public class Adige extends JGTModel {
 
     @Description("The tributary data.")
     @In
-    public HashMap<Integer, Double> inTributarydata;
+    public HashMap<Integer, double[]> inTributarydata;
 
     @Description("The offtakes monitoring points.")
     @In
@@ -187,7 +187,7 @@ public class Adige extends JGTModel {
 
     @Description("The offtakes data.")
     @In
-    public HashMap<Integer, Double> inOfftakesdata;
+    public HashMap<Integer, double[]> inOfftakesdata;
 
     @Description("The vegetation library.")
     @In
@@ -727,19 +727,19 @@ public class Adige extends JGTModel {
         }
     }
 
-    private void setDataArray( HashMap<Integer, Double> dataMap, double[] endArray ) {
-        Set<Entry<Integer, Double>> entries = dataMap.entrySet();
-        for( Entry<Integer, Double> entry : entries ) {
+    private void setDataArray( HashMap<Integer, double[]> dataMap, double[] endArray ) {
+        Set<Entry<Integer, double[]>> entries = dataMap.entrySet();
+        for( Entry<Integer, double[]> entry : entries ) {
             Integer id = entry.getKey();
-            double value = entry.getValue();
+            double[] value = entry.getValue();
             Integer index = basinid2Index.get(id);
             if (index == null) {
                 continue;
             }
-            if (isNovalue(value)) {
-                value = 0.0;
+            if (isNovalue(value[0])) {
+                value[0] = 0.0;
             }
-            endArray[index] = value / (tTimestep / 60.0);
+            endArray[index] = value[0] / (tTimestep / 60.0);
         }
     }
 
