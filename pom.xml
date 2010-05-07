@@ -27,7 +27,7 @@
 
     <properties>
 		<jgt.version>0.1-SNAPSHOT</jgt.version>
-		<gt.version>2.6-SNAPSHOT</gt.version>
+		<gt.version>2.7-SNAPSHOT</gt.version>
 		<gt.version.exp>2.7-SNAPSHOT</gt.version.exp>
 	</properties>
 
