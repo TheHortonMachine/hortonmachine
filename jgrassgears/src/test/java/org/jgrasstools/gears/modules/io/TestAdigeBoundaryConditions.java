@@ -47,14 +47,14 @@ public class TestAdigeBoundaryConditions extends HMTestCase {
         AdigeBoundaryConditionReader reader = new AdigeBoundaryConditionReader();
         reader.file = tmpAbc.getAbsolutePath();
         reader.read();
-        List<AdigeBoundaryCondition> data = reader.data;
+        HashMap<Integer, AdigeBoundaryCondition> data = reader.data;
         
-        AdigeBoundaryCondition readAbc1 = data.get(0);
+        AdigeBoundaryCondition readAbc1 = data.get(1);
         assertEquals(1, readAbc1.basinId);
         assertEquals(10.0, readAbc1.discharge);
         assertEquals(5.0, readAbc1.dischargeSub);
 
-        AdigeBoundaryCondition readAbc2 = data.get(1);
+        AdigeBoundaryCondition readAbc2 = data.get(2);
         assertEquals(2, readAbc2.basinId);
         assertEquals(20.0, readAbc2.discharge);
         assertEquals(10.0, readAbc2.dischargeSub);
