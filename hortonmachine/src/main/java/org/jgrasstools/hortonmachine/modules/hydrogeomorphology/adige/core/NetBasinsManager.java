@@ -46,6 +46,13 @@ public class NetBasinsManager {
      * @param endelevAttr the field name of the end elevation of the net (can be null)
      * @param baricenterAttr the field holding the baricenter of the hasin elevation (can be null)
      * @param vegetationAttributeName the field holding the vegetation id of the hasin (can be null)
+     * @param pSatconst 
+     * @param pEtrate 
+     * @param pPorosity 
+     * @param pSpecyield 
+     * @param pMstexp 
+     * @param pKs 
+     * @param pDepthmnsat 
      * @param out a printstream for logging
      * @return the list of ordered hillslopes, starting from the most downstream one
      * @throws Exception
@@ -54,8 +61,9 @@ public class NetBasinsManager {
             FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
             FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection,
             String netnumAttr, String pfafAttr, String startelevAttr, String endelevAttr,
-            String baricenterAttr, String vegetationAttributeName, IJGTProgressMonitor out )
-            throws Exception {
+            String baricenterAttr, String vegetationAttributeName, double pKs, double pMstexp,
+            double pSpecyield, double pPorosity, double pEtrate, double pSatconst,
+            double pDepthmnsat, IJGTProgressMonitor out ) throws Exception {
 
         SimpleFeatureType fT = netFeatureCollection.getSchema();
         // netnum attribute
@@ -187,7 +195,8 @@ public class NetBasinsManager {
             HillSlope tmpHslp = new HillSlope(mostDownStreamNetFeature,
                     mostDownstreamHillslopeFeature, mostDownStreamPNumber, hillslopeIdsList.get(0)
                             .intValue(), baricenterAttributeIndex, startNetElevAttrIndex,
-                    endNetElevAttrIndex, vegetationAttributeIndex);
+                    endNetElevAttrIndex, vegetationAttributeIndex, pKs, pMstexp, pSpecyield,
+                    pPorosity, pEtrate, pSatconst, pDepthmnsat);
             hillslopeElements.add(tmpHslp);
             mostDownstreamHillslope = tmpHslp;
         } else {
@@ -206,7 +215,8 @@ public class NetBasinsManager {
                         HillSlope tmpHslp = new HillSlope(netFeature, basinFeature, netPfaffsList
                                 .get(j), netNum.intValue(), baricenterAttributeIndex,
                                 startNetElevAttrIndex, endNetElevAttrIndex,
-                                vegetationAttributeIndex);
+                                vegetationAttributeIndex, pKs, pMstexp, pSpecyield, pPorosity,
+                                pEtrate, pSatconst, pDepthmnsat);
                         hillslopeElements.add(tmpHslp);
                         selectedNetFeatureList.add(netFeature);
                         selectedNetId.add(netNum);

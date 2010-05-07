@@ -35,7 +35,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
- * The hilslope area, related to a particolar network link.
+ * The hillslope area, related to a particular network link.
  * 
  * @author Andrea Antonello - www.hydrologis.com
  */
@@ -73,7 +73,9 @@ public class HillSlope implements Comparator<HillSlope> {
     public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature,
             PfafstetterNumber pfafNumber, int hillslopeId, int baricenterElevationFieldIndex,
             int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
-            int vegetationIdFieldIndex ) {
+            int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield,
+            double pPorosity, double pEtrate, double pSatconst, double pDepthmnsat ) {
+        
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
         this.linkFeature = netFeature;
@@ -90,7 +92,7 @@ public class HillSlope implements Comparator<HillSlope> {
         // HashMap<Integer, Double> displacementMap,
         // HashMap<Integer, Double> roughnessMap,
         // double RGL, double ra, double rs, double rarc
-        parameters = new Parameters();
+        parameters = new Parameters(pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat);
 
         rn = new Random();
     }
@@ -465,13 +467,9 @@ public class HillSlope implements Comparator<HillSlope> {
     }
 
     public final class Parameters {
-        private final double depthMnSat;
-        private final double ks;
-        private final double mstExp;
         private final double recParam;
         private final double s2Param;
         private final double s2max;
-        private final double eTrate;
         private final double s1residual;
         private final double s2residual;
 
@@ -479,30 +477,41 @@ public class HillSlope implements Comparator<HillSlope> {
 
         private double qsupmin;
         private double qsubmin;
+        private final double pDepthmnsat;
+        private final double pKs;
+        private final double pMstexp;
+        private final double pEtrate;
 
         /**
          * Constructor for the {@link HillSlope}'s {@link Parameters}.
+         * 
+         * @param pSatconst 
+         * @param pEtrate 
+         * @param pPorosity 
+         * @param pSpecyield 
+         * @param pMstexp 
+         * @param pKs 
+         * @param pDepthmnsat 
          */
-        public Parameters() {
-            depthMnSat = 2.5; // meters
-            ks = 0.001; // 0.0008; //0.0025; //0.00066; [mphr]
-            mstExp = 2.0; // dimensionless - default value 11.0
-
+        public Parameters( double pKs, double pMstexp, double pSpecyield, double pPorosity,
+                double pEtrate, double pSatconst, double pDepthmnsat ) {
+            
+            this.pKs = pKs;
+            this.pMstexp = pMstexp;
+            this.pDepthmnsat = pDepthmnsat;
+            this.pEtrate = pEtrate * (1. / 24.);
+            
             double area_m2 = getHillslopeArea(); // [m^2]
-            double spec_yield = 0.001; // dimensionless
-            recParam = (700 * ks * depthMnSat) / (spec_yield * area_m2); // [1/hr]
+            recParam = (pSatconst * pKs * pDepthmnsat) / (pSpecyield * area_m2); // [1/hr]
 
-            double porosity = 0.41; // 0.41; dimensionless
             // double d4_pm3 = 0.905 * (1. / (porosity * depthMnSat(hillSlope) * area_m2));
-            s2max = porosity * depthMnSat * area_m2;
+            s2max = pPorosity * pDepthmnsat * area_m2;
             s2Param = 0.905 * (1 / s2max); // [1/L^3]
 
-            double etrate_mpd = 0.0004; // 0.0034;
-            eTrate = etrate_mpd * (1. / 24.);
 
-            s1residual = 0.02 * porosity * area_m2;
+            s1residual = 0.02 * pPorosity * area_m2;
 
-            s2residual = 0.007 * porosity * area_m2;
+            s2residual = 0.007 * pPorosity * area_m2;
 
             qsupmin = 0.30 * 0.001;
             qsubmin = 0.70 * 0.001;
@@ -550,22 +559,23 @@ public class HillSlope implements Comparator<HillSlope> {
             }
             double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation,
                     vegetation.getMinStomatalResistance(), vegetation.getArchitecturalResistance(),
-                    vegetation.getLai(month), vegetation.getRgl(), vegetation.getDisplacement(month),
-                    vegetation.getRoughness(month), s2max, pressure, temperature, shortRadiaton,
-                    relativeHumidity, windSpeed, soilMoisture, snowWaterEquivalent);
+                    vegetation.getLai(month), vegetation.getRgl(), vegetation
+                            .getDisplacement(month), vegetation.getRoughness(month), s2max,
+                    pressure, temperature, shortRadiaton, relativeHumidity, windSpeed,
+                    soilMoisture, snowWaterEquivalent);
             return evap;
         }
 
         public double getDepthMnSat() {
-            return depthMnSat;
+            return pDepthmnsat;
         }
 
         public double getKs() {
-            return ks;
+            return pKs;
         }
 
         public double getMstExp() {
-            return mstExp;
+            return pMstexp;
         }
 
         public double getRecParam() {
@@ -581,7 +591,7 @@ public class HillSlope implements Comparator<HillSlope> {
         }
 
         public double getETrate() {
-            return eTrate;
+            return pEtrate;
         }
 
         public double getS1residual() {

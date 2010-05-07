@@ -217,6 +217,34 @@ public class Adige extends JGTModel {
     @In
     public String fNetelevend = null;
 
+    @Description("Saturated hydraulic conductivity.")
+    @In
+    public double pKs = 3.0;
+
+    @Description("Mstexp")
+    @In
+    public double pMstexp = 11.0;
+
+    @Description("Mstexp")
+    @In
+    public double pDepthmnsat = 2.0;
+
+    @Description("Specyield")
+    @In
+    public double pSpecyield = 0.01;
+
+    @Description("Porosity")
+    @In
+    public double pPorosity = 0.41;
+
+    @Description("Etrate")
+    @In
+    public double pEtrate = 0.001;
+
+    @Description("Satconst")
+    @In
+    public double pSatconst = 0.3;
+
     @Role(Role.PARAMETER)
     @Description("The routing model type to use.")
     @In
@@ -258,6 +286,22 @@ public class Adige extends JGTModel {
     @Description("The initial conditions of the model.")
     @In
     public HashMap<Integer, AdigeBoundaryCondition> inInitialconditions = null;
+
+    @Description("Start discharge per unit area")
+    @In
+    public double pDischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
+
+    @Description("Start superficial discharge fraction")
+    @In
+    public double pStartSuperficialDischargeFraction = 0.3;
+
+    @Description("Start saturated volume fraction")
+    @In
+    public double pMaxSatVolumeS1 = 0.2;
+
+    @Description("Start unsaturated volume fraction")
+    @In
+    public double pMaxSatVolumeS2 = 0.25;
 
     @Description("The progress monitor.")
     @In
@@ -533,7 +577,8 @@ public class Adige extends JGTModel {
             // at the first round create the hillslopes and network hierarchy
             NetBasinsManager nbMan = new NetBasinsManager();
             orderedHillslopes = nbMan.operateOnLayers(inNetwork, inHillslope, fNetnum, fPfaff,
-                    fNetelevstart, fNetelevend, fBaricenter, fVegetation, pm);
+                    fNetelevstart, fNetelevend, fBaricenter, fVegetation, pKs, pMstexp, pSpecyield,
+                    pPorosity, pEtrate, pSatconst, pDepthmnsat, pm);
             HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor = new HashMap<Integer, DischargeDistributor>();
             outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
             netPfaffsList = new ArrayList<PfafstetterNumber>();
@@ -597,23 +642,25 @@ public class Adige extends JGTModel {
                     initialConditions[index + 3 * hillsSlopeNum] = condition.S2;
                 }
             } else {
-                double dischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
+                double startSubsuperficialDischargeFraction = 1.0 - pStartSuperficialDischargeFraction;
                 for( int i = 0; i < orderedHillslopes.size(); i++ ) {
                     HillSlope currentHillslope = orderedHillslopes.get(i);
                     // initialize with a default discharge per unit of drainage area in km2
                     double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null)
-                            / 1000000.0 * dischargePerUnitArea;
-                    initialConditions[i] = 0.3 * hillslopeTotalDischarge;
+                            / 1000000.0 * pDischargePerUnitArea;
+                    initialConditions[i] = pStartSuperficialDischargeFraction
+                            * hillslopeTotalDischarge;
                     // initial subsuperficial flow is setted at a percentage of the total
                     // discharge
-                    initialConditions[i + hillsSlopeNum] = 0.7 * hillslopeTotalDischarge;
-                    // initial water content in the saturated hillslope volume is setted to
+                    initialConditions[i + hillsSlopeNum] = startSubsuperficialDischargeFraction
+                            * hillslopeTotalDischarge;
+                    // initial water content in the saturated hillslope volume is set to
                     // have:
                     // saturation surface at the 10% of the total area
                     double maxSaturatedVolume = currentHillslope.parameters.getS2max();
-                    // initial water content in the non saturated hillslope volume is setted to
-                    initialConditions[i + 2 * hillsSlopeNum] = 0.2 * maxSaturatedVolume;
-                    initialConditions[i + 3 * hillsSlopeNum] = 0.25 * maxSaturatedVolume;
+                    // initial water content in the non saturated hillslope volume is set to
+                    initialConditions[i + 2 * hillsSlopeNum] = pMaxSatVolumeS1 * maxSaturatedVolume;
+                    initialConditions[i + 3 * hillsSlopeNum] = pMaxSatVolumeS2 * maxSaturatedVolume;
                 }
             }
 

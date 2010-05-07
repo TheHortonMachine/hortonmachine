@@ -21,7 +21,6 @@ package org.jgrasstools.gears.io.adige;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,7 +49,7 @@ public class VegetationLibraryReader extends JGTModel {
 
     @Description("The list of arrays representing the values in the rows.")
     @Out
-    public Map<Integer, VegetationLibraryRecord> data;
+    public HashMap<Integer, VegetationLibraryRecord> data;
 
     private TableIterator<String[]> rowsIterator;
 

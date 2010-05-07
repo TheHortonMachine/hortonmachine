@@ -21,7 +21,9 @@ package org.jgrasstools.gears.io.adige;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,7 +56,7 @@ public class AdigeBoundaryConditionWriter {
 
     @Description("The list of boundary conditions to write.")
     @In
-    public List<AdigeBoundaryCondition> data;
+    public HashMap<Integer, AdigeBoundaryCondition> data;
 
     private MemoryTable memoryTable;
 
@@ -75,7 +77,9 @@ public class AdigeBoundaryConditionWriter {
         String[] colNames = new String[]{"basinid", "discharge", "sub-discharge", "S1", "S2"};
         memoryTable.setColumns(colNames);
 
-        for( AdigeBoundaryCondition condition : data ) {
+        Set<Entry<Integer, AdigeBoundaryCondition>> entrySet = data.entrySet();
+        for( Entry<Integer, AdigeBoundaryCondition> entry : entrySet ) {
+            AdigeBoundaryCondition condition = entry.getValue();
             Object[] valuesRow = new Object[colNames.length];
             valuesRow[0] = condition.basinId;
             valuesRow[1] = condition.discharge;
