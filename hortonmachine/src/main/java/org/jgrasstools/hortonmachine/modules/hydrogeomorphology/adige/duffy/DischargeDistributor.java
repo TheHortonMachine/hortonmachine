@@ -65,7 +65,7 @@ public abstract class DischargeDistributor {
         this.startDateMillis = startDateMillis;
         this.timeStepMillis = timeStepMillis;
         this.parameters = parameters;
-        long intervals = (endDateMillis - startDateMillis) / timeStepMillis;
+        long intervals = (endDateMillis - startDateMillis) / timeStepMillis + 1;
         subSuperficialDischargeArray = new double[(int) intervals];
         superficialDischargeArray = new double[(int) intervals];
     }

@@ -104,7 +104,7 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
     private DateTime expectedTimestamp = null;
 
     @Initialize
-    public void startTicking() {
+    public void initProcess() {
         // activate time
         doProcess = true;
     }

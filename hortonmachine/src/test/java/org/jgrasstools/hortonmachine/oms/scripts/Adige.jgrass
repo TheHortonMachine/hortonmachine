@@ -8,6 +8,20 @@ sim(name:"Adige") {
     model {
         components  {
           inHillslopeReader		'ShapefileFeatureReader'
+          rainReader			'TimeseriesByStepReaderId2Value'
+          netradiatonReader		'TimeseriesByStepReaderId2Value'
+          shortradiatonReader	'TimeseriesByStepReaderId2Value'
+          temperatureReader		'TimeseriesByStepReaderId2Value'
+          humidityReader		'TimeseriesByStepReaderId2Value'
+          windspeedReader		'TimeseriesByStepReaderId2Value'
+          pressureReader		'TimeseriesByStepReaderId2Value'
+          sweReader				'TimeseriesByStepReaderId2Value'
+          hydrometersReader		'ShapefileFeatureReader'
+          hydrometersDataReader	'TimeseriesByStepReaderId2Value'
+          damsReader		'ShapefileFeatureReader'
+          damsDataReader	'TimeseriesByStepReaderId2Value'
+          tribuReader		'ShapefileFeatureReader'
+          damsDataReader	'TimeseriesByStepReaderId2Value'
           adige					'Adige'
         }
 

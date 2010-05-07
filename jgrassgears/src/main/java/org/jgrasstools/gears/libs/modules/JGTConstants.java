@@ -99,8 +99,8 @@ public class JGTConstants {
             .forPattern(dateTimeFormatterYYYYMMDDHHMMSS_string);
 
     /**
-     * Global formatter for joda datetime (yyyy-MM-dd HH:mm).
-     */
+    * Global formatter for joda datetime (yyyy-MM-dd HH:mm).
+    */
     public static String dateTimeFormatterYYYYMMDDHHMM_string = "yyyy-MM-dd HH:mm";
     public static DateTimeFormatter dateTimeFormatterYYYYMMDDHHMM = DateTimeFormat
             .forPattern(dateTimeFormatterYYYYMMDDHHMM_string);
@@ -180,7 +180,7 @@ public class JGTConstants {
      * Costante di Stefan-Boltzmann [W/(m2 K4)].
      */
     public final static double sigma = 5.67E-8; /* costante di Stefan-Boltzmann [W/(m2 K4)]*/
-    
+
     /*
      * FILE EXTENTIONS
      */
@@ -190,5 +190,4 @@ public class JGTConstants {
     public static final String GEOTIF = "tif";
     public static final String GRASSRASTER = "grassraster";
 
-    
 }

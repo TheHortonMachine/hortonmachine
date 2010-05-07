@@ -62,7 +62,7 @@ public class NetBasinsManager {
             FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection,
             String netnumAttr, String pfafAttr, String startelevAttr, String endelevAttr,
             String baricenterAttr, String vegetationAttributeName, double pKs, double pMstexp,
-            double pSpecyield, double pPorosity, double pEtrate, double pSatconst,
+            double pSpecyield, double pPorosity, Double pEtrate, double pSatconst,
             double pDepthmnsat, IJGTProgressMonitor out ) throws Exception {
 
         SimpleFeatureType fT = netFeatureCollection.getSchema();

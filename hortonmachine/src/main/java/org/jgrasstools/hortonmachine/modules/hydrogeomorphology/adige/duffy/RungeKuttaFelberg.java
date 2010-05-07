@@ -26,11 +26,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+import org.joda.time.DateTime;
 
 /**
  * An implementation of the Runge-Kutta-Felberg algorithm for solving non-linear ordinary
@@ -57,7 +58,6 @@ public class RungeKuttaFelberg {
     private double[] cStar = {2825. / 27648., 0., 18575. / 48384., 13525. / 55296., 277. / 14336.,
             1. / 4.};
 
-    private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm"); //$NON-NLS-1$
     private final boolean doLog;
 
     private boolean isAtFinalSubtimestep = true;
@@ -204,6 +204,12 @@ public class RungeKuttaFelberg {
 
     }
 
+    public void printDate( double minutes ) {
+        double millis = minutes * 1000d * 60d;
+        System.out.println(new DateTime((long) millis)
+                .toString(JGTConstants.utcDateFormatterYYYYMMDDHHMM));
+    }
+
     /**
      * Writes (in ascii format) to a specified file the values of the function described by
      * differential equations in the the intermidia steps requested to go from the Initial to the
@@ -224,19 +230,21 @@ public class RungeKuttaFelberg {
      * @throws java.io.IOException Captures errors while writing to the file
      */
     @SuppressWarnings("nls")
-    public void solve( double intervalStartTimeInMinutes, double intervalEndTimeInMinutes,
-            double timeStepInMinutes, double[] initialConditions, double[] rainArray,
+    public void solve( DateTime currentTimstamp, int modelTimestepInMinutes,
+            double internalTimestepInMinutes, double[] initialConditions, double[] rainArray,
             double[] radiationArray, double[] netshortArray, double[] temperatureArray,
             double[] humidityArray, double[] windspeedArray, double[] pressureArray,
             double[] snowWaterEquivalentArray ) throws IOException {
         isAtFinalSubtimestep = false;
 
+        double intervalStartTimeInMinutes = (double) (currentTimstamp.getMillis() / 1000l / 60l);
+        double intervalEndTimeInMinutes = intervalStartTimeInMinutes + modelTimestepInMinutes;
+
         // the running time inside the interval
         double currentTimeInMinutes = intervalStartTimeInMinutes;
         // the end time inside the interval
         double targetTimeInMinutes = intervalStartTimeInMinutes;
-        // a date object used for logging
-        Date thisDate = new Date();
+
         // the object holding the iterated solution and internal timestep
         CurrentTimestepSolution currentSolution = new CurrentTimestepSolution();
 
@@ -244,7 +252,7 @@ public class RungeKuttaFelberg {
             /*
              * split the user set time interval into smaller intervals of time timeStepInMinutes.
              */
-            targetTimeInMinutes = currentTimeInMinutes + timeStepInMinutes;
+            targetTimeInMinutes = currentTimeInMinutes + internalTimestepInMinutes;
             while( currentTimeInMinutes < targetTimeInMinutes ) {
                 /*
                  * inside step the intervals of time timeStepInMinutes are splitted again in
@@ -300,14 +308,15 @@ public class RungeKuttaFelberg {
                 }
             }
 
-            thisDate.setTime((long) (currentTimeInMinutes * 60.0 * 1000.0));
-            if (doLog)
+            if (doLog) {
                 outputStream.message("->  "
-                        + dateFormatter.format(thisDate)
+                        + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0))
+                                .toString(Adige.adigeFormatter)
                         + " / "
-                        + dateFormatter.format(new Date(
-                                (long) (intervalEndTimeInMinutes * 60. * 1000.)))
-                        + " Outlet Duffy Discharge: " + initialConditions[0]);
+                        + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.))
+                                .toString(Adige.adigeFormatter) + " Outlet Duffy Discharge: "
+                        + initialConditions[0]);
+            }
             // int hillslopeNum = rainArray.length;
             // for( int i = 0; i < hillslopeNum; i++ ) {
             // System.out.println(i + " Discharge " + initialConditions[i] + " qsub "
@@ -347,7 +356,6 @@ public class RungeKuttaFelberg {
                 }
             }
 
-            thisDate.setTime((long) (currentTimeInMinutes * 60.0 * 1000.0));
             double sum = 0;
             for( double d : rainArray ) {
                 sum = sum + d;
@@ -355,11 +363,14 @@ public class RungeKuttaFelberg {
             sum = sum / rainArray.length;
             int hillslopeNum = rainArray.length;
             double currentDischarge = initialConditions[0] + initialConditions[hillslopeNum];
-            outputStream.message(dateFormatter.format(thisDate)
+
+            outputStream.message("->  "
+                    + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0))
+                            .toString(Adige.adigeFormatter)
                     + " / "
-                    + dateFormatter
-                            .format(new Date((long) (intervalEndTimeInMinutes * 60. * 1000.)))
-                    + " " + currentDischarge + " with avg rain: " + sum);
+                    + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.))
+                            .toString(Adige.adigeFormatter) + " " + currentDischarge
+                    + " with avg rain: " + sum);
         } else {
             outputStream.errorMessage("WARNING, UNEXPECTED");
         }

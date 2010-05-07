@@ -239,7 +239,7 @@ public class Adige extends JGTModel {
 
     @Description("Etrate")
     @In
-    public double pEtrate = 0.001;
+    public Double pEtrate = null;
 
     @Description("Satconst")
     @In
@@ -377,7 +377,7 @@ public class Adige extends JGTModel {
     private HashMap<String, Integer> pfaff2Index;
     private List<HillSlope> orderedHillslopes;
 
-    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    public static DateTimeFormatter adigeFormatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
 
     private DateTime startTimestamp;
     private DateTime endTimestamp;
@@ -391,8 +391,14 @@ public class Adige extends JGTModel {
     public void process() throws Exception {
 
         if (startTimestamp == null) {
-            startTimestamp = formatter.parseDateTime(tStart);
-            endTimestamp = formatter.parseDateTime(tEnd);
+            outDischarge = new HashMap<Integer, Double>();
+            outSubdischarge = new HashMap<Integer, Double>();
+            outS1 = new HashMap<Integer, Double>();
+            outS2 = new HashMap<Integer, Double>();
+
+            startTimestamp = adigeFormatter.parseDateTime(tStart);
+            endTimestamp = adigeFormatter.parseDateTime(tEnd);
+
             currentTimstamp = startTimestamp;
             if (pRainintensity != -1) {
                 if (pRainduration != -1) {
@@ -680,11 +686,18 @@ public class Adige extends JGTModel {
             currentTimstamp = currentTimstamp.plusMinutes(tTimestep);
         }
 
-        hydrometersHandler.setCurrentData(inHydrometerdata);
-        damsHandler.setCurrentData(inDamsdata);
-        offtakesHandler.setCurrentData(inOfftakesdata);
-        tributaryHandler.setCurrentData(inTributarydata);
-
+        if (inHydrometerdata != null) {
+            hydrometersHandler.setCurrentData(inHydrometerdata);
+        }
+        if (inDamsdata != null) {
+            damsHandler.setCurrentData(inDamsdata);
+        }
+        if (inOfftakesdata != null) {
+            offtakesHandler.setCurrentData(inOfftakesdata);
+        }
+        if (inTributarydata != null) {
+            tributaryHandler.setCurrentData(inTributarydata);
+        }
         // deal with rain
         if (pRainintensity != -1) {
             /*
@@ -704,31 +717,33 @@ public class Adige extends JGTModel {
             // read rainfall from input link scalar set and transform into a rainfall intensity
             // [mm/h]
             rainArray = new double[hillsSlopeNum];
-            radiationArray = new double[hillsSlopeNum];
-            netshortArray = new double[hillsSlopeNum];
-            temperatureArray = new double[hillsSlopeNum];
-            humidityArray = new double[hillsSlopeNum];
-            windspeedArray = new double[hillsSlopeNum];
-            pressureArray = new double[hillsSlopeNum];
-            snowWaterEquivalentArray = new double[hillsSlopeNum];
-
             setDataArray(inRain, rainArray);
-            setDataArray(inNetradiation, radiationArray);
-            setDataArray(inShortradiation, netshortArray);
-            setDataArray(inTemperature, temperatureArray);
-            setDataArray(inHumidity, humidityArray);
-            setDataArray(inWindspeed, windspeedArray);
-            setDataArray(inPressure, pressureArray);
-            setDataArray(inSwe, snowWaterEquivalentArray);
+
+            if (pEtrate == null) {
+                radiationArray = new double[hillsSlopeNum];
+                netshortArray = new double[hillsSlopeNum];
+                temperatureArray = new double[hillsSlopeNum];
+                humidityArray = new double[hillsSlopeNum];
+                windspeedArray = new double[hillsSlopeNum];
+                pressureArray = new double[hillsSlopeNum];
+                snowWaterEquivalentArray = new double[hillsSlopeNum];
+                setDataArray(inNetradiation, radiationArray);
+                setDataArray(inShortradiation, netshortArray);
+                setDataArray(inTemperature, temperatureArray);
+                setDataArray(inHumidity, humidityArray);
+                setDataArray(inWindspeed, windspeedArray);
+                setDataArray(inPressure, pressureArray);
+                setDataArray(inSwe, snowWaterEquivalentArray);
+            }
         }
 
-        long runningDateInMinutes = currentTimstamp.getMillis() / 1000L / 60L;
-        double intervalStartTimeInMinutes = runningDateInMinutes;
-        double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
+        // long runningDateInMinutes = currentTimstamp.getMillis() / 1000L / 60L;
+        // double intervalStartTimeInMinutes = runningDateInMinutes;
+        // double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
 
-        rainRunoffRaining.solve(intervalStartTimeInMinutes, intervalEndTimeInMinutes, 1,
-                initialConditions, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray);
+        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray,
+                radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,
+                pressureArray, snowWaterEquivalentArray);
         initialConditions = rainRunoffRaining.getFinalCond();
         rainRunoffRaining.setBasicTimeStep(10. / 60.);
 
@@ -752,19 +767,26 @@ public class Adige extends JGTModel {
 
         if (doBoundary)
             outFinalconditions = new HashMap<Integer, AdigeBoundaryCondition>();
-        for( String pfaf : pfaffsList ) {
-            int index = pfaff2Index.get(pfaf);
+
+        Set<Entry<String, Integer>> entrySet = pfaff2Index.entrySet();
+        for( Entry<String, Integer> entry : entrySet ) {
+            String pfaf = entry.getKey();
+            Integer index = entry.getValue();
             Integer basinId = index2Basinid.get(index);
             double discharge = initialConditions[index];
             double subdischarge = initialConditions[index + hillsSlopeNum];
             double s1 = initialConditions[index + 2 * hillsSlopeNum];
             double s2 = initialConditions[index + 3 * hillsSlopeNum];
-            outDischarge.put(basinId, discharge);
-            outSubdischarge.put(basinId, subdischarge);
-            outS1.put(basinId, s1);
-            outS2.put(basinId, s2);
+
+            if (pfaffsList.contains(pfaf)) {
+                outDischarge.put(basinId, discharge);
+                outSubdischarge.put(basinId, subdischarge);
+                outS1.put(basinId, s1);
+                outS2.put(basinId, s2);
+            }
             if (doBoundary) {
                 AdigeBoundaryCondition bc = new AdigeBoundaryCondition();
+                bc.basinId = basinId;
                 bc.discharge = discharge;
                 bc.dischargeSub = subdischarge;
                 bc.S1 = s1;

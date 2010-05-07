@@ -228,14 +228,15 @@ public class DuffyModel implements IBasicFunction {
                 qdh = (1.0 - satsurf) * area_m2 * (prec_mphr - currentHillslope.parameters.getKs()); // m3phr
             }
 
-            if (currentHillslope.hasVegetation()) {
+            Double eTrate = currentHillslope.parameters.getETrate();
+            if (eTrate == null && currentHillslope.hasVegetation()) {
                 qe1 = currentHillslope.parameters.calculateEvapoTranspiration(currentMonth,
                         radiationArray[i], pressureArray[i], temperatureArray[i], netshortArray[i],
                         humidityArray[i], windspeedArray[i], input[i + 2 * linksNum],
                         snowWaterEquivalentArray[i]);
             } else {
                 if (input[i + 2 * linksNum] > currentHillslope.parameters.getS1residual()) {
-                    qe1 = currentHillslope.parameters.getETrate() * area_m2 * (1.0 - satsurf) * mst; // m3phr
+                    qe1 = eTrate * area_m2 * (1.0 - satsurf) * mst; // m3phr
                 } else {
                     qe1 = 0.0;
                 }
@@ -254,13 +255,13 @@ public class DuffyModel implements IBasicFunction {
             /* HILLSLOPE S2-SURFACE FLUX VALUES */
             qds = satsurf * area_m2 * prec_mphr; // m3phr
 
-            if (currentHillslope.hasVegetation()) {
+            if (eTrate == null && currentHillslope.hasVegetation()) {
                 qe2 = currentHillslope.parameters.calculateEvapoTranspiration(currentMonth,
                         radiationArray[i], pressureArray[i], temperatureArray[i], netshortArray[i],
                         humidityArray[i], windspeedArray[i], input[i + 3 * linksNum],
                         snowWaterEquivalentArray[i]);
             } else {
-                qe2 = currentHillslope.parameters.getETrate() * area_m2 * satsurf; // m3phr,
+                qe2 = eTrate * area_m2 * satsurf; // m3phr,
             }
 
             qs = currentHillslope.parameters.getRecParam() * (input[i + 3 * linksNum]); // m3phr

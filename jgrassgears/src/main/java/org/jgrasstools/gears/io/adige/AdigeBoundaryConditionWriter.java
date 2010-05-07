@@ -60,7 +60,7 @@ public class AdigeBoundaryConditionWriter {
 
     private MemoryTable memoryTable;
 
-    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    private DateTimeFormatter formatter = JGTConstants.dateTimeFormatterYYYYMMDDHHMM;
 
     private void ensureOpen() throws IOException {
         if (memoryTable == null) {

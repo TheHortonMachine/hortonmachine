@@ -74,7 +74,7 @@ public class HillSlope implements Comparator<HillSlope> {
             PfafstetterNumber pfafNumber, int hillslopeId, int baricenterElevationFieldIndex,
             int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
             int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield,
-            double pPorosity, double pEtrate, double pSatconst, double pDepthmnsat ) {
+            double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat ) {
         
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
@@ -480,7 +480,7 @@ public class HillSlope implements Comparator<HillSlope> {
         private final double pDepthmnsat;
         private final double pKs;
         private final double pMstexp;
-        private final double pEtrate;
+        private Double pEtrate;
 
         /**
          * Constructor for the {@link HillSlope}'s {@link Parameters}.
@@ -494,12 +494,14 @@ public class HillSlope implements Comparator<HillSlope> {
          * @param pDepthmnsat 
          */
         public Parameters( double pKs, double pMstexp, double pSpecyield, double pPorosity,
-                double pEtrate, double pSatconst, double pDepthmnsat ) {
+                Double pEtrate, double pSatconst, double pDepthmnsat ) {
             
             this.pKs = pKs;
             this.pMstexp = pMstexp;
             this.pDepthmnsat = pDepthmnsat;
-            this.pEtrate = pEtrate * (1. / 24.);
+            if (pEtrate!=null) {
+                this.pEtrate = pEtrate * (1. / 24.);
+            }
             
             double area_m2 = getHillslopeArea(); // [m^2]
             recParam = (pSatconst * pKs * pDepthmnsat) / (pSpecyield * area_m2); // [1/hr]
@@ -590,7 +592,7 @@ public class HillSlope implements Comparator<HillSlope> {
             return s2max;
         }
 
-        public double getETrate() {
+        public Double getETrate() {
             return pEtrate;
         }
 

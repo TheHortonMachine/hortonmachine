@@ -2,6 +2,7 @@ package org.jgrasstools.gears.modules.io;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
@@ -31,9 +32,9 @@ public class TestAdigeBoundaryConditions extends HMTestCase {
         abc2.S1 = 12.0;
         abc2.S2 = 14.0;
         
-        List<AdigeBoundaryCondition> condList = new ArrayList<AdigeBoundaryCondition>();
-        condList.add(abc1);
-        condList.add(abc2);
+        HashMap<Integer, AdigeBoundaryCondition> condList = new HashMap<Integer, AdigeBoundaryCondition>();
+        condList.put(abc1.basinId, abc1);
+        condList.put(abc2.basinId, abc2);
         
         AdigeBoundaryConditionWriter writer = new AdigeBoundaryConditionWriter();
         writer.file = tmpAbc.getAbsolutePath();

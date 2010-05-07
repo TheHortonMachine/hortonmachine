@@ -21,6 +21,7 @@ package org.jgrasstools.gears.io.adige;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -50,7 +51,7 @@ public class AdigeBoundaryConditionReader extends JGTModel {
 
     @Description("The list initial boundary conditions.")
     @Out
-    public List<AdigeBoundaryCondition> data;
+    public HashMap<Integer, AdigeBoundaryCondition> data;
 
     private TableIterator<String[]> rowsIterator;
     private CSTable table;
@@ -68,7 +69,7 @@ public class AdigeBoundaryConditionReader extends JGTModel {
             return;
         }
         ensureOpen();
-        data = new ArrayList<AdigeBoundaryCondition>();
+        data = new HashMap<Integer, AdigeBoundaryCondition>();
         while( rowsIterator.hasNext() ) {
             String[] row = rowsIterator.next();
 
@@ -80,7 +81,7 @@ public class AdigeBoundaryConditionReader extends JGTModel {
             condition.S1 = Double.parseDouble(row[i++]);
             condition.S2 = Double.parseDouble(row[i]);
 
-            data.add(condition);
+            data.put(condition.basinId, condition);
         }
     }
 
