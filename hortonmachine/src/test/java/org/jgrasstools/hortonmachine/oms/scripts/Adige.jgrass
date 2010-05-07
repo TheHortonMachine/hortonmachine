@@ -1,0 +1,40 @@
+sim(name:"Adige") {
+	
+	// your folder here
+	def folder = "/home/moovida/TMP/review/";
+	
+	def hillslope = folder + "hillslope.shp";
+ 
+    model {
+        components  {
+          inHillslopeReader		'ShapefileFeatureReader'
+          adige					'Adige'
+        }
+
+        parameter {
+           'inHillslopeReader.file'			"$hillslope"
+           'adige.fNetnum'					"netnum"
+           'adige.fBaricenter'				"baric"
+           'adige.fVegetation'				"vegetation"
+           'adige.fAvg_sub'					"avg_sub"
+           'adige.fVar_sub'					"var_sub"
+           'adige.fAvg_sup_10'				"avg_sup_10"
+           'adige.fVar_sup_10'				"var_sup_10"
+           'adige.fAvg_sup_30'				"avg_sup_30"
+           'adige.fVar_sup_30'				"var_sup_30"
+           'adige.fAvg_sup_60'				"fAvg_sup_60"
+           'adige.fVar_sup_60'				"fVar_sup_60"
+           'adige.pV_sup'					0.5
+           'adige.pV_sub'					0.005
+           
+           'writer.file'			"$folder/sorgenti_azim_minus90.shp"
+           'featureReshaper.pCql'	"azimuth90=azimuth - 90"
+        }
+
+        connect {
+          'reader.geodata' 'featureReshaper.inFeatures' 
+          'featureReshaper.outFeatures' 'writer.geodata'
+        }
+
+    }
+}
