@@ -687,10 +687,10 @@ public class EnergyIndexCalculator extends JGTModel {
 
         double minES, maxES, minEI, maxEI;
 
-        maxES = Double.MIN_VALUE;
-        minES = Double.MAX_VALUE;
-        maxEI = Double.MIN_VALUE;
-        minEI = Double.MAX_VALUE;
+        maxES = Double.NEGATIVE_INFINITY;
+        minES = Double.POSITIVE_INFINITY;
+        maxEI = Double.NEGATIVE_INFINITY;
+        minEI = Double.POSITIVE_INFINITY;
 
         for( int r = 0; r < eibasinID.length; r++ ) {
             for( int c = 0; c < eibasinID[0].length; c++ ) {

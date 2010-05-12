@@ -71,8 +71,8 @@ public class CoverageViewer {
         ColorMap colorMap = sf.createColorMap();
 
         RenderedImage renderedImage = coverage.getRenderedImage();
-        double max = -Double.MAX_VALUE;
-        double min = Double.MAX_VALUE;
+        double max = Double.NEGATIVE_INFINITY;
+        double min = Double.POSITIVE_INFINITY;
         RectIter iter = RectIterFactory.create(renderedImage, null);
         do {
             do {
