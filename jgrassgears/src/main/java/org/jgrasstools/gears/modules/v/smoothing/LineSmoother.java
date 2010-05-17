@@ -101,9 +101,6 @@ public class LineSmoother extends JGTModel {
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
 
-            if (fGS == null) {
-            }
-
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             int numGeometries = geometry.getNumGeometries();
 
