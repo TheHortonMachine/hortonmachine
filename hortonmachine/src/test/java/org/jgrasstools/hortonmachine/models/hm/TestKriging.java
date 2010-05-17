@@ -44,8 +44,8 @@ public class TestKriging extends HMTestCase {
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
         reader.idfield = "ID";
-        reader.tStart = "2005-05-01 00:00";
-        reader.tTimestep = 30;
+        reader.tStart = "2000-01-01 00:00";
+        reader.tTimestep = 60;
         //reader.tEnd = "2000-01-01 00:00";
         reader.fileNovalue = "-9999";
         

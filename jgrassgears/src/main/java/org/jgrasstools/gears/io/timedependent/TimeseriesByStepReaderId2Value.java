@@ -39,6 +39,7 @@ import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
 
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
@@ -138,7 +139,9 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
                 Integer idInteger = new Integer(id);
                 idList.add(idInteger);
             } catch (Exception e) {
-System.out.println();   
+                throw new ModelsIllegalargumentException(
+                        "The id value doesn't seem to be an integer.", this.getClass()
+                                .getSimpleName());
             }
         }
 
