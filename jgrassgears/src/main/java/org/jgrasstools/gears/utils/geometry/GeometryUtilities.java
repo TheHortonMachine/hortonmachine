@@ -18,6 +18,9 @@
  */
 package org.jgrasstools.gears.utils.geometry;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
@@ -105,16 +108,24 @@ public class GeometryUtilities {
         return gf().createPolygon(linearRing, null);
     }
 
+    /**
+     * Calculates the angle between two {@link LineSegment}s.
+     * 
+     * @param l1 the first segment.
+     * @param l2 the second segment.
+     * @return the angle between the two segments, starting from the first segment 
+     *                  moving clockwise.
+     */
     public static double angleBetween( LineSegment l1, LineSegment l2 ) {
         double tol = 0.00001;
         // analyze slopes
         double s1 = (l1.p1.y - l1.p0.y) / (l1.p1.x - l1.p0.x);
         double s2 = (l2.p1.y - l2.p0.y) / (l2.p1.x - l2.p0.x);
 
-        if (Math.abs(s1 - s2) < tol)
+        if (abs(s1 - s2) < tol)
             return (0);
-        if (Math.abs(s1 + s2) < tol)
-            return (Math.PI);
+        if (abs(s1 + s2) < tol)
+            return (PI);
 
         // not of equal slope, transform lines so that they are tail to tip and
         // use the cosine law to calculate angle between
@@ -132,7 +143,7 @@ public class GeometryUtilities {
         double a = tls1.getLength();
         double b = tls2.getLength();
 
-        return (Math.acos((a * a + b * b - c * c) / (2 * a * b)));
+        return toDegrees(acos((a * a + b * b - c * c) / (2 * a * b)));
     }
 
     /**
