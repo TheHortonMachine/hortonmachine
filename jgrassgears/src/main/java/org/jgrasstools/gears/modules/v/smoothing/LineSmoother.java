@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.modules.v.smoothing;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,6 +55,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
+import com.vividsolutions.jts.operation.linemerge.LineMerger;
 
 @Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
         + "Algorithm. The new position of each point "
@@ -140,7 +142,13 @@ public class LineSmoother extends JGTModel {
             // BufferOp bufOp = new BufferOp(mlString);
             // bufOp.setEndCapStyle(BufferParameters.CAP_FLAT);
             // Geometry protectedBuffer = bufOp.getResultGeometry(pBuffer);
-            Geometry protectedBuffer = mlString.buffer(pBuffer);
+            // Geometry union = mlString.union();
+            LineMerger lineMerger = new LineMerger();
+            lineMerger.add(mlString);
+            Collection mergedLineStrings = lineMerger.getMergedLineStrings();
+            GeometryCollection gC = new GeometryCollection((Geometry[]) mergedLineStrings
+                    .toArray(new Geometry[mergedLineStrings.size()]), gF);
+            Geometry protectedBuffer = gC.buffer(pBuffer);
             protectedAreas.add(protectedBuffer);
 
             outFeatures.add(newFeature);
@@ -163,6 +171,8 @@ public class LineSmoother extends JGTModel {
 
         for( Geometry protectedArea : protectedAreas ) {
             if (mlStringPrep.intersects(protectedArea)) {
+                System.out.println(mlString.toText());
+                System.out.println(protectedArea.toText());
                 // problem, we have to fix this
                 Geometry collection = protectedArea.symDifference(mlString);
                 if (collection instanceof GeometryCollection) {
@@ -175,11 +185,14 @@ public class LineSmoother extends JGTModel {
                         Geometry geometryN = geomCollection.getGeometryN(i);
                         if (geometryN instanceof LineString) {
                             LineString line = (LineString) geometryN;
-                            int coordNum = line.getCoordinates().length;
-                            if (coordNum > lineCoordNum * percentageThres) {
-                                // the lines is supposed to be a main part
+                            if (i%2==0) {
                                 linesList.add(line);
                             }
+//                            int coordNum = line.getCoordinates().length;
+//                            if (coordNum > lineCoordNum * percentageThres) {
+//                                // the lines is supposed to be a main part
+//                                linesList.add(line);
+//                            }
                         } else {
                             if (polygon != null) {
                                 throw new RuntimeException();
@@ -195,9 +208,9 @@ public class LineSmoother extends JGTModel {
                         Coordinate[] sCoords = secondLine.getCoordinates();
 
                         Coordinate last = null;
-                        for( Coordinate coordinate : fCoords ) {
-                            newLine.add(coordinate);
-                            last = coordinate;
+                        for( int j = 0; j < fCoords.length - 1; j++ ) {
+                            newLine.add(fCoords[j]);
+                            last = fCoords[j];
                         }
                         Coordinate first = sCoords[0];
 
@@ -218,15 +231,21 @@ public class LineSmoother extends JGTModel {
                                 newLine.add(polygonCoords[j]);
                             }
                         } else {
-                            throw new RuntimeException();
+                            for( int j = sIndex; j < fIndex; j++ ) {
+                                newLine.add(polygonCoords[j]);
+                            }
                         }
 
-                        for( Coordinate coordinate : sCoords ) {
-                            newLine.add(coordinate);
+                        for( int j = 1; j < sCoords.length; j++ ) {
+                            newLine.add(sCoords[j]);
                         }
 
                     }
 
+                    for( Coordinate coordinate : newLine ) {
+                        coordinate.z = 1.0;
+                        System.out.println(coordinate);
+                    }
                     LineString lineString = gF.createLineString((Coordinate[]) newLine
                             .toArray(new Coordinate[newLine.size()]));
                     return gF.createMultiLineString(new LineString[]{lineString});
