@@ -47,6 +47,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.MultiLineString;
@@ -143,12 +144,12 @@ public class LineSmoother extends JGTModel {
             // bufOp.setEndCapStyle(BufferParameters.CAP_FLAT);
             // Geometry protectedBuffer = bufOp.getResultGeometry(pBuffer);
             // Geometry union = mlString.union();
-            LineMerger lineMerger = new LineMerger();
+            /*LineMerger lineMerger = new LineMerger();
             lineMerger.add(mlString);
             Collection mergedLineStrings = lineMerger.getMergedLineStrings();
             GeometryCollection gC = new GeometryCollection((Geometry[]) mergedLineStrings
-                    .toArray(new Geometry[mergedLineStrings.size()]), gF);
-            Geometry protectedBuffer = gC.buffer(pBuffer);
+                    .toArray(new Geometry[mergedLineStrings.size()]), gF);*/
+            Geometry protectedBuffer = mlString.buffer(pBuffer);
             protectedAreas.add(protectedBuffer);
 
             outFeatures.add(newFeature);
@@ -167,7 +168,7 @@ public class LineSmoother extends JGTModel {
         int lineCoordNum = mlString.getCoordinates().length;
         double percentageThres = 0.03;
 
-        List<Coordinate> newLine = new ArrayList<Coordinate>();
+        ArrayList<ArrayList<Coordinate>> newLine = new ArrayList<ArrayList<Coordinate>>();
 
         for( Geometry protectedArea : protectedAreas ) {
             if (mlStringPrep.intersects(protectedArea)) {
@@ -176,6 +177,7 @@ public class LineSmoother extends JGTModel {
                 // problem, we have to fix this
                 Geometry collection = protectedArea.symDifference(mlString);
                 if (collection instanceof GeometryCollection) {
+                    ArrayList<Coordinate> tmpList = new ArrayList<Coordinate>();
                     GeometryCollection geomCollection = (GeometryCollection) collection;
 
                     List<LineString> linesList = new ArrayList<LineString>();
@@ -185,14 +187,7 @@ public class LineSmoother extends JGTModel {
                         Geometry geometryN = geomCollection.getGeometryN(i);
                         if (geometryN instanceof LineString) {
                             LineString line = (LineString) geometryN;
-                            if (i%2==0) {
-                                linesList.add(line);
-                            }
-//                            int coordNum = line.getCoordinates().length;
-//                            if (coordNum > lineCoordNum * percentageThres) {
-//                                // the lines is supposed to be a main part
-//                                linesList.add(line);
-//                            }
+                            linesList.add(line);
                         } else {
                             if (polygon != null) {
                                 throw new RuntimeException();
@@ -201,54 +196,93 @@ public class LineSmoother extends JGTModel {
                         }
                     }
 
-                    for( int i = 0; i < linesList.size() - 1; i = i + 1 ) {
-                        LineString firstLine = linesList.get(i);
-                        LineString secondLine = linesList.get(i + 1);
-                        Coordinate[] fCoords = firstLine.getCoordinates();
-                        Coordinate[] sCoords = secondLine.getCoordinates();
-
-                        Coordinate last = null;
-                        for( int j = 0; j < fCoords.length - 1; j++ ) {
-                            newLine.add(fCoords[j]);
-                            last = fCoords[j];
+                    Coordinate[] polygonCoords = polygon.getCoordinates();
+                    for( int i = 0; i < linesList.size(); i = i + 1 ) {
+                        LineString l1 = linesList.get(i);
+                        LineString l2 = null;
+                        Coordinate[] l1Coords = l1.getCoordinates();
+                        for( Coordinate coordinate : l1Coords ) {
+                            coordinate.z = Double.NaN;
                         }
-                        Coordinate first = sCoords[0];
+                        int cNum = l1Coords.length;
+                        Coordinate l1LastCoord = l1Coords[cNum - 1];
 
-                        Coordinate[] polygonCoords = polygon.getCoordinates();
-                        int fIndex = 0;
-                        int sIndex = 0;
+                        int l1PointIndex = -1;
+                        int l2PointIndex = -1;
                         for( int j = 0; j < polygonCoords.length; j++ ) {
-                            if (polygonCoords[j].distance(last) < 0.001) {
-                                fIndex = j;
-                            }
-                            if (polygonCoords[j].distance(first) < 0.001) {
-                                sIndex = j;
-                            }
-                        }
-
-                        if (fIndex < sIndex) {
-                            for( int j = fIndex; j < sIndex; j++ ) {
-                                newLine.add(polygonCoords[j]);
-                            }
-                        } else {
-                            for( int j = sIndex; j < fIndex; j++ ) {
-                                newLine.add(polygonCoords[j]);
+                            double distance = polygonCoords[j].distance(l1LastCoord);
+                            System.out.println(distance);
+                            if (distance < 0.001) {
+                                l1PointIndex = j;
                             }
                         }
 
-                        for( int j = 1; j < sCoords.length; j++ ) {
-                            newLine.add(sCoords[j]);
+                        if (l1PointIndex == -1) {
+                            // loose end, add it and continue
+                            for( Coordinate coordinate : l1Coords ) {
+                                tmpList.add(coordinate);
+                            }
+                            continue;
                         }
 
+                        // find the next point
+                        for( int j = i + 1; j < linesList.size(); j++ ) {
+                            LineString tmpL2 = linesList.get(j);
+                            Coordinate[] l2Coords = tmpL2.getCoordinates();
+                            // int c2Num = l2Coords.length;
+                            Coordinate l2FirstCoord = l2Coords[0];
+
+                            for( int k = 0; k < polygonCoords.length; k++ ) {
+                                if (polygonCoords[k].distance(l2FirstCoord) < 0.001) {
+                                    l2PointIndex = k;
+                                }
+                            }
+
+                            if (l2PointIndex == -1) {
+                                throw new RuntimeException();
+                            }
+
+                            /*
+                             * so we found the 2 points that should be 
+                             * connected along the buffer. But are they 
+                             * the right ones? 
+                             */
+                            // check if the second line is an intermediate
+                            LineString tmpLine = gF.createLineString(new Coordinate[]{l1LastCoord,
+                                    l2FirstCoord});
+                            Geometry tmpIntersection = polygon.intersection(tmpLine);
+                            if (tmpIntersection.getNumGeometries() > 1) {
+                                // wrong piece, try the next line
+                                continue;
+                            } else {
+                                // found the right l2
+                                l2 = tmpL2;
+                                // update global index
+                                i = j;
+                                break;
+                            }
+                        }
+
+                        // ok, we have both lines and the indexes
+                        for( Coordinate coordinate : l1Coords ) {
+                            tmpList.add(coordinate);
+                        }
+                        int first = l1PointIndex < l2PointIndex ? l1PointIndex : l2PointIndex;
+                        int last = l1PointIndex < l2PointIndex ? l2PointIndex : l1PointIndex;
+                        for( int j = first; j <= last; j++ ) {
+                            tmpList.add(polygonCoords[j]);
+                        }
+                        newLine.add(tmpList);
                     }
 
-                    for( Coordinate coordinate : newLine ) {
-                        coordinate.z = 1.0;
-                        System.out.println(coordinate);
+                    LineString[] linesArray = new LineString[newLine.size()];
+                    int index = 0;
+                    for( ArrayList<Coordinate> coordinateList : newLine ) {
+                        LineString lineString = gF.createLineString((Coordinate[]) coordinateList
+                                .toArray(new Coordinate[coordinateList.size()]));
+                        linesArray[index++] = lineString;
                     }
-                    LineString lineString = gF.createLineString((Coordinate[]) newLine
-                            .toArray(new Coordinate[newLine.size()]));
-                    return gF.createMultiLineString(new LineString[]{lineString});
+                    return gF.createMultiLineString(linesArray);
                 }
             }
         }
