@@ -62,6 +62,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.linemerge.LineSequencer;
+import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 @Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
@@ -123,85 +124,66 @@ public class LineSmoother extends JGTModel {
         if (!concatOr(outFeatures == null, doReset)) {
             return;
         }
+        int id = 0;
         FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
+        int size = inFeatures.size();
         List<FeatureElevationComparer> comparerList = new ArrayList<FeatureElevationComparer>();
+        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
+        pm.beginTask("Smoothing features...", size);
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
-            comparerList.add(new FeatureElevationComparer(feature, fSort));
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            int numGeometries = geometry.getNumGeometries();
+            List<LineString> lsList = smoothGeometries(geometry, numGeometries);
+            int geometriesNum = lsList.size();
+            if (geometriesNum == 0) {
+                pm.worked(1);
+                continue;
+            }
+
+            LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
+            SimpleFeature newFeature;
+            if (lsArray.length > 1) {
+                MultiLineString multiLineString = gF.createMultiLineString(lsArray);
+                newFeature = fGS.substituteGeometry(feature, multiLineString, id);
+            } else {
+                newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
+            }
+            id++;
+
+            comparerList.add(new FeatureElevationComparer(newFeature, fSort));
+            pm.worked(1);
         }
+        pm.done();
         inFeatures.close(inFeatureIterator);
+
         Collections.sort(comparerList);
+        Collections.reverse(comparerList);
 
         outFeatures = FeatureCollections.newCollection();
         errorFeatures = FeatureCollections.newCollection();
 
-        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
-
-        List<Geometry> protectedAreas = new ArrayList<Geometry>();
-
-        int id = 0;
-        int size = comparerList.size();
-        pm.beginTask("Smoothing features...", size);
+        id = 0;
+        size = comparerList.size();
+        pm.beginTask("Correcting intersections...", size);
         for( FeatureElevationComparer featureElevationComparer : comparerList ) {
             SimpleFeature feature = featureElevationComparer.getFeature();
 
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             int numGeometries = geometry.getNumGeometries();
 
-            // long t0 = System.currentTimeMillis();
-
-            List<LineString> lsList = smoothGeometries(geometry, numGeometries);
-
-            // long t1 = System.currentTimeMillis();
-            // printTime("smooth", t0, t1);
-
-            int geometriesNum = lsList.size();
-            if (geometriesNum == 0) {
-                pm.worked(1);
-                continue;
+            List<LineString> geomList = new ArrayList<LineString>();
+            for( int i = 0; i < numGeometries; i++ ) {
+                geomList.add((LineString) geometry.getGeometryN(i));
             }
-            System.out.println(id + " of " + size);
+            LineString[] lsArray = (LineString[]) geomList.toArray(new LineString[numGeometries]);
 
-            LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[geometriesNum]);
-            // if (feature.getID().equals("cl_3d_28100.342")
-            // || feature.getID().equals("cl_3d_28100.344")) {
-            // System.out.println();
-            // }
             SimpleFeature newFeature = null;
             try {
-
-                MultiLineString mlString = checkIntersectionsShortestPath(lsArray, protectedAreas);
-
-                // MultiLineString mlString = gF.createMultiLineString(lsArray);
-                // mlString = checkIntersections(mlString, protectedAreas);
+                MultiLineString mlString = checkLineIntersections(lsArray, comparerList, id);
 
                 newFeature = fGS.substituteGeometry(feature, mlString, id);
                 id++;
-
-                // BufferOp bufOp = new BufferOp(mlString);
-                // bufOp.setEndCapStyle(BufferParameters.CAP_FLAT);
-                // Geometry protectedBuffer = bufOp.getResultGeometry(pBuffer);
-                // Geometry union = mlString.union();
-                /*LineMerger lineMerger = new LineMerger();
-                lineMerger.add(mlString);
-                Collection mergedLineStrings = lineMerger.getMergedLineStrings();
-                GeometryCollection gC = new GeometryCollection((Geometry[]) mergedLineStrings
-                        .toArray(new Geometry[mergedLineStrings.size()]), gF);*/
-                long t2 = System.currentTimeMillis();
-
-                Geometry protectedBuffer = mlString.buffer(pBuffer);
-                protectedAreas.add(protectedBuffer);
-
-                long t3 = System.currentTimeMillis();
-                printTime("                    ->  buffer", t2, t3);
-
-                if (t3 - t2 > 24000) {
-                    System.out.println("feature: " + feature.getID());
-                    System.out.println(mlString.toText());
-                    for( LineString lineString : lsArray ) {
-                        System.out.println(lineString.toText());
-                    }
-                }
             } catch (Exception e) {
                 e.printStackTrace();
 
@@ -230,6 +212,176 @@ public class LineSmoother extends JGTModel {
                 }
             }
         });
+    }
+
+    private MultiLineString checkLineIntersections( LineString[] lsArray,
+            List<FeatureElevationComparer> comparerList, int id2 ) throws Exception {
+
+        ArrayList<LineString> newLines = new ArrayList<LineString>();
+        for( LineString line : lsArray ) {
+            Coordinate[] lineCoords = line.getCoordinates();
+
+            List<LineString> intersectingLines = new ArrayList<LineString>();
+
+            PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
+
+            // long t0 = System.currentTimeMillis();
+
+            int index = 0;
+            for( FeatureElevationComparer otherLine : comparerList ) {
+                if (index == id2) {
+                    continue;
+                }
+                index++;
+
+                Geometry otherLineGeom = otherLine.getGeometry();
+                int numGeometries = otherLineGeom.getNumGeometries();
+                for( int i = 0; i < numGeometries; i++ ) {
+                    Geometry geometryN = otherLineGeom.getGeometryN(i);
+                    if (preparedLine.intersects(geometryN)) {
+                        intersectingLines.add((LineString) geometryN);
+                    }
+                }
+            }
+
+            // long t1 = System.currentTimeMillis();
+            // printTime("check intersections", t0, t1);
+
+            if (intersectingLines.size() > 0) {
+
+                Polygon[] bufferPolygons = new Polygon[intersectingLines.size()];
+                for( int i = 0; i < bufferPolygons.length; i++ ) {
+                    Geometry buffer = intersectingLines.get(i).buffer(pBuffer);
+                    bufferPolygons[i] = (Polygon) buffer;
+                }
+
+                // LineString[] intersectingLinesArray = (LineString[]) intersectingLines
+                // .toArray(new LineString[intersectingLines.size()]);
+                // MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
+
+                GeometryCollection coll = new GeometryCollection(bufferPolygons, gF);
+
+                double snapTol = GeometrySnapper.computeOverlaySnapTolerance(coll, line);
+                Geometry aFix = selfSnap(coll, snapTol);
+                // Geometry bFix = selfSnap(line, snapTol);
+
+                // long t2 = System.currentTimeMillis();
+                // printTime("fix snap", t1, t2);
+
+                Geometry collection = aFix.symDifference(line);
+                // System.out.println(aFix.toText());
+                // System.out.println(line.toText());
+
+                BasicLineGraphGenerator lineStringGen = new BasicLineGraphGenerator();
+                if (collection instanceof GeometryCollection) {
+                    List<LineSegment> linesS = new ArrayList<LineSegment>();
+                    List<LineSegment> otherLinesS = new ArrayList<LineSegment>();
+
+                    GeometryCollection geomCollection = (GeometryCollection) collection;
+                    int numGeometries = geomCollection.getNumGeometries();
+                    for( int i = 0; i < numGeometries; i++ ) {
+                        Geometry geometryN = geomCollection.getGeometryN(i);
+                        Coordinate[] coordinates = geometryN.getCoordinates();
+
+                        if (geometryN instanceof LineString) {
+                            for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
+                                Coordinate first = coordinates[j];
+                                Coordinate sec = coordinates[j + 1];
+                                LineSegment seg = new LineSegment(first, sec);
+                                linesS.add(seg);
+                            }
+                        } else {
+                            for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
+                                Coordinate first = coordinates[j];
+                                Coordinate sec = coordinates[j + 1];
+                                LineSegment seg = new LineSegment(first, sec);
+                                otherLinesS.add(seg);
+                            }
+                        }
+                    }
+
+                    // long t3 = System.currentTimeMillis();
+                    // printTime("get geometries", t2, t3);
+
+                    int id = 0;
+                    for( LineSegment l : linesS ) {
+                        lineStringGen.add(l);
+                        Edge edge = lineStringGen.getEdge(l.p0, l.p1);
+                        edge.setID(id);
+                        id = id + 2;
+                    }
+                    id = 1;
+                    for( LineSegment l : otherLinesS ) {
+                        lineStringGen.add(l);
+                        Edge edge = lineStringGen.getEdge(l.p0, l.p1);
+                        edge.setID(id);
+                        id = id + 2;
+                    }
+
+                    Graph graph = lineStringGen.getGraph();
+
+                    // long t4 = System.currentTimeMillis();
+                    // printTime("create graph", t3, t4);
+
+                    Node startNode = lineStringGen.getNode(lineCoords[0]);
+                    Node endNode = lineStringGen.getNode(lineCoords[lineCoords.length - 1]);
+
+                    DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph,
+                            startNode, costFunction());
+                    pfinder.calculate();
+                    Path path = pfinder.getPath(endNode);
+
+                    // long t5 = System.currentTimeMillis();
+                    // printTime("shortest path", t4, t5);
+
+                    LineSequencer ls = new LineSequencer();
+                    for( Iterator e = path.getEdges().iterator(); e.hasNext(); ) {
+                        Edge edge = (Edge) e.next();
+                        Object object = edge.getObject();
+                        if (object instanceof LineSegment) {
+                            LineSegment seg = (LineSegment) object;
+                            ls.add(gF.createLineString(new Coordinate[]{seg.p0, seg.p1}));
+                        }
+                        // features.add( feature );
+                    }
+                    Geometry sequencedLineStrings = ls.getSequencedLineStrings();
+                    Coordinate[] coordinates = sequencedLineStrings.getCoordinates();
+                    LineString lStr = gF.createLineString(coordinates);
+                    // System.out.println(lStr.toText());
+                    // long t6 = System.currentTimeMillis();
+                    // printTime("create lines", t5, t6);
+
+                    DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lStr);
+                    simplifier.setDistanceTolerance(0);
+                    Geometry resultGeometry = simplifier.getResultGeometry();
+                    newLines.add((LineString) resultGeometry);
+                    // System.out.println(resultGeometry.toText());
+
+                    // long t7 = System.currentTimeMillis();
+                    // printTime("simplify", t6, t7);
+                }
+
+            } else {
+                newLines.add(line);
+            }
+        }
+
+        LineString[] linesArray;
+        if (newLines.size() == 0) {
+            linesArray = lsArray;
+        } else {
+            linesArray = (LineString[]) newLines.toArray(new LineString[newLines.size()]);
+        }
+        MultiLineString multiLineString = gF.createMultiLineString(linesArray);
+        return multiLineString;
+    }
+
+    private Geometry selfSnap( Geometry g, double snapTolerance ) {
+        GeometrySnapper snapper = new GeometrySnapper(g);
+        Geometry snapped = snapper.snapTo(g, snapTolerance);
+        // need to "clean" snapped geometry - use buffer(0) as a simple way to do this
+        Geometry fix = snapped.buffer(0);
+        return fix;
     }
 
     private MultiLineString checkIntersectionsShortestPath( LineString[] lsArray,
@@ -368,6 +520,7 @@ public class LineSmoother extends JGTModel {
         MultiLineString multiLineString = gF.createMultiLineString(linesArray);
         return multiLineString;
     }
+
     private void printTime( String msg, long t1, long t2 ) {
         long diff = t2 - t1;
         long a = diff / 1000l;
@@ -575,104 +728,110 @@ public class LineSmoother extends JGTModel {
         return lsList;
     }
 
-    // public static void main( String[] args ) {
-    //
-    // Coordinate[] lineCoord = new Coordinate[7];
-    // lineCoord[0] = new Coordinate(0, 0);
-    // lineCoord[1] = new Coordinate(1, 1);
-    // lineCoord[2] = new Coordinate(2, 2);
-    // lineCoord[3] = new Coordinate(3, 3);
-    // lineCoord[4] = new Coordinate(4, 2);
-    // lineCoord[5] = new Coordinate(5, 1);
-    // lineCoord[6] = new Coordinate(6, 0);
-    //
-    // Coordinate[] polygonCoord = new Coordinate[5];
-    // polygonCoord[0] = new Coordinate(0, 1);
-    // polygonCoord[1] = new Coordinate(0, 4);
-    // polygonCoord[2] = new Coordinate(6, 4);
-    // polygonCoord[3] = new Coordinate(6, 1);
-    // polygonCoord[4] = new Coordinate(0, 1);
-    //
-    // GeometryFactory gfac = GeometryUtilities.gf();
-    //
-    // LineString lineString = gfac.createLineString(lineCoord);
-    //
-    // LinearRing linearRing = gfac.createLinearRing(polygonCoord);
-    // Polygon polygon = gfac.createPolygon(linearRing, null);
-    // Geometry symdifference = lineString.symDifference(polygon);
-    // System.out.println(symdifference.toText());
-    //
-    // List<LineSegment> linesS = new ArrayList<LineSegment>();
-    // List<LineSegment> polygonsS = new ArrayList<LineSegment>();
-    // int numGeometries = symdifference.getNumGeometries();
-    // for( int i = 0; i < numGeometries; i++ ) {
-    // Geometry geometryN = symdifference.getGeometryN(i);
-    // if (geometryN instanceof LineString) {
-    // LineString line = (LineString) geometryN;
-    // Coordinate[] coordinates = line.getCoordinates();
-    // for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
-    // Coordinate first = coordinates[j];
-    // Coordinate sec = coordinates[j + 1];
-    // LineSegment seg = new LineSegment(first, sec);
-    // linesS.add(seg);
-    // }
-    // } else {
-    // Coordinate[] coordinates = geometryN.getCoordinates();
-    // for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
-    // Coordinate first = coordinates[j];
-    // Coordinate sec = coordinates[j + 1];
-    // LineSegment seg = new LineSegment(first, sec);
-    // polygonsS.add(seg);
-    // }
-    // }
-    // }
-    //
-    // BasicLineGraphGenerator lineStringGen = new BasicLineGraphGenerator();
-    // int id = 0;
-    // for( LineSegment l : linesS ) {
-    // lineStringGen.add(l);
-    // Edge edge = lineStringGen.getEdge(l.p0, l.p1);
-    // edge.setID(id);
-    // id = id + 2;
-    // }
-    // id = 1;
-    // for( LineSegment l : polygonsS ) {
-    // lineStringGen.add(l);
-    // Edge edge = lineStringGen.getEdge(l.p0, l.p1);
-    // edge.setID(id);
-    // id = id + 2;
-    // }
-    //
-    // Graph graph = lineStringGen.getGraph();
-    //
-    // Node startNode = lineStringGen.getNode(lineCoord[0]);
-    // Node endNode = lineStringGen.getNode(lineCoord[6]);
-    //
-    // DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph, startNode,
-    // costFunction());
-    // pfinder.calculate();
-    // Path path = pfinder.getPath(endNode);
-    //
-    // LineSequencer ls = new LineSequencer();
-    // for( Iterator e = path.getEdges().iterator(); e.hasNext(); ) {
-    // Edge edge = (Edge) e.next();
-    // Object object = edge.getObject();
-    // if (object instanceof LineSegment) {
-    // LineSegment seg = (LineSegment) object;
-    //
-    // ls.add(gfac.createLineString(new Coordinate[]{seg.p0, seg.p1}));
-    // }
-    // System.out.println();
-    // // features.add( feature );
-    // }
-    // Geometry sequencedLineStrings = ls.getSequencedLineStrings();
-    // Coordinate[] coordinates = sequencedLineStrings.getCoordinates();
-    // LineString lStr = gfac.createLineString(coordinates);
-    // DouglasPeuckerSimplifier simple = new DouglasPeuckerSimplifier(lStr);
-    // simple.setDistanceTolerance(0);
-    // Geometry resultGeometry = simple.getResultGeometry();
-    // System.out.println(resultGeometry.toText());
-    //
-    // }
+    public static void main( String[] args ) {
+
+        Coordinate[] lineCoord = new Coordinate[7];
+        lineCoord[0] = new Coordinate(0, 0);
+        lineCoord[1] = new Coordinate(1, 1);
+        lineCoord[2] = new Coordinate(2, 2);
+        lineCoord[3] = new Coordinate(3, 3);
+        lineCoord[4] = new Coordinate(4, 2);
+        lineCoord[5] = new Coordinate(5, 1);
+        lineCoord[6] = new Coordinate(6, 0);
+
+        Coordinate[] polygonCoord = new Coordinate[4];
+        polygonCoord[0] = new Coordinate(0, 1);
+        polygonCoord[1] = new Coordinate(0, 2);
+        polygonCoord[2] = new Coordinate(6, 2);
+        polygonCoord[3] = new Coordinate(6, 1);
+        // polygonCoord[4] = new Coordinate(0, 1);
+
+        GeometryFactory gfac = GeometryUtilities.gf();
+
+        LineString lineString = gfac.createLineString(lineCoord);
+        System.out.println(lineString.toText());
+
+        LineString polyString = gfac.createLineString(polygonCoord);
+        System.out.println(polyString.toText());
+        Geometry symdifference = lineString.symDifference(polyString);
+        System.out.println(symdifference.toText());
+
+        // LinearRing linearRing = gfac.createLinearRing(polygonCoord);
+        // Polygon polygon = gfac.createPolygon(linearRing, null);
+        // Geometry symdifference = lineString.symDifference(polygon);
+        // System.out.println(symdifference.toText());
+
+        // List<LineSegment> linesS = new ArrayList<LineSegment>();
+        // List<LineSegment> polygonsS = new ArrayList<LineSegment>();
+        // int numGeometries = symdifference.getNumGeometries();
+        // for( int i = 0; i < numGeometries; i++ ) {
+        // Geometry geometryN = symdifference.getGeometryN(i);
+        // if (geometryN instanceof LineString) {
+        // LineString line = (LineString) geometryN;
+        // Coordinate[] coordinates = line.getCoordinates();
+        // for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
+        // Coordinate first = coordinates[j];
+        // Coordinate sec = coordinates[j + 1];
+        // LineSegment seg = new LineSegment(first, sec);
+        // linesS.add(seg);
+        // }
+        // } else {
+        // Coordinate[] coordinates = geometryN.getCoordinates();
+        // for( int j = 0; j < coordinates.length - 1; j = j + 1 ) {
+        // Coordinate first = coordinates[j];
+        // Coordinate sec = coordinates[j + 1];
+        // LineSegment seg = new LineSegment(first, sec);
+        // polygonsS.add(seg);
+        // }
+        // }
+        // }
+        //
+        // BasicLineGraphGenerator lineStringGen = new BasicLineGraphGenerator();
+        // int id = 0;
+        // for( LineSegment l : linesS ) {
+        // lineStringGen.add(l);
+        // Edge edge = lineStringGen.getEdge(l.p0, l.p1);
+        // edge.setID(id);
+        // id = id + 2;
+        // }
+        // id = 1;
+        // for( LineSegment l : polygonsS ) {
+        // lineStringGen.add(l);
+        // Edge edge = lineStringGen.getEdge(l.p0, l.p1);
+        // edge.setID(id);
+        // id = id + 2;
+        // }
+        //
+        // Graph graph = lineStringGen.getGraph();
+        //
+        // Node startNode = lineStringGen.getNode(lineCoord[0]);
+        // Node endNode = lineStringGen.getNode(lineCoord[6]);
+        //
+        // DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph, startNode,
+        // costFunction());
+        // pfinder.calculate();
+        // Path path = pfinder.getPath(endNode);
+        //
+        // LineSequencer ls = new LineSequencer();
+        // for( Iterator e = path.getEdges().iterator(); e.hasNext(); ) {
+        // Edge edge = (Edge) e.next();
+        // Object object = edge.getObject();
+        // if (object instanceof LineSegment) {
+        // LineSegment seg = (LineSegment) object;
+        //
+        // ls.add(gfac.createLineString(new Coordinate[]{seg.p0, seg.p1}));
+        // }
+        // System.out.println();
+        // // features.add( feature );
+        // }
+        // Geometry sequencedLineStrings = ls.getSequencedLineStrings();
+        // Coordinate[] coordinates = sequencedLineStrings.getCoordinates();
+        // LineString lStr = gfac.createLineString(coordinates);
+        // DouglasPeuckerSimplifier simple = new DouglasPeuckerSimplifier(lStr);
+        // simple.setDistanceTolerance(0);
+        // Geometry resultGeometry = simple.getResultGeometry();
+        // System.out.println(resultGeometry.toText());
+
+    }
 
 }
