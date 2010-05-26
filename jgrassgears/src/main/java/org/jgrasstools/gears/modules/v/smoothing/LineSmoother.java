@@ -50,6 +50,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import com.vividsolutions.jts.densify.Densifier;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
@@ -64,6 +65,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.linemerge.LineSequencer;
 import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
+import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 @Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
         + "Algorithm. The new position of each point "
@@ -99,9 +101,21 @@ public class LineSmoother extends JGTModel {
     @In
     public double pBuffer = 0.5;
 
+    @Description("Densifier tollerance.")
+    @In
+    public Double pDensify = null;
+
+    @Description("Simplifier tollerance.")
+    @In
+    public Double pSimplify = null;
+
     @Description("Field name of sorting attribute.")
     @In
     public String fSort = null;
+
+    @Description("Switch for correction.")
+    @In
+    public boolean doCorrection = true;
 
     @Description("The progress monitor.")
     @In
@@ -119,85 +133,112 @@ public class LineSmoother extends JGTModel {
 
     private GeometryFactory gF = GeometryUtilities.gf();
 
+    private double densify = -1;
+    private double simplify = -1;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFeatures == null, doReset)) {
             return;
         }
+
+        if (pDensify != null) {
+            densify = pDensify;
+        }
+        if (pSimplify != null) {
+            simplify = pSimplify;
+        }
+
+        outFeatures = FeatureCollections.newCollection();
+        errorFeatures = FeatureCollections.newCollection();
+
         int id = 0;
         FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
         int size = inFeatures.size();
         List<FeatureElevationComparer> comparerList = new ArrayList<FeatureElevationComparer>();
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
-        pm.beginTask("Smoothing features...", size);
-        while( inFeatureIterator.hasNext() ) {
-            SimpleFeature feature = inFeatureIterator.next();
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            int numGeometries = geometry.getNumGeometries();
-            List<LineString> lsList = smoothGeometries(geometry, numGeometries);
-            int geometriesNum = lsList.size();
-            if (geometriesNum == 0) {
-                pm.worked(1);
-                continue;
-            }
 
-            LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
-            SimpleFeature newFeature;
-            if (lsArray.length > 1) {
-                MultiLineString multiLineString = gF.createMultiLineString(lsArray);
-                newFeature = fGS.substituteGeometry(feature, multiLineString, id);
-            } else {
-                newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
-            }
-            id++;
+        if (pLookahead != 0) {
+            pm.beginTask("Smoothing features...", size);
+            while( inFeatureIterator.hasNext() ) {
+                SimpleFeature feature = inFeatureIterator.next();
+                Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                int numGeometries = geometry.getNumGeometries();
+                List<LineString> lsList = smoothGeometries(geometry, numGeometries);
+                int geometriesNum = lsList.size();
+                if (geometriesNum == 0) {
+                    pm.worked(1);
+                    continue;
+                }
 
-            comparerList.add(new FeatureElevationComparer(newFeature, fSort));
-            pm.worked(1);
-        }
-        pm.done();
-        inFeatures.close(inFeatureIterator);
-
-        Collections.sort(comparerList);
-        Collections.reverse(comparerList);
-
-        outFeatures = FeatureCollections.newCollection();
-        errorFeatures = FeatureCollections.newCollection();
-
-        id = 0;
-        size = comparerList.size();
-        pm.beginTask("Correcting intersections...", size);
-        for( FeatureElevationComparer featureElevationComparer : comparerList ) {
-            SimpleFeature feature = featureElevationComparer.getFeature();
-
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            int numGeometries = geometry.getNumGeometries();
-
-            List<LineString> geomList = new ArrayList<LineString>();
-            for( int i = 0; i < numGeometries; i++ ) {
-                geomList.add((LineString) geometry.getGeometryN(i));
-            }
-            LineString[] lsArray = (LineString[]) geomList.toArray(new LineString[numGeometries]);
-
-            SimpleFeature newFeature = null;
-            try {
-                MultiLineString mlString = checkLineIntersections(lsArray, comparerList, id);
-
-                newFeature = fGS.substituteGeometry(feature, mlString, id);
+                LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
+                SimpleFeature newFeature;
+                if (lsArray.length > 1) {
+                    MultiLineString multiLineString = gF.createMultiLineString(lsArray);
+                    newFeature = fGS.substituteGeometry(feature, multiLineString, id);
+                } else {
+                    newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
+                }
                 id++;
-            } catch (Exception e) {
-                e.printStackTrace();
 
-                errorFeatures.add(feature);
+                comparerList.add(new FeatureElevationComparer(newFeature, fSort));
                 pm.worked(1);
-                continue;
             }
-
-            outFeatures.add(newFeature);
-            pm.worked(1);
+            pm.done();
+            inFeatures.close(inFeatureIterator);
+        } else {
+            while( inFeatureIterator.hasNext() ) {
+                SimpleFeature feature = inFeatureIterator.next();
+                comparerList.add(new FeatureElevationComparer(feature, fSort));
+            }
+            inFeatures.close(inFeatureIterator);
         }
-        pm.done();
 
-        inFeatures.close(inFeatureIterator);
+        if (doCorrection) {
+            Collections.sort(comparerList);
+            Collections.reverse(comparerList);
+
+            id = 0;
+            size = comparerList.size();
+            pm.beginTask("Correcting intersections...", size);
+            for( FeatureElevationComparer featureElevationComparer : comparerList ) {
+                SimpleFeature feature = featureElevationComparer.getFeature();
+
+                Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                int numGeometries = geometry.getNumGeometries();
+
+                List<LineString> geomList = new ArrayList<LineString>();
+                for( int i = 0; i < numGeometries; i++ ) {
+                    geomList.add((LineString) geometry.getGeometryN(i));
+                }
+                LineString[] lsArray = (LineString[]) geomList
+                        .toArray(new LineString[numGeometries]);
+
+                SimpleFeature newFeature = null;
+                try {
+                    MultiLineString mlString = checkLineIntersections(lsArray, comparerList, id);
+
+                    newFeature = fGS.substituteGeometry(feature, mlString, id);
+                    id++;
+                } catch (Exception e) {
+                    e.printStackTrace();
+
+                    errorFeatures.add(feature);
+                    pm.worked(1);
+                    continue;
+                }
+
+                outFeatures.add(newFeature);
+                pm.worked(1);
+            }
+            pm.done();
+
+            inFeatures.close(inFeatureIterator);
+        } else {
+            for( FeatureElevationComparer featureElevationComparer : comparerList ) {
+                outFeatures.add(featureElevationComparer.getFeature());
+            }
+        }
 
     }
 
@@ -699,9 +740,14 @@ public class LineSmoother extends JGTModel {
     private List<LineString> smoothGeometries( Geometry geometry, int numGeometries ) {
         List<LineString> lsList = new ArrayList<LineString>();
         for( int i = 0; i < numGeometries; i++ ) {
-            Geometry geometryN = geometry.getGeometryN(i);
 
-            int coordinatesNum = geometryN.getCoordinates().length;
+            Geometry geometryN = geometry.getGeometryN(i);
+            if (densify != -1) {
+                geometryN = Densifier.densify(geometryN, pDensify);
+            }
+
+            Coordinate[] coordinates = geometryN.getCoordinates();
+            int coordinatesNum = coordinates.length;
             if (coordinatesNum <= pLimit) {
                 continue;
             }
@@ -723,6 +769,14 @@ public class LineSmoother extends JGTModel {
                 smoothedArray = geometryN.getCoordinates();
             }
             LineString lineString = gF.createLineString(smoothedArray);
+
+            if (simplify != -1) {
+                TopologyPreservingSimplifier tpSimplifier = new TopologyPreservingSimplifier(
+                        lineString);
+                tpSimplifier.setDistanceTolerance(pSimplify);
+                lineString = (LineString) tpSimplifier.getResultGeometry();
+            }
+
             lsList.add(lineString);
         }
         return lsList;
