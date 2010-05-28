@@ -49,20 +49,25 @@ public class FeatureSlidingAverage {
 
         Coordinate[] coordinates = geometry.getCoordinates();
         int n = coordinates.length; // Points->n_points;
-        int halfLookAhead = lookAhead / 2;
+
+        if (n < 4 * lookAhead) {
+            /*
+             * if lookahead is too large, lets put it as the
+             * 20% of the number of coordinates
+             */
+            lookAhead = (int) Math.floor(n * 0.2d);
+        }
 
         if (lookAhead % 2 == 0) {
-            throw new IllegalArgumentException(
-                    "Look ahead parameter must be odd, but you supplied: " + lookAhead);
+            lookAhead++;
         }
-
-        // if lookahead is major than teh points, set it to one less the point
-        if (lookAhead >= n) {
-            lookAhead = n - 1;
-        }
-
-        if (lookAhead <= 1)
+        if (lookAhead < 3)
             return null;
+        
+        int halfLookAhead = lookAhead / 2;
+        if (halfLookAhead > coordinates.length) {
+            System.out.println();
+        }
 
         int padding = 0;
         if (coordinates[0].distance(coordinates[n - 1]) < DELTA) {

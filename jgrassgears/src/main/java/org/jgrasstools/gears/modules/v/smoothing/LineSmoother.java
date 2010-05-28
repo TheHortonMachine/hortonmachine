@@ -89,9 +89,9 @@ public class LineSmoother extends JGTModel {
     @In
     public int pLookahead = 7;
 
-    @Description("Minimum number of points for a line. If the points number is below that value, the line is removed.")
+    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is removed.")
     @In
-    public int pLimit = 2 * pLookahead;
+    public int pLimit = 0;
 
     @Description("Slide parameter.")
     @In
@@ -163,25 +163,20 @@ public class LineSmoother extends JGTModel {
             while( inFeatureIterator.hasNext() ) {
                 SimpleFeature feature = inFeatureIterator.next();
                 Geometry geometry = (Geometry) feature.getDefaultGeometry();
-                int numGeometries = geometry.getNumGeometries();
-                List<LineString> lsList = smoothGeometries(geometry, numGeometries);
-                int geometriesNum = lsList.size();
-                if (geometriesNum == 0) {
-                    pm.worked(1);
-                    continue;
+                List<LineString> lsList = smoothGeometries(geometry);
+                if (lsList.size() != 0) {
+                    LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList
+                            .size()]);
+                    SimpleFeature newFeature;
+                    if (lsArray.length > 1) {
+                        MultiLineString multiLineString = gF.createMultiLineString(lsArray);
+                        newFeature = fGS.substituteGeometry(feature, multiLineString, id);
+                    } else {
+                        newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
+                    }
+                    id++;
+                    comparerList.add(new FeatureElevationComparer(newFeature, fSort));
                 }
-
-                LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
-                SimpleFeature newFeature;
-                if (lsArray.length > 1) {
-                    MultiLineString multiLineString = gF.createMultiLineString(lsArray);
-                    newFeature = fGS.substituteGeometry(feature, multiLineString, id);
-                } else {
-                    newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
-                }
-                id++;
-
-                comparerList.add(new FeatureElevationComparer(newFeature, fSort));
                 pm.worked(1);
             }
             pm.done();
@@ -214,26 +209,28 @@ public class LineSmoother extends JGTModel {
                 LineString[] lsArray = (LineString[]) geomList
                         .toArray(new LineString[numGeometries]);
 
-                SimpleFeature newFeature = null;
                 try {
-                    MultiLineString mlString = checkLineIntersections(lsArray, comparerList, id);
-
-                    newFeature = fGS.substituteGeometry(feature, mlString, id);
+                    checkLineIntersections(featureElevationComparer, lsArray, comparerList, id);
                     id++;
                 } catch (Exception e) {
                     e.printStackTrace();
-
-                    errorFeatures.add(feature);
-                    pm.worked(1);
+                    featureElevationComparer.setDirty(true);
                     continue;
                 }
 
-                outFeatures.add(newFeature);
                 pm.worked(1);
             }
             pm.done();
 
-            inFeatures.close(inFeatureIterator);
+            for( FeatureElevationComparer featureElevationComparer : comparerList ) {
+                SimpleFeature feature = featureElevationComparer.getFeature();
+                if (!featureElevationComparer.isDirty()) {
+                    outFeatures.add(feature);
+                } else {
+                    errorFeatures.add(feature);
+                }
+            }
+
         } else {
             for( FeatureElevationComparer featureElevationComparer : comparerList ) {
                 outFeatures.add(featureElevationComparer.getFeature());
@@ -255,12 +252,20 @@ public class LineSmoother extends JGTModel {
         });
     }
 
-    private MultiLineString checkLineIntersections( LineString[] lsArray,
-            List<FeatureElevationComparer> comparerList, int id2 ) throws Exception {
+    private void checkLineIntersections( FeatureElevationComparer currentFeatureElevationComparer,
+            LineString[] lsArray, List<FeatureElevationComparer> comparerList, int id2 )
+            throws Exception {
 
         ArrayList<LineString> newLines = new ArrayList<LineString>();
         for( LineString line : lsArray ) {
             Coordinate[] lineCoords = line.getCoordinates();
+            boolean hadEqualBounds = false;
+            if (lineCoords[0].distance(lineCoords[lineCoords.length - 1]) < DELTA) {
+                hadEqualBounds = true;
+                Coordinate coordinate = lineCoords[lineCoords.length - 1];
+                coordinate.x = coordinate.x + DELTA;
+                coordinate.y = coordinate.y + DELTA;
+            }
 
             List<LineString> intersectingLines = new ArrayList<LineString>();
 
@@ -387,19 +392,38 @@ public class LineSmoother extends JGTModel {
                     }
                     Geometry sequencedLineStrings = ls.getSequencedLineStrings();
                     Coordinate[] coordinates = sequencedLineStrings.getCoordinates();
-                    LineString lStr = gF.createLineString(coordinates);
-                    // System.out.println(lStr.toText());
-                    // long t6 = System.currentTimeMillis();
-                    // printTime("create lines", t5, t6);
+                    if (coordinates.length != 0) {
+                        if (hadEqualBounds) {
+                            coordinates[coordinates.length - 1] = new Coordinate(coordinates[0]);
+                        }
+                        LineString lStr = gF.createLineString(coordinates);
+                        // System.out.println(lStr.toText());
+                        // long t6 = System.currentTimeMillis();
+                        // printTime("create lines", t5, t6);
 
-                    DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lStr);
-                    simplifier.setDistanceTolerance(0);
-                    Geometry resultGeometry = simplifier.getResultGeometry();
-                    newLines.add((LineString) resultGeometry);
-                    // System.out.println(resultGeometry.toText());
+                        DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lStr);
+                        simplifier.setDistanceTolerance(0);
+                        Geometry resultGeometry = simplifier.getResultGeometry();
 
-                    // long t7 = System.currentTimeMillis();
-                    // printTime("simplify", t6, t7);
+                        int newLength = resultGeometry.getCoordinates().length;
+                        int length = lineCoords.length;
+
+                        if (Math.abs(length - newLength) > 0.5 * length) {
+                            System.out.println("error");
+                            newLines.add(line);
+                            currentFeatureElevationComparer.setDirty(true);
+                        }else{
+                            newLines.add((LineString) resultGeometry);
+                        }
+
+                        // System.out.println(resultGeometry.toText());
+
+                        // long t7 = System.currentTimeMillis();
+                        // printTime("simplify", t6, t7);
+                    } else {
+                        newLines.add(line);
+                    }
+
                 }
 
             } else {
@@ -414,7 +438,7 @@ public class LineSmoother extends JGTModel {
             linesArray = (LineString[]) newLines.toArray(new LineString[newLines.size()]);
         }
         MultiLineString multiLineString = gF.createMultiLineString(linesArray);
-        return multiLineString;
+        currentFeatureElevationComparer.substituteGeometry(multiLineString);
     }
 
     private Geometry selfSnap( Geometry g, double snapTolerance ) {
@@ -737,19 +761,18 @@ public class LineSmoother extends JGTModel {
 
     }
 
-    private List<LineString> smoothGeometries( Geometry geometry, int numGeometries ) {
+    private List<LineString> smoothGeometries( Geometry geometry ) {
         List<LineString> lsList = new ArrayList<LineString>();
+        int numGeometries = geometry.getNumGeometries();
         for( int i = 0; i < numGeometries; i++ ) {
-
             Geometry geometryN = geometry.getGeometryN(i);
-            if (densify != -1) {
-                geometryN = Densifier.densify(geometryN, pDensify);
+            double length = geometryN.getLength();
+            if (length <= pLimit) {
+                continue;
             }
 
-            Coordinate[] coordinates = geometryN.getCoordinates();
-            int coordinatesNum = coordinates.length;
-            if (coordinatesNum <= pLimit) {
-                continue;
+            if (densify != -1) {
+                geometryN = Densifier.densify(geometryN, pDensify);
             }
 
             List<Coordinate> smoothedCoords = Collections.emptyList();;
@@ -758,7 +781,6 @@ public class LineSmoother extends JGTModel {
             default:
                 FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
                 smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
-                break;
             }
 
             Coordinate[] smoothedArray = null;

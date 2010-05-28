@@ -18,7 +18,9 @@
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -29,9 +31,10 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class FeatureElevationComparer implements Comparable<FeatureElevationComparer> {
 
-    private final SimpleFeature feature;
+    private SimpleFeature feature;
     private double elevation;
     private Geometry geometry;
+    private boolean isDirty = false;
 
     public FeatureElevationComparer( SimpleFeature feature, String field ) {
         this.feature = feature;
@@ -50,6 +53,30 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
 
     public double getElevation() {
         return elevation;
+    }
+    
+    public boolean isDirty() {
+        return isDirty;
+    }
+    
+    public void setDirty( boolean isDirty ) {
+        this.isDirty = isDirty;
+    }
+
+    /**
+     * @param newGeometry new geometry to insert.
+     */
+    public void substituteGeometry( Geometry newGeometry ) {
+        Object[] attributes = feature.getAttributes().toArray();
+        Object[] newAttributes = new Object[attributes.length];
+        System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
+        newAttributes[0] = newGeometry;
+
+        SimpleFeatureType featureType = feature.getFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+        builder.addAll(newAttributes);
+        feature = builder.buildFeature(feature.getID());
+        geometry = newGeometry;
     }
 
     public int compareTo( FeatureElevationComparer o ) {

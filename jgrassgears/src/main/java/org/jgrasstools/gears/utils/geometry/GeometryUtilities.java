@@ -274,4 +274,12 @@ public class GeometryUtilities {
         area /= 2;
         return (area < 0 ? -area : area);
     }
+    
+    public <T> T convert(Class<T> toGeometryClass, Geometry geometry) {
+        
+        
+        
+        
+        return null;
+    }
 }
