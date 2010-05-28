@@ -20,8 +20,11 @@ package org.jgrasstools.gears.modules.v.smoothing;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -159,14 +162,23 @@ public class LineSmoother extends JGTModel {
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
 
         if (pLookahead != 0) {
+            // Geometry first = null;
             pm.beginTask("Smoothing features...", size);
             while( inFeatureIterator.hasNext() ) {
                 SimpleFeature feature = inFeatureIterator.next();
                 Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                // if (first == null) {
+                // first = geometry;
+                // } else {
+                // double snapTol = GeometrySnapper.computeOverlaySnapTolerance(first, geometry);
+                // geometry = selfSnap(geometry, snapTol);
+                // }
+
                 List<LineString> lsList = smoothGeometries(geometry);
                 if (lsList.size() != 0) {
                     LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList
                             .size()]);
+
                     SimpleFeature newFeature;
                     if (lsArray.length > 1) {
                         MultiLineString multiLineString = gF.createMultiLineString(lsArray);
@@ -174,8 +186,8 @@ public class LineSmoother extends JGTModel {
                     } else {
                         newFeature = fGS.substituteGeometry(feature, lsArray[0], id);
                     }
+                    comparerList.add(new FeatureElevationComparer(newFeature, fSort, pBuffer));
                     id++;
-                    comparerList.add(new FeatureElevationComparer(newFeature, fSort));
                 }
                 pm.worked(1);
             }
@@ -184,7 +196,7 @@ public class LineSmoother extends JGTModel {
         } else {
             while( inFeatureIterator.hasNext() ) {
                 SimpleFeature feature = inFeatureIterator.next();
-                comparerList.add(new FeatureElevationComparer(feature, fSort));
+                comparerList.add(new FeatureElevationComparer(feature, fSort, pBuffer));
             }
             inFeatures.close(inFeatureIterator);
         }
@@ -210,7 +222,7 @@ public class LineSmoother extends JGTModel {
                         .toArray(new LineString[numGeometries]);
 
                 try {
-                    checkLineIntersections(featureElevationComparer, lsArray, comparerList, id);
+                    checkLineIntersections(featureElevationComparer, comparerList, lsArray, id);
                     id++;
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -253,7 +265,7 @@ public class LineSmoother extends JGTModel {
     }
 
     private void checkLineIntersections( FeatureElevationComparer currentFeatureElevationComparer,
-            LineString[] lsArray, List<FeatureElevationComparer> comparerList, int id2 )
+            List<FeatureElevationComparer> comparerList, LineString[] lsArray, int id2 )
             throws Exception {
 
         ArrayList<LineString> newLines = new ArrayList<LineString>();
@@ -267,52 +279,60 @@ public class LineSmoother extends JGTModel {
                 coordinate.y = coordinate.y + DELTA;
             }
 
-            List<LineString> intersectingLines = new ArrayList<LineString>();
+            List<Geometry> intersectingPolygons = new ArrayList<Geometry>();
 
             PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
 
-            // long t0 = System.currentTimeMillis();
+            long t0 = System.currentTimeMillis();
 
             int index = 0;
-            for( FeatureElevationComparer otherLine : comparerList ) {
+            for( FeatureElevationComparer featureComparer : comparerList ) {
                 if (index == id2) {
                     continue;
                 }
                 index++;
 
-                Geometry otherLineGeom = otherLine.getGeometry();
-                int numGeometries = otherLineGeom.getNumGeometries();
-                for( int i = 0; i < numGeometries; i++ ) {
-                    Geometry geometryN = otherLineGeom.getGeometryN(i);
-                    if (preparedLine.intersects(geometryN)) {
-                        intersectingLines.add((LineString) geometryN);
-                    }
+                Geometry geom = featureComparer.getGeometry();
+                if (preparedLine.intersects(geom)) {
+                    Geometry bufferPolygon = featureComparer.getBufferPolygon();
+                    // if (!featureComparer.isSnapped()) {
+                    // double snapTol = GeometrySnapper.computeOverlaySnapTolerance(bufferPolygon,
+                    // line);
+                    // Geometry snapped = selfSnap(bufferPolygon, snapTol);
+                    //
+                    // System.out.println(bufferPolygon.toText());
+                    // System.out.println(snapped.toText());
+                    // featureComparer.setBufferPolygon(snapped);
+                    // featureComparer.setSnapped(true);
+                    // bufferPolygon = snapped;
+                    // }
+                    intersectingPolygons.add(bufferPolygon);
                 }
             }
 
             // long t1 = System.currentTimeMillis();
             // printTime("check intersections", t0, t1);
 
-            if (intersectingLines.size() > 0) {
-
-                Polygon[] bufferPolygons = new Polygon[intersectingLines.size()];
-                for( int i = 0; i < bufferPolygons.length; i++ ) {
-                    Geometry buffer = intersectingLines.get(i).buffer(pBuffer);
-                    bufferPolygons[i] = (Polygon) buffer;
-                }
+            if (intersectingPolygons.size() > 0) {
 
                 // LineString[] intersectingLinesArray = (LineString[]) intersectingLines
                 // .toArray(new LineString[intersectingLines.size()]);
-                // MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
+                Polygon[] bufferPolygons = (Polygon[]) intersectingPolygons
+                        .toArray(new Polygon[intersectingPolygons.size()]);
+                MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
+                // long t11 = System.currentTimeMillis();
+                // printTime("buffer", t1, t11);
 
-                GeometryCollection coll = new GeometryCollection(bufferPolygons, gF);
+                // GeometryCollection coll = new GeometryCollection(bufferPolygons, gF);
+                double snapTol = GeometrySnapper.computeOverlaySnapTolerance(multiPolygon, line);
+                Geometry aFix = selfSnap(multiPolygon, snapTol);
+                // Geometry aFix = gF.createMultiPolygon((Polygon[]) intersectingPolygons
+                // .toArray(new Polygon[intersectingPolygons.size()]));
 
-                double snapTol = GeometrySnapper.computeOverlaySnapTolerance(coll, line);
-                Geometry aFix = selfSnap(coll, snapTol);
                 // Geometry bFix = selfSnap(line, snapTol);
 
                 // long t2 = System.currentTimeMillis();
-                // printTime("fix snap", t1, t2);
+                // printTime("fix snap", t11, t2);
 
                 Geometry collection = aFix.symDifference(line);
                 // System.out.println(aFix.toText());
@@ -396,15 +416,26 @@ public class LineSmoother extends JGTModel {
                         if (hadEqualBounds) {
                             coordinates[coordinates.length - 1] = new Coordinate(coordinates[0]);
                         }
+
+                        List<Coordinate> tmp = new ArrayList<Coordinate>();
+                        for( int i = 0; i < coordinates.length; i++ ) {
+                            if (i % 2 == 0 || i == coordinates.length - 1) {
+                                tmp.add(coordinates[i]);
+                            }
+                        }
+                        coordinates = (Coordinate[]) tmp.toArray(new Coordinate[tmp.size()]);
+
                         LineString lStr = gF.createLineString(coordinates);
                         // System.out.println(lStr.toText());
                         // long t6 = System.currentTimeMillis();
                         // printTime("create lines", t5, t6);
 
-                        DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lStr);
-                        simplifier.setDistanceTolerance(0);
-                        Geometry resultGeometry = simplifier.getResultGeometry();
+                        // DouglasPeuckerSimplifier simplifier = new DouglasPeuckerSimplifier(lStr);
+                        // simplifier.setDistanceTolerance(0);
+                        // Geometry resultGeometry = simplifier.getResultGeometry();
 
+                        // int newLength = resultGeometry.getCoordinates().length;
+                        Geometry resultGeometry = lStr;
                         int newLength = resultGeometry.getCoordinates().length;
                         int length = lineCoords.length;
 
@@ -412,7 +443,7 @@ public class LineSmoother extends JGTModel {
                             System.out.println("error");
                             newLines.add(line);
                             currentFeatureElevationComparer.setDirty(true);
-                        }else{
+                        } else {
                             newLines.add((LineString) resultGeometry);
                         }
 

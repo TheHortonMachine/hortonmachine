@@ -63,10 +63,10 @@ public class FeatureSlidingAverage {
         }
         if (lookAhead < 3)
             return null;
-        
+
         int halfLookAhead = lookAhead / 2;
         if (halfLookAhead > coordinates.length) {
-            System.out.println();
+            throw new RuntimeException();
         }
 
         int padding = 0;

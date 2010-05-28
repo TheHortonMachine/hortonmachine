@@ -23,6 +23,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
+import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 
 /**
  * A wrapper for {@link SimpleFeature}s so that they are sorted by a numeric field.
@@ -34,13 +36,30 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     private SimpleFeature feature;
     private double elevation;
     private Geometry geometry;
+    private Geometry bufferPolygon;
     private boolean isDirty = false;
+    private boolean isSnapped = false;
 
-    public FeatureElevationComparer( SimpleFeature feature, String field ) {
+    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer ) {
         this.feature = feature;
 
         elevation = ((Number) feature.getAttribute(field)).doubleValue();
         geometry = (Geometry) feature.getDefaultGeometry();
+
+        if (buffer > 0) {
+            bufferPolygon = geometry.buffer(buffer);
+            // double snapTol = GeometrySnapper.computeOverlaySnapTolerance(bufferPolygon,
+            // geometry);
+            // bufferPolygon = selfSnap(bufferPolygon, snapTol);
+        }
+    }
+
+    private Geometry selfSnap( Geometry g, double snapTolerance ) {
+        GeometrySnapper snapper = new GeometrySnapper(g);
+        Geometry snapped = snapper.snapTo(g, snapTolerance);
+        // need to "clean" snapped geometry - use buffer(0) as a simple way to do this
+        // Geometry fix = snapped.buffer(0);
+        return snapped;
     }
 
     public SimpleFeature getFeature() {
@@ -54,13 +73,29 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     public double getElevation() {
         return elevation;
     }
-    
+
     public boolean isDirty() {
         return isDirty;
     }
-    
+
     public void setDirty( boolean isDirty ) {
         this.isDirty = isDirty;
+    }
+
+    public Geometry getBufferPolygon() {
+        return bufferPolygon;
+    }
+
+    public void setBufferPolygon( Geometry bufferPolygon ) {
+        this.bufferPolygon = bufferPolygon;
+    }
+
+    public boolean isSnapped() {
+        return isSnapped;
+    }
+
+    public void setSnapped( boolean isSnapped ) {
+        this.isSnapped = isSnapped;
     }
 
     /**
