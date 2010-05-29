@@ -151,7 +151,7 @@ public class LineSmoother extends JGTModel {
         if (pSimplify != null) {
             simplify = pSimplify;
         }
-        if (doCorrection) {
+        if (!doCorrection) {
 			pBuffer = -1;
 		}
 
