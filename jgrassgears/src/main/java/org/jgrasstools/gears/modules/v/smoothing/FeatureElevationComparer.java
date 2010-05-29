@@ -39,9 +39,14 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     private Geometry bufferPolygon;
     private boolean isDirty = false;
     private boolean isSnapped = false;
+	private final double lengthThreshold;
+	private boolean toRemove = false;
+    private final double buffer;
 
-    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer ) {
+    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer, double lengthThreshold) {
         this.feature = feature;
+        this.buffer = buffer;
+		this.lengthThreshold = lengthThreshold;
 
         elevation = ((Number) feature.getAttribute(field)).doubleValue();
         geometry = (Geometry) feature.getDefaultGeometry();
@@ -97,11 +102,21 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     public void setSnapped( boolean isSnapped ) {
         this.isSnapped = isSnapped;
     }
+    
+    public boolean toRemove(){
+    	return toRemove;
+    }
 
     /**
      * @param newGeometry new geometry to insert.
      */
     public void substituteGeometry( Geometry newGeometry ) {
+    	if (newGeometry.getLength() < lengthThreshold) {
+			feature = null;
+			geometry = null;
+			toRemove = true;
+		}
+    	
         Object[] attributes = feature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
@@ -112,6 +127,7 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
         builder.addAll(newAttributes);
         feature = builder.buildFeature(feature.getID());
         geometry = newGeometry;
+        bufferPolygon = geometry.buffer(buffer);
     }
 
     public int compareTo( FeatureElevationComparer o ) {

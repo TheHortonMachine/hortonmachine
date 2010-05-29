@@ -48,7 +48,7 @@ public class FeatureSlidingAverage {
         List<Coordinate> res = new ArrayList<Coordinate>();
 
         Coordinate[] coordinates = geometry.getCoordinates();
-        int n = coordinates.length; // Points->n_points;
+        int n = coordinates.length; 
 
         if (n < 4 * lookAhead) {
             /*
