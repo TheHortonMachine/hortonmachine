@@ -39,32 +39,22 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     private Geometry bufferPolygon;
     private boolean isDirty = false;
     private boolean isSnapped = false;
-	private final double lengthThreshold;
-	private boolean toRemove = false;
+    private final double lengthThreshold;
+    private boolean toRemove = false;
     private final double buffer;
 
-    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer, double lengthThreshold) {
+    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer,
+            double lengthThreshold ) {
         this.feature = feature;
         this.buffer = buffer;
-		this.lengthThreshold = lengthThreshold;
+        this.lengthThreshold = lengthThreshold;
 
         elevation = ((Number) feature.getAttribute(field)).doubleValue();
         geometry = (Geometry) feature.getDefaultGeometry();
 
         if (buffer > 0) {
             bufferPolygon = geometry.buffer(buffer);
-            // double snapTol = GeometrySnapper.computeOverlaySnapTolerance(bufferPolygon,
-            // geometry);
-            // bufferPolygon = selfSnap(bufferPolygon, snapTol);
         }
-    }
-
-    private Geometry selfSnap( Geometry g, double snapTolerance ) {
-        GeometrySnapper snapper = new GeometrySnapper(g);
-        Geometry snapped = snapper.snapTo(g, snapTolerance);
-        // need to "clean" snapped geometry - use buffer(0) as a simple way to do this
-        // Geometry fix = snapped.buffer(0);
-        return snapped;
     }
 
     public SimpleFeature getFeature() {
@@ -102,21 +92,25 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     public void setSnapped( boolean isSnapped ) {
         this.isSnapped = isSnapped;
     }
-    
-    public boolean toRemove(){
-    	return toRemove;
+
+    public boolean toRemove() {
+        return toRemove;
     }
 
     /**
      * @param newGeometry new geometry to insert.
      */
     public void substituteGeometry( Geometry newGeometry ) {
-    	if (newGeometry.getLength() < lengthThreshold) {
-			feature = null;
-			geometry = null;
-			toRemove = true;
-		}
-    	
+        if (toRemove) {
+            return;
+        }
+        if (newGeometry.getLength() < lengthThreshold) {
+            feature = null;
+            geometry = null;
+            toRemove = true;
+            return;
+        }
+
         Object[] attributes = feature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
