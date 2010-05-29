@@ -20,11 +20,8 @@ package org.jgrasstools.gears.modules.v.smoothing;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -196,7 +193,7 @@ public class LineSmoother extends JGTModel {
 
         if (doCorrection) {
             Collections.sort(comparerList);
-            Collections.reverse(comparerList);
+            // Collections.reverse(comparerList);
 
             id = 0;
             size = comparerList.size();
@@ -269,7 +266,7 @@ public class LineSmoother extends JGTModel {
             throws Exception {
 
         ArrayList<LineString> newLines = new ArrayList<LineString>();
-        for( LineString line : lsArray ) {
+        for( final LineString line : lsArray ) {
             Coordinate[] lineCoords = line.getCoordinates();
             boolean hadEqualBounds = false;
             if (lineCoords[0].distance(lineCoords[lineCoords.length - 1]) < DELTA) {
@@ -283,7 +280,7 @@ public class LineSmoother extends JGTModel {
 
             PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
 
-            long t0 = System.currentTimeMillis();
+            // long t0 = System.currentTimeMillis();
 
             int index = 0;
             for( FeatureElevationComparer featureComparer : comparerList ) {
@@ -298,17 +295,6 @@ public class LineSmoother extends JGTModel {
                 Geometry geom = featureComparer.getGeometry();
                 if (preparedLine.intersects(geom)) {
                     Geometry bufferPolygon = featureComparer.getBufferPolygon();
-                    // if (!featureComparer.isSnapped()) {
-                    // double snapTol = GeometrySnapper.computeOverlaySnapTolerance(bufferPolygon,
-                    // line);
-                    // Geometry snapped = selfSnap(bufferPolygon, snapTol);
-                    //
-                    // System.out.println(bufferPolygon.toText());
-                    // System.out.println(snapped.toText());
-                    // featureComparer.setBufferPolygon(snapped);
-                    // featureComparer.setSnapped(true);
-                    // bufferPolygon = snapped;
-                    // }
                     int numGeometries = bufferPolygon.getNumGeometries();
                     for( int i = 0; i < numGeometries; i++ ) {
                         Geometry geometryN = bufferPolygon.getGeometryN(i);
@@ -327,13 +313,51 @@ public class LineSmoother extends JGTModel {
                 // .toArray(new LineString[intersectingLines.size()]);
                 Polygon[] bufferPolygons = (Polygon[]) intersectingPolygons
                         .toArray(new Polygon[intersectingPolygons.size()]);
-                MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
+                final MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
                 // long t11 = System.currentTimeMillis();
                 // printTime("buffer", t1, t11);
 
-                // GeometryCollection coll = new GeometryCollection(bufferPolygons, gF);
-                double snapTol = GeometrySnapper.computeOverlaySnapTolerance(multiPolygon, line);
-                Geometry aFix = selfSnap(multiPolygon, snapTol);
+                final Geometry[] collection = new Geometry[1];
+                long time1 = System.currentTimeMillis();
+                try {
+                    collection[0] = multiPolygon.symDifference(line);
+                } catch (Exception e) {
+                    Thread t = new Thread(new Runnable(){
+
+                        public void run() {
+                            double snapTol = GeometrySnapper.computeOverlaySnapTolerance(
+                                    multiPolygon, line);
+                            long ttt1 = System.currentTimeMillis();
+                            Geometry aFix = selfSnap(multiPolygon, snapTol);
+                            collection[0] = aFix.symDifference(line);
+                            // Geometry[] snap = GeometrySnapper.snap(line, multiPolygon, snapTol);
+                            // collection[0] = snap[0].symDifference(snap[1]);
+                            long ttt2 = System.currentTimeMillis();
+                            printTime("snap took", ttt1, ttt2);
+                        }
+                    });
+
+                    t.start();
+
+                    long time2 = System.currentTimeMillis();
+                    long sec = (time2 - time1) / 1000l;
+                    while( sec < 60 && collection[0] == null ) {
+                        Thread.sleep(300);
+                        time2 = System.currentTimeMillis();
+                        sec = (time2 - time1) / 1000l;
+                    }
+
+                    if (t.isAlive()) {
+                        t.interrupt();
+                    }
+
+                    if (collection[0] == null) {
+                        printTime("hmpf: ", time1, time2);
+                        throw new RuntimeException("Didn't make ti to create the snap.");
+                    }
+
+                }
+
                 // Geometry aFix = gF.createMultiPolygon((Polygon[]) intersectingPolygons
                 // .toArray(new Polygon[intersectingPolygons.size()]));
 
@@ -342,16 +366,15 @@ public class LineSmoother extends JGTModel {
                 // long t2 = System.currentTimeMillis();
                 // printTime("fix snap", t11, t2);
 
-                Geometry collection = aFix.symDifference(line);
                 // System.out.println(aFix.toText());
                 // System.out.println(line.toText());
 
                 BasicLineGraphGenerator lineStringGen = new BasicLineGraphGenerator();
-                if (collection instanceof GeometryCollection) {
+                if (collection[0] instanceof GeometryCollection) {
                     List<LineSegment> linesS = new ArrayList<LineSegment>();
                     List<LineSegment> otherLinesS = new ArrayList<LineSegment>();
 
-                    GeometryCollection geomCollection = (GeometryCollection) collection;
+                    GeometryCollection geomCollection = (GeometryCollection) collection[0];
                     int numGeometries = geomCollection.getNumGeometries();
                     for( int i = 0; i < numGeometries; i++ ) {
                         Geometry geometryN = geomCollection.getGeometryN(i);
@@ -403,7 +426,12 @@ public class LineSmoother extends JGTModel {
                     DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph,
                             startNode, costFunction());
                     pfinder.calculate();
-                    Path path = pfinder.getPath(endNode);
+                    Path path = null;
+                    try {
+                        path = pfinder.getPath(endNode);
+                    } catch (Exception e) {
+                        System.out.println();
+                    }
 
                     // long t5 = System.currentTimeMillis();
                     // printTime("shortest path", t4, t5);
@@ -829,6 +857,7 @@ public class LineSmoother extends JGTModel {
             } else {
                 smoothedArray = geometryN.getCoordinates();
             }
+
             LineString lineString = gF.createLineString(smoothedArray);
 
             if (simplify != -1) {

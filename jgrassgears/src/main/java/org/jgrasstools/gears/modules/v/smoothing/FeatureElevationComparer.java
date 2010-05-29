@@ -23,8 +23,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 
 /**
  * A wrapper for {@link SimpleFeature}s so that they are sorted by a numeric field.
@@ -126,9 +124,9 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
 
     public int compareTo( FeatureElevationComparer o ) {
         if (elevation < o.getElevation()) {
-            return -1;
-        } else if (elevation > o.getElevation()) {
             return 1;
+        } else if (elevation > o.getElevation()) {
+            return -1;
         } else
             return 0;
     }
