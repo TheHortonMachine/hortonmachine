@@ -35,6 +35,7 @@ import oms3.annotations.Status;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.graph.build.line.BasicLineGraphGenerator;
 import org.geotools.graph.path.DijkstraShortestPathFinder;
 import org.geotools.graph.path.Path;
@@ -52,6 +53,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.densify.Densifier;
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -64,6 +66,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.operation.linemerge.LineSequencer;
 import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
@@ -193,7 +196,7 @@ public class LineSmoother extends JGTModel {
 
         if (doCorrection) {
             Collections.sort(comparerList);
-            // Collections.reverse(comparerList);
+            Collections.reverse(comparerList);
 
             id = 0;
             size = comparerList.size();
@@ -267,6 +270,7 @@ public class LineSmoother extends JGTModel {
 
         ArrayList<LineString> newLines = new ArrayList<LineString>();
         for( final LineString line : lsArray ) {
+            Envelope lineEnv = line.getEnvelopeInternal();
             Coordinate[] lineCoords = line.getCoordinates();
             boolean hadEqualBounds = false;
             if (lineCoords[0].distance(lineCoords[lineCoords.length - 1]) < DELTA) {
@@ -293,14 +297,14 @@ public class LineSmoother extends JGTModel {
                 index++;
 
                 Geometry geom = featureComparer.getGeometry();
-                if (preparedLine.intersects(geom)) {
+                Envelope geomEnv = geom.getEnvelopeInternal();
+                if (geomEnv.intersects(lineEnv) && preparedLine.intersects(geom)) {
                     Geometry bufferPolygon = featureComparer.getBufferPolygon();
                     int numGeometries = bufferPolygon.getNumGeometries();
                     for( int i = 0; i < numGeometries; i++ ) {
                         Geometry geometryN = bufferPolygon.getGeometryN(i);
                         intersectingPolygons.add((Polygon) geometryN);
                     }
-
                 }
             }
 
@@ -311,24 +315,29 @@ public class LineSmoother extends JGTModel {
 
                 // LineString[] intersectingLinesArray = (LineString[]) intersectingLines
                 // .toArray(new LineString[intersectingLines.size()]);
-                Polygon[] bufferPolygons = (Polygon[]) intersectingPolygons
-                        .toArray(new Polygon[intersectingPolygons.size()]);
-                final MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
+
+                final Geometry union = CascadedPolygonUnion.union(intersectingPolygons);
+                if (!(union instanceof Polygon)) {
+                    System.out.println();
+                }
+                // Polygon[] bufferPolygons = (Polygon[]) intersectingPolygons
+                // .toArray(new Polygon[intersectingPolygons.size()]);
+                // final MultiPolygon multiPolygon = gF.createMultiPolygon(bufferPolygons);
                 // long t11 = System.currentTimeMillis();
                 // printTime("buffer", t1, t11);
 
                 final Geometry[] collection = new Geometry[1];
                 long time1 = System.currentTimeMillis();
                 try {
-                    collection[0] = multiPolygon.symDifference(line);
+                    collection[0] = union.symDifference(line);
                 } catch (Exception e) {
                     Thread t = new Thread(new Runnable(){
 
                         public void run() {
-                            double snapTol = GeometrySnapper.computeOverlaySnapTolerance(
-                                    multiPolygon, line);
+                            double snapTol = GeometrySnapper.computeOverlaySnapTolerance(union,
+                                    line);
                             long ttt1 = System.currentTimeMillis();
-                            Geometry aFix = selfSnap(multiPolygon, snapTol);
+                            Geometry aFix = selfSnap(union, snapTol);
                             collection[0] = aFix.symDifference(line);
                             // Geometry[] snap = GeometrySnapper.snap(line, multiPolygon, snapTol);
                             // collection[0] = snap[0].symDifference(snap[1]);
