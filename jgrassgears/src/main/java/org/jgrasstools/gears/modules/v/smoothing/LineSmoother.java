@@ -82,7 +82,11 @@ public class LineSmoother extends JGTModel {
 
     @Description("The features to be smoothed.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inFeatures;
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> linesFeatures;
+
+    @Description("The point features that define intersections.")
+    @In
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> pointFeatures;
 
     @Description("The smoothing type: McMasters smoothing average (0 = default).")
     @In
@@ -159,10 +163,10 @@ public class LineSmoother extends JGTModel {
         errorFeatures = FeatureCollections.newCollection();
 
         int id = 0;
-        FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
-        int size = inFeatures.size();
+        FeatureIterator<SimpleFeature> inFeatureIterator = linesFeatures.features();
+        int size = linesFeatures.size();
         List<FeatureElevationComparer> comparerList = new ArrayList<FeatureElevationComparer>();
-        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
+        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(linesFeatures.getSchema());
 
         if (pLookahead != 0) {
             // Geometry first = null;
@@ -185,13 +189,13 @@ public class LineSmoother extends JGTModel {
                 pm.worked(1);
             }
             pm.done();
-            inFeatures.close(inFeatureIterator);
+            linesFeatures.close(inFeatureIterator);
         } else {
             while( inFeatureIterator.hasNext() ) {
                 SimpleFeature feature = inFeatureIterator.next();
                 comparerList.add(new FeatureElevationComparer(feature, fSort, pBuffer, pLimit));
             }
-            inFeatures.close(inFeatureIterator);
+            linesFeatures.close(inFeatureIterator);
         }
 
         if (doCorrection) {
