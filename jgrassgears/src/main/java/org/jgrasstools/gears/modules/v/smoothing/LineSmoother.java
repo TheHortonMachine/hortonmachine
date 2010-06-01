@@ -815,11 +815,7 @@ public class LineSmoother extends JGTModel {
                             }
                         } else {
                             for( int j = l1PointIndex; j >= l2PointIndex; j = j - 1 ) {
-                                try {
-                                    tmpList.add(matchedPolygonCoordinates[j]);
-                                } catch (Exception e) {
-                                    System.out.println("FUCK!");
-                                }
+                                tmpList.add(matchedPolygonCoordinates[j]);
                             }
                         }
                         newLine.add(tmpList);

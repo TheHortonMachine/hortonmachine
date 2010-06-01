@@ -75,6 +75,10 @@ public class FeatureReshaper extends JGTModel {
     @In
     public String pCql = null;
 
+    @Description("List of fields to remove, comma separated.")
+    @In
+    public String pRemove = null;
+
     @Description("The filtered features.")
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
@@ -86,19 +90,33 @@ public class FeatureReshaper extends JGTModel {
         if (!concatOr(outFeatures == null, doReset)) {
             return;
         }
-        checkNull(inFeatures, pCql);
+        checkNull(inFeatures);
+
+        List<String> removeNames = new ArrayList<String>();
+        if (pRemove != null) {
+            String[] split = pRemove.split(",");
+            for( String string : split ) {
+                removeNames.add(string.trim());
+            }
+        }
 
         final SimpleFeatureType originalFeatureType = inFeatures.getSchema();
         List<AttributeDescriptor> attributeDescriptors = originalFeatureType
                 .getAttributeDescriptors();
         StringBuilder sB = new StringBuilder();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            sB.append(attributeDescriptor.getLocalName());
+            String name = attributeDescriptor.getLocalName();
+            if (removeNames.contains(name.trim())) {
+                continue;
+            }
+            sB.append(name);
             sB.append("=");
-            sB.append(attributeDescriptor.getLocalName());
+            sB.append(name);
             sB.append("\n");
         }
-        sB.append(pCql);
+        if (pCql != null && pCql.length() > 0) {
+            sB.append(pCql);
+        }
 
         sample = getSample();
 
