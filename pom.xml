@@ -2,9 +2,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>eu.hydrologis.jgrass</groupId>
-    <artifactId>jgrasstools</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <properties>
+        <jgt.groupId>eu.hydrologis.jgrass</jgt.groupId>
+        <jgt.artifactId>jgrasstools</jgt.artifactId>
+		<jgt.version>0.1-SNAPSHOT</jgt.version>
+		<gt.version>2.7-SNAPSHOT</gt.version>
+		<gt.version.exp>2.7-SNAPSHOT</gt.version.exp>
+	</properties>
+
+    <groupId>${jgt.groupId}</groupId>
+    <artifactId>${jgt.artifactId}</artifactId>
+    <version>${jgt.version}</version>
 
     <packaging>pom</packaging>
     <name>JGrasstools - the engine that backs up JGrass</name>
@@ -25,11 +33,6 @@
     </license>
   </licenses>
 
-    <properties>
-		<jgt.version>0.1-SNAPSHOT</jgt.version>
-		<gt.version>2.7-SNAPSHOT</gt.version>
-		<gt.version.exp>2.7-SNAPSHOT</gt.version.exp>
-	</properties>
 
     <developers>
         <developer>
@@ -250,8 +253,6 @@
 				</configuration>
 			</plugin>
 		</plugins>
-
-		
 	</build>
 
 
