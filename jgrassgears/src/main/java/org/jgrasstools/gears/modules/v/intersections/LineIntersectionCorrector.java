@@ -50,7 +50,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -122,8 +121,9 @@ public class LineIntersectionCorrector extends JGTModel {
         errorFeatures = FeatureCollections.newCollection();
 
         // extract points
-        List<LineString> pointsEnvelopes = new ArrayList<LineString>();
         int pSize = pointFeatures.size();
+        pm.message("Intersection points to handle: " + pSize);
+        List<LineString> pointsEnvelopes = new ArrayList<LineString>(pSize);
         FeatureIterator<SimpleFeature> pointsIterator = pointFeatures.features();
         pm.beginTask("Create point bounds...", pSize);
         while( pointsIterator.hasNext() ) {
@@ -150,7 +150,7 @@ public class LineIntersectionCorrector extends JGTModel {
         int size = linesFeatures.size();
 
         // Geometry first = null;
-        List<FeatureElevationComparer> badFeatures = new ArrayList<FeatureElevationComparer>();
+        List<FeatureElevationComparer> badFeatures = new ArrayList<FeatureElevationComparer>(pSize);
         pm.beginTask("Extract intersecting lines...", size);
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
@@ -178,6 +178,7 @@ public class LineIntersectionCorrector extends JGTModel {
 
         int id = 0;
         size = badFeatures.size();
+        pm.message("Found intersecting lines: " + size);
         pm.beginTask("Correcting intersections...", size);
         for( FeatureElevationComparer featureElevationComparer : badFeatures ) {
             if (featureElevationComparer.toRemove()) {
@@ -189,7 +190,7 @@ public class LineIntersectionCorrector extends JGTModel {
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             int numGeometries = geometry.getNumGeometries();
 
-            List<LineString> geomList = new ArrayList<LineString>();
+            List<LineString> geomList = new ArrayList<LineString>(numGeometries);
             for( int i = 0; i < numGeometries; i++ ) {
                 geomList.add((LineString) geometry.getGeometryN(i));
             }
@@ -207,7 +208,7 @@ public class LineIntersectionCorrector extends JGTModel {
                             // we have a ring, rotate it by a quarter
                             int length = coordinates.length;
                             int quarter = length / 4;
-                            List<Coordinate> tmpList = new ArrayList<Coordinate>();
+                            List<Coordinate> tmpList = new ArrayList<Coordinate>(coordinates.length);
                             for( int i = quarter; i < coordinates.length - 1; i++ ) {
                                 tmpList.add(coordinates[i]);
                             }
@@ -290,9 +291,8 @@ public class LineIntersectionCorrector extends JGTModel {
             List<FeatureElevationComparer> comparerList, LineString[] lsArray, int currentLineIndex )
             throws Exception {
 
-        ArrayList<LineString> newLines = new ArrayList<LineString>();
+        ArrayList<LineString> newLines = new ArrayList<LineString>(lsArray.length);
         for( final LineString line : lsArray ) {
-            Envelope lineEnv = line.getEnvelopeInternal();
             Coordinate[] lineCoords = line.getCoordinates();
             boolean hadEqualBounds = false;
             if (lineCoords[0].distance(lineCoords[lineCoords.length - 1]) < DELTA6) {
@@ -319,9 +319,7 @@ public class LineIntersectionCorrector extends JGTModel {
                 index++;
 
                 Geometry geom = featureComparer.getGeometry();
-                Envelope geomEnv = geom.getEnvelopeInternal();
-                boolean envelopeIntersects = geomEnv.intersects(lineEnv);
-                if (envelopeIntersects && preparedLine.intersects(geom)) {
+                if (preparedLine.intersects(geom)) {
                     Geometry bufferPolygon = featureComparer.getBufferPolygon();
                     int numGeometries = bufferPolygon.getNumGeometries();
                     for( int i = 0; i < numGeometries; i++ ) {
@@ -375,11 +373,11 @@ public class LineIntersectionCorrector extends JGTModel {
 
                 BasicLineGraphGenerator lineStringGen = new BasicLineGraphGenerator();
                 if (collection[0] instanceof GeometryCollection) {
-                    List<LineSegment> linesS = new ArrayList<LineSegment>();
-                    List<LineSegment> otherLinesS = new ArrayList<LineSegment>();
-
                     GeometryCollection geomCollection = (GeometryCollection) collection[0];
                     int numGeometries = geomCollection.getNumGeometries();
+                    List<LineSegment> linesS = new ArrayList<LineSegment>(numGeometries);
+                    List<LineSegment> otherLinesS = new ArrayList<LineSegment>(numGeometries);
+
                     for( int i = 0; i < numGeometries; i++ ) {
                         Geometry geometryN = geomCollection.getGeometryN(i);
                         Coordinate[] coordinates = geometryN.getCoordinates();
@@ -447,7 +445,7 @@ public class LineIntersectionCorrector extends JGTModel {
                             coordinates[coordinates.length - 1] = new Coordinate(coordinates[0]);
                         }
 
-                        List<Coordinate> tmp = new ArrayList<Coordinate>();
+                        List<Coordinate> tmp = new ArrayList<Coordinate>(coordinates.length);
                         for( int i = 0; i < coordinates.length; i++ ) {
                             if (i % 2 == 0 || i == coordinates.length - 1) {
                                 tmp.add(coordinates[i]);
