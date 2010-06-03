@@ -1,4 +1,3 @@
-
 /*
  * JGrass - Free Open Source Java GIS http://www.jgrass.org 
  * (C) HydroloGIS - www.hydrologis.com 
@@ -19,52 +18,23 @@
  */
 package org.jgrasstools.hortonmachine;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import oms3.Access;
 import oms3.ComponentAccess;
+import oms3.annotations.Execute;
 
-import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
-import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
-import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
-import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
-import org.jgrasstools.gears.io.eicalculator.EIEnergyReader;
-import org.jgrasstools.gears.io.grass.JGrassCoverageReader;
-import org.jgrasstools.gears.io.grass.JGrassCoverageWriter;
-import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
-import org.jgrasstools.gears.io.tiff.GeoTiffCoverageReader;
-import org.jgrasstools.gears.io.tiff.GeoTiffCoverageWriter;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
-import org.jgrasstools.gears.io.timeseries.TimeseriesReaderArray;
-import org.jgrasstools.gears.io.timeseries.TimeseriesWriterArray;
-import org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
-import org.jgrasstools.hortonmachine.modules.basin.topindex.TopIndex;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
-import org.jgrasstools.hortonmachine.modules.geomorphology.ab.Ab;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.Aspect;
-import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.Curvatures;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
-import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EnergyIndexCalculator;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.shalstab.Shalstab;
-import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
-import org.jgrasstools.hortonmachine.modules.network.netnumbering.NetNumbering;
-import org.jgrasstools.hortonmachine.modules.network.netshape2flow.Netshape2Flow;
-import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
-import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
-import org.jgrasstools.hortonmachine.modules.statistics.kriging.Kriging;
+import org.scannotation.AnnotationDB;
+import org.scannotation.ClasspathUrlFinder;
 
 /**
  * Class presenting modules names and classes.
@@ -74,14 +44,14 @@ import org.jgrasstools.hortonmachine.modules.statistics.kriging.Kriging;
 public class HortonMachine {
 
     /**
-     * A {@link LinkedHashMap map} of all the classes and their simple names.
+     * A {@link LinkedHashMap map} of all the class names and the class itself.
      */
     public static final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
 
     /**
-     * A {@link LinkedHashMap map} of all the classes and their simple names.
+     * A {@link LinkedHashMap map} of all the class names and their fields.
      */
-    public static final LinkedHashMap<String, List<String>> moduleName2FieldNames = new LinkedHashMap<String, List<String>>();
+    public static final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
 
     /**
      * An array of all the fields used in the modules.
@@ -89,99 +59,105 @@ public class HortonMachine {
     public static String[] allFields = null;
 
     /**
-     * An array of all the classes of the modules.
+     * An array of all the class names of the modules.
      */
     public static String[] allClasses = null;
 
     static {
-        /*
-         * define all modules available
-         */
-        // basin
-        moduleName2Class.put("RescaledDistance", RescaledDistance.class);
-        moduleName2Class.put("TopIndex", TopIndex.class);
-        
-        // demmanip
-        moduleName2Class.put("Pitfiller", Pitfiller.class);
-        moduleName2Class.put("Wateroutlet", Wateroutlet.class);
 
-        // geomorphology
-        moduleName2Class.put("Ab", Ab.class);
-        moduleName2Class.put("Aspect", Aspect.class);
-        moduleName2Class.put("Curvatures", Curvatures.class);
-        moduleName2Class.put("DrainDir", DrainDir.class);
-        moduleName2Class.put("FlowDirections", FlowDirections.class);
-        moduleName2Class.put("Gradient", Gradient.class);
+        try {
+            URL url = ClasspathUrlFinder.findClassBase(HortonMachine.class);
+            AnnotationDB db = new AnnotationDB();
+            db.scanArchives(url);
 
-        // hillslope
-        
-        // hydrogeo
-        // moduleName2Class.put("Adige", Adige.class);
-        moduleName2Class.put("EnergyBalance", EnergyBalance.class);
-        moduleName2Class.put("EnergyIndexCalculator", EnergyIndexCalculator.class);
-        moduleName2Class.put("Peakflow", Peakflow.class);
-        moduleName2Class.put("Shalstab", Shalstab.class);
-
-        // network
-        moduleName2Class.put("ExtractNetwork", ExtractNetwork.class);
-        moduleName2Class.put("NetNumbering", NetNumbering.class);
-        moduleName2Class.put("Netshape2Flow", Netshape2Flow.class);
-
-        // statistics
-        moduleName2Class.put("Cb", Cb.class);
-        moduleName2Class.put("Jami", Jami.class);
-        moduleName2Class.put("Kriging", Kriging.class);
-
-        Set<String> moduleNames = moduleName2Class.keySet();
-
-        /*
-         * extract all fields
-         */
-        if (allFields == null) {
-
-            List<String> completions = new ArrayList<String>();
-            for( String moduleName : moduleNames ) {
-                try {
-                    List<String> tmpfields = new ArrayList<String>();
-                    Class< ? > moduleClass = moduleName2Class.get(moduleName);
-                    Object annotatedObject = moduleClass.newInstance();
-                    ComponentAccess cA = new ComponentAccess(annotatedObject);
-                    Collection<Access> inputs = cA.inputs();
-                    for( Access access : inputs ) {
-                        String name = access.getField().getName();
-                        if (!completions.contains(name)) {
-                            completions.add(name);
-                        }
-                        tmpfields.add(name);
-                    }
-                    Collection<Access> outputs = cA.outputs();
-                    for( Access access : outputs ) {
-                        String name = access.getField().getName();
-                        if (!completions.contains(name)) {
-                            completions.add(name);
-                        }
-                        tmpfields.add(name);
-                    }
-                    moduleName2FieldNames.put(moduleName, tmpfields);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+            Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
+            Set<String> simpleClasses = annotationIndex.get(Execute.class.getName());
+            for( String className : simpleClasses ) {
+                int lastDot = className.lastIndexOf('.');
+                String name = className.substring(lastDot + 1);
+                Class< ? > clazz = Class.forName(className);
+                moduleName2Class.put(name, clazz);
             }
-            Collections.sort(completions);
-            allFields = (String[]) completions.toArray(new String[completions.size()]);
-        }
-        /*
-         * gather all classes
-         */
-        if (allClasses == null) {
+
+            /*
+             * extract all classes and fields
+             */
             List<String> classNames = new ArrayList<String>();
-            for( String moduleName : moduleNames ) {
-                Class< ? > moduleClass = moduleName2Class.get(moduleName);
-                classNames.add(moduleClass.getSimpleName());
+            List<String> fieldNamesList = new ArrayList<String>();
+
+            Set<Entry<String, Class< ? >>> moduleName2ClassEntries = moduleName2Class.entrySet();
+            for( Entry<String, Class< ? >> moduleName2ClassEntry : moduleName2ClassEntries ) {
+                String moduleName = moduleName2ClassEntry.getKey();
+                Class< ? > moduleClass = moduleName2ClassEntry.getValue();
+
+                classNames.add(moduleName);
+
+                List<ClassField> tmpfields = new ArrayList<ClassField>();
+                Object annotatedObject = moduleClass.newInstance();
+                ComponentAccess cA = new ComponentAccess(annotatedObject);
+                Collection<Access> inputs = cA.inputs();
+                for( Access access : inputs ) {
+                    String name = access.getField().getName();
+                    ClassField cf = new ClassField();
+                    cf.isIn = true;
+                    cf.fieldName = name;
+                    cf.parentClass = moduleClass;
+                    if (!fieldNamesList.contains(name)) {
+                        fieldNamesList.add(name);
+                    }
+                    tmpfields.add(cf);
+
+                }
+                Collection<Access> outputs = cA.outputs();
+                for( Access access : outputs ) {
+                    String name = access.getField().getName();
+                    ClassField cf = new ClassField();
+                    cf.isOut = true;
+                    cf.fieldName = name;
+                    cf.parentClass = moduleClass;
+                    if (!fieldNamesList.contains(name)) {
+                        fieldNamesList.add(name);
+                    }
+                    tmpfields.add(cf);
+                }
+                moduleName2Fields.put(moduleName, tmpfields);
             }
+            Collections.sort(fieldNamesList);
+            allFields = (String[]) fieldNamesList.toArray(new String[fieldNamesList.size()]);
             Collections.sort(classNames);
             allClasses = (String[]) classNames.toArray(new String[classNames.size()]);
+        } catch (Exception e1) {
+            e1.printStackTrace();
         }
     }
+
+    public static class ClassField implements Comparable<ClassField> {
+        public boolean isIn = false;
+        public boolean isOut = false;
+        public String fieldName = null;
+        public Class< ? > parentClass = null;
+
+        public int compareTo( ClassField o ) {
+            return fieldName.compareTo(o.fieldName);
+        }
+
+        @SuppressWarnings("nls")
+        public String toString() {
+            return "ClassField [fieldName=" + fieldName + ", isIn=" + isIn + ", isOut=" + isOut
+                    + ", parentClass=" + parentClass + "]";
+        }
+    }
+
+    // public static void main( String[] args ) throws IOException {
+    // Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();
+    // for( Entry<String, Class< ? >> entry : entrySet ) {
+    // System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
+    // }
+    //
+    // List<ClassField> list = moduleName2Fields.get("Adige");
+    // for( ClassField classField : list ) {
+    // System.out.println(classField);
+    // }
+    // }
 
 }

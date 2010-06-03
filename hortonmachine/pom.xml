@@ -26,6 +26,13 @@
 			<artifactId>jama</artifactId>
 			<version>1.0.2</version>
 		</dependency>
+<!--        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
+            <version>1.0.2</version>
+        </dependency> -->
+
+        
 	</dependencies>
 
 		<!-- Build configuration -->
@@ -54,15 +61,5 @@
               </executions>
             </plugin>
 		</plugins>
-
-		
 	</build>
-
-	
-	<pluginRepositories>
-	  <pluginRepository>
-		<id>onejar-maven-plugin.googlecode.com</id>
-		<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-	  </pluginRepository>
-	</pluginRepositories>
 </project>
