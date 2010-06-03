@@ -116,15 +116,13 @@ public class IntersectionFinder extends JGTModel {
         SimpleFeatureType linesType = b.buildFeatureType();
 
         int size = inMap.size();
-        List<PreparedGeometry> prepGeoms = new ArrayList<PreparedGeometry>();
+        List<Geometry> geometriesList = new ArrayList<Geometry>();
         FeatureIterator<SimpleFeature> linesIterator = inMap.features();
-        pm.beginTask("Preparing geometries...", size);
+        pm.beginTask("Collecting geometries...", size);
         while( linesIterator.hasNext() ) {
             SimpleFeature feature = linesIterator.next();
             Geometry line = (Geometry) feature.getDefaultGeometry();
-
-            PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(line);
-            prepGeoms.add(preparedGeometry);
+            geometriesList.add(line);
             pm.worked(1);
         }
         pm.done();
@@ -134,14 +132,13 @@ public class IntersectionFinder extends JGTModel {
         int id = 0;
         pm.beginTask("Checking intersections...", size);
         for( int i = 0; i < size; i++ ) {
-            PreparedGeometry line = prepGeoms.get(i);
-            Envelope lineEnv = line.getGeometry().getEnvelopeInternal();
+            Geometry line = geometriesList.get(i);
+            PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
             for( int j = i + 1; j < size; j++ ) {
-                PreparedGeometry otherLine = prepGeoms.get(j);
-                Geometry otherGeometry = otherLine.getGeometry();
-                Envelope otherEnv = otherGeometry.getEnvelopeInternal();
-                if (lineEnv.intersects(otherEnv) && line.intersects(otherGeometry)) {
-                    Geometry intersection = line.getGeometry().intersection(otherGeometry);
+                Geometry otherGeometry = geometriesList.get(j);
+
+                if (preparedLine.intersects(otherGeometry)) {
+                    Geometry intersection = line.intersection(otherGeometry);
                     int numGeometries = intersection.getNumGeometries();
                     for( int k = 0; k < numGeometries; k++ ) {
                         Geometry geometryN = intersection.getGeometryN(k);
