@@ -29,11 +29,15 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.i18n.MessageHandler;
@@ -93,6 +97,11 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
  *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
  */
+@Description("It calculates the drainage directions minimizing the deviation from the real flow")
+@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
+@Keywords("Geomorphology")
+@Status(Status.TESTED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DrainDir extends JGTModel {
 
     /*
@@ -161,20 +170,18 @@ public class DrainDir extends JGTModel {
         if (!concatOr(outFlow == null, doReset)) {
             return;
         }
-        
+
         double[] orderedelev, indexes;
         int nelev;
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inPit);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage pitfillerRI = inPit.getRenderedImage();
-        WritableRaster pitfillerWR = CoverageUtilities.renderedImage2WritableRaster(pitfillerRI,
-                true);
+        WritableRaster pitfillerWR = CoverageUtilities.renderedImage2WritableRaster(pitfillerRI, true);
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
 
@@ -204,23 +211,17 @@ public class DrainDir extends JGTModel {
         pm.message(msg.message("draindir.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
-                NaN);
-        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
-                NaN);
+        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
+        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
 
         // it contains the analyzed cells
-        WritableRaster analyzeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null,
-                null, null);
-        WritableRaster deviationsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows,
-                null, null, null);
+        WritableRaster analyzeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster deviationsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
 
         if (doLad) {
-            OrlandiniD8_LAD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR,
-                    nelev);
+            OrlandiniD8_LAD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
         } else {
-            OrlandiniD8_LTD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR,
-                    nelev);
+            OrlandiniD8_LTD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
             // only if required executes this method
             if (inFlownet != null) {
                 newDirections(pitfillerWR, dirWR);
@@ -229,10 +230,8 @@ public class DrainDir extends JGTModel {
         if (isCanceled(pm)) {
             return;
         }
-        outFlow = CoverageUtilities.buildCoverage("draindir", dirWR, regionMap, inPit
-                .getCoordinateReferenceSystem());
-        outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inPit
-                .getCoordinateReferenceSystem());
+        outFlow = CoverageUtilities.buildCoverage("draindir", dirWR, regionMap, inPit.getCoordinateReferenceSystem());
+        outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inPit.getCoordinateReferenceSystem());
     }
 
     /**
@@ -246,9 +245,8 @@ public class DrainDir extends JGTModel {
      * @param nelev
      * @return
      */
-    private void OrlandiniD8_LAD( double[] indexes, WritableRaster deviationsImage,
-            WritableRaster analyzeImage, WritableRaster pitImage, WritableRaster flowImage,
-            WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
+    private void OrlandiniD8_LAD( double[] indexes, WritableRaster deviationsImage, WritableRaster analyzeImage,
+            WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
         int row, col, ncelle, nr, nc;
         double dev1, dev2, sumdev1, sumdev2, sumdev;
         double[] dati = new double[10]; /*
@@ -268,8 +266,7 @@ public class DrainDir extends JGTModel {
 
         WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
         WritableRandomIter analyseRandomIter = RandomIterFactory.createWritable(analyzeImage, null);
-        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage,
-                null);
+        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
 
         pm.beginTask(msg.message("draindir.orlandinilad"), rows * cols);
@@ -280,8 +277,7 @@ public class DrainDir extends JGTModel {
             count = indexes[i];
             col = (int) count % cols - 1;
             row = (int) count / cols;
-            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0))
-                    && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
+            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
                 compose(analyseRandomIter, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
 
@@ -294,8 +290,8 @@ public class DrainDir extends JGTModel {
                     } else {
                         dev1 = -dev1;
                     }
-                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                            pitRandomIter, tcaRandomIter, dirRandomIter, i, i);
+                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                            dirRandomIter, i, i);
 
                     sumdev = dati[6];
                     sumdev1 = dev1 + (pLambda * sumdev);
@@ -312,8 +308,8 @@ public class DrainDir extends JGTModel {
                 } else if (dati[1] == 0) {
                     if (ncelle == nelev) {
                         /* sono all'uscita */
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                                pitRandomIter, tcaRandomIter, dirRandomIter, cols, rows);
+                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                                dirRandomIter, cols, rows);
                         dirRandomIter.setSample(col, row, 0, 10);
                         deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
 
@@ -325,17 +321,15 @@ public class DrainDir extends JGTModel {
                             return;
                         }
                     } else {
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                                pitRandomIter, tcaRandomIter, dirRandomIter, cols, rows);
+                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                                dirRandomIter, cols, rows);
                         sumdev = pLambda * dati[6];
-                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col,
-                                row, 0));
+                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
                         flow = dirRandomIter.getSampleDouble(col, row, 0);
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
                         while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
-                            tcaRandomIter.setSample(nc, nr, 0, tcaRandomIter.getSampleDouble(nc,
-                                    nr, 0)
+                            tcaRandomIter.setSample(nc, nr, 0, tcaRandomIter.getSampleDouble(nc, nr, 0)
                                     + tcaRandomIter.getSampleDouble(col, row, 0));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
                             nr = nr + order[(int) flow][0];
@@ -370,9 +364,8 @@ public class DrainDir extends JGTModel {
      * @param nelev
      * @return
      */
-    private void OrlandiniD8_LTD( double[] indexes, WritableRaster deviationsImage,
-            WritableRaster analyzeImage, WritableRaster pitImage, WritableRaster flowImage,
-            WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
+    private void OrlandiniD8_LTD( double[] indexes, WritableRaster deviationsImage, WritableRaster analyzeImage,
+            WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
 
         int row, col, ncelle, nr, nc;
         double dx, dev1, dev2, sumdev1, sumdev2, sumdev;
@@ -391,8 +384,7 @@ public class DrainDir extends JGTModel {
 
         WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
         WritableRandomIter analyseRandomIter = RandomIterFactory.createWritable(analyzeImage, null);
-        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage,
-                null);
+        WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
         double[] u = {xRes, yRes};
         double[] v = {NaN, NaN};
@@ -411,8 +403,7 @@ public class DrainDir extends JGTModel {
             col = (int) count % cols - 1;
             row = (int) count / cols;
 
-            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0))
-                    && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
+            if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
 
                 compose(analyseRandomIter, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
@@ -425,8 +416,8 @@ public class DrainDir extends JGTModel {
                     } else {
                         dev1 = -dev1;
                     }
-                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                            pitRandomIter, tcaRandomIter, dirRandomIter, cols, rows);
+                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                            dirRandomIter, cols, rows);
                     sumdev = dati[6];
                     sumdev1 = dev1 + pLambda * sumdev;
                     sumdev2 = dev2 + pLambda * sumdev;
@@ -442,8 +433,8 @@ public class DrainDir extends JGTModel {
                 } else if (dati[1] == 0) {
                     if (ncelle == nelev) {
                         /* sono all'uscita */
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                                pitRandomIter, tcaRandomIter, dirRandomIter, cols, rows);
+                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                                dirRandomIter, cols, rows);
                         dirRandomIter.setSample(col, row, 0, 10);
                         deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
 
@@ -455,17 +446,16 @@ public class DrainDir extends JGTModel {
                             return;
                         }
                     } else {
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter,
-                                pitRandomIter, tcaRandomIter, dirRandomIter, cols, rows);
+                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                                dirRandomIter, cols, rows);
                         sumdev = pLambda * dati[6];
-                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col,
-                                row, 0));
+                        dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
                         flow = dirRandomIter.getSampleDouble(col, row, 0);
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
                         while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
-                            tcaRandomIter.setSample(nc, nr, 0, (tcaRandomIter.getSampleDouble(nc,
-                                    nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0)));
+                            tcaRandomIter.setSample(nc, nr, 0, (tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter
+                                    .getSampleDouble(col, row, 0)));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
                             nr = nr + order[(int) flow][0];
                             nc = nc + order[(int) flow][1];
@@ -498,9 +488,8 @@ public class DrainDir extends JGTModel {
      * @param analyse
      * @param deviation
      */
-    private void calcarea( int row, int col, double[] dati, double[] v, WritableRandomIter analyse,
-            WritableRandomIter deviation, RandomIter pitRandomIter,
-            WritableRandomIter tcaRandomIter, WritableRandomIter dirRandomIter, int nCols, int nRows ) {
+    private void calcarea( int row, int col, double[] dati, double[] v, WritableRandomIter analyse, WritableRandomIter deviation,
+            RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, WritableRandomIter dirRandomIter, int nCols, int nRows ) {
         int conta, ninflow;
         int outdir;
         double sumdev;
@@ -515,25 +504,18 @@ public class DrainDir extends JGTModel {
              * verifico se la cella che sto considerando e' stata gia' processata
              */
             if (analyse.getSampleDouble(col + order[n][1], row + order[n][0], 0) == 1) {
-                if (!isNovalue(pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0],
-                        0))
-                        || conta <= nRows * nCols) {
-                    outdir = (int) dirRandomIter.getSampleDouble(col + order[n][1], row
-                            + order[n][0], 0);
+                if (!isNovalue(pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0)) || conta <= nRows * nCols) {
+                    outdir = (int) dirRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
                     /*
                      * verifico se la cella che sto considerando drena nel pixel
                      * centrale
                      */
                     if (outdir - n == 4 || outdir - n == -4) {
                         ninflow = ninflow + 1;
-                        tcaRandomIter.setSample(col, row, 0, tcaRandomIter.getSampleDouble(col,
-                                row, 0)
-                                + tcaRandomIter.getSampleDouble(col + order[n][1], row
-                                        + order[n][0], 0));
-                        dev[ninflow] = deviation.getSampleDouble(col + order[n][1], row
-                                + order[n][0], 0);
-                        are[ninflow] = tcaRandomIter.getSampleDouble(col + order[n][1], row
-                                + order[n][0], 0);
+                        tcaRandomIter.setSample(col, row, 0, tcaRandomIter.getSampleDouble(col, row, 0)
+                                + tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0));
+                        dev[ninflow] = deviation.getSampleDouble(col + order[n][1], row + order[n][0], 0);
+                        are[ninflow] = tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
                     }
                 }
             }
@@ -556,9 +538,8 @@ public class DrainDir extends JGTModel {
      * @param col
      * @param row
      */
-    private void compose( WritableRandomIter analyse, RandomIter pitRandomIter,
-            WritableRandomIter tcaRandomIter, double[] dati, double[] u, double[] v, int col,
-            int row ) {
+    private void compose( WritableRandomIter analyse, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, double[] dati,
+            double[] u, double[] v, int col, int row ) {
         int n = 1, m = 1;
 
         double pendmax, dirmax = 0.0, e1min = -9999.0, e2min = -9999.0;
@@ -667,21 +648,20 @@ public class DrainDir extends JGTModel {
      * to then correct the drainage directions.
      */
     private void newDirections( WritableRaster pitWR, WritableRaster dirWR ) {
-        int[][] odir = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4}, {0, -1, 5},
-                {1, -1, 6}, {1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
+        int[][] odir = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4}, {0, -1, 5}, {1, -1, 6}, {1, 0, 7}, {1, 1, 8},
+                {0, 0, 9}, {0, 0, 10}};
         double elev = 0.0;
         int[] flow = new int[2], nflow = new int[2];
         RandomIter pitRandomIter = RandomIterFactory.create(pitWR, null);
 
         RenderedImage flowFixedRI = inFlownet.getRenderedImage();
-        WritableRaster flowFixedWR = CoverageUtilities.renderedImage2WritableRaster(flowFixedRI,
-                true);
+        WritableRaster flowFixedWR = CoverageUtilities.renderedImage2WritableRaster(flowFixedRI, true);
         RandomIter flowFixedIter = RandomIterFactory.create(flowFixedWR, null);
 
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirWR, null);
 
-        WritableRaster modflowImage = CoverageUtilities.createDoubleWritableRaster(
-                pitWR.getWidth(), pitWR.getHeight(), null, null, null);
+        WritableRaster modflowImage = CoverageUtilities.createDoubleWritableRaster(pitWR.getWidth(), pitWR.getHeight(), null,
+                null, null);
         WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modflowImage, null);
 
         pm.beginTask("new directions...", rows);
@@ -698,33 +678,24 @@ public class DrainDir extends JGTModel {
                         nflow[1] = flow[1] + odir[k][0];
                         if (modflowRandomIter.getSampleDouble(nflow[0], nflow[1], 0) == 0
                                 && isNovalue(flowFixedIter.getSampleDouble(nflow[0], nflow[1], 0))) {
-                            elev = pitRandomIter.getSampleDouble(nflow[0] + odir[1][1], nflow[1]
-                                    + odir[1][0], 0);
+                            elev = pitRandomIter.getSampleDouble(nflow[0] + odir[1][1], nflow[1] + odir[1][0], 0);
                             for( int n = 2; n <= 8; n++ ) {
-                                if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] <= rows
-                                        && nflow[1] + odir[n][0] >= 0
+                                if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] <= rows && nflow[1] + odir[n][0] >= 0
                                         && nflow[1] + odir[n][0] <= cols) {
-                                    if (pitRandomIter.getSampleDouble(nflow[0] + odir[n][1],
-                                            nflow[1] + odir[n][0], 0) >= elev) {
-                                        elev = pitRandomIter.getSampleDouble(nflow[0] + odir[n][1],
-                                                nflow[1] + odir[n][0], 0);
+                                    if (pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0) >= elev) {
+                                        elev = pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0);
                                         dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[n][2]);
                                     }
                                 }
                             }
                             for( int s = 1; s <= 8; s++ ) {
-                                if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] <= rows
-                                        && nflow[1] + odir[s][1] >= 0
+                                if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] <= rows && nflow[1] + odir[s][1] >= 0
                                         && nflow[1] + odir[s][1] <= cols) {
-                                    if (!isNovalue(flowFixedIter.getSampleDouble(nflow[0]
-                                            + odir[s][1], nflow[1] + odir[s][0], 0))) {
+                                    if (!isNovalue(flowFixedIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0))) {
 
-                                        if (pitRandomIter.getSampleDouble(nflow[0] + odir[s][1],
-                                                nflow[1] + odir[s][0], 0) <= elev) {
-                                            elev = pitRandomIter.getSampleDouble(nflow[0]
-                                                    + odir[s][1], nflow[1] + odir[s][0], 0);
-                                            dirRandomIter.setSample(nflow[0], nflow[1], 0,
-                                                    odir[s][2]);
+                                        if (pitRandomIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0) <= elev) {
+                                            elev = pitRandomIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0);
+                                            dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[s][2]);
                                         }
                                     }
                                 }

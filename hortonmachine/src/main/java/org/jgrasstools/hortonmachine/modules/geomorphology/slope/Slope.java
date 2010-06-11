@@ -16,8 +16,10 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.modules.geomorphology.gradient;
+package org.jgrasstools.hortonmachine.modules.geomorphology.slope;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -40,48 +42,17 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.i18n.MessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-/**
- * <p>
- * The openmi compliant representation of the gradient model. Calculates the
- * gradient in each point of the map,
- * </p>
- * <p>
- * It estimate the gradient with a finite difference formula:
- * 
- * <pre>
- *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
- * f<sub>x</sub>=(f(x+1,y)-f(x-1,y))/(2 &#916 x) 
- * f<sub>y</sub>=(f(x,y+1)-f(x,y-1))/(2 &#916 y)
- * </pre>
- * 
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the matrix of elevations (-pit);</LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>matrix of the gradients (-gradient);</LI>
- * </OL>
- * <P></DD> Usage: h.gradient --igrass-pit pit --ograss-gradient gradient
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
- *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
- */
-@Description("Calculates the gradient in each point of the map.")
+
+@Description("Calculates the slope in each point of the map.")
 @Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
 @Keywords("Geomorphology")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Gradient extends JGTModel {
+public class Slope extends JGTModel {
     /*
      * EXTERNAL VARIABLES
      */
@@ -89,6 +60,10 @@ public class Gradient extends JGTModel {
     @Description("The digital elevation model (DEM).")
     @In
     public GridCoverage2D inDem = null;
+
+    @Description("The map of flowdirection.")
+    @In
+    public GridCoverage2D inFlow = null;
 
     @Description("The progress monitor.")
     @In
@@ -103,9 +78,6 @@ public class Gradient extends JGTModel {
      */
     private MessageHandler msg = MessageHandler.getInstance();
 
-    /**
-     * Computes the gradient algoritm. p=f_{x}^{2}+f_{y}^{2}
-     */
     @Execute
     public void process() {
         if (!concatOr(outSlope == null, doReset)) {
@@ -118,41 +90,48 @@ public class Gradient extends JGTModel {
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
+        int[][] DIR = ModelsSupporter.DIR_WITHFLOW_ENTERING;
+
         RenderedImage elevationRI = inDem.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
+        RenderedImage flowRI = inFlow.getRenderedImage();
+        RandomIter flowIter = RandomIterFactory.create(flowRI, null);
 
-        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRaster slopeWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-        pm.beginTask(msg.message("gradient.working"), nRows);
-        for( int y = 1; y < nRows - 1; y++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int x = 1; x < nCols - 1; x++ ) {
-                // extract the value to use for the algoritm. It is the finite difference approach.
-                double elevIJ = elevationIter.getSampleDouble(x, y, 0);
-                double elevIJipre = elevationIter.getSampleDouble(x - 1, y, 0);
-                double elevIJipost = elevationIter.getSampleDouble(x + 1, y, 0);
-                double elevIJjpre = elevationIter.getSampleDouble(x, y - 1, 0);
-                double elevIJjpost = elevationIter.getSampleDouble(x, y + 1, 0);
-                if (isNovalue(elevIJ) || isNovalue(elevIJipre) || isNovalue(elevIJipost) || isNovalue(elevIJjpre)
-                        || isNovalue(elevIJjpost)) {
-                    gradientWR.setSample(x, y, 0, doubleNovalue);
-                } else if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
-                        && !isNovalue(elevIJjpost)) {
-                    double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
-                    double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
-                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
-                    gradientWR.setSample(x, y, 0, grad);
-                } else {
-                    throw new IllegalArgumentException("Error in gradient");
+        int[] point = new int[2];
+
+        // grid contains the dimension of pixels according with flow directions
+        double[] grid = new double[11];
+
+        grid[0] = grid[9] = grid[10] = 0;
+        grid[1] = grid[5] = abs(xRes);
+        grid[3] = grid[7] = abs(yRes);
+        grid[2] = grid[4] = grid[6] = grid[8] = sqrt(xRes * xRes + yRes * yRes);
+        // Calculates the slope along the flow directions of elevation field, if
+        // a pixel is on the border its value will be equal to novalue
+
+        pm.beginTask(msg.message("slope.calculating"), nRows);
+        for( int c = 0; c < nCols; c++ ) {
+            for( int r = 0; r < nRows; r++ ) {
+                int flowDir = (int) flowIter.getSampleDouble(c, r, 0);
+                if (flowDir == 10) {
+                    pm.errorMessage(msg.message("slope.outleterror"));
                 }
+                double value = doubleNovalue;
+                if (!isNovalue(flowDir)) {
+                    point[0] = c + DIR[flowDir][1];
+                    point[1] = r + DIR[flowDir][0];
+                    value = (elevationIter.getSampleDouble(c, r, 0) - elevationIter.getSampleDouble(point[0], point[1], 0))
+                            / grid[flowDir];
+                }
+                slopeWR.setSample(c, r, 0, value);
             }
             pm.worked(1);
         }
         pm.done();
 
-        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inDem.getCoordinateReferenceSystem());
     }
 
 }

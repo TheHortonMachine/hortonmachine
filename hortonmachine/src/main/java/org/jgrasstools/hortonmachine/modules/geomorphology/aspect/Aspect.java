@@ -38,10 +38,14 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.i18n.MessageHandler;
@@ -85,6 +89,11 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi
  *         Silvia, Pisoni Silvano, Rigon Riccardo
  */
+@Description("Generates raster map layers of aspect from a raster map layer of true elevation values. The value of aspect is calculated counterclockwise from north.")
+@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
+@Keywords("Geomorphology")
+@Status(Status.TESTED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Aspect extends JGTModel {
     @Description("The digital elevation model (DEM).")
     @In

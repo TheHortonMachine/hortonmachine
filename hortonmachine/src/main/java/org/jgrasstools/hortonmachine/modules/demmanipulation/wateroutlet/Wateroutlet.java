@@ -28,10 +28,14 @@ import java.util.HashMap;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.i18n.MessageHandler;
@@ -74,6 +78,11 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
  *         Silvia, Pisoni Silvano, Rigon Riccardo; Originally by Charles Ehlschlaeger, U.S. Army
  *         Construction Engineering Research Laboratory.
  */
+@Description("Generates a watershed basin from a drainage direction map and a set of coordinates representing the outlet point of watershed")
+@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Keywords("Dem manipulation, Geomorphology")
+@Status(Status.TESTED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Wateroutlet extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
     @In
