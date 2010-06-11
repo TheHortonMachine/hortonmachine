@@ -11,7 +11,7 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * It test the {@link Slope} module.
+ * Tests the {@link Slope} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -26,11 +26,13 @@ public class TestSlope extends HMTestCase {
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
+        // first create the needed map of flowdirections
         FlowDirections flow = new FlowDirections();
         flow.pm = pm;
         flow.inPit = pitfillerCoverage;
         flow.process();
 
+        // then create the slope map
         Slope slope = new Slope();
         slope.inDem = pitfillerCoverage;
         slope.inFlow = flow.outFlow;
