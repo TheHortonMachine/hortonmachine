@@ -4,7 +4,9 @@ import static java.lang.Double.NaN;
 import static java.lang.Math.pow;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,7 +64,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     @In
     public long pTypeid;
 
-    @Description("The aggregation type of the fetched data. (0 = hour, 1 = day, 2 = month, 3 = year)")
+    @Description("The aggregation type of the fetched data. (0 = hour, 1 = day, 2 = month, 3 = year, 4 = permonths)")
     @In
     public int pAggregation;
 
@@ -136,6 +138,10 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         case 3:
             // 3 = year
             outData = getYearlyAggregation();
+            break;
+        case 4:
+            // 4 = permonth
+            outData = getPermonthAggregation();
             break;
         default:
             break;
@@ -297,7 +303,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
                     allNaN = false;
                 }
             }
- 
+
             // variance
             double var = calculateVariance(valuesArray, mean);
             varList.add(var);
@@ -314,6 +320,51 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         }
 
         AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, varList, quantilesList);
+        return result;
+    }
+
+    public AggregatedResult getPermonthAggregation() {
+        LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
+        List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
+
+        // aggregated data in this case is a value for every month, from 1-12 as in joda time
+        LinkedHashMap<Integer, List<Double>> monthNumber2DataMap = new LinkedHashMap<Integer, List<Double>>();
+
+        Set<Entry<DateTime, Double>> dataEntrySet = timestamp2Data.entrySet();
+        for( Entry<DateTime, Double> entry : dataEntrySet ) {
+            DateTime dateTime = entry.getKey();
+            Double value = entry.getValue();
+            int monthOfYear = dateTime.getMonthOfYear();
+            List<Double> dataListPerMonth = monthNumber2DataMap.get(monthOfYear);
+            if (dataListPerMonth == null) {
+                dataListPerMonth = new ArrayList<Double>();
+                monthNumber2DataMap.put(monthOfYear, dataListPerMonth);
+            }
+            dataListPerMonth.add(value);
+        }
+
+        DecimalFormat monthFormatter = new DecimalFormat("00");
+        Set<Entry<Integer, List<Double>>> perMonthEntrySet = monthNumber2DataMap.entrySet();
+        for( Entry<Integer, List<Double>> entry : perMonthEntrySet ) {
+            Integer monthNumber = entry.getKey();
+            List<Double> valuesList = entry.getValue();
+
+            double mean = 0;
+            for( Double value : valuesList ) {
+                mean = mean + value;
+            }
+            // mean
+            int size = valuesList.size();
+            mean = mean / size;
+
+            DateTime monthDT = JGTConstants.dateTimeFormatterYYYYMMDDHHMM.parseDateTime("1970-"
+                    + monthFormatter.format(monthNumber) + "-01 00:00");
+            aggregatedMap.put(monthDT, mean);
+            numberOfValuesUsed.add(size);
+        }
+
+        AggregatedResult result = new AggregatedResult(aggregatedMap, numberOfValuesUsed, Collections.EMPTY_LIST,
+                Collections.EMPTY_LIST);
         return result;
     }
 
@@ -382,6 +433,24 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     }
 
     public void printReport() throws IOException {
+
+        if (pAggregation == 4) {
+            LinkedHashMap<DateTime, Double> timestamp2ValueMap = outData.getTimestamp2ValueMap();
+            List<Integer> validDataNum = outData.getValidDataNumber();
+            Set<Entry<DateTime, Double>> entrySet = timestamp2ValueMap.entrySet();
+            int id = 0;
+            double mean = 0;
+            for( Entry<DateTime, Double> entry : entrySet ) {
+                Double value = entry.getValue();
+                System.out.println("Permonths mean for month " + entry.getKey().getMonthOfYear() + ": \t" + value + "    (valid data: "
+                        + validDataNum.get(id++) + ")");
+                mean = mean + value;
+            }
+            mean = mean / 12d;
+            System.out.println("Mean: " + mean);
+            return;
+        }
+
         AggregatedResult monthlyAggregation;
         AggregatedResult yearlyAggregation;
 
