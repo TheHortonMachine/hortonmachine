@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.hortonmachine;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,6 +32,7 @@ import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Execute;
 
+import org.jgrasstools.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 
@@ -131,22 +131,6 @@ public class HortonMachine {
         }
     }
 
-    public static class ClassField implements Comparable<ClassField> {
-        public boolean isIn = false;
-        public boolean isOut = false;
-        public String fieldName = null;
-        public Class< ? > parentClass = null;
-
-        public int compareTo( ClassField o ) {
-            return fieldName.compareTo(o.fieldName);
-        }
-
-        @SuppressWarnings("nls")
-        public String toString() {
-            return "ClassField [fieldName=" + fieldName + ", isIn=" + isIn + ", isOut=" + isOut
-                    + ", parentClass=" + parentClass + "]";
-        }
-    }
 
     // public static void main( String[] args ) throws IOException {
     // Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();

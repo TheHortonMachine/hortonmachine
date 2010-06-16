@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,6 +33,7 @@ import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Execute;
 
+import org.jgrasstools.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 
@@ -97,10 +99,13 @@ public class JGrassGears {
                 ComponentAccess cA = new ComponentAccess(annotatedObject);
                 Collection<Access> inputs = cA.inputs();
                 for( Access access : inputs ) {
-                    String name = access.getField().getName();
+                    Field field = access.getField();
+                    String name = field.getName();
+                    Class< ? > fieldClass = field.getType();
                     ClassField cf = new ClassField();
                     cf.isIn = true;
                     cf.fieldName = name;
+                    cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
@@ -110,10 +115,13 @@ public class JGrassGears {
                 }
                 Collection<Access> outputs = cA.outputs();
                 for( Access access : outputs ) {
-                    String name = access.getField().getName();
+                    Field field = access.getField();
+                    String name = field.getName();
+                    Class< ? > fieldClass = field.getType();
                     ClassField cf = new ClassField();
                     cf.isOut = true;
                     cf.fieldName = name;
+                    cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
@@ -128,22 +136,6 @@ public class JGrassGears {
             allClasses = (String[]) classNames.toArray(new String[classNames.size()]);
         } catch (Exception e1) {
             e1.printStackTrace();
-        }
-    }
-
-    public static class ClassField implements Comparable<ClassField> {
-        public boolean isIn = false;
-        public boolean isOut = false;
-        public String fieldName = null;
-        public Class< ? > parentClass = null;
-
-        public int compareTo( ClassField o ) {
-            return fieldName.compareTo(o.fieldName);
-        }
-
-        public String toString() {
-            return "ClassField [fieldName=" + fieldName + ", isIn=" + isIn + ", isOut=" + isOut
-                    + ", parentClass=" + parentClass + "]";
         }
     }
 
