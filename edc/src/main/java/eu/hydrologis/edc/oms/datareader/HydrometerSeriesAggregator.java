@@ -80,8 +80,11 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
 
     private LinkedHashMap<DateTime, Double> timestamp2Data;
     private DateTimeFormatter formatter = Constants.utcDateFormatterYYYYMMDDHHMM;
-
+    private DecimalFormat twovaluesFormatter = new DecimalFormat("00");
+    private DecimalFormat fourvaluesFormatter = new DecimalFormat("0000");
     private ListInterpolator dischargeScaleInterpolator;
+
+    private boolean dailyFirst = true;
 
     @Execute
     public void getData() {
@@ -210,6 +213,60 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         session.close();
     }
 
+    private LinkedHashMap<DateTime, Double> getDailyAggregation( LinkedHashMap<DateTime, Double> timestamp2Data ) {
+
+        LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
+
+        // aggregated data in this case is a value for every month, from 1-12 as in joda time
+        LinkedHashMap<String, List<Double>> yearmonthday2DataMap = new LinkedHashMap<String, List<Double>>();
+
+        Set<Entry<DateTime, Double>> dataEntrySet = timestamp2Data.entrySet();
+        for( Entry<DateTime, Double> entry : dataEntrySet ) {
+            DateTime dateTime = entry.getKey();
+            Double value = entry.getValue();
+
+            String dateKey = getYearmonthdayKeyString(dateTime);
+
+            List<Double> dataListPerDay = yearmonthday2DataMap.get(dateKey);
+            if (dataListPerDay == null) {
+                dataListPerDay = new ArrayList<Double>();
+                yearmonthday2DataMap.put(dateKey, dataListPerDay);
+            }
+            dataListPerDay.add(value);
+        }
+
+        Set<Entry<String, List<Double>>> dailyEntrySet = yearmonthday2DataMap.entrySet();
+        for( Entry<String, List<Double>> entry : dailyEntrySet ) {
+            String dateKey = entry.getKey();
+            List<Double> valuesList = entry.getValue();
+
+            double mean = 0;
+            for( Double value : valuesList ) {
+                mean = mean + value;
+            }
+            // mean
+            int size = valuesList.size();
+            mean = mean / size;
+
+            DateTime dayDT = formatter.parseDateTime(dateKey + " 00:00");
+            aggregatedMap.put(dayDT, mean);
+        }
+
+        return aggregatedMap;
+    }
+
+    private String getYearmonthdayKeyString( DateTime dateTime ) {
+        int dayOfMonth = dateTime.getDayOfMonth();
+        int monthOfYear = dateTime.getMonthOfYear();
+        int year = dateTime.getYear();
+        StringBuilder sb = new StringBuilder();
+        sb.append(fourvaluesFormatter.format(year)).append("-");
+        sb.append(twovaluesFormatter.format(monthOfYear)).append("-");
+        sb.append(twovaluesFormatter.format(dayOfMonth));
+        String dateKey = sb.toString();
+        return dateKey;
+    }
+
     private AggregatedResult getAggregation( int type ) {
         LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
         List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
@@ -324,6 +381,11 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     }
 
     public AggregatedResult getPermonthAggregation() {
+        // should we first aggregate daily?
+        if (dailyFirst) {
+            timestamp2Data = getDailyAggregation(timestamp2Data);
+        }
+
         LinkedHashMap<DateTime, Double> aggregatedMap = new LinkedHashMap<DateTime, Double>();
         List<Integer> numberOfValuesUsed = new ArrayList<Integer>();
 
@@ -442,8 +504,8 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             double mean = 0;
             for( Entry<DateTime, Double> entry : entrySet ) {
                 Double value = entry.getValue();
-                System.out.println("Permonths mean for month " + entry.getKey().getMonthOfYear() + ": \t" + value + "    (valid data: "
-                        + validDataNum.get(id++) + ")");
+                System.out.println("Permonths mean for month " + entry.getKey().getMonthOfYear() + ": \t" + value
+                        + "    (valid data: " + validDataNum.get(id++) + ")");
                 mean = mean + value;
             }
             mean = mean / 12d;
@@ -517,8 +579,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
         }
 
         StringBuilder sB = new StringBuilder();
-        sB
-                .append("year, jan, dd, feb, dd, mar, dd, apr, dd, may, dd, jun, dd, jul, dd, aug, dd, sep, dd, oct, dd, nov, dd, dec, dd, yearly, dd\n");
+        sB.append("year, jan, dd, feb, dd, mar, dd, apr, dd, may, dd, jun, dd, jul, dd, aug, dd, sep, dd, oct, dd, nov, dd, dec, dd, yearly, dd\n");
         Set<Entry<Integer, YearResult>> reportSet = reportMap.entrySet();
         for( Entry<Integer, YearResult> report : reportSet ) {
             String string = report.getValue().toString();
