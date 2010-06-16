@@ -85,7 +85,8 @@ public class GearsProcessFactory implements ProcessFactory {
         for( ClassField classField : list ) {
             if (classField.isIn) {
                 String fieldName = classField.fieldName;
-                Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldName);
+                String fieldDescription = classField.fieldDescription;
+                Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
                 input.put(param.key, param);
             }
         }
@@ -93,8 +94,21 @@ public class GearsProcessFactory implements ProcessFactory {
     }
 
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        
+        String moduleName = name.getLocalPart();
+        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.moduleName2Fields;
+        List<ClassField> list = modulename2fields.get(moduleName);
+
+        Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();
+        for( ClassField classField : list ) {
+            if (classField.isOut) {
+                String fieldName = classField.fieldName;
+                String fieldDescription = classField.fieldDescription;
+                Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
+                output.put(param.key, param);
+            }
+        }
+        return output;
     }
 
     public InternationalString getTitle( Name name ) {

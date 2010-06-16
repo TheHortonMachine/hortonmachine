@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.Map.Entry;
 
 import oms3.Access;
 import oms3.ComponentAccess;
+import oms3.annotations.Description;
 import oms3.annotations.Execute;
 
 import org.jgrasstools.gears.libs.modules.ClassField;
@@ -101,10 +103,19 @@ public class JGrassGears {
                 for( Access access : inputs ) {
                     Field field = access.getField();
                     String name = field.getName();
+                    Description descriptionAnnot = field.getAnnotation(Description.class);
+                    String description = name;
+                    if (descriptionAnnot != null) {
+                        description = descriptionAnnot.value();
+                        if (description == null) {
+                            description = name;
+                        }
+                    }
                     Class< ? > fieldClass = field.getType();
                     ClassField cf = new ClassField();
                     cf.isIn = true;
                     cf.fieldName = name;
+                    cf.fieldDescription = description;
                     cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
                     if (!fieldNamesList.contains(name)) {
@@ -117,10 +128,19 @@ public class JGrassGears {
                 for( Access access : outputs ) {
                     Field field = access.getField();
                     String name = field.getName();
+                    Description descriptionAnnot = field.getAnnotation(Description.class);
+                    String description = name;
+                    if (descriptionAnnot != null) {
+                        description = descriptionAnnot.value();
+                        if (description == null) {
+                            description = name;
+                        }
+                    }
                     Class< ? > fieldClass = field.getType();
                     ClassField cf = new ClassField();
                     cf.isOut = true;
                     cf.fieldName = name;
+                    cf.fieldDescription = description;
                     cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
                     if (!fieldNamesList.contains(name)) {
@@ -139,16 +159,16 @@ public class JGrassGears {
         }
     }
 
-    // public static void main( String[] args ) throws IOException {
-    // Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();
-    // for( Entry<String, Class< ? >> entry : entrySet ) {
-    // System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
-    // }
-    //
-    // List<ClassField> list = moduleName2Fields.get("LineSmoother");
-    // for( ClassField classField : list ) {
-    // System.out.println(classField);
-    // }
-    // }
+    public static void main( String[] args ) throws IOException {
+        Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();
+        for( Entry<String, Class< ? >> entry : entrySet ) {
+            System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
+        }
+
+        List<ClassField> list = moduleName2Fields.get("LineSmoother");
+        for( ClassField classField : list ) {
+            System.out.println(classField);
+        }
+    }
 
 }

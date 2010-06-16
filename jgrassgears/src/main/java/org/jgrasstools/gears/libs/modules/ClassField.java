@@ -27,6 +27,7 @@ public class ClassField implements Comparable<ClassField> {
     public boolean isIn = false;
     public boolean isOut = false;
     public String fieldName = null;
+    public String fieldDescription = null;
     public Class< ? > parentClass = null;
     public Class< ? > fieldClass = null;
 
@@ -34,8 +35,9 @@ public class ClassField implements Comparable<ClassField> {
         return fieldName.compareTo(o.fieldName);
     }
 
+    @Override
     public String toString() {
-        return "ClassField [fieldName=" + fieldName + ", isIn=" + isIn + ", isOut=" + isOut + ", parentClass=" + parentClass
-                + "]";
+        return "ClassField [fieldClass=" + fieldClass + ", fieldDescription=" + fieldDescription + ", fieldName=" + fieldName
+                + ", isIn=" + isIn + ", isOut=" + isOut + ", parentClass=" + parentClass + "]";
     }
 }

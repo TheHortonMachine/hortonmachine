@@ -19,6 +19,7 @@
 package org.jgrasstools.hortonmachine.geotools;
 
 import java.awt.RenderingHints.Key;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -28,7 +29,9 @@ import java.util.Set;
 import org.geotools.data.Parameter;
 import org.geotools.feature.NameImpl;
 import org.geotools.process.Process;
+import org.geotools.process.ProcessException;
 import org.geotools.process.ProcessFactory;
+import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.ClassField;
 import org.jgrasstools.hortonmachine.HortonMachine;
 import org.opengis.feature.type.Name;
@@ -93,8 +96,20 @@ public class HmProcessFactory implements ProcessFactory {
     }
 
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
-        // TODO Auto-generated method stub
-        return null;
+        String moduleName = name.getLocalPart();
+        LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.moduleName2Fields;
+        List<ClassField> list = modulename2fields.get(moduleName);
+
+        Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();
+        for( ClassField classField : list ) {
+            if (classField.isOut) {
+                String fieldName = classField.fieldName;
+                String fieldDescription = classField.fieldDescription;
+                Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
+                output.put(param.key, param);
+            }
+        }
+        return output;
     }
 
     public InternationalString getTitle( Name name ) {
