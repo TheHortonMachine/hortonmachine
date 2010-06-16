@@ -223,15 +223,6 @@
 			<url>http://mvn.geo-solutions.it/</url>
 		</repository>
 
-		<!--<repository>
-			<id>jaitools-snapshots</id>
-			<name>jaitools snapshots</name>
-			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>-->
-
 		<repository>
 			<id>jgrasstools</id>
 			<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
