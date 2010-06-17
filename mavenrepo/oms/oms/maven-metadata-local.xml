@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<metadata>
+<?xml version="1.0" encoding="UTF-8"?><metadata>
   <groupId>oms</groupId>
   <artifactId>oms</artifactId>
   <version>3-SNAPSHOT</version>
@@ -7,6 +6,6 @@
     <versions>
       <version>3-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20100405154925</lastUpdated>
+    <lastUpdated>20100617080638</lastUpdated>
   </versioning>
 </metadata>

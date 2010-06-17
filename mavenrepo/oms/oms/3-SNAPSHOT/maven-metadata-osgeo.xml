@@ -2,10 +2,4 @@
   <groupId>oms</groupId>
   <artifactId>oms</artifactId>
   <version>3-SNAPSHOT</version>
-  <versioning>
-    <snapshot>
-      <localCopy>true</localCopy>
-    </snapshot>
-    <lastUpdated>20100617080638</lastUpdated>
-  </versioning>
 </metadata>
