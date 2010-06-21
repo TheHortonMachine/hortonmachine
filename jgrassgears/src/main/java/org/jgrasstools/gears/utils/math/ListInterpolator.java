@@ -18,18 +18,18 @@
  */
 package org.jgrasstools.gears.utils.math;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A class for doing interpolations on lists of X and Y.
+ * A class for doing linear interpolations on lists of X and Y.
  * 
- * @author Andrea Antonello - www.hydrologis.com
+ * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ListInterpolator {
 
     private final List<Double> xList;
     private final List<Double> yList;
+    private boolean isInverse = false;
 
     public ListInterpolator( List<Double> xList, List<Double> yList ) {
         if (xList.size() != yList.size()) {
@@ -47,9 +47,21 @@ public class ListInterpolator {
      */
     public Double linearInterpolateY( Double xValue ) {
 
-        // if out of range
-        if (xValue < xList.get(0) || xValue > xList.get(xList.size() - 1)) {
-            return new Double(Double.NaN);
+        Double first = xList.get(0);
+        Double last = xList.get(xList.size() - 1);
+
+        // check out of range
+        if (first <= last) {
+            if (xValue < xList.get(0) || xValue > xList.get(xList.size() - 1)) {
+                return new Double(Double.NaN);
+            }
+            isInverse = false;
+        } else {
+            // inverse proportional
+            if (xValue > xList.get(0) || xValue < xList.get(xList.size() - 1)) {
+                return new Double(Double.NaN);
+            }
+            isInverse = true;
         }
 
         for( int i = 0; i < xList.size(); i++ ) {
@@ -58,7 +70,7 @@ public class ListInterpolator {
             if (x2.equals(xValue)) {
                 return yList.get(i);
             }// else interpolate
-            else if (x2 > xValue) {
+            else if ((!isInverse && x2 > xValue) || (isInverse && x2 < xValue)) {
                 double x1 = xList.get(i - 1);
                 double y1 = yList.get(i - 1);
                 double y2 = yList.get(i);
@@ -78,9 +90,21 @@ public class ListInterpolator {
      */
     public Double linearInterpolateX( Double yValue ) {
 
-        // if out of range
-        if (yValue < yList.get(0) || yValue > yList.get(yList.size() - 1)) {
-            return new Double(Double.NaN);
+        Double first = yList.get(0);
+        Double last = yList.get(yList.size() - 1);
+
+        // check out of range
+        if (first <= last) {
+            if (yValue < yList.get(0) || yValue > yList.get(yList.size() - 1)) {
+                return new Double(Double.NaN);
+            }
+            isInverse = false;
+        } else {
+            // inverse proportional
+            if (yValue > yList.get(0) || yValue < yList.get(yList.size() - 1)) {
+                return new Double(Double.NaN);
+            }
+            isInverse = true;
         }
 
         for( int i = 0; i < yList.size(); i++ ) {
@@ -89,7 +113,7 @@ public class ListInterpolator {
             if (y2.equals(yValue)) {
                 return xList.get(i);
             }// else interpolate
-            else if (y2 > yValue) {
+            else if ((!isInverse && y2 > yValue) || (isInverse && y2 < yValue)) {
                 double y1 = yList.get(i - 1);
                 double x1 = xList.get(i - 1);
                 double x2 = xList.get(i);
@@ -101,16 +125,4 @@ public class ListInterpolator {
         return new Double(Double.NaN);
     }
 
-    public static void main( String[] args ) {
-        List<Double> x = new ArrayList<Double>();
-        x.add(1.0);
-        x.add(3.0);
-        List<Double> y = new ArrayList<Double>();
-        y.add(1.0);
-        y.add(3.0);
-
-        ListInterpolator ip = new ListInterpolator(x, y);
-        System.out.println(ip.linearInterpolateY(2.0));
-
-    }
 }
