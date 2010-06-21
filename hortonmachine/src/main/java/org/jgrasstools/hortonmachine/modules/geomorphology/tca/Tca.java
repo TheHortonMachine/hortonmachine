@@ -19,18 +19,15 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.tca;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.text.MessageFormat;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
@@ -79,8 +76,6 @@ public class Tca extends JGTModel {
 
     private int cols;
     private int rows;
-    private double xRes;
-    private double yRes;
 
     /**
      * Calculates total contributing areas
@@ -96,8 +91,6 @@ public class Tca extends JGTModel {
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
@@ -106,11 +99,7 @@ public class Tca extends JGTModel {
 
         // Initialize new RasterData and set value
         WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
-        // it contains the analyzed cells
-        WritableRaster analyzeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
 
-        RandomIter tcaIter = RandomIterFactory.create(tcaWR, null);
-        RandomIter flowIter = RandomIterFactory.create(flowWR, null);
         area(flowWR, tcaWR);
         outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
@@ -118,7 +107,6 @@ public class Tca extends JGTModel {
 
     private void area( WritableRaster flowImage, WritableRaster tcaImage ) {
 
-        int row, col;
         RandomIter flowIter = RandomIterFactory.create(flowImage, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaImage, null);
 
@@ -128,14 +116,9 @@ public class Tca extends JGTModel {
 
         for( int i = 0; i < rows; i++ ) {
             for( int j = 0; j < cols; j++ ) {
-                // get the girections of the current pixel.
-                int flowValue = (int) flowIter.getSampleDouble(j, i, 0);
-                /*
-                 * I have put flowValue == 0 because the cast to an int value of a NaN is 0, and 0
-                 * is an invalid value for the drainage direction.
-                 */
-
-                if (isNovalue(flowValue) || flowValue == 0) {
+                // get the directions of the current pixel.
+                double flowValue = flowIter.getSampleDouble(j, i, 0);
+                if (isNovalue(flowValue)) {
                     tcaIter.setSample(j, i, 0, NaN);
                 } else {
                     int rRow = i;
@@ -146,15 +129,15 @@ public class Tca extends JGTModel {
                         tcaIter.setSample(rCol, rRow, 0, tcaValue + 1);
 
                         // it move to the next pixel.
-                        int newRow = rRow + dirs[flowValue][0];
-                        int newCol = rCol + dirs[flowValue][1];
+                        int newRow = rRow + dirs[(int) flowValue][0];
+                        int newCol = rCol + dirs[(int) flowValue][1];
                         // get the new value of drainage direction.
                         int nextFlow = (int) flowIter.getSampleDouble(newCol, newRow, 0);
                         /*  
                          * 
                          * verify that the next pixel doesn't drain in the previous, otherwise there
-                        * is an infinite loop.
-                        */
+                         * is an infinite loop.
+                         */
                         if (nextFlow < 9 && (!isNovalue(nextFlow) || nextFlow != 0)) {
                             int r = newRow + dirs[nextFlow][0];
                             int c = newCol + dirs[nextFlow][1];
