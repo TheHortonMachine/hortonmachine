@@ -39,7 +39,7 @@ import oms3.annotations.Role;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.i18n.MessageHandler;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -137,7 +137,7 @@ public class ExtractNetwork extends JGTModel {
     /*
      * INTERNAL VARIABLES
      */
-    private MessageHandler msg = MessageHandler.getInstance();
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
     private ModelsEngine modelsEngine = new ModelsEngine();
 
     private int cols;

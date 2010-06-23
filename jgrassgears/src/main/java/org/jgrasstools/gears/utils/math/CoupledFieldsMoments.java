@@ -20,7 +20,7 @@ package org.jgrasstools.gears.utils.math;
 
 import java.awt.image.RenderedImage;
 
-import org.jgrasstools.gears.i18n.MessageHandler;
+import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -81,7 +81,7 @@ public class CoupledFieldsMoments {
             map2RI = map1RI;
         }
         ModelsEngine modelsEngine = new ModelsEngine();
-        MessageHandler msg = MessageHandler.getInstance();
+        GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
         pm.message(msg.message("cb.vectorize"));
         double[] U = modelsEngine.vectorizeDoubleMatrix(map1RI);

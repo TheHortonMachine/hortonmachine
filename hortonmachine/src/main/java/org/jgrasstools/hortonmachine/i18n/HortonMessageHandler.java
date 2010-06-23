@@ -27,19 +27,19 @@ import java.util.ResourceBundle;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class MessageHandler {
-    private static MessageHandler messageHandler = null;
+public class HortonMessageHandler {
+    private static HortonMessageHandler messageHandler = null;
 
     private Locale locale = Locale.getDefault();
 
     private ResourceBundle resourceBundle;
 
-    private MessageHandler() {
+    private HortonMessageHandler() {
     }
 
-    public synchronized static MessageHandler getInstance() {
+    public synchronized static HortonMessageHandler getInstance() {
         if (messageHandler == null) {
-            messageHandler = new MessageHandler();
+            messageHandler = new HortonMessageHandler();
             messageHandler.initResourceBundle();
 
         }
@@ -47,7 +47,7 @@ public class MessageHandler {
     }
 
     private void initResourceBundle() {
-        resourceBundle = ResourceBundle.getBundle("messages", locale);
+        resourceBundle = ResourceBundle.getBundle("hm_messages", locale);
     }
 
     public String message( String key ) {

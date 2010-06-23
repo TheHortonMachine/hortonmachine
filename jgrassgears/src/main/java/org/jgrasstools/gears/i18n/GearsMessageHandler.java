@@ -27,19 +27,19 @@ import java.util.ResourceBundle;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class MessageHandler {
-    private static MessageHandler messageHandler = null;
+public class GearsMessageHandler {
+    private static GearsMessageHandler messageHandler = null;
 
     private Locale locale = Locale.getDefault();
 
     private ResourceBundle resourceBundle;
 
-    private MessageHandler() {
+    private GearsMessageHandler() {
     }
 
-    public synchronized static MessageHandler getInstance() {
+    public synchronized static GearsMessageHandler getInstance() {
         if (messageHandler == null) {
-            messageHandler = new MessageHandler();
+            messageHandler = new GearsMessageHandler();
             messageHandler.initResourceBundle();
 
         }
@@ -47,7 +47,7 @@ public class MessageHandler {
     }
 
     private void initResourceBundle() {
-        resourceBundle = ResourceBundle.getBundle("messages", locale);
+        resourceBundle = ResourceBundle.getBundle("jg_messages", locale);
     }
 
     public String message( String key ) {

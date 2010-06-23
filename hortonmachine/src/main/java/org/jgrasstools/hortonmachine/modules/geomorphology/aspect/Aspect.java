@@ -48,7 +48,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.i18n.MessageHandler;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -115,7 +115,7 @@ public class Aspect extends JGTModel {
     @Out
     public GridCoverage2D outAspect = null;
 
-    private MessageHandler msg = MessageHandler.getInstance();
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private double radtodeg = 360.0 / (2 * PI);
 

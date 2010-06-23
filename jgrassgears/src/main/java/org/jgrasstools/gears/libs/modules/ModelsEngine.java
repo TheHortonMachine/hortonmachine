@@ -48,7 +48,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
-import org.jgrasstools.gears.i18n.MessageHandler;
+import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -65,7 +65,7 @@ import com.vividsolutions.jts.geom.LineString;
 public class ModelsEngine {
     private static int[][] DIR = ModelsSupporter.DIR;
 
-    private MessageHandler msg = MessageHandler.getInstance();
+    private GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
     public static PixelInCell DEFAULTPIXELANCHOR = PixelInCell.CELL_CENTER;
 
@@ -591,7 +591,7 @@ public class ModelsEngine {
         int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
         /* numerating every stream */
-        MessageHandler msg = MessageHandler.getInstance();
+        GearsMessageHandler msg = GearsMessageHandler.getInstance();
         pm.beginTask(msg.message("utils.numbering_stream"), height);
         for( int j = 0; j < height; j++ ) {
             for( int i = 0; i < width; i++ ) {

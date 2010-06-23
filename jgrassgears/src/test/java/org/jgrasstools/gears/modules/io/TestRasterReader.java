@@ -18,7 +18,7 @@ public class TestRasterReader extends HMTestCase {
         URL testUrl = this.getClass().getClassLoader().getResource("dtm_test.asc");
         String path = new File(testUrl.toURI()).getAbsolutePath();
         GridCoverage2D readCoverage = RasterReader.readCoverage(path);
-        
+
         RasterReader reader = new RasterReader();
         reader.file = path;
         reader.fileNovalue = -9999.0;
@@ -40,14 +40,9 @@ public class TestRasterReader extends HMTestCase {
         reader.pRes = new double[]{xres, yres};
         reader.process();
         readCoverage = reader.geodata;
-        
-        double[][] mapData = new double[][]{
-            {1000, 1000, 1200, 1250, 1300, 1350, 1450},
-            {750, 850, 860, 900, 1000, 1200, 1250},
-            {700, 750, 800, 850, 900, 1000, 1100},
-            {650, 700, 750, 800, 850, 490, 450},
-            {430, 500, 600, 700, 800, 500, 450},
-            {700, 750, 760, 770, 850, 1000, 1150}};
+
+        double[][] mapData = HMTestMaps.mapData;
+        mapData[1][1] = -9999.0;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
     }
