@@ -16,6 +16,8 @@ import org.jgrasstools.hortonmachine.models.hm.TestNetnumbering;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 import org.jgrasstools.hortonmachine.models.hm.TestRescaledDistance;
 import org.jgrasstools.hortonmachine.models.hm.TestShalstab;
+import org.jgrasstools.hortonmachine.models.hm.TestTca;
+import org.jgrasstools.hortonmachine.models.hm.TestTca3d;
 import org.jgrasstools.hortonmachine.models.hm.TestTopindex;
 import org.jgrasstools.hortonmachine.models.hm.TestWateroutlet;
 
@@ -41,14 +43,14 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(TestJami.class);
         suite.addTestSuite(TestKriging.class);
         suite.addTestSuite(TestNetnumbering.class);
+        suite.addTestSuite(TestTca.class);
+        suite.addTestSuite(TestTca3d.class);
 
         suite.addTestSuite(TestPitfiller.class);
         suite.addTestSuite(TestRescaledDistance.class);
         suite.addTestSuite(TestShalstab.class);
         suite.addTestSuite(TestTopindex.class);
         suite.addTestSuite(TestWateroutlet.class);
-
-
 
         // suite.addTestSuite(TestAspect.class);
         // suite.addTestSuite(TestD2O.class);
@@ -78,8 +80,7 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(TestSumdownstream.class);
         // suite.addTestSuite(TestTau.class);
         // suite.addTestSuite(TestTc.class);
-        // suite.addTestSuite(TestTca.class);
-        // suite.addTestSuite(TestTca3D.class);
+
         // 
         //        
         // 

@@ -15,7 +15,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Giuseppe Formetta ()
  */
-public class Test_Tca3d extends HMTestCase{
+public class TestTca3d extends HMTestCase{
 	public void testTca3d() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
