@@ -1,20 +1,16 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.tca3d;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-
-import jaitools.numeric.SumProcessor;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static java.lang.Math.*;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.text.MessageFormat;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
@@ -26,13 +22,13 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.i18n.MessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("The OMS3 component representation of the tca model. The upslope catchment (or simply contributing) areas represent the planar projection of the areas afferent to a point in the basin. Once the drainage directions have been defined, it is possible to calculate, for each site, the total drainage area afferent to it, indicated as TCA (Total Contributing Area).")
 @Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
@@ -62,7 +58,7 @@ public class Tca3d extends JGTModel {
 	/*
 	 * INTERNAL VARIABLES
 	 */
-	private MessageHandler msg = MessageHandler.getInstance();
+	private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
 	private static final double NaN = doubleNovalue;
 
@@ -81,23 +77,6 @@ public class Tca3d extends JGTModel {
 			return;
 		}
 
-		// IValueSet pitValueSet = pitLink.getSourceComponent().getValues(time,
-		// pitLink.getID());
-		// GridCoverage2D pitGC = null;
-		// IValueSet flowValueSet =
-		// flowLink.getSourceComponent().getValues(time, flowLink.getID());
-		// GridCoverage2D flowGC = null;
-		// if (pitValueSet != null && flowValueSet != null) {
-		// pitGC = ((JGrassGridCoverageValueSet)
-		// pitValueSet).getGridCoverage2D();
-		// flowGC = ((JGrassGridCoverageValueSet)
-		// flowValueSet).getGridCoverage2D();
-		// } else {
-		//            String error = Messages.getString("erroreading"); //$NON-NLS-1$
-		// err.println(error);
-		// throw new IOException(error);
-		// }
-
 		HashMap<String, Double> regionMap = CoverageUtilities
 				.getRegionParamsFromGridCoverage(inPit);
 		cols = regionMap.get(CoverageUtilities.COLS).intValue();
@@ -112,14 +91,14 @@ public class Tca3d extends JGTModel {
 		WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(
 				flowRI, true);
 
-		pm.message(msg.message("tca3d.initializematrix"));
+		pm.message(msg.message("tca3d.initializematrix")); //$NON-NLS-1$
 
 		// Initialize new RasterData and set value
 		WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(
 				cols, rows, null, null, NaN);
 		
 		tca3dWR = area3d(pitWR,flowWR, tca3dWR);
-		outTca3d = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap,
+		outTca3d = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
 				inPit.getCoordinateReferenceSystem());
 
 	}
@@ -149,9 +128,9 @@ public class Tca3d extends JGTModel {
 		double[] grid = new double[11];
 		// grid contains the dimension of pixels according with flow directions
 		grid[0] = grid[9] = grid[10] = 0;
-		grid[1] = grid[5] = Math.abs(dx);
-		grid[3] = grid[7] = Math.abs(dy);
-		grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(dx * dx + dy * dy);
+		grid[1] = grid[5] = abs(dx);
+		grid[3] = grid[7] = abs(dy);
+		grid[2] = grid[4] = grid[6] = grid[8] = sqrt(dx * dx + dy * dy);
 
 		// contains the triangle's side
 		double latitr[] = new double[3];
@@ -164,7 +143,7 @@ public class Tca3d extends JGTModel {
 		WritableRandomIter tca3dIter = RandomIterFactory.createWritable(
 				tca3dImage, null);
 
-		pm.message(msg.message("tca3d.woringon"));
+		pm.message(msg.message("tca3d.woringon")); //$NON-NLS-1$
 
 		for (int j = 1; j < rows - 1; j++) {
 			for (int i = 1; i < cols - 1; i++) {
@@ -186,23 +165,23 @@ public class Tca3d extends JGTModel {
 							// calcola per ogni lato del triangolo in dislivello
 							// e la distanza planimetrica tra i pixel
 							// considerati.
-							dzdiff[0][0] = Math.abs(pitAtIJ - pitAtK0);
+							dzdiff[0][0] = abs(pitAtIJ - pitAtK0);
 							dzdiff[0][1] = grid[dir[tri[k][0]][2]];
-							dzdiff[1][0] = Math.abs(pitAtIJ - pitAtK1);
+							dzdiff[1][0] = abs(pitAtIJ - pitAtK1);
 							dzdiff[1][1] = grid[dir[tri[k][1]][2]];
-							dzdiff[2][0] = Math.abs(pitAtK0 - pitAtK1);
+							dzdiff[2][0] = abs(pitAtK0 - pitAtK1);
 							dzdiff[2][1] = grid[1];
 							// calcola i lati del tringolo considerato
-							latitr[0] = Math.sqrt(Math.pow(dzdiff[0][0], 2)
-									+ Math.pow(dzdiff[0][1], 2));
-							latitr[1] = Math.sqrt(Math.pow(dzdiff[1][0], 2)
-									+ Math.pow(dzdiff[1][1], 2));
-							latitr[2] = Math.sqrt(Math.pow(dzdiff[2][0], 2)
-									+ Math.pow(dzdiff[2][1], 2));
+							latitr[0] = sqrt(pow(dzdiff[0][0], 2)
+									+ pow(dzdiff[0][1], 2));
+							latitr[1] = sqrt(pow(dzdiff[1][0], 2)
+									+ pow(dzdiff[1][1], 2));
+							latitr[2] = sqrt(pow(dzdiff[2][0], 2)
+									+ pow(dzdiff[2][1], 2));
 							// calcola il semiperimetro del triangolo
 							semiptr = 0.5 * (latitr[0] + latitr[1] + latitr[2]);
 							// calcola l'area di ciascun triangolo
-							areatr[k] = Math.sqrt(semiptr
+							areatr[k] = sqrt(semiptr
 									* (semiptr - latitr[0])
 									* (semiptr - latitr[1])
 									* (semiptr - latitr[2]));
@@ -235,7 +214,7 @@ public class Tca3d extends JGTModel {
 					tca3dIter.setSample(i, j, 0, NaN);
 			}
 		}
-		pm.message(msg.message("tca3d.summ"));
+		pm.message(msg.message("tca3d.summ")); //$NON-NLS-1$
 		RandomIter flowIter = RandomIterFactory.create(flowImage, null);
 		ModelsEngine prova=new ModelsEngine();
 		return prova.sumDownstream(flowIter, tca3dIter, cols, rows, pm);	
