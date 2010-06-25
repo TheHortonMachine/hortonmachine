@@ -1,8 +1,9 @@
-sim(name:"ConvertAsciiToGeotiff") {
+SimBuilder sb = new SimBuilder(logging:'ALL');
+s = sb.sim(name:"ConvertAsciiToGeotiff") {
 
 	// your folder here
-	def folder = "C:/TMP/";
- 
+	def folder = new File("src/test/resources").absolutePath;
+    
     model {
         components  {
           reader    'RasterReader'
@@ -12,8 +13,6 @@ sim(name:"ConvertAsciiToGeotiff") {
         parameter {
            'reader.file' "$folder/dtm_test.asc"
            'writer.file' "$folder/dtm_test.tiff"
-           'reader.fileNovalue' 	"-9999.0"
-           'reader.geodataNovalue'	Double.NaN
         }
 
         connect {
@@ -22,3 +21,8 @@ sim(name:"ConvertAsciiToGeotiff") {
 
     }
 }
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer.geodata

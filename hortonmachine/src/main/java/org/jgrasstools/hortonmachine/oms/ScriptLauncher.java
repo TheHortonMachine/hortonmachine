@@ -18,10 +18,15 @@
  */
 package org.jgrasstools.hortonmachine.oms;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyShell;
+
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 
 import oms3.CLI;
 
@@ -72,27 +77,51 @@ public class ScriptLauncher {
         LinkedHashMap<String, Class< ? >> modulename2class = HortonMachine.moduleName2Class;
         Set<Entry<String, Class< ? >>> entries = modulename2class.entrySet();
         for( Entry<String, Class< ? >> entry : entries ) {
+            // there has to be at least a whitespace before the name
             String name = entry.getKey();
             Class< ? > class1 = entry.getValue();
-            script = script.replaceAll(name, class1.getCanonicalName());
+            script = substituteClass(script, name, class1);
         }
         modulename2class = JGrassGears.moduleName2Class;
         entries = modulename2class.entrySet();
         for( Entry<String, Class< ? >> entry : entries ) {
             String name = entry.getKey();
             Class< ? > class1 = entry.getValue();
-            script = script.replaceAll(name, class1.getCanonicalName());
+            script = substituteClass(script, name, class1);
         }
 
         System.out.println(script);
 
-        Object o = CLI.createSim(script, false, mode);
+        Object o = createSim(script, false, mode);
         CLI.invoke(o, "run");
     }
 
+    @SuppressWarnings("nls")
+    public static Object createSim( String script, boolean groovy, String ll ) {
+        Level.parse(ll);
+        StringBuilder sb = new StringBuilder();
+        sb.append("import static oms3.SimConst.*\n");
+        sb.append("import java.util.*\n");
+        sb.append("import oms3.SimBuilder\n");
+        String prefix = sb.toString();
+
+        ClassLoader parent = Thread.currentThread().getContextClassLoader();
+        GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());
+        return shell.evaluate(prefix + script);
+    }
+
+    @SuppressWarnings("nls")
+    private static String substituteClass( String script, String name, Class< ? > class1 ) {
+        script = script.replaceAll("'{1}" + name, "'" + class1.getCanonicalName());
+        script = script.replaceAll(" {1}" + name, " " + class1.getCanonicalName());
+        script = script.replaceAll("\t{1}" + name, "\t" + class1.getCanonicalName());
+        script = script.replaceAll("\n{1}" + name, "\n" + class1.getCanonicalName());
+        return script;
+    }
+
     private static void printUsage() {
-        System.out.println("USAGE: " + "\njava -jar jgrasstools.jar" + "\n pathToScript"
-                + "\n [--work <working_folder_path>]" + "\n [--mode <loglevel>");
+        System.out.println("USAGE: " + "\njava -jar jgrasstools.jar" + "\n pathToScript" + "\n [--work <working_folder_path>]"
+                + "\n [--mode <loglevel>");
     }
 
 }
