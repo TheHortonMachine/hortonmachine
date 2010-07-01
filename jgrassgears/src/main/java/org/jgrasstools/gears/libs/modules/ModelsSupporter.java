@@ -159,8 +159,6 @@ public class ModelsSupporter {
 
     final public static String DEFAULTKEY = "defaultkey"; //$NON-NLS-1$
 
-    public static final String DOTILE = "doTile";
-
     public static final String RESOLUTION = "resolution";
 
 }

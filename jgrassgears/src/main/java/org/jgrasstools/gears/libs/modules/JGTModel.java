@@ -72,7 +72,7 @@ public class JGTModel implements Process {
      * be recalculated.
      * </p>
      */
-    protected boolean doReset = false;
+    public boolean doReset = false;
 
     /**
      * Check on the progress monitor to see if the process was stopped.

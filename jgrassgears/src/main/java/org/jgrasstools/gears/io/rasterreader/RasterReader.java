@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.RenderingHints;
@@ -81,12 +82,12 @@ public class RasterReader extends JGTModel {
     @Role(Role.PARAMETER)
     @Description("The file novalue.")
     @In
-    public Double fileNovalue = null;
+    public Double fileNovalue = -9999.0;
 
     @Role(Role.PARAMETER)
     @Description("The novalue wanted in the coverage.")
     @In
-    public Double geodataNovalue = null;
+    public Double geodataNovalue = doubleNovalue;
 
     @Description("The optional requested boundary coordinates as array of [n, s, w, e].")
     @In

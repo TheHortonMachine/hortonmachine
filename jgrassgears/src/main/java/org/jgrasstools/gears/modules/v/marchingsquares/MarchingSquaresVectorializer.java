@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears.modules.v.marchingsquares;
 
+import static java.lang.Math.abs;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -143,7 +144,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
                 double value = iter.getSampleDouble(col, row, 0);
                 if (!isNovalue(value) && !bitSet.get(row * width + col)) {
 
-                    if (value == pValue) {
+                    if (abs(value - pValue) < .0000001 ) {
                         java.awt.Polygon awtPolygon = new java.awt.Polygon();
                         Polygon polygon = identifyPerimeter(col, row, awtPolygon);
                         if (polygon != null) {
@@ -189,13 +190,13 @@ public class MarchingSquaresVectorializer extends JGTModel {
                     "Supplied initial coordinates (%d, %d) do not lie on a perimeter.", initialX,
                     initialY));
         }
+        final Point2D worldPosition = new Point2D.Double(initialX, initialY);
+        gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
         if (initialValue == 15) {
             // not a border pixel
             return null;
         }
 
-        final Point2D worldPosition = new Point2D.Double(initialX, initialY);
-        gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
         Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0,
                 worldPosition.getY() - yRes / 2.0);
         List<Coordinate> coordinateList = new ArrayList<Coordinate>(200);
@@ -340,6 +341,8 @@ public class MarchingSquaresVectorializer extends JGTModel {
         if (sum == 0) {
             System.out.println(x + "/" + y);
         }
+        // mark the used position
+        bitSet.set(y * width + x);
         return sum;
     }
 
@@ -349,10 +352,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
             return false;
         }
         double value = iter.getSampleDouble(x, y, 0);
-        if (!isNovalue(value)) {
-            // mark the used position
-            bitSet.set(y * width + x);
-        } else {
+        if (isNovalue(value)) {
             return false;
         }
 
