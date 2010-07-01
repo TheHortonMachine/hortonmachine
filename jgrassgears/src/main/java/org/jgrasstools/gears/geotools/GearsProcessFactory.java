@@ -94,7 +94,7 @@ public class GearsProcessFactory implements ProcessFactory {
     }
 
     public Map<String, Parameter< ? >> getResultInfo( Name name, Map<String, Object> parameters ) throws IllegalArgumentException {
-        
+
         String moduleName = name.getLocalPart();
         LinkedHashMap<String, List<ClassField>> modulename2fields = JGrassGears.getInstance().moduleName2Fields;
         List<ClassField> list = modulename2fields.get(moduleName);
@@ -109,6 +109,10 @@ public class GearsProcessFactory implements ProcessFactory {
             }
         }
         return output;
+    }
+
+    public InternationalString getTitle() {
+        return null;
     }
 
     public InternationalString getTitle( Name name ) {

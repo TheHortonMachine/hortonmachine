@@ -112,6 +112,10 @@ public class HmProcessFactory implements ProcessFactory {
         return output;
     }
 
+    public InternationalString getTitle() {
+        return null;
+    }
+
     public InternationalString getTitle( Name name ) {
         return null;
     }
