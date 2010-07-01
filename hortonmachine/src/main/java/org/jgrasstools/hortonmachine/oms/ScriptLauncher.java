@@ -74,7 +74,7 @@ public class ScriptLauncher {
         String script = CLI.readFile(scriptPath);
 
         // add modules imports
-        LinkedHashMap<String, Class< ? >> modulename2class = HortonMachine.moduleName2Class;
+        LinkedHashMap<String, Class< ? >> modulename2class = HortonMachine.getInstance().moduleName2Class;
         Set<Entry<String, Class< ? >>> entries = modulename2class.entrySet();
         for( Entry<String, Class< ? >> entry : entries ) {
             // there has to be at least a whitespace before the name
@@ -82,7 +82,7 @@ public class ScriptLauncher {
             Class< ? > class1 = entry.getValue();
             script = substituteClass(script, name, class1);
         }
-        modulename2class = JGrassGears.moduleName2Class;
+        modulename2class = JGrassGears.getInstance().moduleName2Class;
         entries = modulename2class.entrySet();
         for( Entry<String, Class< ? >> entry : entries ) {
             String name = entry.getKey();
@@ -97,12 +97,13 @@ public class ScriptLauncher {
     }
 
     @SuppressWarnings("nls")
-    public static Object createSim( String script, boolean groovy, String ll ) {
-        Level.parse(ll);
+    public static Object createSim( String script, boolean groovy, String loggingMode ) {
+        Level.parse(loggingMode);
         StringBuilder sb = new StringBuilder();
         sb.append("import static oms3.SimConst.*\n");
         sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
+        sb.append("SimBuilder sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         String prefix = sb.toString();
 
         ClassLoader parent = Thread.currentThread().getContextClassLoader();

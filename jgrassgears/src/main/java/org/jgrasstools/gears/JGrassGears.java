@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.Access;
 import oms3.ComponentAccess;
@@ -47,40 +47,87 @@ import org.scannotation.ClasspathUrlFinder;
 @SuppressWarnings("nls")
 public class JGrassGears {
 
+    private static JGrassGears jgrassGears = null;
+
+    private URL baseclassUrl;
+    private JGrassGears( URL baseclassUrl ) {
+        this.baseclassUrl = baseclassUrl;
+    }
+
+    /**
+     * Retrieves the {@link JGrassGears}. If it exists, that instance is returned.
+     * 
+     * @return the JGrassGears annotations class.
+     */
+    public static JGrassGears getInstance() {
+        if (jgrassGears == null) {
+            jgrassGears = new JGrassGears(null);
+            jgrassGears.gatherInformations();
+        }
+        return jgrassGears;
+    }
+
+    /**
+     * Retrieves the {@link JGrassGears} for a particular url path.
+     * 
+     * <p>
+     * <b>When this method is called, the {@link JGrassGears} instance is reset.</b>
+     * </p>
+     * <p>
+     * Be careful when you use this. This is a workaround needed for eclipse
+     * systems, where the url returned by the urlfinder is a bundleresource that
+     * would need to be resolved first with rcp tools we do not want to depend on. 
+     * </p>
+     * 
+     * @return the JGrassGears annotations class.
+     */
+    public static JGrassGears getInstance( URL baseclassUrl ) {
+        jgrassGears = new JGrassGears(baseclassUrl);
+        jgrassGears.gatherInformations();
+        return jgrassGears;
+    }
+
     /**
      * A {@link LinkedHashMap map} of all the class names and the class itself.
      */
-    public static final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
+    public final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
 
     /**
      * A {@link LinkedHashMap map} of all the class names and their fields.
      */
-    public static final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
+    public final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
 
     /**
      * An array of all the fields used in the modules.
      */
-    public static String[] allFields = null;
+    public String[] allFields = null;
 
     /**
      * An array of all the class names of the modules.
      */
-    public static String[] allClasses = null;
+    public String[] allClasses = null;
 
-    static {
+    private void gatherInformations() {
 
         try {
-            URL url = ClasspathUrlFinder.findClassBase(JGrassGears.class);
+            if (baseclassUrl == null) {
+                baseclassUrl = ClasspathUrlFinder.findClassBase(JGrassGears.class);
+            }
             AnnotationDB db = new AnnotationDB();
-            db.scanArchives(url);
+            db.scanArchives(baseclassUrl);
 
             Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
             Set<String> simpleClasses = annotationIndex.get(Execute.class.getName());
             for( String className : simpleClasses ) {
                 int lastDot = className.lastIndexOf('.');
                 String name = className.substring(lastDot + 1);
-                Class< ? > clazz = Class.forName(className);
-                moduleName2Class.put(name, clazz);
+                Class< ? > clazz = null;
+                try {
+                    clazz = Class.forName(className);
+                    moduleName2Class.put(name, clazz);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
 
             /*
@@ -160,12 +207,12 @@ public class JGrassGears {
     }
 
     public static void main( String[] args ) throws IOException {
-        Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();
+        Set<Entry<String, Class< ? >>> entrySet = getInstance().moduleName2Class.entrySet();
         for( Entry<String, Class< ? >> entry : entrySet ) {
             System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
         }
 
-        List<ClassField> list = moduleName2Fields.get("LineSmoother");
+        List<ClassField> list = getInstance().moduleName2Fields.get("LineSmoother");
         for( ClassField classField : list ) {
             System.out.println(classField);
         }

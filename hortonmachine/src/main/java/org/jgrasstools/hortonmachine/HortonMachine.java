@@ -27,8 +27,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.Access;
 import oms3.ComponentAccess;
@@ -46,40 +46,87 @@ import org.scannotation.ClasspathUrlFinder;
  */
 public class HortonMachine {
 
+    private static HortonMachine hortonMachine = null;
+
+    private URL baseclassUrl;
+    private HortonMachine( URL baseclassUrl ) {
+        this.baseclassUrl = baseclassUrl;
+    }
+
+    /**
+     * Retrieves the {@link HortonMachine}. If it exists, that instance is returned.
+     * 
+     * @return the horton machine annotations class.
+     */
+    public static HortonMachine getInstance() {
+        if (hortonMachine == null) {
+            hortonMachine = new HortonMachine(null);
+            hortonMachine.gatherInformations();
+        }
+        return hortonMachine;
+    }
+
+    /**
+     * Retrieves the {@link HortonMachine} for a particular url path.
+     * 
+     * <p>
+     * <b>When this method is called, the {@link HortonMachine} instance is reset.</b>
+     * </p>
+     * <p>
+     * Be careful when you use this. This is a workaround needed for eclipse
+     * systems, where the url returned by the urlfinder is a bundleresource that
+     * would need to be resolved first with rcp tools we do not want to depend on. 
+     * </p>
+     * 
+     * @return the horton machine annotations class.
+     */
+    public static HortonMachine getInstance( URL baseclassUrl ) {
+        hortonMachine = new HortonMachine(baseclassUrl);
+        hortonMachine.gatherInformations();
+        return hortonMachine;
+    }
+
     /**
      * A {@link LinkedHashMap map} of all the class names and the class itself.
      */
-    public static final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
+    public final LinkedHashMap<String, Class< ? >> moduleName2Class = new LinkedHashMap<String, Class< ? >>();
 
     /**
      * A {@link LinkedHashMap map} of all the class names and their fields.
      */
-    public static final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
+    public final LinkedHashMap<String, List<ClassField>> moduleName2Fields = new LinkedHashMap<String, List<ClassField>>();
 
     /**
      * An array of all the fields used in the modules.
      */
-    public static String[] allFields = null;
+    public String[] allFields = null;
 
     /**
      * An array of all the class names of the modules.
      */
-    public static String[] allClasses = null;
+    public String[] allClasses = null;
 
-    static {
+    private void gatherInformations() {
 
         try {
-            URL url = ClasspathUrlFinder.findClassBase(HortonMachine.class);
+            if (baseclassUrl == null) {
+                baseclassUrl = ClasspathUrlFinder.findClassBase(HortonMachine.class);
+            }
             AnnotationDB db = new AnnotationDB();
-            db.scanArchives(url);
+            db.scanArchives(baseclassUrl);
 
             Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
             Set<String> simpleClasses = annotationIndex.get(Execute.class.getName());
             for( String className : simpleClasses ) {
                 int lastDot = className.lastIndexOf('.');
                 String name = className.substring(lastDot + 1);
-                Class< ? > clazz = Class.forName(className);
-                moduleName2Class.put(name, clazz);
+                Class< ? > clazz = null;
+                try {
+                    clazz = Class.forName(className);
+                    moduleName2Class.put(name, clazz);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
 
             /*
@@ -159,12 +206,14 @@ public class HortonMachine {
     }
 
     public static void main( String[] args ) throws IOException {
-        Set<Entry<String, Class< ? >>> entrySet = moduleName2Class.entrySet();
+        HortonMachine hm = HortonMachine.getInstance();
+
+        Set<Entry<String, Class< ? >>> entrySet = hm.moduleName2Class.entrySet();
         for( Entry<String, Class< ? >> entry : entrySet ) {
             System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
         }
 
-        List<ClassField> list = moduleName2Fields.get("Adige");
+        List<ClassField> list = hm.moduleName2Fields.get("Adige");
         for( ClassField classField : list ) {
             System.out.println(classField);
         }
