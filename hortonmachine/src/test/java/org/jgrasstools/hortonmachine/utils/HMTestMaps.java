@@ -121,14 +121,24 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},};
 
     public static double[][] mflowData = new double[][]{
-
-    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, {NaN, 10, 5, 7, 6, 6, 6, 6, 5, NaN},
-            {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, {NaN, 10, 4, 4, 4, 4, 5, 4, 4, NaN}, {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},};
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, 
+        {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, 
+        {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, 
+        {NaN, 10, 5, 7, 6, 6, 6, 6, 5, NaN},
+        {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, 
+        {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, 
+        {NaN, 10, 4, 4, 4, 4, 5, 4, 4, NaN}, 
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},};
 
     public static double[][] mflowDataBorder = new double[][]{
-
-    {5, 6, 8, 8, 9, 6, 5, 8, 5, 5}, {3, NaN, 6, 6, 6, 6, 6, 6, 6, 3}, {3, 7, 6, 6, 6, 6, 6, 7, 7, 3}, {4, 10, 5, 7, 6, 6, 6, 6, 5, 2}, {3, 3, 4, 5, 5, 5, 5, 5, 5, 3}, {3, 2, 3, 3, 4, 4, 4, 3, 3, 5},
-            {5, 10, 4, 4, 4, 4, 5, 4, 4, 3}, {3, 3, 7, 3, 3, 8, 3, 9, 3, 3},};
+            {5, 6, 8, 8, 9, 6, 5, 8, 5, 5}, 
+            {3, NaN, 6, 6, 6, 6, 6, 6, 6, 3}, 
+            {3, 7, 6, 6, 6, 6, 6, 7, 7, 3}, 
+            {4, 10, 5, 7, 6, 6, 6, 6, 5, 2}, 
+            {3, 3, 4, 5, 5, 5, 5, 5, 5, 3}, 
+            {3, 2, 3, 3, 4, 4, 4, 3, 3, 5},
+            {5, 10, 4, 4, 4, 4, 5, 4, 4, 3}, 
+            {3, 3, 7, 3, 3, 8, 3, 9, 3, 3},};
 
     public static double[][] slopeData = new double[][]{{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, {NaN, NaN, 4.71, 3.54, 2.59, 2.36, 3.54, 7.07, 5.89, NaN},
             {NaN, 4.67, 6.84, 2.36, 2.36, 2.36, 2.36, 6.67, 10, NaN}, {NaN, 0.33, 8, 6.67, 5.89, 4.71, 3.54, 0, 0, NaN}, {NaN, 4.67, 0.47, 2.33, 3.33, 3.33, 3.33, 0, 0, NaN},

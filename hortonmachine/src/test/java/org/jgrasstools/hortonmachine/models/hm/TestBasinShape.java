@@ -8,7 +8,6 @@ import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.basin.basinshape.BasinShape;
-import org.jgrasstools.hortonmachine.modules.network.netnumbering.NetNumbering;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;

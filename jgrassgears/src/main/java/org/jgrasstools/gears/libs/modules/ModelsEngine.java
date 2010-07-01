@@ -1304,4 +1304,21 @@ public class ModelsEngine {
         return summedMapWR;
     }
 
+    public boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz, double diss ) {
+        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
+
+        for( int k = 1; k <= 8; k++ ) {
+            if (flowIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
+                if (tcaIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) >= maz) {
+                    if (tcaIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == maz) {
+                        if (dist.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) > diss)
+                            return false;
+                    } else
+                        return false;
+                }
+            }
+        }
+        return true;
+    }
+
 }
