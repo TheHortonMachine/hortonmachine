@@ -65,8 +65,22 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
+
+/**
+ * A class containing several methods used by the modules.
+ * 
+ * <p>The methods are not static for usage in multithreading environment.</p>
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ * @author Silvia Franceschi (www.hydrologis.com)
+ * @author Erica Ghesla
+ * @author Daniele Andreis
+ */
+@SuppressWarnings("unchecked")
 public class ModelsEngine {
     private static int[][] DIR = ModelsSupporter.DIR;
+
+    private static int[][] dirIn = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
     private GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
@@ -95,6 +109,95 @@ public class ModelsEngine {
             rowCol[0] += DIR[n][1];
             return true;
         }
+    }
+
+    /**
+     * Moves one pixel upstream.
+     * 
+     * @param p
+     * @param flowRandomIter
+     * @param tcaRandomIter
+     * @param lRandomIter
+     * @param param
+     */
+    public void go_upstream_a( int[] p, RandomIter flowRandomIter, RandomIter tcaRandomIter, RandomIter lRandomIter, int[] param ) {
+        double area = 0, lenght = 0;
+        int[] point = new int[2];
+        int kk = 0, count = 0;
+
+        point[0] = p[0];
+        point[1] = p[1];
+        // check how many pixels are draining in the considered pixel and select
+        // the pixel with maximun tca
+        for( int k = 1; k <= 8; k++ ) {
+            if (flowRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+                // counts how many pixels are draining in the considere
+                count++;
+                if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) >= area) {
+                    // if two pixels has the same tca select the pixel with the
+                    // maximum vale of hacklength
+                    if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) == area) {
+                        if (lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) > lenght) {
+                            kk = k;
+                            area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
+                            lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
+                            point[0] = p[0] + dirIn[k][0];
+                            point[1] = p[1] + dirIn[k][1];
+                        }
+                    } else {
+                        kk = k;
+                        area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
+                        lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
+                        point[0] = p[0] + dirIn[k][0];
+                        point[1] = p[1] + dirIn[k][1];
+                    }
+                }
+            }
+
+        }
+        p[0] = point[0];
+        p[1] = point[1];
+        param[0] = kk;
+        param[1] = count;
+    }
+
+    /**
+     * Moves one pixel upstream following the supplied network. TODO Daniele doc
+     * 
+     * @param colRow
+     * @param flowIterator
+     * @param netnumIterator
+     * @param param
+     */
+    public void goUpStreamOnNetFixed( int[] colRow, RandomIter flowIterator, RandomIter netnumIterator, int[] param ) {
+
+        int kk = 0, count = 0;
+        int[] point = new int[2];
+
+        for( int k = 1; k <= 8; k++ ) {
+            if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+                count++;
+                if (netnumIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == netnumIterator
+                        .getSampleDouble(colRow[0], colRow[1], 0)) {
+                    kk = k;
+                    point[0] = colRow[0] + dirIn[k][0];
+                    point[1] = colRow[1] + dirIn[k][1];
+                }
+            }
+        }
+        if (kk == 0) {
+            for( int k = 1; k <= 8; k++ ) {
+                if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+                    kk = k;
+                    point[0] = colRow[0] + dirIn[k][0];
+                    point[1] = colRow[1] + dirIn[k][1];
+                }
+            }
+        }
+        colRow[0] = point[0];
+        colRow[1] = point[1];
+        param[0] = kk;
+        param[1] = count;
     }
 
     /**
@@ -1316,9 +1419,9 @@ public class ModelsEngine {
 
         for( int k = 1; k <= 8; k++ ) {
             if (flowIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
-               if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) >= maz) {
+                if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) >= maz) {
                     if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == maz) {
-                        if (dist.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) > diss)                            
+                        if (dist.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) > diss)
                             return false;
                     } else
                         return false;
