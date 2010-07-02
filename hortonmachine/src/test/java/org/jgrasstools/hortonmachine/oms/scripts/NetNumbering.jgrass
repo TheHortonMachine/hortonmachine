@@ -1,0 +1,60 @@
+s = sb.sim(name:"NetNumbering") {
+
+	// your folder here
+	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	
+    model {
+        components  {
+          reader1    'RasterReader'
+          reader2    'RasterReader'
+          writer1    'ArcgridCoverageWriter'
+          writer2    'ArcgridCoverageWriter'
+          writer3    'ShapefileFeatureWriter'
+          tca 'Tca'
+          extractNetwork 'ExtractNetwork'
+          netNumbering 'NetNumbering'
+          basinShape 'BasinShape'
+        }
+
+        parameter {
+           'reader1.file' "$folder/byumba_pit.asc"
+           'reader1.fileNovalue'		(-9999.0)
+           'reader1.geodataNovalue'		Double.NaN
+           
+           'reader2.file' "$folder/byumba_mdir.asc"
+           'reader2.fileNovalue'		(-9999.0)
+           'reader2.geodataNovalue'		Double.NaN
+           
+           'writer1.file' "$folder/byumba_netnum200.asc"
+           'writer2.file' "$folder/byumba_basins200.asc"
+           'writer3.file' "$folder/byumba_basins.shp"
+           
+           'extractNetwork.pMode'		0
+           'extractNetwork.pThres'		200
+           'extractNetwork.doNetfc'	(false)
+	        
+			//'extractNetwork.pm' pm
+        }
+
+        connect {
+          'reader2.geodata' 'tca.inFlow'
+          'reader2.geodata' 'extractNetwork.inFlow'
+          'tca.outTca' 'extractNetwork.inTca'
+          'extractNetwork.outNet' 'netNumbering.inNet'
+          'reader2.geodata' 'netNumbering.inFlow'
+          'netNumbering.outNetnum' 'writer1.geodata'
+          'netNumbering.outBasins' 'writer2.geodata'
+          'netNumbering.outBasins' 'basinShape.inBasins'
+          'reader1.geodata' 'basinShape.inPit'
+          'basinShape.outBasins' 'writer3.geodata'
+        }
+
+    }
+}
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer.geodata
+
+

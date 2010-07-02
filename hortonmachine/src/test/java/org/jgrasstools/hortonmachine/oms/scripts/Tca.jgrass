@@ -1,0 +1,34 @@
+s = sb.sim(name:"Tca") {
+
+	// your folder here
+	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	
+    model {
+        components  {
+          reader    'RasterReader'
+          writer    'ArcgridCoverageWriter'
+          tca 'Tca'
+        }
+
+        parameter {
+           'reader.file' "$folder/byumba_flow.asc"
+           'writer.file' "$folder/byumba_tca.asc"
+           'reader.fileNovalue'		(-9999.0)
+           'reader.geodataNovalue'		Double.NaN
+           
+        }
+
+        connect {
+          'reader.geodata' 'tca.inFlow'
+          'tca.outTca' 'writer.geodata'
+        }
+
+    }
+}
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer.geodata
+
+

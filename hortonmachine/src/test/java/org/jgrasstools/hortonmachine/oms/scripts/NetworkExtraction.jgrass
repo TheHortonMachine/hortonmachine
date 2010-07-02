@@ -1,0 +1,50 @@
+s = sb.sim(name:"NetworkExtraction") {
+
+	// your folder here
+	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	
+    model {
+        components  {
+          reader    'RasterReader'
+          writer    'ArcgridCoverageWriter'
+          flowDirections 'FlowDirections'
+          drainDir 'DrainDir'
+          extractNetwork 'ExtractNetwork'
+        }
+
+        parameter {
+           'reader.file' "$folder/byumba_pit.asc"
+           'writer.file' "$folder/byumba_net200.asc"
+           'reader.fileNovalue'		(-9999.0)
+           'reader.geodataNovalue'		Double.NaN
+           
+           'drainDir.doLad'			(true) 
+           'drainDir.pLambda'			1
+           'extractNetwork.pMode'		0
+           'extractNetwork.pThres'		200
+           'extractNetwork.doNetfc'	(false)
+	        
+			//'flowDirections.pm' pm
+			//'drainDir.pm' pm
+			//'extractNetwork.pm' pm
+        }
+
+        connect {
+          'reader.geodata' 'flowDirections.inPit'
+          'flowDirections.outFlow' 'drainDir.inFlow'
+          'reader.geodata' 'drainDir.inPit'
+          'drainDir.outFlow' 'extractNetwork.inFlow'
+          'drainDir.outTca' 'extractNetwork.inTca'
+          'extractNetwork.outNet' 'writer.geodata'
+          
+        }
+
+    }
+}
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer.geodata
+
+
