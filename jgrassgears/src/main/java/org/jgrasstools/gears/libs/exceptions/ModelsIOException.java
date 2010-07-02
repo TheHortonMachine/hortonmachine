@@ -30,7 +30,7 @@ import java.io.IOException;
 public class ModelsIOException extends IOException {
     private static final long serialVersionUID = 4509285779491321905L;
 
-    public ModelsIOException( String message, String owner ) {
-        super(owner + ": " + message);
+    public ModelsIOException( String message, Object owner ) {
+        super(owner.getClass().getSimpleName() + ": " + message);
     }
 }

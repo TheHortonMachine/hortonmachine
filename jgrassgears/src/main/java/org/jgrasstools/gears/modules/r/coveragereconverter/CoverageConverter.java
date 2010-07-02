@@ -74,7 +74,7 @@ public class CoverageConverter extends JGTModel {
             JGrassCoverageWriter.writeGrassRaster(outputFile, coverage);
         } else {
             throw new ModelsIllegalargumentException("Output data type not supported: " + pType,
-                    this.getClass().getSimpleName());
+                    this);
         }
 
     }

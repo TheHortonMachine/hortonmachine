@@ -211,17 +211,17 @@ public class NetNumbering extends JGTModel {
             netNumWR = modelsEngine.netNumbering(nstream, flowIter, netIter, nCols, nRows, pm);
         } else if (pMode == 1) {
             if (tcaIter == null) {
-                throw new ModelsIllegalargumentException("This method needs the map of tca.", this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("This method needs the map of tca.", this);
             }
             netNumWR = modelsEngine.netNumberingWithTca(nstream, flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
         } else if (pMode == 2) {
             if (attributeVect == null || geomVect == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
             }
             netNumWR = modelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
         } else {
             if (attributeVect == null || geomVect == null || tcaIter == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection and the map of tca.", this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection and the map of tca.", this);
             }
             netNumWR = modelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
         }

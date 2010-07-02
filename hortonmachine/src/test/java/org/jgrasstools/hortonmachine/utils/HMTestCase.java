@@ -30,6 +30,7 @@ import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
 import junit.framework.TestCase;
+@SuppressWarnings("nls")
 public class HMTestCase extends TestCase {
     public void testDummy(){
         // done to not make the maven test fail

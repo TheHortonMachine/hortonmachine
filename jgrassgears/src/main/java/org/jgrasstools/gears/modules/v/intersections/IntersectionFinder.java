@@ -94,7 +94,7 @@ public class IntersectionFinder extends JGTModel {
         case POLYGON:
         case MULTIPOLYGON:
             throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.",
-                    this.getClass().getSimpleName());
+                    this);
         default:
             throw new ModelsIllegalargumentException("The module doesn't work for points.", this
                     .getClass().getSimpleName());

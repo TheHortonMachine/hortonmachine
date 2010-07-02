@@ -72,7 +72,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException(newPattern, this);
         }
         // pfafstetter attribute
         int pAttrIndex = fT.indexOf(pfafAttr);
@@ -80,7 +80,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{pfafAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException(newPattern, this);
         }
         // net start elevation attribute
         int startNetElevAttrIndex = -1;
@@ -146,7 +146,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, ft.getTypeName()};
             pattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(pattern, this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException(pattern, this);
         }
 
         // baricenter attribute
@@ -157,7 +157,7 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{baricenterAttr, ft.getTypeName()};
                 pattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(pattern, this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException(pattern, this);
             }
         }
         int vegetationAttributeIndex = -1;
@@ -167,7 +167,7 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{vegetationAttributeName, ft.getTypeName()};
                 pattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(pattern, this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException(pattern, this);
             }
         }
 

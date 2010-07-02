@@ -153,7 +153,7 @@ public class RasterCatToFeatureAttribute {
                 }
             } else {
                 throw new ModelsIllegalargumentException("The Geometry type is not supported.",
-                        this.getClass().getSimpleName());
+                        this);
             }
 
             if (!inCoverageEnvelope.contains(c.x, c.y)) {

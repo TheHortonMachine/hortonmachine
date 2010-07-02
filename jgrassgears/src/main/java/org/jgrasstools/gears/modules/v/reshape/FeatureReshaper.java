@@ -257,7 +257,7 @@ public class FeatureReshaper extends JGTModel {
                 try {
                     expression = CQL.toExpression(expressionDefinition);
                 } catch (CQLException e) {
-                    throw new ModelsRuntimeException(e.toString(), this.getClass().getSimpleName());
+                    throw new ModelsRuntimeException(e.toString(), this);
                 }
                 list.add(expression);
             }

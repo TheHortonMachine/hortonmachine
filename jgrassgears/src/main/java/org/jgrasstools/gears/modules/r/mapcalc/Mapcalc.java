@@ -149,7 +149,7 @@ public class Mapcalc extends JGTModel {
             public void onFailureEvent( JiffleFailureEvent arg0 ) {
                 String msg = arg0.toString();
                 hasFinished = true;
-                throw new ModelsRuntimeException(msg, this.getClass().getSimpleName());
+                throw new ModelsRuntimeException(msg, this);
             }
 
             public void onProgressEvent( JiffleProgressEvent arg0 ) {
@@ -178,10 +178,10 @@ public class Mapcalc extends JGTModel {
             }
         } catch (JiffleCompilationException e) {
             String message = "An error occurred during the compilation of the function. Please check your function.";
-            throw new ModelsRuntimeException(message, this.getClass().getSimpleName());
+            throw new ModelsRuntimeException(message, this);
         } catch (JiffleInterpreterException e) {
             String message = "An error occurred during the interpretation of the function. Please check your function.";
-            throw new ModelsRuntimeException(message, this.getClass().getSimpleName());
+            throw new ModelsRuntimeException(message, this);
         }
 
     }

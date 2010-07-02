@@ -557,7 +557,7 @@ public class HillSlope implements Comparator<HillSlope> {
             if (!hasVegetation()) {
                 throw new ModelsIllegalargumentException(
                         "Evapotranspiration can be calculated only if the vegetation library has been defined. check your syntax...",
-                        this.getClass().getSimpleName());
+                        this);
             }
             double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation,
                     vegetation.getMinStomatalResistance(), vegetation.getArchitecturalResistance(),

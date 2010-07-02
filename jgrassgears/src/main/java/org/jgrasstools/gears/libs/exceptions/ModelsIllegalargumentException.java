@@ -28,7 +28,7 @@ package org.jgrasstools.gears.libs.exceptions;
 public class ModelsIllegalargumentException extends IllegalArgumentException {
     private static final long serialVersionUID = 4509285779491321905L;
 
-    public ModelsIllegalargumentException( String message, String owner ) {
-        super(owner + ": " + message);
+    public ModelsIllegalargumentException( String message, Object owner ) {
+        super(owner.getClass().getSimpleName() + ": " + message);
     }
 }

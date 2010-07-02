@@ -406,7 +406,7 @@ public class Adige extends JGTModel {
                 } else {
                     throw new ModelsIllegalargumentException(
                             "In the case of usage of a constant rainintensity it is necessary to define also its duration.\nCheck your arguments, probably the --rainduration flag is missing.",
-                            this.getClass().getSimpleName());
+                            this);
                 }
             }
 
@@ -416,7 +416,7 @@ public class Adige extends JGTModel {
             }
             if (fPfaff == null || fPfaff.length() < 1) {
                 throw new ModelsIllegalargumentException("Missing pfafstetter attribute name.",
-                        this.getClass().getSimpleName());
+                        this);
             }
             if (fMonpointid == null || fMonpointid.length() < 1) {
                 throw new ModelsIllegalargumentException(
@@ -425,7 +425,7 @@ public class Adige extends JGTModel {
             }
             if (fBaricenter == null || fBaricenter.length() < 1) {
                 throw new ModelsIllegalargumentException("Missing basin centroid attribute name.",
-                        this.getClass().getSimpleName());
+                        this);
             }
             if (fNetelevstart == null || fNetelevstart.length() < 1) {
                 throw new ModelsIllegalargumentException(
@@ -456,13 +456,13 @@ public class Adige extends JGTModel {
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The hydrometer features are missing the pafaffstetter attribute field: "
-                                                + fPfaff, this.getClass().getSimpleName());
+                                                + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The hydrometer features are missing the id attribute field: "
-                                                + fMonpointid, this.getClass().getSimpleName());
+                                                + fMonpointid, this);
                             }
                         }
 
@@ -491,13 +491,13 @@ public class Adige extends JGTModel {
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The dams features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this.getClass().getSimpleName());
+                                                + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The dams features are missing the id attribute field: "
-                                                + fMonpointid, this.getClass().getSimpleName());
+                                                + fMonpointid, this);
                             }
                         }
 
@@ -526,13 +526,13 @@ public class Adige extends JGTModel {
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The tributary features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this.getClass().getSimpleName());
+                                                + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The tributary features are missing the id attribute field: "
-                                                + fMonpointid, this.getClass().getSimpleName());
+                                                + fMonpointid, this);
                             }
                         }
 
@@ -561,13 +561,13 @@ public class Adige extends JGTModel {
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The offtakes features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this.getClass().getSimpleName());
+                                                + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
                                         "The offtakes features are missing the id attribute field: "
-                                                + fMonpointid, this.getClass().getSimpleName());
+                                                + fMonpointid, this);
                             }
                         }
 
@@ -862,7 +862,7 @@ public class Adige extends JGTModel {
     // if (columns != vegIndexesNum) {
     // throw new ModelsIOException(
     // "The vegetation library scalarset contains a wrong number of columns. Check your data.",
-    // this.getClass().getSimpleName());
+    // this);
     // }
     // for( int i = 1; i < vegetationLibScalarSet.size(); i = i + vegIndexesNum ) {
     // // 0-id,1-architectural_resistance,2-min_stomatal_resistance,

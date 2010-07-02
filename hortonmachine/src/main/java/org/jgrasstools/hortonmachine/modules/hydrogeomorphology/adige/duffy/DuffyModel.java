@@ -454,7 +454,7 @@ public class DuffyModel implements IBasicFunction {
                         || output[i + (2 * linksNum)] == 0.0) {
                     throw new ModelsIllegalargumentException(
                             "Invalid value of S1, please check the parameters."
-                                    + output[i + (2 * linksNum)], this.getClass().getSimpleName());
+                                    + output[i + (2 * linksNum)], this);
                 }
                 output[i + (3 * linksNum)] = (1.0D / 60.0) * (re - qs - qe2);
             }

@@ -242,7 +242,7 @@ public class Peakflow extends JGTModel {
         } else {
             throw new ModelsIllegalargumentException(
                     "Problems occurred in parsing the command arguments. Please check your arguments.",
-                    this.getClass().getSimpleName());
+                    this);
         }
 
         // the internal timestep is always 1 second
