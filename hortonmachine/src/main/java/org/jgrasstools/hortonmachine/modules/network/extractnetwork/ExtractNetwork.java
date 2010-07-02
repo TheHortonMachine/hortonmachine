@@ -31,11 +31,15 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
@@ -86,6 +90,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
  *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
  */
+@Description("Extracts the network from an elevation model.")
+@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
+@Keywords("Network, Vector")
+@Status(Status.TESTED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ExtractNetwork extends JGTModel {
 
     /*
