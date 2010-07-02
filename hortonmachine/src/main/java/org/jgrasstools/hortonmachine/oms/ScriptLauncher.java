@@ -23,6 +23,8 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -31,6 +33,7 @@ import java.util.logging.Level;
 import oms3.CLI;
 
 import org.jgrasstools.gears.JGrassGears;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.HortonMachine;
 
 /**
@@ -69,6 +72,11 @@ public class ScriptLauncher {
 
         if (workPath != null) {
             System.setProperty("oms3.work", workPath);
+        } else {
+            String tempdir = System.getProperty("java.io.tmpdir");
+            File omsTmp = new File(tempdir + File.separator + "oms");
+            omsTmp.mkdirs();
+            System.setProperty("oms3.work", omsTmp.getAbsolutePath());
         }
 
         String script = CLI.readFile(scriptPath);
@@ -90,8 +98,6 @@ public class ScriptLauncher {
             script = substituteClass(script, name, class1);
         }
 
-        System.out.println(script);
-
         Object o = createSim(script, false, mode);
         CLI.invoke(o, "run");
     }
@@ -104,13 +110,16 @@ public class ScriptLauncher {
         sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
         sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
-        sb.append("def pm = new PrintStreamProgressMonitor(System.out, System.err);\n");
+        sb
+                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         String prefix = sb.toString();
+        String finalScript = prefix + script;
+        System.out.println(finalScript);
 
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());
-        return shell.evaluate(prefix + script);
+        return shell.evaluate(finalScript);
     }
 
     @SuppressWarnings("nls")
