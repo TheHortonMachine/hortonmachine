@@ -4,7 +4,10 @@ syntax: regexp
 \.project
 \.settings
 ^hortonmachine.target
+^hortonmachine.bin
 ^jgrassgears.target
+^jgrassgears.bin
 ^edc.target
+^edc.bin
 ~$
 .swp$

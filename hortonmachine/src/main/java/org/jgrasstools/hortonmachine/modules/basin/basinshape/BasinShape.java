@@ -170,7 +170,11 @@ public class BasinShape extends JGTModel {
             WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinsWR, null);
             for( int i = 0; i < nCols; i++ ) {
                 for( int j = 0; j < nRows; j++ ) {
-                    int basinNum = (int) basinsRandomIter.getSampleDouble(i, j, 0);
+                    double basinId = basinsRandomIter.getSampleDouble(i, j, 0);
+                    if (isNovalue(basinId)) {
+                        continue;
+                    }
+                    int basinNum = (int) basinId;
                     if (basinNum == num) {
                         if (nordRow == -1) {
                             nordRow = i;
@@ -278,7 +282,7 @@ public class BasinShape extends JGTModel {
                         centroidElevation = elev;
                     }
                 }
-                values[6] = centroidElevation;
+                values[7] = centroidElevation;
                 subbasinIter.done();
                 subbasinsWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 

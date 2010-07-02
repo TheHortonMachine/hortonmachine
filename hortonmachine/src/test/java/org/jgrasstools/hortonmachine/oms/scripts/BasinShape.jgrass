@@ -12,11 +12,11 @@ s = sb.sim(name:"BasinShape") {
         }
 
         parameter {
-           'reader1.file' "$folder/byumba_pit.asc"
+           'reader1.file' "$folder/byumba_pit_small.asc"
            'reader1.fileNovalue'		(-9999.0)
            'reader1.geodataNovalue'		Double.NaN
            
-           'reader2.file' "$folder/byumba_netnum200.asc"
+           'reader2.file' "$folder/byumba_basins200.asc"
            'reader2.fileNovalue'		(-9999.0)
            'reader2.geodataNovalue'		Double.NaN
            
@@ -37,6 +37,6 @@ s = sb.sim(name:"BasinShape") {
 res = s.run();
 
 println "Output gridcoverage:"
-println res.writer.geodata
+println res.writer3.geodata
 
 
