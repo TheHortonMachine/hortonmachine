@@ -1,0 +1,62 @@
+s = sb.sim(name:"Pfafstetter") {
+
+	// your folder here
+	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	
+    model {
+        components  {
+          reader1    'RasterReader'
+          reader2    'RasterReader'
+          reader3    'RasterReader'
+          writer3    'ShapefileFeatureWriter'
+          tca 'Tca'
+          hackLength 'HackLength'
+          hackStream 'HackStream'
+          pfafstetter 'Pfafstetter'
+        }
+
+        parameter {
+           'reader1.file' "$folder/byumba_pit_small.asc"
+           'reader1.fileNovalue'		(-9999.0)
+           'reader1.geodataNovalue'		Double.NaN
+           
+           'reader2.file' "$folder/byumba_mdir.asc"
+           'reader2.fileNovalue'		(-9999.0)
+           'reader2.geodataNovalue'		Double.NaN
+
+           'reader3.file' "$folder/byumba_netnum200.asc"
+           'reader3.fileNovalue'		(-9999.0)
+           'reader3.geodataNovalue'		Double.NaN
+           
+           'writer3.file' "$folder/byumba_net_pfaf.shp"
+           
+           'tca.pm' pm
+           'hackLength.pm' pm
+           'hackStream.pm' pm
+           'pfafstetter.pm' pm
+        }
+
+        connect {
+          'reader2.geodata' 'tca.inFlow'
+          'tca.outTca' 'hackLength.inTca'
+          'reader2.geodata' 'hackLength.inFlow'
+          'hackLength.outHacklength' 'hackStream.inHacklength'
+          'reader2.geodata' 'hackStream.inFlow'
+          'tca.outTca' 'hackStream.inTca'
+          'reader3.geodata' 'hackStream.inNet'
+          'hackStream.outHackstream' 'pfafstetter.inHackstream'
+          'reader2.geodata' 'pfafstetter.inFlow'
+          'reader1.geodata' 'pfafstetter.inPit'
+          'reader3.geodata' 'pfafstetter.inNetnum'
+          'pfafstetter.outPfaf' 'writer3.geodata'
+        }
+
+    }
+}
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer3.geodata
+
+
