@@ -283,8 +283,8 @@ public class HackStream extends JGTModel {
                 }
                 if (count > 1) {
                     for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(punto[0] + dir[k][0], punto[1] + dir[k][1], 0) == dir[k][2] && k != kk) {
-                            segnaIter.setSample(punto[0] + dir[k][0], punto[1] + dir[k][1], 0, 10);
+                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
                         }
                     }
                 }
@@ -302,8 +302,8 @@ public class HackStream extends JGTModel {
                         // attribuisco ai nodi che incontro direzione di
                         // drenaggio 10
                         for( int k = 1; k <= 8; k++ ) {
-                            if (flowIter.getSample(flow_p[0] + dir[k][0], flow_p[1] + dir[k][1], 0) == dir[k][2] && k != kk) {
-                                segnaIter.setSample(flow_p[0] + dir[k][0], flow_p[1] + dir[k][1], 0, 10);
+                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
                             }
                         }
                     }
@@ -397,8 +397,8 @@ public class HackStream extends JGTModel {
                 hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
                 if (count > 1) {
                     for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(punto[0] + dir[k][0], punto[1] + dir[k][1], 0) == dir[k][2]) {
-                            segnaIter.setSample(punto[0] + dir[k][0], punto[1] + dir[k][1], 0, 10);
+                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2]) {
+                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
                         }
                     }
                 }
@@ -416,8 +416,8 @@ public class HackStream extends JGTModel {
                         // attribuisco ai nodi che incontro direzione di
                         // drenaggio 10
                         for( int k = 1; k <= 8; k++ ) {
-                            if (flowIter.getSample(flow_p[0] + dir[k][0], flow_p[1] + dir[k][1], 0) == dir[k][2] && k != kk) {
-                                segnaIter.setSample(flow_p[0] + dir[k][0], flow_p[1] + dir[k][1], 0, 10);
+                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
                             }
                         }
                     }

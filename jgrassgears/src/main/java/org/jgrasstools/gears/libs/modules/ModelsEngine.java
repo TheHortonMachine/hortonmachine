@@ -130,26 +130,26 @@ public class ModelsEngine {
         // check how many pixels are draining in the considered pixel and select
         // the pixel with maximun tca
         for( int k = 1; k <= 8; k++ ) {
-            if (flowRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+            if (flowRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                 // counts how many pixels are draining in the considere
                 count++;
-                if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) >= area) {
+                if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0) >= area) {
                     // if two pixels has the same tca select the pixel with the
                     // maximum vale of hacklength
-                    if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) == area) {
-                        if (lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0) > lenght) {
+                    if (tcaRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0) == area) {
+                        if (lRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0) > lenght) {
                             kk = k;
-                            area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
-                            lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
-                            point[0] = p[0] + dirIn[k][0];
-                            point[1] = p[1] + dirIn[k][1];
+                            area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0);
+                            lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0);
+                            point[0] = p[0] + dirIn[k][1];
+                            point[1] = p[1] + dirIn[k][0];
                         }
                     } else {
                         kk = k;
-                        area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
-                        lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][0], p[1] + dirIn[k][1], 0);
-                        point[0] = p[0] + dirIn[k][0];
-                        point[1] = p[1] + dirIn[k][1];
+                        area = tcaRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0);
+                        lenght = lRandomIter.getSampleDouble(p[0] + dirIn[k][1], p[1] + dirIn[k][0], 0);
+                        point[0] = p[0] + dirIn[k][1];
+                        point[1] = p[1] + dirIn[k][0];
                     }
                 }
             }
@@ -175,22 +175,22 @@ public class ModelsEngine {
         int[] point = new int[2];
 
         for( int k = 1; k <= 8; k++ ) {
-            if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+            if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][1], colRow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                 count++;
-                if (netnumIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == netnumIterator
+                if (netnumIterator.getSampleDouble(colRow[0] + dirIn[k][1], colRow[1] + dirIn[k][0], 0) == netnumIterator
                         .getSampleDouble(colRow[0], colRow[1], 0)) {
                     kk = k;
-                    point[0] = colRow[0] + dirIn[k][0];
-                    point[1] = colRow[1] + dirIn[k][1];
+                    point[0] = colRow[0] + dirIn[k][1];
+                    point[1] = colRow[1] + dirIn[k][0];
                 }
             }
         }
         if (kk == 0) {
             for( int k = 1; k <= 8; k++ ) {
-                if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][0], colRow[1] + dirIn[k][1], 0) == dirIn[k][2]) {
+                if (flowIterator.getSampleDouble(colRow[0] + dirIn[k][1], colRow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                     kk = k;
-                    point[0] = colRow[0] + dirIn[k][0];
-                    point[1] = colRow[1] + dirIn[k][1];
+                    point[0] = colRow[0] + dirIn[k][1];
+                    point[1] = colRow[1] + dirIn[k][0];
                 }
             }
         }
