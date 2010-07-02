@@ -41,6 +41,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 import javax.vecmath.Point4d;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.feature.FeatureCollection;
@@ -55,6 +56,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -62,6 +64,7 @@ import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 public class ModelsEngine {
     private static int[][] DIR = ModelsSupporter.DIR;
 
@@ -216,104 +219,108 @@ public class ModelsEngine {
     }
 
     /**
-     * TODO port to be independent from JGrassRegion
+     * Create the {@link MultiLineString line} geometries of channel network
      * 
-     * It create the shapefile of channel network
-     * 
-     * @param flowIterator
-     * @param netNumIterator
+     * @param flowIter the flow map.
+     * @param netNumIter the netnumbering map.
      * @param nstream
-     * @param active
-     * @param out
-     * @return
+     * @param pm the progress monitor.
+     * @param gridGeometry the gridgeometry.
+     * @return the geometries of the network.
      * @throws IOException
+     * @throws TransformException
      */
-    // public List<MultiLineString> net2ShapeGeometries( RandomIter flowIterator,
-    // RandomIter netNumIterator, int[] nstream, JGrassRegion active, PrintStream out )
-    // throws IOException {
-    //
-    // // get rows and cols from the active region
-    // int activecols = active.getCols();
-    // int activerows = active.getRows();
-    // int[] flow = new int[2];
-    // int[] flow_p = new int[2];
-    //
-    // CoordinateList coordlist = new CoordinateList();
-    //
-    // // GEOMETRY
-    //
-    // // creates a vector of geometry
-    // List<MultiLineString> newGeometryVectorLine = new ArrayList<MultiLineString>();
-    // GeometryFactory newfactory = new GeometryFactory();
-    //
-    // /* name of new geometry (polyline) */
-    // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(out, out);
-    // pm.beginTask(msg.message("utils.extracting_network_geometries"), nstream[0]);
-    // for( int num = 1; num <= nstream[0]; num++ ) {
-    // for( int y = 0; y < activerows; y++ ) {
-    // for( int x = 0; x < activecols; x++ ) {
-    // flow[0] = x;
-    // flow[1] = y;
-    // // looks for the source
-    // if (netNumIterator.getSampleDouble(x, y, 0) == num) {
-    // // if the point is a source it starts to extract the
-    // // channel...
-    // if (sourcesNet(flowIterator, flow, num, netNumIterator)) {
-    // flow_p[0] = flow[0];
-    // flow_p[1] = flow[1];
-    // Coordinate coordSource = JGrassUtilities.rowColToCenterCoordinates(
-    // active, flow[1], flow[0]);
-    // // creates new Object Coordinate... SOURCE POINT...
-    // // adds the points to the CoordinateList
-    // coordlist.add(coordSource);
-    // if (!go_downstream(flow, flowIterator.getSampleDouble(flow[0], flow[1],
-    // 0)))
-    // return null;
-    // // it extracts the other points of the channel... it
-    // // continues until the next node...
-    // while( !isNovalue(flowIterator.getSampleDouble(flow[0], flow[1], 0))
-    // && flowIterator.getSampleDouble(flow[0], flow[1], 0) != 10.0
-    // && netNumIterator.getSampleDouble(flow[0], flow[1], 0) == num
-    // && !isNovalue(netNumIterator.getSampleDouble(flow[0], flow[1],
-    // 0)) ) {
-    // Coordinate coordPoint = JGrassUtilities.rowColToCenterCoordinates(
-    // active, flow[1], flow[0]);
-    // // creates new Object Coordinate... CHANNEL
-    // // POINT...
-    // // adds new points to CoordinateList
-    // coordlist.add(coordPoint);
-    // flow_p[0] = flow[0];
-    // flow_p[1] = flow[1];
-    // if (!go_downstream(flow, flowIterator.getSampleDouble(flow[0],
-    // flow[1], 0)))
-    // return null;
-    // }
-    // Coordinate coordNode = JGrassUtilities.rowColToCenterCoordinates(
-    // active, flow[1], flow[0]);
-    // // creates new Object Coordinate... NODE POINT...
-    // // adds new points to CoordinateList
-    // coordlist.add(coordNode);
-    // }
-    // }
-    // }
-    // }
-    // // when the channel is complete creates one new geometry (new
-    // // channel of the network)
-    // // adds the new geometry to the vector of geometry
-    // // if (!coordlist.isEmpty()) {
-    // newGeometryVectorLine.add(newfactory.createMultiLineString(new LineString[]{newfactory
-    // .createLineString(coordlist.toCoordinateArray())}));
-    // // } else {
-    // // if (out != null)
-    // // out.println("Found an empty geometry at " + num);
-    // // }
-    // // it removes every element of coordlist
-    // coordlist.clear();
-    // pm.worked(1);
-    // }
-    // pm.done();
-    // return newGeometryVectorLine;
-    // }
+    public List<MultiLineString> net2ShapeGeometries( WritableRandomIter flowIter, RandomIter netNumIter, int[] nstream,
+            GridGeometry2D gridGeometry, IJGTProgressMonitor pm ) throws IOException, TransformException {
+
+        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+        int rows = gridRange.height;
+        int cols = gridRange.width;
+
+        // screen2world
+        MathTransform2D gridToCRS2D = gridGeometry.getGridToCRS2D();
+
+        // get rows and cols from the active region
+        int[] flow = new int[2];
+        int[] flow_p = new int[2];
+
+        CoordinateList coordlist = new CoordinateList();
+
+        // creates a vector of geometry
+        List<MultiLineString> newGeometryVectorLine = new ArrayList<MultiLineString>();
+        GeometryFactory newfactory = new GeometryFactory();
+
+        /* name of new geometry (polyline) */
+        pm.beginTask("Extracting the network geometries...", nstream[0]);
+        for( int num = 1; num <= nstream[0]; num++ ) {
+            for( int y = 0; y < rows; y++ ) {
+                for( int x = 0; x < cols; x++ ) {
+                    flow[0] = x;
+                    flow[1] = y;
+                    // looks for the source
+                    if (netNumIter.getSampleDouble(x, y, 0) == num) {
+                        // if the point is a source it starts to extract the
+                        // channel...
+                        if (sourcesNet(flowIter, flow, num, netNumIter)) {
+                            flow_p[0] = flow[0];
+                            flow_p[1] = flow[1];
+
+                            Point2D worldPosition = new Point2D.Double(flow[0], flow[1]);
+                            gridToCRS2D.transform(worldPosition, worldPosition);
+                            Coordinate coordSource = new Coordinate(worldPosition.getX(), worldPosition.getY());
+
+                            // creates new Object Coordinate... SOURCE POINT...
+                            // adds the points to the CoordinateList
+                            coordlist.add(coordSource);
+                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                                return null;
+                            // it extracts the other points of the channel... it
+                            // continues until the next node...
+                            while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                    && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
+                                    && netNumIter.getSampleDouble(flow[0], flow[1], 0) == num
+                                    && !isNovalue(netNumIter.getSampleDouble(flow[0], flow[1], 0)) ) {
+
+                                worldPosition = new Point2D.Double(flow[0], flow[1]);
+                                gridToCRS2D.transform(worldPosition, worldPosition);
+                                Coordinate coordPoint = new Coordinate(worldPosition.getX(), worldPosition.getY());
+
+                                // creates new Object Coordinate... CHANNEL
+                                // POINT...
+                                // adds new points to CoordinateList
+                                coordlist.add(coordPoint);
+                                flow_p[0] = flow[0];
+                                flow_p[1] = flow[1];
+                                if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                                    return null;
+                            }
+                            worldPosition = new Point2D.Double(flow[0], flow[1]);
+                            gridToCRS2D.transform(worldPosition, worldPosition);
+                            Coordinate coordNode = new Coordinate(worldPosition.getX(), worldPosition.getY());
+                            // creates new Object Coordinate... NODE POINT...
+                            // adds new points to CoordinateList
+                            coordlist.add(coordNode);
+                        }
+                    }
+                }
+            }
+            // when the channel is complete creates one new geometry (new
+            // channel of the network)
+            // adds the new geometry to the vector of geometry
+            // if (!coordlist.isEmpty()) {
+            newGeometryVectorLine.add(newfactory.createMultiLineString(new LineString[]{newfactory.createLineString(coordlist
+                    .toCoordinateArray())}));
+            // } else {
+            // if (out != null)
+            // out.println("Found an empty geometry at " + num);
+            // }
+            // it removes every element of coordlist
+            coordlist.clear();
+            pm.worked(1);
+        }
+        pm.done();
+        return newGeometryVectorLine;
+    }
 
     /**
      * Controls if the considered point is a source in the network map.
@@ -1308,10 +1315,10 @@ public class ModelsEngine {
         int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
         for( int k = 1; k <= 8; k++ ) {
-            if (flowIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
-                if (tcaIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) >= maz) {
-                    if (tcaIterator.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == maz) {
-                        if (dist.getSample(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) > diss)
+            if (flowIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
+               if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) >= maz) {
+                    if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == maz) {
+                        if (dist.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) > diss)                            
                             return false;
                     } else
                         return false;
