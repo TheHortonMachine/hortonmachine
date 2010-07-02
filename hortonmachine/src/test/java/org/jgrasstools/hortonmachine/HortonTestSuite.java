@@ -2,6 +2,7 @@ package org.jgrasstools.hortonmachine;
 
 import org.jgrasstools.hortonmachine.models.hm.TestAb;
 import org.jgrasstools.hortonmachine.models.hm.TestAspect;
+import org.jgrasstools.hortonmachine.models.hm.TestBasinShape;
 import org.jgrasstools.hortonmachine.models.hm.TestCb;
 import org.jgrasstools.hortonmachine.models.hm.TestCurvatures;
 import org.jgrasstools.hortonmachine.models.hm.TestDrain;
@@ -11,11 +12,13 @@ import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork0;
 import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork1;
 import org.jgrasstools.hortonmachine.models.hm.TestFlow;
 import org.jgrasstools.hortonmachine.models.hm.TestGradient;
+import org.jgrasstools.hortonmachine.models.hm.TestHacklength;
 import org.jgrasstools.hortonmachine.models.hm.TestKriging;
 import org.jgrasstools.hortonmachine.models.hm.TestNetnumbering;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 import org.jgrasstools.hortonmachine.models.hm.TestRescaledDistance;
 import org.jgrasstools.hortonmachine.models.hm.TestShalstab;
+import org.jgrasstools.hortonmachine.models.hm.TestSlope;
 import org.jgrasstools.hortonmachine.models.hm.TestTca;
 import org.jgrasstools.hortonmachine.models.hm.TestTca3d;
 import org.jgrasstools.hortonmachine.models.hm.TestTopindex;
@@ -52,7 +55,8 @@ public class HortonTestSuite extends TestCase {
         suite.addTestSuite(TestTopindex.class);
         suite.addTestSuite(TestWateroutlet.class);
 
-        // suite.addTestSuite(TestAspect.class);
+        suite.addTestSuite(TestBasinShape.class);
+
         // suite.addTestSuite(TestD2O.class);
         // suite.addTestSuite(TestD2O3d.class);
         // suite.addTestSuite(TestDD.class);
@@ -62,7 +66,7 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(Testh2cd0.class);
         // suite.addTestSuite(Testh2cD1.class);
         // suite.addTestSuite(TestH2cd3D.class);
-        // suite.addTestSuite(TestHackLength.class);
+        suite.addTestSuite(TestHacklength.class);
         // suite.addTestSuite(TestHackLength3D.class);
         // suite.addTestSuite(TestHackStream.class);
         // suite.addTestSuite(TestMagnitudo.class);
@@ -71,10 +75,9 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(TestMultiTca.class);
         // suite.addTestSuite(TestNabla.class);
         // suite.addTestSuite(TestNabla1.class);
-        // suite.addTestSuite(TestNetnumbering.class);
         // suite.addTestSuite(TestNetnumbering1.class);
         // suite.addTestSuite(TestSeol.class);
-        // suite.addTestSuite(TestSlope.class);
+        suite.addTestSuite(TestSlope.class);
         // suite.addTestSuite(TestSplitSubBasin.class);
         // suite.addTestSuite(TestSrahler.class);
         // suite.addTestSuite(TestSumdownstream.class);

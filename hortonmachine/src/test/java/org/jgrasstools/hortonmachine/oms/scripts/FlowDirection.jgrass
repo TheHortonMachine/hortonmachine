@@ -1,0 +1,35 @@
+s = sb.sim(name:"NetworkExtraction") {
+
+	// your folder here
+	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	
+    model {
+        components  {
+          reader    'RasterReader'
+          writer    'ArcgridCoverageWriter'
+          flowDirections 'FlowDirections'
+        }
+
+        parameter {
+           'reader.file' "$folder/byumba_pit.asc"
+           'writer.file' "$folder/byumba_flow.asc"
+           'reader.fileNovalue'		(-9999.0)
+           'reader.geodataNovalue'		Double.NaN
+           'flowDirections.pm' pm
+        }
+
+        connect {
+          'reader.geodata' 'flowDirections.inPit'
+          'flowDirections.outFlow' 'writer.geodata'
+          
+        }
+
+    }
+}
+
+res = s.run();
+
+println "Output gridcoverage:"
+println res.writer.geodata
+
+

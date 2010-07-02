@@ -1,4 +1,3 @@
-SimBuilder sb = new SimBuilder(logging:'ALL');
 s = sb.sim(name:"ConvertAsciiToGeotiff") {
 
 	// your folder here
