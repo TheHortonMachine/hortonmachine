@@ -172,7 +172,7 @@ public class HackStream extends JGTModel {
 
             for( int j = 0; j < nRows; j++ ) {
                 for( int i = 0; i < nCols; i++ ) {
-                    if (netIter.getSampleDouble(i, j, 0) != 2)
+                    if (isNovalue(netIter.getSampleDouble(i, j, 0)))
                         flowIter.setSample(i, j, 0, doubleNovalue);
                     if (flowIter.getSampleDouble(i, j, 0) == 10)
                         count++;

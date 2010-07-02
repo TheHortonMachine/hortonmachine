@@ -258,6 +258,7 @@ public class Pfafstetter extends JGTModel {
         }
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setCRS(inFlow.getCoordinateReferenceSystem());
         b.setName("pfafstetternet"); //$NON-NLS-1$
         b.add("the_geom", MultiLineString.class); //$NON-NLS-1$
         for( int j = 0; j < attributeName.size(); j++ ) {
