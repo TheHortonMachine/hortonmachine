@@ -103,7 +103,9 @@ public class ScriptLauncher {
         sb.append("import static oms3.SimConst.*\n");
         sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
-        sb.append("SimBuilder sb = new SimBuilder(logging:'" + loggingMode + "');\n");
+        sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
+        sb.append("def pm = new PrintStreamProgressMonitor(System.out, System.err);\n");
+        sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         String prefix = sb.toString();
 
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
