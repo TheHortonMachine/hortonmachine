@@ -115,7 +115,7 @@ public class ScriptLauncher {
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         String prefix = sb.toString();
         String finalScript = prefix + script;
-        System.out.println(finalScript);
+        // System.out.println(finalScript);
 
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());

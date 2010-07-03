@@ -119,6 +119,9 @@ public class JGrassGears {
             Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
             Set<String> simpleClasses = annotationIndex.get(Execute.class.getName());
             for( String className : simpleClasses ) {
+                if (!className.startsWith("org.jgrasstools.gears")) {
+                    continue;
+                }
                 int lastDot = className.lastIndexOf('.');
                 String name = className.substring(lastDot + 1);
                 Class< ? > clazz = null;
