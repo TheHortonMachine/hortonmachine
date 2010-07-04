@@ -80,6 +80,10 @@ public class MapsViewer {
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature>[] featureCollections = new FeatureCollection[0];
 
+    @Description("The feature collection to visualize.")
+    @In
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = null;
+
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
     private FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
     private StyleBuilder sb = new StyleBuilder(sf, ff);
@@ -95,6 +99,9 @@ public class MapsViewer {
 
         addCoverages(map, sb, rasterSym);
 
+        if (featureCollection != null) {
+            featureCollections = new FeatureCollection[]{featureCollection};
+        }
         addFeatureCollections(map);
 
         // Create a JMapFrame with a menu to choose the display style for the

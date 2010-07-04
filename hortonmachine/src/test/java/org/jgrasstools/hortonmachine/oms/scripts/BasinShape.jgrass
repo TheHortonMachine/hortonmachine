@@ -12,6 +12,7 @@ s = sb.sim(name:"BasinShape") {
           reader2    'RasterReader'
           writer3    'ShapefileFeatureWriter'
           basinShape 'BasinShape'
+          mapsViewer 'MapsViewer'
         }
 
         parameter {
@@ -32,6 +33,7 @@ s = sb.sim(name:"BasinShape") {
           'reader1.geodata' 'basinShape.inPit'
           'reader2.geodata' 'basinShape.inBasins'
           'basinShape.outBasins' 'writer3.geodata'
+          'basinShape.outBasins' 'mapsViewer.featureCollection'
         }
 
     }
@@ -39,7 +41,5 @@ s = sb.sim(name:"BasinShape") {
 
 res = s.run();
 
-println "Output gridcoverage:"
-println res.writer3.geodata
 
 
