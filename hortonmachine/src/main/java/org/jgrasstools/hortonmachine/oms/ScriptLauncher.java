@@ -108,10 +108,10 @@ public class ScriptLauncher {
         sb.append("import oms3.SimBuilder\n");
         sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
         sb
-                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
+                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
-        String prefix = sb.toString();
-        String finalScript = prefix + script;
+        sb.append(script);
+        String finalScript = sb.toString();
 
         if (!loggingMode.equals("OFF")) {
             System.out.println(finalScript);
@@ -125,7 +125,10 @@ public class ScriptLauncher {
     @SuppressWarnings("nls")
     private static String substituteClass( String script, String name, Class< ? > class1 ) {
         // names of modules are between apici: 'name'
-        script = script.replaceAll("'" + name + "'", "'" + class1.getCanonicalName() + "'");
+        // script = script.replaceAll("\\\\'" + name + "\\\\'", "'" + class1.getCanonicalName() +
+        // "'");
+        script = script.replaceAll("(?<=')" + name + "(?=')", class1.getCanonicalName());
+
         // script = script.replaceAll("'{1}" + name, "'" + class1.getCanonicalName());
         // script = script.replaceAll(" {1}" + name, " " + class1.getCanonicalName());
         // script = script.replaceAll("\t{1}" + name, "\t" + class1.getCanonicalName());
