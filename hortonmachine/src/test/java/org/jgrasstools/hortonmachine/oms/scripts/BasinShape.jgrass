@@ -1,8 +1,11 @@
+// change the variables to fix your needs
+def folder = new File("/home/moovida/TMP/test/").absolutePath;
+def pit = "byumba_pit_small.asc"
+def basins = "byumba_basins200.asc"
+def outbasins = "byumba_basins_tmp.shp"
+
 s = sb.sim(name:"BasinShape") {
 
-	// your folder here
-	def folder = new File("/home/moovida/lavori/jgrasstools").absolutePath;
-	
     model {
         components  {
           reader1    'RasterReader'
@@ -12,15 +15,15 @@ s = sb.sim(name:"BasinShape") {
         }
 
         parameter {
-           'reader1.file' "$folder/byumba_pit_small.asc"
+           'reader1.file' "$folder/$pit"
            'reader1.fileNovalue'		(-9999.0)
            'reader1.geodataNovalue'		Double.NaN
            
-           'reader2.file' "$folder/byumba_basins200.asc"
+           'reader2.file' "$folder/$basins"
            'reader2.fileNovalue'		(-9999.0)
            'reader2.geodataNovalue'		Double.NaN
            
-           'writer3.file' "$folder/byumba_basins_tmp.shp"
+           'writer3.file' "$folder/$outbasins"
            
            'basinShape.pm' pm
         }
