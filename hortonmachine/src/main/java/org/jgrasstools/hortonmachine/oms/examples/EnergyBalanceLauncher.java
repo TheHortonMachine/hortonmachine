@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package org.jgrasstools.hortonmachine.oms;
+package org.jgrasstools.hortonmachine.oms.examples;
 
 import oms3.CLI;
 

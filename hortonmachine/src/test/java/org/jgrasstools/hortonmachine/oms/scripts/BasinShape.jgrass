@@ -1,7 +1,7 @@
 s = sb.sim(name:"BasinShape") {
 
 	// your folder here
-	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
+	def folder = new File("/home/moovida/lavori/jgrasstools").absolutePath;
 	
     model {
         components  {
