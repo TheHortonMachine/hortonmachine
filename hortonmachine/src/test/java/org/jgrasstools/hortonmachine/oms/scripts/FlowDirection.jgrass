@@ -1,8 +1,10 @@
+// change the variables to fix your needs
+def folder = new File("/home/moovida/development/jgrasstools-hg/jgrasstools/hortonmachine/src/test/resources/").absolutePath;
+def pit = "dtm_test_pit.asc"
+def flow = "dtm_test_flow.asc"
+
 s = sb.sim(name:"NetworkExtraction") {
 
-	// your folder here
-	def folder = new File("/home/silli/lavori/jgrasstools").absolutePath;
-	
     model {
         components  {
           reader    'RasterReader'
@@ -11,25 +13,20 @@ s = sb.sim(name:"NetworkExtraction") {
         }
 
         parameter {
-           'reader.file' "$folder/byumba_pit.asc"
-           'writer.file' "$folder/byumba_flow.asc"
-           'reader.fileNovalue'		(-9999.0)
-           'reader.geodataNovalue'		Double.NaN
+           'reader.file' "$folder/$pit"
+           'writer.file' "$folder/$flow"
            'flowDirections.pm' pm
         }
 
         connect {
           'reader.geodata' 'flowDirections.inPit'
           'flowDirections.outFlow' 'writer.geodata'
-          
         }
-
     }
 }
 
 res = s.run();
-
-println "Output gridcoverage:"
-println res.writer.geodata
+def exists = new File(res.writer.file).exists();
+println "Output file has been created: ${exists}"
 
 
