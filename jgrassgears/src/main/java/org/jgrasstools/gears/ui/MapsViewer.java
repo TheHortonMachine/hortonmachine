@@ -76,6 +76,10 @@ public class MapsViewer {
     @In
     public GridCoverage2D[] coverages = new GridCoverage2D[0];
 
+    @Description("The coverage to visualize.")
+    @In
+    public GridCoverage2D coverage = null;
+
     @Description("The feature collections to visualize.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature>[] featureCollections = new FeatureCollection[0];
@@ -97,6 +101,9 @@ public class MapsViewer {
 
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
 
+        if (coverage != null) {
+            coverages = new GridCoverage2D[]{coverage};
+        }
         addCoverages(map, sb, rasterSym);
 
         if (featureCollection != null) {
