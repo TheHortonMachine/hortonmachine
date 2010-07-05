@@ -94,8 +94,6 @@ public class MapsViewer {
 
     @Execute
     public void displayMaps() throws Exception {
-        // RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
-        // Style rasterStyle = SLD.wrapSymbolizers(sym);
         final MapContext map = new DefaultMapContext();
         map.setTitle("Maps Viewer");
 
