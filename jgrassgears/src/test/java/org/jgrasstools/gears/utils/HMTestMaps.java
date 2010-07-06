@@ -406,6 +406,78 @@ public class HMTestMaps {
 
     };
 
+    
+    public static double[][] marchingSq1 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2, NaN, NaN, NaN, NaN, 2, 2, NaN}, 
+        {NaN, 2, 2, 2, 2, 2, NaN, 2, 2, NaN},
+        {NaN, NaN, 2, 2, 2, 2, 2, 2, 2, NaN},
+        {NaN, NaN, 2, 2, 2, NaN, NaN, 2, 2, NaN},
+        {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+
+};
+    
+    public static double[][] marchingSq2 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2, NaN, NaN, NaN, NaN, 2, 2, NaN}, 
+        {NaN, NaN, NaN, 2, NaN, NaN, NaN, 2, 2, NaN},
+        {NaN, NaN, NaN, NaN, 2, NaN, 2, 2, 2, NaN},
+        {NaN, NaN, 2, 2, NaN, NaN, NaN, 2, 2, NaN},
+        {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+
+};
+    public static double[][] marchingSq3 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN}, 
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN},
+        {NaN, NaN, NaN, NaN, 2,   NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, 2, 2, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, 2, 2, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+};
+    
+    
+    public static double[][] marchingSq4 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, 2, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, 2, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN}, 
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN,   NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+};
+    
+    public static double[][] marchingSq5 = new double[][]{
+        {2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN}, 
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN,   NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+};
+    
+    public static double[][] marchingSq6 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN}, 
+        {NaN, NaN, 2,    2,  NaN, NaN, NaN, NaN,     NaN, NaN},
+        {NaN, 2, NaN, NaN, NaN,   NaN, NaN, NaN, NaN, NaN},
+        {2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+};
+    
+    
+    
+    
     public static double[][] d2oPixelData = new double[][]{
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
             {NaN, NaN, 2, 2, 3, 5, 5, 6, 8, NaN}, {NaN, 1, 1, 2, 4, 4, 5, 7, 8, NaN},

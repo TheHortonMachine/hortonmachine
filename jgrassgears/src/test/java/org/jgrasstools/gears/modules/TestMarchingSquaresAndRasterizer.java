@@ -21,6 +21,9 @@ package org.jgrasstools.gears.modules;
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
+import javax.media.jai.iterator.RectIter;
+import javax.media.jai.iterator.RectIterFactory;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -38,17 +41,55 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
-    public void testMarchingSquaresAndRasterizer() throws Exception {
+    public void testMarchingSquaresAndRasterizer1() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
         * extract vectors
         */
-        double[][] extractNet1Data = HMTestMaps.extractNet1Data;
+        double[][] extractNet1Data = HMTestMaps.marchingSq1;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data,
-                envelopeParams, crs, true);
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = 2;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+        * and rasterize back again
+        */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = 2.0;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+        
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractNet1Data, 0);
+
+    }
+    public void testMarchingSquaresAndRasterizer2() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+        * extract vectors
+        */
+        double[][] extractNet1Data = HMTestMaps.marchingSq2;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -74,8 +115,205 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
 
+        
         // should be the same as before
         checkMatrixEqual(renderedImage, extractNet1Data, 0);
+
+    }
+
+    public void testMarchingSquaresAndRasterizer3() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+        * extract vectors
+        */
+        double[][] extractData = HMTestMaps.marchingSq3;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = 2;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+        * and rasterize back again
+        */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = 2.0;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+        
+        RectIter iter = RectIterFactory.create(renderedImage, null);
+        do {
+            do {
+                System.out.print(iter.getSampleDouble() + " ");
+            } while( !iter.nextPixelDone() );
+            iter.startPixels();
+            System.out.println();
+        } while( !iter.nextLineDone() );
+
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractData, 0);
+
+    }
+
+    public void testMarchingSquaresAndRasterizer4() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+        * extract vectors
+        */
+        double[][] extractData = HMTestMaps.marchingSq4;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = 2;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+        * and rasterize back again
+        */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = 2.0;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+        
+        RectIter iter = RectIterFactory.create(renderedImage, null);
+        do {
+            do {
+                System.out.print(iter.getSampleDouble() + " ");
+            } while( !iter.nextPixelDone() );
+            iter.startPixels();
+            System.out.println();
+        } while( !iter.nextLineDone() );
+
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractData, 0);
+
+    }
+
+    public void testMarchingSquaresAndRasterizer5() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+        * extract vectors
+        */
+        double[][] extractData = HMTestMaps.marchingSq3;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = 2;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+        * and rasterize back again
+        */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = 2.0;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+        
+        RectIter iter = RectIterFactory.create(renderedImage, null);
+        do {
+            do {
+                System.out.print(iter.getSampleDouble() + " ");
+            } while( !iter.nextPixelDone() );
+            iter.startPixels();
+            System.out.println();
+        } while( !iter.nextLineDone() );
+
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractData, 0);
+
+    }
+
+    public void testMarchingSquaresAndRasterizer6() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+        * extract vectors
+        */
+        double[][] extractData = HMTestMaps.marchingSq6;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = 2;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+        * and rasterize back again
+        */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = 2.0;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+        
+        RectIter iter = RectIterFactory.create(renderedImage, null);
+        do {
+            do {
+                System.out.print(iter.getSampleDouble() + " ");
+            } while( !iter.nextPixelDone() );
+            iter.startPixels();
+            System.out.println();
+        } while( !iter.nextLineDone() );
+
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractData, 0);
 
     }
 
