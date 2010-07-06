@@ -23,8 +23,6 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -33,7 +31,6 @@ import java.util.logging.Level;
 import oms3.CLI;
 
 import org.jgrasstools.gears.JGrassGears;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.HortonMachine;
 
 /**
@@ -111,11 +108,14 @@ public class ScriptLauncher {
         sb.append("import oms3.SimBuilder\n");
         sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
         sb
-                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
+                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
-        String prefix = sb.toString();
-        String finalScript = prefix + script;
-        // System.out.println(finalScript);
+        sb.append(script);
+        String finalScript = sb.toString();
+
+        if (!loggingMode.equals("OFF")) {
+            System.out.println(finalScript);
+        }
 
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());
@@ -124,10 +124,15 @@ public class ScriptLauncher {
 
     @SuppressWarnings("nls")
     private static String substituteClass( String script, String name, Class< ? > class1 ) {
-        script = script.replaceAll("'{1}" + name, "'" + class1.getCanonicalName());
-        script = script.replaceAll(" {1}" + name, " " + class1.getCanonicalName());
-        script = script.replaceAll("\t{1}" + name, "\t" + class1.getCanonicalName());
-        script = script.replaceAll("\n{1}" + name, "\n" + class1.getCanonicalName());
+        // names of modules are between apici: 'name'
+        // script = script.replaceAll("\\\\'" + name + "\\\\'", "'" + class1.getCanonicalName() +
+        // "'");
+        script = script.replaceAll("(?<=')" + name + "(?=')", class1.getCanonicalName());
+
+        // script = script.replaceAll("'{1}" + name, "'" + class1.getCanonicalName());
+        // script = script.replaceAll(" {1}" + name, " " + class1.getCanonicalName());
+        // script = script.replaceAll("\t{1}" + name, "\t" + class1.getCanonicalName());
+        // script = script.replaceAll("\n{1}" + name, "\n" + class1.getCanonicalName());
         return script;
     }
 

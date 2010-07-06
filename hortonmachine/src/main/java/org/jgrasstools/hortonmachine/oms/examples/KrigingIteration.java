@@ -1,4 +1,4 @@
-package org.jgrasstools.hortonmachine.oms;
+package org.jgrasstools.hortonmachine.oms.examples;
 
 import oms3.annotations.Description;
 import oms3.annotations.In;

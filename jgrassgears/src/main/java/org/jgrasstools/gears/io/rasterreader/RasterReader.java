@@ -25,6 +25,20 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.buildCoverage;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createGridGeometryGeneralParameter;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.makeRegionParamsMap;
 
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
@@ -51,7 +65,9 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
 import org.geotools.factory.Hints;
@@ -66,9 +82,9 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 @Description("Generic geotools coverage reader.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Reading")
@@ -121,6 +137,11 @@ public class RasterReader extends JGTModel {
         if (!concatOr(geodata == null, doReset)) {
             return;
         }
+
+        // if (pRes != null || pRowcol != null) {
+        // throw new RuntimeException("Resampling is not implemented yet.");
+        // }
+
         if (pType == null) {
             // try to guess from the extension
             if (file.toLowerCase().endsWith(ESRIGRID)) {
@@ -132,22 +153,8 @@ public class RasterReader extends JGTModel {
             } else if (isGrass(file)) {
                 pType = GRASSRASTER;
             } else
-                throw new ModelsIllegalargumentException(
-                        "A coverage type to read has to be supplied.", this.getClass()
-                                .getSimpleName());
-        }
-
-        if (pBounds != null) {
-            if (pRes != null) {
-                generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(pRes[0],
-                        pRes[1], pBounds[0], pBounds[1], pBounds[3], pBounds[2], null);
-            } else if (pRowcol != null) {
-                generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(pRowcol[0],
-                        pRowcol[1], pBounds[0], pBounds[1], pBounds[3], pBounds[2], null);
-            } else {
-                pm
-                        .errorMessage("Reading the whole file. Bounds without resolution or row/cols suuplied.");
-            }
+                throw new ModelsIllegalargumentException("A coverage type to read has to be supplied.", this.getClass()
+                        .getSimpleName());
         }
 
         File mapFile = new File(file);
@@ -160,8 +167,7 @@ public class RasterReader extends JGTModel {
         } else if (pType.equals(GRASSRASTER)) {
             readGrass(mapFile);
         } else {
-            throw new ModelsIllegalargumentException("Data type not supported: " + pType, this
-                    .getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
         }
 
     }
@@ -175,20 +181,72 @@ public class RasterReader extends JGTModel {
         return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
     }
 
+    private void resample() {
+        if (pRes == null && pRowcol == null && pBounds == null) {
+            return;
+        }
+
+        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(geodata);
+        double west = envelopeParams.get(WEST);
+        double south = envelopeParams.get(SOUTH);
+        double east = envelopeParams.get(EAST);
+        double north = envelopeParams.get(NORTH);
+        double xres = envelopeParams.get(XRES);
+        double yres = envelopeParams.get(YRES);
+
+        if (pBounds == null) {
+            pBounds = new double[]{north, south, west, east};
+        }
+
+        if (pRes == null && pRowcol == null) {
+            // means only bounds are set -> set resolution and recalc rows/cols
+            pRes = new double[]{xres, yres};
+        }
+
+        double n = pBounds[0];
+        double s = pBounds[1];
+        double w = pBounds[2];
+        double e = pBounds[3];
+        if (pRes != null || pRowcol != null) {
+            int newRows = 0;
+            int newCols = 0;
+            if (pRowcol != null) {
+                newRows = (int) pRowcol[0];
+                newCols = (int) pRowcol[1];
+                if (pRes == null) {
+                    pRes = new double[2];
+                }
+                pRes[0] = (e - w) / (double) newCols;
+                pRes[1] = (n - s) / (double) newRows;
+            } else if (pRes != null) {
+                pRowcol = new double[2];
+                newRows = (int) Math.round((n - s) / pRes[1]);
+                newCols = (int) Math.round((e - w) / pRes[0]);
+            }
+            pRowcol[0] = newRows;
+            pRowcol[1] = newCols;
+        }
+
+        HashMap<String, Double> newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
+        CoordinateReferenceSystem crs = geodata.getCoordinateReferenceSystem();
+        GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
+        geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
+    }
     private void readGrass( File mapFile ) throws Exception {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
 
         if (generalParameter == null) {
-            generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion
-                    .getCols(), jGrassRegion.getRows(), jGrassRegion.getWest(), jGrassRegion
-                    .getEast(), jGrassRegion.getSouth(), jGrassRegion.getNorth(), crs);
+            generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(), jGrassRegion
+                    .getWest(), jGrassRegion.getEast(), jGrassRegion.getSouth(), jGrassRegion.getNorth(), crs);
         }
 
         GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
         GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
         geodata = (GridCoverage2D) reader.read(generalParameter);
+
+        resample();
         checkNovalues();
     }
 
@@ -204,6 +262,8 @@ public class RasterReader extends JGTModel {
         final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
         GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
         geodata = coverage.view(ViewType.GEOPHYSICS);
+
+        resample();
         checkNovalues();
     }
 
@@ -211,6 +271,8 @@ public class RasterReader extends JGTModel {
         GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
         GridCoverage2D coverage = geoTiffReader.read(generalParameter);
         geodata = coverage.view(ViewType.GEOPHYSICS);
+
+        resample();
         checkNovalues();
     }
 
@@ -218,6 +280,8 @@ public class RasterReader extends JGTModel {
         ArcGridReader arcGridReader = new ArcGridReader(mapFile);
         GridCoverage2D coverage = arcGridReader.read(generalParameter);
         geodata = coverage.view(ViewType.GEOPHYSICS);
+
+        resample();
         checkNovalues();
     }
 
@@ -230,19 +294,18 @@ public class RasterReader extends JGTModel {
             return;
         }
         if (fileNovalue != geodataNovalue) {
-            HashMap<String, Double> params = CoverageUtilities
-                    .getRegionParamsFromGridCoverage(geodata);
-            int height = params.get(CoverageUtilities.ROWS).intValue();
-            int width = params.get(CoverageUtilities.COLS).intValue();
-            WritableRaster tmpWR = CoverageUtilities.createDoubleWritableRaster(width, height,
-                    null, null, null);
+            HashMap<String, Double> params = getRegionParamsFromGridCoverage(geodata);
+            int height = params.get(ROWS).intValue();
+            int width = params.get(COLS).intValue();
+            WritableRaster tmpWR = createDoubleWritableRaster(width, height, null, null, null);
             WritableRandomIter tmpIter = RandomIterFactory.createWritable(tmpWR, null);
             RenderedImage readRI = geodata.getRenderedImage();
             RandomIter readIter = RandomIterFactory.create(readRI, null);
+            int minX = readRI.getMinX();
+            int minY = readRI.getMinY();
             for( int r = 0; r < height; r++ ) {
                 for( int c = 0; c < width; c++ ) {
-                    double value = readIter.getSampleDouble(c, r, 0);
-
+                    double value = readIter.getSampleDouble(c + minX, r + minY, 0);
                     if (isNovalue(value) || value == fileNovalue) {
                         tmpIter.setSample(c, r, 0, geodataNovalue);
                     } else {
@@ -250,8 +313,7 @@ public class RasterReader extends JGTModel {
                     }
                 }
             }
-            geodata = CoverageUtilities.buildCoverage("newcoverage", tmpWR, params, geodata
-                    .getCoordinateReferenceSystem());
+            geodata = buildCoverage("newcoverage", tmpWR, params, geodata.getCoordinateReferenceSystem());
         }
     }
 

@@ -68,6 +68,7 @@ public class ArcgridCoverageWriter extends JGTModel {
         ArcGridWriter gtw = (ArcGridWriter) format.getWriter(new File(file));
         gtw.write(geodata, (GeneralParameterValue[]) paramWrite.values().toArray(
                 new GeneralParameterValue[1]));
+        gtw.dispose();
         hasWritten = true;
     }
 

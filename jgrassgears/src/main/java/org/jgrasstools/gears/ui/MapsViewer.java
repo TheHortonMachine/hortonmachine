@@ -76,9 +76,17 @@ public class MapsViewer {
     @In
     public GridCoverage2D[] coverages = new GridCoverage2D[0];
 
+    @Description("The coverage to visualize.")
+    @In
+    public GridCoverage2D coverage = null;
+
     @Description("The feature collections to visualize.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature>[] featureCollections = new FeatureCollection[0];
+
+    @Description("The feature collection to visualize.")
+    @In
+    public FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = null;
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
     private FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
@@ -86,15 +94,19 @@ public class MapsViewer {
 
     @Execute
     public void displayMaps() throws Exception {
-        // RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
-        // Style rasterStyle = SLD.wrapSymbolizers(sym);
         final MapContext map = new DefaultMapContext();
         map.setTitle("Maps Viewer");
 
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
 
+        if (coverage != null) {
+            coverages = new GridCoverage2D[]{coverage};
+        }
         addCoverages(map, sb, rasterSym);
 
+        if (featureCollection != null) {
+            featureCollections = new FeatureCollection[]{featureCollection};
+        }
         addFeatureCollections(map);
 
         // Create a JMapFrame with a menu to choose the display style for the
