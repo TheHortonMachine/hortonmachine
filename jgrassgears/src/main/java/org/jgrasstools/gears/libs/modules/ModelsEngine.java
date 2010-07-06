@@ -874,9 +874,9 @@ public class ModelsEngine {
         for( Point4d point4d : points ) {
             if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
                 for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dir[i][0];
-                    int indexJ = (int) point4d.y + dir[i][1];
-                    if (netRandomIter.getSampleDouble(indexJ, indexI, 0) == point4d.z) {
+                    int indexI = (int) point4d.x + dir[i][1];
+                    int indexJ = (int) point4d.y + dir[i][0];
+                    if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
                         point4d.x = indexI;
                         point4d.y = indexJ;
                     }
@@ -884,7 +884,7 @@ public class ModelsEngine {
             }
         }
         for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.y, (int) point4d.x, 0) == point4d.z) {
+            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) == point4d.z) {
                 p++;
             }
         }
@@ -901,13 +901,13 @@ public class ModelsEngine {
                     f = 0;
                     // look for the source...
                     for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0))) {
+                        if (mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]
+                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))) {
                             break;
                         } else
                             f++;
                     }
-                    // if the pixel is a source...starts to assigne a number to
+                    // if the pixel is a source...starts to assign a number to
                     // every stream
                     if (f == 8) {
                         n++;
@@ -916,7 +916,7 @@ public class ModelsEngine {
                         if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
                             return null;
                         for( Point4d point4d : points ) {
-                            if (point4d.x == flow[1] && point4d.y == flow[0]) {
+                            if (point4d.x == flow[0] && point4d.y == flow[1]) {
                                 n++;
                                 nstream.add(n);
                                 point4d.w = n - 1;
@@ -932,8 +932,8 @@ public class ModelsEngine {
                                 && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
+                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))
+                                        && mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
                                     gg++;
                                 }
                             }
@@ -947,7 +947,7 @@ public class ModelsEngine {
                             if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return null;
                             for( Point4d point4d : points ) {
-                                if (point4d.x == flow[1] && point4d.y == flow[0]) {
+                                if (point4d.x == flow[0] && point4d.y == flow[1]) {
                                     n++;
                                     nstream.add(n);
                                     point4d.w = n - 1;
@@ -1012,9 +1012,9 @@ public class ModelsEngine {
         for( Point4d point4d : points ) {
             if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
                 for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dir[i][0];
-                    int indexJ = (int) point4d.y + dir[i][1];
-                    if (netRandomIter.getSampleDouble(indexJ, indexI, 0) == point4d.z) {
+                    int indexI = (int) point4d.x + dir[i][1];
+                    int indexJ = (int) point4d.y + dir[i][0];
+                    if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
                         point4d.x = indexI;
                         point4d.y = indexJ;
                     }
@@ -1022,7 +1022,7 @@ public class ModelsEngine {
             }
         }
         for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.y, (int) point4d.x, 0) == point4d.z) {
+            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) == point4d.z) {
                 p++;
             }
         }
@@ -1054,7 +1054,7 @@ public class ModelsEngine {
                         if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
                             return null;
                         for( Point4d point4d : points ) {
-                            if (point4d.x == flow[1] && point4d.y == flow[0]) {
+                            if (point4d.y == flow[1] && point4d.x == flow[0]) {
                                 n++;
                                 nstream.add(n);
                                 point4d.w = n - 1;
@@ -1093,7 +1093,7 @@ public class ModelsEngine {
                             if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return null;
                             for( Point4d point4d : points ) {
-                                if (point4d.x == flow[1] && point4d.y == flow[0]) {
+                                if (point4d.y == flow[1] && point4d.x == flow[0]) {
                                     n++;
                                     nstream.add(n);
                                     point4d.w = n - 1;
@@ -1109,8 +1109,8 @@ public class ModelsEngine {
 
         oRandomIter.done();
         tcaRandomIter.done();
-        mRandomIter.done();
-        netRandomIter.done();
+   //     mRandomIter.done();
+ //       netRandomIter.done();
         return outImage;
     }
 

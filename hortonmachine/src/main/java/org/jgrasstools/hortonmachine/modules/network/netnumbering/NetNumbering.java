@@ -165,7 +165,7 @@ public class NetNumbering extends JGTModel {
         RandomIter netIter = RandomIterFactory.create(netRI, null);
 
         RandomIter tcaIter = null;
-        if (pMode == 1) {
+        if (pMode == 1 || pMode==3) {
             RenderedImage tcaRI = inTca.getRenderedImage();
             tcaIter = RandomIterFactory.create(tcaRI, null);
         }
