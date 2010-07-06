@@ -108,7 +108,7 @@ public class ScriptLauncher {
         sb.append("import oms3.SimBuilder\n");
         sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
         sb
-                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);\n");
+                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         sb.append(script);
         String finalScript = sb.toString();
