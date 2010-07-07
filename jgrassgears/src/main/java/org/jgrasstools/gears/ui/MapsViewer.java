@@ -125,11 +125,6 @@ public class MapsViewer {
                     SLDParser stylereader = new SLDParser(sf, sldFile);
                     StyledLayerDescriptor sld = stylereader.parseSLD();
                     
-                    SLDParser parser = new SLDParser(new StyleFactoryImpl(), sldFile.toURI().toURL());
-                    Style style = parser.readXML()[0];
-                    
-                    
-                    
                     namedStyle = SLD.defaultStyle(sld);
                     SLDTransformer aTransformer = new SLDTransformer();
                     aTransformer.setIndentation(4);
