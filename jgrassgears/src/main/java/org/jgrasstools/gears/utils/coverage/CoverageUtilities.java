@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.utils.coverage;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.ComponentSampleModel;
@@ -629,4 +631,39 @@ public class CoverageUtilities {
         return worldPosition;
     }
 
+    /**
+     * Replace the NaN value with -9999.0.
+     * <p>
+     * This operation it's necessary in order to use the NaN in the equation, so
+     * -9999.0 is a low value.
+     * </p>
+     * 
+     * @param pitRI
+     *            the elevation map.
+     * @return the elevation map without NaN
+     */
+    public static WritableRaster replaceNaN( RenderedImage pitRI, double newValue ) {
+
+        WritableRaster tmpWR = (WritableRaster) pitRI.getData();
+        RandomIter pitTmpIterator = RandomIterFactory.create(pitRI, null);
+
+        /*
+         * Set the NaN as -9999.0 in order to use it into the calculating.
+         */
+        int height = pitRI.getHeight();
+        int width = pitRI.getWidth();
+        for( int y = 0; y < height; y++ ) {
+            for( int x = 0; x < width; x++ ) {
+                if (isNovalue(pitTmpIterator.getSampleDouble(x, y, 0))) {
+                    tmpWR.setSample(x, y, 0, newValue);
+                }
+            }
+        }
+        pitTmpIterator.done();
+        // pitTmpRI = null;
+        return tmpWR;
+    }
+    
+    
+    
 }

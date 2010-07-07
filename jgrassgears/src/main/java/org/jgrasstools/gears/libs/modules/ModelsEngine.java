@@ -1109,8 +1109,8 @@ public class ModelsEngine {
 
         oRandomIter.done();
         tcaRandomIter.done();
-   //     mRandomIter.done();
- //       netRandomIter.done();
+        // mRandomIter.done();
+        // netRandomIter.done();
         return outImage;
     }
 
@@ -1429,6 +1429,157 @@ public class ModelsEngine {
             }
         }
         return true;
+    }
+    /**
+     * Calculating the inverse of the sun vector.
+     * 
+     * @param sunVector
+     * @return
+     */
+    public double[] calcInverseSunVector( double[] sunVector ) {
+        double m = Math.max(Math.abs(sunVector[0]), Math.abs(sunVector[1]));
+        return new double[]{-sunVector[0] / m, -sunVector[1] / m, -sunVector[2] / m};
+    }
+
+    /**
+     * Calculating the normal to the sun vector.
+     * 
+     * @param sunVector
+     * @return
+     */
+    public double[] calcNormalSunVector( double[] sunVector ) {
+        double[] normalSunVector = new double[3];
+        normalSunVector[2] = Math.sqrt(Math.pow(sunVector[0], 2) + Math.pow(sunVector[1], 2));
+        normalSunVector[0] = -sunVector[0] * sunVector[2] / normalSunVector[2];
+        normalSunVector[1] = -sunVector[1] * sunVector[2] / normalSunVector[2];
+        return normalSunVector;
+    }
+
+    /**
+     * Compute the dot product.
+     * 
+     * @param a
+     *            is a vector.
+     * @param b
+     *            is a vector.
+     * @return the dot product of a and b.
+     */
+    public double scalarProduct( double[] a, double[] b ) {
+        double c = 0;
+        for( int i = 0; i < a.length; i++ ) {
+            c = c + a[i] * b[i];
+        }
+        return c;
+    }
+    /**
+    * Evaluate the shadow map calling the shadow method.
+    * 
+    * @param h
+    *            the height of the raster.
+    * @param w
+    *            the width of the raster.
+    * @param sunVector
+    * @param inverseSunVector
+    * @param normalSunVector
+    * @param demWR
+    *            the elevation map.
+    * @param dx
+    *            the resolution of the elevation map.
+    * @return the shadow map.
+    */
+    public WritableRaster calculateFactor( int h, int w, double[] sunVector, double[] inverseSunVector,
+            double[] normalSunVector, WritableRaster demWR, double dx ) {
+
+        double casx = 1e6 * sunVector[0];
+        double casy = 1e6 * sunVector[1];
+        int f_i = 0;
+        int f_j = 0;
+
+        if (casx <= 0) {
+            f_i = 0;
+        } else {
+            f_i = w - 1;
+        }
+
+        if (casy <= 0) {
+            f_j = 0;
+        } else {
+            f_j = h - 1;
+        }
+
+        WritableRaster sOmbraWR = CoverageUtilities.createDoubleWritableRaster(w, h, null, null, 1.0);
+        int j = f_j;
+        for( int i = 0; i < sOmbraWR.getWidth(); i++ ) {
+            shadow(i, j, sOmbraWR, demWR, dx, normalSunVector, inverseSunVector);
+        }
+        int i = f_i;
+        for( int k = 0; k < sOmbraWR.getHeight(); k++ ) {
+            shadow(i, k, sOmbraWR, demWR, dx, normalSunVector, inverseSunVector);
+        }
+        return sOmbraWR;
+    }
+
+    /**
+     * Evaluate the shadow map.
+     * 
+     * @param i
+     *            the x axis index.
+     * @param j
+     *            the y axis index.
+     * @param tmpWR
+     *            the output shadow map.
+     * @param demWR
+     *            the elevation map.
+     * @param res
+     *            the resolution of the elevation map.
+     * @param normalSunVector
+     * @param inverseSunVector
+     * @return
+     */
+    private WritableRaster shadow( int i, int j, WritableRaster tmpWR, WritableRaster demWR, double res,
+            double[] normalSunVector, double[] inverseSunVector ) {
+        int n = 0;
+        double zcompare = -Double.MAX_VALUE;
+        double dx = (inverseSunVector[0] * n);
+        double dy = (inverseSunVector[1] * n);
+        int nCols = tmpWR.getWidth();
+        int nRows = tmpWR.getHeight();
+        int idx = (int) Math.round(i + dx);
+        int jdy = (int) Math.round(j + dy);
+        double vectorToOrigin[] = new double[3];
+        while( idx >= 0 && idx <= nCols - 1 && jdy >= 0 && jdy <= nRows - 1 ) {
+            vectorToOrigin[0] = dx * res;
+            vectorToOrigin[1] = dy * res;
+
+            int tmpY = (int) (j + dy);
+            if (tmpY < 0) {
+                tmpY = 0;
+            } else if (tmpY > nRows) {
+                tmpY = nRows - 1;
+            }
+            int tmpX = (int) (i + dx);
+            if (tmpX < 0) {
+                tmpX = 0;
+            } else if (tmpY > nCols) {
+                tmpX = nCols - 1;
+            }
+            vectorToOrigin[2] = demWR.getSampleDouble(idx, jdy, 0);
+            // vectorToOrigin[2] = (pitRandomIter.getSampleDouble(idx, jdy, 0) +
+            // pitRandomIter
+            // .getSampleDouble(tmpX, tmpY, 0)) / 2;
+            double zprojection = scalarProduct(vectorToOrigin, normalSunVector);
+            if ((zprojection < zcompare)) {
+                tmpWR.setSample(idx, jdy, 0, 0);
+            } else {
+                zcompare = zprojection;
+            }
+            n = n + 1;
+            dy = (inverseSunVector[1] * n);
+            dx = (inverseSunVector[0] * n);
+            idx = (int) Math.round(i + dx);
+            jdy = (int) Math.round(j + dy);
+        }
+        return tmpWR;
     }
 
 }

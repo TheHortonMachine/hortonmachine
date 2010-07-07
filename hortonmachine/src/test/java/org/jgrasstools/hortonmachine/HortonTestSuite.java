@@ -1,5 +1,8 @@
 package org.jgrasstools.hortonmachine;
 
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 import org.jgrasstools.hortonmachine.models.hm.TestAb;
 import org.jgrasstools.hortonmachine.models.hm.TestAspect;
 import org.jgrasstools.hortonmachine.models.hm.TestBasinShape;
@@ -13,19 +16,19 @@ import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork1;
 import org.jgrasstools.hortonmachine.models.hm.TestFlow;
 import org.jgrasstools.hortonmachine.models.hm.TestGradient;
 import org.jgrasstools.hortonmachine.models.hm.TestHacklength;
+import org.jgrasstools.hortonmachine.models.hm.TestHillshade;
+import org.jgrasstools.hortonmachine.models.hm.TestInsolation;
 import org.jgrasstools.hortonmachine.models.hm.TestKriging;
 import org.jgrasstools.hortonmachine.models.hm.TestNetnumbering;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 import org.jgrasstools.hortonmachine.models.hm.TestRescaledDistance;
 import org.jgrasstools.hortonmachine.models.hm.TestShalstab;
+import org.jgrasstools.hortonmachine.models.hm.TestSkyview;
 import org.jgrasstools.hortonmachine.models.hm.TestSlope;
 import org.jgrasstools.hortonmachine.models.hm.TestTca;
 import org.jgrasstools.hortonmachine.models.hm.TestTca3d;
 import org.jgrasstools.hortonmachine.models.hm.TestTopindex;
 import org.jgrasstools.hortonmachine.models.hm.TestWateroutlet;
-
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 public class HortonTestSuite extends TestCase {
 
@@ -56,6 +59,9 @@ public class HortonTestSuite extends TestCase {
         suite.addTestSuite(TestWateroutlet.class);
 
         suite.addTestSuite(TestBasinShape.class);
+        suite.addTestSuite(TestSkyview.class);
+        suite.addTestSuite(TestHillshade.class);
+        suite.addTestSuite(TestInsolation.class);
 
         // suite.addTestSuite(TestD2O.class);
         // suite.addTestSuite(TestD2O3d.class);
