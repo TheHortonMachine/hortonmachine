@@ -22,6 +22,8 @@ import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
+import java.io.File;
+import java.io.IOException;
 
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
@@ -51,10 +53,14 @@ import org.geotools.styling.PolygonSymbolizer;
 import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.Rule;
 import org.geotools.styling.SLD;
+import org.geotools.styling.SLDParser;
+import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.Stroke;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
+import org.geotools.styling.StyleFactoryImpl;
+import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
@@ -88,9 +94,15 @@ public class MapsViewer {
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = null;
 
+    @Description("The feature collections style layer.")
+    @In
+    public String inSld = null;
+
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
     private FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
     private StyleBuilder sb = new StyleBuilder(sf, ff);
+
+    private Style namedStyle;
 
     @Execute
     public void displayMaps() throws Exception {
@@ -106,6 +118,27 @@ public class MapsViewer {
 
         if (featureCollection != null) {
             featureCollections = new FeatureCollection[]{featureCollection};
+            // does it have style
+            if (inSld != null) {
+                File sldFile = new File(inSld);
+                if (sldFile.exists()) {
+                    SLDParser stylereader = new SLDParser(sf, sldFile);
+                    StyledLayerDescriptor sld = stylereader.parseSLD();
+                    
+                    SLDParser parser = new SLDParser(new StyleFactoryImpl(), sldFile.toURI().toURL());
+                    Style style = parser.readXML()[0];
+                    
+                    
+                    
+                    namedStyle = SLD.defaultStyle(sld);
+                    SLDTransformer aTransformer = new SLDTransformer();
+                    aTransformer.setIndentation(4);
+                    String xml = ""; //$NON-NLS-1$
+                        xml = aTransformer.transform(sld);
+                    System.out.println(xml);
+                }
+            }
+
         }
         addFeatureCollections(map);
 
@@ -132,7 +165,6 @@ public class MapsViewer {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GEOMETRYTYPE type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
-            Style namedStyle = null;;
             switch( type ) {
             case MULTIPOLYGON:
             case POLYGON:
@@ -154,27 +186,29 @@ public class MapsViewer {
                 break;
             case MULTIPOINT:
             case POINT:
-                Mark circleMark = sf.getCircleMark();
-                Fill fill = sf.createFill(ff.literal(Color.RED));
-                circleMark.setFill(fill);
-                // circleMark.setStroke(null);
+                if (namedStyle == null) {
+                    Mark circleMark = sf.getCircleMark();
+                    Fill fill = sf.createFill(ff.literal(Color.RED));
+                    circleMark.setFill(fill);
+                    // circleMark.setStroke(null);
 
-                Graphic gr = sf.createDefaultGraphic();
-                gr.graphicalSymbols().clear();
-                gr.graphicalSymbols().add(circleMark);
-                Expression size = ff.literal(6);
-                gr.setSize(size);
+                    Graphic gr = sf.createDefaultGraphic();
+                    gr.graphicalSymbols().clear();
+                    gr.graphicalSymbols().add(circleMark);
+                    Expression size = ff.literal(6);
+                    gr.setSize(size);
 
-                Rule pointRule = sf.createRule();
-                PointSymbolizer pointSymbolizer = sf.createPointSymbolizer(gr, null);
-                pointRule.symbolizers().add(pointSymbolizer);
+                    Rule pointRule = sf.createRule();
+                    PointSymbolizer pointSymbolizer = sf.createPointSymbolizer(gr, null);
+                    pointRule.symbolizers().add(pointSymbolizer);
 
-                FeatureTypeStyle pointsFeatureTypeStyle = sf.createFeatureTypeStyle();
-                pointsFeatureTypeStyle.rules().add(pointRule);
+                    FeatureTypeStyle pointsFeatureTypeStyle = sf.createFeatureTypeStyle();
+                    pointsFeatureTypeStyle.rules().add(pointRule);
 
-                namedStyle = sf.createStyle();
-                namedStyle.featureTypeStyles().add(pointsFeatureTypeStyle);
-                namedStyle.setName("points");
+                    namedStyle = sf.createStyle();
+                    namedStyle.featureTypeStyles().add(pointsFeatureTypeStyle);
+                    namedStyle.setName("points");
+                }
                 break;
             case MULTILINE:
             case LINE:
