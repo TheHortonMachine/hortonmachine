@@ -241,7 +241,7 @@ public class BasinShape extends JGTModel {
                     squares.inGeodata = inBasins;
                     squares.pm = pm;
                     squares.doReset = true;
-                    squares.pValue = num;
+                    squares.pValue = (double) num;
                     squares.process();
                 } catch (Exception e) {
                     pm.errorMessage(e.getLocalizedMessage());

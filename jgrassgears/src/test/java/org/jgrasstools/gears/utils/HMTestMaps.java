@@ -475,7 +475,16 @@ public class HMTestMaps {
         {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
 };
     
-    
+    public static double[][] marchingSq7 = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, 2,    2,   1,   1,   1,  2, 2, NaN}, 
+        {NaN, NaN, 2,    2,   1,   1,   1,  2, 2, NaN},
+        {NaN, NaN, 5,    5,   3,   3,   4,   4, NaN, NaN},
+        {NaN, NaN, 5,    5,   3,   3,   4,   4, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
+};  
     
     
     public static double[][] d2oPixelData = new double[][]{

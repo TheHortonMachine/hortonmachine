@@ -19,12 +19,12 @@
 package org.jgrasstools.gears.modules.r.scanline;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
+
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
@@ -50,6 +50,7 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
@@ -75,11 +76,15 @@ public class ScanLineRasterizer {
 
     @Description("The value to use as raster value if no field is given.")
     @In
-    public double pValue = 0.0;
+    public Double pValue = doubleNovalue;
 
     @Description("The field to use to retrieve the category value for the raster.")
     @In
     public String fCat = null;
+
+    @Description("The field contains to retrieve the category value to use for the rasterizzations.")
+    @In
+    public String fValueToRasterize = null;
 
     @Description("The gridgeometry on which to perform rasterization.")
     @In
@@ -113,36 +118,28 @@ public class ScanLineRasterizer {
             width = paramsMap.get(COLS).intValue();
             xRes = paramsMap.get(XRES);
 
-            outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null,
-                    doubleNovalue);
+            outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
         }
 
         GeometryType type = inGeodata.getSchema().getGeometryDescriptor().getType();
-        if (getGeometryType(type) == GEOMETRYTYPE.POINT
-                || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
-            throw new ModelsRuntimeException("Not implemented yet for points", this.getClass()
-                    .getSimpleName());
-        } else if (getGeometryType(type) == GEOMETRYTYPE.LINE
-                || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
-            throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass()
-                    .getSimpleName());
-        } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON
-                || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
-            rasterizepolygon(inGeodata, outWR, pGrid, fCat, pValue);
+        if (getGeometryType(type) == GEOMETRYTYPE.POINT || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
+            throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
+        } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
+            throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
+        } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
+            rasterizepolygon(inGeodata, outWR, pGrid, fValueToRasterize, pValue);
         } else {
-            throw new ModelsIllegalargumentException(
-                    "Couldn't recognize the geometry type of the file.", this.getClass()
-                            .getSimpleName());
+            throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
+                    .getSimpleName());
         }
 
-        outGeodata = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inGeodata
-                .getSchema().getCoordinateReferenceSystem());
+        outGeodata = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inGeodata.getSchema()
+                .getCoordinateReferenceSystem());
 
     }
 
-    private void rasterizepolygon( FeatureCollection<SimpleFeatureType, SimpleFeature> polygonFC,
-            WritableRaster rasterized, GridGeometry2D gridGeometry, String field, double cat )
-            throws InvalidGridGeometryException, TransformException {
+    private void rasterizepolygon( FeatureCollection<SimpleFeatureType, SimpleFeature> polygonFC, WritableRaster rasterized,
+            GridGeometry2D gridGeometry, String field, Double cat ) throws InvalidGridGeometryException, TransformException {
 
         int w = rasterized.getWidth();
         int h = rasterized.getHeight();
@@ -150,18 +147,27 @@ public class ScanLineRasterizer {
         int size = inGeodata.size();
         pm.beginTask("Rasterizing features...", size);
         FeatureIterator<SimpleFeature> featureIterator = inGeodata.features();
+        boolean severalValue = false;
+        /*
+         * if cat is null then there is several polygons with several value to
+         * rasterize.
+         */
+        if (cat == null) {
+            severalValue = true;
+        }
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Polygon polygon = (Polygon) feature.getDefaultGeometry();
-
+            // extract the value to put into the raster.
+            if (severalValue) {
+                cat = (Double) feature.getAttribute(field);
+            }
             double delta = xRes / 4.0;
 
             for( int r = 0; r < h; r++ ) {
                 // do scan line to fill the polygon
-                double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r))
-                        .getCoordinate();
-                double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(w - 1, r))
-                        .getCoordinate();
+                double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
+                double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(w - 1, r)).getCoordinate();
                 Coordinate west = new Coordinate(westPos[0], westPos[1]);
                 Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
                 LineString line = gf.createLineString(new Coordinate[]{west, east});
@@ -172,16 +178,19 @@ public class ScanLineRasterizer {
                         Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
                         Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                        GridCoordinates2D startGridCoord = gridGeometry
-                                .worldToGrid(new DirectPosition2D(startC.x, startC.x));
-                        GridCoordinates2D endGridCoord = gridGeometry
-                                .worldToGrid(new DirectPosition2D(endC.x, endC.x));
+                        GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(startC.x, startC.x));
+                        GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(endC.x, endC.x));
 
                         /*
                          * the part in between has to be filled
                          */
                         for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                            double value = pValue;
+                            double value = cat;
+                            /*
+                             * if there is only one value (cat is a number) then
+                             * you can write into the raster another field of
+                             * the feature.
+                             */
                             if (fCat != null) {
                                 value = ((Number) feature.getAttribute(fCat)).doubleValue();
                             }

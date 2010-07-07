@@ -67,7 +67,7 @@ import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
 @Description("Module for raster to vector conversion")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello, Daniele Andreis", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
@@ -78,9 +78,13 @@ public class MarchingSquaresVectorializer extends JGTModel {
     @In
     public GridCoverage2D inGeodata;
 
-    @Description("The value to use to trace the polygons.")
+    @Description("The value to use to trace the polygons. If it is null then all the value of the raster are used")
     @In
-    public double pValue = doubleNovalue;
+    public Double pValue = doubleNovalue;
+
+    @Description("The value to use as a name for the raster value in the Feature.")
+    @In
+    public String defaultFeatureField = "value";
 
     @Description("A threshold on cell number to filter away polygons with cells less than that.")
     @In
@@ -139,23 +143,64 @@ public class MarchingSquaresVectorializer extends JGTModel {
         awtGeometriesList = new ArrayList<java.awt.Polygon>();
 
         pm.beginTask("Extracting vectors...", height);
-        for( int row = 0; row < height; row++ ) {
-            for( int col = 0; col < width; col++ ) {
-                double value = iter.getSampleDouble(col, row, 0);
-                if (!isNovalue(value) && !bitSet.get(row * width + col)) {
+        /*
+         * a List where to store the different value of the raster if pValue is
+         * null, otherwise only pValue is putted into.
+         */
+        ArrayList<Double> valueRaster = new ArrayList<Double>();
+        /*
+         * if pValue is a number then extract the polygon from the raster (if
+         * the pixel value is equals to pValue).
+         */
+        if (pValue != null) {
+            valueRaster.add(0, pValue);
+            for( int row = 0; row < height; row++ ) {
+                for( int col = 0; col < width; col++ ) {
+                    double value = iter.getSampleDouble(col, row, 0);
+                    if (!isNovalue(value) && !bitSet.get(row * width + col)) {
 
-                    if (abs(value - pValue) < .0000001 ) {
-                        java.awt.Polygon awtPolygon = new java.awt.Polygon();
-                        Polygon polygon = identifyPerimeter(col, row, awtPolygon);
-                        if (polygon != null) {
-                            geometriesList.add(polygon);
-                            awtGeometriesList.add(awtPolygon);
+                        if (abs(value - pValue) < .0000001) {
+                            java.awt.Polygon awtPolygon = new java.awt.Polygon();
+                            Polygon polygon = identifyPerimeter(col, row, awtPolygon);
+                            if (polygon != null) {
+                                geometriesList.add(polygon);
+                                awtGeometriesList.add(awtPolygon);
+                            }
                         }
                     }
                 }
+                pm.worked(1);
             }
-            pm.worked(1);
+        } else {
+            /*
+             * 
+             */
+            pValue = doubleNovalue;
+            for( int row = 0; row < height; row++ ) {
+                for( int col = 0; col < width; col++ ) {
+                    double value = iter.getSampleDouble(col, row, 0);
+                    if (value != pValue) {
+                        pValue = value;
+
+                        if (!isNovalue(value) && !bitSet.get(row * width + col)) {
+
+                            if (value == pValue) {
+                                java.awt.Polygon awtPolygon = new java.awt.Polygon();
+                                Polygon polygon = identifyPerimeter(col, row, awtPolygon);
+                                if (polygon != null) {
+                                    valueRaster.add(pValue);
+                                    geometriesList.add(polygon);
+                                    awtGeometriesList.add(awtPolygon);
+                                }
+                            }
+                        }
+                    }
+                }
+                pm.worked(1);
+            }
+
         }
+
         pm.done();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -163,14 +208,15 @@ public class MarchingSquaresVectorializer extends JGTModel {
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
         b.add("cat", Integer.class);
+        b.add(defaultFeatureField, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
 
         outGeodata = FeatureCollections.newCollection();
         int index = 0;
         for( Polygon polygon : geometriesList ) {
-
+            Double tmpValue = valueRaster.get(index);
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            Object[] values = new Object[]{polygon, index};
+            Object[] values = new Object[]{polygon, index, tmpValue};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
             index++;
@@ -179,16 +225,14 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
     }
 
-    private Polygon identifyPerimeter( int initialX, int initialY, java.awt.Polygon awtPolygon )
-            throws TransformException {
+    private Polygon identifyPerimeter( int initialX, int initialY, java.awt.Polygon awtPolygon ) throws TransformException {
         if (initialX < 0 || initialX > width - 1 || initialY < 0 || initialY > height - 1)
             throw new IllegalArgumentException("Coordinate outside the bounds.");
 
         int initialValue = value(initialX, initialY);
         if (initialValue == 0) {
-            throw new IllegalArgumentException(String.format(
-                    "Supplied initial coordinates (%d, %d) do not lie on a perimeter.", initialX,
-                    initialY));
+            throw new IllegalArgumentException(String.format("Supplied initial coordinates (%d, %d) do not lie on a perimeter.",
+                    initialX, initialY));
         }
         final Point2D worldPosition = new Point2D.Double(initialX, initialY);
         gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
@@ -197,8 +241,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
             return null;
         }
 
-        Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0,
-                worldPosition.getY() - yRes / 2.0);
+        Coordinate startCoordinate = new Coordinate(worldPosition.getX() + xRes / 2.0, worldPosition.getY() - yRes / 2.0);
         List<Coordinate> coordinateList = new ArrayList<Coordinate>(200);
         coordinateList.add(startCoordinate);
 
@@ -310,8 +353,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
             awtPolygon.addPoint(x, y);
         } while( x != initialX || y != initialY );
 
-        double polygonArea = GeometryUtilities.getPolygonArea(awtPolygon.xpoints,
-                awtPolygon.ypoints, coordinateList.size() - 1);
+        double polygonArea = GeometryUtilities.getPolygonArea(awtPolygon.xpoints, awtPolygon.ypoints, coordinateList.size() - 1);
         if (polygonArea < pThres) {
             return null;
         }
@@ -320,8 +362,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
         coordinateList.add(startCoordinate);
 
-        Coordinate[] coordinateArray = (Coordinate[]) coordinateList
-                .toArray(new Coordinate[coordinateList.size()]);
+        Coordinate[] coordinateArray = (Coordinate[]) coordinateList.toArray(new Coordinate[coordinateList.size()]);
         LinearRing linearRing = gf.createLinearRing(coordinateArray);
         Polygon polygon = gf.createPolygon(linearRing, null);
         return polygon;

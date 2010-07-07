@@ -45,8 +45,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractNet1Data = HMTestMaps.marchingSq1;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -55,7 +55,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 2.0;
         squares.pm = pm;
 
         squares.process();
@@ -63,8 +63,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
@@ -75,17 +75,18 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
-        
+
         // should be the same as before
         checkMatrixEqual(renderedImage, extractNet1Data, 0);
 
     }
+
     public void testMarchingSquaresAndRasterizer2() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractNet1Data = HMTestMaps.marchingSq2;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -94,7 +95,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 2.0;
         squares.pm = pm;
 
         squares.process();
@@ -102,8 +103,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
@@ -115,7 +116,6 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
 
-        
         // should be the same as before
         checkMatrixEqual(renderedImage, extractNet1Data, 0);
 
@@ -125,8 +125,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractData = HMTestMaps.marchingSq3;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -135,7 +135,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 2.0;
         squares.pm = pm;
 
         squares.process();
@@ -143,8 +143,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
@@ -155,7 +155,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
-        
+
         RectIter iter = RectIterFactory.create(renderedImage, null);
         do {
             do {
@@ -174,8 +174,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractData = HMTestMaps.marchingSq4;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -184,7 +184,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 2.0;
         squares.pm = pm;
 
         squares.process();
@@ -192,8 +192,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
@@ -204,7 +204,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
-        
+
         RectIter iter = RectIterFactory.create(renderedImage, null);
         do {
             do {
@@ -223,8 +223,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractData = HMTestMaps.marchingSq3;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -233,7 +233,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = 2.0;
         squares.pm = pm;
 
         squares.process();
@@ -241,8 +241,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
@@ -253,7 +253,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
-        
+
         RectIter iter = RectIterFactory.create(renderedImage, null);
         do {
             do {
@@ -272,8 +272,8 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         /*
-        * extract vectors
-        */
+         * extract vectors
+         */
         double[][] extractData = HMTestMaps.marchingSq6;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -282,7 +282,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
         squares.inGeodata = geodata;
-        squares.pValue = 2;
+        squares.pValue = null;
         squares.pm = pm;
 
         squares.process();
@@ -290,31 +290,62 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
 
         /*
-        * and rasterize back again
-        */
+         * and rasterize back again
+         */
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
         rasterizer.pGrid = geodata.getGridGeometry();
-        rasterizer.pValue = 2.0;
+        rasterizer.pValue = null;
+        rasterizer.fValueToRasterize = squares.defaultFeatureField;
         rasterizer.process();
 
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
 
         RenderedImage renderedImage = outGeodata2.getRenderedImage();
-        
-        RectIter iter = RectIterFactory.create(renderedImage, null);
-        do {
-            do {
-                System.out.print(iter.getSampleDouble() + " ");
-            } while( !iter.nextPixelDone() );
-            iter.startPixels();
-            System.out.println();
-        } while( !iter.nextLineDone() );
 
         // should be the same as before
         checkMatrixEqual(renderedImage, extractData, 0);
 
     }
 
+    public void testMarchingSquaresAndRasterizer7() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        /*
+         * extract vectors
+         */
+        double[][] extractData = HMTestMaps.marchingSq7;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D geodata = netCoverage;
+
+        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+        squares.inGeodata = geodata;
+        squares.pValue = null;
+        squares.pm = pm;
+
+        squares.process();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+
+        /*
+         * and rasterize back again
+         */
+        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+        rasterizer.inGeodata = outGeodata;
+        rasterizer.pm = pm;
+        rasterizer.pGrid = geodata.getGridGeometry();
+        rasterizer.pValue = null;
+        rasterizer.fValueToRasterize = squares.defaultFeatureField;
+        rasterizer.process();
+
+        GridCoverage2D outGeodata2 = rasterizer.outGeodata;
+
+        RenderedImage renderedImage = outGeodata2.getRenderedImage();
+
+        // should be the same as before
+        checkMatrixEqual(renderedImage, extractData, 0);
+    }
 }
