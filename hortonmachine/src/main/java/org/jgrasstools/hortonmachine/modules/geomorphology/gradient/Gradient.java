@@ -90,6 +90,10 @@ public class Gradient extends JGTModel {
     @In
     public GridCoverage2D inDem = null;
 
+    @Description("The gradient formula mode.")
+    @In
+    public int defaultMode = 0;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -98,9 +102,6 @@ public class Gradient extends JGTModel {
     @Out
     public GridCoverage2D outSlope = null;
 
-    @Description("Select the formula.")
-    @Out
-    public int defaultMode = 0;
 
     /*
      * INTERNAL VARIABLES
