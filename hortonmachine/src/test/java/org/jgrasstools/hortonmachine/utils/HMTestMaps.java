@@ -167,6 +167,31 @@ public class HMTestMaps {
             {NaN, NaN, 3.73, 3, 2.48, 2.36, 3.54, 7.45, 11.21, NaN}, {NaN, 4.17, 6.6, 4.49, 3.73, 3, 1.67, 3.44, 12.69, NaN}, {NaN, 3.18, 1.18, 2.95, 3.34, 3.37, 1.67, 3.33, 13.04, NaN},
             {NaN, 4.17, 5.89, 5.1, 3.02, 2.12, 5.08, 7.07, 11.21, NaN}, {NaN, 5.74, 4.96, 4.21, 6.5, 8.05, 8.43, 6.51, 8.33, NaN}, {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
 
+        public static double[][] gradientHornData = new double[][]{
+                    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+                    {NaN, NaN, NaN, 5.45, 6.33, 6.96, 7.37, 7.00, 6.80, NaN},
+                    {NaN, NaN, NaN, 2.73, 2.44, 2.65, 4.17, 6.35, 9.94, NaN},
+                    {NaN, 3.13, 4.48, 4.49, 3.93, 3.25, 2.52, 3.36, 11.33, NaN},
+                    {NaN, 2.79, 2.00, 2.19, 2.17, 2.47, 1.93, 3.29, 11.46, NaN},
+                    {NaN, 3.89, 4.77, 4.77, 3.27, 3.42, 4.90, 6.30, 10.08, NaN},
+                    {NaN, 5.75, 5.02, 5.03, 6.14, 7.36, 7.50, 6.83, 7.29, NaN},
+                    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},};
+          
+        public static double[][] gradientEvansData = new double[][]{
+                {NaN,  NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+                {NaN, NaN,    NaN,    5.75,    6.24,    6.93,    7.08,    6.96,    6.56,    NaN},
+                {NaN, NaN,    NaN,    2.64,    2.43,    2.75,    4.39,    5.98,    9.58,    NaN},
+                {NaN, 2.98,    3.78,    4.50,    4.01,    3.34,    2.86,    3.44,    10.91,   NaN},
+                {NaN, 3.05,    2.70,    1.93,    1.79,    2.17,    2.06,    3.36,    10.99,   NaN},
+                {NaN, 3.90,    4.42,   4.67,    3.37,    3.85,    4.84,    6.10,    9.82,    NaN},
+                { NaN, 5.75,    5.04,    5.32,    6.06,    7.15,    7.21,    6.94,    6.96,    NaN},
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+             };
+    
+    
+    
+    
+    
     public static double[][] aspectDataDegrees = new double[][]{{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, {NaN, NaN, 254.0, 242.0, 220.0, 247.0, 259.0, 257.0, 259.0, NaN},
             {NaN, 254.0, 256.0, 241.0, 242.0, 243.0, 250.0, 253.0, 263.0, NaN}, {NaN, 270.0, 259.0, 240.0, 240.0, 241.0, 180.0, 139.0, 265.0, NaN},
             {NaN, 19.0, 52.0, 283.0, 273.0, 262.0, 270.0, 360.0, 275.0, NaN}, {NaN, 286.0, 291.0, 314.0, 341.0, 299.0, 284.0, 281.0, 277.0, NaN},

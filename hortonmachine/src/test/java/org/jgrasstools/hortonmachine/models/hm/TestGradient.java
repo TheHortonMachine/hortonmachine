@@ -25,7 +25,7 @@ public class TestGradient extends HMTestCase {
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-        
+
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
         gradient.pm = pm;
@@ -34,6 +34,45 @@ public class TestGradient extends HMTestCase {
 
         GridCoverage2D gradientCoverage = gradient.outSlope;
         checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientData, 0.01);
+    }
+
+    public void testGradientHorn() throws IOException {
+
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        double[][] pitData = HMTestMaps.pitData;
+        GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
+
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
+
+        Gradient gradient = new Gradient();
+        gradient.inDem = pitfillerCoverage;
+        gradient.pm = pm;
+        gradient.defaultMode = 1;
+
+        gradient.process();
+
+        GridCoverage2D gradientCoverage = gradient.outSlope;
+        checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientHornData, 0.01);
+    }
+    public void testGradientEvans() throws IOException {
+
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        double[][] pitData = HMTestMaps.pitData;
+        GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
+
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
+
+        Gradient gradient = new Gradient();
+        gradient.inDem = pitfillerCoverage;
+        gradient.pm = pm;
+        gradient.defaultMode = 2;
+
+        gradient.process();
+
+        GridCoverage2D gradientCoverage = gradient.outSlope;
+        checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientEvansData, 0.01);
     }
 
 }

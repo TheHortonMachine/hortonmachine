@@ -38,23 +38,23 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 /**
  * <p>
  * The openmi compliant representation of the gradient model. Calculates the
  * gradient in each point of the map,
  * </p>
  * <p>
- * It estimate the gradient with a finite difference formula:
+ * It estimate the gradient with several formula:
  * 
  * <pre>
- *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
- * f<sub>x</sub>=(f(x+1,y)-f(x-1,y))/(2 &#916 x) 
- * f<sub>y</sub>=(f(x,y+1)-f(x,y-1))/(2 &#916 y)
+*  <li>finite difference defaultMode=0;
+*  <li> Horn defaultMode=1;
+*  <li> Evans defaultMode=2;
  * </pre>
  * 
  * </p>
@@ -77,7 +77,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
  *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
  */
 @Description("Calculates the gradient in each point of the map.")
-@Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
 @Keywords("Geomorphology")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
@@ -98,14 +98,23 @@ public class Gradient extends JGTModel {
     @Out
     public GridCoverage2D outSlope = null;
 
+    @Description("Select the formula.")
+    @Out
+    public int defaultMode = 0;
+
     /*
      * INTERNAL VARIABLES
      */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    /**
-     * Computes the gradient algoritm. p=f_{x}^{2}+f_{y}^{2}
-     */
+    private int nCols;
+
+    private Double xRes;
+
+    private int nRows;
+
+    private Double yRes;
+
     @Execute
     public void process() {
         if (!concatOr(outSlope == null, doReset)) {
@@ -113,21 +122,107 @@ public class Gradient extends JGTModel {
         }
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
+        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        xRes = regionMap.get(CoverageUtilities.XRES);
+        yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage elevationRI = inDem.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
+        WritableRaster gradientWR = null;
+        if (defaultMode == 1) {
+            gradientWR = gradientHorn(elevationIter);
+        } else if (defaultMode == 2) {
+            gradientWR = gradientEvans(elevationIter);
+        } else {
+
+            gradientWR = gradientDiff(elevationIter);
+
+        }
+        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());
+    }
+
+    /**
+    * Computes the gradient algorithm. p=f_{x}^{2}+f_{y}^{2}
+    *  
+    * The derivatives can be calculate with the  the horn formula:
+    * 
+    * f<sub>x</sub>=(2*f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-2*f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(8 &#916 x) 
+    * f<sub>y</sub>=(2*f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-2*f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(8 &#916 y)
+    * <p>
+    * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
+    * 
+    * 1   2   3
+    * 4   5   6
+    * 7   8   9
+    * 
+    * This numeration is used to extract the appropriate elevation value (es elev1 an so on)
+    * 
+    * </p>
+    *
+    *
+    *
+    */
+
+    private WritableRaster gradientHorn( RandomIter elevationIter ) {
 
         WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
             if (isCanceled(pm)) {
-                return;
+                return null;
             }
+            for( int x = 1; x < nCols - 1; x++ ) {
+                // extract the value to use for the algoritm. It is the finite difference approach.
+                double elev5 = elevationIter.getSampleDouble(x, y, 0);
+                double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
+                double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
+                double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
+                double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
+                double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
+                double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
+                double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
+                double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
+
+                if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4)
+                        || isNovalue(elev6) || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
+                    gradientWR.setSample(x, y, 0, doubleNovalue);
+                } else {
+                    double fu = 2 * elev6 + elev9 + elev3;
+                    double fd = 2 * elev4 + elev7 + elev1;
+                    double xGrad = (fu - fd) / (8 * xRes);
+                    fu = 2 * elev8 + elev7 + elev9;
+                    fd = 2 * elev2 + elev1 + elev3;
+                    double yGrad = (fu - fd) / (8 * yRes);
+                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
+                    gradientWR.setSample(x, y, 0, grad);
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        return gradientWR;
+    }
+
+    /**
+     * Estimate the gradient (p=f_{x}^{2}+f_{y}^{2}) with a finite difference formula:
+     * 
+     * <pre>
+     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
+     * f<sub>x</sub>=(f(x+1,y)-f(x-1,y))/(2 &#916 x) 
+     * f<sub>y</sub>=(f(x,y+1)-f(x,y-1))/(2 &#916 y)
+     * </pre>
+     * 
+    */
+    private WritableRaster gradientDiff( RandomIter elevationIter ) {
+
+        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+
+        pm.beginTask(msg.message("gradient.working"), nRows);
+        for( int y = 1; y < nRows - 1; y++ ) {
+
             for( int x = 1; x < nCols - 1; x++ ) {
                 // extract the value to use for the algoritm. It is the finite difference approach.
                 double elevIJ = elevationIter.getSampleDouble(x, y, 0);
@@ -152,7 +247,76 @@ public class Gradient extends JGTModel {
         }
         pm.done();
 
-        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());
+        return gradientWR;
+    }
+
+    /** estimate the gradient using the Horn formula.
+     * <p>
+     * Where the gradient is:
+     * </p>
+     * <pre>
+     *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
+     *  
+     *  and the derivatives can be calculate with the  the Evans formula:
+      
+      * f<sub>x</sub>=(f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(6 &#916 x) 
+      * f<sub>y</sub>=(f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(6 &#916 y)
+     <p>
+      * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
+      * 
+      * 1   2   3
+      * 4   5   6
+      * 7   8   9
+      * 
+      * This enumeration is used to extract the appropriate elevation value (es elev1 an so on)
+      * 
+      * </p>
+     *
+     *
+     *
+     */
+    private WritableRaster gradientEvans( RandomIter elevationIter ) {
+
+        WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+
+        pm.beginTask(msg.message("gradient.working"), nRows);
+        for( int y = 1; y < nRows - 1; y++ ) {
+
+            for( int x = 1; x < nCols - 1; x++ ) {
+
+                // extract the value to use for the algoritm. It is the finite difference approach.
+                double elev5 = elevationIter.getSampleDouble(x, y, 0);
+                double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
+                double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
+                double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
+                double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
+                double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
+                double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
+                double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
+                double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
+
+                if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4)
+                        || isNovalue(elev6) || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
+                    gradientWR.setSample(x, y, 0, doubleNovalue);
+                } else {
+                    double fu = elev6 + elev9 + elev3;
+                    double fd = elev4 + elev7 + elev1;
+                    double xGrad = (fu - fd) / (6 * xRes);
+                    fu = elev8 + elev7 + elev9;
+                    fd = elev2 + elev1 + elev3;
+
+                    double yGrad = (fu - fd) / (6 * yRes);
+                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
+                    gradientWR.setSample(x, y, 0, grad);
+                }
+            }
+
+            pm.worked(1);
+        }
+        pm.done();
+
+        return gradientWR;
     }
 
 }
+
