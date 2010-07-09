@@ -96,6 +96,9 @@ public class HydrometersDischargeScalesDao extends AbstractEdcDao {
                 ", ");
         sB.append(columnAnnotationToString(HydrometersDischargeScalesTable.class, "discharge"))
                 .append(", ");
+        sB.append(columnAnnotationToString(HydrometersDischargeScalesTable.class, "level_unit"))
+        .append(", ");
+        sB.append(columnAnnotationToString(HydrometersDischargeScalesTable.class, "discharge_unit"));
         return sB.toString();
     }
 }
