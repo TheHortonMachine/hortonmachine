@@ -18,10 +18,9 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -31,7 +30,6 @@ import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
@@ -39,13 +37,17 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
-@Description("Utility class for reading energy data from csv files.")
+@Description("Utility class for writing energy data to csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
+@Keywords("IO, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EIEnergyReader extends JGTModel {
-    @Description("The csv file to read from.")
+public class EIEnergyWriter extends JGTModel {
+    @Description("The data to write.")
+    @In
+    public List<EIEnergy> inEnergy;
+
+    @Description("The csv file to write to.")
     @In
     public String file = null;
 
@@ -58,48 +60,34 @@ public class EIEnergyReader extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("The read data.")
-    @Out
-    public List<EIEnergy> outEnergy;
-
-    private BufferedReader csvReader;
+    private BufferedWriter csvWriter;
 
     private void ensureOpen() throws IOException {
-        if (csvReader == null)
-            csvReader = new BufferedReader(new FileReader(file));
+        if (csvWriter == null)
+            csvWriter = new BufferedWriter(new FileWriter(file));
     }
 
     @Finalize
     public void close() throws IOException {
-        csvReader.close();
+        csvWriter.close();
     }
 
     @Execute
-    public void read() throws IOException {
-        if (!concatOr(outEnergy == null, doReset)) {
-            return;
-        }
+    public void write() throws IOException {
         ensureOpen();
-        outEnergy = new ArrayList<EIEnergy>();
-        String line = null;
-        while( (line = csvReader.readLine()) != null ) {
-            if (line.trim().length() == 0 || line.trim().startsWith("#")) {
-                // jump empty lines and lines that start as comment
-                continue;
-            }
-            String[] lineSplit = line.split(pSeparator);
-            if (lineSplit.length > 4) {
-                throw new IOException("Energy values are defined in 4 columns.");
-            }
 
-            EIEnergy eiEnergy = new EIEnergy();
-            eiEnergy.basinId = Integer.parseInt(lineSplit[0].trim());
-            eiEnergy.energeticBandId = Integer.parseInt(lineSplit[1].trim());
-            eiEnergy.virtualMonth = Integer.parseInt(lineSplit[2].trim());
-            eiEnergy.energyValue = Double.parseDouble(lineSplit[3].trim());
-            outEnergy.add(eiEnergy);
+        csvWriter.write("# EIAreas writer output\n");
+        for( EIEnergy energy : inEnergy ) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(energy.basinId);
+            sb.append(pSeparator);
+            sb.append(energy.energeticBandId);
+            sb.append(pSeparator);
+            sb.append(energy.virtualMonth);
+            sb.append(pSeparator);
+            sb.append(energy.energyValue);
+            sb.append("\n");
+            csvWriter.write(sb.toString());
         }
-
     }
-
 }
