@@ -263,13 +263,40 @@ public class Kriging extends JGTModel {
         double[] yStation = new double[nStaz + 1];
         double[] zStation = new double[nStaz + 1];
         double[] hStation = new double[nStaz + 1];
-        for( int i = 0; i < xStation.length - 1; i++ ) {
+        boolean areAllEquals = true;
+        xStation[0] = xStationList.get(0);
+        yStation[0] = yStationList.get(0);
+        zStation[0] = zStationList.get(0);
+        hStation[0] = hStationList.get(0);
+        double previousValue =  hStation[0];
+        for( int i = 1; i < xStation.length - 1; i++ ) {
             xStation[i] = xStationList.get(i);
             yStation[i] = yStationList.get(i);
             zStation[i] = zStationList.get(i);
             hStation[i] = hStationList.get(i);
+            if(hStation[i]!=previousValue && areAllEquals){
+                areAllEquals=false;
+            }
         }
-
+        // stations with the same cooridate
+        double xSta; double ySta; double hSta;
+        for (int i=0;i<xStation.length-1;i++){
+            xSta=xStation[i];
+            ySta=yStation[i];
+            hSta=hStation[i];
+            for(int j=i;j<xStation.length-1;j++){
+                if(j!=i && xSta==xStation[j] && ySta==yStation[j] &&  hSta==hStation[j]){
+                    pm
+                     .errorMessage("Two station have the same coordiantes and rain value:"+xSta+";"+ySta );
+                }
+                if(j!=i && xSta==xStation[j] && ySta==yStation[j]){
+                    pm
+                     .errorMessage("Two station have the same coordiantes:"+xSta+";"+ySta );
+                }
+            }
+            
+        }
+        
         /*
          * if the isLogarithmic is true then execute the model with log value.
          */
@@ -327,6 +354,7 @@ public class Kriging extends JGTModel {
         Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int j = 0;
         int[] idArray = new int[inInterpolate.size()];
+        if(n1>1 && !areAllEquals){
         while( idIterator.hasNext() ) {
             double sum = 0.;
             int id = idIterator.next();
@@ -362,8 +390,18 @@ public class Kriging extends JGTModel {
                 throw new ModelsRuntimeException("Error in the coffeicients calculation", this
                         .getClass().getSimpleName());
             }
+        }}else if(n1==1 || areAllEquals){
+            double tmp = hStation[0];
+            int k=0;
+            while( idIterator.hasNext() ) {
+                int id = idIterator.next();
+                result[k] = tmp;
+                idArray[k] = id;
+                k++;
+            
+            }
+            
         }
-
         if (pMode == 0 || pMode == 1) {
             storeResult(result, idArray);
         } else {
@@ -705,3 +743,5 @@ public class Kriging extends JGTModel {
     }
 
 }
+
+ 
