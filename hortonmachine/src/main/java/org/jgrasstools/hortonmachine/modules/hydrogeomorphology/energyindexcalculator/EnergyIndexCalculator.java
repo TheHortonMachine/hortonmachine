@@ -582,38 +582,38 @@ public class EnergyIndexCalculator extends JGTModel {
             if (direction[0] >= 0. && direction[0] <= PI / 4.) {
                 beta = direction[0];
                 geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI / 4. && direction[0] <= PI / 2.) {
                 beta = (PI / 2. - direction[0]);
                 geomorphUtilities.orizzonte2(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI / 2. && direction[0] <= PI * 3. / 4.) {
                 beta = (direction[0] - PI / 2.);
 
                 geomorphUtilities.orizzonte3(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI * 3. / 4. && direction[0] <= PI) {
                 beta = (PI - direction[0]);
                 geomorphUtilities.orizzonte4(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI && direction[0] <= PI * 5. / 4.) {
                 beta = (direction[0] - PI);
                 geomorphUtilities.orizzonte5(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI * 5. / 4. && direction[0] <= PI * 3. / 2.) {
                 beta = (PI * 3. / 2. - direction[0]);
                 geomorphUtilities.orizzonte6(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI * 3. / 2. && direction[0] <= PI * 7. / 4.) {
                 beta = (direction[0] - PI * 3. / 2.);
                 geomorphUtilities.orizzonte7(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
 
             } else if (direction[0] > PI * 7. / 4. && direction[0] < 2. * PI) {
                 beta = (2. * PI - direction[0]);
@@ -626,7 +626,7 @@ public class EnergyIndexCalculator extends JGTModel {
                  * puoi lasciare così com'è
                  */
                 geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
-                        outputShadow, NOVALUE);
+                        outputShadow);
                 // error!!!
             }
 

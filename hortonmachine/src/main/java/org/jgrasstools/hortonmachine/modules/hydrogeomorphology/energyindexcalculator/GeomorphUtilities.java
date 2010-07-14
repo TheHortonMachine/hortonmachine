@@ -18,11 +18,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator;
 
-
-
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
+import static java.lang.Math.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 /**
  * @author Stefano Endrizzi
@@ -30,7 +30,7 @@ import javax.media.jai.iterator.RandomIter;
 public class GeomorphUtilities {
 
     public void orizzonte1( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
 
@@ -45,10 +45,9 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int jj = j; jj >= 0; jj-- ) {
-                    for( int i = (int) Math.floor(1 / Math.tan(beta) * (j - jj)); i <= (int) Math.floor(1 / Math.tan(beta)
-                            * (j - jj + 1)) - 1
+                    for( int i = (int) floor(1 / tan(beta) * (j - jj)); i <= (int) floor(1 / tan(beta) * (j - jj + 1)) - 1
                             && i < rows; i++ ) {
-                        if (jj < cols && elevImageIterator.getSampleDouble(jj, i, 0) != novalue) {
+                        if (jj < cols && !isNovalue(elevImageIterator.getSampleDouble(jj, i, 0))) {
                             /*shadow->element[i][jj]=j;}}}}}*/
                             if (curvatureImage.getSampleDouble(jj, i, 0) == 1 && I == -1) {
                                 I = i;
@@ -57,9 +56,9 @@ public class GeomorphUtilities {
                             } else if (curvatureImage.getSampleDouble(jj, i, 0) == 1 && I != -1) {
                                 zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
                                         .getSampleDouble(jj, i, 0))
-                                        / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - jj) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                        / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                                + pow((double) (J - jj) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[i][jj] = 0;
                                     I = i;
                                     J = jj;
@@ -69,9 +68,9 @@ public class GeomorphUtilities {
                             } else if (curvatureImage.getSampleDouble(jj, i, 0) == 0 && y == 1) {
                                 zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
                                         .getSampleDouble(jj, i, 0))
-                                        / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - jj) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                        / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                                + pow((double) (J - jj) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[i][jj] = 0;
                                     y = 0;
                                 } else {
@@ -88,16 +87,16 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int i = 0; i < rows; i++ ) {
-                    if (elevImageIterator.getSampleDouble(j, i, 0) != novalue) {
+                    if (!isNovalue(elevImageIterator.getSampleDouble(j, i, 0))) {
                         if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I == -1) {
                             I = i;
                             J = j;
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I != -1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 I = i;
                                 J = j;
@@ -106,9 +105,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 0 && y == 1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 y = 0;
                             } else {
@@ -123,7 +122,7 @@ public class GeomorphUtilities {
 
     /*----------------------------------------------------------------------------------------------------------*/
     public void orizzonte2( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -139,21 +138,22 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int ii = i; ii < quadrata; ii++ ) {
-                    for( int j = cols - (int) Math.floor(1 / Math.tan(beta) * (ii - i)) - 1; j >= cols
-                            - (int) Math.floor(1 / Math.tan(beta) * (ii - i + 1)) - 1
+                    for( int j = cols - (int) floor(1 / tan(beta) * (ii - i)) - 1; j >= cols
+                            - (int) floor(1 / tan(beta) * (ii - i + 1)) - 1
                             && j >= 0; j-- ) {
-                        if (ii >= (rows + 2 * cols) && elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0) != novalue) {
+                        if (ii >= (rows + 2 * cols)
+                                && !isNovalue(elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))) {
                             /*shadow->element[ii-(Z0->nrh+2*Z0->nch)][j]=i}}}}}*/
                             if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 1 && I == -1) {
                                 I = ii - (rows + 2 * cols);
                                 J = j;
                                 y = 1;
                             } else if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 1 && I != -1) {
-                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))
-                                        / Math.sqrt(Math
-                                                .pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii
+                                        - (rows + 2 * cols), 0))
+                                        / sqrt(Math.pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
+                                                + pow((double) (J - j) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[ii - (rows + 2 * cols)][j] = 0;
                                     I = ii - (rows + 2 * cols);
                                     J = j;
@@ -161,11 +161,11 @@ public class GeomorphUtilities {
                                     shadow[ii - (rows + 2 * cols)][j] = 1;
                                 }
                             } else if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 0 && y == 1) {
-                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))
-                                        / Math.sqrt(Math
-                                                .pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii
+                                        - (rows + 2 * cols), 0))
+                                        / sqrt(Math.pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
+                                                + pow((double) (J - j) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[ii - (rows + 2 * cols)][j] = 0;
                                     y = 0;
                                 } else {
@@ -182,16 +182,16 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int j = cols - 1; j >= 0; j-- ) {
-                    if (elevImageIterator.getSampleDouble(j, i, 0) != novalue) {
+                    if (!isNovalue(elevImageIterator.getSampleDouble(j, i, 0))) {
                         if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I == -1) {
                             I = i;
                             J = j;
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I != -1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 I = i;
                                 J = j;
@@ -200,9 +200,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 0 && y == 1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 y = 0;
                             } else {
@@ -218,7 +218,7 @@ public class GeomorphUtilities {
 
     /*----------------------------------------------------------------------------------------------------------*/
     public void orizzonte3( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -233,10 +233,10 @@ public class GeomorphUtilities {
             J = -1;
             y = 0;
             for( int ii = i; ii >= 0; ii-- ) {
-                for( int j = cols - (int) Math.floor(1.0 / Math.tan(beta) * (i - ii)) - 1; j >= cols
-                        - (int) Math.floor(1.0 / Math.tan(beta) * (i - ii + 1)) - 1
+                for( int j = cols - (int) floor(1.0 / tan(beta) * (i - ii)) - 1; j >= cols
+                        - (int) floor(1.0 / tan(beta) * (i - ii + 1)) - 1
                         && j >= 0; j-- ) {
-                    if (ii < rows && elevImageIterator.getSampleDouble(j, ii, 0) != novalue) {
+                    if (ii < rows && !isNovalue(elevImageIterator.getSampleDouble(j, ii, 0))) {
                         /*shadow->element[ii][j]=i;}}}}*/
                         if (curvatureImage.getSampleDouble(j, ii, 0) == 1 && I == -1) {
                             I = ii;
@@ -244,9 +244,9 @@ public class GeomorphUtilities {
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, ii, 0) == 1 && I != -1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii, 0))
-                                    / Math.sqrt(Math.pow((double) (I - ii) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - ii) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii][j] = 0;
                                 I = ii;
                                 J = j;
@@ -255,9 +255,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curvatureImage.getSampleDouble(j, ii, 0) == 0 && I != -1 && y == 1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii, 0))
-                                    / Math.sqrt(Math.pow((double) (I - ii) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - ii) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii][j] = 0;
                                 y = 0;
                             } else {
@@ -282,8 +282,8 @@ public class GeomorphUtilities {
             J = -1;
             y = 0;
             for( ii = i; ii >= 0; ii-- ) {
-                for( j = Z0[0].length - 1 - (int) Math.floor(1.0 / Math.tan(beta) * (double) (i - ii)); j >= Z0[0].length - 1
-                        - Math.floor(1.0 / Math.tan(beta) * (i - ii + 1))
+                for( j = Z0[0].length - 1 - (int) floor(1.0 / tan(beta) * (double) (i - ii)); j >= Z0[0].length - 1
+                        - floor(1.0 / tan(beta) * (i - ii + 1))
                         && j >= 0; j-- ) {
                     if (ii < Z0.length && Z0[ii][j] != novalue) {
                         /*shadow.element[ii][j]=i;}}}}*/
@@ -293,9 +293,9 @@ public class GeomorphUtilities {
                             y = 1;
                         } else if (curv[ii][j] == 1 && I != -1) {
                             zenith = (Z0[I][J] - Z0[ii][j])
-                                    / Math.sqrt(Math.pow((double) (I - ii) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - ii) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii][j] = 0;
                                 I = ii;
                                 J = j;
@@ -304,9 +304,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curv[ii][j] == 0 && I != 0 && y == 1) {
                             zenith = (Z0[I][J] - Z0[ii][j])
-                                    / Math.sqrt(Math.pow((double) (I - ii) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - ii) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii][j] = 0;
                                 y = 0;
                             } else {
@@ -321,7 +321,7 @@ public class GeomorphUtilities {
     } /*----------------------------------------------------------------------------------------------------------*/
 
     public void orizzonte4( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -337,10 +337,10 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int jj = j; jj >= 0; jj-- ) {
-                    for( int i = rows - (int) Math.floor(1 / Math.tan(beta) * (j - jj)) - 1; i >= rows
-                            - (int) Math.floor(1 / Math.tan(beta) * (j - jj + 1)) - 1
+                    for( int i = rows - (int) floor(1 / tan(beta) * (j - jj)) - 1; i >= rows
+                            - (int) floor(1 / tan(beta) * (j - jj + 1)) - 1
                             && i >= 0; i-- ) {
-                        if (jj < cols && elevImageIterator.getSampleDouble(jj, i, 0) != novalue) {
+                        if (jj < cols && !isNovalue(elevImageIterator.getSampleDouble(jj, i, 0))) {
                             /*shadow.element[i][jj]=j;}}}}}*/
                             if (curvatureImage.getSampleDouble(jj, i, 0) == 1 && I == -1) {
                                 I = i;
@@ -349,9 +349,9 @@ public class GeomorphUtilities {
                             } else if (curvatureImage.getSampleDouble(jj, i, 0) == 1 && I != -1) {
                                 zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
                                         .getSampleDouble(jj, i, 0))
-                                        / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - jj) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                        / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                                + pow((double) (J - jj) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[i][jj] = 0;
                                     I = i;
                                     J = jj;
@@ -361,9 +361,9 @@ public class GeomorphUtilities {
                             } else if (curvatureImage.getSampleDouble(jj, i, 0) == 0 && y == 1) {
                                 zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
                                         .getSampleDouble(jj, i, 0))
-                                        / Math.sqrt((double) Math.pow((I - i) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - jj) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                        / sqrt((double) pow((I - i) * (double) delta, (double) 2)
+                                                + pow((double) (J - jj) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[i][jj] = 0;
                                     y = 0;
                                 } else {
@@ -380,16 +380,16 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int i = rows - 1; i >= 0; i-- ) {
-                    if (elevImageIterator.getSampleDouble(j, i, 0) != novalue) {
+                    if (!isNovalue(elevImageIterator.getSampleDouble(j, i, 0))) {
                         if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I == -1) {
                             I = i;
                             J = j;
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I != -1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 I = i;
                                 J = j;
@@ -398,9 +398,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 0 && y == 1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 y = 0;
                             } else {
@@ -416,7 +416,7 @@ public class GeomorphUtilities {
 
     /*----------------------------------------------------------------------------------------------------------*/
     public void orizzonte5( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -431,20 +431,21 @@ public class GeomorphUtilities {
             J = -1;
             y = 0;
             for( int jj = j; jj < quadrata; jj++ ) {
-                for( int i = rows - (int) Math.floor(1 / Math.tan(beta) * (jj - j)) - 1; i >= rows
-                        - (int) Math.floor(1 / Math.tan(beta) * (jj - j + 1)) - 1
+                for( int i = rows - (int) floor(1 / tan(beta) * (jj - j)) - 1; i >= rows
+                        - (int) floor(1 / tan(beta) * (jj - j + 1)) - 1
                         && i >= 0; i-- ) {
-                    if (jj >= quadrata - cols && elevImageIterator.getSampleDouble(jj - (quadrata - cols), i, 0) != novalue) {
+                    if (jj >= quadrata - cols && !isNovalue(elevImageIterator.getSampleDouble(jj - (quadrata - cols), i, 0))) {
                         /*shadow.element[i][jj-(quadrata-Z0.nch)]=j;}}}}*/
                         if (curvatureImage.getSampleDouble(jj - (quadrata - cols), i, 0) == 1 && I == -1) {
                             I = i;
                             J = jj - (quadrata - cols);
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(jj - (quadrata - cols), i, 0) == 1 && I != -1) {
-                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(jj - (quadrata - cols), i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - (jj - (quadrata - cols))) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(jj
+                                    - (quadrata - cols), i, 0))
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - (jj - (quadrata - cols))) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][jj - (quadrata - cols)] = 0;
                                 I = i;
                                 J = jj - (quadrata - cols);
@@ -452,10 +453,11 @@ public class GeomorphUtilities {
                                 shadow[i][jj - (quadrata - cols)] = 1;
                             }
                         } else if (curvatureImage.getSampleDouble(jj - (quadrata - cols), i, 0) == 0 && y == 1) {
-                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(jj - (quadrata - cols), i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - (jj - (quadrata - cols))) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(jj
+                                    - (quadrata - cols), i, 0))
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - (jj - (quadrata - cols))) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][jj - (quadrata - cols)] = 0;
                                 y = 0;
                             } else {
@@ -471,7 +473,7 @@ public class GeomorphUtilities {
 
     /*----------------------------------------------------------------------------------------------------------*/
     public void orizzonte6( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -487,20 +489,20 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int ii = i; ii >= 0; ii-- ) {
-                    for( int j = (int) Math.floor(1 / Math.tan(beta) * (i - ii)); j <= (int) Math.floor(1 / Math.tan(beta)
-                            * (i - ii + 1)) - 1
+                    for( int j = (int) floor(1 / tan(beta) * (i - ii)); j <= (int) floor(1 / tan(beta) * (i - ii + 1)) - 1
                             && j < cols; j++ ) {
-                        if (ii < rows && elevImageIterator.getSampleDouble(j, ii, 0) != novalue) {
+                        if (ii < rows && !isNovalue(elevImageIterator.getSampleDouble(j, ii, 0))) {
                             /*shadow.element[ii][j]=i;}}}}}*/
                             if (curvatureImage.getSampleDouble(j, ii, 0) == 1 && I == -1) {
                                 I = ii;
                                 J = j;
                                 y = 1;
                             } else if (curvatureImage.getSampleDouble(j, ii, 0) == 1 && I != -1) {
-                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii, 0))
-                                        / Math.sqrt(Math.pow((double) (I - ii) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
+                                        .getSampleDouble(j, ii, 0))
+                                        / sqrt(pow((double) (I - ii) * (double) delta, (double) 2)
+                                                + pow((double) (J - j) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[ii][j] = 0;
                                     I = ii;
                                     J = j;
@@ -508,10 +510,11 @@ public class GeomorphUtilities {
                                     shadow[ii][j] = 1;
                                 }
                             } else if (curvatureImage.getSampleDouble(j, ii, 0) == 0 && y == 1) {
-                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii, 0))
-                                        / Math.sqrt((double) Math.pow((I - ii) * (double) delta, (double) 2)
-                                                + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                                if (zenith <= Math.tan(alfa)) {
+                                zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator
+                                        .getSampleDouble(j, ii, 0))
+                                        / sqrt((double) pow((I - ii) * (double) delta, (double) 2)
+                                                + pow((double) (J - j) * (double) delta, (double) 2));
+                                if (zenith <= tan(alfa)) {
                                     shadow[ii][j] = 0;
                                     y = 0;
                                 } else {
@@ -528,16 +531,16 @@ public class GeomorphUtilities {
                 J = -1;
                 y = 0;
                 for( int j = 0; j < cols; j++ ) {
-                    if (elevImageIterator.getSampleDouble(j, i, 0) != novalue) {
+                    if (!isNovalue(elevImageIterator.getSampleDouble(j, i, 0))) {
                         if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I == -1) {
                             I = i;
                             J = j;
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 1 && I != -1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 I = i;
                                 J = j;
@@ -546,9 +549,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curvatureImage.getSampleDouble(j, i, 0) == 0 && y == 1) {
                             zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, i, 0))
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][j] = 0;
                                 y = 0;
                             } else {
@@ -564,7 +567,7 @@ public class GeomorphUtilities {
 
     /*----------------------------------------------------------------------------------------------------------*/
     public void orizzonte7( double delta, int quadrata, double beta, double alfa, RandomIter elevImageIterator,
-            WritableRaster curvatureImage, int[][] shadow, double novalue ) {
+            WritableRaster curvatureImage, int[][] shadow ) {
         int rows = curvatureImage.getHeight();
         int cols = curvatureImage.getWidth();
         /*=====================*/
@@ -579,20 +582,20 @@ public class GeomorphUtilities {
             J = -1;
             y = 0;
             for( int ii = i; ii < quadrata - 1; ii++ ) {
-                for( int j = (int) Math.floor(1 / Math.tan(beta) * (ii - i)); j <= (int) Math.floor(1 / Math.tan(beta)
-                        * (ii - i + 1)) - 1
+                for( int j = (int) floor(1 / tan(beta) * (ii - i)); j <= (int) floor(1 / tan(beta) * (ii - i + 1)) - 1
                         && j < cols; j++ ) {
-                    if (ii >= (rows + 2 * cols) && elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0) != novalue) {
+                    if (ii >= (rows + 2 * cols) && !isNovalue(elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))) {
                         /*shadow.element[ii-(Z0.nrh+2*Z0.nch)][j]=i;}}}}*/
                         if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 1 && I == -1) {
                             I = ii - (rows + 2 * cols);
                             J = j;
                             y = 1;
                         } else if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 1 && I != -1) {
-                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))
-                                    / Math.sqrt(Math.pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii
+                                    - (rows + 2 * cols), 0))
+                                    / sqrt(pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii - (rows + 2 * cols)][j] = 0;
                                 I = ii - (rows + 2 * cols);
                                 J = j;
@@ -600,10 +603,11 @@ public class GeomorphUtilities {
                                 shadow[ii - (rows + 2 * cols)][j] = 1;
                             }
                         } else if (curvatureImage.getSampleDouble(j, ii - (rows + 2 * cols), 0) == 0 && y == 1) {
-                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii - (rows + 2 * cols), 0))
-                                    / Math.sqrt(Math.pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - j) * (double) delta, (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                            zenith = (elevImageIterator.getSampleDouble(J, I, 0) - elevImageIterator.getSampleDouble(j, ii
+                                    - (rows + 2 * cols), 0))
+                                    / sqrt(pow((double) (I - (ii - (rows + 2 * cols))) * (double) delta, (double) 2)
+                                            + pow((double) (J - j) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[ii - (rows + 2 * cols)][j] = 0;
                                 y = 0;
                             } else {
@@ -632,8 +636,7 @@ public class GeomorphUtilities {
             J = -1;
             y = 0;
             for( int jj = j; jj < quadrata; jj++ ) {
-                for( int i = (int) Math.floor(1 / Math.tan(beta) * (jj - j)) + 1; i <= (int) Math.floor(1 / Math.tan(beta)
-                        * (jj - j + 1))
+                for( int i = (int) floor(1 / tan(beta) * (jj - j)) + 1; i <= (int) floor(1 / tan(beta) * (jj - j + 1))
                         && i <= Z0.length; i++ ) {
                     if (jj > quadrata - Z0[0].length && Z0[i][jj - (quadrata - Z0[0].length)] != novalue) {
                         /*shadow.element[i][jj-(quadrata-Z0.nch)]=j;}}}}*/
@@ -643,10 +646,9 @@ public class GeomorphUtilities {
                             y = 1;
                         } else if (curv[i][jj - (quadrata - Z0[0].length)] == 1 && I != 1) {
                             zenith = (Z0[I][J] - Z0[i][jj - (quadrata - Z0[0].length)])
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - (jj - (quadrata - Z0[0].length))) * (double) delta,
-                                                    (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - (jj - (quadrata - Z0[0].length))) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][jj - (quadrata - Z0[0].length)] = 0;
                                 I = i;
                                 J = jj - (quadrata - Z0[0].length);
@@ -655,10 +657,9 @@ public class GeomorphUtilities {
                             }
                         } else if (curv[i][jj - (quadrata - Z0[0].length)] == 0 && y == 1) {
                             zenith = (Z0[I][J] - Z0[i][jj - (quadrata - Z0[0].length)])
-                                    / Math.sqrt(Math.pow((double) (I - i) * (double) delta, (double) 2)
-                                            + Math.pow((double) (J - (jj - (quadrata - Z0[0].length))) * (double) delta,
-                                                    (double) 2));
-                            if (zenith <= Math.tan(alfa)) {
+                                    / sqrt(pow((double) (I - i) * (double) delta, (double) 2)
+                                            + pow((double) (J - (jj - (quadrata - Z0[0].length))) * (double) delta, (double) 2));
+                            if (zenith <= tan(alfa)) {
                                 shadow[i][jj - (quadrata - Z0[0].length)] = 0;
                                 y = 0;
                             } else {

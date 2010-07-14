@@ -76,7 +76,7 @@ public class EIEnergyWriter extends JGTModel {
     public void write() throws IOException {
         ensureOpen();
 
-        csvWriter.write("# EIAreas writer output\n");
+        csvWriter.write("# EIEnergy writer output\n");
         for( EIEnergy energy : inEnergy ) {
             StringBuilder sb = new StringBuilder();
             sb.append(energy.basinId);
