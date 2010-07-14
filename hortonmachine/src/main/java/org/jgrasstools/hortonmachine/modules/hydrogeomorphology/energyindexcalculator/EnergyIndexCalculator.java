@@ -38,11 +38,15 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.JTS;
@@ -56,6 +60,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -64,6 +69,11 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
+@Description("The Adige model.")
+@Author(name = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
+@Keywords("Hydrology, Energy")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyIndexCalculator extends JGTModel {
 
     @Description("The digital elevation model (DEM).")
@@ -150,10 +160,11 @@ public class EnergyIndexCalculator extends JGTModel {
 
     private int cols;
 
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+
     @Execute
     public void executeEnergyIndexCalculator() throws Exception {
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inBasins);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         dx = regionMap.get(CoverageUtilities.XRES);
@@ -167,8 +178,7 @@ public class EnergyIndexCalculator extends JGTModel {
         double meanY = s + (n - s) / 2.0;
 
         Coordinate tmp = new Coordinate(meanX, meanY);
-        MathTransform mathTransform = CRS.findMathTransform(
-                inAspect.getCoordinateReferenceSystem(), DefaultGeographicCRS.WGS84);
+        MathTransform mathTransform = CRS.findMathTransform(inAspect.getCoordinateReferenceSystem(), DefaultGeographicCRS.WGS84);
         Coordinate newC = JTS.transform(tmp, null, mathTransform);
         avgLatitude = newC.y;
 
@@ -179,8 +189,8 @@ public class EnergyIndexCalculator extends JGTModel {
         elevImageIterator = RandomIterFactory.create(elevImage, null);
 
         RenderedImage tmpImage = inCurvatures.getRenderedImage();
-        curvatureImage = CoverageUtilities.createDoubleWritableRaster(tmpImage.getWidth(), tmpImage
-                .getHeight(), null, null, null);
+        curvatureImage = CoverageUtilities
+                .createDoubleWritableRaster(tmpImage.getWidth(), tmpImage.getHeight(), null, null, null);
         RandomIter tmpIterator = RandomIterFactory.create(tmpImage, null);
         // TODO check what this is for?!?!?
         for( int i = 0; i < tmpImage.getHeight(); i++ ) {
@@ -198,10 +208,10 @@ public class EnergyIndexCalculator extends JGTModel {
 
         avgLatitude *= (PI / 180.0);
 
-        pm.message("Preparing inputs...");
+        pm.message(msg.message("eicalculator.preparing_inputs")); //$NON-NLS-1$
         eibasinNum = prepareInputsOutputs();
 
-        pm.beginTask("Compute EI...", 6);
+        pm.beginTask(msg.message("eicalculator.computing"), 6); //$NON-NLS-1$
         for( int m = 0; m < 6; m++ ) {
             pm.worked(1);
             compute_EI(m + 1);
@@ -210,7 +220,7 @@ public class EnergyIndexCalculator extends JGTModel {
 
         average_EI(10, 6);
 
-        pm.beginTask("Calculate areas...", eibasinNum);
+        pm.beginTask(msg.message("eicalculator.calc_areas"), eibasinNum); //$NON-NLS-1$
         for( int i = 0; i < eibasinNum; i++ ) {
             pm.worked(1);
             area(i);
@@ -322,7 +332,7 @@ public class EnergyIndexCalculator extends JGTModel {
             }
         }
 
-        pm.message("Number of subbasins: " + eibasinNum);
+        pm.message(msg.message("eicalculator.subbasinsnum") + eibasinNum); //$NON-NLS-1$
 
         /*
          * prepare outputs
@@ -361,7 +371,7 @@ public class EnergyIndexCalculator extends JGTModel {
         return eibasinNum;
     }
 
-    private boolean compute_EI( int month ) {
+    private void compute_EI( int month ) {
 
         int[] day_beg = new int[1], day_end = new int[1], daymonth = new int[1], monthyear = new int[1];
         int day;
@@ -380,13 +390,7 @@ public class EnergyIndexCalculator extends JGTModel {
 
         get_date(day, monthyear, daymonth);
 
-        if ((hour - (long) hour) * 60 < 10) {
-            pm.message("giorno: " + daymonth[0] + "/" + monthyear[0] + "  ora: " + hour + ":0"
-                    + ((hour - (long) hour) * 60));
-        } else {
-            pm.message("giorno: " + daymonth[0] + "/" + monthyear[0] + "  ora: " + hour + ":"
-                    + ((hour - (long) hour) * 60));
-        }
+        printReport(daymonth, monthyear, hour);
 
         do {
             sun(hour, day, E0, alpha, direction);
@@ -395,8 +399,8 @@ public class EnergyIndexCalculator extends JGTModel {
                 for( int c = 0; c < eibasinID[0].length; c++ ) {
                     if (eibasinID[r][c] != NOVALUE) {
                         radiation(Rad_morpho, Rad_flat, E0[0], alpha[0], direction[0],
-                                aspectImageIterator.getSampleDouble(c, r, 0), slopeImageIterator
-                                        .getSampleDouble(c, r, 0), outputShadow[r][c]);
+                                aspectImageIterator.getSampleDouble(c, r, 0), slopeImageIterator.getSampleDouble(c, r, 0),
+                                outputShadow[r][c]);
                         Rad_morpho_cum[r][c] += Rad_morpho[0];
                         Rad_flat_cum[r][c] += Rad_flat[0];
                     }
@@ -411,13 +415,7 @@ public class EnergyIndexCalculator extends JGTModel {
 
             get_date(day, monthyear, daymonth);
 
-            if ((hour - (long) hour) * 60 < 10) {
-                pm.message("giorno: " + daymonth[0] + "/" + monthyear[0] + "  ora: " + hour + ":0"
-                        + ((hour - (long) hour) * 60));
-            } else {
-                pm.message("giorno: " + daymonth[0] + "/" + monthyear[0] + "  ora: " + hour + ":"
-                        + ((hour - (long) hour) * 60));
-            }
+            printReport(daymonth, monthyear, hour);
 
         } while( day <= day_end[0] );
 
@@ -439,8 +437,25 @@ public class EnergyIndexCalculator extends JGTModel {
             }
         }
 
-        return true;
+    }
 
+    private void printReport( int[] daymonth, int[] monthyear, double hour ) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(msg.message("hm.day")); //$NON-NLS-1$
+        sb.append(": "); //$NON-NLS-1$
+        sb.append(daymonth[0]);
+        sb.append("/"); //$NON-NLS-1$
+        sb.append(monthyear[0]);
+        sb.append(msg.message("hm.hour")); //$NON-NLS-1$
+        sb.append(": "); //$NON-NLS-1$
+        sb.append(hour);
+        if ((hour - (long) hour) * 60 < 10) {
+            sb.append(":0"); //$NON-NLS-1$
+        } else {
+            sb.append(":"); //$NON-NLS-1$
+        }
+        sb.append(((hour - (long) hour) * 60));
+        pm.message(sb.toString());
     }
 
     private void find_days( int month, int[] day_begin, int[] day_end ) {
@@ -464,8 +479,7 @@ public class EnergyIndexCalculator extends JGTModel {
             day_begin[0] = 143;
             day_end[0] = 173;
         } else {
-            throw new ModelsIllegalargumentException("Incorrect in find_days",
-                    "EnergyIndexCalculator");
+            throw new ModelsIllegalargumentException("Incorrect in find_days", "EnergyIndexCalculator");
         }
     }
 
@@ -522,19 +536,17 @@ public class EnergyIndexCalculator extends JGTModel {
 
         // correction sideral time
         G = 2.0 * PI * (day - 1) / 365.0;
-        Et = 0.000075 + 0.001868 * cos(G) - 0.032077 * sin(G) - 0.014615 * cos(2 * G) - 0.04089
-                * sin(2 * G);
+        Et = 0.000075 + 0.001868 * cos(G) - 0.032077 * sin(G) - 0.014615 * cos(2 * G) - 0.04089 * sin(2 * G);
 
         // local time
         local_hour = hour + Et / omega; // Iqbal: formula 1.4.2
 
         // earth-sun distance correction
-        E0[0] = 1.00011 + 0.034221 * cos(G) + 0.00128 * sin(G) + 0.000719 * cos(2 * G) + 0.000077
-                * sin(2 * G);
+        E0[0] = 1.00011 + 0.034221 * cos(G) + 0.00128 * sin(G) + 0.000719 * cos(2 * G) + 0.000077 * sin(2 * G);
 
         // solar declination
-        D = 0.006918 - 0.399912 * cos(G) + 0.070257 * sin(G) - 0.006758 * cos(2 * G) + 0.000907
-                * sin(2 * G) - 0.002697 * cos(3 * G) + 0.00148 * sin(3 * G);
+        D = 0.006918 - 0.399912 * cos(G) + 0.070257 * sin(G) - 0.006758 * cos(2 * G) + 0.000907 * sin(2 * G) - 0.002697
+                * cos(3 * G) + 0.00148 * sin(3 * G);
 
         // Sunrise and sunset with respect to midday [hour]
         Thr = (acos(-tan(D) * tan(avgLatitude))) / omega;
@@ -542,25 +554,20 @@ public class EnergyIndexCalculator extends JGTModel {
         if (local_hour >= 12.0 - Thr && local_hour <= 12.0 + Thr) {
 
             // alpha: solar height (complementar to zenith angle), [rad]
-            alpha[0] = asin(sin(avgLatitude) * sin(D) + cos(avgLatitude) * cos(D)
-                    * cos(omega * (12.0 - local_hour)));
+            alpha[0] = asin(sin(avgLatitude) * sin(D) + cos(avgLatitude) * cos(D) * cos(omega * (12.0 - local_hour)));
 
             // direction: azimuth angle (0 Nord, clockwise) [rad]
             if (local_hour <= 12) {
                 if (alpha[0] == PI / 2.0) { /* sole allo zenit */
                     direction[0] = PI / 2.0;
                 } else {
-                    direction[0] = PI
-                            - acos((sin(alpha[0]) * sin(avgLatitude) - sin(D))
-                                    / (cos(alpha[0]) * cos(avgLatitude)));
+                    direction[0] = PI - acos((sin(alpha[0]) * sin(avgLatitude) - sin(D)) / (cos(alpha[0]) * cos(avgLatitude)));
                 }
             } else {
                 if (alpha[0] == PI / 2.0) { /* sole allo zenit */
                     direction[0] = 3 * PI / 2.0;
                 } else {
-                    direction[0] = PI
-                            + acos((sin(alpha[0]) * sin(avgLatitude) - sin(D))
-                                    / (cos(alpha[0]) * cos(avgLatitude)));
+                    direction[0] = PI + acos((sin(alpha[0]) * sin(avgLatitude) - sin(D)) / (cos(alpha[0]) * cos(avgLatitude)));
                 }
             }
 
@@ -574,39 +581,39 @@ public class EnergyIndexCalculator extends JGTModel {
 
             if (direction[0] >= 0. && direction[0] <= PI / 4.) {
                 beta = direction[0];
-                geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI / 4. && direction[0] <= PI / 2.) {
                 beta = (PI / 2. - direction[0]);
-                geomorphUtilities.orizzonte2(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte2(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI / 2. && direction[0] <= PI * 3. / 4.) {
                 beta = (direction[0] - PI / 2.);
 
-                geomorphUtilities.orizzonte3(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte3(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI * 3. / 4. && direction[0] <= PI) {
                 beta = (PI - direction[0]);
-                geomorphUtilities.orizzonte4(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte4(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI && direction[0] <= PI * 5. / 4.) {
                 beta = (direction[0] - PI);
-                geomorphUtilities.orizzonte5(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte5(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI * 5. / 4. && direction[0] <= PI * 3. / 2.) {
                 beta = (PI * 3. / 2. - direction[0]);
-                geomorphUtilities.orizzonte6(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte6(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI * 3. / 2. && direction[0] <= PI * 7. / 4.) {
                 beta = (direction[0] - PI * 3. / 2.);
-                geomorphUtilities.orizzonte7(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte7(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
 
             } else if (direction[0] > PI * 7. / 4. && direction[0] < 2. * PI) {
                 beta = (2. * PI - direction[0]);
@@ -618,8 +625,8 @@ public class EnergyIndexCalculator extends JGTModel {
                  * chiamate solo quando il sole è a nord e da noi questo non capita mai.. quindi
                  * puoi lasciare così com'è
                  */
-                geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0],
-                        elevImageIterator, curvatureImage, outputShadow, NOVALUE);
+                geomorphUtilities.orizzonte1(dx, 2 * (cols + rows), beta, alpha[0], elevImageIterator, curvatureImage,
+                        outputShadow, NOVALUE);
                 // error!!!
             }
 
@@ -638,15 +645,14 @@ public class EnergyIndexCalculator extends JGTModel {
 
     }
 
-    private void radiation( double[] Rad_morpho, double[] Rad_flat, double E0, double alpha,
-            double direction, double aspect, double slope, int shadow ) {
+    private void radiation( double[] Rad_morpho, double[] Rad_flat, double E0, double alpha, double direction, double aspect,
+            double slope, int shadow ) {
 
         Rad_flat[0] = E0 * sin(alpha);
         if (shadow == 1 || alpha == 0.0) { // in ombra o di notte
             Rad_morpho[0] = 0.0;
         } else {
-            Rad_morpho[0] = E0
-                    * (cos(slope) * sin(alpha) + sin(slope) * cos(alpha) * cos(-aspect + direction));
+            Rad_morpho[0] = E0 * (cos(slope) * sin(alpha) + sin(slope) * cos(alpha) * cos(-aspect + direction));
         }
 
         if (Rad_morpho[0] < 0)
@@ -717,18 +723,13 @@ public class EnergyIndexCalculator extends JGTModel {
             for( int c = 0; c < eibasinID[0].length; c++ ) {
                 if (eibasinID[r][c] == (i + 1)) {
                     for( int j = 0; j < pEs; j++ ) {
-                        double minCurrentAltimetricBand = minES + (j) * (maxES - minES)
-                                / (double) pEs;
-                        double maxCurrentAltimetricBand = minES + (j + 1) * (maxES - minES)
-                                / (double) pEs;
+                        double minCurrentAltimetricBand = minES + (j) * (maxES - minES) / (double) pEs;
+                        double maxCurrentAltimetricBand = minES + (j + 1) * (maxES - minES) / (double) pEs;
                         double value = elevImageIterator.getSampleDouble(c, r, 0);
-                        if ((value > minCurrentAltimetricBand && value <= maxCurrentAltimetricBand)
-                                || (j == 0 && value == minES)) {
+                        if ((value > minCurrentAltimetricBand && value <= maxCurrentAltimetricBand) || (j == 0 && value == minES)) {
                             for( int k = 0; k < pEi; k++ ) {
-                                double minCurrentEnergeticBand = minEI + (k) * (maxEI - minEI)
-                                        / (double) pEi;
-                                double maxCurrentEnergeticBand = minEI + (k + 1) * (maxEI - minEI)
-                                        / (double) pEi;
+                                double minCurrentEnergeticBand = minEI + (k) * (maxEI - minEI) / (double) pEi;
+                                double maxCurrentEnergeticBand = minEI + (k + 1) * (maxEI - minEI) / (double) pEi;
                                 if ((eibasinE[r][c] > minCurrentEnergeticBand && eibasinE[r][c] <= maxCurrentEnergeticBand)
                                         || (k == 0 && eibasinE[r][c] == minEI)) {
                                     eibasinA[j][k][i] += 1.0;
@@ -762,8 +763,7 @@ public class EnergyIndexCalculator extends JGTModel {
                         if (eibasinID[r][c] != NOVALUE) {
                             double test1 = minEI + (k) * (maxEI - minEI) / (double) pEi;
                             double test2 = minEI + (k + 1) * (maxEI - minEI) / (double) pEi;
-                            if ((eibasinE[r][c] > test1 && eibasinE[r][c] <= test2)
-                                    || (k == 0 && eibasinE[r][c] == minEI)) {
+                            if ((eibasinE[r][c] > test1 && eibasinE[r][c] <= test2) || (k == 0 && eibasinE[r][c] == minEI)) {
                                 cont += 1;
                                 eibasinEI[m][k][i] += eibasinEmonth[m][r][c];
                             }
