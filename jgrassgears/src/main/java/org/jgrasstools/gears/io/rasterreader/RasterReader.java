@@ -82,6 +82,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -293,7 +294,7 @@ public class RasterReader extends JGTModel {
         if (isNovalue(fileNovalue) && isNovalue(geodataNovalue)) {
             return;
         }
-        if (Math.abs(fileNovalue - geodataNovalue) > .0000001) {
+        if (!NumericsUtilities.doubleEquals(fileNovalue, geodataNovalue)) {
             HashMap<String, Double> params = getRegionParamsFromGridCoverage(geodata);
             int height = params.get(ROWS).intValue();
             int width = params.get(COLS).intValue();
