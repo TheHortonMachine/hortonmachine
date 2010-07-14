@@ -293,7 +293,7 @@ public class RasterReader extends JGTModel {
         if (isNovalue(fileNovalue) && isNovalue(geodataNovalue)) {
             return;
         }
-        if (fileNovalue != geodataNovalue) {
+        if (Math.abs(fileNovalue - geodataNovalue) > .0000001) {
             HashMap<String, Double> params = getRegionParamsFromGridCoverage(geodata);
             int height = params.get(ROWS).intValue();
             int width = params.get(COLS).intValue();
