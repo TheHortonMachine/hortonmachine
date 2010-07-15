@@ -94,7 +94,7 @@ public class Skyview extends JGTModel {
         CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
         // extract the raster.
         RenderedImage pitTmpRI = inElevation.getRenderedImage();
-        WritableRaster pitWR = CoverageUtilities.replaceNaN(pitTmpRI, -9999.0);
+        WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
         pitTmpRI = null;
         minX = pitWR.getMinX();
         minY = pitWR.getMinY();

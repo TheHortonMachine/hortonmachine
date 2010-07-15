@@ -99,7 +99,7 @@ public class Hillshade extends JGTModel {
             System.err.println(msg.message("hillshade.errElevation"));
         }
         RenderedImage pitRI = inElevation.getRenderedImage();
-        WritableRaster pitWR = CoverageUtilities.replaceNaN(pitRI, -9999.0);
+        WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitRI, -9999.0);
         // extract some attributes of the dem
         HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
         double dx = attribute.get(CoverageUtilities.XRES);

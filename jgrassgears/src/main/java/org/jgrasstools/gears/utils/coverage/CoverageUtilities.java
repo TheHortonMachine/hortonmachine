@@ -94,8 +94,8 @@ public class CoverageUtilities {
      *                  used, which is 0.
      * @return a {@link WritableRaster writable raster}.
      */
-    public static WritableRaster createDoubleWritableRaster( int width, int height,
-            Class< ? > dataClass, SampleModel sampleModel, Double value ) {
+    public static WritableRaster createDoubleWritableRaster( int width, int height, Class< ? > dataClass,
+            SampleModel sampleModel, Double value ) {
         int dataType = DataBuffer.TYPE_DOUBLE;
         if (dataClass != null) {
             if (dataClass.isAssignableFrom(Integer.class)) {
@@ -131,8 +131,7 @@ public class CoverageUtilities {
      * @return the {@link HashMap map} of parameters. ( {@link #NORTH} and the 
      *          other static vars can be used to retrieve them.
      */
-    public static HashMap<String, Double> getRegionParamsFromGridCoverage(
-            GridCoverage2D gridCoverage ) {
+    public static HashMap<String, Double> getRegionParamsFromGridCoverage( GridCoverage2D gridCoverage ) {
         HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
 
         Envelope envelope = gridCoverage.getEnvelope();
@@ -163,8 +162,7 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
-    public static HashMap<String, Double> generalParameterValues2RegionParamsMap(
-            GeneralParameterValue[] params ) {
+    public static HashMap<String, Double> generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
         GridGeometry2D gg = null;
         if (params != null) {
             for( int i = 0; i < params.length; i++ ) {
@@ -209,8 +207,8 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
-    public static HashMap<String, Double> makeRegionParamsMap( double north, double south,
-            double west, double east, double xRes, double yRes, int width, int height ) {
+    public static HashMap<String, Double> makeRegionParamsMap( double north, double south, double west, double east, double xRes,
+            double yRes, int width, int height ) {
         HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
         envelopeParams.put(NORTH, north);
         envelopeParams.put(SOUTH, south);
@@ -223,8 +221,8 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
-    public static GridGeometry2D gridGeometryFromRegionParams(
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
+    public static GridGeometry2D gridGeometryFromRegionParams( HashMap<String, Double> envelopeParams,
+            CoordinateReferenceSystem crs ) {
 
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
@@ -258,12 +256,10 @@ public class CoverageUtilities {
      * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.
      * @return the {@link GeneralParameterValue array of parameters}.
      */
-    public static GeneralParameterValue[] createGridGeometryGeneralParameter( int width,
-            int height, double north, double south, double east, double west,
-            CoordinateReferenceSystem crs ) {
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( int width, int height, double north, double south,
+            double east, double west, CoordinateReferenceSystem crs ) {
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
-        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(
-                AbstractGridFormat.READ_GRIDGEOMETRY2D);
+        Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
         Envelope env;
         if (crs != null) {
@@ -291,9 +287,8 @@ public class CoverageUtilities {
      * @param crs the {@link CoordinateReferenceSystem}. Can be null, even if it should not.  
      * @return the {@link GeneralParameterValue array of parameters}.
      */
-    public static GeneralParameterValue[] createGridGeometryGeneralParameter( double xres,
-            double yres, double north, double south, double east, double west,
-            CoordinateReferenceSystem crs ) {
+    public static GeneralParameterValue[] createGridGeometryGeneralParameter( double xres, double yres, double north,
+            double south, double east, double west, CoordinateReferenceSystem crs ) {
         // make sure the resolution gives integer rows and cols
         int height = (int) Math.round((north - south) / yres);
         if (height < 1)
@@ -302,8 +297,8 @@ public class CoverageUtilities {
         if (width < 1)
             width = 1;
 
-        GeneralParameterValue[] generalParameter = createGridGeometryGeneralParameter(width,
-                height, north, south, east, west, crs);
+        GeneralParameterValue[] generalParameter = createGridGeometryGeneralParameter(width, height, north, south, east, west,
+                crs);
 
         return generalParameter;
     }
@@ -315,8 +310,7 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the produced raster.
      */
-    public static WritableRaster createWritableRasterFromMatrix( double[][] matrix,
-            boolean matrixIsRowCol ) {
+    public static WritableRaster createWritableRasterFromMatrix( double[][] matrix, boolean matrixIsRowCol ) {
         int height = matrix.length;
         int width = matrix[0].length;
         if (!matrixIsRowCol) {
@@ -348,8 +342,7 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the produced raster.
      */
-    public static WritableRaster createWritableRasterFromMatrix( float[][] matrix,
-            boolean matrixIsRowCol ) {
+    public static WritableRaster createWritableRasterFromMatrix( float[][] matrix, boolean matrixIsRowCol ) {
         int height = matrix.length;
         int width = matrix[0].length;
         if (!matrixIsRowCol) {
@@ -408,9 +401,8 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs,
-            boolean matrixIsRowCol ) {
+    public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix, HashMap<String, Double> envelopeParams,
+            CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverage(name, writableRaster, envelopeParams, crs);
     }
@@ -425,9 +417,8 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs,
-            boolean matrixIsRowCol ) {
+    public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix, HashMap<String, Double> envelopeParams,
+            CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverage(name, writableRaster, envelopeParams, crs);
     }
@@ -441,8 +432,8 @@ public class CoverageUtilities {
      * @param crs the {@link CoordinateReferenceSystem}.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
+    public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage, HashMap<String, Double> envelopeParams,
+            CoordinateReferenceSystem crs ) {
 
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
@@ -506,8 +497,7 @@ public class CoverageUtilities {
      * @param nullBorders a flag that indicates if the borders should be set to null.
      * @return the converted writable raster.
      */
-    public static WritableRaster renderedImage2WritableRaster( RenderedImage renderedImage,
-            boolean nullBorders ) {
+    public static WritableRaster renderedImage2WritableRaster( RenderedImage renderedImage, boolean nullBorders ) {
         int width = renderedImage.getWidth();
         int height = renderedImage.getHeight();
 
@@ -569,8 +559,8 @@ public class CoverageUtilities {
      *         profile progressive, elevation, easting, northing
      * @throws Exception 
      */
-    public static List<Double[]> doProfile( double x1, double y1, double x2, double y2,
-            double xres, double yres, GridCoverage2D coverage ) throws Exception {
+    public static List<Double[]> doProfile( double x1, double y1, double x2, double y2, double xres, double yres,
+            GridCoverage2D coverage ) throws Exception {
         GridGeometry2D gridGeometry = coverage.getGridGeometry();
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
@@ -585,8 +575,7 @@ public class CoverageUtilities {
         double progressive = 0.0;
 
         // ad the first point
-        GridCoordinates2D gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(start.x,
-                start.y));
+        GridCoordinates2D gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(start.x, start.y));
         double value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
 
         Double[] d = {0.0, value, start.x, start.y};
@@ -624,34 +613,26 @@ public class CoverageUtilities {
      * @throws InvalidGridGeometryException
      * @throws TransformException
      */
-    public static Point2D gridToWorld( GridGeometry2D gridGeometry, int x, int y )
-            throws InvalidGridGeometryException, TransformException {
+    public static Point2D gridToWorld( GridGeometry2D gridGeometry, int x, int y ) throws InvalidGridGeometryException,
+            TransformException {
         final Point2D worldPosition = new Point2D.Double(x, y);
         gridGeometry.getGridToCRS2D().transform(worldPosition, worldPosition);
         return worldPosition;
     }
 
     /**
-     * Replace the NaN value with -9999.0.
-     * <p>
-     * This operation it's necessary in order to use the NaN in the equation, so
-     * -9999.0 is a low value.
-     * </p>
+     * Replace the current internal novalue with a given value.
      * 
-     * @param pitRI
-     *            the elevation map.
-     * @return the elevation map without NaN
+     * @param renderedImage a {@link RenderedImage}.
+     * @param newValue the value to put in instead of the novalue.
+     * @return the rendered image with the substituted novalue. 
      */
-    public static WritableRaster replaceNaN( RenderedImage pitRI, double newValue ) {
+    public static WritableRaster replaceNovalue( RenderedImage renderedImage, double newValue ) {
+        WritableRaster tmpWR = (WritableRaster) renderedImage.getData();
+        RandomIter pitTmpIterator = RandomIterFactory.create(renderedImage, null);
 
-        WritableRaster tmpWR = (WritableRaster) pitRI.getData();
-        RandomIter pitTmpIterator = RandomIterFactory.create(pitRI, null);
-
-        /*
-         * Set the NaN as -9999.0 in order to use it into the calculating.
-         */
-        int height = pitRI.getHeight();
-        int width = pitRI.getWidth();
+        int height = renderedImage.getHeight();
+        int width = renderedImage.getWidth();
         for( int y = 0; y < height; y++ ) {
             for( int x = 0; x < width; x++ ) {
                 if (isNovalue(pitTmpIterator.getSampleDouble(x, y, 0))) {
@@ -660,10 +641,7 @@ public class CoverageUtilities {
             }
         }
         pitTmpIterator.done();
-        // pitTmpRI = null;
         return tmpWR;
     }
-    
-    
-    
+
 }

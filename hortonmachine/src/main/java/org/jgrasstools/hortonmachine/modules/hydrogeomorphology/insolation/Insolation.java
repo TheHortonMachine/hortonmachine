@@ -167,7 +167,7 @@ public class Insolation extends JGTModel {
         RenderedImage pitTmpRI = inElevation.getRenderedImage();
         int width = pitTmpRI.getWidth();
         int height = pitTmpRI.getHeight();
-        WritableRaster pitWR = CoverageUtilities.replaceNaN(pitTmpRI, -9999.0);
+        WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
         pitTmpRI = null;
 
         WritableRaster insolationWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, pitWR.getSampleModel(),
