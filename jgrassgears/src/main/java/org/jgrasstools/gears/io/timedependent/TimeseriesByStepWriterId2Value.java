@@ -155,7 +155,8 @@ public class TimeseriesByStepWriterId2Value {
             valuesRow = new Object[idsSet.size()];
         }
         for( Integer id : idsSet ) {
-            double value = data.get(id)[0];
+            double[] dataArray = data.get(id);
+            double value = dataArray[0];
             valuesRow[index++] = String.valueOf(value);
         }
         memoryTable.addRow(valuesRow);

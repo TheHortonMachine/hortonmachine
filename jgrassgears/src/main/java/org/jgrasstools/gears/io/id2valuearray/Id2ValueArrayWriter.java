@@ -18,12 +18,14 @@
  */
 package org.jgrasstools.gears.io.id2valuearray;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,20 +40,15 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-@Description("Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
+@Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
+@Keywords("IO, Writing")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Id2ValueArrayReader {
-    @Description("The csv file to read from.")
+public class Id2ValueArrayWriter {
+    @Description("The csv file to write to.")
     @In
     public String file = null;
-
-    @Role(Role.PARAMETER)
-    @Description("The number of columns of the array.")
-    @In
-    public int pCols = -1;
 
     @Role(Role.PARAMETER)
     @Description("The csv separator.")
@@ -67,46 +64,46 @@ public class Id2ValueArrayReader {
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("The read map of ids and values arrays.")
+    @Description("The map of ids and values arrays to write.")
     @Out
     public HashMap<Integer, double[]> data;
 
-    private BufferedReader csvReader;
+    private BufferedWriter csvWriter;
 
     private void ensureOpen() throws IOException {
-        if (csvReader == null)
-            csvReader = new BufferedReader(new FileReader(file));
+        if (csvWriter == null)
+            csvWriter = new BufferedWriter(new FileWriter(file));
     }
-    
+
+    private double novalue = -9999.0;
+
     @Execute
-    public void readNextLine() throws IOException {
+    public void writeNextLine() throws IOException {
         ensureOpen();
-        data = new HashMap<Integer, double[]>();
-        String line = null;
-        if ((line = csvReader.readLine()) != null) {
-            String[] lineSplit = line.trim().split(pSeparator);
-            for( int i = 0; i < lineSplit.length; i++ ) {
-                int id = (int) Double.parseDouble(lineSplit[i].trim());
-                
-                double[] values = new double[pCols];
-                for( int j = i + 1, k = 0; j < i + pCols + 1; j++,k++ ) {
-                    double value = Double.parseDouble(lineSplit[j].trim());
-                    if (fileNovalue != null) {
-                        if (lineSplit[j].trim().equals(fileNovalue)) {
-                            // set to internal novalue
-                            value = doubleNovalue;
-                        }
-                    }
-                    values[k] = value;
+
+        novalue = Double.parseDouble(fileNovalue);
+
+        Set<Entry<Integer, double[]>> entrySet = data.entrySet();
+        for( Entry<Integer, double[]> entry : entrySet ) {
+            Integer id = entry.getKey();
+            double[] values = entry.getValue();
+
+            csvWriter.write(id.toString());
+            csvWriter.write(pSeparator);
+            for( int i = 0; i < values.length; i++ ) {
+                double value = values[i];
+                if (isNovalue(value)) {
+                    value = novalue;
                 }
-                data.put(id, values);
-                i = i + pCols;
+                csvWriter.write(String.valueOf(value));
+                csvWriter.write(pSeparator);
             }
         }
+        csvWriter.write("\n");
     }
 
     @Finalize
     public void close() throws IOException {
-        csvReader.close();
+        csvWriter.close();
     }
 }
