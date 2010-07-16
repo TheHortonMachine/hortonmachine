@@ -37,6 +37,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -210,9 +211,6 @@ public class Kriging extends JGTModel {
 
     @Execute
     public void executeKriging() throws Exception {
-        
-        System.out.println("Kriging processing");
-        
         verifyInput();
 
         List<Double> xStationList = new ArrayList<Double>();
@@ -251,7 +249,7 @@ public class Kriging extends JGTModel {
                 }
             }
         } finally {
-            inStations.close(stationsIter);
+            stationsIter.close();
         }
 
         int nStaz = xStationList.size();
@@ -274,27 +272,27 @@ public class Kriging extends JGTModel {
             yStation[i] = yStationList.get(i);
             zStation[i] = zStationList.get(i);
             hStation[i] = hStationList.get(i);
-            if(hStation[i]!=previousValue && areAllEquals){
+            if(areAllEquals && hStation[i]!=previousValue){
                 areAllEquals=false;
             }
         }
-        // stations with the same cooridate
+        // stations with the same coordinate
         double xSta; double ySta; double hSta;
-        for (int i=0;i<xStation.length-1;i++){
-            xSta=xStation[i];
-            ySta=yStation[i];
-            hSta=hStation[i];
-            for(int j=i;j<xStation.length-1;j++){
-                if(j!=i && xSta==xStation[j] && ySta==yStation[j] &&  hSta==hStation[j]){
-                    pm
-                     .errorMessage("Two station have the same coordiantes and rain value:"+xSta+";"+ySta );
-                }
-                if(j!=i && xSta==xStation[j] && ySta==yStation[j]){
-                    pm
-                     .errorMessage("Two station have the same coordiantes:"+xSta+";"+ySta );
+        for( int i = 0; i < xStation.length - 1; i++ ) {
+            xSta = xStation[i];
+            ySta = yStation[i];
+            hSta = hStation[i];
+            for( int j = i; j < xStation.length - 1; j++ ) {
+                if (j != i && xSta == xStation[j] && ySta == yStation[j]) {
+                    if (hSta == hStation[j]) {
+                        pm.errorMessage("Two station have the same coordiantes and rain value:" + xSta + ";" + ySta);
+                        continue;
+                    } else {
+                        throw new ModelsIllegalargumentException("Two station have the same coordiantes:" + xSta + ";" + ySta,
+                                this);
+                    }
                 }
             }
-            
         }
         
         /*
@@ -354,43 +352,43 @@ public class Kriging extends JGTModel {
         Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int j = 0;
         int[] idArray = new int[inInterpolate.size()];
-        if(n1>1 && !areAllEquals){
-        while( idIterator.hasNext() ) {
-            double sum = 0.;
-            int id = idIterator.next();
-            idArray[j] = id;
-            Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
-            xStation[n1] = coordinate.x;
-            yStation[n1] = coordinate.y;
-            zStation[n1] = coordinate.z;
-            /*
-             * calculating the right hand side of the kriging linear system.
-             */
-            double[] knowsTerm = knowsTermsCalculating(xStation, yStation, zStation, n1);
+        if (n1 > 1 && !areAllEquals) {
+            while( idIterator.hasNext() ) {
+                double sum = 0.;
+                int id = idIterator.next();
+                idArray[j] = id;
+                Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
+                xStation[n1] = coordinate.x;
+                yStation[n1] = coordinate.y;
+                zStation[n1] = coordinate.z;
+                /*
+                 * calculating the right hand side of the kriging linear system.
+                 */
+                double[] knowsTerm = knowsTermsCalculating(xStation, yStation, zStation, n1);
 
-            /*
-             * solve the linear system, where the result is the weight.
-             */
-            Matrix a = new Matrix(covarianceMatrix);
-            Matrix b = new Matrix(knowsTerm, knowsTerm.length);
-            Matrix x = a.solve(b);
-            double[] moltiplicativeFactor = x.getColumnPackedCopy();
-            double h0 = 0.0;
-            for( int k = 0; k < n1; k++ ) {
-                h0 = h0 + moltiplicativeFactor[k] * hStation[k];
-                sum = sum + moltiplicativeFactor[k];
-            }
+                /*
+                 * solve the linear system, where the result is the weight.
+                 */
+                Matrix a = new Matrix(covarianceMatrix);
+                Matrix b = new Matrix(knowsTerm, knowsTerm.length);
+                Matrix x = a.solve(b);
+                double[] moltiplicativeFactor = x.getColumnPackedCopy();
+                double h0 = 0.0;
+                for( int k = 0; k < n1; k++ ) {
+                    h0 = h0 + moltiplicativeFactor[k] * hStation[k];
+                    sum = sum + moltiplicativeFactor[k];
+                }
 
-            if (doLogarithmic) {
-                h0 = Math.exp(h0);
+                if (doLogarithmic) {
+                    h0 = Math.exp(h0);
+                }
+                result[j] = h0;
+                j++;
+                if (Math.abs(sum - 1) >= TOLL) {
+                    throw new ModelsRuntimeException("Error in the coffeicients calculation", this.getClass().getSimpleName());
+                }
             }
-            result[j] = h0;
-            j++;
-            if (Math.abs(sum - 1) >= TOLL) {
-                throw new ModelsRuntimeException("Error in the coffeicients calculation", this
-                        .getClass().getSimpleName());
-            }
-        }}else if(n1==1 || areAllEquals){
+        }else if(n1==1 || areAllEquals){
             double tmp = hStation[0];
             int k=0;
             while( idIterator.hasNext() ) {
@@ -405,6 +403,7 @@ public class Kriging extends JGTModel {
         if (pMode == 0 || pMode == 1) {
             storeResult(result, idArray);
         } else {
+            throw new RuntimeException("Not implemented");
             // storeResult(result);
         }
     }
