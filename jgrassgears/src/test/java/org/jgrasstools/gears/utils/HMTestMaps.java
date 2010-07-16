@@ -864,6 +864,38 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}
 
     };
+    
+    
+    public static double[][] cutoutData = new double[][]{
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, 410, NaN, NaN, NaN, NaN, NaN, 490, NaN, NaN}, 
+        {NaN, NaN, 430, 500, 600, 700, 800, 500, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, 700, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+    
+    public static double[][] cutoutDataInverse = new double[][]{
+        {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500},
+        {600, NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500},
+        {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500},
+        {400, NaN, 650, 700, 750, 800, 850, NaN, 450, 1500},
+        {450, 550, NaN, NaN, NaN, NaN, NaN, NaN, 450, 1500},
+        {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500},
+        {600, NaN, 750, 800, 780, 790, 1000, 1100, 1250, 1500},
+        {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+
+    public static double[][] cutoutDataMaxMinInverse800_1400 = new double[][]{
+        {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, NaN, NaN},
+        {NaN, NaN, NaN, 850, 860, 900, 1000, 1200, 1250, NaN},
+        {NaN, NaN, NaN, NaN, 800, 850, 900, 1000, 1100, NaN},
+        {NaN, NaN, NaN, NaN, NaN, 800, 850, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},
+        {NaN, NaN, NaN, NaN, NaN, NaN, 850, 1000, 1150, NaN},
+        {NaN, NaN, NaN, 800, NaN, NaN, 1000, 1100, 1250, NaN},
+        {800, 910, 980, 1001, 1150, 1200, 1250, 1300, NaN, NaN}};
+    
 
     public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFcFromPoint(
             Coordinate point, CoordinateReferenceSystem crs ) {

@@ -69,18 +69,18 @@ import com.vividsolutions.jts.geom.LineSegment;
  * </p>
  * 
  * @author Andrea Antonello - www.hydrologis.com
- * @since 1.1.0
+ * @since 0.1
  */
 @SuppressWarnings("deprecation")
 public class CoverageUtilities {
-    public static final String NORTH = "NORTH";
-    public static final String SOUTH = "SOUTH";
-    public static final String WEST = "WEST";
-    public static final String EAST = "EAST";
-    public static final String XRES = "XRES";
-    public static final String YRES = "YRES";
-    public static final String ROWS = "ROWS";
-    public static final String COLS = "COLS";
+    public static final String NORTH = "NORTH"; //$NON-NLS-1$
+    public static final String SOUTH = "SOUTH"; //$NON-NLS-1$
+    public static final String WEST = "WEST"; //$NON-NLS-1$
+    public static final String EAST = "EAST"; //$NON-NLS-1$
+    public static final String XRES = "XRES"; //$NON-NLS-1$
+    public static final String YRES = "YRES"; //$NON-NLS-1$
+    public static final String ROWS = "ROWS"; //$NON-NLS-1$
+    public static final String COLS = "COLS"; //$NON-NLS-1$
 
     /**
      * Creates a {@link WritableRaster writable raster}.
@@ -487,7 +487,7 @@ public class CoverageUtilities {
         double[][] dataMatrix = new double[1][1];
         dataMatrix[0][0] = 0;
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, true);
-        return buildCoverage("dummy", writableRaster, envelopeParams, DefaultGeographicCRS.WGS84);
+        return buildCoverage("dummy", writableRaster, envelopeParams, DefaultGeographicCRS.WGS84); //$NON-NLS-1$
     }
 
     /**
@@ -538,69 +538,53 @@ public class CoverageUtilities {
     }
 
     /**
-     * Calculates the profile of a raster map between two given
-     * {@link Coordinate coordinates}.
+     * Calculates the profile of a raster map between two given {@link Coordinate coordinates}.
      * 
-     * @param x1
-     *            the easting of the first coordinate
-     * @param y1
-     *            the northing of the first coordinate
-     * @param x2
-     *            the easting of the final coordinate
-     * @param y2
-     *            the northing of the final coordinate
-     * @param xres
-     *            the x resolution to consider
-     * @param yres
-     *            the y resolution to consider
-     * @param coverage
-     *            the raster from which to take the elevations
-     * @return a list of double arrays that contain for every point of the
-     *         profile progressive, elevation, easting, northing
-     * @throws Exception 
+     * @param start the first coordinate.
+     * @param end the last coordinate.
+     * @param coverage the coverage from which to extract the profile.
+     * @return the list of {@link ProfilePoint}s.
+     * @throws Exception
      */
-    public static List<Double[]> doProfile( double x1, double y1, double x2, double y2, double xres, double yres,
-            GridCoverage2D coverage ) throws Exception {
+    public static List<ProfilePoint> doProfile( Coordinate start, Coordinate end, GridCoverage2D coverage ) throws Exception {
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        double xres = regionMap.get(CoverageUtilities.XRES);
         GridGeometry2D gridGeometry = coverage.getGridGeometry();
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
 
-        Coordinate start = new Coordinate(x1, y1);
-        Coordinate end = new Coordinate(x2, y2);
         LineSegment pline = new LineSegment(start, end);
-
         double lenght = pline.getLength();
 
-        List<Double[]> distanceValueAbsolute = new ArrayList<Double[]>();
+        List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
         double progressive = 0.0;
 
         // ad the first point
         GridCoordinates2D gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(start.x, start.y));
         double value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
 
-        Double[] d = {0.0, value, start.x, start.y};
-        distanceValueAbsolute.add(d);
+        ProfilePoint profilePoint = new ProfilePoint(0.0, value, start.x, start.y);
+        profilePointsList.add(profilePoint);
         progressive = progressive + xres;
 
         while( progressive < lenght ) {
-
             Coordinate c = pline.pointAlong(progressive / lenght);
             gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
             value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
-            Double[] v = {progressive, value, c.x, c.y};
-            distanceValueAbsolute.add(v);
+            profilePoint = new ProfilePoint(progressive, value, c.x, c.y);
+            profilePointsList.add(profilePoint);
             progressive = progressive + xres;
         }
 
         // add the last point
         gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(end.x, end.y));
         value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
-        Double[] v = {lenght, value, end.x, end.y};
-        distanceValueAbsolute.add(v);
+        profilePoint = new ProfilePoint(lenght, value, end.x, end.y);
+        profilePointsList.add(profilePoint);
 
         iter.done();
 
-        return distanceValueAbsolute;
+        return profilePointsList;
     }
 
     /**
