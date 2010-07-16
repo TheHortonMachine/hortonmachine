@@ -77,11 +77,9 @@ public class TestKriging extends HMTestCase {
         kriging.pMode = 0;
 
         File interpolatedRainFile = new File(krigingRainFile.getParentFile(), "kriging_interpolated.csv");
-        String interpolatedRainPath = interpolatedRainFile.getAbsolutePath();
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("test-classes", "resources");
+        interpolatedRainFile = classesTestFile2srcTestResourcesFile(interpolatedRainFile);
         TimeseriesByStepWriterId2Value writer = new TimeseriesByStepWriterId2Value();
-        writer.file = interpolatedRainPath;
+        writer.file = interpolatedRainFile.getAbsolutePath();
 
         writer.tStart = reader.tStart;
         writer.tTimestep = reader.tTimestep;
@@ -164,11 +162,9 @@ public class TestKriging extends HMTestCase {
         kriging.pMode = 0;
 
         File interpolatedRainFile = new File(krigingRainFile.getParentFile(), "kriging_interpolated.csv");
-        String interpolatedRainPath = interpolatedRainFile.getAbsolutePath();
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("test-classes", "resources");
+        interpolatedRainFile = classesTestFile2srcTestResourcesFile(interpolatedRainFile);
         TimeseriesByStepWriterId2Value writer = new TimeseriesByStepWriterId2Value();
-        writer.file = interpolatedRainPath;
+        writer.file = interpolatedRainFile.getAbsolutePath();
 
         writer.tStart = reader.tStart;
         writer.tTimestep = reader.tTimestep;
@@ -261,11 +257,9 @@ public class TestKriging extends HMTestCase {
         kriging.pMode = 0;
 
         File interpolatedRainFile = new File(krigingRainFile.getParentFile(), "kriging_interpolated.csv");
-        String interpolatedRainPath = interpolatedRainFile.getAbsolutePath();
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
-        interpolatedRainPath = interpolatedRainPath.replaceFirst("test-classes", "resources");
+        interpolatedRainFile = classesTestFile2srcTestResourcesFile(interpolatedRainFile);
         TimeseriesByStepWriterId2Value writer = new TimeseriesByStepWriterId2Value();
-        writer.file = interpolatedRainPath;
+        writer.file = interpolatedRainFile.getAbsolutePath();
 
         writer.tStart = reader.tStart;
         writer.tTimestep = reader.tTimestep;
