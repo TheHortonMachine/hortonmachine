@@ -61,7 +61,7 @@ public class JGrassCoverageWriter extends JGTModel {
     public boolean doActive = true;
 
     @Description("The file to the map to be written (the cell file).")
-    @Out
+    @In
     public String file = null;
 
     private boolean hasWritten = false;
