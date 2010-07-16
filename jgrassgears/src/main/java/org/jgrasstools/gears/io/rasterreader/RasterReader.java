@@ -240,7 +240,7 @@ public class RasterReader extends JGTModel {
 
         if (generalParameter == null) {
             generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(), jGrassRegion
-                    .getWest(), jGrassRegion.getEast(), jGrassRegion.getSouth(), jGrassRegion.getNorth(), crs);
+                    .getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
         }
 
         GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();

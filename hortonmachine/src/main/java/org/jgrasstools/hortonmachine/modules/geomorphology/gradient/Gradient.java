@@ -140,10 +140,13 @@ public class Gradient extends JGTModel {
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         WritableRaster gradientWR = null;
         if (defaultMode == 1) {
+            pm.message("Using Horn formula");
             gradientWR = gradientHorn(elevationIter);
         } else if (defaultMode == 2) {
+            pm.message("Using Evans formula");
             gradientWR = gradientEvans(elevationIter);
         } else {
+            pm.message("Using finite differences");
             gradientWR = gradientDiff(elevationIter);
         }
         outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());

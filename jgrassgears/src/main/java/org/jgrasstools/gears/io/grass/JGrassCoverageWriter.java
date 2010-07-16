@@ -78,19 +78,17 @@ public class JGrassCoverageWriter extends JGTModel {
 
         GeneralParameterValue[] readParams = null;
         if (doActive) {
-            JGrassRegion activeRegion = mapEnvironment.getActiveRegion();
-            readParams = CoverageUtilities.createGridGeometryGeneralParameter(activeRegion
-                    .getCols(), activeRegion.getRows(), activeRegion.getWest(), activeRegion
-                    .getEast(), activeRegion.getSouth(), activeRegion.getNorth(), mapEnvironment
-                    .getCoordinateReferenceSystem());
+            JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
+            readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
+                    jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(),
+                    mapEnvironment.getCoordinateReferenceSystem());
         }
 
         writer.write(geodata, readParams);
         hasWritten = true;
     }
-    
-    
-    public static void writeGrassRaster(String path, GridCoverage2D coverage) throws Exception {
+
+    public static void writeGrassRaster( String path, GridCoverage2D coverage ) throws Exception {
         JGrassCoverageWriter writer = new JGrassCoverageWriter();
         writer.geodata = coverage;
         writer.file = path;

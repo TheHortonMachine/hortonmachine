@@ -111,8 +111,8 @@ public class CutOut extends JGTModel {
         RenderedImage geodataRI = inGeodata.getRenderedImage();
         RandomIter geodataIter = RandomIterFactory.create(geodataRI, null);
 
-        RenderedImage maskRI = inMask.getRenderedImage();
-        if (maskRI != null) {
+        if (inMask != null) {
+            RenderedImage maskRI = inMask.getRenderedImage();
             maskIter = RandomIterFactory.create(maskRI, null);
         }
 
