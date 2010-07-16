@@ -18,6 +18,10 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.gradient;
 
+import static java.lang.Math.atan;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.toDegrees;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -38,6 +42,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -90,9 +95,13 @@ public class Gradient extends JGTModel {
     @In
     public GridCoverage2D inDem = null;
 
-    @Description("The gradient formula mode.")
+    @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
     @In
     public int defaultMode = 0;
+
+    @Description("The output type, if true = radiants (default), if false = degrees")
+    @In
+    public boolean doRadiants = true;
 
     @Description("The progress monitor.")
     @In
@@ -102,7 +111,6 @@ public class Gradient extends JGTModel {
     @Out
     public GridCoverage2D outSlope = null;
 
-
     /*
      * INTERNAL VARIABLES
      */
@@ -110,11 +118,11 @@ public class Gradient extends JGTModel {
 
     private int nCols;
 
-    private Double xRes;
+    private double xRes;
 
     private int nRows;
 
-    private Double yRes;
+    private double yRes;
 
     @Execute
     public void process() {
@@ -136,9 +144,7 @@ public class Gradient extends JGTModel {
         } else if (defaultMode == 2) {
             gradientWR = gradientEvans(elevationIter);
         } else {
-
             gradientWR = gradientDiff(elevationIter);
-
         }
         outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());
     }
@@ -160,11 +166,7 @@ public class Gradient extends JGTModel {
     * This numeration is used to extract the appropriate elevation value (es elev1 an so on)
     * 
     * </p>
-    *
-    *
-    *
     */
-
     private WritableRaster gradientHorn( RandomIter elevationIter ) {
 
         WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
@@ -196,7 +198,10 @@ public class Gradient extends JGTModel {
                     fu = 2 * elev8 + elev7 + elev9;
                     fd = 2 * elev2 + elev1 + elev3;
                     double yGrad = (fu - fd) / (8 * yRes);
-                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
+                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+                    if (!doRadiants) {
+                        grad = transform(grad);
+                    }
                     gradientWR.setSample(x, y, 0, grad);
                 }
             }
@@ -205,6 +210,16 @@ public class Gradient extends JGTModel {
         pm.done();
 
         return gradientWR;
+    }
+
+    /**
+     * Transform the gradient value into degrees.
+     * 
+     * @param value the radiant based gradient.
+     * @return the degree gradient.
+     */
+    private double transform( double value ) {
+        return toDegrees(atan(value));
     }
 
     /**
@@ -238,10 +253,13 @@ public class Gradient extends JGTModel {
                         && !isNovalue(elevIJjpost)) {
                     double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
                     double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
-                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
+                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+                    if (!doRadiants) {
+                        grad = transform(grad);
+                    }
                     gradientWR.setSample(x, y, 0, grad);
                 } else {
-                    throw new IllegalArgumentException("Error in gradient");
+                    throw new ModelsIllegalargumentException("Error in gradient", this);
                 }
             }
             pm.worked(1);
@@ -259,21 +277,18 @@ public class Gradient extends JGTModel {
      *  p=&radic{f<sub>x</sub>&sup2;+f<sub>y</sub>&sup2;}
      *  
      *  and the derivatives can be calculate with the  the Evans formula:
-      
-      * f<sub>x</sub>=(f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(6 &#916 x) 
-      * f<sub>y</sub>=(f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(6 &#916 y)
-     <p>
-      * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
-      * 
-      * 1   2   3
-      * 4   5   6
-      * 7   8   9
-      * 
-      * This enumeration is used to extract the appropriate elevation value (es elev1 an so on)
-      * 
-      * </p>
-     *
-     *
+     * f<sub>x</sub>=(f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(6 &#916 x) 
+     * f<sub>y</sub>=(f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(6 &#916 y)
+     * <p>
+     * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
+     * 
+     * 1   2   3
+     * 4   5   6
+     * 7   8   9
+     * 
+     * This enumeration is used to extract the appropriate elevation value (es elev1 an so on)
+     * 
+     * </p>
      *
      */
     private WritableRaster gradientEvans( RandomIter elevationIter ) {
@@ -307,7 +322,10 @@ public class Gradient extends JGTModel {
                     fd = elev2 + elev1 + elev3;
 
                     double yGrad = (fu - fd) / (6 * yRes);
-                    double grad = Math.sqrt(Math.pow(xGrad, 2) + Math.pow(yGrad, 2));
+                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+                    if (!doRadiants) {
+                        grad = transform(grad);
+                    }
                     gradientWR.setSample(x, y, 0, grad);
                 }
             }
@@ -320,4 +338,3 @@ public class Gradient extends JGTModel {
     }
 
 }
-
