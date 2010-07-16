@@ -99,9 +99,9 @@ public class Gradient extends JGTModel {
     @In
     public int defaultMode = 0;
 
-    @Description("The output type, if true = radiants (default), if false = degrees")
+    @Description("The output type, if false = arctan of the angle (default), if true = degrees")
     @In
-    public boolean doRadiants = true;
+    public boolean doDegrees = false;
 
     @Description("The progress monitor.")
     @In
@@ -199,7 +199,7 @@ public class Gradient extends JGTModel {
                     fd = 2 * elev2 + elev1 + elev3;
                     double yGrad = (fu - fd) / (8 * yRes);
                     double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (!doRadiants) {
+                    if (doDegrees) {
                         grad = transform(grad);
                     }
                     gradientWR.setSample(x, y, 0, grad);
@@ -254,7 +254,7 @@ public class Gradient extends JGTModel {
                     double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
                     double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
                     double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (!doRadiants) {
+                    if (doDegrees) {
                         grad = transform(grad);
                     }
                     gradientWR.setSample(x, y, 0, grad);
@@ -323,7 +323,7 @@ public class Gradient extends JGTModel {
 
                     double yGrad = (fu - fd) / (6 * yRes);
                     double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (!doRadiants) {
+                    if (doDegrees) {
                         grad = transform(grad);
                     }
                     gradientWR.setSample(x, y, 0, grad);
