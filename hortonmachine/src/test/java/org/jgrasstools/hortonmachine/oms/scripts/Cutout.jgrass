@@ -1,0 +1,34 @@
+// change the variables to fix your needs
+def folder = new File("/home/silli/grassdata/utm_bim/selle/cell/").absolutePath;
+def map = "dtm000190_grad_deg"
+def cut = "dtm000190_grad_deg_cut"
+
+s = sb.sim(name:"Cutout") {
+
+    model {
+        components  {
+          rasterreader    'RasterReader'
+          jgrasscoveragewriter    'JGrassCoverageWriter'
+          cutout 'CutOut'
+        }
+
+        parameter {
+           'rasterreader.file' "$folder/$map"
+           'jgrasscoveragewriter.file' "$folder/$cut"
+           
+           'cutout.pMax' 60.0
+           'cutout.pMin' 40.0
+           
+           'cutout.pm' pm
+        }
+
+        connect {
+          'rasterreader.geodata' 'cutout.inGeodata'
+          'cutout.outGeodata' 'jgrasscoveragewriter.geodata'
+        }
+    }
+}
+
+res = s.run();
+
+

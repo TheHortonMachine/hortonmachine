@@ -1,0 +1,32 @@
+// change the variables to fix your needs
+def folder = new File("/home/silli/grassdata/utm_bim/selle/cell/").absolutePath;
+def dtm = "dtm000190"
+def grad = "dtm000190_grad_deg"
+
+s = sb.sim(name:"Gradient") {
+
+    model {
+        components  {
+          rasterreader    'RasterReader'
+          jgrasscoveragewriter    'JGrassCoverageWriter'
+          gradient 'Gradient'
+        }
+
+        parameter {
+           'rasterreader.file' "$folder/$dtm"
+           'jgrasscoveragewriter.file' "$folder/$grad"
+           
+           'gradient.doDegrees' "true"
+           'gradient.pm' pm
+        }
+
+        connect {
+          'rasterreader.geodata' 'gradient.inDem'
+          'gradient.outSlope' 'jgrasscoveragewriter.geodata'
+        }
+    }
+}
+
+res = s.run();
+
+
