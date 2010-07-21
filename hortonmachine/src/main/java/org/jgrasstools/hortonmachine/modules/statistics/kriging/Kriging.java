@@ -30,6 +30,7 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Out;
+import oms3.annotations.Range;
 import oms3.annotations.Role;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -37,11 +38,12 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -52,7 +54,7 @@ import com.vividsolutions.jts.geom.Geometry;
 /**
  * This class is an implementation of the ordinary kriging algorithm.
  * <p>
- * Kriging is a group of geostatistical techniques to interpolate the value of a
+ * Kriging is a group of <i>geostatistical</i> techniques to interpolate the value of a
  * random field (e.g., the elevation, z, of the landscape as a function of the
  * geographic location) at an unobserved location from observations of its value
  * at nearby locations. (for more details see <a
@@ -81,6 +83,9 @@ public class Kriging extends JGTModel {
     @In
     public String fStationsid = null;
 
+    @Description("The field of the station elevation.")
+    @In
+    public String fStationsZ = null;
     @Description("The measured data, to be interpolated.")
     @In
     public HashMap<Integer, double[]> inData = null;
@@ -129,6 +134,7 @@ public class Kriging extends JGTModel {
      * Variance of the measure field.
      */
     @Role(Role.PARAMETER)
+    @Range(max = 2.0)
     @Description("The variance.")
     @In
     public double pVariance = 0;
@@ -161,22 +167,22 @@ public class Kriging extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    private int variogramMode = 0;
+    public int defaultVariogramMode = 0;
 
-    /**
-     * The range if the models runs with the gaussian variogram.
-     */
-    private double a = 0.04943906;
+    @Role(Role.PARAMETER)
+    @Description("The range if the models runs with the gaussian variogram.")
+    @In
+    public double pA;
 
-    /**
-     * The sill if the models runs with the gaussian variogram.
-     */
-    private double s = 0.6806828;
+    @Role(Role.PARAMETER)
+    @Description("The sill if the models runs with the gaussian variogram.")
+    @In
+    public double pS;
 
-    /**
-     * Is the nugget if the models runs with the gaussian variogram.
-     */
-    private double nug = 0.0;
+    @Role(Role.PARAMETER)
+    @Description("Is the nugget if the models runs with the gaussian variogram.")
+    @In
+    public double pNug;
 
     /**
      * the number of rows if the mode is 2 or 3.
@@ -193,12 +199,7 @@ public class Kriging extends JGTModel {
      */
     private static final double TOLL = 1.0d * 10E-8;
 
-    /**
-     */
-    // private double xRes = 0.0;
-
-    // private double yRes = 0.0;
-
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
     /**
      * Executing ordinary kriging.
      * <p>
@@ -211,6 +212,9 @@ public class Kriging extends JGTModel {
 
     @Execute
     public void executeKriging() throws Exception {
+
+        System.out.println("Kriging processing");
+
         verifyInput();
 
         List<Double> xStationList = new ArrayList<Double>();
@@ -230,8 +234,11 @@ public class Kriging extends JGTModel {
             while( stationsIter.hasNext() ) {
                 SimpleFeature feature = stationsIter.next();
                 int id = ((Number) feature.getAttribute(fStationsid)).intValue();
-                Coordinate coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid()
-                        .getCoordinate();
+                double z = 0;
+                if (fStationsZ != null) {
+                    z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
+                }
+                Coordinate coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
                 double[] h = inData.get(id);
                 if (h == null || isNovalue(h[0])) {
                     /*
@@ -239,17 +246,28 @@ public class Kriging extends JGTModel {
                      * allowed. Also skip novalues.
                      */
                     continue;
-                }
-                if (Math.abs(h[0]) >= TOLL) {
-                    xStationList.add(coordinate.x);
-                    yStationList.add(coordinate.y);
-                    zStationList.add(coordinate.z);
-                    hStationList.add(h[0]);
-                    n1 = n1 + 1;
+                } 
+                if(defaultVariogramMode==0){ 
+                    if (Math.abs(h[0]) >= TOLL) {
+                        xStationList.add(coordinate.x);
+                        yStationList.add(coordinate.y);
+                        zStationList.add(z);
+                        hStationList.add(h[0]);
+                        n1 = n1 + 1;
+                    }
+                }else if(defaultVariogramMode==1){ 
+                    if (Math.abs(h[0]) >= 0) {
+                        xStationList.add(coordinate.x);
+                        yStationList.add(coordinate.y);
+                        zStationList.add(z);
+                        hStationList.add(h[0]);
+                        n1 = n1 + 1;
+                    }
+                
                 }
             }
         } finally {
-            stationsIter.close();
+            inStations.close(stationsIter);
         }
 
         int nStaz = xStationList.size();
@@ -262,42 +280,73 @@ public class Kriging extends JGTModel {
         double[] zStation = new double[nStaz + 1];
         double[] hStation = new double[nStaz + 1];
         boolean areAllEquals = true;
+        if(nStaz!=0){
         xStation[0] = xStationList.get(0);
         yStation[0] = yStationList.get(0);
         zStation[0] = zStationList.get(0);
         hStation[0] = hStationList.get(0);
-        double previousValue =  hStation[0];
-        for( int i = 1; i < xStation.length - 1; i++ ) {
-            xStation[i] = xStationList.get(i);
-            yStation[i] = yStationList.get(i);
-            zStation[i] = zStationList.get(i);
-            hStation[i] = hStationList.get(i);
-            if(areAllEquals && hStation[i]!=previousValue){
-                areAllEquals=false;
-            }
-        }
-        // stations with the same coordinate
-        double xSta; double ySta; double hSta;
-        for( int i = 0; i < xStation.length - 1; i++ ) {
-            xSta = xStation[i];
-            ySta = yStation[i];
-            hSta = hStation[i];
-            for( int j = i; j < xStation.length - 1; j++ ) {
-                if (j != i && xSta == xStation[j] && ySta == yStation[j]) {
-                    if (hSta == hStation[j]) {
-                        pm.errorMessage("Two station have the same coordiantes and rain value:" + xSta + ";" + ySta);
-                        continue;
-                    } else {
-                        throw new ModelsIllegalargumentException("Two station have the same coordiantes:" + xSta + ";" + ySta,
-                                this);
-                    }
+        double previousValue = hStation[0];
+        ModelsEngine modelsEngine = new ModelsEngine();
+        for( int i = 1; i < nStaz; i++ ) {
+
+            double xTmp = xStationList.get(i);
+            double yTmp = yStationList.get(i);
+            double zTmp = zStationList.get(i);
+            double hTmp = hStationList.get(i);
+            boolean doubleStation = modelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp, zTmp,
+                    hTmp, i, false, pm);
+            if (!doubleStation) {
+                xStation[i] = xTmp;
+                yStation[i] = yTmp;
+                zStation[i] = zTmp;
+                hStation[i] = hTmp;
+                if (hStation[i] != previousValue && areAllEquals) {
+                    areAllEquals = false;
                 }
+                previousValue = hStation[i];
             }
         }
+        }
+        HashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = new HashMap<Integer, Coordinate>();
+        int numPointToInterpolate = getNumPoint(inInterpolate);
         
         /*
          * if the isLogarithmic is true then execute the model with log value.
          */
+        double[] result = new double[numPointToInterpolate];
+
+        
+        if (pMode == 0 || pMode == 1) {
+            pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
+        } else if (pMode == 2) {
+            throw new RuntimeException(msg.message("notImplemented"));
+            // Raster grid = (Raster)
+            // gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
+            // nRows = grid.getHeight();
+            // nCols = grid.getWidth();
+            // Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
+            // double xMin = envelope2d.getMinX();
+            // double yMin = envelope2d.getMinY();
+            // numPointToInterpolate = nRows * nCols;
+            // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin);
+            
+        } else if (pMode == 3) {
+            throw new RuntimeException(msg.message("notImplemented"));
+            // Raster grid = (Raster)
+            // gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
+            // nRows = grid.getHeight();
+            // nCols = grid.getWidth();
+            // Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
+            // double xMin = envelope2d.getMinX();
+            // double yMin = envelope2d.getMinY();
+            // numPointToInterpolate = nRows * nCols;
+            // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin, grid);
+        }
+        Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
+        Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
+        int j = 0;
+        int[] idArray = new int[inInterpolate.size()];
+        if(n1!=0){
         if (doLogarithmic) {
             for( int i = 0; i < nStaz; i++ ) {
                 if (hStation[i] > 0.0) {
@@ -313,46 +362,13 @@ public class Kriging extends JGTModel {
         /*
          * extract the coordinate of the points where interpolated.
          */
-        HashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = new HashMap<Integer, Coordinate>();
-        int numPointToInterpolate = getNumPoint(inInterpolate);
-        if (pMode == 0 || pMode == 1) {
-            pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate,
-                    fInterpolateid);
-        } else if (pMode == 2) {
-            throw new RuntimeException("Not implemented yet!");
-            // Raster grid = (Raster)
-            // gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
-            // nRows = grid.getHeight();
-            // nCols = grid.getWidth();
-            // Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
-            // double xMin = envelope2d.getMinX();
-            // double yMin = envelope2d.getMinY();
-            // numPointToInterpolate = nRows * nCols;
-            // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin);
-
-        } else if (pMode == 3) {
-            throw new RuntimeException("Not implemented yet!");
-            // Raster grid = (Raster)
-            // gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
-            // nRows = grid.getHeight();
-            // nCols = grid.getWidth();
-            // Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
-            // double xMin = envelope2d.getMinX();
-            // double yMin = envelope2d.getMinY();
-            // numPointToInterpolate = nRows * nCols;
-            // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin, grid);
-        }
 
         /*
          * initialize the solution and its variance vector.
          */
-        double[] result = new double[numPointToInterpolate];
 
-        Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
-        Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
-        int j = 0;
-        int[] idArray = new int[inInterpolate.size()];
         if (n1 > 1 && !areAllEquals) {
+            pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
             while( idIterator.hasNext() ) {
                 double sum = 0.;
                 int id = idIterator.next();
@@ -387,24 +403,44 @@ public class Kriging extends JGTModel {
                 if (Math.abs(sum - 1) >= TOLL) {
                     throw new ModelsRuntimeException("Error in the coffeicients calculation", this.getClass().getSimpleName());
                 }
+
             }
-        }else if(n1==1 || areAllEquals){
+            pm.worked(1);
+        } else if (n1 == 1 || areAllEquals) {
             double tmp = hStation[0];
-            int k=0;
+            int k = 0;
+            pm.message(msg.message("kriging.setequalsvalue"));
+            pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
             while( idIterator.hasNext() ) {
                 int id = idIterator.next();
                 result[k] = tmp;
                 idArray[k] = id;
                 k++;
-            
+                pm.worked(1);
             }
-            
-        }
+
+        } 
+        pm.done();
         if (pMode == 0 || pMode == 1) {
             storeResult(result, idArray);
         } else {
-            throw new RuntimeException("Not implemented");
             // storeResult(result);
+        }}else{
+            pm
+            .errorMessage("No rain for this time step");
+            j=0;
+            double[] value = inData.values().iterator().next();
+            while( idIterator.hasNext() ) {
+                int id = idIterator.next();
+                idArray[j] = id;
+                result[j]=value[0];
+                j++;
+            }
+            if (pMode == 0 || pMode == 1) {
+                storeResult(result, idArray);
+            } else {
+                // storeResult(result);
+            } 
         }
     }
 
@@ -413,40 +449,35 @@ public class Kriging extends JGTModel {
      */
     private void verifyInput() {
         if (inData == null || inStations == null) {
-            throw new NullPointerException(
-                    "problema nelle stazioni di misura, non ci sono stazioni o dati");
+            throw new NullPointerException(msg.message("kriging.stationproblem"));
         }
         if (pMode < 0 || pMode > 3) {
-            throw new IllegalArgumentException("Modalita' di esecuzione non esistente");
+            throw new IllegalArgumentException(msg.message("kriging.defaultMode"));
         }
-        if (variogramMode != 0 && variogramMode != 1) {
-            throw new IllegalArgumentException(
-                    "Tipo di variogramma sbagliato, imposta variogramMode");
+        if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
+            throw new IllegalArgumentException(msg.message("kriging.variogramMode"));
         }
-        if (variogramMode == 0) {
-            if (pVariance == 0 || pIntegralscale[0] == 0 || pIntegralscale[1] == 0
-                    || pIntegralscale[2] == 0) {
+        if (defaultVariogramMode == 0) {
+            if (pVariance == 0 || pIntegralscale[0] == 0 || pIntegralscale[1] == 0 || pIntegralscale[2] == 0) {
 
-                pm
-                        .errorMessage("Attenzione una dei parametri del modello potrebbe essere non settata");
+                pm.errorMessage(msg.message("kriging.noParam"));
                 pm.errorMessage("varianza " + pVariance);
-                pm.errorMessage("Scala Integrale x " + pIntegralscale[0]);
-                pm.errorMessage("Scala Integrale y " + pIntegralscale[1]);
-                pm.errorMessage("Scala Integrale z " + pIntegralscale[2]);
+                pm.errorMessage("Integral scale x " + pIntegralscale[0]);
+                pm.errorMessage("Integral scale y " + pIntegralscale[1]);
+                pm.errorMessage("Integral scale z " + pIntegralscale[2]);
             }
         }
-        if (variogramMode == 1) {
-            if (nug == 0 || s == 0 || a == 0) {
-                pm
-                        .errorMessage("Attenzione una dei parametri del modello potrebbe essere non settata");
-                pm.errorMessage("Nugget " + nug);
-                pm.errorMessage("Sill " + s);
-                pm.errorMessage("Range " + a);
+        if (defaultVariogramMode == 1) {
+            if (pNug == 0 || pS == 0 || pA == 0) {
+                pm.errorMessage(msg.message("kriging.noParam"));
+                pm.errorMessage("Nugget " + pNug);
+                pm.errorMessage("Sill " + pS);
+                pm.errorMessage("Range " + pA);
             }
         }
 
         if ((pMode == 1 || pMode == 0) && inInterpolate == null) {
-            throw new NullPointerException("problema nei punti da interpolarei");
+            throw new NullPointerException(msg.message("kriging.noPoint"));
         }
         // if ((mode == 2 || mode == 3) && gridToInterpolate == null) {
         // throw new NullPointerException("problema nei punti da interpolare");
@@ -571,8 +602,12 @@ public class Kriging extends JGTModel {
             while( iterator.hasNext() ) {
                 SimpleFeature feature = iterator.next();
                 int name = ((Number) feature.getAttribute(idField)).intValue();
-                coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid()
-                        .getCoordinate();
+                coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
+                double z = 0;
+                if (fStationsZ != null) {
+                    z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
+                }
+                coordinate.z=z;
                 id2CoordinatesMap.put(name, coordinate);
             }
         } finally {
@@ -589,15 +624,13 @@ public class Kriging extends JGTModel {
      * @return
      * @throws ModelsIOException 
      */
-    private int getNumPoint( FeatureCollection<SimpleFeatureType, SimpleFeature> collection )
-            throws ModelsIOException {
+    private int getNumPoint( FeatureCollection<SimpleFeatureType, SimpleFeature> collection ) throws ModelsIOException {
         int nStaz = 0;
         if (collection != null) {
             nStaz = collection.size();
         }
         if (nStaz == 0) {
-            throw new ModelsIOException("Didn't find any input station", this.getClass()
-                    .getSimpleName());
+            throw new ModelsIOException("Didn't find any point in the FeatureCollection", this.getClass().getSimpleName());
         }
         return nStaz;
     }
@@ -642,8 +675,8 @@ public class Kriging extends JGTModel {
         if (isNovalue(rz)) {
             rz = 0;
         }
-        double h2 = (rx / pIntegralscale[0]) * (rx / pIntegralscale[0]) + (ry / pIntegralscale[1])
-                * (ry / pIntegralscale[1]) + (rz / pIntegralscale[2]) * (rz / pIntegralscale[2]);
+        double h2 = (rx / pIntegralscale[0]) * (rx / pIntegralscale[0]) + (ry / pIntegralscale[1]) * (ry / pIntegralscale[1])
+                + (rz / pIntegralscale[2]) * (rz / pIntegralscale[2]);
         if (h2 < TOLL) {
             return pVariance;
         } else {
@@ -667,7 +700,7 @@ public class Kriging extends JGTModel {
      */
     private double[][] covMatrixCalculating( double[] x, double[] y, double[] z, int n ) {
         double[][] ap = new double[n + 1][n + 1];
-        if (variogramMode == 0) {
+        if (defaultVariogramMode == 0) {
             for( int j = 0; j < n; j++ ) {
                 for( int i = 0; i <= j; i++ ) {
                     double rx = x[i] - x[j];
@@ -680,13 +713,13 @@ public class Kriging extends JGTModel {
 
                 }
             }
-        } else if (variogramMode == 1) {
+        } else if (defaultVariogramMode == 1) {
             for( int j = 0; j < n; j++ ) {
                 for( int i = 0; i < n; i++ ) {
                     double rx = x[i] - x[j];
                     double ry = y[i] - y[j];
                     double rz = z[i] - z[j];
-                    double tmp = variogram(nug, a, s, rx, ry, rz);
+                    double tmp = variogram(pNug, pA, pS, rx, ry, rz);
 
                     ap[j][i] = tmp;
                     ap[i][j] = tmp;
@@ -720,19 +753,19 @@ public class Kriging extends JGTModel {
     private double[] knowsTermsCalculating( double[] x, double[] y, double[] z, int n ) {
 
         double[] gamma = new double[n + 1];
-        if (variogramMode == 0) {
+        if (defaultVariogramMode == 0) {
             for( int i = 0; i < n; i++ ) {
                 double rx = x[i] - x[n];
                 double ry = y[i] - y[n];
                 double rz = z[i] - z[n];
                 gamma[i] = variogram(rx, ry, rz);
             }
-        } else if (variogramMode == 1) {
+        } else if (defaultVariogramMode == 1) {
             for( int i = 0; i < n; i++ ) {
                 double rx = x[i] - x[n];
                 double ry = y[i] - y[n];
                 double rz = z[i] - z[n];
-                gamma[i] = variogram(nug, a, s, rx, ry, rz);
+                gamma[i] = variogram(pNug, pA, pS, rx, ry, rz);
             }
 
         }
@@ -742,5 +775,3 @@ public class Kriging extends JGTModel {
     }
 
 }
-
- 

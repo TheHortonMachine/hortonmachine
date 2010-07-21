@@ -1,0 +1,10 @@
+@T,rain
+Author,Silvia Franceschi
+DataSource,rain test
+DateFormat,yyyy-MM-dd HH:mm
+
+@H,date,rain_1
+ID,,1201
+,2000-01-01 00:00,0.0
+,2000-01-01 01:00,NaN
+,2000-01-01 02:00,1.0

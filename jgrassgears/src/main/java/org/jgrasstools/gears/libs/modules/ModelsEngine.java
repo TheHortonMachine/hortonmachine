@@ -17,7 +17,7 @@
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jgrasstools.gears.libs.modules;
-
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.*;
 import static java.lang.Math.PI;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
@@ -1580,6 +1580,47 @@ public class ModelsEngine {
             jdy = (int) Math.round(j + dy);
         }
         return tmpWR;
+    }
+
+    /**
+     * Verify if the current station (i) is already into the arrays.
+     *      
+     * @param xStation the x coordinate of the stations
+     * @param yStation the y coordinate of the stations
+     * @param zStation the z coordinate of the stations
+     * @param hStation the h value of the stations
+     * @param i the current index
+     * @param doMean if the h value of a double station have different value then do the mean.
+     * @param pm
+     * @return true if there is already this station.
+     * @throws Exception
+     */
+    public boolean verifyDoubleStation( double[] xStation, double[] yStation, double[] zStation, double[] hStation, double xTmp,
+            double yTmp, double zTmp, double hTmp, int i, boolean doMean, IJGTProgressMonitor pm ) throws Exception {
+
+        for( int j = 0; j < i - 1; j++ ) {
+
+            if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])
+                    && doubleEquals(hTmp, hStation[j])) {
+                if(!doMean){
+                pm.errorMessage(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp);
+                throw new Exception(msg.message("verifyStation.run"));
+            }
+                return true;
+            } else if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])) {
+                if (!doMean) {
+                    pm.errorMessage(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp);
+                    throw new Exception(msg.message("verifyStation.run"));
+                }
+                if(!isNovalue(hStation[j])&& !isNovalue(hTmp)){
+                hStation[j] = (hStation[j] + hTmp) / 2;}
+                else{
+                    hStation[j] = doubleNovalue;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
 }
