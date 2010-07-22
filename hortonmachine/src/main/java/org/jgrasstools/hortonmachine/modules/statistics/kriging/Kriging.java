@@ -30,7 +30,6 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Out;
-import oms3.annotations.Range;
 import oms3.annotations.Role;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -38,6 +37,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -134,7 +134,6 @@ public class Kriging extends JGTModel {
      * Variance of the measure field.
      */
     @Role(Role.PARAMETER)
-    @Range(max = 2.0)
     @Description("The variance.")
     @In
     public double pVariance = 0;
@@ -212,9 +211,6 @@ public class Kriging extends JGTModel {
 
     @Execute
     public void executeKriging() throws Exception {
-
-        System.out.println("Kriging processing");
-
         verifyInput();
 
         List<Double> xStationList = new ArrayList<Double>();
@@ -246,8 +242,8 @@ public class Kriging extends JGTModel {
                      * allowed. Also skip novalues.
                      */
                     continue;
-                } 
-                if(defaultVariogramMode==0){ 
+                }
+                if (defaultVariogramMode == 0) {
                     if (Math.abs(h[0]) >= TOLL) {
                         xStationList.add(coordinate.x);
                         yStationList.add(coordinate.y);
@@ -255,7 +251,7 @@ public class Kriging extends JGTModel {
                         hStationList.add(h[0]);
                         n1 = n1 + 1;
                     }
-                }else if(defaultVariogramMode==1){ 
+                } else if (defaultVariogramMode == 1) {
                     if (Math.abs(h[0]) >= 0) {
                         xStationList.add(coordinate.x);
                         yStationList.add(coordinate.y);
@@ -263,11 +259,11 @@ public class Kriging extends JGTModel {
                         hStationList.add(h[0]);
                         n1 = n1 + 1;
                     }
-                
+
                 }
             }
         } finally {
-            inStations.close(stationsIter);
+            stationsIter.close();
         }
 
         int nStaz = xStationList.size();
@@ -280,42 +276,41 @@ public class Kriging extends JGTModel {
         double[] zStation = new double[nStaz + 1];
         double[] hStation = new double[nStaz + 1];
         boolean areAllEquals = true;
-        if(nStaz!=0){
-        xStation[0] = xStationList.get(0);
-        yStation[0] = yStationList.get(0);
-        zStation[0] = zStationList.get(0);
-        hStation[0] = hStationList.get(0);
-        double previousValue = hStation[0];
-        ModelsEngine modelsEngine = new ModelsEngine();
-        for( int i = 1; i < nStaz; i++ ) {
+        if (nStaz != 0) {
+            xStation[0] = xStationList.get(0);
+            yStation[0] = yStationList.get(0);
+            zStation[0] = zStationList.get(0);
+            hStation[0] = hStationList.get(0);
+            double previousValue = hStation[0];
+            ModelsEngine modelsEngine = new ModelsEngine();
+            for( int i = 1; i < nStaz; i++ ) {
 
-            double xTmp = xStationList.get(i);
-            double yTmp = yStationList.get(i);
-            double zTmp = zStationList.get(i);
-            double hTmp = hStationList.get(i);
-            boolean doubleStation = modelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp, zTmp,
-                    hTmp, i, false, pm);
-            if (!doubleStation) {
-                xStation[i] = xTmp;
-                yStation[i] = yTmp;
-                zStation[i] = zTmp;
-                hStation[i] = hTmp;
-                if (hStation[i] != previousValue && areAllEquals) {
-                    areAllEquals = false;
+                double xTmp = xStationList.get(i);
+                double yTmp = yStationList.get(i);
+                double zTmp = zStationList.get(i);
+                double hTmp = hStationList.get(i);
+                boolean doubleStation = modelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp,
+                        zTmp, hTmp, i, false, pm);
+                if (!doubleStation) {
+                    xStation[i] = xTmp;
+                    yStation[i] = yTmp;
+                    zStation[i] = zTmp;
+                    hStation[i] = hTmp;
+                    if (areAllEquals && hStation[i] != previousValue) {
+                        areAllEquals = false;
+                    }
+                    previousValue = hStation[i];
                 }
-                previousValue = hStation[i];
             }
-        }
         }
         HashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = new HashMap<Integer, Coordinate>();
         int numPointToInterpolate = getNumPoint(inInterpolate);
-        
+
         /*
          * if the isLogarithmic is true then execute the model with log value.
          */
         double[] result = new double[numPointToInterpolate];
 
-        
         if (pMode == 0 || pMode == 1) {
             pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
         } else if (pMode == 2) {
@@ -329,7 +324,7 @@ public class Kriging extends JGTModel {
             // double yMin = envelope2d.getMinY();
             // numPointToInterpolate = nRows * nCols;
             // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin);
-            
+
         } else if (pMode == 3) {
             throw new RuntimeException(msg.message("notImplemented"));
             // Raster grid = (Raster)
@@ -346,101 +341,102 @@ public class Kriging extends JGTModel {
         Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int j = 0;
         int[] idArray = new int[inInterpolate.size()];
-        if(n1!=0){
-        if (doLogarithmic) {
-            for( int i = 0; i < nStaz; i++ ) {
-                if (hStation[i] > 0.0) {
-                    hStation[i] = Math.log(hStation[i]);
+        if (n1 != 0) {
+            if (doLogarithmic) {
+                for( int i = 0; i < nStaz; i++ ) {
+                    if (hStation[i] > 0.0) {
+                        hStation[i] = Math.log(hStation[i]);
+                    }
                 }
             }
-        }
 
-        /*
-         * calculating the covariance matrix.
-         */
-        double[][] covarianceMatrix = covMatrixCalculating(xStation, yStation, zStation, n1);
-        /*
-         * extract the coordinate of the points where interpolated.
-         */
+            /*
+             * calculating the covariance matrix.
+             */
+            double[][] covarianceMatrix = covMatrixCalculating(xStation, yStation, zStation, n1);
+            /*
+             * extract the coordinate of the points where interpolated.
+             */
 
-        /*
-         * initialize the solution and its variance vector.
-         */
+            /*
+             * initialize the solution and its variance vector.
+             */
 
-        if (n1 > 1 && !areAllEquals) {
-            pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
-            while( idIterator.hasNext() ) {
-                double sum = 0.;
-                int id = idIterator.next();
-                idArray[j] = id;
-                Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
-                xStation[n1] = coordinate.x;
-                yStation[n1] = coordinate.y;
-                zStation[n1] = coordinate.z;
-                /*
-                 * calculating the right hand side of the kriging linear system.
-                 */
-                double[] knowsTerm = knowsTermsCalculating(xStation, yStation, zStation, n1);
+            if (!areAllEquals && n1 > 1) {
+                pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
+                while( idIterator.hasNext() ) {
+                    double sum = 0.;
+                    int id = idIterator.next();
+                    idArray[j] = id;
+                    Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
+                    xStation[n1] = coordinate.x;
+                    yStation[n1] = coordinate.y;
+                    zStation[n1] = coordinate.z;
+                    /*
+                     * calculating the right hand side of the kriging linear system.
+                     */
+                    double[] knowsTerm = knowsTermsCalculating(xStation, yStation, zStation, n1);
 
-                /*
-                 * solve the linear system, where the result is the weight.
-                 */
-                Matrix a = new Matrix(covarianceMatrix);
-                Matrix b = new Matrix(knowsTerm, knowsTerm.length);
-                Matrix x = a.solve(b);
-                double[] moltiplicativeFactor = x.getColumnPackedCopy();
-                double h0 = 0.0;
-                for( int k = 0; k < n1; k++ ) {
-                    h0 = h0 + moltiplicativeFactor[k] * hStation[k];
-                    sum = sum + moltiplicativeFactor[k];
+                    /*
+                     * solve the linear system, where the result is the weight.
+                     */
+                    Matrix a = new Matrix(covarianceMatrix);
+                    Matrix b = new Matrix(knowsTerm, knowsTerm.length);
+                    Matrix x = a.solve(b);
+                    double[] moltiplicativeFactor = x.getColumnPackedCopy();
+                    double h0 = 0.0;
+                    for( int k = 0; k < n1; k++ ) {
+                        h0 = h0 + moltiplicativeFactor[k] * hStation[k];
+                        sum = sum + moltiplicativeFactor[k];
+                    }
+
+                    if (doLogarithmic) {
+                        h0 = Math.exp(h0);
+                    }
+                    result[j] = h0;
+                    j++;
+                    if (Math.abs(sum - 1) >= TOLL) {
+                        throw new ModelsRuntimeException("Error in the coffeicients calculation", this.getClass().getSimpleName());
+                    }
+
                 }
-
-                if (doLogarithmic) {
-                    h0 = Math.exp(h0);
-                }
-                result[j] = h0;
-                j++;
-                if (Math.abs(sum - 1) >= TOLL) {
-                    throw new ModelsRuntimeException("Error in the coffeicients calculation", this.getClass().getSimpleName());
-                }
-
-            }
-            pm.worked(1);
-        } else if (n1 == 1 || areAllEquals) {
-            double tmp = hStation[0];
-            int k = 0;
-            pm.message(msg.message("kriging.setequalsvalue"));
-            pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
-            while( idIterator.hasNext() ) {
-                int id = idIterator.next();
-                result[k] = tmp;
-                idArray[k] = id;
-                k++;
                 pm.worked(1);
-            }
+            } else if (n1 == 1 || areAllEquals) {
+                double tmp = hStation[0];
+                int k = 0;
+                pm.message(msg.message("kriging.setequalsvalue"));
+                pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
+                while( idIterator.hasNext() ) {
+                    int id = idIterator.next();
+                    result[k] = tmp;
+                    idArray[k] = id;
+                    k++;
+                    pm.worked(1);
+                }
 
-        } 
-        pm.done();
-        if (pMode == 0 || pMode == 1) {
-            storeResult(result, idArray);
+            }
+            pm.done();
+            if (pMode == 0 || pMode == 1) {
+                storeResult(result, idArray);
+            } else {
+                throw new RuntimeException("Not implemented"); // storeResult(result);
+            }
         } else {
-            // storeResult(result);
-        }}else{
-            pm
-            .errorMessage("No rain for this time step");
-            j=0;
+            pm.errorMessage("No rain for this time step");
+            j = 0;
             double[] value = inData.values().iterator().next();
             while( idIterator.hasNext() ) {
                 int id = idIterator.next();
                 idArray[j] = id;
-                result[j]=value[0];
+                result[j] = value[0];
                 j++;
             }
             if (pMode == 0 || pMode == 1) {
                 storeResult(result, idArray);
             } else {
-                // storeResult(result);
-            } 
+                            throw new RuntimeException("Not implemented");
+                
+            }
         }
     }
 
@@ -607,11 +603,11 @@ public class Kriging extends JGTModel {
                 if (fStationsZ != null) {
                     z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
                 }
-                coordinate.z=z;
+                coordinate.z = z;
                 id2CoordinatesMap.put(name, coordinate);
             }
         } finally {
-            collection.close(iterator);
+            iterator.close();
         }
 
         return id2CoordinatesMap;

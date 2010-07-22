@@ -17,7 +17,6 @@
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jgrasstools.gears.libs.modules;
-import static org.jgrasstools.gears.utils.math.NumericsUtilities.*;
 import static java.lang.Math.PI;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
@@ -25,6 +24,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.doubleEquals;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1603,14 +1603,16 @@ public class ModelsEngine {
             if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])
                     && doubleEquals(hTmp, hStation[j])) {
                 if(!doMean){
-                pm.errorMessage(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp);
-                throw new Exception(msg.message("verifyStation.run"));
+                    throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp,this);
+            //    pm.errorMessage(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp);
+            //    throw new Exception(msg.message("verifyStation.run"));
             }
                 return true;
             } else if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])) {
                 if (!doMean) {
-                    pm.errorMessage(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp);
-                    throw new Exception(msg.message("verifyStation.run"));
+                    throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp,this);
+                   // pm.errorMessage(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp);
+                  //  throw new Exceptio(msg.message("verifyStation.run"));
                 }
                 if(!isNovalue(hStation[j])&& !isNovalue(hTmp)){
                 hStation[j] = (hStation[j] + hTmp) / 2;}
