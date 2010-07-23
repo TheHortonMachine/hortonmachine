@@ -37,7 +37,6 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -86,6 +85,10 @@ public class Kriging extends JGTModel {
     @Description("The field of the station elevation.")
     @In
     public String fStationsZ = null;
+
+    @Description("The field of the point elevation.")
+    @In
+    public String fPointZ = null;
     @Description("The measured data, to be interpolated.")
     @In
     public HashMap<Integer, double[]> inData = null;
@@ -232,7 +235,13 @@ public class Kriging extends JGTModel {
                 int id = ((Number) feature.getAttribute(fStationsid)).intValue();
                 double z = 0;
                 if (fStationsZ != null) {
-                    z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
+                    try {
+                        z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
+                    } catch (NullPointerException e) {
+                        pm.errorMessage(msg.message("kriging.noStationZ"));
+                        throw new Exception(msg.message("kriging.noStationZ"));
+
+                    }
                 }
                 Coordinate coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
                 double[] h = inData.get(id);
@@ -434,8 +443,8 @@ public class Kriging extends JGTModel {
             if (pMode == 0 || pMode == 1) {
                 storeResult(result, idArray);
             } else {
-                            throw new RuntimeException("Not implemented");
-                
+                throw new RuntimeException("Not implemented");
+
             }
         }
     }
@@ -450,6 +459,11 @@ public class Kriging extends JGTModel {
         if (pMode < 0 || pMode > 3) {
             throw new IllegalArgumentException(msg.message("kriging.defaultMode"));
         }
+        if (pMode == 1 && (fStationsZ == null || fPointZ == null)) {
+            pm.errorMessage(msg.message("kriging.noElevation"));
+            throw new IllegalArgumentException(msg.message("kriging.noElevation"));
+        }
+
         if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
             throw new IllegalArgumentException(msg.message("kriging.variogramMode"));
         }
@@ -588,9 +602,10 @@ public class Kriging extends JGTModel {
      * a key.
      * @param nStaz
      * @param collection
+     * @throws Exception if a fiel of elevation isn't the same of the collection
      */
     private HashMap<Integer, Coordinate> getCoordinate( int nStaz,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection, String idField ) {
+            FeatureCollection<SimpleFeatureType, SimpleFeature> collection, String idField ) throws Exception {
         HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
         FeatureIterator<SimpleFeature> iterator = collection.features();
         Coordinate coordinate = null;
@@ -600,8 +615,13 @@ public class Kriging extends JGTModel {
                 int name = ((Number) feature.getAttribute(idField)).intValue();
                 coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
                 double z = 0;
-                if (fStationsZ != null) {
-                    z = ((Number) feature.getAttribute(fStationsZ)).doubleValue();
+                if (fPointZ != null) {
+                    try {
+                        z = ((Number) feature.getAttribute(fPointZ)).doubleValue();
+                    } catch (NullPointerException e) {
+                        pm.errorMessage(msg.message("kriging.noPointZ"));
+                        throw new Exception(msg.message("kriging.noPointZ"));
+                    }
                 }
                 coordinate.z = z;
                 id2CoordinatesMap.put(name, coordinate);
@@ -612,7 +632,6 @@ public class Kriging extends JGTModel {
 
         return id2CoordinatesMap;
     }
-
     /**
      * Return the number of features.
      * 
@@ -701,7 +720,10 @@ public class Kriging extends JGTModel {
                 for( int i = 0; i <= j; i++ ) {
                     double rx = x[i] - x[j];
                     double ry = y[i] - y[j];
-                    double rz = z[i] - z[j];
+                    double rz = 0;
+                    if (pMode == 1) {
+                        rz = z[i] - z[j];
+                    }
                     double tmp = variogram(rx, ry, rz);
 
                     ap[j][i] = tmp;
@@ -714,7 +736,10 @@ public class Kriging extends JGTModel {
                 for( int i = 0; i < n; i++ ) {
                     double rx = x[i] - x[j];
                     double ry = y[i] - y[j];
-                    double rz = z[i] - z[j];
+                    double rz = 0;
+                    if (pMode == 1) {
+                        rz = z[i] - z[j];
+                    }
                     double tmp = variogram(pNug, pA, pS, rx, ry, rz);
 
                     ap[j][i] = tmp;
