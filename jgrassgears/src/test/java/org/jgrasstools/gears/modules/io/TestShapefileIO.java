@@ -1,6 +1,7 @@
 package org.jgrasstools.gears.modules.io;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -48,7 +49,8 @@ public class TestShapefileIO extends HMTestCase {
 
         File tmpShape = File.createTempFile("testshp", ".shp");
         if (tmpShape.exists()) {
-            tmpShape.delete();
+            if (tmpShape.delete())
+                throw new IOException();
         }
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = tmpShape.getAbsolutePath();
@@ -84,7 +86,8 @@ public class TestShapefileIO extends HMTestCase {
         }
 
         if (tmpShape.exists()) {
-            tmpShape.delete();
+            if (!tmpShape.delete())
+                throw new IOException();
         }
     }
 }

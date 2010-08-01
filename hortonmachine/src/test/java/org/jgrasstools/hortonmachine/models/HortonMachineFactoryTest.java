@@ -34,7 +34,7 @@ public class HortonMachineFactoryTest {
         assertNotNull(factory);
         assertTrue(factory.isAvailable());
 
-        InternationalString description = factory.getDescription(NAME);
+        // InternationalString description = factory.getDescription(NAME);
         // assertNotNull( description );
 
         String version = factory.getVersion(NAME);
@@ -52,7 +52,7 @@ public class HortonMachineFactoryTest {
         Map<String, Object> input = new HashMap<String, Object>();
         Progress progress = pool.submit(grad, input);
 
-        float work = progress.getProgress();
+        // float work = progress.getProgress();
         Map<String, Object> result = progress.get();
 
         assertTrue(progress.isDone());

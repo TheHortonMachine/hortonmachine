@@ -19,6 +19,8 @@
 package org.jgrasstools.gears.modules.v.intersections;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.jgrasstools.gears.libs.modules.ClassField;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -41,8 +43,7 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
     private boolean toRemove = false;
     private final double buffer;
 
-    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer,
-            double lengthThreshold ) {
+    public FeatureElevationComparer( SimpleFeature feature, String field, double buffer, double lengthThreshold ) {
         this.feature = feature;
         this.buffer = buffer;
         this.lengthThreshold = lengthThreshold;
@@ -129,6 +130,25 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
             return -1;
         } else
             return 0;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        long temp;
+        temp = Double.doubleToLongBits(elevation);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if (obj instanceof FeatureElevationComparer) {
+            FeatureElevationComparer o = (FeatureElevationComparer) obj;
+            return NumericsUtilities.dEq(elevation, o.getElevation());
+        }
+        return false;
     }
 
 }

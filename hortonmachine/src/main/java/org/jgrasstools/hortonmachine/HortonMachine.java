@@ -58,7 +58,7 @@ public class HortonMachine {
      * 
      * @return the horton machine annotations class.
      */
-    public static HortonMachine getInstance() {
+    public synchronized static HortonMachine getInstance() {
         if (hortonMachine == null) {
             hortonMachine = new HortonMachine(null);
             hortonMachine.gatherInformations();

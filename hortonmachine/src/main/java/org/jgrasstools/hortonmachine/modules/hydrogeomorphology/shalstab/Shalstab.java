@@ -234,7 +234,7 @@ public class Shalstab extends JGTModel {
     /**
      * Value to be given to pixels if <code>h_s < eps</code>.
      */
-    private final double ROCK = 8888.0;
+    private static final double ROCK = 8888.0;
 
     @Execute
     public void process() throws Exception {

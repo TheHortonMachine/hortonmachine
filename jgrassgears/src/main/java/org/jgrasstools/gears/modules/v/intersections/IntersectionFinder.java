@@ -44,9 +44,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
@@ -126,9 +124,8 @@ public class IntersectionFinder extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        inMap.close(linesIterator);
+        linesIterator.close();
 
-        GeometryFactory gf = GeometryUtilities.gf();
         int id = 0;
         pm.beginTask("Checking intersections...", size);
         for( int i = 0; i < size; i++ ) {

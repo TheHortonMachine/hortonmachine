@@ -92,6 +92,8 @@ public class BasinShape extends JGTModel {
     private int nCols;
     private int nRows;
 
+    private RandomIter pitRandomIter;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outBasins == null, doReset)) {
@@ -128,8 +130,8 @@ public class BasinShape extends JGTModel {
             }
         }
 
-        WritableRaster subbasinsWR = CoverageUtilities.createDoubleWritableRaster(pitRI.getWidth(), pitRI.getHeight(), null,
-                pitRI.getSampleModel(), doubleNovalue);
+        WritableRaster subbasinsWR = CoverageUtilities.createDoubleWritableRaster(basinsRI.getWidth(), basinsRI.getHeight(),
+                null, basinsRI.getSampleModel(), doubleNovalue);
 
         // create the feature type
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -166,7 +168,8 @@ public class BasinShape extends JGTModel {
             double minZ = Double.MAX_VALUE;
             double maxZ = Double.MIN_VALUE;
             double averageZ = 0.0;
-            RandomIter pitRandomIter = RandomIterFactory.create(pitRI, null);
+            if (pitRI != null)
+                pitRandomIter = RandomIterFactory.create(pitRI, null);
             WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinsWR, null);
             for( int i = 0; i < nCols; i++ ) {
                 for( int j = 0; j < nRows; j++ ) {
@@ -189,15 +192,17 @@ public class BasinShape extends JGTModel {
                             eastCol = j;
                         }
                         subbasinIter.setSample(i, j, 0, basinNum);
-                        double elevation = pitRandomIter.getSampleDouble(i, j, 0);
-                        if (!isNovalue(elevation)) {
-                            minZ = elevation < minZ ? elevation : minZ;
-                            maxZ = elevation > maxZ ? elevation : maxZ;
-                            averageZ = averageZ + elevation;
-                        } else {
-                            minZ = -1;
-                            maxZ = -1;
-                            averageZ = 0;
+                        if (pitRI != null) {
+                            double elevation = pitRandomIter.getSampleDouble(i, j, 0);
+                            if (!isNovalue(elevation)) {
+                                minZ = elevation < minZ ? elevation : minZ;
+                                maxZ = elevation > maxZ ? elevation : maxZ;
+                                averageZ = averageZ + elevation;
+                            } else {
+                                minZ = -1;
+                                maxZ = -1;
+                                averageZ = 0;
+                            }
                         }
                         numPixel++;
                     }

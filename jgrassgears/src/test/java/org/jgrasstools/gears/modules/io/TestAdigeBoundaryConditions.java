@@ -1,6 +1,7 @@
 package org.jgrasstools.gears.modules.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +63,8 @@ public class TestAdigeBoundaryConditions extends HMTestCase {
         reader.close();
         
         if (tmpAbc.exists()) {
-            tmpAbc.delete();
+            if (!tmpAbc.delete())
+                throw new IOException();
         }
     }
 }

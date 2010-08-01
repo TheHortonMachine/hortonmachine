@@ -45,7 +45,7 @@ import org.scannotation.ClasspathUrlFinder;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 @SuppressWarnings("nls")
-public class JGrassGears {
+public  class JGrassGears {
 
     private static JGrassGears jgrassGears = null;
 
@@ -59,7 +59,7 @@ public class JGrassGears {
      * 
      * @return the JGrassGears annotations class.
      */
-    public static JGrassGears getInstance() {
+    public synchronized static JGrassGears getInstance() {
         if (jgrassGears == null) {
             jgrassGears = new JGrassGears(null);
             jgrassGears.gatherInformations();
@@ -204,8 +204,12 @@ public class JGrassGears {
             allFields = (String[]) fieldNamesList.toArray(new String[fieldNamesList.size()]);
             Collections.sort(classNames);
             allClasses = (String[]) classNames.toArray(new String[classNames.size()]);
-        } catch (Exception e1) {
-            e1.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

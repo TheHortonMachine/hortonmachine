@@ -23,6 +23,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyShell;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -72,7 +73,8 @@ public class ScriptLauncher {
         } else {
             String tempdir = System.getProperty("java.io.tmpdir");
             File omsTmp = new File(tempdir + File.separator + "oms");
-            omsTmp.mkdirs();
+            if (!omsTmp.mkdirs())
+                throw new IOException();
             System.setProperty("oms3.work", omsTmp.getAbsolutePath());
         }
 
@@ -107,8 +109,7 @@ public class ScriptLauncher {
         sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
         sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
-        sb
-                .append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
+        sb.append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         sb.append(script);
         String finalScript = sb.toString();

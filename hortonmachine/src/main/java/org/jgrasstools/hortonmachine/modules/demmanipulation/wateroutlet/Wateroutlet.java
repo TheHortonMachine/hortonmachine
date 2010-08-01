@@ -110,9 +110,9 @@ public class Wateroutlet extends JGTModel {
 
     private int[] pt_seg = new int[1];
     private int[] ba_seg = new int[1];
-    private final int RAMSEGBITS = 4;
-    private final int DOUBLEBITS = 8; /* 2 * ramsegbits */
-    private final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
+    private static  final int RAMSEGBITS = 4;
+    private static  final int DOUBLEBITS = 8; /* 2 * ramsegbits */
+    private static  final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
 
     // /private double[][] flowData = null;
 

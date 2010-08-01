@@ -34,6 +34,25 @@ public class ClassField implements Comparable<ClassField> {
     public int compareTo( ClassField o ) {
         return fieldName.compareTo(o.fieldName);
     }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((fieldName == null) ? 0 : fieldName.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if (obj instanceof ClassField) {
+            ClassField oField = (ClassField) obj;
+            return fieldName.equals(oField.fieldName);
+        }
+        return false;
+    }
+    
+    
 
     @Override
     public String toString() {

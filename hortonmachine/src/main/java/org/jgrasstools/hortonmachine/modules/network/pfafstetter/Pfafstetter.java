@@ -368,7 +368,7 @@ public class Pfafstetter extends JGTModel {
         if (netNumList.size() != netNumListAll.size()) {
             for( Integer integer : netNumListAll ) {
                 for( Integer integer2 : netNumList ) {
-                    if (integer == integer2) {
+                    if (integer.equals(integer2)) {
                         num++;
                     }
                 }
@@ -488,8 +488,11 @@ public class Pfafstetter extends JGTModel {
                                         if (token < order) {
                                             pfafToken += st.nextToken() + "."; //$NON-NLS-1$
                                         } else {
-                                            pfafToken += String.valueOf(Integer.valueOf(st.nextToken()) + 1)
-                                                    + "." + String.valueOf(pfafNum); //$NON-NLS-1$
+                                            StringBuilder sb = new StringBuilder();
+                                            sb.append(String.valueOf(Integer.valueOf(st.nextToken()) + 1));
+                                            sb.append("."); //$NON-NLS-1$
+                                            sb.append(String.valueOf(pfafNum));
+                                            pfafToken += sb.toString(); 
                                             pfafNum = pfafNum + 2;
                                         }
                                         token++;

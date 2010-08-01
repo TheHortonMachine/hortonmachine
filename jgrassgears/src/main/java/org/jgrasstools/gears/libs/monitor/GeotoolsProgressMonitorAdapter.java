@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.libs.monitor;
 
 import org.geotools.util.SimpleInternationalString;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.util.InternationalString;
 import org.opengis.util.ProgressListener;
 
@@ -81,7 +82,7 @@ public class GeotoolsProgressMonitorAdapter implements IJGTProgressMonitor {
             runningWork = runningWork + work;
             // calculate %
             float percentage = 100 * runningWork / (float) totalWork;
-            if (percentage % 10 == 0 && percentage != lastPercentage) {
+            if (percentage % 10 == 0 && NumericsUtilities.fEq(percentage, lastPercentage)) {
                 geotoolsMonitor.progress(percentage);
                 lastPercentage = percentage;
             }

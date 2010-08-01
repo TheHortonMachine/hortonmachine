@@ -83,12 +83,14 @@ public class CompressionUtilities {
 
             if (item.isDirectory()) {
                 File newdir = new File(dir + File.separator + item.getName());
-                newdir.mkdir();
+                if (!newdir.mkdir())
+                    throw new IOException();
             } else {
                 String newfilePath = dir + File.separator + item.getName();
                 File newFile = new File(newfilePath);
                 if (!newFile.getParentFile().exists()) {
-                    newFile.getParentFile().mkdirs();
+                    if (!newFile.getParentFile().mkdirs())
+                        throw new IOException();
                 }
 
                 InputStream is = zf.getInputStream(item);

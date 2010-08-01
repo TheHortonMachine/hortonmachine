@@ -118,7 +118,6 @@ public class Tca3d extends JGTModel {
 
         // areatr contains areas of 8 triangles having vertex in the 8 pixel
         // around
-        double[] areatr = new double[9];
 
         double[] grid = new double[11];
         // grid contains the dimension of pixels according with flow directions
@@ -145,7 +144,7 @@ public class Tca3d extends JGTModel {
                 nnov = 0;
                 area = 0;
                 areamed = 0;
-                areatr = new double[9];
+                final double[] areatr = new double[9];
                 if (!isNovalue(pitAtIJ)) {
                     // calculates the area of the triangle
                     for( int k = 1; k <= 8; k++ ) {

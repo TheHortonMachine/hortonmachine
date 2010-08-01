@@ -47,14 +47,14 @@ public final class FilesFinder {
     }
 
     public List<File> process() {
+        if (file == null || !file.exists() || !file.canRead()) {
+            throw new IllegalArgumentException("Directory not readable.");
+        }
         if (!file.isDirectory()) {
             if (file.getName().matches(".*" + regex + ".*")) {
                 filesList.add(file);
                 return filesList;
             }
-        }
-        if (file == null || !file.exists() || !file.canRead()) {
-            throw new IllegalArgumentException("Directory not readable.");
         }
 
         addToList(file);

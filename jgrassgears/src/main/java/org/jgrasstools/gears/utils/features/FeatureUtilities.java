@@ -108,7 +108,9 @@ public class FeatureUtilities {
             }
 
         }
-
+        if (firstFeature == null) {
+            throw new RuntimeException();
+        }
         CoordinateList coordinateList = new CoordinateList();
         Coordinate[] coords = firstFeature.getCoordinates();
         if (foundSecond) {

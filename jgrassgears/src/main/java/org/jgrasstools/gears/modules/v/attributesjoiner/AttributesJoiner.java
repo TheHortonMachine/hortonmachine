@@ -74,8 +74,6 @@ public class AttributesJoiner extends JGTModel {
     @Out
     public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
 
-    private GeometryFactory gF = GeometryUtilities.gf();
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFeatures == null, doReset)) {

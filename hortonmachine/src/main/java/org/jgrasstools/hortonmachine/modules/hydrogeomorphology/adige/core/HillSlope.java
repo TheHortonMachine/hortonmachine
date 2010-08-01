@@ -70,12 +70,11 @@ public class HillSlope implements Comparator<HillSlope> {
     private boolean hasVegetation = false;
     private final int vegetationIdFieldIndex;
 
-    public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature,
-            PfafstetterNumber pfafNumber, int hillslopeId, int baricenterElevationFieldIndex,
-            int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
-            int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield,
-            double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat ) {
-        
+    public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature, PfafstetterNumber pfafNumber, int hillslopeId,
+            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
+            int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield, double pPorosity, Double pEtrate,
+            double pSatconst, double pDepthmnsat ) {
+
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
         this.linkFeature = netFeature;
@@ -119,7 +118,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @return the slope of the current hillslope's link. The result is the tangent.
      */
     public double getLinkSlope() {
-        if (linkSlope == -1) {
+        if ((int) linkSlope == -1) {
             // hillslopeFeature.getAttribute(baricenterElevationAttribute);
             double startElev = (Double) linkFeature.getAttribute(linkStartElevationAttributeIndex);
             double endElev = (Double) linkFeature.getAttribute(linkEndElevationAttributeIndex);
@@ -183,8 +182,7 @@ public class HillSlope implements Comparator<HillSlope> {
 
     public double getBaricenterElevation() {
         if (baricenterElevation == -1) {
-            baricenterElevation = (Double) hillslopeFeature
-                    .getAttribute(baricenterElevationAttributeIndex);
+            baricenterElevation = (Double) hillslopeFeature.getAttribute(baricenterElevationAttributeIndex);
         }
         return baricenterElevation;
     }
@@ -205,8 +203,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @param doMonitor
      * @return
      */
-    public Geometry getGeometry( List<PfafstetterNumber> limit, IJGTProgressMonitor pm,
-            boolean doMonitor ) {
+    public Geometry getGeometry( List<PfafstetterNumber> limit, IJGTProgressMonitor pm, boolean doMonitor ) {
 
         if (limit == null && totalGeometryUpstream != null) {
             return totalGeometryUpstream;
@@ -221,8 +218,7 @@ public class HillSlope implements Comparator<HillSlope> {
          */
         Geometry runningGeometry = geometries.get(0);
         if (doMonitor)
-            pm.beginTask("Estrazione geometrie dei bacini elementari a monte",
-                    geometries.size() - 1);
+            pm.beginTask("Estrazione geometrie dei bacini elementari a monte", geometries.size() - 1);
         for( int i = 1; i < geometries.size(); i++ ) {
             if (doMonitor) {
                 pm.worked(1);
@@ -304,8 +300,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @return
      */
     public boolean addConnectedUpstreamElementWithCheck( HillSlope element ) {
-        if (PfafstetterNumber.areConnectedUpstream(this.getPfafstetterNumber(), element
-                .getPfafstetterNumber())) {
+        if (PfafstetterNumber.areConnectedUpstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             if (!upstreamElements.contains(element)) {
                 upstreamElements.add(element);
                 element.addConnectedDownstreamElementWithChech(this);
@@ -324,8 +319,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @return
      */
     public boolean addConnectedDownstreamElementWithChech( HillSlope element ) {
-        if (PfafstetterNumber.areConnectedDownstream(this.getPfafstetterNumber(), element
-                .getPfafstetterNumber())) {
+        if (PfafstetterNumber.areConnectedDownstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             downstreamElement = element;
             element.addConnectedUpstreamElementWithCheck(this);
             return true;
@@ -403,8 +397,7 @@ public class HillSlope implements Comparator<HillSlope> {
      * @param elems
      * @param firstOfMaiorBasin
      */
-    public void getAllUpstreamElementsGeometries( List<Geometry> elems,
-            List<PfafstetterNumber> limit, HillSlope firstOfMaiorBasin ) {
+    public void getAllUpstreamElementsGeometries( List<Geometry> elems, List<PfafstetterNumber> limit, HillSlope firstOfMaiorBasin ) {
         // if the limit is the number of the actual element, return
         if (limit != null && limit.size() > 0) {
             for( PfafstetterNumber pfafs : limit ) {
@@ -447,8 +440,7 @@ public class HillSlope implements Comparator<HillSlope> {
     @SuppressWarnings("nls")
     public String toString() {
         StringBuilder b = new StringBuilder();
-        b.append("=====================\n= PF: " + pfafstetterNumber).append("\n= ").append(
-                "DownElem: \n= ");
+        b.append("=====================\n= PF: " + pfafstetterNumber).append("\n= ").append("DownElem: \n= ");
         if (downstreamElement != null) {
             b.append(downstreamElement.pfafstetterNumber).append("\n= ");
         }
@@ -493,23 +485,22 @@ public class HillSlope implements Comparator<HillSlope> {
          * @param pKs 
          * @param pDepthmnsat 
          */
-        public Parameters( double pKs, double pMstexp, double pSpecyield, double pPorosity,
-                Double pEtrate, double pSatconst, double pDepthmnsat ) {
-            
+        public Parameters( double pKs, double pMstexp, double pSpecyield, double pPorosity, Double pEtrate, double pSatconst,
+                double pDepthmnsat ) {
+
             this.pKs = pKs;
             this.pMstexp = pMstexp;
             this.pDepthmnsat = pDepthmnsat;
-            if (pEtrate!=null) {
+            if (pEtrate != null) {
                 this.pEtrate = pEtrate * (1. / 24.);
             }
-            
+
             double area_m2 = getHillslopeArea(); // [m^2]
             recParam = (pSatconst * pKs * pDepthmnsat) / (pSpecyield * area_m2); // [1/hr]
 
             // double d4_pm3 = 0.905 * (1. / (porosity * depthMnSat(hillSlope) * area_m2));
             s2max = pPorosity * pDepthmnsat * area_m2;
             s2Param = 0.905 * (1 / s2max); // [1/L^3]
-
 
             s1residual = 0.02 * pPorosity * area_m2;
 
@@ -525,11 +516,9 @@ public class HillSlope implements Comparator<HillSlope> {
          * @param vegetationLibrary the map of vegetation index versus 
          *          vegetation parameters.
          */
-        public void setVegetationLibrary(
-                HashMap<Integer, VegetationLibraryRecord> vegetationLibrary ) {
+        public void setVegetationLibrary( HashMap<Integer, VegetationLibraryRecord> vegetationLibrary ) {
             if (vegetationIdFieldIndex != -1) {
-                int vegetationId = ((Number) hillslopeFeature.getAttribute(vegetationIdFieldIndex))
-                        .intValue();
+                int vegetationId = ((Number) hillslopeFeature.getAttribute(vegetationIdFieldIndex)).intValue();
                 if (vegetationId != -1) {
                     hasVegetation = true;
                     vegetation = vegetationLibrary.get(vegetationId);
@@ -551,20 +540,17 @@ public class HillSlope implements Comparator<HillSlope> {
          * @param snow water equivalent
          * @return evapotraspiration.
          */
-        public double calculateEvapoTranspiration( int month, double radiation, double pressure,
-                double temperature, double shortRadiaton, double relativeHumidity,
-                double windSpeed, double soilMoisture, double snowWaterEquivalent ) {
+        public double calculateEvapoTranspiration( int month, double radiation, double pressure, double temperature,
+                double shortRadiaton, double relativeHumidity, double windSpeed, double soilMoisture, double snowWaterEquivalent ) {
             if (!hasVegetation()) {
                 throw new ModelsIllegalargumentException(
                         "Evapotranspiration can be calculated only if the vegetation library has been defined. check your syntax...",
                         this);
             }
-            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation,
-                    vegetation.getMinStomatalResistance(), vegetation.getArchitecturalResistance(),
-                    vegetation.getLai(month), vegetation.getRgl(), vegetation
-                            .getDisplacement(month), vegetation.getRoughness(month), s2max,
-                    pressure, temperature, shortRadiaton, relativeHumidity, windSpeed,
-                    soilMoisture, snowWaterEquivalent);
+            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation, vegetation.getMinStomatalResistance(),
+                    vegetation.getArchitecturalResistance(), vegetation.getLai(month), vegetation.getRgl(),
+                    vegetation.getDisplacement(month), vegetation.getRoughness(month), s2max, pressure, temperature,
+                    shortRadiaton, relativeHumidity, windSpeed, soilMoisture, snowWaterEquivalent);
             return evap;
         }
 

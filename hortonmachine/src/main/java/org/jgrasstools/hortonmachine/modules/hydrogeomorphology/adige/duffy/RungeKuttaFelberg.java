@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
 import org.joda.time.DateTime;
 
@@ -237,7 +238,7 @@ public class RungeKuttaFelberg {
             double[] snowWaterEquivalentArray ) throws IOException {
         isAtFinalSubtimestep = false;
 
-        double intervalStartTimeInMinutes = (double) (currentTimstamp.getMillis() / 1000l / 60l);
+        double intervalStartTimeInMinutes = currentTimstamp.getMillis() / 1000d / 60d;
         double intervalEndTimeInMinutes = intervalStartTimeInMinutes + modelTimestepInMinutes;
 
         // the running time inside the interval
@@ -339,7 +340,7 @@ public class RungeKuttaFelberg {
 
         isAtFinalSubtimestep = true;
         // 
-        if (currentTimeInMinutes != intervalEndTimeInMinutes && initialConditions[0] > 1e-3) {
+        if (NumericsUtilities.dEq(currentTimeInMinutes, intervalEndTimeInMinutes) && initialConditions[0] > 1e-3) {
             step(currentTimeInMinutes, initialConditions, intervalEndTimeInMinutes
                     - currentTimeInMinutes - 1. / 60., true, currentSolution, rainArray,
                     radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,

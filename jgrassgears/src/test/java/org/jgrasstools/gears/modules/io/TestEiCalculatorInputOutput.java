@@ -1,6 +1,7 @@
 package org.jgrasstools.gears.modules.io;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
@@ -49,7 +50,8 @@ public class TestEiCalculatorInputOutput extends HMTestCase {
         for( int i = 0; i < altimetry.size(); i++ ) {
             assertEquals(altimetry.get(i).basinId, altimetryTmp.get(i).basinId);
         }
-        tmpFile.delete();
+        if (!tmpFile.delete())
+            throw new IOException();
 
         /*
          * areas
@@ -81,7 +83,8 @@ public class TestEiCalculatorInputOutput extends HMTestCase {
         for( int i = 0; i < areas.size(); i++ ) {
             assertEquals(areas.get(i).basinId, areasTmp.get(i).basinId);
         }
-        tmpFile1.delete();
+        if (tmpFile1.delete())
+            throw new IOException();
 
         /*
          * energy
@@ -113,7 +116,8 @@ public class TestEiCalculatorInputOutput extends HMTestCase {
         for( int i = 0; i < energy.size(); i++ ) {
             assertEquals(energy.get(i).basinId, energyTmp.get(i).basinId);
         }
-        tmpFile2.delete();
+        if (!tmpFile2.delete())
+            throw new IOException();
 
     }
 }

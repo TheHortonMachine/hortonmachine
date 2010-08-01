@@ -174,6 +174,9 @@ public class CoverageUtilities {
                 }
             }
         }
+        if (gg == null) {
+            throw new IllegalArgumentException("No gridgeometry present");
+        }
         HashMap<String, Double> regionParams = gridGeometry2RegionParamsMap(gg);
         return regionParams;
     }

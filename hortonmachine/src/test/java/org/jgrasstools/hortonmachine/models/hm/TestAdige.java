@@ -26,8 +26,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
  */
 public class TestAdige extends HMTestCase {
 
-    private DateTimeFormatter dF = utcDateFormatterYYYYMMDDHHMM;
-
     @SuppressWarnings("nls")
     public void testAdige() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);

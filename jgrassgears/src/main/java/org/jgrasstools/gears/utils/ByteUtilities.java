@@ -51,7 +51,7 @@ public class ByteUtilities {
         return bits;
     }
 
-    public static byte[] BitSet2ByteArray( BitSet bs ) {
+    public static byte[] bitSet2ByteArray( BitSet bs ) {
         byte[] bytes = new byte[bs.size() / 8 + 1];
 
         for( int i = 0; i < bs.size(); i++ )
