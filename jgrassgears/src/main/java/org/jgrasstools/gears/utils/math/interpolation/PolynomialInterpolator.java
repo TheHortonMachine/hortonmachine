@@ -20,6 +20,8 @@ package org.jgrasstools.gears.utils.math.interpolation;
 
 import java.util.List;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+
 /**
  * A polynomial interpolation function.
  * 
@@ -40,7 +42,9 @@ public class PolynomialInterpolator implements Interpolator {
 
     /**
      * Constructor.
-     * @param data the array of data points
+     * 
+     * @param xList the list of X samples.
+     * @param yList the list of Y = f(X) samples.
      */
     public PolynomialInterpolator( List<Double> xList, List<Double> yList ) {
         this.dd = new double[xList.size()][xList.size()];
@@ -54,14 +58,6 @@ public class PolynomialInterpolator implements Interpolator {
         for( int i = 0; i < data.length; ++i ) {
             addPoint(data[i]);
         }
-    }
-
-    /**
-     * Return the divided difference table.
-     * @return the table
-     */
-    public double[][] getDividedDifferenceTable() {
-        return dd;
     }
 
     private void addPoint( double[] dataPoint ) {
@@ -84,7 +80,7 @@ public class PolynomialInterpolator implements Interpolator {
 
     public double getInterpolated( double x ) {
         if (n < 2)
-            return Double.NaN;
+            return JGTConstants.doubleNovalue;
 
         double y = dd[0][0];
         double xFactor = 1;
@@ -94,9 +90,7 @@ public class PolynomialInterpolator implements Interpolator {
             xFactor = xFactor * (x - data[order - 1][0]);
             y = y + xFactor * dd[0][order];
         }
-
         return y;
     }
-
 
 }
