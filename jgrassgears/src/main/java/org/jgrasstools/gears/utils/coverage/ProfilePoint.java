@@ -69,7 +69,7 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
     }
 
     public int compareTo( ProfilePoint o ) {
-        if (NumericsUtilities.doubleEquals(progressive, o.progressive)) {
+        if (NumericsUtilities.dEq(progressive, o.progressive)) {
             return 0;
         } else if (progressive > o.progressive) {
             return 1;
@@ -113,9 +113,9 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
          * This can be is used to find intersecting profiles.
          */
         Coordinate otherPosition = other.position;
-        if (NumericsUtilities.doubleEquals(elevation, other.elevation)
-                && NumericsUtilities.doubleEquals(position.x, otherPosition.x)
-                && NumericsUtilities.doubleEquals(position.y, otherPosition.y)) {
+        if (NumericsUtilities.dEq(elevation, other.elevation)
+                && NumericsUtilities.dEq(position.x, otherPosition.x)
+                && NumericsUtilities.dEq(position.y, otherPosition.y)) {
             return true;
         } else {
             return false;

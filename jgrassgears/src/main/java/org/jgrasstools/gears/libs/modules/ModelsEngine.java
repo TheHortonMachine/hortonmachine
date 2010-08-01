@@ -24,7 +24,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.utils.math.NumericsUtilities.doubleEquals;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.*;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -1600,15 +1600,15 @@ public class ModelsEngine {
 
         for( int j = 0; j < i - 1; j++ ) {
 
-            if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])
-                    && doubleEquals(hTmp, hStation[j])) {
+            if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j])
+                    && dEq(hTmp, hStation[j])) {
                 if(!doMean){
                     throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp,this);
             //    pm.errorMessage(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp);
             //    throw new Exception(msg.message("verifyStation.run"));
             }
                 return true;
-            } else if (doubleEquals(xTmp, xStation[j]) && doubleEquals(yTmp, yStation[j]) && doubleEquals(zTmp, zStation[j])) {
+            } else if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j])) {
                 if (!doMean) {
                     throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp,this);
                    // pm.errorMessage(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp);

@@ -15,41 +15,45 @@ public class TestNumericUtilities extends HMTestCase {
     public void testNumericUtilities() throws Exception {
         double a = 1.000000001;
         double b = 1.0;
-        assertTrue(doubleEquals(a, b));
-        assertTrue(!doubleEquals(a, b, 1E-10));
+        assertTrue(!dEq(a, b));
+        assertTrue(dEq(a, b, 1E-8));
 
         float af = 1.000000001f;
         float bf = 1.0f;
-        assertTrue(doubleEquals(af, bf));
-        assertTrue(doubleEquals(af, bf, 1E-8f));
+        assertTrue(dEq(af, bf));
+        assertTrue(dEq(af, bf, 1E-8f));
 
         a = Double.NaN;
         b = 1.0;
-        assertFalse(doubleEquals(a, b));
+        assertFalse(dEq(a, b));
         b = Double.NaN;
-        assertTrue(doubleEquals(a, b));
+        assertTrue(dEq(a, b));
 
         af = Float.NaN;
         bf = 1.0f;
-        assertFalse(floatEquals(af, bf));
+        assertFalse(fEq(af, bf));
         bf = Float.NaN;
-        assertTrue(floatEquals(af, bf));
+        assertTrue(fEq(af, bf));
 
         a = Double.POSITIVE_INFINITY;
         b = Double.POSITIVE_INFINITY;
-        assertTrue(doubleEquals(a, b));
+        assertTrue(dEq(a, b));
 
         a = Double.POSITIVE_INFINITY;
         b = Double.NEGATIVE_INFINITY;
-        assertTrue(doubleEquals(a, abs(b)));
+        assertTrue(dEq(a, abs(b)));
 
         af = Float.POSITIVE_INFINITY;
         bf = Float.POSITIVE_INFINITY;
-        assertTrue(floatEquals(af, bf));
+        assertTrue(fEq(af, bf));
 
         af = Float.POSITIVE_INFINITY;
         bf = Float.NEGATIVE_INFINITY;
-        assertTrue(floatEquals(af, abs(bf)));
+        assertTrue(fEq(af, abs(bf)));
+
+        a = 0.3 - 0.2 - 0.1;
+        b = 0.0;
+        assertTrue(dEq(a, b));
 
     }
 }
