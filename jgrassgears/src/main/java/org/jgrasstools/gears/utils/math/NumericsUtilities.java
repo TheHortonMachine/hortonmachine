@@ -23,11 +23,27 @@ import static java.lang.Float.*;
 import static java.lang.Double.*;
 
 /**
- * Class to help out with numeric issues.
+ * Class to help out with numeric issues, mostly due to floating point usage.
  * 
  * <p>
  * Since the floating point representation keeps a constant relative precision,
  * comparison is done using relative error.  
+ * </p>
+ * <p>
+ * Be aware of the fact that the methods 
+ * <ul>
+ * <li>{@link #dEq(double, double)}</li>
+ * <li>{@link #fEq(float, float)}</li>
+ * </ul>
+ * can be used in the case of "simple" numerical
+ * comparison, while in the case of particular values that are generated through 
+ * iterations the user/developer should consider to supply an epsilon value
+ * derived from the knowledge of the domain of the current problem 
+ * and use the methods
+ * <ul>
+ * <li>{@link #dEq(double, double, double)}</li>
+ * <li>{@link #fEq(float, float, float)}</li>
+ * </ul>
  * </p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
