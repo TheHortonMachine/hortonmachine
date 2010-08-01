@@ -57,12 +57,12 @@ public class NumericsUtilities {
     }
 
     /**
-     * The double tollerance used for comparisons.
+     * The double tolerance used for comparisons.
      */
     private final static double D_TOLERANCE = MACHINE_D_EPSILON * 10d;
 
     /**
-     * The float tollerance used for comparisons.
+     * The float tolerance used for comparisons.
      */
     private final static float F_TOLERANCE = MACHINE_F_EPSILON * 10f;
 
