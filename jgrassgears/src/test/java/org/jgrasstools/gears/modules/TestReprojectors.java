@@ -108,7 +108,7 @@ public class TestReprojectors extends HMTestCase {
             }
 
         }
-        outFC.close(featureIterator);
+        featureIterator.close();
 
     }
 }
