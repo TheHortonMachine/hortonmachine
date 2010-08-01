@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.utils.math.integration;
 
-import org.jgrasstools.gears.utils.math.ListInterpolator;
+import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
 
 /**
  * @author Silvia Franceschi (www.hydrologis.com)
@@ -26,7 +26,7 @@ import org.jgrasstools.gears.utils.math.ListInterpolator;
 public class ConvolutionExponential extends SimpsonIntegral implements IntegrableFunction {
 
     private double k = 0f;
-    private final ListInterpolator timeDischargeInterpolator;
+    private final LinearListInterpolator timeDischargeInterpolator;
 
     /**
      * Calculates the integral of the exponential equation
@@ -40,7 +40,7 @@ public class ConvolutionExponential extends SimpsonIntegral implements Integrabl
      */
     public ConvolutionExponential( double lowerintegrationlimit, double upperintegrationlimit,
             int maximalsteps, double integrationaccuracy, double invasoConstant,
-            ListInterpolator timeDischargeInterpolator ) {
+            LinearListInterpolator timeDischargeInterpolator ) {
         lowerlimit = lowerintegrationlimit;
         upperlimit = upperintegrationlimit;
         maxsteps = maximalsteps;

@@ -1,0 +1,10 @@
+@T,table
+Created,2010-08-01 09:50
+Author,HortonMachine library
+@H,timestamp,value_1221,value_1097,value_944,value_945,value_946,value_699,value_693,value_1105,value_1104,value_1242,value_1263,value_1260,value_769,value_614,value_615,value_613,value_1039,value_618,value_619,value_616,value_617,value_622,value_623,value_620,value_621,value_762,value_627,value_626,value_1291,value_763,value_625,value_624,value_630,value_629,value_1292,value_628,value_1041,value_1040,value_1042,value_1179,value_1066,value_1064,value_1065,value_1070,value_1068,value_1069,value_1202,value_970,value_1075,value_1210,value_1211,value_961,value_841,value_1209,value_1212
+ID,,1221,1097,944,945,946,699,693,1105,1104,1242,1263,1260,769,614,615,613,1039,618,619,616,617,622,623,620,621,762,627,626,1291,763,625,624,630,629,1292,628,1041,1040,1042,1179,1066,1064,1065,1070,1068,1069,1202,970,1075,1210,1211,961,841,1209,1212
+Type,Date,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double
+Format,yyyy-MM-dd HH:mm,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+,2000-01-01 00:00,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+,2000-01-01 01:00,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
+

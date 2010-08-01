@@ -45,7 +45,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.ListInterpolator;
+import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge.QReal;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.discharge.QStatistic;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHCalculator;
@@ -184,7 +184,7 @@ public class Peakflow extends JGTModel {
             cumulatedValueList.add(topindexCb[i][1]);
         }
 
-        ListInterpolator interpolator = new ListInterpolator(meanValueList, cumulatedValueList);
+        LinearListInterpolator interpolator = new LinearListInterpolator(meanValueList, cumulatedValueList);
         double topindexThreshold = interpolator.linearInterpolateX(1 - pSat / 100);
 
         RenderedImage topindexRI = inTopindex.getRenderedImage();

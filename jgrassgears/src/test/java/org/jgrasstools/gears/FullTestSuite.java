@@ -50,7 +50,7 @@ public class FullTestSuite extends TestCase {
         suite.addTestSuite(TestSourceDirection.class);
 
         // other
-        suite.addTestSuite(TestListInterpolation.class);
+        suite.addTestSuite(TestInterpolators.class);
         suite.addTestSuite(TestNumericUtilities.class);
 
         return suite;

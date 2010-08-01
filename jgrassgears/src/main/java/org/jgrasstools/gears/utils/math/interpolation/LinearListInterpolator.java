@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.utils.math;
+package org.jgrasstools.gears.utils.math.interpolation;
 
 import java.util.List;
 
@@ -25,13 +25,13 @@ import java.util.List;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ListInterpolator {
+public class LinearListInterpolator implements Interpolator {
 
     private final List<Double> xList;
     private final List<Double> yList;
     private boolean isInverse = false;
 
-    public ListInterpolator( List<Double> xList, List<Double> yList ) {
+    public LinearListInterpolator( List<Double> xList, List<Double> yList ) {
         if (xList.size() != yList.size()) {
             throw new IllegalArgumentException("The lists have to be of the same length.");
         }
@@ -123,6 +123,10 @@ public class ListInterpolator {
             }
         }
         return new Double(Double.NaN);
+    }
+
+    public double getInterpolated( double x ) {
+        return linearInterpolateY(x);
     }
 
 }
