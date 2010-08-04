@@ -27,6 +27,7 @@ import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
@@ -55,7 +56,12 @@ public class FileIterator extends JGTModel {
 
     private List<File> filesList = null;
     private int fileIndex = 0;
-
+    
+    @Initialize
+    public void initProcess() {
+        doProcess = true;
+    }
+    
     @Execute
     public void process() {
         if (filesList == null) {
