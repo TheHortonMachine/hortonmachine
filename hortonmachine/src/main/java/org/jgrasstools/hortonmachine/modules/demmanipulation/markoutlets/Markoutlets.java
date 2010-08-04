@@ -15,7 +15,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlet;
+package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
@@ -76,16 +76,15 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
  *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
  */
-@Description("marks all the outlets of the considered region on the drainage directions map with the conventional value 10..")
-@Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
-@Keywords("DemManipulation")
+@Description("Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.")
+@Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
+@Keywords("Outlets, Dem, Raster")
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Markoutlet extends JGTModel {
+public class Markoutlets extends JGTModel {
     /*
      * EXTERNAL VARIABLES
      */
-    // input
     @Description("The map of flow direction.")
     @In
     public GridCoverage2D inFlow = null;
@@ -96,78 +95,64 @@ public class Markoutlet extends JGTModel {
 
     @Description("The map of markoutlet.")
     @Out
-    public GridCoverage2D outMflow = null;
+    public GridCoverage2D outFlow = null;
 
     /*
      * INTERNAL VARIABLES
      */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
- 
     @Execute
     public void process() {
-        if (!concatOr(outMflow == null, doReset)) {
+        if (!concatOr(outFlow == null, doReset)) {
             return;
         }
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         CoverageUtilities.setNovalueBorder(flowWR);
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
-       
-        //RenderedImage mflowRI = outMflow.getRenderedImage();
+
         WritableRaster mflowWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        //RandomIter mflowIter = RandomIterFactory.createWritable(mflowWR, null);
-       
-        pm.beginTask(msg.message("mflow.working"), nRows);
-        //for( int y = 1; y < nRows - 1; y++ ) {
-        //    if (isCanceled(pm)) {
-        //        return;
-         //   }
+
+        pm.beginTask(msg.message("markoutlets.working"), 2 * nRows); //$NON-NLS-1$
 
         int[] punto = new int[2];
         int[] oldpunto = new int[2];
         for( int i = 0; i < nRows; i++ ) {
             for( int j = 0; j < nCols; j++ ) {
-                
                 double value = flowIter.getSampleDouble(j, i, 0);
                 if (!isNovalue(value)) {
-                   
                     mflowWR.setSample(j, i, 0, value);
                 } else {
                     mflowWR.setSample(j, i, 0, doubleNovalue);
                 }
-
             }
-           
+            pm.worked(1);
         }
+
         for( int i = 0; i < nRows; i++ ) {
             for( int j = 0; j < nCols; j++ ) {
-                System.out.print(j);
-                System.out.println(i);
                 punto[0] = j;
                 punto[1] = i;
-               
+
                 double flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
-                ModelsEngine prova=new ModelsEngine();
-                ModelsEngine prova1=new ModelsEngine();
-               
-                System.out.println(punto[0]+" "+ punto[1]);
-                if (prova.isSourcePixel(flowIter, punto[0],punto[1] )) {
+                ModelsEngine prova = new ModelsEngine();
+                ModelsEngine prova1 = new ModelsEngine();
+
+                if (prova.isSourcePixel(flowIter, punto[0], punto[1])) {
                     oldpunto[0] = punto[0];
                     oldpunto[1] = punto[1];
 
                     while( flowSample < 9.0 && (!isNovalue(flowSample)) ) {
                         oldpunto[0] = punto[0];
                         oldpunto[1] = punto[1];
-                        if(!prova1.go_downstream(punto, flowSample)){
-                            return ;
+                        if (!prova1.go_downstream(punto, flowSample)) {
+                            return;
                         }
                         flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
 
@@ -179,12 +164,8 @@ public class Markoutlet extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        
-        
-        
-    
 
-        outMflow = CoverageUtilities.buildCoverage("markoutlet", mflowWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        outFlow = CoverageUtilities.buildCoverage("markoutlet", mflowWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
 }

@@ -23,13 +23,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlet.Markoutlet;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets.Markoutlets;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Markoutlet} module.
+ * Test the {@link Markoutlets} module.
  * 
  * @author Giuseppe Formetta ()
  */
@@ -44,14 +44,14 @@ public class TestMarkOutlet extends HMTestCase {
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
-        Markoutlet moutlet = new Markoutlet();
+        Markoutlets moutlet = new Markoutlets();
 
         moutlet.inFlow = flowCoverage;
         moutlet.pm = pm;
 
         moutlet.process();
 
-        GridCoverage2D markoutletCoverage = moutlet.outMflow;
+        GridCoverage2D markoutletCoverage = moutlet.outFlow;
 
         checkMatrixEqual(markoutletCoverage.getRenderedImage(), HMTestMaps.mflowData);
 
