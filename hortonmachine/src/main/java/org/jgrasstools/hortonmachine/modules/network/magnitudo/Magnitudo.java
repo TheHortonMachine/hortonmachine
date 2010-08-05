@@ -23,10 +23,8 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
-
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -36,11 +34,13 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+
 
 @Description("It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.")
 @Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
@@ -48,80 +48,102 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License("GPL3")
 public class Magnitudo extends JGTModel {
 
-    @Description("The map of flowdirections.")
-    @In
-    public GridCoverage2D inFlow = null;
+	@Description("The map of flowdirections.")
+	@In
+	public GridCoverage2D inFlow = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+	@Description("The progress monitor.")
+	@In
+	public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("The map of magnitudo.")
-    @Out
-    public GridCoverage2D outMag = null;
+	@Description("The map of magnitudo.")
+	@Out
+	public GridCoverage2D outMag = null;
+	
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    @Execute
-    public void process() throws Exception {
-        if (!concatOr(outMag == null, doReset)) {
-            return;
-        }
+	
+	@Execute
+	public void process() throws Exception {
+		if (!concatOr(outMag == null, doReset)) {
+			return;
+		}
+		HashMap<String, Double> regionMap = CoverageUtilities
+				.getRegionParamsFromGridCoverage(inFlow);
+		int cols = regionMap.get(CoverageUtilities.COLS).intValue();
+		int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
+		RenderedImage flowRI = inFlow.getRenderedImage();
+		RandomIter flowIter = RandomIterFactory.create(flowRI, null);
 
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        RandomIter flowIter = RandomIterFactory.create(flowRI, null);
+		WritableRaster magWR = CoverageUtilities.createDoubleWritableRaster(
+				cols, rows, null, null, 0.0);
+		if (magWR == null) {
+			return;
+		} else {
+			magnitudo(flowIter, cols, rows, magWR);
+			outMag = CoverageUtilities.buildCoverage("mag", magWR, regionMap,
+					inFlow.getCoordinateReferenceSystem());
 
-        WritableRaster magWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
-        if (magWR == null) {
-            return;
-        } else {
-            magnitudo(flowIter, cols, rows, magWR);
-            outMag = CoverageUtilities.buildCoverage("magnitudo", magWR, regionMap, inFlow.getCoordinateReferenceSystem());
-        }
-    }
+		}
+	}
 
-    public void magnitudo( RandomIter flowIter, int width, int height, WritableRaster magWR ) {
-        int[] flow = new int[2];
-        // get rows and cols from the active region
-        int cols = width;
-        int rows = height;
-        RandomIter magIter = RandomIterFactory.create(magWR, null);
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                ModelsEngine magEng = new ModelsEngine();
-                // looks for the source
-                if (magEng.isSourcePixel(flowIter, flow[0], flow[1])) {
-                    magWR.setSample(flow[0], flow[1], 0, magIter.getSampleDouble(flow[0], flow[1], 0) + 1.0);
-                    if (!magEng.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                        return;
-                    while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                            && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
-                        magWR.setSample(flow[0], flow[1], 0, magIter.getSampleDouble(flow[0], flow[1], 0) + 1.0);
-                        if (!magEng.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return;
-                    }
+	public void magnitudo(RandomIter flowIter, int width, int height,
+			WritableRaster magWR) {
 
-                    if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
-                        magWR.setSample(flow[0], flow[1], 0, magIter.getSampleDouble(flow[0], flow[1], 0) + 1.0);
-                    }
-                }
-            }
-        }
+		int[] flow = new int[2];
+		// get rows and cols from the active region
+		int cols = width;
+		int rows = height;
+		RandomIter magIter = RandomIterFactory.create(magWR, null);
+        pm.beginTask(msg.message("magnitudo.workingon"), rows); //$NON-NLS-1$
 
-        for( int j = 0; j < rows; j++ ) {
+		for (int j = 0; j < rows; j++) {
+			for (int i = 0; i < cols; i++) {
+				flow[0] = i;
+				flow[1] = j;
+				ModelsEngine magEng = new ModelsEngine();
+				// looks for the source
+				if (magEng.isSourcePixel(flowIter, flow[0], flow[1])) {
+					magWR.setSample(flow[0], flow[1], 0, magIter
+							.getSampleDouble(flow[0], flow[1], 0) + 1.0);
+					if (!magEng.go_downstream(flow, flowIter
+							.getSampleDouble(flow[0], flow[1], 0)))
+						return;
+					while (!isNovalue(flowIter.getSampleDouble(flow[0],
+							flow[1], 0))
+							&& flowIter.getSampleDouble(flow[0], flow[1],
+									0) != 10) {
+						magWR.setSample(flow[0], flow[1], 0,
+								magIter.getSampleDouble(flow[0],
+										flow[1], 0) + 1.0);
+						if (!magEng.go_downstream(flow, flowIter
+								.getSampleDouble(flow[0], flow[1], 0)))
+							return;
+					}
+
+					if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
+						magWR.setSample(flow[0], flow[1], 0,
+								magIter.getSampleDouble(flow[0],
+										flow[1], 0) + 1.0);
+					}
+				}
+			}
+			pm.worked(1);
+		}
+		
+		for( int j = 0; j < rows; j++ ) {
             for( int i = 0; i < cols; i++ ) {
                 if (magIter.getSampleDouble(i, j, 0) == 0.0 && flowIter.getSampleDouble(i, j, 0) == 10.0) {
                     magWR.setSample(i, j, 0, 1.0);
-                } else if (magIter.getSampleDouble(i, j, 0) == 0.0 && isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                    magWR.setSample(i, j, 0, doubleNovalue);
+                } else if (magIter.getSampleDouble(i, j, 0) == 0.0
+                        && isNovalue(flowIter.getSampleDouble(i, j, 0))) {
+                    magWR.setSample(i, j, 0,doubleNovalue);
                 }
             }
+            pm.worked(1);
         }
-
-    }
+		pm.done();
+	}
 
 }
