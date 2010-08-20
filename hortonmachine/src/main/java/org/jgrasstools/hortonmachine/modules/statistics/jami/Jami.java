@@ -489,7 +489,7 @@ public class Jami extends JGTModel {
             // vettore jj_av con le
             // stazioni del bacino in studio
             for( int j = 0; j < activeStationsPerBasin[i]; j++ ) {
-                if (pType != DTDAY || pType == DTMONTH) {
+                if (pType != DTDAY && pType != DTMONTH) {
                     if (!isNovalue(statValues[stations[j][i]])) {
                         jj_av[cont] = stations[j][i]; // registro le stazioni
                         // attive
@@ -741,9 +741,9 @@ public class Jami extends JGTModel {
                     }
                 }
 
-                int basinid = ((Number) basinFeatures.get(i).getAttribute(basinIdFieldIndex)).intValue();
-                outInterpolated.put(basinid, interpolatedMeteoForBand);
             }
+            int basinid = ((Number) basinFeatures.get(i).getAttribute(basinIdFieldIndex)).intValue();
+            outInterpolated.put(basinid, interpolatedMeteoForBand);
         }
         pm.done();
     }

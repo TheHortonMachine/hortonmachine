@@ -76,7 +76,7 @@ public class TestJami extends HMTestCase {
         jami.fBasinid = "netnum";
         jami.pNum = 2;
         jami.pBins = 4;
-        jami.pType = JGTConstants.TEMPERATURE;
+        jami.pType = JGTConstants.DTDAY;
         jami.inStations = stationsFC;
         jami.inInterpolate = basinsFC;
 
