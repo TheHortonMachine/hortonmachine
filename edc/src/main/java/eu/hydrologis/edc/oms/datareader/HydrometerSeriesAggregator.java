@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -29,7 +29,7 @@ import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.math.ListInterpolator;
+import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -82,7 +82,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
     private DateTimeFormatter formatter = Constants.utcDateFormatterYYYYMMDDHHMM;
     private DecimalFormat twovaluesFormatter = new DecimalFormat("00");
     private DecimalFormat fourvaluesFormatter = new DecimalFormat("0000");
-    private ListInterpolator dischargeScaleInterpolator;
+    private LinearListInterpolator dischargeScaleInterpolator;
 
     private boolean dailyFirst = true;
 
@@ -162,7 +162,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
                 xList.add(v1);
                 yList.add(v2);
             }
-            dischargeScaleInterpolator = new ListInterpolator(xList, yList);
+            dischargeScaleInterpolator = new LinearListInterpolator(xList, yList);
         }
         Double newValue = dischargeScaleInterpolator.linearInterpolateY(value);
         return newValue;
@@ -459,7 +459,7 @@ public class HydrometerSeriesAggregator implements ITimeseriesAggregator {
             valueList.add(record[0]);
         }
 
-        ListInterpolator listInterpolator = new ListInterpolator(cumNormalizedList, valueList);
+        LinearListInterpolator listInterpolator = new LinearListInterpolator(cumNormalizedList, valueList);
 
         Double quantile10 = listInterpolator.linearInterpolateY(0.1);
         Double quantile25 = listInterpolator.linearInterpolateY(0.25);

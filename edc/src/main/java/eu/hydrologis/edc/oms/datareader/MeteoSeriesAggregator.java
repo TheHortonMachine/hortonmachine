@@ -8,9 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Map.Entry;
 
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -18,25 +18,18 @@ import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Out;
 
-import org.hibernate.Criteria;
 import org.hibernate.classic.Session;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.math.ListInterpolator;
+import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 
-import eu.hydrologis.edc.annotatedclasses.HydrometersDischargeScalesTable;
-import eu.hydrologis.edc.annotatedclasses.HydrometersTable;
-import eu.hydrologis.edc.annotatedclasses.ScaleTypeTable;
-import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesHydrometersTable;
 import eu.hydrologis.edc.annotatedclasses.timeseries.SeriesMonitoringPointsTable;
 import eu.hydrologis.edc.annotatedclassesdaos.timeseries.SeriesMonitoringPointsDao;
 import eu.hydrologis.edc.databases.EdcSessionFactory;
@@ -299,7 +292,7 @@ public class MeteoSeriesAggregator implements ITimeseriesAggregator {
             valueList.add(record[0]);
         }
 
-        ListInterpolator listInterpolator = new ListInterpolator(cumNormalizedList, valueList);
+        LinearListInterpolator listInterpolator = new LinearListInterpolator(cumNormalizedList, valueList);
 
         Double quantile10 = listInterpolator.linearInterpolateY(0.1);
         Double quantile25 = listInterpolator.linearInterpolateY(0.25);
