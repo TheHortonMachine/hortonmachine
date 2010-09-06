@@ -309,19 +309,19 @@ public class Adige extends JGTModel {
 
     @Description("The superficial discharge for every basin id.")
     @Out
-    public HashMap<Integer, Double> outDischarge;
+    public HashMap<Integer, double[]> outDischarge;
 
     @Description("The sub-superficial discharge for every basin id.")
     @Out
-    public HashMap<Integer, Double> outSubdischarge;
+    public HashMap<Integer, double[]> outSubdischarge;
 
     @Description("The water content in non saturated soil for every basin id.")
     @Out
-    public HashMap<Integer, Double> outS1;
+    public HashMap<Integer, double[]> outS1;
 
     @Description("The water content in saturated soil for every basin id.")
     @Out
-    public HashMap<Integer, Double> outS2;
+    public HashMap<Integer, double[]> outS2;
 
     @Description("The final conditions of the model to persist.")
     @In
@@ -391,10 +391,10 @@ public class Adige extends JGTModel {
     public void process() throws Exception {
 
         if (startTimestamp == null) {
-            outDischarge = new HashMap<Integer, Double>();
-            outSubdischarge = new HashMap<Integer, Double>();
-            outS1 = new HashMap<Integer, Double>();
-            outS2 = new HashMap<Integer, Double>();
+            outDischarge = new HashMap<Integer, double[]>();
+            outSubdischarge = new HashMap<Integer, double[]>();
+            outS1 = new HashMap<Integer, double[]>();
+            outS2 = new HashMap<Integer, double[]>();
 
             startTimestamp = adigeFormatter.parseDateTime(tStart);
             endTimestamp = adigeFormatter.parseDateTime(tEnd);
@@ -773,10 +773,10 @@ public class Adige extends JGTModel {
             String pfaf = entry.getKey();
             Integer index = entry.getValue();
             Integer basinId = index2Basinid.get(index);
-            double discharge = initialConditions[index];
-            double subdischarge = initialConditions[index + hillsSlopeNum];
-            double s1 = initialConditions[index + 2 * hillsSlopeNum];
-            double s2 = initialConditions[index + 3 * hillsSlopeNum];
+            double[] discharge = {initialConditions[index]};
+            double[] subdischarge = {initialConditions[index + hillsSlopeNum]};
+            double[] s1 = {initialConditions[index + 2 * hillsSlopeNum]};
+            double[] s2 = {initialConditions[index + 3 * hillsSlopeNum]};
 
             if (pfaffsList.contains(pfaf)) {
                 outDischarge.put(basinId, discharge);
@@ -787,10 +787,10 @@ public class Adige extends JGTModel {
             if (doBoundary) {
                 AdigeBoundaryCondition bc = new AdigeBoundaryCondition();
                 bc.basinId = basinId;
-                bc.discharge = discharge;
-                bc.dischargeSub = subdischarge;
-                bc.S1 = s1;
-                bc.S2 = s2;
+                bc.discharge = discharge[0];
+                bc.dischargeSub = subdischarge[0];
+                bc.S1 = s1[0];
+                bc.S2 = s2[0];
                 outFinalconditions.put(basinId, bc);
             }
         }

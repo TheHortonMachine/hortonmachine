@@ -73,8 +73,9 @@ public class ScriptLauncher {
         } else {
             String tempdir = System.getProperty("java.io.tmpdir");
             File omsTmp = new File(tempdir + File.separator + "oms");
-            if (!omsTmp.mkdirs())
-                throw new IOException();
+            if (!omsTmp.exists())
+                if (!omsTmp.mkdirs())
+                    throw new IOException();
             System.setProperty("oms3.work", omsTmp.getAbsolutePath());
         }
 

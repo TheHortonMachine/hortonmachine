@@ -30,13 +30,13 @@ public class TestCoverageConverter extends HMTestCase {
     @SuppressWarnings("nls")
     public void testCoverageConverter() throws Exception {
 
-        String inPath = "/media/32_00_00/dati_geologico/DTM/dtm001725/w001001x.adf";
-        String outPath = "/home/moovida/data/serviziogeologico_tn/ServizioGeologico/sorgenti/sorgenti/dtm001725.asc";
+        String inPath = "/home/moovida/data/adf/nzdem/nzdem500/w001001x.adf";
+        String outPath = "/home/moovida/data/adf/nzdem/nzdem500/tifexport.tiff";
 
         CoverageConverter converter = new CoverageConverter();
         converter.inputFile = inPath;
         converter.outputFile = outPath;
-        converter.pType = JGTConstants.ESRIGRID;
+        converter.pType = JGTConstants.GEOTIFF;
         converter.process();
 
     }

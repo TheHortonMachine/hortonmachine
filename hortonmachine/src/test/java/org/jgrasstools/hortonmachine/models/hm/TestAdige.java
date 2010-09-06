@@ -218,10 +218,10 @@ public class TestAdige extends HMTestCase {
 
             adige.process();
 
-            HashMap<Integer, Double> outDischarge = adige.outDischarge;
-            HashMap<Integer, Double> outSubDischarge = adige.outSubdischarge;
-            HashMap<Integer, Double> outS1 = adige.outS1;
-            HashMap<Integer, Double> outS2 = adige.outS2;
+            HashMap<Integer, double[]> outDischarge = adige.outDischarge;
+            HashMap<Integer, double[]> outSubDischarge = adige.outSubdischarge;
+            HashMap<Integer, double[]> outS1 = adige.outS1;
+            HashMap<Integer, double[]> outS2 = adige.outS2;
         }
 
         rainReader.close();
