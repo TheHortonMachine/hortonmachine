@@ -94,7 +94,7 @@ public class JGTModel implements Process {
             throws ProcessException {
         // the geotools monitor is wrapped into the internal progress monitor
         GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
-        input.put("pm", pm);
+        input.put("pm", pm); //$NON-NLS-1$
         try {
             // set the inputs to the model
             ComponentAccess.setInputData(input, this, null);
