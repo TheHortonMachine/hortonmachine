@@ -14,6 +14,7 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.PenmanEtp;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
@@ -66,12 +67,10 @@ public class TestAdige extends HMTestCase {
 
         String fId = "ID";
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFC = ShapefileFeatureReader
-                .readShapefile(hillslopePath);
+        FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
 
         // meteo
-        TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId,
-                startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
         // TimeseriesByStepReaderId2Value netradiationReader = getTimeseriesReader(
         // netradiationDataPath, fId, startDate, endDate, timeStepMinutes);
         // TimeseriesByStepReaderId2Value shortradiationReader = getTimeseriesReader(
@@ -91,22 +90,18 @@ public class TestAdige extends HMTestCase {
         // startDate,
         // endDate, timeStepMinutes);
 
-        TimeseriesByStepReaderId2Value hydrometersReader = getTimeseriesReader(hydrometersDataPath,
-                fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value damsReader = getTimeseriesReader(damsDataPath, fId,
-                startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value tributaryReader = getTimeseriesReader(tributaryDataPath,
-                fId, startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value hydrometersReader = getTimeseriesReader(hydrometersDataPath, fId, startDate, endDate,
+                timeStepMinutes);
+        TimeseriesByStepReaderId2Value damsReader = getTimeseriesReader(damsDataPath, fId, startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value tributaryReader = getTimeseriesReader(tributaryDataPath, fId, startDate, endDate,
+                timeStepMinutes);
         // TimeseriesByStepReaderId2Value offtakesReader = getTimeseriesReader(offtakesDataPath,
         // fId,
         // startDate, endDate, timeStepMinutes);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hydrometersFC = ShapefileFeatureReader
-                .readShapefile(hydrometersPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> damsFC = ShapefileFeatureReader
-                .readShapefile(damsPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> tributaryFC = ShapefileFeatureReader
-                .readShapefile(tributaryPath);
+        FeatureCollection<SimpleFeatureType, SimpleFeature> hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
+        FeatureCollection<SimpleFeatureType, SimpleFeature> damsFC = ShapefileFeatureReader.readShapefile(damsPath);
+        FeatureCollection<SimpleFeatureType, SimpleFeature> tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
         // FeatureCollection<SimpleFeatureType, SimpleFeature> offtakesFC = ShapefileFeatureReader
         // .readShapefile(offtakesPath);
 
@@ -116,8 +111,9 @@ public class TestAdige extends HMTestCase {
         HashMap<Integer, VegetationLibraryRecord> vegetationData = vegetationReader.data;
         vegetationReader.close();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> networkFC = ShapefileFeatureReader
-                .readShapefile(networkPath);
+        PenmanEtp etp = new PenmanEtp();
+
+        FeatureCollection<SimpleFeatureType, SimpleFeature> networkFC = ShapefileFeatureReader.readShapefile(networkPath);
 
         Adige adige = new Adige();
         adige.pm = pm;
@@ -139,7 +135,6 @@ public class TestAdige extends HMTestCase {
         adige.inDams = damsFC;
         adige.inTributary = tributaryFC;
         // adige.inOfftakes = offtakesFC;
-        adige.inVegetation = vegetationData;
         adige.pPfafids = "514.11,514.9";
         adige.fMonpointid = "id_punti_m";
         adige.inNetwork = networkFC;
@@ -171,7 +166,7 @@ public class TestAdige extends HMTestCase {
         HashMap<Integer, AdigeBoundaryCondition> inBoundaryConditions = boundaryConditionReader.data;
         boundaryConditionReader.close();
         adige.inInitialconditions = inBoundaryConditions;
-        
+
         adige.pDischargePerUnitArea = 0.01;
         adige.pStartSuperficialDischargeFraction = 0.3;
         adige.pMaxSatVolumeS1 = 0.2;
@@ -216,6 +211,9 @@ public class TestAdige extends HMTestCase {
             // offtakesReader.nextRecord();
             // adige.inOfftakesdata = offtakesReader.data;
 
+            // TODO setup penman etp
+            // etp.inHumidity =
+
             adige.process();
 
             HashMap<Integer, double[]> outDischarge = adige.outDischarge;
@@ -245,9 +243,8 @@ public class TestAdige extends HMTestCase {
         boundaryConditionWriter.close();
 
     }
-
-    private TimeseriesByStepReaderId2Value getTimeseriesReader( String path, String id,
-            String startDate, String endDate, int timeStepMinutes ) {
+    private TimeseriesByStepReaderId2Value getTimeseriesReader( String path, String id, String startDate, String endDate,
+            int timeStepMinutes ) {
         TimeseriesByStepReaderId2Value dataReader = new TimeseriesByStepReaderId2Value();
         dataReader.file = path;
         dataReader.fileNovalue = "-9999";

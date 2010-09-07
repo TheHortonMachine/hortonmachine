@@ -157,6 +157,10 @@ public class Adige extends JGTModel {
     @In
     public HashMap<Integer, double[]> inSwe;
 
+    @Description("The evapotranspiration data.")
+    @In
+    public HashMap<Integer, double[]> inEtp;
+
     @Description("The hydrometers monitoring points.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inHydrometers;
@@ -188,10 +192,6 @@ public class Adige extends JGTModel {
     @Description("The offtakes data.")
     @In
     public HashMap<Integer, double[]> inOfftakesdata;
-
-    @Description("The vegetation library.")
-    @In
-    public HashMap<Integer, VegetationLibraryRecord> inVegetation;
 
     @Description("Comma separated list of pfafstetter ids, in which to generate the output")
     @In
@@ -346,6 +346,7 @@ public class Adige extends JGTModel {
     private double[] windspeedArray;
     private double[] pressureArray;
     private double[] snowWaterEquivalentArray;
+    private double[] etpArray;
     /** the running discharge array, which at the begin holds the initial conditions */
     private double[] initialConditions = null;
 
@@ -411,31 +412,25 @@ public class Adige extends JGTModel {
             }
 
             if (fNetnum == null || fNetnum.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing net num attribute name.", this
-                        .getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Missing net num attribute name.", this.getClass().getSimpleName());
             }
             if (fPfaff == null || fPfaff.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing pfafstetter attribute name.",
-                        this);
+                throw new ModelsIllegalargumentException("Missing pfafstetter attribute name.", this);
             }
             if (fMonpointid == null || fMonpointid.length() < 1) {
-                throw new ModelsIllegalargumentException(
-                        "Missing monitoring point id attribute name.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("Missing monitoring point id attribute name.", this.getClass()
+                        .getSimpleName());
             }
             if (fBaricenter == null || fBaricenter.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing basin centroid attribute name.",
-                        this);
+                throw new ModelsIllegalargumentException("Missing basin centroid attribute name.", this);
             }
             if (fNetelevstart == null || fNetelevstart.length() < 1) {
-                throw new ModelsIllegalargumentException(
-                        "Missing start net elevation attribute name.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("Missing start net elevation attribute name.", this.getClass()
+                        .getSimpleName());
             }
             if (fNetelevend == null || fNetelevend.length() < 1) {
-                throw new ModelsIllegalargumentException(
-                        "Missing start net elevation attribute name.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("Missing start net elevation attribute name.", this.getClass()
+                        .getSimpleName());
             }
 
             // hydrometers
@@ -455,14 +450,12 @@ public class Adige extends JGTModel {
                             pfaffIndex = featureType.indexOf(fPfaff);
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the pafaffstetter attribute field: "
-                                                + fPfaff, this);
+                                        "The hydrometer features are missing the pafaffstetter attribute field: " + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the id attribute field: "
-                                                + fMonpointid, this);
+                                        "The hydrometer features are missing the id attribute field: " + fMonpointid, this);
                             }
                         }
 
@@ -490,14 +483,12 @@ public class Adige extends JGTModel {
                             pfaffIndex = featureType.indexOf(fPfaff);
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The dams features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
+                                        "The dams features are missing the pfaffstetter attribute field: " + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The dams features are missing the id attribute field: "
-                                                + fMonpointid, this);
+                                throw new ModelsIllegalargumentException("The dams features are missing the id attribute field: "
+                                        + fMonpointid, this);
                             }
                         }
 
@@ -525,14 +516,12 @@ public class Adige extends JGTModel {
                             pfaffIndex = featureType.indexOf(fPfaff);
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
+                                        "The tributary features are missing the pfaffstetter attribute field: " + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the id attribute field: "
-                                                + fMonpointid, this);
+                                        "The tributary features are missing the id attribute field: " + fMonpointid, this);
                             }
                         }
 
@@ -560,14 +549,12 @@ public class Adige extends JGTModel {
                             pfaffIndex = featureType.indexOf(fPfaff);
                             if (pfaffIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the pfaffstetter attribute field: "
-                                                + fPfaff, this);
+                                        "The offtakes features are missing the pfaffstetter attribute field: " + fPfaff, this);
                             }
                             monIdIndex = featureType.indexOf(fMonpointid);
                             if (monIdIndex == -1) {
                                 throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the id attribute field: "
-                                                + fMonpointid, this);
+                                        "The offtakes features are missing the id attribute field: " + fMonpointid, this);
                             }
                         }
 
@@ -582,21 +569,17 @@ public class Adige extends JGTModel {
 
             // at the first round create the hillslopes and network hierarchy
             NetBasinsManager nbMan = new NetBasinsManager();
-            orderedHillslopes = nbMan.operateOnLayers(inNetwork, inHillslope, fNetnum, fPfaff,
-                    fNetelevstart, fNetelevend, fBaricenter, fVegetation, pKs, pMstexp, pSpecyield,
-                    pPorosity, pEtrate, pSatconst, pDepthmnsat, pm);
+            orderedHillslopes = nbMan.operateOnLayers(inNetwork, inHillslope, fNetnum, fPfaff, fNetelevstart, fNetelevend,
+                    fBaricenter, pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat, pm);
             HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor = new HashMap<Integer, DischargeDistributor>();
             outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
             netPfaffsList = new ArrayList<PfafstetterNumber>();
             pfaff2Index = new HashMap<String, Integer>();
             basinid2Index = new HashMap<Integer, Integer>();
             index2Basinid = new HashMap<Integer, Integer>();
-            pm.beginTask("Analaysing hillslopes and calculating distribution curves...",
-                    orderedHillslopes.size());
+            pm.beginTask("Analaysing hillslopes and calculating distribution curves...", orderedHillslopes.size());
             for( int i = 0; i < orderedHillslopes.size(); i++ ) {
                 HillSlope hillSlope = orderedHillslopes.get(i);
-                if (inVegetation != null)
-                    hillSlope.parameters.setVegetationLibrary(inVegetation);
                 PfafstetterNumber pfafstetterNumber = hillSlope.getPfafstetterNumber();
                 netPfaffsList.add(pfafstetterNumber);
                 int hillslopeId = hillSlope.getHillslopeId();
@@ -606,10 +589,9 @@ public class Adige extends JGTModel {
                 // the distributor
                 HashMap<Integer, Double> params = fillParameters(hillSlope);
                 System.out.println("Bacino: " + hillslopeId);
-                hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor
-                        .createDischargeDistributor(DischargeDistributor.DISTRIBUTOR_TYPE_NASH,
-                                startTimestamp.getMillis(), endTimestamp.getMillis(),
-                                (long) tTimestep * 60L * 1000L, params));
+                hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor.createDischargeDistributor(
+                        DischargeDistributor.DISTRIBUTOR_TYPE_NASH, startTimestamp.getMillis(), endTimestamp.getMillis(),
+                        (long) tTimestep * 60L * 1000L, params));
                 pm.worked(1);
             }
             pm.done();
@@ -634,8 +616,7 @@ public class Adige extends JGTModel {
             initialConditions = new double[hillsSlopeNum * 4];
 
             if (inInitialconditions != null) {
-                Set<Entry<Integer, AdigeBoundaryCondition>> entries = inInitialconditions
-                        .entrySet();
+                Set<Entry<Integer, AdigeBoundaryCondition>> entries = inInitialconditions.entrySet();
                 for( Entry<Integer, AdigeBoundaryCondition> entry : entries ) {
                     Integer hillslopeId = entry.getKey();
                     Integer index = basinid2Index.get(hillslopeId);
@@ -652,14 +633,11 @@ public class Adige extends JGTModel {
                 for( int i = 0; i < orderedHillslopes.size(); i++ ) {
                     HillSlope currentHillslope = orderedHillslopes.get(i);
                     // initialize with a default discharge per unit of drainage area in km2
-                    double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null)
-                            / 1000000.0 * pDischargePerUnitArea;
-                    initialConditions[i] = pStartSuperficialDischargeFraction
-                            * hillslopeTotalDischarge;
+                    double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null) / 1000000.0 * pDischargePerUnitArea;
+                    initialConditions[i] = pStartSuperficialDischargeFraction * hillslopeTotalDischarge;
                     // initial subsuperficial flow is setted at a percentage of the total
                     // discharge
-                    initialConditions[i + hillsSlopeNum] = startSubsuperficialDischargeFraction
-                            * hillslopeTotalDischarge;
+                    initialConditions[i + hillsSlopeNum] = startSubsuperficialDischargeFraction * hillslopeTotalDischarge;
                     // initial water content in the saturated hillslope volume is set to
                     // have:
                     // saturation surface at the 10% of the total area
@@ -674,10 +652,8 @@ public class Adige extends JGTModel {
             System.out.println("bacino\tQ\tQs\tS1\tS2");
             for( int i = 0; i < hillsSlopeNum; i++ ) {
                 int currentBasinId = index2Basinid.get(i);
-                System.out.println(currentBasinId + "\t" + initialConditions[i] + "\t"
-                        + initialConditions[i + hillsSlopeNum] + "\t"
-                        + initialConditions[i + 2 * hillsSlopeNum] + "\t"
-                        + initialConditions[i + 3 * hillsSlopeNum]);
+                System.out.println(currentBasinId + "\t" + initialConditions[i] + "\t" + initialConditions[i + hillsSlopeNum]
+                        + "\t" + initialConditions[i + 2 * hillsSlopeNum] + "\t" + initialConditions[i + 3 * hillsSlopeNum]);
             }
 
             rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., pm, doLog);
@@ -727,6 +703,7 @@ public class Adige extends JGTModel {
                 windspeedArray = new double[hillsSlopeNum];
                 pressureArray = new double[hillsSlopeNum];
                 snowWaterEquivalentArray = new double[hillsSlopeNum];
+                etpArray = new double[hillsSlopeNum];
                 setDataArray(inNetradiation, radiationArray);
                 setDataArray(inShortradiation, netshortArray);
                 setDataArray(inTemperature, temperatureArray);
@@ -734,6 +711,7 @@ public class Adige extends JGTModel {
                 setDataArray(inWindspeed, windspeedArray);
                 setDataArray(inPressure, pressureArray);
                 setDataArray(inSwe, snowWaterEquivalentArray);
+                setDataArray(inEtp, etpArray);
             }
         }
 
@@ -741,9 +719,8 @@ public class Adige extends JGTModel {
         // double intervalStartTimeInMinutes = runningDateInMinutes;
         // double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
 
-        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray,
-                radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,
-                pressureArray, snowWaterEquivalentArray);
+        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, radiationArray, netshortArray,
+                temperatureArray, humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray);
         initialConditions = rainRunoffRaining.getFinalCond();
         rainRunoffRaining.setBasicTimeStep(10. / 60.);
 
@@ -816,29 +793,23 @@ public class Adige extends JGTModel {
         HashMap<Integer, Double> params = new HashMap<Integer, Double>();
         // Double attribute = (Double)
         // hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_10);
-        Double attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_10))
-                .doubleValue();
+        Double attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_10)).doubleValue();
 
         params.put(DischargeDistributor.PARAMS_AVG_SUP_10, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_30);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_30))
-                .doubleValue();
+        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_30)).doubleValue();
         params.put(DischargeDistributor.PARAMS_AVG_SUP_30, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_60);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_60))
-                .doubleValue();
+        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_60)).doubleValue();
         params.put(DischargeDistributor.PARAMS_AVG_SUP_60, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_10);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_10))
-                .doubleValue();
+        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_10)).doubleValue();
         params.put(DischargeDistributor.PARAMS_VAR_SUP_10, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_30);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_30))
-                .doubleValue();
+        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_30)).doubleValue();
         params.put(DischargeDistributor.PARAMS_VAR_SUP_30, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_60);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_60))
-                .doubleValue();
+        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_60)).doubleValue();
         params.put(DischargeDistributor.PARAMS_VAR_SUP_60, attribute);
         // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUB);
         attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sub)).doubleValue();
