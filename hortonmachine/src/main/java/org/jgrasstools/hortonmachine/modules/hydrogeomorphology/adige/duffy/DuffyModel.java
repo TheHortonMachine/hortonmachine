@@ -129,9 +129,8 @@ public class DuffyModel {
      * 
      * @return
      */
-    public double[] eval( double currentTimeInMinutes, double[] input, double[] rainArray, double[] radiationArray,
-            double[] netshortArray, double[] temperatureArray, double[] humidityArray, double[] windspeedArray,
-            double[] pressureArray, double[] snowWaterEquivalentArray, double[] etpArray, boolean isAtFinalSubtimestep ) {
+    public double[] eval( double currentTimeInMinutes, double[] input, double[] rainArray, double[] etpArray,
+            boolean isAtFinalSubtimestep ) {
         // the input's length is twice the number of links... the first half
         // corresponds to links
         // discharge and the second to hillslopes storage

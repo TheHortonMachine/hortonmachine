@@ -51,11 +51,6 @@ public class PenmanEtp extends JGTModel {
     // @In
     // public HashMap<Integer, double[]> inElevations;
 
-    @Description("Net radiation.")
-    @Unit("W/m2")
-    @In
-    public double rad;
-
     @Description("The vegetation library for every basin.")
     @In
     public HashMap<Integer, VegetationLibraryRecord> inVegetation;
@@ -64,7 +59,8 @@ public class PenmanEtp extends JGTModel {
     @In
     public double maxMoisture;
 
-    @Description("The radiation data.")
+    @Description("Net radiation.")
+    @Unit("W/m2")
     @In
     public HashMap<Integer, double[]> inNetradiation;
 
@@ -88,7 +84,7 @@ public class PenmanEtp extends JGTModel {
     @Description("The windspeed data.")
     @In
     public HashMap<Integer, double[]> inWindspeed;
-
+    
     @Description("The pressure data.")
     @In
     public HashMap<Integer, double[]> inPressure;
@@ -127,7 +123,8 @@ public class PenmanEtp extends JGTModel {
     @Execute
     public void penman() {
 
-        checkNull(inPressure, inTemperature, inHumidity, inWindspeed, inSwe, inSoilMoisture, inVegetation);
+        checkNull(inPressure, inTemperature, inHumidity, inWindspeed, inSwe, inSoilMoisture, inVegetation, inShortradiation,
+                inNetradiation);
 
         outEtp = new HashMap<Integer, double[]>();
 
@@ -144,7 +141,8 @@ public class PenmanEtp extends JGTModel {
             double wind = inWindspeed.get(basinId)[0];
             double snowWaterEquivalent = inSwe.get(basinId)[0];
             double soilMoisture = inSoilMoisture.get(basinId)[0];
-            double net_short = inShortradiation.get(basinId)[0];
+            double shortRadiation = inShortradiation.get(basinId)[0];
+            double netRadiation = inNetradiation.get(basinId)[0];
 
             VegetationLibraryRecord vegetation = inVegetation.get(basinId);
             double displacement = vegetation.getDisplacement(monthOfYear);
@@ -186,9 +184,9 @@ public class PenmanEtp extends JGTModel {
                 if (RGL < 0) {
                     throw new ModelsIllegalargumentException("Invalid value of RGL for the current class.", this);
                 } else if (RGL == 0) {
-                    f = net_short;
+                    f = shortRadiation;
                 } else {
-                    f = net_short / RGL;
+                    f = shortRadiation / RGL;
                 }
                 dayFactor = (1. + f) / (f + rs / RSMAX);
             } else
@@ -233,7 +231,7 @@ public class PenmanEtp extends JGTModel {
 
             /* calculate the Penman-Monteith evaporation in mm/day (by not dividing by 
              * the density of water (~1000 kg/m3)), the result ends up being in mm instead of m */
-            double evap = ((slope * rad + r_air * CP_PM * vpd / ra) / (lv * (slope + gamma * (1 + (rc + rarc) / ra))) * SEC_PER_DAY) / 24.0;
+            double evap = ((slope * netRadiation + r_air * CP_PM * vpd / ra) / (lv * (slope + gamma * (1 + (rc + rarc) / ra))) * SEC_PER_DAY) / 24.0;
 
             if (vpd >= 0.0 && evap < 0.0)
                 evap = 0.0;

@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -41,7 +41,6 @@ import oms3.annotations.Unit;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
-import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -80,10 +79,6 @@ public class Adige extends JGTModel {
     @Description("The a field name of the baricenter elevation attribute in the hillslope data.")
     @In
     public String fBaricenter = null;
-
-    @Description("The a field name of the soil use attribute in the hillslope data.")
-    @In
-    public String fVegetation = null;
 
     @Description("The a field name of the avg_sub attribute in the hillslope data.")
     @In
@@ -128,38 +123,6 @@ public class Adige extends JGTModel {
     @Description("The rainfall data.")
     @In
     public HashMap<Integer, double[]> inRain;
-
-    @Description("The radiation data.")
-    @In
-    public HashMap<Integer, double[]> inNetradiation;
-
-    @Description("The netshort radiation data.")
-    @In
-    public HashMap<Integer, double[]> inShortradiation;
-
-    @Description("The temperature data.")
-    @In
-    public HashMap<Integer, double[]> inTemperature;
-
-    @Description("The humidity data.")
-    @In
-    public HashMap<Integer, double[]> inHumidity;
-
-    @Description("The windspeed data.")
-    @In
-    public HashMap<Integer, double[]> inWindspeed;
-
-    @Description("The pressure data.")
-    @In
-    public HashMap<Integer, double[]> inPressure;
-
-    @Description("The snow water equivalent data.")
-    @In
-    public HashMap<Integer, double[]> inSwe;
-
-    @Description("The evapotranspiration data.")
-    @In
-    public HashMap<Integer, double[]> inEtp;
 
     @Description("The hydrometers monitoring points.")
     @In
@@ -240,6 +203,10 @@ public class Adige extends JGTModel {
     @Description("Etrate")
     @In
     public Double pEtrate = null;
+    
+    @Description("The evapotranspiration data.")
+    @In
+    public HashMap<Integer, double[]> inEtp;
 
     @Description("Satconst")
     @In
@@ -339,14 +306,8 @@ public class Adige extends JGTModel {
 
     /** the running rain array */
     private double[] rainArray = null;
-    private double[] radiationArray;
-    private double[] netshortArray;
-    private double[] temperatureArray;
-    private double[] humidityArray;
-    private double[] windspeedArray;
-    private double[] pressureArray;
-    private double[] snowWaterEquivalentArray;
     private double[] etpArray;
+    
     /** the running discharge array, which at the begin holds the initial conditions */
     private double[] initialConditions = null;
 
@@ -696,21 +657,6 @@ public class Adige extends JGTModel {
             setDataArray(inRain, rainArray);
 
             if (pEtrate == null) {
-                radiationArray = new double[hillsSlopeNum];
-                netshortArray = new double[hillsSlopeNum];
-                temperatureArray = new double[hillsSlopeNum];
-                humidityArray = new double[hillsSlopeNum];
-                windspeedArray = new double[hillsSlopeNum];
-                pressureArray = new double[hillsSlopeNum];
-                snowWaterEquivalentArray = new double[hillsSlopeNum];
-                etpArray = new double[hillsSlopeNum];
-                setDataArray(inNetradiation, radiationArray);
-                setDataArray(inShortradiation, netshortArray);
-                setDataArray(inTemperature, temperatureArray);
-                setDataArray(inHumidity, humidityArray);
-                setDataArray(inWindspeed, windspeedArray);
-                setDataArray(inPressure, pressureArray);
-                setDataArray(inSwe, snowWaterEquivalentArray);
                 setDataArray(inEtp, etpArray);
             }
         }
@@ -719,8 +665,7 @@ public class Adige extends JGTModel {
         // double intervalStartTimeInMinutes = runningDateInMinutes;
         // double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
 
-        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, radiationArray, netshortArray,
-                temperatureArray, humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray);
+        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, etpArray);
         initialConditions = rainRunoffRaining.getFinalCond();
         rainRunoffRaining.setBasicTimeStep(10. / 60.);
 

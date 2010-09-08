@@ -89,52 +89,37 @@ public class RungeKuttaFelberg {
      *        refined
      * @param currentSolution
      * @param rainArray
-     * @param radiationArray
-     * @param netshortArray
-     * @param temperatureArray
-     * @param humidityArray
-     * @param windspeedArray
-     * @param pressureArray
-     * @param snowWaterEquivalentArray
      * @param etpArray
      */
     private void step( double currentTimeInMinutes, double[] initialConditions, double timeStepInMinutes, boolean finalize,
-            CurrentTimestepSolution currentSolution, double[] rainArray, double[] radiationArray, double[] netshortArray,
-            double[] temperatureArray, double[] humidityArray, double[] windspeedArray, double[] pressureArray,
-            double[] snowWaterEquivalentArray, double[] etpArray ) {
+            CurrentTimestepSolution currentSolution, double[] rainArray, double[] etpArray ) {
 
         double[] carrier = new double[initialConditions.length];
 
-        double[] k0 = duffy.eval(currentTimeInMinutes, initialConditions, rainArray, radiationArray, netshortArray,
-                temperatureArray, humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, false);
+        double[] k0 = duffy.eval(currentTimeInMinutes, initialConditions, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes * b[1][0] * k0[i]);
 
-        double[] k1 = duffy.eval(currentTimeInMinutes, carrier, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, false);
+        double[] k1 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes * (b[2][0] * k0[i] + b[2][1] * k1[i]));
 
-        double[] k2 = duffy.eval(currentTimeInMinutes, carrier, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, false);
+        double[] k2 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
                     * (b[3][0] * k0[i] + b[3][1] * k1[i] + b[3][2] * k2[i]));
 
-        double[] k3 = duffy.eval(currentTimeInMinutes, carrier, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, false);
+        double[] k3 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
                     * (b[4][0] * k0[i] + b[4][1] * k1[i] + b[4][2] * k2[i] + b[4][3] * k3[i]));
 
-        double[] k4 = duffy.eval(currentTimeInMinutes, carrier, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, false);
+        double[] k4 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
                     * (b[5][0] * k0[i] + b[5][1] * k1[i] + b[5][2] * k2[i] + b[5][3] * k3[i] + b[5][4] * k4[i]));
 
-        double[] k5 = duffy.eval(currentTimeInMinutes, carrier, rainArray, radiationArray, netshortArray, temperatureArray,
-                humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray, etpArray, isAtFinalSubtimestep);
+        double[] k5 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, isAtFinalSubtimestep);
 
         double[] newY = new double[initialConditions.length];
         for( int i = 0; i < initialConditions.length; i++ ) {
@@ -187,9 +172,7 @@ public class RungeKuttaFelberg {
             // System.out.println(" --> "+timeStep+" "+epsilon+" "+Delta+" "+factor+"
             // "+newTimeStep+" ("+java.util.Calendar.getInstance().getTime()+")");
 
-            step(currentTimeInMinutes, initialConditions, newTimeStepInMinutes, true, currentSolution, rainArray, radiationArray,
-                    netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray,
-                    etpArray);
+            step(currentTimeInMinutes, initialConditions, newTimeStepInMinutes, true, currentSolution, rainArray, etpArray);
         }
 
     }
@@ -209,21 +192,11 @@ public class RungeKuttaFelberg {
      * @param intervalEndTimeInMinutes The final time of the solution
      * @param timeStepInMinutes How often the values are desired
      * @param initialConditions The value of the initial condition
-     * @param pressureArray 
-     * @param windspeedArray 
-     * @param humidityArray 
-     * @param temperatureArray 
-     * @param netshortArray 
-     * @param radiationArray 
-     * @param snowWaterEquivalentArray 
      * @param etpArray 
-     * @throws java.io.IOException Captures errors while writing to the file
      */
     @SuppressWarnings("nls")
     public void solve( DateTime currentTimstamp, int modelTimestepInMinutes, double internalTimestepInMinutes,
-            double[] initialConditions, double[] rainArray, double[] radiationArray, double[] netshortArray,
-            double[] temperatureArray, double[] humidityArray, double[] windspeedArray, double[] pressureArray,
-            double[] snowWaterEquivalentArray, double[] etpArray ) throws IOException {
+            double[] initialConditions, double[] rainArray, double[] etpArray ) throws IOException {
         isAtFinalSubtimestep = false;
 
         double intervalStartTimeInMinutes = currentTimstamp.getMillis() / 1000d / 60d;
@@ -247,9 +220,7 @@ public class RungeKuttaFelberg {
                  * inside step the intervals of time timeStepInMinutes are splitted again in
                  * intervals that begin with basicTimeStepInMinutes and are changed while iteration.
                  */
-                step(currentTimeInMinutes, initialConditions, basicTimeStepInMinutes, false, currentSolution, rainArray,
-                        radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                        snowWaterEquivalentArray, etpArray);
+                step(currentTimeInMinutes, initialConditions, basicTimeStepInMinutes, false, currentSolution, rainArray, etpArray);
                 if (currentTimeInMinutes + currentSolution.newTimeStepInMinutes > targetTimeInMinutes) {
                     break;
                 }
@@ -270,8 +241,7 @@ public class RungeKuttaFelberg {
             }
 
             step(currentTimeInMinutes, initialConditions, targetTimeInMinutes - currentTimeInMinutes, true, currentSolution,
-                    rainArray, radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                    snowWaterEquivalentArray, etpArray);
+                    rainArray, etpArray);
 
             if (currentTimeInMinutes + currentSolution.newTimeStepInMinutes >= intervalEndTimeInMinutes) {
                 break;
@@ -323,8 +293,7 @@ public class RungeKuttaFelberg {
         //
         if (NumericsUtilities.dEq(currentTimeInMinutes, intervalEndTimeInMinutes) && initialConditions[0] > 1e-3) {
             step(currentTimeInMinutes, initialConditions, intervalEndTimeInMinutes - currentTimeInMinutes - 1. / 60., true,
-                    currentSolution, rainArray, radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,
-                    pressureArray, snowWaterEquivalentArray, etpArray);
+                    currentSolution, rainArray, etpArray);
             basicTimeStepInMinutes = currentSolution.newTimeStepInMinutes;
             currentTimeInMinutes += basicTimeStepInMinutes;
             currentSolution.newTimeStepInMinutes = currentTimeInMinutes;
