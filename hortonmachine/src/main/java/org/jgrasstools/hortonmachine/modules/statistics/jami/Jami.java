@@ -325,60 +325,6 @@ public class Jami extends JGTModel {
         // increment by one. Fascie start from 0, so 0-5 are 6 fascie
         fascieNum++;
 
-        if (basinAreas == null) {
-            pm.beginTask("Calculate areas per basin and altimetric band.", inAreas.size());
-
-            HashMap<Integer, HashMap<Integer, Double>> idbasin2InfoMap = new HashMap<Integer, HashMap<Integer, Double>>();
-            HashMap<Integer, Double> idbasin2AreaMap = new HashMap<Integer, Double>();
-            for( EIAreas area : inAreas ) {
-                int idBasin = area.basinId;
-                HashMap<Integer, Double> idfasceMap = idbasin2InfoMap.get(idBasin);
-                if (idfasceMap == null) {
-                    idfasceMap = new HashMap<Integer, Double>();
-                    idbasin2InfoMap.put(idBasin, idfasceMap);
-                }
-                int idAltimetricBand = area.altimetricBandId;
-                double areaValue = area.areaValue;
-
-                // area fascia
-                Double areaFascia = idfasceMap.get(idAltimetricBand);
-                if (areaFascia == null) {
-                    idfasceMap.put(idAltimetricBand, areaValue);
-                } else {
-                    Double sum = areaValue + areaFascia;
-                    idfasceMap.put(idAltimetricBand, sum);
-                }
-
-                // total basin area
-                Double basinArea = idbasin2AreaMap.get(idBasin);
-                if (basinArea == null) {
-                    idbasin2AreaMap.put(idBasin, areaValue);
-                } else {
-                    Double sum = areaValue + basinArea;
-                    idbasin2AreaMap.put(idBasin, sum);
-                }
-
-                pm.worked(1);
-            }
-            pm.done();
-
-            basinAreas = new double[idbasin2AreaMap.size()];
-            basinAreasPerFascias = new double[idbasin2AreaMap.size()][fascieNum];
-            Set<Entry<Integer, Integer>> entrySet = basinid2BasinindexMap.entrySet();
-            for( Entry<Integer, Integer> entry : entrySet ) {
-                Integer basinId = entry.getKey();
-                Integer basinIndex = entry.getValue();
-
-                Double area = idbasin2AreaMap.get(basinId);
-                basinAreas[basinIndex] = area;
-
-                HashMap<Integer, Double> fascia2AreaMap = idbasin2InfoMap.get(basinId);
-                for( int fasciaIndex = 0; fasciaIndex < fascieNum; fasciaIndex++ ) {
-                    basinAreasPerFascias[basinIndex][fasciaIndex] = fascia2AreaMap.get(fasciaIndex);
-                }
-            }
-        }
-
         currentTimestamp = formatter.parseDateTime(tCurrent);
 
         outInterpolatedBand = new HashMap<Integer, double[]>();
@@ -444,6 +390,8 @@ public class Jami extends JGTModel {
             basinid2BasinindexMap.put(basinid, i);
             basinindex2basinidMap.put(i, basinid);
         }
+
+        calculateAreas(fascieNum);
 
         pm.message("Creating the band's elevation for every basin matrix.");
         /*
@@ -857,6 +805,62 @@ public class Jami extends JGTModel {
             outInterpolated.put(basinid, new double[]{interpolatedMeteoForBasin});
         }
         pm.done();
+    }
+
+    private void calculateAreas( int fascieNum ) {
+        if (basinAreas == null) {
+            pm.beginTask("Calculate areas per basin and altimetric band.", inAreas.size());
+
+            HashMap<Integer, HashMap<Integer, Double>> idbasin2InfoMap = new HashMap<Integer, HashMap<Integer, Double>>();
+            HashMap<Integer, Double> idbasin2AreaMap = new HashMap<Integer, Double>();
+            for( EIAreas area : inAreas ) {
+                int idBasin = area.basinId;
+                HashMap<Integer, Double> idfasceMap = idbasin2InfoMap.get(idBasin);
+                if (idfasceMap == null) {
+                    idfasceMap = new HashMap<Integer, Double>();
+                    idbasin2InfoMap.put(idBasin, idfasceMap);
+                }
+                int idAltimetricBand = area.altimetricBandId;
+                double areaValue = area.areaValue;
+
+                // area fascia
+                Double areaFascia = idfasceMap.get(idAltimetricBand);
+                if (areaFascia == null) {
+                    idfasceMap.put(idAltimetricBand, areaValue);
+                } else {
+                    Double sum = areaValue + areaFascia;
+                    idfasceMap.put(idAltimetricBand, sum);
+                }
+
+                // total basin area
+                Double basinArea = idbasin2AreaMap.get(idBasin);
+                if (basinArea == null) {
+                    idbasin2AreaMap.put(idBasin, areaValue);
+                } else {
+                    Double sum = areaValue + basinArea;
+                    idbasin2AreaMap.put(idBasin, sum);
+                }
+
+                pm.worked(1);
+            }
+            pm.done();
+
+            basinAreas = new double[idbasin2AreaMap.size()];
+            basinAreasPerFascias = new double[idbasin2AreaMap.size()][fascieNum];
+            Set<Entry<Integer, Integer>> entrySet = basinid2BasinindexMap.entrySet();
+            for( Entry<Integer, Integer> entry : entrySet ) {
+                Integer basinId = entry.getKey();
+                Integer basinIndex = entry.getValue();
+
+                Double area = idbasin2AreaMap.get(basinId);
+                basinAreas[basinIndex] = area;
+
+                HashMap<Integer, Double> fascia2AreaMap = idbasin2InfoMap.get(basinId);
+                for( int fasciaIndex = 0; fasciaIndex < fascieNum; fasciaIndex++ ) {
+                    basinAreasPerFascias[basinIndex][fasciaIndex] = fascia2AreaMap.get(fasciaIndex);
+                }
+            }
+        }
     }
 
     /**

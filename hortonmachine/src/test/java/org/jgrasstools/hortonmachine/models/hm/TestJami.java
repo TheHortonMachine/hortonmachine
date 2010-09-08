@@ -4,10 +4,14 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
+import org.jgrasstools.gears.io.eicalculator.EIAreas;
+import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
 import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayWriter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
@@ -32,6 +36,10 @@ public class TestJami extends HMTestCase {
 
         URL altimUrl = this.getClass().getClassLoader().getResource("eicalculator_out_altimetry.csv");
         File altimetryFile = new File(altimUrl.toURI());
+
+        URL areasUrl = this.getClass().getClassLoader().getResource("eicalculator_out_areas.csv");
+        File areasFile = new File(areasUrl.toURI());
+
         File outputFile = new File(altimetryFile.getParentFile(), "jami_out_temp.csv");
         outputFile = classesTestFile2srcTestResourcesFile(outputFile);
 
@@ -47,6 +55,14 @@ public class TestJami extends HMTestCase {
         altim.read();
         List<EIAltimetry> altimList = altim.outAltimetry;
         altim.close();
+
+        EIAreasReader areas = new EIAreasReader();
+        areas.file = areasFile.getAbsolutePath();
+        areas.pSeparator = "\\s+";
+        areas.pm = pm;
+        areas.read();
+        List<EIAreas> areasList = areas.outAreas;
+        areas.close();
 
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = new File(stationsUrl.toURI()).getAbsolutePath();
@@ -71,6 +87,7 @@ public class TestJami extends HMTestCase {
         Jami jami = new Jami();
         jami.pm = pm;
         jami.inAltimetry = altimList;
+        jami.inAreas = areasList;
         jami.fStationid = "id_punti_m";
         jami.fStationelev = "quota";
         jami.fBasinid = "netnum";
@@ -97,9 +114,25 @@ public class TestJami extends HMTestCase {
 
             jami.process();
 
-            HashMap<Integer, double[]> interpolationPointId2MeteoDataMap = jami.outInterpolatedBand;
+            HashMap<Integer, double[]> interpolationPointId2MeteoDataMapBands = jami.outInterpolatedBand;
+            HashMap<Integer, double[]> interpolationPointId2MeteoDataMap = jami.outInterpolated;
 
-            writer.data = interpolationPointId2MeteoDataMap;
+            Set<Entry<Integer, double[]>> entrySet = interpolationPointId2MeteoDataMapBands.entrySet();
+            for( Entry<Integer, double[]> entry : entrySet ) {
+                Integer basinId = entry.getKey();
+                double[] valuePerBand = entry.getValue();
+                double value = interpolationPointId2MeteoDataMap.get(basinId)[0];
+                System.out.println("basin: " + basinId);
+                System.out.print("per band: ");
+                for( double bandValue : valuePerBand ) {
+                    System.out.print(" " + bandValue);
+                }
+                System.out.println("per band: ");
+                System.out.println("interpolated on basin: " + value);
+                System.out.println("****************************");
+            }
+
+            writer.data = interpolationPointId2MeteoDataMapBands;
             writer.writeNextLine();
 
             runningDate = runningDate.plusMinutes(30);
