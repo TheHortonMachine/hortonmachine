@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -53,6 +54,7 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.gce.grassraster.JGrassConstants;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
+import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -72,8 +74,8 @@ import com.vividsolutions.jts.geom.Geometry;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Jami extends JGTModel {
 
-    @Description("The features representing the meteo stations " + "and containing the position information as well " + "as the elevation. Every feature has a unique id "
-            + "that is used to map the meteo data records to it.")
+    @Description("The features representing the meteo stations " + "and containing the position information as well "
+            + "as the elevation. Every feature has a unique id " + "that is used to map the meteo data records to it.")
     @In
     public FeatureCollection<SimpleFeatureType, SimpleFeature> inStations;
 
@@ -172,11 +174,19 @@ public class Jami extends JGTModel {
     @In
     public List<EIAltimetry> inAltimetry = null;
 
+    @Description("The list of altimetric/energetic bands areas.")
+    @In
+    public List<EIAreas> inAreas = null;
+
     @Description("The map of meteo data to interpolate. Every value is associated to the id of the station.")
     @In
     public HashMap<Integer, double[]> inMeteo = null;
 
-    @Description("The map of interpolated meteo data. Every value is associated to the id of the interpolation point.")
+    @Description("The map of interpolated meteo data for every band and point. Every value is associated to the id of the interpolation point.")
+    @Out
+    public HashMap<Integer, double[]> outInterpolatedBand = null;
+
+    @Description("The map of interpolated meteo data for every point. Every value is associated to the id of the interpolation point.")
     @Out
     public HashMap<Integer, double[]> outInterpolated = null;
 
@@ -293,13 +303,85 @@ public class Jami extends JGTModel {
 
     private DateTime currentTimestamp = null;
 
+    private double[] basinAreas;
+
+    private double[][] basinAreasPerFascias;
+
     @Execute
     public void process() throws Exception {
-        
+
         System.out.println("Jami processing " + tCurrent + " " + pType);
+
+        checkNull(inAltimetry, inAreas, inMeteo, inStations);
+
+        // check fascie num
+        int fascieNum = 0;
+        for( EIAreas area : inAreas ) {
+            int idAltimetricBand = area.altimetricBandId;
+            if (idAltimetricBand > fascieNum) {
+                fascieNum = idAltimetricBand;
+            }
+        }
+        // increment by one. Fascie start from 0, so 0-5 are 6 fascie
+        fascieNum++;
+
+        if (basinAreas == null) {
+            pm.beginTask("Calculate areas per basin and altimetric band.", inAreas.size());
+
+            HashMap<Integer, HashMap<Integer, Double>> idbasin2InfoMap = new HashMap<Integer, HashMap<Integer, Double>>();
+            HashMap<Integer, Double> idbasin2AreaMap = new HashMap<Integer, Double>();
+            for( EIAreas area : inAreas ) {
+                int idBasin = area.basinId;
+                HashMap<Integer, Double> idfasceMap = idbasin2InfoMap.get(idBasin);
+                if (idfasceMap == null) {
+                    idfasceMap = new HashMap<Integer, Double>();
+                    idbasin2InfoMap.put(idBasin, idfasceMap);
+                }
+                int idAltimetricBand = area.altimetricBandId;
+                double areaValue = area.areaValue;
+
+                // area fascia
+                Double areaFascia = idfasceMap.get(idAltimetricBand);
+                if (areaFascia == null) {
+                    idfasceMap.put(idAltimetricBand, areaValue);
+                } else {
+                    Double sum = areaValue + areaFascia;
+                    idfasceMap.put(idAltimetricBand, sum);
+                }
+
+                // total basin area
+                Double basinArea = idbasin2AreaMap.get(idBasin);
+                if (basinArea == null) {
+                    idbasin2AreaMap.put(idBasin, areaValue);
+                } else {
+                    Double sum = areaValue + basinArea;
+                    idbasin2AreaMap.put(idBasin, sum);
+                }
+
+                pm.worked(1);
+            }
+            pm.done();
+
+            basinAreas = new double[idbasin2AreaMap.size()];
+            basinAreasPerFascias = new double[idbasin2AreaMap.size()][fascieNum];
+            Set<Entry<Integer, Integer>> entrySet = basinid2BasinindexMap.entrySet();
+            for( Entry<Integer, Integer> entry : entrySet ) {
+                Integer basinId = entry.getKey();
+                Integer basinIndex = entry.getValue();
+
+                Double area = idbasin2AreaMap.get(basinId);
+                basinAreas[basinIndex] = area;
+
+                HashMap<Integer, Double> fascia2AreaMap = idbasin2InfoMap.get(basinId);
+                for( int fasciaIndex = 0; fasciaIndex < fascieNum; fasciaIndex++ ) {
+                    basinAreasPerFascias[basinIndex][fasciaIndex] = fascia2AreaMap.get(fasciaIndex);
+                }
+            }
+        }
 
         currentTimestamp = formatter.parseDateTime(tCurrent);
 
+        outInterpolatedBand = new HashMap<Integer, double[]>();
         outInterpolated = new HashMap<Integer, double[]>();
         /*
          * get stations
@@ -314,7 +396,7 @@ public class Jami extends JGTModel {
             stationCoordinates.add(stationCoord);
             stationFeatures.add(feature);
         }
-        inStations.close(featureIterator);
+        featureIterator.close();
         pm.done();
 
         /*
@@ -334,7 +416,7 @@ public class Jami extends JGTModel {
             basinBaricenterCoordinates.add(baricenterCoord);
             basinFeatures.add(feature);
         }
-        inInterpolate.close(featureIterator);
+        featureIterator.close();
         pm.done();
 
         statElev = new double[stationCoordinates.size()];
@@ -368,14 +450,6 @@ public class Jami extends JGTModel {
          * create the altimetric bands matrix
          */
         int basinNum = basinBaricenterCoordinates.size();
-
-        int fascieNum = 0;
-        for( EIAltimetry altim : inAltimetry ) {
-            if (altim.altimetricBandId > fascieNum) {
-                fascieNum = altim.altimetricBandId;
-            }
-        }
-        fascieNum++;
 
         bandsBasins = new double[fascieNum][basinNum];
         for( int i = 0; i < inAltimetry.size(); i++ ) {
@@ -471,7 +545,7 @@ public class Jami extends JGTModel {
         // System.out.println("Temperature: "
         // + maxTempPerStation[s] + " "
         // + minTempPerStation[s]);
-        //				
+        //
         // }
         // }
 
@@ -479,6 +553,7 @@ public class Jami extends JGTModel {
             pm.worked(1);
             // interpolated value for every band
             double[] interpolatedMeteoForBand = new double[bandsNum];
+            double interpolatedMeteoForBasin = 0;
 
             int cont = 0;
             double h;
@@ -514,18 +589,22 @@ public class Jami extends JGTModel {
             // sopravviva
             if (cont == 0) {
                 if (pType == TEMPERATURE) { // caso dei dati di temperatura
-                    pm.errorMessage("ERRORE: PER IL BACINO " + i + " NON SONO DISPONIBILI DATI DI TEMPERATURA, PER QUESTO BACINO STAND-BY");
+                    pm.errorMessage("ERRORE: PER IL BACINO " + i
+                            + " NON SONO DISPONIBILI DATI DI TEMPERATURA, PER QUESTO BACINO STAND-BY");
                     for( int f = 0; f < bandsNum; f++ ) { // per tutte le fasce
                         // altimetriche metto il
                         // dato a -100
                         interpolatedMeteoForBand[f] = doubleNovalue;
                     }
+                    interpolatedMeteoForBasin = doubleNovalue;
                 } else if (pType == PRESSURE) { // caso dei dati di pressione
                     pm.message("  -> Per il bacino " + i + " non sono disponibili dati di pressione, uso valori di default");
                     for( int f = 0; f < bandsNum; f++ ) { // per tutte le fasce
                         // altimetriche considero
                         // un'adiabatica
                         interpolatedMeteoForBand[f] = 1013.25 * Math.exp(-(bandsBasins[f][i]) * 0.00013);
+                        interpolatedMeteoForBasin = interpolatedMeteoForBasin + interpolatedMeteoForBand[f]
+                                * basinAreasPerFascias[i][f] / basinAreas[i];
                     }
                 } else if (pType == HUMIDITY) { // caso dei dati di umidità
                     pm.message("  -> Per il bacino " + i + " non sono disponibili dati di umidita', uso valori di default");
@@ -533,15 +612,19 @@ public class Jami extends JGTModel {
                         // altimetriche metto NODATA
                         interpolatedMeteoForBand[f] = defaultRh;
                     }
+                    interpolatedMeteoForBasin = defaultRh;
                 } else if (pType == WIND) { // caso dei dati di velocità del vento
-                    pm.message("  -> Per il bacino " + i + " non sono disponibili dati di velocita' del vento, uso valori di default");
+                    pm.message("  -> Per il bacino " + i
+                            + " non sono disponibili dati di velocita' del vento, uso valori di default");
                     for( int f = 0; f < bandsNum; f++ ) { // per tutte le fasce
                         // altimetriche metto NODATA
                         interpolatedMeteoForBand[f] = defaultW;
                     }
+                    interpolatedMeteoForBasin = defaultW;
                 } else if (pType == DTDAY) { // caso dei dati di escursione termica
                     // giornaliera
-                    pm.message("  -> Per il bacino " + i + " non sono disponibili dati di escursione termica giornaliera', uso valori di default");
+                    pm.message("  -> Per il bacino " + i
+                            + " non sono disponibili dati di escursione termica giornaliera', uso valori di default");
                     for( int f = 0; f < bandsNum; f++ ) { // per tutte le fasce
                         // altimetriche del bacino
                         // assegno all'escursione termica giornaliera il dato
@@ -549,9 +632,11 @@ public class Jami extends JGTModel {
                         // messo nel file dei parametri
                         interpolatedMeteoForBand[f] = defaultDtday;
                     }
+                    interpolatedMeteoForBasin = defaultDtday;
                 } else if (pType == DTMONTH) { // caso dei dati di escursione termica
                     // mensile
-                    pm.message("  -> Per il bacino " + i + " non sono disponibili dati di escursione termica mensile', uso valori di default");
+                    pm.message("  -> Per il bacino " + i
+                            + " non sono disponibili dati di escursione termica mensile', uso valori di default");
                     for( int f = 0; f < bandsNum; f++ ) {
                         /*
                          *  per tutte le fasce
@@ -562,6 +647,7 @@ public class Jami extends JGTModel {
                         // messo nel file dei parametri
                         interpolatedMeteoForBand[f] = defaultDtmonth;
                     }
+                    interpolatedMeteoForBasin = defaultDtmonth;
                 }
 
             } else if (cont == 1) {
@@ -573,10 +659,12 @@ public class Jami extends JGTModel {
                     if (pType == TEMPERATURE) { // trasformo la temp in K e calcolo T
                         // con
                         // l'adiabatica semplice
-                        interpolatedMeteoForBand[f] = (statValues[jj_av[0]] + tk) * Math.exp(-(bandsBasins[f][i] - statElev[jj_av[0]]) * GAMMA / (statValues[jj_av[0]] + tk)) - tk;
+                        interpolatedMeteoForBand[f] = (statValues[jj_av[0]] + tk)
+                                * Math.exp(-(bandsBasins[f][i] - statElev[jj_av[0]]) * GAMMA / (statValues[jj_av[0]] + tk)) - tk;
                     } else if (pType == PRESSURE) { // calcolo P con il gradiente
                         // adiabatico
-                        interpolatedMeteoForBand[f] = statValues[jj_av[0]] * Math.exp(-(bandsBasins[f][i] - statElev[jj_av[0]]) * 0.00013);
+                        interpolatedMeteoForBand[f] = statValues[jj_av[0]]
+                                * Math.exp(-(bandsBasins[f][i] - statElev[jj_av[0]]) * 0.00013);
                     } else if (pType == DTDAY) {
                         // se ho una sola stazione assegno il valore della
                         // stazione a tutto il
@@ -599,6 +687,9 @@ public class Jami extends JGTModel {
                         // altimetriche
                         interpolatedMeteoForBand[f] = statValues[jj_av[0]];
                     }
+
+                    interpolatedMeteoForBasin = interpolatedMeteoForBasin + interpolatedMeteoForBand[f]
+                            * basinAreasPerFascias[i][f] / basinAreas[i];
                 }
             } else {
                 // caso 2. ci sono almeno 2 stazioni (a quote inferiori alla
@@ -614,7 +705,8 @@ public class Jami extends JGTModel {
                     // essere
                     // calcolato dai dati per j che va da 1 a n-1, dove n e' il
                     // numero di stazioni (cont)
-                    lapseRate[j] = (statValues[jj_av[j]] - statValues[jj_av[j + 1]]) / (statElev[jj_av[j + 1]] - statElev[jj_av[j]]);
+                    lapseRate[j] = (statValues[jj_av[j]] - statValues[jj_av[j + 1]])
+                            / (statElev[jj_av[j + 1]] - statElev[jj_av[j]]);
                 }
 
                 for( int f = 0; f < bandsNum; f++ ) { // ciclo sulle fascie
@@ -628,7 +720,8 @@ public class Jami extends JGTModel {
                         if (pType == TEMPERATURE) { // T
                             interpolatedMeteoForBand[f] = statValues[jj_av[0]] - GAMMA * (bandsBasins[f][i] - statElev[jj_av[0]]);
                         } else if (pType == PRESSURE) { // P
-                            interpolatedMeteoForBand[f] = statValues[jj_av[0]] - (statValues[jj_av[0]] * 0.00013) * (bandsBasins[f][i] - statElev[jj_av[0]]);
+                            interpolatedMeteoForBand[f] = statValues[jj_av[0]] - (statValues[jj_av[0]] * 0.00013)
+                                    * (bandsBasins[f][i] - statElev[jj_av[0]]);
                         } else if (pType == DTDAY) {
                             interpolatedMeteoForBand[f] = maxTempPerStation[jj_av[0]] - minTempPerStation[jj_av[0]];
                             if ((maxTempPerStation[jj_av[0]] - minTempPerStation[jj_av[0]]) <= 0) {
@@ -646,9 +739,11 @@ public class Jami extends JGTModel {
                         // più alta
                     } else if (bandsBasins[f][i] >= statElev[jj_av[cont - 1]]) {
                         if (pType == TEMPERATURE) { // T
-                            interpolatedMeteoForBand[f] = statValues[jj_av[cont - 1]] - GAMMA * (bandsBasins[f][i] - statElev[jj_av[cont - 1]]);
+                            interpolatedMeteoForBand[f] = statValues[jj_av[cont - 1]] - GAMMA
+                                    * (bandsBasins[f][i] - statElev[jj_av[cont - 1]]);
                         } else if (pType == PRESSURE) { // P
-                            interpolatedMeteoForBand[f] = statValues[jj_av[cont - 1]] - (statValues[jj_av[cont - 1]] * 0.00013) * (bandsBasins[f][i] - statElev[jj_av[cont - 1]]);
+                            interpolatedMeteoForBand[f] = statValues[jj_av[cont - 1]] - (statValues[jj_av[cont - 1]] * 0.00013)
+                                    * (bandsBasins[f][i] - statElev[jj_av[cont - 1]]);
                         } else if (pType == DTDAY) {
                             interpolatedMeteoForBand[f] = maxTempPerStation[jj_av[cont - 1]] - minTempPerStation[jj_av[cont - 1]];
                             if ((maxTempPerStation[jj_av[0]] - minTempPerStation[jj_av[0]]) <= 0) {
@@ -686,7 +781,9 @@ public class Jami extends JGTModel {
                             // * (bandsBasins[f][i] - statElev[jj_av[k]]))
                             // / (statElev[jj_av[k + 1]] - statElev[jj_av[k]]);
                             interpolatedMeteoForBand[f] = ((maxTempPerStation[jj_av[k + 1]] - minTempPerStation[jj_av[k + 1]]) - (maxTempPerStation[jj_av[k]] - minTempPerStation[jj_av[k]]))
-                                    * (bandsBasins[f][i] - statElev[jj_av[k]]) / (statElev[jj_av[k + 1]] - statElev[jj_av[k]]) + (maxTempPerStation[jj_av[k]] - minTempPerStation[jj_av[k]]);
+                                    * (bandsBasins[f][i] - statElev[jj_av[k]])
+                                    / (statElev[jj_av[k + 1]] - statElev[jj_av[k]])
+                                    + (maxTempPerStation[jj_av[k]] - minTempPerStation[jj_av[k]]);
                             // if (i == 100) {
                             // System.out.println("Banda " + f + " "
                             // + bandsBasins[f][i]);
@@ -712,38 +809,52 @@ public class Jami extends JGTModel {
                                 k -= 1;
                                 h = statElev[jj_av[k]];
                             } while( bandsBasins[f][i] <= h );
-                            interpolatedMeteoForBand[f] = (DTmonth[jj_av[k]] * (statElev[jj_av[k + 1]] - bandsBasins[f][i]) + DTmonth[jj_av[k + 1]] * (bandsBasins[f][i] - statElev[jj_av[k]]))
+                            interpolatedMeteoForBand[f] = (DTmonth[jj_av[k]] * (statElev[jj_av[k + 1]] - bandsBasins[f][i]) + DTmonth[jj_av[k + 1]]
+                                    * (bandsBasins[f][i] - statElev[jj_av[k]]))
                                     / (statElev[jj_av[k + 1]] - statElev[jj_av[k]]);
                         } else {
                             do {
                                 k -= 1;
                                 h = statElev[jj_av[k]];
                             } while( bandsBasins[f][i] <= h );
-                            interpolatedMeteoForBand[f] = statValues[jj_av[k]] - lapseRate[k] * (bandsBasins[f][i] - statElev[jj_av[k]]);
+                            interpolatedMeteoForBand[f] = statValues[jj_av[k]] - lapseRate[k]
+                                    * (bandsBasins[f][i] - statElev[jj_av[k]]);
                         }
                     }
 
+                    interpolatedMeteoForBasin = interpolatedMeteoForBasin + interpolatedMeteoForBand[f]
+                            * basinAreasPerFascias[i][f] / basinAreas[i];
                 }
 
                 // ADDED
                 // controllo su RH>100 e v=0
                 if (pType == HUMIDITY) { // RH
+                    double MAX_HUMIDITY = 100;
+                    double MIN_HUMIDITY = 5;
                     for( int f = 0; f < bandsNum; f++ ) {
-                        if (interpolatedMeteoForBand[f] > 100)
-                            interpolatedMeteoForBand[f] = 100;
-                        if (interpolatedMeteoForBand[f] < 5)
-                            interpolatedMeteoForBand[f] = 5;
+                        if (interpolatedMeteoForBand[f] > MAX_HUMIDITY)
+                            interpolatedMeteoForBand[f] = MAX_HUMIDITY;
+                        if (interpolatedMeteoForBand[f] < MIN_HUMIDITY)
+                            interpolatedMeteoForBand[f] = MIN_HUMIDITY;
                     }
+                    if (interpolatedMeteoForBasin > MAX_HUMIDITY)
+                        interpolatedMeteoForBasin = MAX_HUMIDITY;
+                    if (interpolatedMeteoForBasin < MIN_HUMIDITY)
+                        interpolatedMeteoForBasin = MIN_HUMIDITY;
                 } else if (pType == WIND) { // V
+                    double MIN_WIND = 0.01;
                     for( int f = 0; f < bandsNum; f++ ) {
-                        if (interpolatedMeteoForBand[f] < 0.01)
-                            interpolatedMeteoForBand[f] = 0.01;
+                        if (interpolatedMeteoForBand[f] < MIN_WIND)
+                            interpolatedMeteoForBand[f] = MIN_WIND;
                     }
+                    if (interpolatedMeteoForBasin < MIN_WIND)
+                        interpolatedMeteoForBasin = MIN_WIND;
                 }
 
             }
             int basinid = ((Number) basinFeatures.get(i).getAttribute(basinIdFieldIndex)).intValue();
-            outInterpolated.put(basinid, interpolatedMeteoForBand);
+            outInterpolatedBand.put(basinid, interpolatedMeteoForBand);
+            outInterpolated.put(basinid, new double[]{interpolatedMeteoForBasin});
         }
         pm.done();
     }
@@ -817,9 +928,11 @@ public class Jami extends JGTModel {
                 /*
                  * search for the nearest stations that have values.
                  */
-                List<Integer> stationsToUse = extractStationsToUse(basinBaricenterCoordinate, stationIdsForBand, stationId2CoordinateMap, statValues, stationid2StationindexMap);
+                List<Integer> stationsToUse = extractStationsToUse(basinBaricenterCoordinate, stationIdsForBand,
+                        stationId2CoordinateMap, statValues, stationid2StationindexMap);
                 if (stationsToUse.size() < pNum) {
-                    pm.message("Found only " + stationsToUse.size() + " for basin " + basinindex2basinidMap.get(i) + " and bandid " + bandId + ".");
+                    pm.message("Found only " + stationsToUse.size() + " for basin " + basinindex2basinidMap.get(i)
+                            + " and bandid " + bandId + ".");
                 }
 
                 /*
@@ -851,8 +964,8 @@ public class Jami extends JGTModel {
      * @param idStationIndexMap
      * @return the list of needed nearest stations.
      */
-    private List<Integer> extractStationsToUse( Coordinate basinBaricenterCoordinate, List<Integer> stationIdsToSearch, HashMap<Integer, Coordinate> stationId2CoordinateMap, double[] statValues,
-            HashMap<Integer, Integer> idStationIndexMap ) {
+    private List<Integer> extractStationsToUse( Coordinate basinBaricenterCoordinate, List<Integer> stationIdsToSearch,
+            HashMap<Integer, Coordinate> stationId2CoordinateMap, double[] statValues, HashMap<Integer, Integer> idStationIndexMap ) {
 
         List<Integer> stationsToUse = new ArrayList<Integer>();
         List<Integer> stationsLeftOver = new ArrayList<Integer>();
@@ -917,7 +1030,8 @@ public class Jami extends JGTModel {
     private void extractFromStationFeatures() throws Exception {
         int stationIdIndex = -1;
         int stationElevIndex = -1;
-        pm.beginTask("Filling the elevation and id arrays for the stations, ordering them in ascending elevation order.", stationCoordinates.size());
+        pm.beginTask("Filling the elevation and id arrays for the stations, ordering them in ascending elevation order.",
+                stationCoordinates.size());
         for( int i = 0; i < stationCoordinates.size(); i++ ) {
             pm.worked(1);
             SimpleFeature stationF = stationFeatures.get(i);

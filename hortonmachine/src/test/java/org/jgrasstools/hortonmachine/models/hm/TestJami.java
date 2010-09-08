@@ -97,7 +97,7 @@ public class TestJami extends HMTestCase {
 
             jami.process();
 
-            HashMap<Integer, double[]> interpolationPointId2MeteoDataMap = jami.outInterpolated;
+            HashMap<Integer, double[]> interpolationPointId2MeteoDataMap = jami.outInterpolatedBand;
 
             writer.data = interpolationPointId2MeteoDataMap;
             writer.writeNextLine();

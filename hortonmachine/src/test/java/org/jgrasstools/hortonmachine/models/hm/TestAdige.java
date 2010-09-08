@@ -41,13 +41,6 @@ public class TestAdige extends HMTestCase {
         String hillslopePath = shpFolder + "basins_passirio_width0.shp";
 
         String rainDataPath = dataFolder + "kriging_interpolated.csv";
-        // String netradiationDataPath = "";
-        // String shortradiationDataPath = "";
-        // String temperatureDataPath = "";
-        // String humidityDataPath = "";
-        // String windspeedDataPath = "";
-        // String pressureDataPath = "";
-        // String sweDataPath = "";
 
         String hydrometersPath = shpFolder + "hydrometers.shp";
         String hydrometersDataPath = dataFolder + "hydrometers_new.csv";
@@ -71,24 +64,6 @@ public class TestAdige extends HMTestCase {
 
         // meteo
         TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value netradiationReader = getTimeseriesReader(
-        // netradiationDataPath, fId, startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value shortradiationReader = getTimeseriesReader(
-        // shortradiationDataPath, fId, startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value temperatureReader =
-        // getTimeseriesReader(temperatureDataPath,
-        // fId, startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value humidityReader = getTimeseriesReader(humidityDataPath,
-        // fId,
-        // startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value windspeedReader = getTimeseriesReader(windspeedDataPath,
-        // fId, startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value pressureReader = getTimeseriesReader(pressureDataPath,
-        // fId,
-        // startDate, endDate, timeStepMinutes);
-        // TimeseriesByStepReaderId2Value sweReader = getTimeseriesReader(sweDataPath, fId,
-        // startDate,
-        // endDate, timeStepMinutes);
 
         TimeseriesByStepReaderId2Value hydrometersReader = getTimeseriesReader(hydrometersDataPath, fId, startDate, endDate,
                 timeStepMinutes);
@@ -120,7 +95,6 @@ public class TestAdige extends HMTestCase {
         adige.inHillslope = hillslopeFC;
         adige.fNetnum = "netnum";
         adige.fBaricenter = "avgz";
-        adige.fVegetation = "uso_reclas";
         adige.fAvg_sub = "mean_sub";
         adige.fVar_sub = "sd_sub";
         adige.fAvg_sup_10 = "mean_10";
@@ -178,27 +152,6 @@ public class TestAdige extends HMTestCase {
             rainReader.nextRecord();
             adige.inRain = rainReader.data;
 
-            // netradiationReader.nextRecord();
-            // adige.inNetradiation = netradiationReader.data;
-            //
-            // shortradiationReader.nextRecord();
-            // adige.inShortradiation = shortradiationReader.data;
-            //
-            // temperatureReader.nextRecord();
-            // adige.inTemperature = temperatureReader.data;
-            //
-            // humidityReader.nextRecord();
-            // adige.inHumidity = humidityReader.data;
-            //
-            // windspeedReader.nextRecord();
-            // adige.inWindspeed = windspeedReader.data;
-            //
-            // pressureReader.nextRecord();
-            // adige.inPressure = pressureReader.data;
-            //
-            // sweReader.nextRecord();
-            // adige.inSwe = sweReader.data;
-
             hydrometersReader.nextRecord();
             adige.inHydrometerdata = hydrometersReader.data;
 
@@ -207,12 +160,6 @@ public class TestAdige extends HMTestCase {
 
             tributaryReader.nextRecord();
             adige.inTributarydata = tributaryReader.data;
-
-            // offtakesReader.nextRecord();
-            // adige.inOfftakesdata = offtakesReader.data;
-
-            // TODO setup penman etp
-            // etp.inHumidity =
 
             adige.process();
 
@@ -223,18 +170,10 @@ public class TestAdige extends HMTestCase {
         }
 
         rainReader.close();
-        // netradiationReader.close();
-        // shortradiationReader.close();
-        // temperatureReader.close();
-        // humidityReader.close();
-        // windspeedReader.close();
-        // pressureReader.close();
-        // sweReader.close();
 
         hydrometersReader.close();
         damsReader.close();
         tributaryReader.close();
-        // offtakesReader.close();
 
         AdigeBoundaryConditionWriter boundaryConditionWriter = new AdigeBoundaryConditionWriter();
         boundaryConditionWriter.file = outBoundaryConditionsPath;
