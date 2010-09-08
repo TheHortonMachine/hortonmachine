@@ -71,19 +71,15 @@ public class PenmanEtp extends JGTModel {
     @Description("The air temperature data.")
     @Unit("C")
     @In
-    public HashMap<Integer, double[]> inTemperature;
+    public HashMap<Integer, double[]> inTemp;
 
     @Description("The humidity data.")
     @In
-    public HashMap<Integer, double[]> inHumidity;
-
-    @Description("Soil moisture.")
-    @In
-    public HashMap<Integer, double[]> inSoilMoisture;
+    public HashMap<Integer, double[]> inRh;
 
     @Description("The windspeed data.")
     @In
-    public HashMap<Integer, double[]> inWindspeed;
+    public HashMap<Integer, double[]> inWind;
     
     @Description("The pressure data.")
     @In
@@ -123,7 +119,7 @@ public class PenmanEtp extends JGTModel {
     @Execute
     public void penman() {
 
-        checkNull(inPressure, inTemperature, inHumidity, inWindspeed, inSwe, inSoilMoisture, inVegetation, inShortradiation,
+        checkNull(inPressure, inTemp, inRh, inWind, inSwe,  inVegetation, inShortradiation,
                 inNetradiation);
 
         outEtp = new HashMap<Integer, double[]>();
@@ -131,16 +127,15 @@ public class PenmanEtp extends JGTModel {
         DateTime currentTimestamp = formatter.parseDateTime(tCurrent);
         int monthOfYear = currentTimestamp.getMonthOfYear();
 
-        Set<Entry<Integer, double[]>> elevSet = inTemperature.entrySet();
+        Set<Entry<Integer, double[]>> elevSet = inTemp.entrySet();
         for( Entry<Integer, double[]> entry : elevSet ) {
             Integer basinId = entry.getKey();
             // double elevation = inElevations.get(basinId)[0];
             double tair = entry.getValue()[0];
             double pressure = inPressure.get(basinId)[0];
-            double relativeHumidity = inHumidity.get(basinId)[0];
-            double wind = inWindspeed.get(basinId)[0];
+            double relativeHumidity = inRh.get(basinId)[0];
+            double wind = inWind.get(basinId)[0];
             double snowWaterEquivalent = inSwe.get(basinId)[0];
-            double soilMoisture = inSoilMoisture.get(basinId)[0];
             double shortRadiation = inShortradiation.get(basinId)[0];
             double netRadiation = inNetradiation.get(basinId)[0];
 
@@ -151,6 +146,9 @@ public class PenmanEtp extends JGTModel {
             double RGL = vegetation.getRgl();
             double lai = vegetation.getLai(monthOfYear);
             double rarc = vegetation.getArchitecturalResistance();
+            
+            // FIXME remove the moisture
+            double soilMoisture = Double.NaN;
 
             /*
              * set the pressure in Pascal instead of in hPa as the input link gives 
