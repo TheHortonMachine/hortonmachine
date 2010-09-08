@@ -47,6 +47,11 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.w3c.dom.NodeList;
 
+import com.sun.media.imageio.plugins.tiff.EXIFParentTIFFTagSet;
+import com.sun.media.imageio.plugins.tiff.EXIFTIFFTagSet;
+import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
+import com.sun.media.imageio.plugins.tiff.TIFFField;
+
 @Description("Utility class for reading exif tags in jpegs.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Jpeg, Exif, Reading")
