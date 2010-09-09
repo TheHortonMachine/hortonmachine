@@ -55,10 +55,6 @@ public class PenmanEtp extends JGTModel {
     @In
     public HashMap<Integer, VegetationLibraryRecord> inVegetation;
 
-    @Description("Maximum moisture")
-    @In
-    public double maxMoisture;
-
     @Description("Net radiation.")
     @Unit("W/m2")
     @In
@@ -157,20 +153,21 @@ public class PenmanEtp extends JGTModel {
             double vpd = svp(tair) - (relativeHumidity * 100 / svp(tair)); // vpd in KPa
             double ra = calcAerodynamic(displacement, roughness, ZREF, wind, snowWaterEquivalent);
 
-            // calculate gsm_inv: soil moisture stress factor
-            double criticalSoilMoisture = 0.33; // fraction of soil moisture content at the critical
-            // point
-            double wiltingPointSoilMoisture = 0.133;
-            double waterContentCriticalPoint = criticalSoilMoisture * maxMoisture;
-            double waterContentWiltingPoint = wiltingPointSoilMoisture * maxMoisture;
-            double gsm_inv; // soil moisture stress factor
-            if (soilMoisture >= waterContentCriticalPoint) {
-                gsm_inv = 1.0;
-            } else if (soilMoisture >= waterContentWiltingPoint) {
-                gsm_inv = (soilMoisture - waterContentWiltingPoint) / (waterContentCriticalPoint - waterContentWiltingPoint);
-            } else {
-                gsm_inv = 0.0;
-            }
+            //CONSIDER THE SOIL RESISTANCE NULL
+//            // calculate gsm_inv: soil moisture stress factor
+//            double criticalSoilMoisture = 0.33; // fraction of soil moisture content at the critical
+//            // point
+//            double wiltingPointSoilMoisture = 0.133;
+//            double waterContentCriticalPoint = criticalSoilMoisture * maxMoisture;
+//            double waterContentWiltingPoint = wiltingPointSoilMoisture * maxMoisture;
+//            double gsm_inv; // soil moisture stress factor
+//            if (soilMoisture >= waterContentCriticalPoint) {
+//                gsm_inv = 1.0;
+//            } else if (soilMoisture >= waterContentWiltingPoint) {
+//                gsm_inv = (soilMoisture - waterContentWiltingPoint) / (waterContentCriticalPoint - waterContentWiltingPoint);
+//            } else {
+//                gsm_inv = 0.0;
+//            }
             /* calculate the slope of the saturated vapor pressure curve in Pa/K */
             double slope = svp_slope(tair) * 1000.0;
 
@@ -199,7 +196,8 @@ public class PenmanEtp extends JGTModel {
             vpdFactor = (vpdFactor < VPDMINFACTOR) ? VPDMINFACTOR : vpdFactor;
 
             /* calculate canopy resistance in s/m */
-            double rc = rs / (lai * gsm_inv * tFactor * vpdFactor) * dayFactor;
+//            double rc = rs / (lai * gsm_inv * tFactor * vpdFactor) * dayFactor;
+            double rc = rs / (lai * tFactor * vpdFactor) * dayFactor;
             rc = (rc > RSMAX) ? RSMAX : rc;
 
             // double h; /* scale height in the atmosphere (m) */

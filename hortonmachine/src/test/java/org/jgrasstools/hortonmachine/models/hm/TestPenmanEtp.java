@@ -56,7 +56,6 @@ public class TestPenmanEtp extends HMTestCase {
         vegetationReader.close();
 
         PenmanEtp penmanEtp = new PenmanEtp();
-        penmanEtp.maxMoisture = 1;
         penmanEtp.inVegetation = vegetationData;
 
         TimeseriesByStepWriterId2Value etpWriter = new TimeseriesByStepWriterId2Value();
