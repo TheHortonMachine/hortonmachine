@@ -75,19 +75,7 @@ public class ExifReader extends JGTModel {
 
     @Execute
     public void readExif() throws IOException {
-        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpeg");
-        ImageReader reader = null;
-        while( readers.hasNext() ) {
-            reader = (ImageReader) readers.next();
-            if (reader.getClass().getName().startsWith("com.sun.media")) {
-                // Break on finding the provider.
-                break;
-            }
-        }
-        if (reader == null) {
-            throw new ModelsIOException("Cannot find reader!", this);
-        }
-
+        ImageReader reader = ExifUtil.findReader();
         reader.setInput(new FileImageInputStream(new File(file)));
         IIOMetadata imageMetadata = reader.getImageMetadata(0);
 

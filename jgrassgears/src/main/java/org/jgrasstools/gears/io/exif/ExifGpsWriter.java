@@ -22,7 +22,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -53,9 +55,12 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.NodeList;
 
 import com.sun.media.imageio.plugins.tiff.EXIFGPSTagSet;
@@ -86,11 +91,27 @@ public class ExifGpsWriter extends JGTModel {
 
     @Description("The latitude to add to the exif tags.")
     @Out
-    public Double inLat = null;
+    public Double pLat = null;
 
     @Description("The longitude to add to the exif tags.")
     @Out
-    public Double inLon = null;
+    public Double pLon = null;
+
+    @Description("The timestamp to add to the exif tags (format yyyy-MM-dd HH:mm:ss).")
+    @Out
+    public String tTimestamp = null;
+
+    @Description("The altidude in meters to add to the exif tags.")
+    @Out
+    public Double pAltitude = null;
+
+    @Description("Switch to define if latitude is northern or southern hemisphere (default is true, i.e northern).")
+    @Out
+    public boolean doNorth = true;
+
+    @Description("Switch to define if longitude is eastern or western part (default is true, i.e eastern).")
+    @Out
+    public boolean doEast = true;
 
     private ImageReader jpegReader;
 
@@ -100,90 +121,108 @@ public class ExifGpsWriter extends JGTModel {
 
     private File imageFile;
 
+    private String[] latRef = {"", ""};
+    private String[] longRef = {"", ""};
+    private byte[] altRef = new byte[1];
+    private long[][] latitude;
+    private long[][] longitude;
+    private long[][] altitude;
+    private String[] imgDirectionRef = {"", ""};
+    private long[][] imgDirection;
+    private String[] datum = {"W", "G", "S", "-", "8", "4", ""};
+    private String[] status = {"", ""};
+    private long[][] timeStamp;
+    private String[] dateStamp = new String[11];
+
+    private DecimalFormat latFormatter = new DecimalFormat("0000.0000");
+    private DecimalFormat lonFormatter = new DecimalFormat("00000.0000");
+
+    private DateTimeFormatter dateFormatter = JGTConstants.utcDateFormatterYYYYMMDDHHMMSS;
+
     @Execute
     public void writeGpsExif() throws IOException {
+
+        checkNull(pLat, pLon, tTimestamp);
+
+        String latStr = latFormatter.format(pLat * 100);
+        latitude = getLatitude(latStr);
+        String lonStr = lonFormatter.format(pLon * 100);
+        longitude = getLongitude(lonStr);
+
+        latRef[0] = doNorth ? EXIFGPSTagSet.LATITUDE_REF_NORTH : EXIFGPSTagSet.LATITUDE_REF_SOUTH;
+        longRef[0] = doEast ? EXIFGPSTagSet.LONGITUDE_REF_EAST : EXIFGPSTagSet.LONGITUDE_REF_WEST;
+
+        if (pAltitude != null) {
+            double alt = pAltitude * 10;
+            altitude = new long[][]{{(long) alt, 10}};
+            altRef[0] = EXIFGPSTagSet.ALTITUDE_REF_SEA_LEVEL;
+        }
+
+        String[] timeStampSplit = tTimestamp.trim().split("\\s+"); // yyyy-MM-dd HH:mm:ss
+        String date = timeStampSplit[0].replaceAll("-", ":");
+        dateStamp = getDate(date);
+        String time = timeStampSplit[1].replaceAll(":", "");
+        timeStamp = getTime(time);
+
         imageFile = new File(file);
         ImageInputStream is = ImageIO.createImageInputStream(imageFile);
 
         // Get core JPEG reader.
-        Iterator readers = ImageIO.getImageReadersByFormatName("jpeg");
-
-        while( readers.hasNext() ) {
-            jpegReader = (ImageReader) readers.next();
-            if (jpegReader.getClass().getName().startsWith("com.sun.imageio")) {
-                // Break on finding the core provider.
-                break;
-            }
-        }
+        jpegReader = ExifUtil.findReader();
         if (jpegReader == null) {
-            System.out.println("Cannot find core JPEG reader!");
-            System.exit(0);
+            throw new ModelsIOException("Cannot find JPEG reader.", this);
         }
 
         // Get core JPEG writer.
-        Iterator writers = ImageIO.getImageWritersByFormatName("jpeg");
-
-        while( writers.hasNext() ) {
-            jpegWriter = (ImageWriter) writers.next();
-            if (jpegWriter.getClass().getName().startsWith("com.sun.imageio")) {
-                // Break on finding the core provider.
-                break;
-            }
-        }
+        jpegWriter = ExifUtil.findWriter();
         if (jpegWriter == null) {
-            System.out.println("Cannot find core JPEG writer!");
-            System.exit(0);
+            throw new ModelsIOException("Cannot find JPEG writer.", this);
         }
 
         jpegReader.setInput(is);
         image = jpegReader.read(0);
 
-        writeExif(null);
+        writeExif();
+
     }
 
     /**
      * Main method to write the gps data to the exif 
      * @param gps - gps position to be added
+     * @throws IOException 
      */
-    private void writeExif( GPSPosition gpos ) {
+    private void writeExif() throws IOException {
 
-        IIOMetadata metadata = null;
-        try {
-            // get metadata object
-            metadata = jpegReader.getImageMetadata(0);
+        IIOMetadata metadata = jpegReader.getImageMetadata(0);
 
-            // names says which exif tree to get - 0 for jpeg 1 for the default
-            String[] names = metadata.getMetadataFormatNames();
-            IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(names[0]);
+        // names says which exif tree to get - 0 for jpeg 1 for the default
+        String[] names = metadata.getMetadataFormatNames();
+        IIOMetadataNode root = (IIOMetadataNode) metadata.getAsTree(names[0]);
 
-            // exif is on the app1 node called unknown
-            NodeList nList = root.getElementsByTagName("unknown");
-            IIOMetadataNode app1EXIFNode = (IIOMetadataNode) nList.item(0);
-            ArrayList md = readExif(app1EXIFNode);
-            IIOMetadata exifMetadata = (IIOMetadata) md.get(0);
+        // exif is on the app1 node called unknown
+        NodeList nList = root.getElementsByTagName("unknown");
+        IIOMetadataNode app1EXIFNode = (IIOMetadataNode) nList.item(0);
+        ArrayList<IIOMetadata> md = readExif(app1EXIFNode);
+        IIOMetadata exifMetadata = md.get(0);
 
-            // insert the gps data into the exif
-            exifMetadata = insertGPSCoords(gpos, exifMetadata);
+        // insert the gps data into the exif
+        exifMetadata = insertGPSCoords(exifMetadata);
 
-            // create a new exif node
-            IIOMetadataNode app1NodeNew = createNewExifNode(exifMetadata, null, null);
+        // create a new exif node
+        IIOMetadataNode app1NodeNew = createNewExifNode(exifMetadata, null, null);
 
-            // copy the user data accross
-            app1EXIFNode.setUserObject(app1NodeNew.getUserObject());
+        // copy the user data accross
+        app1EXIFNode.setUserObject(app1NodeNew.getUserObject());
 
-            // write to a new image file
-            FileImageOutputStream out1 = new FileImageOutputStream(new File("GPS_" + imageFile.getName()));
-            jpegWriter.setOutput(out1);
-            metadata.setFromTree(names[0], root);
+        // write to a new image file
+        FileImageOutputStream out1 = new FileImageOutputStream(new File("GPS_" + imageFile.getName()));
+        jpegWriter.setOutput(out1);
+        metadata.setFromTree(names[0], root);
 
-            IIOImage image = new IIOImage(jpegReader.readAsRenderedImage(0, jpegReader.getDefaultReadParam()), null, metadata);
+        IIOImage image = new IIOImage(jpegReader.readAsRenderedImage(0, jpegReader.getDefaultReadParam()), null, metadata);
 
-            // write out the new image
-            jpegWriter.write(jpegReader.getStreamMetadata(), image, jpegWriter.getDefaultWriteParam());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        // write out the new image
+        jpegWriter.write(jpegReader.getStreamMetadata(), image, jpegWriter.getDefaultWriteParam());
 
     }
 
@@ -192,7 +231,7 @@ public class ExifGpsWriter extends JGTModel {
      * @param app1EXIFNode app1 Node of the image (where the exif data is stored)
      * @return the exif metadata
      */
-    private ArrayList readExif( IIOMetadataNode app1EXIFNode ) {
+    private ArrayList<IIOMetadata> readExif( IIOMetadataNode app1EXIFNode ) {
         // Set up input skipping EXIF ID 6-byte sequence.
         byte[] app1Params = (byte[]) app1EXIFNode.getUserObject();
 
@@ -201,7 +240,7 @@ public class ExifGpsWriter extends JGTModel {
 
         // only the tiff reader knows how to interpret the exif metadata
         ImageReader tiffReader = null;
-        Iterator readers = ImageIO.getImageReadersByFormatName("tiff");
+        Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("tiff");
 
         while( readers.hasNext() ) {
             tiffReader = (ImageReader) readers.next();
@@ -214,7 +253,7 @@ public class ExifGpsWriter extends JGTModel {
             System.out.println("Cannot find core TIFF reader!");
         }
 
-        ArrayList out = new ArrayList(1);
+        ArrayList<IIOMetadata> out = new ArrayList<IIOMetadata>(1);
 
         tiffReader.setInput(app1EXIFInput);
 
@@ -310,7 +349,7 @@ public class ExifGpsWriter extends JGTModel {
      * @param exif the exif metadata to add the position to
      * 
      */
-    private IIOMetadata insertGPSCoords( GPSPosition pos, IIOMetadata exif ) {
+    private IIOMetadata insertGPSCoords( IIOMetadata exif ) {
 
         IIOMetadata outExif = null;
         try {
@@ -326,7 +365,7 @@ public class ExifGpsWriter extends JGTModel {
                 // this assumes that the EXIFParentTIFFTagSet is allowed on the tiff image reader
 
                 // first construct the directory to hold the GPS data
-                TIFFDirectory gpsData = pos.createDirectory();
+                TIFFDirectory gpsData = createDirectory();
 
                 // Create the pointer with the data
                 EXIFParentTIFFTagSet parentSet = EXIFParentTIFFTagSet.getInstance();
@@ -346,4 +385,116 @@ public class ExifGpsWriter extends JGTModel {
 
     }
 
+    private TIFFDirectory createDirectory() {
+
+        EXIFGPSTagSet gpsTags = EXIFGPSTagSet.getInstance();
+
+        ArrayList tags = new ArrayList();
+        tags.add(gpsTags);
+        TIFFDirectory directory = new TIFFIFD(tags, EXIFParentTIFFTagSet.getInstance().getTag(
+                EXIFParentTIFFTagSet.TAG_GPS_INFO_IFD_POINTER));
+        // TIFFDirectory directory = new TIFFDirectory(new
+        // TIFFTagSet[]{gpsTags},EXIFParentTIFFTagSet.getInstance().getTag(EXIFParentTIFFTagSet.TAG_GPS_INFO_IFD_POINTER));
+
+        // create the new fields
+
+        // version field
+        TIFFField field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_VERSION_ID), TIFFTag.TIFF_BYTE, 4,
+                EXIFGPSTagSet.GPS_VERSION_2_2);
+        directory.addTIFFField(field);
+        // lat reference
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_LATITUDE_REF), TIFFTag.TIFF_ASCII, 2, latRef);
+        directory.addTIFFField(field);
+        // latitude
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_LATITUDE), TIFFTag.TIFF_RATIONAL, 3, latitude);
+        directory.addTIFFField(field);
+        // long reference
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_LONGITUDE_REF), TIFFTag.TIFF_ASCII, 2, longRef);
+        directory.addTIFFField(field);
+        // longitude
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_LONGITUDE), TIFFTag.TIFF_RATIONAL, 3, longitude);
+        directory.addTIFFField(field);
+        // time stamp
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_TIME_STAMP), TIFFTag.TIFF_RATIONAL, 3, timeStamp);
+        directory.addTIFFField(field);
+        // status
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_STATUS), TIFFTag.TIFF_ASCII, 2, status);
+        directory.addTIFFField(field);
+        // date stamp
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_DATE_STAMP), TIFFTag.TIFF_ASCII, 11, dateStamp);
+        directory.addTIFFField(field);
+        // datum
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_MAP_DATUM), TIFFTag.TIFF_ASCII, 6, datum);
+        directory.addTIFFField(field);
+        // altitude reference
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_ALTITUDE_REF), TIFFTag.TIFF_BYTE, 1, altRef);
+        directory.addTIFFField(field);
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_ALTITUDE), TIFFTag.TIFF_RATIONAL, 1, altitude);
+        directory.addTIFFField(field);
+        // add the direction
+        imgDirectionRef[0] = EXIFGPSTagSet.DIRECTION_REF_TRUE;
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_IMG_DIRECTION_REF), TIFFTag.TIFF_ASCII, 2, imgDirectionRef);
+        directory.addTIFFField(field);
+        if (imgDirection == null)
+            imgDirection = new long[][]{{0, 100}};
+        field = new TIFFField(gpsTags.getTag(EXIFGPSTagSet.TAG_GPS_IMG_DIRECTION), TIFFTag.TIFF_RATIONAL, 1, imgDirection);
+        directory.addTIFFField(field);
+
+        return directory;
+    }
+
+    // assumes the the format is HHMM.MMMM
+    private long[][] getLatitude( String lat ) {
+
+        float secs = Float.parseFloat("0" + lat.substring(4)) * 60.f;
+        long nom = (long) (secs * 1000);
+
+        long[][] latl = new long[][]{{Long.parseLong(lat.substring(0, 2)), 1}, {Long.parseLong(lat.substring(2, 4)), 1},
+                {nom, 1000}};
+
+        return latl;
+    }
+
+    // assumes the the format is HHHMM.MMMM
+    private long[][] getLongitude( String longi ) {
+
+        float secs = Float.parseFloat("0" + longi.substring(5)) * 60.f;
+        long nom = (long) (secs * 1000);
+
+        long[][] longl = new long[][]{{Long.parseLong(longi.substring(0, 3)), 1}, {Long.parseLong(longi.substring(3, 5)), 1},
+                {nom, 1000}};
+
+        return longl;
+    }
+
+    /**
+     * Convert a time to exif format.
+     * 
+     * @param time the time in format HHMMSS.
+     * @return the exif time object.
+     */
+    private long[][] getTime( String time ) {
+        long[][] timel = new long[][]{{Long.parseLong(time.substring(0, 2)), 1}, {Long.parseLong(time.substring(2, 4)), 1},
+                {Long.parseLong(time.substring(4)), 1}};
+        return timel;
+    }
+
+    /**
+     * Convert a date to exif date.
+     * 
+     * @param date the date in format YYYY:MM:DD
+     * @return the exif date object.
+     */
+    private String[] getDate( String date ) {
+
+        String dateStr = "20" + date.substring(4) + ":" + date.substring(2, 4) + ":" + date.substring(0, 2);
+
+        String[] dateArray = new String[11];
+
+        for( int i = 0; i < dateStr.length(); i++ )
+            dateArray[i] = dateStr.substring(i, i + 1);
+        dateArray[10] = "";
+
+        return dateArray;
+    }
 }
