@@ -36,6 +36,8 @@ import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -76,7 +78,7 @@ public class PenmanEtp extends JGTModel {
     @Description("The windspeed data.")
     @In
     public HashMap<Integer, double[]> inWind;
-    
+
     @Description("The pressure data.")
     @In
     public HashMap<Integer, double[]> inPressure;
@@ -88,6 +90,10 @@ public class PenmanEtp extends JGTModel {
     @Description("The current timestamp (format: yyyy-MM-dd HH:mm ).")
     @In
     public String tCurrent;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("Daily evapotranspiration.")
     @Unit("mm/day")
@@ -115,8 +121,7 @@ public class PenmanEtp extends JGTModel {
     @Execute
     public void penman() {
 
-        checkNull(inPressure, inTemp, inRh, inWind, inSwe,  inVegetation, inShortradiation,
-                inNetradiation);
+        checkNull(inPressure, inTemp, inRh, inWind, inSwe, inVegetation, inShortradiation, inNetradiation);
 
         outEtp = new HashMap<Integer, double[]>();
 
@@ -142,9 +147,6 @@ public class PenmanEtp extends JGTModel {
             double RGL = vegetation.getRgl();
             double lai = vegetation.getLai(monthOfYear);
             double rarc = vegetation.getArchitecturalResistance();
-            
-            // FIXME remove the moisture
-            double soilMoisture = Double.NaN;
 
             /*
              * set the pressure in Pascal instead of in hPa as the input link gives 
@@ -153,21 +155,23 @@ public class PenmanEtp extends JGTModel {
             double vpd = svp(tair) - (relativeHumidity * 100 / svp(tair)); // vpd in KPa
             double ra = calcAerodynamic(displacement, roughness, ZREF, wind, snowWaterEquivalent);
 
-            //CONSIDER THE SOIL RESISTANCE NULL
-//            // calculate gsm_inv: soil moisture stress factor
-//            double criticalSoilMoisture = 0.33; // fraction of soil moisture content at the critical
-//            // point
-//            double wiltingPointSoilMoisture = 0.133;
-//            double waterContentCriticalPoint = criticalSoilMoisture * maxMoisture;
-//            double waterContentWiltingPoint = wiltingPointSoilMoisture * maxMoisture;
-//            double gsm_inv; // soil moisture stress factor
-//            if (soilMoisture >= waterContentCriticalPoint) {
-//                gsm_inv = 1.0;
-//            } else if (soilMoisture >= waterContentWiltingPoint) {
-//                gsm_inv = (soilMoisture - waterContentWiltingPoint) / (waterContentCriticalPoint - waterContentWiltingPoint);
-//            } else {
-//                gsm_inv = 0.0;
-//            }
+            // CONSIDER THE SOIL RESISTANCE NULL
+            // // calculate gsm_inv: soil moisture stress factor
+            // double criticalSoilMoisture = 0.33; // fraction of soil moisture content at the
+            // critical
+            // // point
+            // double wiltingPointSoilMoisture = 0.133;
+            // double waterContentCriticalPoint = criticalSoilMoisture * maxMoisture;
+            // double waterContentWiltingPoint = wiltingPointSoilMoisture * maxMoisture;
+            // double gsm_inv; // soil moisture stress factor
+            // if (soilMoisture >= waterContentCriticalPoint) {
+            // gsm_inv = 1.0;
+            // } else if (soilMoisture >= waterContentWiltingPoint) {
+            // gsm_inv = (soilMoisture - waterContentWiltingPoint) / (waterContentCriticalPoint -
+            // waterContentWiltingPoint);
+            // } else {
+            // gsm_inv = 0.0;
+            // }
             /* calculate the slope of the saturated vapor pressure curve in Pa/K */
             double slope = svp_slope(tair) * 1000.0;
 
@@ -196,7 +200,7 @@ public class PenmanEtp extends JGTModel {
             vpdFactor = (vpdFactor < VPDMINFACTOR) ? VPDMINFACTOR : vpdFactor;
 
             /* calculate canopy resistance in s/m */
-//            double rc = rs / (lai * gsm_inv * tFactor * vpdFactor) * dayFactor;
+            // double rc = rs / (lai * gsm_inv * tFactor * vpdFactor) * dayFactor;
             double rc = rs / (lai * tFactor * vpdFactor) * dayFactor;
             rc = (rc > RSMAX) ? RSMAX : rc;
 
@@ -330,7 +334,7 @@ public class PenmanEtp extends JGTModel {
         } else {
             windSpeed *= tmp_wind;
             ra = HUGE_RESIST;
-            System.out.println("Aerodinamic resistance is set to the maximum value!");
+            pm.message("Aerodinamic resistance is set to the maximum value!");
         }
 
         return ra;
