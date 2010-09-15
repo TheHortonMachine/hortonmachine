@@ -21,15 +21,11 @@ package org.jgrasstools.gears.io.exif;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 
-import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.FileImageInputStream;
-import javax.imageio.stream.ImageInputStream;
-import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -41,16 +37,10 @@ import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.w3c.dom.NodeList;
-
-import com.sun.media.imageio.plugins.tiff.EXIFParentTIFFTagSet;
-import com.sun.media.imageio.plugins.tiff.EXIFTIFFTagSet;
-import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
-import com.sun.media.imageio.plugins.tiff.TIFFField;
 
 @Description("Utility class for reading exif tags in jpegs.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -85,13 +75,6 @@ public class ExifReader extends JGTModel {
 
     @SuppressWarnings("nls")
     private void parseExifMeta( IIOMetadata exifMeta ) {
-        // Specification of "com_sun_media_imageio_plugins_tiff_image_1.0"
-        // http://download.java.net/media/jai-imageio/javadoc/1.1/com/sun/media/imageio/plugins/tiff/package-summary.html
-
-        // tags.addColumn("Tag #");
-        // tags.addColumn("Name");
-        // tags.addColumn("Value(s)");
-
         outTags = new HashMap<String, ExifTag>();
 
         IIOMetadataNode root = (IIOMetadataNode) exifMeta.getAsTree("com_sun_media_imageio_plugins_tiff_image_1.0");
@@ -128,58 +111,6 @@ public class ExifReader extends JGTModel {
                 outTags.put(tagName, exifTag);
             }
         }
-    }
-    /**Returns the EXIF information from the given metadata if present.  The
-     * metadata is assumed to be in <pre>javax_imageio_jpeg_image_1.0</pre> format.
-     * If EXIF information was not present then null is returned.*/
-    private byte[] getEXIF( IIOMetadata meta ) {
-        // http://java.sun.com/javase/6/docs/api/javax/imageio/metadata/doc-files/jpeg_metadata.html
-
-        // javax_imageio_jpeg_image_1.0
-        // -->markerSequence
-        // ---->unknown (attribute: "MarkerTag" val: 225 (for exif))
-
-        IIOMetadataNode root = (IIOMetadataNode) meta.getAsTree("JPEGMetaFormat");
-
-        IIOMetadataNode markerSeq = (IIOMetadataNode) root.getElementsByTagName("markerSequence").item(0);
-
-        NodeList unkowns = markerSeq.getElementsByTagName("unknown");
-        for( int i = 0; i < unkowns.getLength(); i++ ) {
-            IIOMetadataNode marker = (IIOMetadataNode) unkowns.item(i);
-            if ("225".equals(marker.getAttribute("MarkerTag"))) {
-                return (byte[]) marker.getUserObject();
-            }
-        }
-        return null;
-    }
-
-    /**Uses a TIFFImageReader plugin to parse the given exif data into tiff
-     * tags.  The returned IIOMetadata is in whatever format the tiff ImageIO
-     * plugin uses.  If there is no tiff plugin, then this method returns null.*/
-    private IIOMetadata getTiffMetaFromEXIF( byte[] exif ) {
-        java.util.Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("tif");
-
-        ImageReader reader;
-        if (!readers.hasNext()) {
-            return null;
-        } else {
-            reader = readers.next();
-        }
-
-        // skip the 6 byte exif header
-        ImageInputStream wrapper = new MemoryCacheImageInputStream(new java.io.ByteArrayInputStream(exif, 6, exif.length - 6));
-        reader.setInput(wrapper, true, false);
-
-        IIOMetadata exifMeta;
-        try {
-            exifMeta = reader.getImageMetadata(0);
-        } catch (Exception e) {
-            // shouldn't happen
-            throw new Error(e);
-        }
-
-        reader.dispose();
-        return exifMeta;
     }
 
 }

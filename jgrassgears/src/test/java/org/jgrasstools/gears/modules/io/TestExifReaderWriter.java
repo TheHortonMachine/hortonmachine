@@ -9,7 +9,6 @@ import java.util.Set;
 import org.jgrasstools.gears.io.exif.ExifGpsWriter;
 import org.jgrasstools.gears.io.exif.ExifReader;
 import org.jgrasstools.gears.io.exif.ExifTag;
-import org.jgrasstools.gears.io.exif.ExifWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
  * Test ExifReader.
@@ -20,13 +19,8 @@ public class TestExifReaderWriter extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testExifReader() throws Exception {
-        // URL testUrl = this.getClass().getClassLoader().getResource("dtm_test.asc");
-        // String path = new File(testUrl.toURI()).getAbsolutePath();
-
-        Class< ? > classs = Class.forName("com.sun.media.imageioimpl.plugins.tiff.TIFFImageMetadata");
         
         File img = new File("/home/moovida/Desktop/android_sdcard/geopaparazzi/pictures/IMG_20100619_112532.jpg");
-        // File img = new File("/home/moovida/Desktop/rilievo_drava/DCIM/100CANON/IMG_3801.JPG");
 
         dumpExifData(img);
 

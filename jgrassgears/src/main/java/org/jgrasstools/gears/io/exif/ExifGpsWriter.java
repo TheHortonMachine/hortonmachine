@@ -22,11 +22,9 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.imageio.IIOImage;
@@ -38,7 +36,6 @@ import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOInvalidTreeException;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
@@ -51,21 +48,16 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.joda.time.format.DateTimeFormatter;
 import org.w3c.dom.NodeList;
 
 import com.sun.media.imageio.plugins.tiff.EXIFGPSTagSet;
 import com.sun.media.imageio.plugins.tiff.EXIFParentTIFFTagSet;
-import com.sun.media.imageio.plugins.tiff.EXIFTIFFTagSet;
 import com.sun.media.imageio.plugins.tiff.TIFFDirectory;
 import com.sun.media.imageio.plugins.tiff.TIFFField;
 import com.sun.media.imageio.plugins.tiff.TIFFImageReadParam;
@@ -80,6 +72,7 @@ import com.sun.media.imageioimpl.plugins.tiff.TIFFIFD;
 @Keywords("IO, Jpeg, Exif, Reading")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
+@SuppressWarnings("nls")
 public class ExifGpsWriter extends JGTModel {
     @Description("The jpeg file.")
     @In
@@ -136,8 +129,6 @@ public class ExifGpsWriter extends JGTModel {
 
     private DecimalFormat latFormatter = new DecimalFormat("0000.0000");
     private DecimalFormat lonFormatter = new DecimalFormat("00000.0000");
-
-    private DateTimeFormatter dateFormatter = JGTConstants.utcDateFormatterYYYYMMDDHHMMSS;
 
     @Execute
     public void writeGpsExif() throws IOException {
@@ -285,9 +276,9 @@ public class ExifGpsWriter extends JGTModel {
         IIOMetadataNode app1Node = null;
         ImageWriter tiffWriter = null;
         try {
-            Iterator writers = ImageIO.getImageWritersByFormatName("tiff");
+            Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("tiff");
             while( writers.hasNext() ) {
-                tiffWriter = (ImageWriter) writers.next();
+                tiffWriter = writers.next();
                 if (tiffWriter.getClass().getName().startsWith("com.sun.media")) {
                     // Break on finding the core provider.
                     break;
@@ -389,7 +380,7 @@ public class ExifGpsWriter extends JGTModel {
 
         EXIFGPSTagSet gpsTags = EXIFGPSTagSet.getInstance();
 
-        ArrayList tags = new ArrayList();
+        ArrayList<EXIFGPSTagSet> tags = new ArrayList<EXIFGPSTagSet>();
         tags.add(gpsTags);
         TIFFDirectory directory = new TIFFIFD(tags, EXIFParentTIFFTagSet.getInstance().getTag(
                 EXIFParentTIFFTagSet.TAG_GPS_INFO_IFD_POINTER));
