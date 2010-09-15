@@ -30,7 +30,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -39,7 +39,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryCollection;
@@ -56,7 +55,7 @@ public class GeometrySimplifier extends JGTModel {
 
     @Description("The features to be simplified.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inFeatures;
+    public SimpleFeatureCollection inFeatures;
 
     @Description("The simplification type: TopologyPreservingSimplifier = 0, Douglas Peucker = 1 (default = 0).")
     @In
@@ -72,7 +71,7 @@ public class GeometrySimplifier extends JGTModel {
 
     @Description("The simplified features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
+    public SimpleFeatureCollection outFeatures;
 
     private GeometryFactory gF = GeometryUtilities.gf();
 

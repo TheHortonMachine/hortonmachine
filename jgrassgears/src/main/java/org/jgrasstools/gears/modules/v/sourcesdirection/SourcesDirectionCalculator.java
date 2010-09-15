@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules.v.sourcesdirection;
 
 import static java.lang.Double.NaN;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridToWorld;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
@@ -39,7 +39,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
@@ -52,8 +52,6 @@ import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithmObjects;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -67,7 +65,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The source point features.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inSources;
+    public SimpleFeatureCollection inSources;
 
     @Description("Resolution to use.")
     @In
@@ -83,7 +81,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The source point features with the added azimuth angle.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outSources;
+    public SimpleFeatureCollection outSources;
 
     @Execute
     public void process() throws Exception {

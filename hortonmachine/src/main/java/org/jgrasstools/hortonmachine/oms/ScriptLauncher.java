@@ -25,8 +25,8 @@ import groovy.lang.GroovyShell;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 
 import oms3.CLI;

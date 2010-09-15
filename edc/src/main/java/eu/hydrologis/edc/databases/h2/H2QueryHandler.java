@@ -93,9 +93,9 @@ public class H2QueryHandler implements QueryHandler {
         // }
         //
         // DataStore spatialDataStore = h2SessionFactory.getSpatialDataStore();
-        // FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = spatialDataStore
+        // SimpleFeatureSource featureSource = spatialDataStore
         // .getFeatureSource(tableName);
-        // FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = featureSource
+        // SimpleFeatureCollection featureCollection = featureSource
         // .getFeatures(filter);
         // FeatureIterator<SimpleFeature> featureIterator = featureCollection.features();
         //
@@ -189,7 +189,7 @@ public class H2QueryHandler implements QueryHandler {
         // Object[] values = new Object[]{reporjectedPoint, id};
         // builder.addAll(values);
         // SimpleFeature feature = builder.buildFeature(tableName + "." + id);
-        // FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+        // SimpleFeatureCollection newCollection = FeatureCollections
         // .newCollection();
         // newCollection.add(feature);
         //

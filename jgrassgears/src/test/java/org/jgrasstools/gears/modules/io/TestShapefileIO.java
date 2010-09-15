@@ -3,7 +3,7 @@ package org.jgrasstools.gears.modules.io;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -34,7 +34,7 @@ public class TestShapefileIO extends HMTestCase {
         b.add("the_geom", Point.class);
         b.add("id", Integer.class);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+        SimpleFeatureCollection newCollection = FeatureCollections
                 .newCollection();
         SimpleFeatureType type = b.buildFeatureType();
         for( int i = 0; i < 2; i++ ) {
@@ -61,7 +61,7 @@ public class TestShapefileIO extends HMTestCase {
         ShapefileFeatureReader reader = new ShapefileFeatureReader();
         reader.file = tmpShape.getAbsolutePath();
         reader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> readFC = reader.geodata;
+        SimpleFeatureCollection readFC = reader.geodata;
 
         FeatureIterator<SimpleFeature> featureIterator = readFC.features();
         while( featureIterator.hasNext() ) {

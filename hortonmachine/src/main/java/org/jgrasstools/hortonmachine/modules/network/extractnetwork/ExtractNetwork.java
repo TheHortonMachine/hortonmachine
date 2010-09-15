@@ -42,16 +42,14 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 /**
  * <p>
  * The openmi compliant representation of the extractnetwork model. It extracts
@@ -141,7 +139,7 @@ public class ExtractNetwork extends JGTModel {
     
     @Description("The feature collection of the network.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outNetfc = null;
+    public SimpleFeatureCollection outNetfc = null;
 
     /*
      * INTERNAL VARIABLES

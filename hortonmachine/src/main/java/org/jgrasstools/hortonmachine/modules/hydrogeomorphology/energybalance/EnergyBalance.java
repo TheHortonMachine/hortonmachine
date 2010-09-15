@@ -65,7 +65,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
@@ -90,7 +90,7 @@ public class EnergyBalance extends JGTModel {
 
     @Description("The feature collection of basins to process.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inBasins;
+    public SimpleFeatureCollection inBasins;
 
     @Description("The field of the basins feature collection that hold the id.")
     @In

@@ -27,9 +27,9 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.data.FeatureSource;
 import org.geotools.data.memory.MemoryDataStore;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -59,7 +59,7 @@ public class ContourLinesLabeler extends JGTModel {
 
     @Description("The contour lines.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inContour;
+    public SimpleFeatureCollection inContour;
 
     @Description("Field name of the contour elevation")
     @In
@@ -67,7 +67,7 @@ public class ContourLinesLabeler extends JGTModel {
 
     @Description("The lines to intersect with the contours to generate label points.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inLines;
+    public SimpleFeatureCollection inLines;
 
     @Description("The buffer to consider for every line.")
     @In
@@ -79,7 +79,7 @@ public class ContourLinesLabeler extends JGTModel {
 
     @Description("The labeled point layer.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outPoints = null;
+    public SimpleFeatureCollection outPoints = null;
 
     @SuppressWarnings("nls")
     @Execute
@@ -89,7 +89,7 @@ public class ContourLinesLabeler extends JGTModel {
         }
         SimpleFeatureType inSchema = inContour.getSchema();
         MemoryDataStore memDatastore = new MemoryDataStore(inContour);
-        FeatureSource<SimpleFeatureType, SimpleFeature> contourSource = memDatastore
+        SimpleFeatureSource contourSource = memDatastore
                 .getFeatureSource(memDatastore.getTypeNames()[0]);
 
         CoordinateReferenceSystem crs = inSchema.getCoordinateReferenceSystem();
@@ -113,7 +113,7 @@ public class ContourLinesLabeler extends JGTModel {
             BoundingBox lineBounds = line.getBounds();
 
             Filter bboxFilter = FilterUtilities.getBboxFilter("the_geom", lineBounds);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> filteredContours = contourSource
+            SimpleFeatureCollection filteredContours = contourSource
                     .getFeatures(bboxFilter);
 
             FeatureIterator<SimpleFeature> contourIterator = filteredContours.features();

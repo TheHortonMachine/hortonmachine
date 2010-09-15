@@ -18,14 +18,12 @@
  */
 package org.jgrasstools.gears.modules;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.v.contourlabels.ContourLinesLabeler;
 import org.jgrasstools.gears.utils.HMTestCase;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Test for the {@link ContourLinesLabeler} modules.
@@ -44,12 +42,12 @@ public class TestCountourLinesLabeler extends HMTestCase {
         ShapefileFeatureReader reader = new ShapefileFeatureReader();
         reader.file = contours;
         reader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> contoursFC = reader.geodata;
+        SimpleFeatureCollection contoursFC = reader.geodata;
 
         reader = new ShapefileFeatureReader();
         reader.file = lines;
         reader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> linesFC = reader.geodata;
+        SimpleFeatureCollection linesFC = reader.geodata;
 
         ContourLinesLabeler labeler = new ContourLinesLabeler();
         labeler.pm = pm;
@@ -59,7 +57,7 @@ public class TestCountourLinesLabeler extends HMTestCase {
         labeler.buffer = 10.0;
         labeler.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outPoints = labeler.outPoints;
+        SimpleFeatureCollection outPoints = labeler.outPoints;
 
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = points;

@@ -38,7 +38,7 @@ import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -55,7 +55,7 @@ public class ShapefileFeatureWriter extends JGTModel {
 
     @Description("The feature collection to write.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> geodata = null;
+    public SimpleFeatureCollection geodata = null;
 
     private boolean hasWritten = false;
 
@@ -100,7 +100,7 @@ public class ShapefileFeatureWriter extends JGTModel {
     }
 
     public static void writeShapefile( String path,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection )
+            SimpleFeatureCollection featureCollection )
             throws IOException {
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = path;

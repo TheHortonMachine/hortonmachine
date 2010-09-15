@@ -24,7 +24,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -237,7 +237,7 @@ public abstract class MonitoringPoint
      * @param monitoringPointsList
      * @return the featurecollection
      */
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> toFeatureCollection(
+    public SimpleFeatureCollection toFeatureCollection(
             List<MonitoringPoint> monitoringPointsList ) {
 
         // create the feature type
@@ -260,7 +260,7 @@ public abstract class MonitoringPoint
          * insert them in inverse order to get them out of the collection in the same order as the
          * list
          */
-        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+        SimpleFeatureCollection newCollection = FeatureCollections
                 .newCollection();
         for( int i = 0; i < monitoringPointsList.size(); i++ ) {
             MonitoringPoint mp = monitoringPointsList.get(monitoringPointsList.size() - i - 1);

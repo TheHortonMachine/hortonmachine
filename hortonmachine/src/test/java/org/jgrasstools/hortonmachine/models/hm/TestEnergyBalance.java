@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
@@ -14,15 +14,9 @@ import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
-import org.jgrasstools.gears.io.timeseries.PlainId2ValueReader;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 /**
  * Test EnergyBalance.
  * 
@@ -68,7 +62,7 @@ public class TestEnergyBalance extends HMTestCase {
         ShapefileFeatureReader basinsReader = new ShapefileFeatureReader();
         basinsReader.file = new File(basinsUrl.toURI()).getAbsolutePath();
         basinsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> basinsFC = basinsReader.geodata;
+        SimpleFeatureCollection basinsFC = basinsReader.geodata;
 
         TimeseriesByStepReaderId2Value rainReader = new TimeseriesByStepReaderId2Value();
         rainReader.file = new File(rainUrl.toURI()).getAbsolutePath();

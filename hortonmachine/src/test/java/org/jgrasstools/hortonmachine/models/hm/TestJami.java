@@ -5,21 +5,18 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
 import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayWriter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 /**
  * Test jami.
  * 
@@ -51,12 +48,12 @@ public class TestJami extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = new File(stationsUrl.toURI()).getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader basinsReader = new ShapefileFeatureReader();
         basinsReader.file = new File(basinsUrl.toURI()).getAbsolutePath();
         basinsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> basinsFC = basinsReader.geodata;
+        SimpleFeatureCollection basinsFC = basinsReader.geodata;
 
         TimeseriesByStepReaderId2Value dataReader = new TimeseriesByStepReaderId2Value();
         dataReader.file = stationDataFile.getAbsolutePath();

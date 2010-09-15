@@ -49,7 +49,7 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.gce.grassraster.JGrassConstants;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
@@ -75,7 +75,7 @@ public class Jami extends JGTModel {
     @Description("The features representing the meteo stations " + "and containing the position information as well " + "as the elevation. Every feature has a unique id "
             + "that is used to map the meteo data records to it.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inStations;
+    public SimpleFeatureCollection inStations;
 
     @Role(Role.PARAMETER)
     @Description("The field name of the attribute table that holds the station id.")
@@ -100,7 +100,7 @@ public class Jami extends JGTModel {
     @Description("The features representing the points in which the meteo data will be interpolated to. The baricenter of the basin is used to place the result of"
             + "the interpolation. These can be of any shape, the baricenter will be used anyways.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inInterpolate;
+    public SimpleFeatureCollection inInterpolate;
 
     @Role(Role.PARAMETER)
     @Description("The field name of the attribute table that holds the basin id.")

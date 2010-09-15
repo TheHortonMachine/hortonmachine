@@ -48,7 +48,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -96,7 +96,7 @@ public class MarchingSquaresVectorializer extends JGTModel {
 
     @Description("The extracted features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
+    public SimpleFeatureCollection outGeodata = null;
 
     @Description("The extracted polygons in the image space.")
     @Out

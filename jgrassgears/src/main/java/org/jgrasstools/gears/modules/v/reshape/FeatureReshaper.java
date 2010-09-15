@@ -30,7 +30,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
@@ -69,7 +69,7 @@ public class FeatureReshaper extends JGTModel {
 
     @Description("The features to reshape.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inFeatures;
+    public SimpleFeatureCollection inFeatures;
 
     @Description("The CQL reshape function.")
     @In
@@ -81,7 +81,7 @@ public class FeatureReshaper extends JGTModel {
 
     @Description("The filtered features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
+    public SimpleFeatureCollection outFeatures;
 
     private SimpleFeature sample = null;
 

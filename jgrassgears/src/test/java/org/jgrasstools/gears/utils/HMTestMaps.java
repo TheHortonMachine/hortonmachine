@@ -22,7 +22,7 @@ import static java.lang.Double.NaN;
 
 import java.util.HashMap;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -46,7 +46,7 @@ public class HMTestMaps {
 
     public static CoordinateReferenceSystem crs = null;
 
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> testFC;
+    public static SimpleFeatureCollection testFC;
 
     static {
         double n = 5140020.0;
@@ -897,7 +897,7 @@ public class HMTestMaps {
         {800, 910, 980, 1001, 1150, 1200, 1250, 1300, NaN, NaN}};
     
 
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFcFromPoint(
+    public static SimpleFeatureCollection createFcFromPoint(
             Coordinate point, CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("test");

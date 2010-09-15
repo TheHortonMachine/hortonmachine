@@ -35,11 +35,11 @@ import oms3.annotations.In;
 import oms3.annotations.Out;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 public class TopIndex extends JGTModel {
 
     @Description("The map of the total contributing area.")

@@ -19,7 +19,6 @@
 package org.jgrasstools.hortonmachine.utils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;

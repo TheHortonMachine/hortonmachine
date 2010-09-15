@@ -2,9 +2,7 @@ package org.jgrasstools.gears.modules.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;

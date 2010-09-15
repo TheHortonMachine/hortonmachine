@@ -19,7 +19,6 @@
 package org.jgrasstools.gears.modules.v.intersections;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.jgrasstools.gears.libs.modules.ClassField;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;

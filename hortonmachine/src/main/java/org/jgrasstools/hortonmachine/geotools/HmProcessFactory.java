@@ -19,7 +19,6 @@
 package org.jgrasstools.hortonmachine.geotools;
 
 import java.awt.RenderingHints.Key;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -29,7 +28,6 @@ import java.util.Set;
 import org.geotools.data.Parameter;
 import org.geotools.feature.NameImpl;
 import org.geotools.process.Process;
-import org.geotools.process.ProcessException;
 import org.geotools.process.ProcessFactory;
 import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.ClassField;

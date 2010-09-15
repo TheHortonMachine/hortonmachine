@@ -30,18 +30,14 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 @Description("Module that joins attributes from one featurecollection into another based on a common field.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -52,7 +48,7 @@ public class AttributesJoiner extends JGTModel {
 
     @Description("The features to extend.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inFeatures;
+    public SimpleFeatureCollection inFeatures;
 
     @Description("The dbf tabledata to merge in.")
     @In
@@ -72,7 +68,7 @@ public class AttributesJoiner extends JGTModel {
 
     @Description("The joined features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
+    public SimpleFeatureCollection outFeatures;
 
     @Execute
     public void process() throws Exception {

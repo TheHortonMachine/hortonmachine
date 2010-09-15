@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.coveragereprojector.CoverageReprojector;
@@ -30,7 +30,6 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -82,7 +81,7 @@ public class TestReprojectors extends HMTestCase {
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         FeatureReprojector reprojector = new FeatureReprojector();
         reprojector.inGeodata = testFC;
@@ -90,7 +89,7 @@ public class TestReprojectors extends HMTestCase {
         reprojector.pm = pm;
         reprojector.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outFC = reprojector.outGeodata;
+        SimpleFeatureCollection outFC = reprojector.outGeodata;
 
         FeatureIterator<SimpleFeature> featureIterator = outFC.features();
         while( featureIterator.hasNext() ) {

@@ -22,7 +22,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -57,8 +57,8 @@ public class NetBasinsManager {
      * @return the list of ordered hillslopes, starting from the most downstream one
      * @throws Exception
      */
-    public List<HillSlope> operateOnLayers( FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection, String netnumAttr, String pfafAttr,
+    public List<HillSlope> operateOnLayers( SimpleFeatureCollection netFeatureCollection,
+            SimpleFeatureCollection hillslopeFeatureCollection, String netnumAttr, String pfafAttr,
             String startelevAttr, String endelevAttr, String baricenterAttr, String vegetationAttributeName, double pKs,
             double pMstexp, double pSpecyield, double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat,
             IJGTProgressMonitor out ) throws Exception {

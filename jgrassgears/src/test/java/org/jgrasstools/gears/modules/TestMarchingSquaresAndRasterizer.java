@@ -25,15 +25,13 @@ import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -60,7 +58,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -100,7 +98,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -140,7 +138,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -189,7 +187,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -238,7 +236,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -287,7 +285,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again
@@ -328,7 +326,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 
         squares.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+        SimpleFeatureCollection outGeodata = squares.outGeodata;
 
         /*
          * and rasterize back again

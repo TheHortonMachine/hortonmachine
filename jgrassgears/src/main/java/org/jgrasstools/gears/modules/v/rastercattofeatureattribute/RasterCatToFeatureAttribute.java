@@ -35,11 +35,10 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
@@ -70,7 +69,7 @@ public class RasterCatToFeatureAttribute {
 
     @Description("The feature collection to use for the geometric mapping.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inFC = null;
+    public SimpleFeatureCollection inFC = null;
 
     @Description("The name for the new field to create.")
     @In
@@ -86,7 +85,7 @@ public class RasterCatToFeatureAttribute {
 
     @Description("The extended features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
+    public SimpleFeatureCollection outGeodata = null;
 
     private static final String MIDDLE = "middle";
     private static final String START = "start";

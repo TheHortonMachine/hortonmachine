@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
@@ -29,7 +29,6 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class TestRasterCatToFeatureAttribute extends HMTestCase {
@@ -41,7 +40,7 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
                 elevationData, envelopeParams, crs, true);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> inFC = HMTestMaps.testFC;
+        SimpleFeatureCollection inFC = HMTestMaps.testFC;
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
@@ -52,7 +51,7 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
         rc2fa.fNew = "elev";
         rc2fa.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outMap = rc2fa.outGeodata;
+        SimpleFeatureCollection outMap = rc2fa.outGeodata;
 
         FeatureIterator<SimpleFeature> features = outMap.features();
         while( features.hasNext() ) {

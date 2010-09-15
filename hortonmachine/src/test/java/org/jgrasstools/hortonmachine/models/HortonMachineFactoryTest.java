@@ -15,7 +15,6 @@ import org.geotools.process.Processors;
 import org.geotools.process.Progress;
 import org.junit.Test;
 import org.opengis.feature.type.Name;
-import org.opengis.util.InternationalString;
 
 /**
  * Time to check that GearsProcessFactry meets the process api.

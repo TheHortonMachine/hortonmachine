@@ -32,11 +32,12 @@ import java.util.Set;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -180,8 +181,8 @@ public class FeatureUtilities {
      * @param features - the vectore of features
      * @return the created featurecollection
      */
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFeatureCollection( SimpleFeature... features ) {
-        FeatureCollection<SimpleFeatureType, SimpleFeature> fcollection = FeatureCollections.newCollection();
+    public static SimpleFeatureCollection createFeatureCollection( SimpleFeature... features ) {
+        SimpleFeatureCollection fcollection = FeatureCollections.newCollection();
 
         for( SimpleFeature feature : features ) {
             fcollection.add(feature);
@@ -208,7 +209,7 @@ public class FeatureUtilities {
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs, LinkedHashMap<String, Integer> fieldsAndTypesIndex,
+    public static SimpleFeatureCollection csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs, LinkedHashMap<String, Integer> fieldsAndTypesIndex,
             String separator, IJGTProgressMonitor pm ) throws Exception {
         GeometryFactory gf = new GeometryFactory();
         Map<String, Class< ? >> typesMap = JGrassConstants.CSVTYPESCLASSESMAP;
@@ -242,7 +243,7 @@ public class FeatureUtilities {
         }
         SimpleFeatureType featureType = b.buildFeatureType();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         Collection<Integer> orderedTypeIndexes = fieldsAndTypesIndex.values();
         Integer[] orderedTypeIndexesArray = (Integer[]) orderedTypeIndexes.toArray(new Integer[orderedTypeIndexes.size()]);
 
@@ -310,7 +311,7 @@ public class FeatureUtilities {
      * @param fet the featurecollection
      * @throws IOException 
      */
-    public static synchronized boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs, FeatureCollection<SimpleFeatureType, SimpleFeature> fet ) throws IOException {
+    public static synchronized boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs, SimpleFeatureCollection fet ) throws IOException {
 
         // Create the file you want to write to
         File file = null;
@@ -391,7 +392,7 @@ public class FeatureUtilities {
      * @param collection the featurecollection
      * @throws IOException 
      */
-    private static synchronized boolean writeToShapefile( ShapefileDataStore data, FeatureCollection<SimpleFeatureType, SimpleFeature> collection ) throws IOException {
+    private static synchronized boolean writeToShapefile( ShapefileDataStore data, SimpleFeatureCollection collection ) throws IOException {
         String featureName = data.getTypeNames()[0]; // there is only one in
         // a shapefile
         FeatureStore<SimpleFeatureType, SimpleFeature> store = null;
@@ -404,7 +405,7 @@ public class FeatureUtilities {
 
             // Tell it the name of the shapefile it should look for in our
             // DataStore
-            FeatureSource<SimpleFeatureType, SimpleFeature> source = data.getFeatureSource(featureName);
+            SimpleFeatureSource source = data.getFeatureSource(featureName);
             store = (FeatureStore<SimpleFeatureType, SimpleFeature>) source;
             store.addFeatures(collection);
             data.getFeatureWriter(transaction);

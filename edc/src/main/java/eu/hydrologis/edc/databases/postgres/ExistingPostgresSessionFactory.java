@@ -17,13 +17,10 @@
  */
 package eu.hydrologis.edc.databases.postgres;
 
-import static eu.hydrologis.edc.utils.Constants.*;
-import static eu.hydrologis.edc.utils.Constants.EDCGEOMETRIES_SCHEMA;
-import static eu.hydrologis.edc.utils.Constants.FORMAT_SQL;
+import static eu.hydrologis.edc.utils.Constants.DATABASE;
 import static eu.hydrologis.edc.utils.Constants.HOST;
 import static eu.hydrologis.edc.utils.Constants.PASS;
 import static eu.hydrologis.edc.utils.Constants.PORT;
-import static eu.hydrologis.edc.utils.Constants.SHOW_SQL;
 import static eu.hydrologis.edc.utils.Constants.TYPE;
 import static eu.hydrologis.edc.utils.Constants.USER;
 

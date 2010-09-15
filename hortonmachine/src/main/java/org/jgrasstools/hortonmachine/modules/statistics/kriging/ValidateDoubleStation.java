@@ -13,7 +13,7 @@ import oms3.annotations.License;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -22,7 +22,6 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -36,7 +35,7 @@ public class ValidateDoubleStation extends JGTModel {
 
 	@Description("The collection of the measurement point, containing the position of the station.")
 	@In
-	public FeatureCollection<SimpleFeatureType, SimpleFeature> inStations = null;
+	public SimpleFeatureCollection inStations = null;
 
 	@Description("The field of the stations collections, defining the id.")
 	@In
@@ -52,7 +51,7 @@ public class ValidateDoubleStation extends JGTModel {
 
 	@Description("The collection of the measurement point, containing the position of the station without the double point.")
 	@In
-	public FeatureCollection<SimpleFeatureType, SimpleFeature> outStations = null;
+	public SimpleFeatureCollection outStations = null;
 
 	@Role(Role.PARAMETER)
 	@Description("The progress monitor.")

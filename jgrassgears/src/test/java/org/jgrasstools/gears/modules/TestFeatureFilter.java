@@ -18,13 +18,12 @@
  */
 package org.jgrasstools.gears.modules;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.modules.v.featurefilter.FeatureFilter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 /**
  * Test for the reprojection modules.
  * 
@@ -35,13 +34,13 @@ public class TestFeatureFilter extends HMTestCase {
     @SuppressWarnings("nls")
     public void testFeatureFilter() throws Exception {
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         FeatureFilter filter = new FeatureFilter();
         filter.inFeatures = testFC;
         filter.pCql = "cat > 2";
         filter.process();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outFC = filter.outFeatures;
+        SimpleFeatureCollection outFC = filter.outFeatures;
 
         FeatureIterator<SimpleFeature> featureIterator = outFC.features();
         SimpleFeature feature = featureIterator.next();

@@ -31,7 +31,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
@@ -43,7 +43,6 @@ import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.densify.Densifier;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -65,11 +64,11 @@ public class LineSmoother extends JGTModel {
 
     @Description("The features to be smoothed.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> linesFeatures;
+    public SimpleFeatureCollection linesFeatures;
 
     @Description("The point features that define intersections.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> pointFeatures;
+    public SimpleFeatureCollection pointFeatures;
 
     @Description("The smoothing type: McMasters smoothing average (0 = default).")
     @In
@@ -101,7 +100,7 @@ public class LineSmoother extends JGTModel {
 
     @Description("The smoothed features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outFeatures;
+    public SimpleFeatureCollection outFeatures;
 
     private GeometryFactory gF = GeometryUtilities.gf();
 
@@ -202,7 +201,7 @@ public class LineSmoother extends JGTModel {
      */
     public static void defaultSmoothShapefile( String shapePath, String outPath ) throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> initialFC = ShapefileFeatureReader
+        SimpleFeatureCollection initialFC = ShapefileFeatureReader
                 .readShapefile(shapePath);
 
         LineSmoother smoother = new LineSmoother();
@@ -215,7 +214,7 @@ public class LineSmoother extends JGTModel {
         smoother.pSimplify = 0.01;
         smoother.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> smoothedFeatures = smoother.outFeatures;
+        SimpleFeatureCollection smoothedFeatures = smoother.outFeatures;
 
         ShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures);
     }

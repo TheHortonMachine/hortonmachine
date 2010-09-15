@@ -44,7 +44,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -87,7 +87,7 @@ public class BasinShape extends JGTModel {
 
     @Description("The extracted basins map.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outBasins = null;
+    public SimpleFeatureCollection outBasins = null;
 
     private int nCols;
     private int nRows;
@@ -112,7 +112,7 @@ public class BasinShape extends JGTModel {
         outBasins = basinShape(basinsRI, pitRI);
     }
 
-    private FeatureCollection<SimpleFeatureType, SimpleFeature> basinShape( RenderedImage basinsRI, RenderedImage pitRI )
+    private SimpleFeatureCollection basinShape( RenderedImage basinsRI, RenderedImage pitRI )
             throws InvalidGridGeometryException, TransformException {
 
         int[] nstream = new int[1];
@@ -153,7 +153,7 @@ public class BasinShape extends JGTModel {
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
         for( int num = 1; num <= nstream[0]; num++ ) {
@@ -253,7 +253,7 @@ public class BasinShape extends JGTModel {
                     continue;
                 }
 
-                FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = squares.outGeodata;
+                SimpleFeatureCollection outGeodata = squares.outGeodata;
                 FeatureIterator<SimpleFeature> outGeodataIterator = outGeodata.features();
                 List<Polygon> polygons = new ArrayList<Polygon>();
                 while( outGeodataIterator.hasNext() ) {

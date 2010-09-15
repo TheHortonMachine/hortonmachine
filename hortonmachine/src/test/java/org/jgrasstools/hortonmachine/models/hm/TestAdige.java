@@ -1,10 +1,8 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.utcDateFormatterYYYYMMDDHHMM;
-
 import java.util.HashMap;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionWriter;
@@ -15,9 +13,6 @@ import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Test Adige.
@@ -66,7 +61,7 @@ public class TestAdige extends HMTestCase {
 
         String fId = "ID";
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFC = ShapefileFeatureReader
+        SimpleFeatureCollection hillslopeFC = ShapefileFeatureReader
                 .readShapefile(hillslopePath);
 
         // meteo
@@ -101,13 +96,13 @@ public class TestAdige extends HMTestCase {
         // fId,
         // startDate, endDate, timeStepMinutes);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hydrometersFC = ShapefileFeatureReader
+        SimpleFeatureCollection hydrometersFC = ShapefileFeatureReader
                 .readShapefile(hydrometersPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> damsFC = ShapefileFeatureReader
+        SimpleFeatureCollection damsFC = ShapefileFeatureReader
                 .readShapefile(damsPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> tributaryFC = ShapefileFeatureReader
+        SimpleFeatureCollection tributaryFC = ShapefileFeatureReader
                 .readShapefile(tributaryPath);
-        // FeatureCollection<SimpleFeatureType, SimpleFeature> offtakesFC = ShapefileFeatureReader
+        // SimpleFeatureCollection offtakesFC = ShapefileFeatureReader
         // .readShapefile(offtakesPath);
 
         VegetationLibraryReader vegetationReader = new VegetationLibraryReader();
@@ -116,7 +111,7 @@ public class TestAdige extends HMTestCase {
         HashMap<Integer, VegetationLibraryRecord> vegetationData = vegetationReader.data;
         vegetationReader.close();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> networkFC = ShapefileFeatureReader
+        SimpleFeatureCollection networkFC = ShapefileFeatureReader
                 .readShapefile(networkPath);
 
         Adige adige = new Adige();

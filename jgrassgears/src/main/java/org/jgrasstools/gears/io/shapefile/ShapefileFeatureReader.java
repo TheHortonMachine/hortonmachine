@@ -33,6 +33,8 @@ import oms3.annotations.Status;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
@@ -50,7 +52,7 @@ public class ShapefileFeatureReader extends JGTModel {
 
     @Description("The read feature collection.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> geodata = null;
+    public SimpleFeatureCollection geodata = null;
 
     @Execute
     public void readFeatureCollection() throws IOException {
@@ -59,7 +61,7 @@ public class ShapefileFeatureReader extends JGTModel {
         }
         File shapeFile = new File(file);
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
-        FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = store.getFeatureSource();
+        SimpleFeatureSource featureSource = store.getFeatureSource();
         geodata = featureSource.getFeatures();
     }
 
@@ -70,7 +72,7 @@ public class ShapefileFeatureReader extends JGTModel {
      * @return the read {@link FeatureCollection}.
      * @throws IOException
      */
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> readShapefile( String path )
+    public static SimpleFeatureCollection readShapefile( String path )
             throws IOException {
 
         ShapefileFeatureReader reader = new ShapefileFeatureReader();
