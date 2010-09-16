@@ -36,6 +36,7 @@ public class CrsUtilities {
      * @param shapePath the path to the regarding shapefile
      * @throws IOException 
      */
+    @SuppressWarnings("nls")
     public static void writeProjectionFile( String shapePath, CoordinateReferenceSystem crs ) throws IOException {
         /*
          * fill a prj file
@@ -68,12 +69,33 @@ public class CrsUtilities {
      * @param geometries the array of geometries, wrapped into an Object array
      * @throws Exception
      */
-    public static void reproject( CoordinateReferenceSystem from, CoordinateReferenceSystem to, Object[] geometries ) throws Exception {
+    public static void reproject( CoordinateReferenceSystem from, CoordinateReferenceSystem to, Object[] geometries )
+            throws Exception {
         MathTransform mathTransform = CRS.findMathTransform(from, to);
 
         for( int i = 0; i < geometries.length; i++ ) {
             geometries[i] = JTS.transform((Geometry) geometries[i], mathTransform);
         }
+    }
+
+    /**
+     * Get the code from a {@link CoordinateReferenceSystem}.
+     * 
+     * @param crs the crs to get the code from.
+     * @return the code, that can be used with {@link CRS#decode(String)}
+     *              to recreate the crs.
+     * @throws Exception
+     */
+    public static String getCodeFromCrs( CoordinateReferenceSystem crs ) throws Exception {
+        String code = null;
+        try {
+            Integer epsg = CRS.lookupEpsgCode(crs, true);
+            code = "EPSG:" + epsg; //$NON-NLS-1$
+        } catch (Exception e) {
+            // try non epsg
+            code = CRS.lookupIdentifier(crs, true);
+        }
+        return code;
     }
 
 }
