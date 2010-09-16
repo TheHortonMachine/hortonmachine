@@ -7,8 +7,6 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 
 public interface EpanetNativeFunctions extends Library {
-    public static final EpanetNativeFunctions INSTANCE = (EpanetNativeFunctions) Native.loadLibrary("epanet2_64bit",
-            EpanetNativeFunctions.class);
     public static final int EN_AVERAGE = 1;
     public static final int EN_HEADLOSS = 10;
     public static final int EN_TANK = 2;

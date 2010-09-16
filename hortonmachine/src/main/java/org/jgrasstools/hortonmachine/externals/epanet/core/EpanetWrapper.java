@@ -22,6 +22,9 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
+
 /**
  * A wrapper for epanet functions.
  * 
@@ -29,9 +32,37 @@ import java.nio.IntBuffer;
  */
 public class EpanetWrapper {
 
-    private EpanetNativeFunctions epanet;
-    public EpanetWrapper() {
-        epanet = EpanetNativeFunctions.INSTANCE;
+    private static EpanetNativeFunctions epanet;
+
+    /**
+     * Contructor for the {@link EpanetWrapper}.
+     * 
+     * <p>This also takes care to load the native library, if needed. 
+     * 
+     * @param lib the name of the library (ex. "epanet2_64bit").
+     * @param nativeLibPath the path in which to search the native library.
+     *              If the native library is already in the java library path
+     *              this is not needed and may be <code>null</code>
+     * @throws Exception if the library could not be loaded.
+     */
+    public EpanetWrapper( String lib, String nativeLibPath ) throws Exception {
+        if (epanet == null) {
+            try {
+                NativeLibrary.addSearchPath(lib, nativeLibPath);
+                epanet = (EpanetNativeFunctions) Native.loadLibrary(lib, EpanetNativeFunctions.class);
+            } catch (Exception e) {
+                throw new Exception("An error occurred while trying to load the epanet library.", e);
+            }
+        }
+    }
+
+    /**
+     * Get the reference to the jna native epanet instance.
+     * 
+     * @return the Epanet native reference.
+     */
+    public static EpanetNativeFunctions getEpanet() {
+        return epanet;
     }
 
     /**

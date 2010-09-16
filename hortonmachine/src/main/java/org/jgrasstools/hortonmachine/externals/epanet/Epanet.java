@@ -90,7 +90,8 @@ public class Epanet extends JGTModel {
         String report2 = folder + "semplice2.rpt";
         String output = folder + "semplice.out";
 
-        EpanetWrapper ep = new EpanetWrapper();
+        EpanetWrapper ep = new EpanetWrapper("epanet2_64bit",
+                "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
 
         ep.ENopen(input, report, "");
 
