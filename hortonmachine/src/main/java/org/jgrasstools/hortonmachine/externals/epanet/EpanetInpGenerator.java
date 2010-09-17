@@ -54,6 +54,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Epanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
+@SuppressWarnings("nls")
 public class EpanetInpGenerator extends JGTModel {
 
     @Description("The junctions features.")
@@ -191,7 +192,7 @@ public class EpanetInpGenerator extends JGTModel {
             Coordinate[] coordinates = geometry.getCoordinates();
 
             // [PIPES]
-            Object dc_id = getAttribute(feature, Pipes.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Pipes.ID.getAttributeName());
             sbPipes.append(dc_id.toString());
             sbPipes.append(SPACER);
             Object node1 = getAttribute(feature, Pipes.NODE1.getAttributeName());
@@ -303,12 +304,37 @@ public class EpanetInpGenerator extends JGTModel {
             SimpleFeature feature = (SimpleFeature) featureIterator.next();
 
             // [PUMPS]
-            // ;ID Node1 Node2 Parameters
+            // ;ID Node1 Node2 Parameters(key1 value1 key2 value2...)
             Object dc_id = getAttribute(feature, Pumps.ID.getAttributeName());
             sbPumps.append(dc_id.toString());
             sbPumps.append(SPACER);
-            Object elevation = getAttribute(feature, Pumps.ELEVATION.getAttributeName());
-            sbPumps.append(elevation.toString());
+            Object node1 = getAttribute(feature, Pumps.NODE1.getAttributeName());
+            sbPumps.append(node1.toString());
+            sbPumps.append(SPACER);
+            Object node2 = getAttribute(feature, Pumps.NODE2.getAttributeName());
+            sbPumps.append(node2.toString());
+            sbPumps.append(SPACER);
+
+            Object power = getAttribute(feature, Pumps.POWER_KW.getAttributeName());
+            if (power != null) {
+                sbPumps.append("POWER " + power.toString());
+                sbPumps.append(SPACER);
+            }
+            Object head = getAttribute(feature, Pumps.HEAD_ID.getAttributeName());
+            if (head != null) {
+                sbPumps.append("HEAD " + head.toString());
+                sbPumps.append(SPACER);
+            }
+            Object speed = getAttribute(feature, Pumps.SPEED.getAttributeName());
+            if (speed != null) {
+                sbPumps.append("SPEED " + speed.toString());
+                sbPumps.append(SPACER);
+            }
+            Object speedPattern = getAttribute(feature, Pumps.SPEED_PATTERN.getAttributeName());
+            if (speedPattern != null) {
+                sbPumps.append("PATTERN " + speedPattern.toString());
+                sbPumps.append(SPACER);
+            }
             sbPumps.append(NL);
         }
         featureIterator.close();
@@ -328,7 +354,12 @@ public class EpanetInpGenerator extends JGTModel {
             Object dc_id = getAttribute(feature, Valves.ID.getAttributeName());
             sbValves.append(dc_id.toString());
             sbValves.append(SPACER);
-            // TODO node1, node2?
+            Object node1 = getAttribute(feature, Valves.NODE1.getAttributeName());
+            sbValves.append(node1.toString());
+            sbValves.append(SPACER);
+            Object node2 = getAttribute(feature, Valves.NODE2.getAttributeName());
+            sbValves.append(node2.toString());
+            sbValves.append(SPACER);
             Object diameter = getAttribute(feature, Valves.DIAMETER.getAttributeName());
             sbValves.append(diameter.toString());
             sbValves.append(SPACER);
@@ -347,16 +378,13 @@ public class EpanetInpGenerator extends JGTModel {
         return sbValves.toString();
     }
 
-    private Object getAttribute( SimpleFeature feature, String attributeName ) throws IOException {
+    private Object getAttribute( SimpleFeature feature, String attributeName ) {
         Object attribute = feature.getAttribute(attributeName);
         if (attribute == null) {
             attribute = feature.getAttribute(attributeName.toUpperCase());
         }
         if (attribute == null) {
             attribute = feature.getAttribute(attributeName.toLowerCase());
-        }
-        if (attribute == null) {
-            throw new IOException("No attribute was found for: " + attributeName);
         }
         return attribute;
     }

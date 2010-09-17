@@ -400,21 +400,39 @@ public class EpanetFeatureTypes {
         /**
          * Unique id of the junction. 
          */
-        DC_ID(ID_STR, String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
-        DIAMETER(DIAMETER_STR, Integer.class), //
+        ID(ID_STR, String.class), //
+        /**
+         * Start node.
+         */
         NODE1(NODE1_STR, String.class), //
+        /**
+         * End node.
+         */
         NODE2(NODE2_STR, String.class), //
+        /**
+         * Length.
+         */
+        LENGTH(LENGTH_STR, Double.class), //
+        /**
+         * Diameter.
+         */
+        DIAMETER(DIAMETER_STR, Integer.class), //
+        /**
+         * Roughness coefficient.
+         */
         ROUGHNESS(ROUGHNESS_STR, Double.class), //
+        /**
+         * Minor loss coefficient.
+         */
         MINORLOSS(MINORLOSS_STR, Double.class), //
-        STATUS(STATUS_STR, String.class), //
-        RESULT_FLOW(RESULT_FLO_STR, Double.class), //
-        RESULT_VELO(RESULT_VEL_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        LENGTH(LENGTH_STR, Double.class);
+        /**
+         * Status.
+         * 
+         * <p>Status can be: OPEN, CLOSED or CV.
+         * <p>Setting status to CV means that the pipe contains a
+         * check valve restricting flow to one direction.
+         */
+        STATUS(STATUS_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
