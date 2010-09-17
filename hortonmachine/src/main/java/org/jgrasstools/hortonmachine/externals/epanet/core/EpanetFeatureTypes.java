@@ -44,28 +44,27 @@ public class EpanetFeatureTypes {
     private static final String JUNCTIONS_SHP = "junctions.shp";
     private static final String JUNCTIONS_PRE = "J";
 
-    private static final String ID_STR = "dc_id";
-    private static final String PATTERN_STR = "pattern";
-    private static final String EMITTER_COEFFICIENT_STR = "emittercoe";
+    private static final String ID_STR = "id";
+    private static final String PATTERN_STR = "pattern_id";
+    private static final String EMITTER_COEFFICIENT_STR = "emitt_coef";
     private static final String DEMAND_STR = "demand";
-    private static final String ELEVATION_STR = "elevation";
-    private static final String VOLUME_CURVE_ID_STR = "volumecurv";
-    private static final String MINIMUM_VOLUME_STR = "minimumvol";
-    private static final String DIAMETER_STR = "diameter";
-    private static final String MAXIMUM_WATER_LEVEL_STR = "maximumlev";
-    private static final String MINIMUM_WATER_LEVEL_STR = "minimumlev";
-    private static final String INITIAL_WATER_LEVEL_STR = "initiallev";
+    private static final String ELEVATION_STR = "elev";
+    private static final String VOLUME_CURVE_ID_STR = "vol_cur_id";
+    private static final String MINIMUM_VOLUME_STR = "min_vol";
+    private static final String DIAMETER_STR = "diam";
+    private static final String MAXIMUM_WATER_LEVEL_STR = "max_lev";
+    private static final String MINIMUM_WATER_LEVEL_STR = "min_lev";
+    private static final String INITIAL_WATER_LEVEL_STR = "init_lev";
     private static final String HEAD_STR = "head";
-    private static final String POWER_KW_STR = "power_kw";
-    private static final String PROPERTIES_STR = "properties";
-    private static final String MINORLOSS_STR = "minorloss";
+    private static final String POWER_STR = "power";
+    private static final String MINORLOSS_STR = "min_loss";
     private static final String SETTING_STR = "setting";
     private static final String TYPE_STR = "type";
     private static final String LENGTH_STR = "length";
     private static final String STATUS_STR = "status";
-    private static final String ROUGHNESS_STR = "roughness";
-    private static final String NODE2_STR = "node2";
-    private static final String NODE1_STR = "node1";
+    private static final String ROUGHNESS_STR = "rough";
+    private static final String STARTNODE_STR = "startnode";
+    private static final String ENDNODE_STR = "endnode";
     private static final String SPEED_STR = "speed";
 
     /**
@@ -258,15 +257,15 @@ public class EpanetFeatureTypes {
         /**
          * Start node.
          */
-        NODE1(NODE1_STR, String.class), //
+        START_NODE(STARTNODE_STR, String.class), //
         /**
          * End node.
          */
-        NODE2(NODE2_STR, String.class), //
+        END_NODE(ENDNODE_STR, String.class), //
         /**
          * Power value for constant energy pump [KW].
          */
-        POWER_KW(POWER_KW_STR, String.class), //
+        POWER(POWER_STR, String.class), //
         /**
          * Id of curve that describes head vs. flow for the pump.
          */
@@ -322,11 +321,11 @@ public class EpanetFeatureTypes {
         /**
          * Start node.
          */
-        NODE1(NODE1_STR, String.class), //
+        START_NODE(STARTNODE_STR, String.class), //
         /**
          * End node.
          */
-        NODE2(NODE2_STR, String.class), //
+        END_NODE(ENDNODE_STR, String.class), //
         /**
          * Diameter.
          */
@@ -404,11 +403,11 @@ public class EpanetFeatureTypes {
         /**
          * Start node.
          */
-        NODE1(NODE1_STR, String.class), //
+        START_NODE(STARTNODE_STR, String.class), //
         /**
          * End node.
          */
-        NODE2(NODE2_STR, String.class), //
+        END_NODE(ENDNODE_STR, String.class), //
         /**
          * Length.
          */

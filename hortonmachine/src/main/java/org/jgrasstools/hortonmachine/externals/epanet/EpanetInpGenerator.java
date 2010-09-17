@@ -195,10 +195,10 @@ public class EpanetInpGenerator extends JGTModel {
             Object dc_id = getAttribute(feature, Pipes.ID.getAttributeName());
             sbPipes.append(dc_id.toString());
             sbPipes.append(SPACER);
-            Object node1 = getAttribute(feature, Pipes.NODE1.getAttributeName());
+            Object node1 = getAttribute(feature, Pipes.START_NODE.getAttributeName());
             sbPipes.append(node1.toString());
             sbPipes.append(SPACER);
-            Object node2 = getAttribute(feature, Pipes.NODE2.getAttributeName());
+            Object node2 = getAttribute(feature, Pipes.END_NODE.getAttributeName());
             sbPipes.append(node2.toString());
             sbPipes.append(SPACER);
             Object length = getAttribute(feature, Pipes.LENGTH.getAttributeName());
@@ -308,14 +308,14 @@ public class EpanetInpGenerator extends JGTModel {
             Object dc_id = getAttribute(feature, Pumps.ID.getAttributeName());
             sbPumps.append(dc_id.toString());
             sbPumps.append(SPACER);
-            Object node1 = getAttribute(feature, Pumps.NODE1.getAttributeName());
+            Object node1 = getAttribute(feature, Pumps.START_NODE.getAttributeName());
             sbPumps.append(node1.toString());
             sbPumps.append(SPACER);
-            Object node2 = getAttribute(feature, Pumps.NODE2.getAttributeName());
+            Object node2 = getAttribute(feature, Pumps.END_NODE.getAttributeName());
             sbPumps.append(node2.toString());
             sbPumps.append(SPACER);
 
-            Object power = getAttribute(feature, Pumps.POWER_KW.getAttributeName());
+            Object power = getAttribute(feature, Pumps.POWER.getAttributeName());
             if (power != null) {
                 sbPumps.append("POWER " + power.toString());
                 sbPumps.append(SPACER);
@@ -354,10 +354,10 @@ public class EpanetInpGenerator extends JGTModel {
             Object dc_id = getAttribute(feature, Valves.ID.getAttributeName());
             sbValves.append(dc_id.toString());
             sbValves.append(SPACER);
-            Object node1 = getAttribute(feature, Valves.NODE1.getAttributeName());
+            Object node1 = getAttribute(feature, Valves.START_NODE.getAttributeName());
             sbValves.append(node1.toString());
             sbValves.append(SPACER);
-            Object node2 = getAttribute(feature, Valves.NODE2.getAttributeName());
+            Object node2 = getAttribute(feature, Valves.END_NODE.getAttributeName());
             sbValves.append(node2.toString());
             sbValves.append(SPACER);
             Object diameter = getAttribute(feature, Valves.DIAMETER.getAttributeName());
