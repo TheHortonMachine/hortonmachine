@@ -34,6 +34,8 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -105,18 +107,21 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         List<SimpleFeature> pipesList = getFeatures(inPipes);
 
         if (inDem != null) {
+            inJunctions = FeatureCollections.newCollection();
             pm.beginTask("Extracting elevations from dem...", junctionsList.size());
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), (double[]) null);
                 junction.setAttribute(Junctions.ELEVATION.getAttributeName(), dest[0]);
+                inJunctions.add(junction);
                 pm.worked(1);
             }
             pm.done();
         }
 
         pm.beginTask("Extracting pipe-nodes links...", pipesList.size());
+        inPipes = FeatureCollections.newCollection();
         for( SimpleFeature pipe : pipesList ) {
             Geometry geometry = (Geometry) pipe.getDefaultGeometry();
             Coordinate[] coordinates = geometry.getCoordinates();
@@ -136,6 +141,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Object attribute = nearestLast.getAttribute(Junctions.ID.getAttributeName());
                 pipe.setAttribute(Pipes.END_NODE.getAttributeName(), attribute);
             }
+            inPipes.add(pipe);
             pm.worked(1);
         }
         pm.done();
