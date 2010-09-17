@@ -21,32 +21,71 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
  * The attributes for the creation feature.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @author Silvia Franceschi (www.hydrologis.com)
  */
 @SuppressWarnings("nls")
 public class EpanetFeatureTypes {
-    public interface EpanetTypes {
-        public Class< ? > getClazz();
-        public String getAttributeName();
-        public String getShapefileName();
-        public String getName();
-    }
-    
+    public static final String PIPES = "pipes";
+    public static final String PIPES_SHP = "pipes.shp";
+    public static final String VALVES = "valves";
+    public static final String VALVES_SHP = "valves.shp";
+    public static final String PUMPS = "pumps";
+    public static final String PUMPS_SHP = "pumps.shp";
+    public static final String RESERVOIRS = "reservoirs";
+    public static final String RESERVOIRS_SHP = "reservoirs.shp";
+    public static final String TANKS = "tanks";
+    public static final String TANKS_SHP = "tanks.shp";
+    public static final String JUNCTIONS = "junctions";
+    public static final String JUNCTIONS_SHP = "junctions.shp";
+
+    public static final String DC_ID_STR = "dc_id";
+    public static final String INSTALLATI_STR = "installati";
+    public static final String PATTERN_STR = "pattern";
+    public static final String EMITTERCOE_STR = "emittercoe";
+    public static final String DEMAND_STR = "demand";
+    public static final String RESULT_PRE_STR = "result_pre";
+    public static final String RESULT_HEA_STR = "result_hea";
+    public static final String RESULT_DEM_STR = "result_dem";
+    public static final String RESULT_VEL_STR = "result_vel";
+    public static final String RESULT_FLO_STR = "result_flo";
+    public static final String ELEVATION_STR = "elevation";
+    public static final String BITCODEZON_STR = "bitcodezon";
+    public static final String DCSUBTYPE_STR = "dcsubtype";
+    public static final String ABANDON_DA_STR = "abandon_da";
+    public static final String VOLUMECURV_STR = "volumecurv";
+    public static final String MINIMUMVOL_STR = "minimumvol";
+    public static final String DIAMETER_STR = "diameter";
+    public static final String MAXIMUMLEV_STR = "maximumlev";
+    public static final String MINIMUMLEV_STR = "minimumlev";
+    public static final String INITIALLEV_STR = "initiallev";
+    public static final String HEAD_STR = "head";
+    public static final String POWER_KW_STR = "power_kw";
+    public static final String PROPERTIES_STR = "properties";
+    public static final String MINORLOSS_STR = "minorloss";
+    public static final String SETTING_STR = "setting";
+    public static final String TYPE_STR = "type";
+    public static final String LENGTH_STR = "length";
+    public static final String STATUS_STR = "status";
+    public static final String ROUGHNESS_STR = "roughness";
+    public static final String NODE2_STR = "node2";
+    public static final String NODE1_STR = "node1";
+
     /**
      * The {@link Junctions} attributes and classes.
      */
-    public static enum Junctions implements EpanetTypes {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        ELEVATION("elevation", Double.class), //
-        RESULT_DEM("result_dem", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        RESULT_PRE("result_pre", Double.class), //
-        DEMAND("demand", Double.class), //
-        EMITTERCOE("emittercoe", Double.class), //
-        PATTERN("pattern", String.class);
+    public static enum Junctions implements IEpanetType {
+        DC_ID(DC_ID_STR, String.class), //
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        ELEVATION(ELEVATION_STR, Double.class), //
+        RESULT_DEM(RESULT_DEM_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        DEMAND(DEMAND_STR, Double.class), //
+        EMITTERCOE(EMITTERCOE_STR, Double.class), //
+        PATTERN(PATTERN_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -65,33 +104,33 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "junctions.shp";
+            return JUNCTIONS_SHP;
         }
 
         public String getName() {
-            return "junctions";
+            return JUNCTIONS;
         }
     }
 
     /**
      * The {@link Tanks} attributes and classes.
      */
-    public static enum Tanks implements EpanetTypes {
+    public static enum Tanks implements IEpanetType {
         DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        ELEVATION("elevation", Double.class), //
-        RESULT_DEM("result_dem", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        RESULT_PRE("result_pre", Double.class), //
-        INITIALLEV("initiallev", Double.class), //
-        MINIMUMLEV("minimumlev", Double.class), //
-        MAXIMUMLEV("maximumlev", Double.class), //
-        DIAMETER("diameter", Double.class), //
-        MINIMUMVOL("minimumvol", Double.class), //
-        VOLUMECURV("volumecurv", String.class);
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        ELEVATION(ELEVATION_STR, Double.class), //
+        RESULT_DEM(RESULT_DEM_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        INITIALLEV(INITIALLEV_STR, Double.class), //
+        MINIMUMLEV(MINIMUMLEV_STR, Double.class), //
+        MAXIMUMLEV(MAXIMUMLEV_STR, Double.class), //
+        DIAMETER(DIAMETER_STR, Double.class), //
+        MINIMUMVOL(MINIMUMVOL_STR, Double.class), //
+        VOLUMECURV(VOLUMECURV_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -110,29 +149,29 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "tanks.shp";
+            return TANKS_SHP;
         }
 
         public String getName() {
-            return "tanks";
+            return TANKS;
         }
     }
 
     /**
      * The {@link Reservoirs} attributes and classes.
      */
-    public static enum Reservoirs implements EpanetTypes {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        ELEVATION("elevation", Double.class), //
-        RESULT_DEM("result_dem", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        RESULT_PRE("result_pre", Double.class), //
-        HEAD("head", Double.class), //
-        PATTERN("pattern", String.class);
+    public static enum Reservoirs implements IEpanetType {
+        DC_ID(DC_ID_STR, String.class), //
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        ELEVATION(ELEVATION_STR, Double.class), //
+        RESULT_DEM(RESULT_DEM_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        HEAD(HEAD_STR, Double.class), //
+        PATTERN(PATTERN_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -151,31 +190,31 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "reservoirs.shp";
+            return RESERVOIRS_SHP;
         }
 
         public String getName() {
-            return "reservoirs";
+            return RESERVOIRS;
         }
     }
 
     /**
      * The {@link Pumps} attributes and classes.
      */
-    public static enum Pumps implements EpanetTypes {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        ELEVATION("elevation", Double.class), //
-        RESULT_DEM("result_dem", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        RESULT_PRE("result_pre", Double.class), //
-        RESULT_FLO("result_flo", Double.class), //
-        RESULT_VEL("result_vel", Double.class), //
-        PROPERTIES("properties", String.class), //
-        POWER_KW("power_kw", Integer.class);
+    public static enum Pumps implements IEpanetType {
+        DC_ID(DC_ID_STR, String.class), //
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        ELEVATION(ELEVATION_STR, Double.class), //
+        RESULT_DEM(RESULT_DEM_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        RESULT_FLO(RESULT_FLO_STR, Double.class), //
+        RESULT_VEL(RESULT_VEL_STR, Double.class), //
+        PROPERTIES(PROPERTIES_STR, String.class), //
+        POWER_KW(POWER_KW_STR, Integer.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -194,33 +233,33 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "pumps.shp";
+            return PUMPS_SHP;
         }
 
         public String getName() {
-            return "pumps";
+            return PUMPS;
         }
     }
 
     /**
      * The {@link Valves} attributes and classes.
      */
-    public static enum Valves implements EpanetTypes {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        ELEVATION("elevation", Double.class), //
-        RESULT_DEM("result_dem", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        RESULT_PRE("result_pre", Double.class), //
-        RESULT_FLO("result_flo", Double.class), //
-        RESULT_VEL("result_vel", Double.class), //
-        DIAMETER("diameter", Integer.class), //
-        TYPE("type", String.class), //
-        SETTING("setting", String.class), //
-        MINORLOSS("minorloss", Double.class);
+    public static enum Valves implements IEpanetType {
+        DC_ID(DC_ID_STR, String.class), //
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        ELEVATION(ELEVATION_STR, Double.class), //
+        RESULT_DEM(RESULT_DEM_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        RESULT_FLO(RESULT_FLO_STR, Double.class), //
+        RESULT_VEL(RESULT_VEL_STR, Double.class), //
+        DIAMETER(DIAMETER_STR, Integer.class), //
+        TYPE(TYPE_STR, String.class), //
+        SETTING(SETTING_STR, String.class), //
+        MINORLOSS(MINORLOSS_STR, Double.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -239,33 +278,33 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "valves.shp";
+            return VALVES_SHP;
         }
 
         public String getName() {
-            return "valves";
+            return VALVES;
         }
     }
 
     /**
      * The {@link Pipes} attributes and classes.
      */
-    public static enum Pipes implements EpanetTypes {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI("installati", String.class), //
-        ABANDON_DA("abandon_da", String.class), //
-        DCSUBTYPE("dcsubtype", Integer.class), //
-        BITCODEZON("bitcodezon", Integer.class), //
-        DIAMETER("diameter", Integer.class), //
-        NODE1("node1", String.class), //
-        NODE2("node2", String.class), //
-        ROUGHNESS("roughness", Double.class), //
-        MINORLOSS("minorloss", Double.class), //
-        STATUS("status", String.class), //
-        RESULT_FLOW("result_flow", Double.class), //
-        RESULT_VELO("result_velo", Double.class), //
-        RESULT_HEA("result_hea", Double.class), //
-        LENGTH("length", Double.class);
+    public static enum Pipes implements IEpanetType {
+        DC_ID(DC_ID_STR, String.class), //
+        INSTALLATI(INSTALLATI_STR, String.class), //
+        ABANDON_DA(ABANDON_DA_STR, String.class), //
+        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
+        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        DIAMETER(DIAMETER_STR, Integer.class), //
+        NODE1(NODE1_STR, String.class), //
+        NODE2(NODE2_STR, String.class), //
+        ROUGHNESS(ROUGHNESS_STR, Double.class), //
+        MINORLOSS(MINORLOSS_STR, Double.class), //
+        STATUS(STATUS_STR, String.class), //
+        RESULT_FLOW(RESULT_FLO_STR, Double.class), //
+        RESULT_VELO(RESULT_VEL_STR, Double.class), //
+        RESULT_HEA(RESULT_HEA_STR, Double.class), //
+        LENGTH(LENGTH_STR, Double.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -284,11 +323,11 @@ public class EpanetFeatureTypes {
         }
 
         public String getShapefileName() {
-            return "pipes.shp";
+            return PIPES_SHP;
         }
 
         public String getName() {
-            return "pipes";
+            return PIPES;
         }
     }
 

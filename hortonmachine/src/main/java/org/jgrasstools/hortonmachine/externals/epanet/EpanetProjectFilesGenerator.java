@@ -44,13 +44,13 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.EpanetTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Reservoirs;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Tanks;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Valves;
+import org.jgrasstools.hortonmachine.externals.epanet.core.IEpanetType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -87,7 +87,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
 
         pm.beginTask("Create epanet project shapefiles...", 7);
         pm.worked(1);
-        EpanetTypes[] values = Junctions.values();
+        IEpanetType[] values = Junctions.values();
         makePointLayer(values, baseFolder, crs);
         pm.worked(1);
         values = Tanks.values();
@@ -108,7 +108,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         pm.done();
     }
 
-    private void makePointLayer( EpanetTypes[] types, File baseFolder, CoordinateReferenceSystem mapCrs )
+    private void makePointLayer( IEpanetType[] types, File baseFolder, CoordinateReferenceSystem mapCrs )
             throws MalformedURLException, IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         String shapefileName = types[0].getShapefileName();
@@ -116,7 +116,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         b.setName(typeName);
         b.setCRS(mapCrs);
         b.add("the_geom", Point.class);
-        for( EpanetTypes type : types ) {
+        for( IEpanetType type : types ) {
             b.add(type.getAttributeName(), type.getClazz());
         }
         SimpleFeatureType tanksType = b.buildFeatureType();
@@ -141,7 +141,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         }
     }
 
-    private void makeLineLayer( EpanetTypes[] types, File baseFolder, CoordinateReferenceSystem mapCrs )
+    private void makeLineLayer( IEpanetType[] types, File baseFolder, CoordinateReferenceSystem mapCrs )
             throws MalformedURLException, IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         String shapefileName = types[0].getShapefileName();
@@ -149,7 +149,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         b.setName(typeName);
         b.setCRS(mapCrs);
         b.add("the_geom", LineString.class);
-        for( EpanetTypes type : types ) {
+        for( IEpanetType type : types ) {
             b.add(type.getAttributeName(), type.getClazz());
         }
         SimpleFeatureType tanksType = b.buildFeatureType();
