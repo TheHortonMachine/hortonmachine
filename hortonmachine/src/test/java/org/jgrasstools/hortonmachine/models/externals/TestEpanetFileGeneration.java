@@ -21,7 +21,7 @@ public class TestEpanetFileGeneration extends HMTestCase {
         gen.pm = pm;
         gen.pCode = "EPSG:32632";
 
-        File here = new File(".");
+        File here = new File("C:\\TMP\\epanettests\\");
         File folder = new File(here.getAbsolutePath() + File.separator + "test");
         if (!folder.exists())
             assertTrue(folder.mkdir());
@@ -32,7 +32,7 @@ public class TestEpanetFileGeneration extends HMTestCase {
         File junctions = new File(folder, Junctions.ID.getShapefileName());
         assertTrue(junctions.exists());
 
-        assertTrue(FileUtilities.deleteFileOrDir(folder));
+//        assertTrue(FileUtilities.deleteFileOrDir(folder));
 
     }
 

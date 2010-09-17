@@ -4,7 +4,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import com.sun.jna.Library;
-import com.sun.jna.Native;
 
 public interface EpanetNativeFunctions extends Library {
     public static final int EN_AVERAGE = 1;
