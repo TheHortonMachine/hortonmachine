@@ -28,12 +28,12 @@ public class TestEpanetInpGeneration extends HMTestCase {
 
         String inpFilePath = folder + File.separator + "aaaaa.inp";
 
-        String jPath = folder + File.separator + Junctions.DC_ID.getShapefileName();
-        String tPath = folder + File.separator + Tanks.DC_ID.getShapefileName();
-        String puPath = folder + File.separator + Pumps.DC_ID.getShapefileName();
+        String jPath = folder + File.separator + Junctions.ID.getShapefileName();
+        String tPath = folder + File.separator + Tanks.ID.getShapefileName();
+        String puPath = folder + File.separator + Pumps.ID.getShapefileName();
         String piPath = folder + File.separator + Pipes.DC_ID.getShapefileName();
-        String vPath = folder + File.separator + Valves.DC_ID.getShapefileName();
-        String rPath = folder + File.separator + Reservoirs.DC_ID.getShapefileName();
+        String vPath = folder + File.separator + Valves.ID.getShapefileName();
+        String rPath = folder + File.separator + Reservoirs.ID.getShapefileName();
         SimpleFeatureCollection jFC = ShapefileFeatureReader.readShapefile(jPath);
         SimpleFeatureCollection tFC = ShapefileFeatureReader.readShapefile(tPath);
         SimpleFeatureCollection puFC = ShapefileFeatureReader.readShapefile(puPath);

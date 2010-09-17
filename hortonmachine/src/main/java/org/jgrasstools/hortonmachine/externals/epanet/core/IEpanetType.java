@@ -21,28 +21,39 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
  * Interface for all epanet feature types.
  */
 public interface IEpanetType {
+
     /**
      * Getter for the binding class.
      * 
      * @return the binding class.
      */
     public Class< ? > getClazz();
+
     /**
      * Getter for the attribute name.
      * 
      * @return the attribute name.
      */
     public String getAttributeName();
+
     /**
      * Getter for the file name.
      * 
      * @return the file name.
      */
     public String getShapefileName();
+
     /**
      * Getter for the name.
      * 
      * @return the name of the type.
      */
     public String getName();
+
+    /**
+     * Getter for the type prefix.
+     * 
+     * @return the prefix.
+     */
+    public String getPrefix();
 }

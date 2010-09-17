@@ -34,6 +34,7 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -94,6 +95,12 @@ public class EpanetInpGenerator extends JGTModel {
     public void process() throws Exception {
         checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes, outFile);
 
+        int resSize = inReservoirs.size();
+        int tanksSize = inTanks.size();
+        if (resSize + tanksSize < 1) {
+            throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this);
+        }
+
         File outputFile = new File(outFile);
 
         BufferedWriter bw = null;
@@ -144,7 +151,7 @@ public class EpanetInpGenerator extends JGTModel {
             Coordinate coordinate = geometry.getCoordinate();
 
             // [JUNCTIONS]
-            Object dc_id = getAttribute(feature, Junctions.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Junctions.ID.getAttributeName());
             sbJunctions.append(dc_id.toString());
             sbJunctions.append(SPACER);
             Object elevation = getAttribute(feature, Junctions.ELEVATION.getAttributeName());
@@ -234,13 +241,13 @@ public class EpanetInpGenerator extends JGTModel {
             SimpleFeature feature = (SimpleFeature) featureIterator.next();
 
             // [RESERVOIRS]
-            Object dc_id = getAttribute(feature, Reservoirs.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Reservoirs.ID.getAttributeName());
             sbReservoirs.append(dc_id.toString());
             sbReservoirs.append(SPACER);
             Object head = getAttribute(feature, Reservoirs.HEAD.getAttributeName());
             sbReservoirs.append(head.toString());
             sbReservoirs.append(SPACER);
-            Object pattern = getAttribute(feature, Reservoirs.PATTERN.getAttributeName());
+            Object pattern = getAttribute(feature, Reservoirs.HEAD_PATTERN.getAttributeName());
             sbReservoirs.append(pattern.toString());
             sbReservoirs.append(NL);
         }
@@ -258,28 +265,28 @@ public class EpanetInpGenerator extends JGTModel {
 
             // [TANKS]
             // ;ID Elevation InitLevel MinLevel MaxLevel Diameter MinVol VolCurve
-            Object dc_id = getAttribute(feature, Tanks.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Tanks.ID.getAttributeName());
             sbTanks.append(dc_id.toString());
             sbTanks.append(SPACER);
-            Object elevation = getAttribute(feature, Tanks.ELEVATION.getAttributeName());
+            Object elevation = getAttribute(feature, Tanks.BOTTOM_ELEVATION.getAttributeName());
             sbTanks.append(elevation.toString());
             sbTanks.append(SPACER);
-            Object initLevel = getAttribute(feature, Tanks.INITIALLEV.getAttributeName());
+            Object initLevel = getAttribute(feature, Tanks.INITIAL_WATER_LEVEL.getAttributeName());
             sbTanks.append(initLevel.toString());
             sbTanks.append(SPACER);
-            Object minLevel = getAttribute(feature, Tanks.MINIMUMLEV.getAttributeName());
+            Object minLevel = getAttribute(feature, Tanks.MINIMUM_WATER_LEVEL.getAttributeName());
             sbTanks.append(minLevel.toString());
             sbTanks.append(SPACER);
-            Object maxLevel = getAttribute(feature, Tanks.MAXIMUMLEV.getAttributeName());
+            Object maxLevel = getAttribute(feature, Tanks.MAXIMUM_WATER_LEVEL.getAttributeName());
             sbTanks.append(maxLevel.toString());
             sbTanks.append(SPACER);
             Object diameter = getAttribute(feature, Tanks.DIAMETER.getAttributeName());
             sbTanks.append(diameter.toString());
             sbTanks.append(SPACER);
-            Object minVol = getAttribute(feature, Tanks.MINIMUMVOL.getAttributeName());
+            Object minVol = getAttribute(feature, Tanks.MINIMUM_VOLUME.getAttributeName());
             sbTanks.append(minVol.toString());
             sbTanks.append(SPACER);
-            Object volCurve = getAttribute(feature, Tanks.VOLUMECURV.getAttributeName());
+            Object volCurve = getAttribute(feature, Tanks.VOLUME_CURVE_ID.getAttributeName());
             sbTanks.append(volCurve.toString());
             sbTanks.append(NL);
         }
@@ -297,7 +304,7 @@ public class EpanetInpGenerator extends JGTModel {
 
             // [PUMPS]
             // ;ID Node1 Node2 Parameters
-            Object dc_id = getAttribute(feature, Pumps.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Pumps.ID.getAttributeName());
             sbPumps.append(dc_id.toString());
             sbPumps.append(SPACER);
             Object elevation = getAttribute(feature, Pumps.ELEVATION.getAttributeName());
@@ -318,7 +325,7 @@ public class EpanetInpGenerator extends JGTModel {
 
             // [VALVES]
             // ;ID Node1 Node2 Diameter Type Setting MinorLoss
-            Object dc_id = getAttribute(feature, Valves.DC_ID.getAttributeName());
+            Object dc_id = getAttribute(feature, Valves.ID.getAttributeName());
             sbValves.append(dc_id.toString());
             sbValves.append(SPACER);
             // TODO node1, node2?

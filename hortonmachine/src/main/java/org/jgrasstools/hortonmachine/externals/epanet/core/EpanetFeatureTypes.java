@@ -25,66 +25,72 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
  */
 @SuppressWarnings("nls")
 public class EpanetFeatureTypes {
-    public static final String PIPES = "pipes";
-    public static final String PIPES_SHP = "pipes.shp";
-    public static final String VALVES = "valves";
-    public static final String VALVES_SHP = "valves.shp";
-    public static final String PUMPS = "pumps";
-    public static final String PUMPS_SHP = "pumps.shp";
-    public static final String RESERVOIRS = "reservoirs";
-    public static final String RESERVOIRS_SHP = "reservoirs.shp";
-    public static final String TANKS = "tanks";
-    public static final String TANKS_SHP = "tanks.shp";
-    public static final String JUNCTIONS = "junctions";
-    public static final String JUNCTIONS_SHP = "junctions.shp";
+    private static final String PIPES = "pipes";
+    private static final String PIPES_SHP = "pipes.shp";
+    private static final String PIPES_PRE = "PI";
+    private static final String VALVES = "valves";
+    private static final String VALVES_SHP = "valves.shp";
+    private static final String VALVES_PRE = "V";
+    private static final String PUMPS = "pumps";
+    private static final String PUMPS_SHP = "pumps.shp";
+    private static final String PUMPS_PRE = "PU";
+    private static final String RESERVOIRS = "reservoirs";
+    private static final String RESERVOIRS_SHP = "reservoirs.shp";
+    private static final String RESERVOIRS_PRE = "R";
+    private static final String TANKS = "tanks";
+    private static final String TANKS_SHP = "tanks.shp";
+    private static final String TANKS_PRE = "T";
+    private static final String JUNCTIONS = "junctions";
+    private static final String JUNCTIONS_SHP = "junctions.shp";
+    private static final String JUNCTIONS_PRE = "J";
 
-    public static final String DC_ID_STR = "dc_id";
-    public static final String INSTALLATI_STR = "installati";
-    public static final String PATTERN_STR = "pattern";
-    public static final String EMITTERCOE_STR = "emittercoe";
-    public static final String DEMAND_STR = "demand";
-    public static final String RESULT_PRE_STR = "result_pre";
-    public static final String RESULT_HEA_STR = "result_hea";
-    public static final String RESULT_DEM_STR = "result_dem";
-    public static final String RESULT_VEL_STR = "result_vel";
-    public static final String RESULT_FLO_STR = "result_flo";
-    public static final String ELEVATION_STR = "elevation";
-    public static final String BITCODEZON_STR = "bitcodezon";
-    public static final String DCSUBTYPE_STR = "dcsubtype";
-    public static final String ABANDON_DA_STR = "abandon_da";
-    public static final String VOLUMECURV_STR = "volumecurv";
-    public static final String MINIMUMVOL_STR = "minimumvol";
-    public static final String DIAMETER_STR = "diameter";
-    public static final String MAXIMUMLEV_STR = "maximumlev";
-    public static final String MINIMUMLEV_STR = "minimumlev";
-    public static final String INITIALLEV_STR = "initiallev";
-    public static final String HEAD_STR = "head";
-    public static final String POWER_KW_STR = "power_kw";
-    public static final String PROPERTIES_STR = "properties";
-    public static final String MINORLOSS_STR = "minorloss";
-    public static final String SETTING_STR = "setting";
-    public static final String TYPE_STR = "type";
-    public static final String LENGTH_STR = "length";
-    public static final String STATUS_STR = "status";
-    public static final String ROUGHNESS_STR = "roughness";
-    public static final String NODE2_STR = "node2";
-    public static final String NODE1_STR = "node1";
+    private static final String ID_STR = "dc_id";
+    private static final String PATTERN_STR = "pattern";
+    private static final String EMITTER_COEFFICIENT_STR = "emittercoe";
+    private static final String DEMAND_STR = "demand";
+    private static final String ELEVATION_STR = "elevation";
+    private static final String VOLUME_CURVE_ID_STR = "volumecurv";
+    private static final String MINIMUM_VOLUME_STR = "minimumvol";
+    private static final String DIAMETER_STR = "diameter";
+    private static final String MAXIMUM_WATER_LEVEL_STR = "maximumlev";
+    private static final String MINIMUM_WATER_LEVEL_STR = "minimumlev";
+    private static final String INITIAL_WATER_LEVEL_STR = "initiallev";
+    private static final String HEAD_STR = "head";
+    private static final String POWER_KW_STR = "power_kw";
+    private static final String PROPERTIES_STR = "properties";
+    private static final String MINORLOSS_STR = "minorloss";
+    private static final String SETTING_STR = "setting";
+    private static final String TYPE_STR = "type";
+    private static final String LENGTH_STR = "length";
+    private static final String STATUS_STR = "status";
+    private static final String ROUGHNESS_STR = "roughness";
+    private static final String NODE2_STR = "node2";
+    private static final String NODE1_STR = "node1";
+    private static final String SPEED_STR = "speed";
 
     /**
      * The {@link Junctions} attributes and classes.
      */
     public static enum Junctions implements IEpanetType {
-        DC_ID(DC_ID_STR, String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
+        /**
+         * Unique id of the junction. 
+         */
+        ID(ID_STR, String.class), //
+        /**
+         * The elevation of the junction.
+         */
         ELEVATION(ELEVATION_STR, Double.class), //
-        RESULT_DEM(RESULT_DEM_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        /**
+         * Base demand flow.
+         */
         DEMAND(DEMAND_STR, Double.class), //
-        EMITTERCOE(EMITTERCOE_STR, Double.class), //
+        /**
+         * Defines junction modeled as emitters (sprinklers or orificies).
+         */
+        EMITTER_COEFFICIENT(EMITTER_COEFFICIENT_STR, Double.class), //
+        /**
+         * Demand pattern id.
+         */
         PATTERN(PATTERN_STR, String.class);
 
         private Class< ? > clazz;
@@ -110,27 +116,56 @@ public class EpanetFeatureTypes {
         public String getName() {
             return JUNCTIONS;
         }
+
+        public String getPrefix() {
+            return JUNCTIONS_PRE;
+        }
     }
 
     /**
      * The {@link Tanks} attributes and classes.
      */
     public static enum Tanks implements IEpanetType {
-        DC_ID("dc_id", String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
-        ELEVATION(ELEVATION_STR, Double.class), //
-        RESULT_DEM(RESULT_DEM_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        RESULT_PRE(RESULT_PRE_STR, Double.class), //
-        INITIALLEV(INITIALLEV_STR, Double.class), //
-        MINIMUMLEV(MINIMUMLEV_STR, Double.class), //
-        MAXIMUMLEV(MAXIMUMLEV_STR, Double.class), //
+        /**
+         * Unique id of the junction. 
+         */
+        ID(ID_STR, String.class), //
+        /**
+         * The bottom elevation of the tank.
+         * 
+         *  <p>Water surface elevation = bottom elevation + water level.
+         */
+        BOTTOM_ELEVATION(ELEVATION_STR, Double.class), //
+        /**
+         * Initial water level.
+         */
+        INITIAL_WATER_LEVEL(INITIAL_WATER_LEVEL_STR, Double.class), //
+        /**
+         * Minimum water level.
+         */
+        MINIMUM_WATER_LEVEL(MINIMUM_WATER_LEVEL_STR, Double.class), //
+        /**
+         * Maximum water level.
+         */
+        MAXIMUM_WATER_LEVEL(MAXIMUM_WATER_LEVEL_STR, Double.class), //
+        /**
+         * Nominal diameter for cylindrical tanks.
+         * 
+         * <p>If a volume curve is supplied, the diameter value
+         * can be any non zero number.
+         */
         DIAMETER(DIAMETER_STR, Double.class), //
-        MINIMUMVOL(MINIMUMVOL_STR, Double.class), //
-        VOLUMECURV(VOLUMECURV_STR, String.class);
+        /**
+         * Minimum volume.
+         * 
+         * <p>Can be 0 for cylindrical tanks or if a 
+         * volume curve is supplied.
+         */
+        MINIMUM_VOLUME(MINIMUM_VOLUME_STR, Double.class), //
+        /**
+         * Volume curve id.
+         */
+        VOLUME_CURVE_ID(VOLUME_CURVE_ID_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -155,23 +190,33 @@ public class EpanetFeatureTypes {
         public String getName() {
             return TANKS;
         }
+
+        public String getPrefix() {
+            return TANKS_PRE;
+        }
     }
 
     /**
      * The {@link Reservoirs} attributes and classes.
      */
     public static enum Reservoirs implements IEpanetType {
-        DC_ID(DC_ID_STR, String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
-        ELEVATION(ELEVATION_STR, Double.class), //
-        RESULT_DEM(RESULT_DEM_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        RESULT_PRE(RESULT_PRE_STR, Double.class), //
+        /**
+         * Unique id of the junction. 
+         */
+        ID(ID_STR, String.class), //
+        /**
+         * The hydraulic head.
+         * 
+         * <p>Elevation + Pressure head of water in the reservoir.
+         */
         HEAD(HEAD_STR, Double.class), //
-        PATTERN(PATTERN_STR, String.class);
+        /**
+         * Head pattern
+         * 
+         * <p>A head pattern can be used to make the reservoir 
+         * head vary with time.
+         */
+        HEAD_PATTERN(PATTERN_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -196,25 +241,46 @@ public class EpanetFeatureTypes {
         public String getName() {
             return RESERVOIRS;
         }
+
+        public String getPrefix() {
+            return RESERVOIRS_PRE;
+        }
     }
 
     /**
      * The {@link Pumps} attributes and classes.
      */
     public static enum Pumps implements IEpanetType {
-        DC_ID(DC_ID_STR, String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
-        ELEVATION(ELEVATION_STR, Double.class), //
-        RESULT_DEM(RESULT_DEM_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        RESULT_PRE(RESULT_PRE_STR, Double.class), //
-        RESULT_FLO(RESULT_FLO_STR, Double.class), //
-        RESULT_VEL(RESULT_VEL_STR, Double.class), //
-        PROPERTIES(PROPERTIES_STR, String.class), //
-        POWER_KW(POWER_KW_STR, Integer.class);
+        /**
+         * Unique id of the junction. 
+         */
+        ID(ID_STR, String.class), //
+        /**
+         * Start node.
+         */
+        NODE1(NODE1_STR, String.class), //
+        /**
+         * End node.
+         */
+        NODE2(NODE2_STR, String.class), //
+        /**
+         * Power value for constant energy pump [KW].
+         */
+        POWER_KW(POWER_KW_STR, String.class), //
+        /**
+         * Id of curve that describes head vs. flow for the pump.
+         */
+        HEAD_ID(HEAD_STR, String.class), //
+        /**
+         * Relative speed. 
+         * 
+         * <p>Normal is 1, 0 means pump is off.
+         */
+        SPEED(SPEED_STR, String.class), //
+        /**
+         * Id of time pattern that describes how speed varies with time.
+         */
+        SPEED_PATTERN(PATTERN_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
@@ -239,26 +305,63 @@ public class EpanetFeatureTypes {
         public String getName() {
             return PUMPS;
         }
+
+        public String getPrefix() {
+            return PUMPS_PRE;
+        }
     }
 
     /**
      * The {@link Valves} attributes and classes.
      */
     public static enum Valves implements IEpanetType {
-        DC_ID(DC_ID_STR, String.class), //
-        INSTALLATI(INSTALLATI_STR, String.class), //
-        ABANDON_DA(ABANDON_DA_STR, String.class), //
-        DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
-        BITCODEZON(BITCODEZON_STR, Integer.class), //
-        ELEVATION(ELEVATION_STR, Double.class), //
-        RESULT_DEM(RESULT_DEM_STR, Double.class), //
-        RESULT_HEA(RESULT_HEA_STR, Double.class), //
-        RESULT_PRE(RESULT_PRE_STR, Double.class), //
-        RESULT_FLO(RESULT_FLO_STR, Double.class), //
-        RESULT_VEL(RESULT_VEL_STR, Double.class), //
+        /**
+         * Unique id of the junction. 
+         */
+        ID(ID_STR, String.class), //
+        /**
+         * Start node.
+         */
+        NODE1(NODE1_STR, String.class), //
+        /**
+         * End node.
+         */
+        NODE2(NODE2_STR, String.class), //
+        /**
+         * Diameter.
+         */
         DIAMETER(DIAMETER_STR, Integer.class), //
+        /**
+         * The valve type.
+         * 
+         * <p>Can be one of:
+         * <ul>
+         * <li> {@link LinkTypes#EN_PRV}</li>
+         * <li>{@link LinkTypes#EN_PSV}</li>
+         * <li>{@link LinkTypes#EN_PBV}</li>
+         * <li>{@link LinkTypes#EN_FCV}</li>
+         * <li>{@link LinkTypes#EN_TCV}</li>
+         * <li>{@link LinkTypes#EN_GPV}</li>
+         * </ul>
+         */
         TYPE(TYPE_STR, String.class), //
+        /**
+         * The valve setting.
+         * 
+         * <p>Can be one of:
+         * <ul>
+         * <li> {@link LinkTypes#EN_PRV#getSetting()}</li>
+         * <li>{@link LinkTypes#EN_PSV#getSetting()}</li>
+         * <li>{@link LinkTypes#EN_PBV#getSetting()}</li>
+         * <li>{@link LinkTypes#EN_FCV#getSetting()}</li>
+         * <li>{@link LinkTypes#EN_TCV#getSetting()}</li>
+         * <li>{@link LinkTypes#EN_GPV#getSetting()}</li>
+         * </ul>
+         */
         SETTING(SETTING_STR, String.class), //
+        /**
+         * Minor loss coefficient.
+         */
         MINORLOSS(MINORLOSS_STR, Double.class);
 
         private Class< ? > clazz;
@@ -284,13 +387,20 @@ public class EpanetFeatureTypes {
         public String getName() {
             return VALVES;
         }
+
+        public String getPrefix() {
+            return VALVES_PRE;
+        }
     }
 
     /**
      * The {@link Pipes} attributes and classes.
      */
     public static enum Pipes implements IEpanetType {
-        DC_ID(DC_ID_STR, String.class), //
+        /**
+         * Unique id of the junction. 
+         */
+        DC_ID(ID_STR, String.class), //
         INSTALLATI(INSTALLATI_STR, String.class), //
         ABANDON_DA(ABANDON_DA_STR, String.class), //
         DCSUBTYPE(DCSUBTYPE_STR, Integer.class), //
@@ -328,6 +438,10 @@ public class EpanetFeatureTypes {
 
         public String getName() {
             return PIPES;
+        }
+
+        public String getPrefix() {
+            return PIPES_PRE;
         }
     }
 

@@ -29,7 +29,7 @@ public class TestEpanetFileGeneration extends HMTestCase {
         gen.inFolder = folder.getAbsolutePath();
         gen.process();
 
-        File junctions = new File(folder, Junctions.DC_ID.getShapefileName());
+        File junctions = new File(folder, Junctions.ID.getShapefileName());
         assertTrue(junctions.exists());
 
         assertTrue(FileUtilities.deleteFileOrDir(folder));
