@@ -39,6 +39,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.opengis.feature.simple.SimpleFeature;
@@ -101,10 +102,10 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
     public void process() throws Exception {
         checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes);
 
-        List<SimpleFeature> junctionsList = getFeatures(inJunctions);
-        List<SimpleFeature> tanksList = getFeatures(inTanks);
-        List<SimpleFeature> reservoirsList = getFeatures(inReservoirs);
-        List<SimpleFeature> pipesList = getFeatures(inPipes);
+        List<SimpleFeature> junctionsList = FeatureUtilities.featureCollectionToList(inJunctions);
+        List<SimpleFeature> tanksList = FeatureUtilities.featureCollectionToList(inTanks);
+        List<SimpleFeature> reservoirsList = FeatureUtilities.featureCollectionToList(inReservoirs);
+        List<SimpleFeature> pipesList = FeatureUtilities.featureCollectionToList(inPipes);
 
         if (inDem != null) {
             inJunctions = FeatureCollections.newCollection();
@@ -159,17 +160,6 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             }
         }
         return null;
-    }
-
-    public List<SimpleFeature> getFeatures( SimpleFeatureCollection collection ) {
-        List<SimpleFeature> featuresList = new ArrayList<SimpleFeature>();
-        SimpleFeatureIterator featureIterator = collection.features();
-        while( featureIterator.hasNext() ) {
-            SimpleFeature feature = featureIterator.next();
-            featuresList.add(feature);
-        }
-        featureIterator.close();
-        return featuresList;
     }
 
 }

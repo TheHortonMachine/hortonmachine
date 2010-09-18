@@ -25,7 +25,7 @@ public class TestEpanetSynchronizer extends HMTestCase {
     public void testEpanet() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        String folder = "C:\\TMP\\epanettests\\test\\";
+        String folder = "C:\\TMP\\epanettests\\shape_orig_esempio1\\";
         String newFolder = "C:\\TMP\\epanettests\\test_out\\";
 
         String jPath = folder + File.separator + Junctions.ID.getShapefileName();
