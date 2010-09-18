@@ -42,7 +42,7 @@ import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 @Keywords("Epanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EpanetTimeParameters extends JGTModel {
+public class EpanetParametersTime extends JGTModel {
 
     @Description("The duration of the simulation in minutes. Default is 0.")
     @In
@@ -73,7 +73,6 @@ public class EpanetTimeParameters extends JGTModel {
     public String startClockTime = null;
 
     @Description("Kind of postprocessing that should be done on time series.")
-    @Label("STATISTIC")
     @In
     public String statistic = null;
 

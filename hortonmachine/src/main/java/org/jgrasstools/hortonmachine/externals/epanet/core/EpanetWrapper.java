@@ -332,10 +332,10 @@ public class EpanetWrapper {
     /**
      * Retrieves the value of a particular analysis option.  
      * 
-     * @param optionCode The {@link OptionCodes}.
+     * @param optionCode The {@link OptionParameterCodes}.
      * @throws EpanetException 
      */
-    public float ENgetoption( OptionCodes optionCode ) throws EpanetException {
+    public float ENgetoption( OptionParameterCodes optionCode ) throws EpanetException {
         float[] optionValue = new float[1];
         int error = epanet.ENgetoption(optionCode.getCode(), optionValue);
         checkError(error);
@@ -650,11 +650,11 @@ public class EpanetWrapper {
     /**
      * Sets the value of a particular analysis option.  
      * 
-     * @param optionCode the {@link OptionCodes}.
+     * @param optionCode the {@link OptionParameterCodes}.
      * @param value the option value.
      * @throws EpanetException 
      */
-    public void ENsetoption( OptionCodes optionCode, float value ) throws EpanetException {
+    public void ENsetoption( OptionParameterCodes optionCode, float value ) throws EpanetException {
         int errcode = epanet.ENsetoption(optionCode.getCode(), value);
         checkError(errcode);
     }

@@ -62,9 +62,13 @@ import com.vividsolutions.jts.geom.Geometry;
 @SuppressWarnings("nls")
 public class EpanetInpGenerator extends JGTModel {
 
+    @Description("The options parameters.")
+    @In
+    public EpanetParametersOptions inOptions = null;
+
     @Description("The time parameters.")
     @In
-    public EpanetTimeParameters inTime = null;
+    public EpanetParametersTime inTime = null;
 
     @Description("The junctions features.")
     @In
@@ -122,7 +126,7 @@ public class EpanetInpGenerator extends JGTModel {
 
         BufferedWriter bw = null;
         try {
-            pm.beginTask("Generating inp file...", 9);
+            pm.beginTask("Generating inp file...", 10);
             bw = new BufferedWriter(new FileWriter(outputFile));
             bw.write("[TITLE]");
             pm.worked(1);
@@ -155,10 +159,23 @@ public class EpanetInpGenerator extends JGTModel {
              * the time section
              */
             pm.worked(1);
-            bw.write("\n\n" + EpanetTimeParameters.TIMESECTION + "\n");
+            bw.write("\n\n" + EpanetParametersTime.TIMESECTION + "\n");
             Properties timeParameters = inTime.outProperties;
             Set<Entry<Object, Object>> entrySet = timeParameters.entrySet();
             for( Entry<Object, Object> entry : entrySet ) {
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                bw.write(key + "\t" + value + "\n");
+            }
+            
+            /*
+             * the options section
+             */
+            pm.worked(1);
+            bw.write("\n\n" + EpanetParametersOptions.OPTIONSSECTION + "\n");
+            Properties optionsParameters = inOptions.outProperties;
+            Set<Entry<Object, Object>> optionsEntrySet = optionsParameters.entrySet();
+            for( Entry<Object, Object> entry : optionsEntrySet ) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
                 bw.write(key + "\t" + value + "\n");

@@ -6,7 +6,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetInpGenerator;
-import org.jgrasstools.hortonmachine.externals.epanet.EpanetTimeParameters;
+import org.jgrasstools.hortonmachine.externals.epanet.EpanetParametersTime;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
@@ -41,7 +41,7 @@ public class TestEpanetInpGeneration extends HMTestCase {
         SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
         SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
         
-        EpanetTimeParameters time= new EpanetTimeParameters();
+        EpanetParametersTime time= new EpanetParametersTime();
         time.process();
 
         EpanetInpGenerator gen = new EpanetInpGenerator();
