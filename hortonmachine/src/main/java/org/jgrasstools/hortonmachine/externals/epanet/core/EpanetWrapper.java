@@ -137,7 +137,7 @@ public class EpanetWrapper {
      * @throws EpanetException
      */
     public void ENopenH() throws EpanetException {
-        int err = epanet.ENsaveH();
+        int err = epanet.ENopenH();
         checkError(err);
     }
 
@@ -484,7 +484,7 @@ public class EpanetWrapper {
      */
     public float ENgetnodevalue( int index, NodeParameters code ) throws EpanetException {
         float[] nodeValue = new float[1];
-        int error = epanet.ENgetoption(code.getCode(), nodeValue);
+        int error = epanet.ENgetnodevalue(index, code.getCode(), nodeValue);
         checkError(error);
         return nodeValue[0];
     }
@@ -563,11 +563,11 @@ public class EpanetWrapper {
      * Retrieves the value of a specific link parameter. 
      * 
      * @param index link index.
-     * @param param {@link Parameters}.
+     * @param param {@link LinkParameters}.
      * @return the value.
      * @throws EpanetException
      */
-    public float ENgetlinkvalue( int index, Parameters param ) throws EpanetException {
+    public float ENgetlinkvalue( int index, LinkParameters param ) throws EpanetException {
         float[] value = new float[1];
         int errcode = epanet.ENgetlinkvalue(index, param.getCode(), value);
         checkError(errcode);
@@ -607,7 +607,7 @@ public class EpanetWrapper {
      * @param value parameter value.
      * @throws EpanetException 
      */
-    public void ENsetlinkvalue( int index, Parameters linkParameter, float value ) throws EpanetException {
+    public void ENsetlinkvalue( int index, LinkParameters linkParameter, float value ) throws EpanetException {
         int errcode = epanet.ENsetnodevalue(index, linkParameter.getCode(), value);
         checkError(errcode);
     }

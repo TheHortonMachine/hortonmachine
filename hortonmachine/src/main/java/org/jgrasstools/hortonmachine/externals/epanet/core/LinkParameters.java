@@ -1,7 +1,7 @@
 package org.jgrasstools.hortonmachine.externals.epanet.core;
 
 @SuppressWarnings("nls")
-public enum Parameters {
+public enum LinkParameters {
     EN_DIAMETER(0, "Diameter "), //
     EN_LENGTH(1, "Length "), //
     EN_ROUGHNESS(2, "Roughness coeff. "), //
@@ -19,7 +19,7 @@ public enum Parameters {
 
     private int code;
     private String description;
-    Parameters( int code, String description ) {
+    LinkParameters( int code, String description ) {
         this.code = code;
         this.description = description;
     }
@@ -32,9 +32,9 @@ public enum Parameters {
         return description;
     }
 
-    public static Parameters forCode( int i ) {
-        Parameters[] values = values();
-        for( Parameters type : values ) {
+    public static LinkParameters forCode( int i ) {
+        LinkParameters[] values = values();
+        for( LinkParameters type : values ) {
             if (type.code == i) {
                 return type;
             }

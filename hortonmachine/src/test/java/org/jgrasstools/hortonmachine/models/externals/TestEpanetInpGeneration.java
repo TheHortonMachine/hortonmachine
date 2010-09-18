@@ -6,7 +6,9 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetInpGenerator;
+import org.jgrasstools.hortonmachine.externals.epanet.EpanetParametersOptions;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetParametersTime;
+import org.jgrasstools.hortonmachine.externals.epanet.core.Headloss;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
@@ -40,9 +42,14 @@ public class TestEpanetInpGeneration extends HMTestCase {
         SimpleFeatureCollection piFC = ShapefileFeatureReader.readShapefile(piPath);
         SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
         SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
-        
-        EpanetParametersTime time= new EpanetParametersTime();
+
+        EpanetParametersTime time = new EpanetParametersTime();
         time.process();
+
+        EpanetParametersOptions options = new EpanetParametersOptions();
+        options.headloss = Headloss.C_M.getName();
+        options.unbalanced = "CONTINUE 10";
+        options.process();
 
         EpanetInpGenerator gen = new EpanetInpGenerator();
         gen.pm = pm;
@@ -53,8 +60,9 @@ public class TestEpanetInpGeneration extends HMTestCase {
         gen.inValves = vFC;
         gen.inReservoirs = rFC;
         gen.inTime = time;
+        gen.inOptions = options;
         gen.outFile = inpFilePath;
-        
+
         gen.process();
 
         File file = new File(inpFilePath);

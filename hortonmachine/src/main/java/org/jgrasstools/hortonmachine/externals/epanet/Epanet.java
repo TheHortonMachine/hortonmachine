@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.hortonmachine.externals.epanet;
 
+import java.io.File;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -31,10 +33,13 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetException;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetNativeFunctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
 import org.jgrasstools.hortonmachine.externals.epanet.core.LinkTypes;
-import org.jgrasstools.hortonmachine.externals.epanet.core.Parameters;
+import org.jgrasstools.hortonmachine.externals.epanet.core.LinkParameters;
+import org.jgrasstools.hortonmachine.externals.epanet.core.NodeParameters;
+import org.jgrasstools.hortonmachine.externals.epanet.core.NodeTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodesStatistic;
 
@@ -45,85 +50,79 @@ import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodesSta
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Epanet extends JGTModel {
 
-    @Description("The junctions features.")
+    @Description("The inp file.")
     @In
-    public SimpleFeatureCollection inJunctions = null;
-
-    @Description("The junctions features.")
-    @In
-    public SimpleFeatureCollection inTanks = null;
-
-    @Description("The tanks features.")
-    @In
-    public SimpleFeatureCollection inReservoirs = null;
-
-    @Description("The pumps features.")
-    @In
-    public SimpleFeatureCollection inPumps = null;
-
-    @Description("The valves features.")
-    @In
-    public SimpleFeatureCollection inValves = null;
-
-    @Description("The pipes features.")
-    @In
-    public SimpleFeatureCollection inPipes = null;
+    public String inInp = null;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("The file into which to write the inp.")
-    @In
-    public String outFile = null;
-
-    private static final String NL = "\n";
-    private static final String SPACER = " ";
-
-    private static String folder = "D:\\development\\hydrologis-hg\\hydrologis\\epanet\\eu.hydrologis.jgrass.epanet\\example\\";
-
     @Execute
     public void process() throws Exception {
-
-        // System.out.println("Dll Path " + System.getProperty("java.library.path"));
-        String input = folder + "semplice.inp";
-        String report = folder + "semplice.rpt";
-        String report2 = folder + "semplice2.rpt";
-        String output = folder + "semplice.out";
-
         EpanetWrapper ep = new EpanetWrapper("epanet2_64bit",
                 "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
 
-        ep.ENopen(input, report, "");
+        File inFile = new File(inInp);
+        String report = inFile.getAbsolutePath() + ".rpt";
+        ep.ENopen(inInp, report, "");
 
+        // reportLinks(ep);
+        // reportNodes(ep);
+
+        if (false) {
+            ep.ENsolveH();
+            ep.ENsaveH();
+            // ep.ENreport();
+        } else {
+            long[] t = new long[1];
+            long[] tstep = new long[1];
+            ep.ENopenH();
+            ep.ENinitH(0);
+            do {
+                ep.ENrunH(t);
+
+                reportLinks(ep);
+                reportNodes(ep);
+
+                ep.ENnextH(tstep);
+                System.out.println("TIME: " + t[0]);
+                System.out.println("TIMESTEP: " + tstep[0]);
+
+            } while( tstep[0] > 0 );
+
+            ep.ENcloseH();
+        }
+
+        ep.ENclose();
+
+    }
+    private void reportLinks( EpanetWrapper ep ) throws EpanetException {
         int linksNum = ep.ENgetcount(Components.EN_LINKCOUNT);
         System.out.println("Links found: " + linksNum);
         for( int i = 1; i <= linksNum; i++ ) {
             String linkId = ep.ENgetlinkid(i);
             LinkTypes type = ep.ENgetlinktype(i);
-            float value = ep.ENgetlinkvalue(i, Parameters.EN_DIAMETER);
-            System.out.println(linkId + " - " + type.getDescription() + " - " + value);
+            float flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
+            float vel = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
+            float headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
+            float status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+            System.out.println(linkId + " - " + type.getDescription() + " - " + flow + " - " + vel + " - " + status + " - "
+                    + headloss);
         }
+    }
 
-        /* Compute ranges (max - min) */
-        ep.ENsettimeparam(TimeParameterCodes.STATISTIC, (long) TimeParameterCodesStatistic.STATISTIC_RANGE.getCode());
-
-        /* Solve hydraulics */
-        ep.ENsolveH();
-        ep.ENsaveH();
-
-        /* Define contents of the report */
-        ep.ENresetreport();
-        ep.ENsetreport("FILE " + report2);
-        ep.ENsetreport("NODES ALL");
-        ep.ENsetreport("PRESSURE PRECISION 1");
-        ep.ENsetreport("PRESSURE ABOVE 20");
-
-        /* Write the report to file */
-        ep.ENreport();
-
-        ep.ENclose();
-
+    private void reportNodes( EpanetWrapper ep ) throws EpanetException {
+        int nodesNum = ep.ENgetcount(Components.EN_NODECOUNT);
+        System.out.println("Nodes found: " + nodesNum);
+        for( int i = 1; i <= nodesNum; i++ ) {
+            String nodeId = ep.ENgetnodeid(i);
+            NodeTypes type = ep.ENgetnodetype(i);
+            float dem = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
+            float head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
+            float press = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
+            System.out.println(nodeId + " - " + type.getDescription() + " - " + dem + " - " + head + " - " + press);
+        }
     }
 
 }

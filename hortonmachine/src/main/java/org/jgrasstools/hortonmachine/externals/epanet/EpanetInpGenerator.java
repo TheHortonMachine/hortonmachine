@@ -140,20 +140,20 @@ public class EpanetInpGenerator extends JGTModel {
             String junctionsText = handleJunctions(junctionsList);
             bw.write(junctionsText);
             pm.worked(1);
-            String pipesText = handlePipes(pipesList);
-            bw.write(pipesText);
+            String reservoirsText = handleReservoirs(reservoirsList);
+            bw.write(reservoirsText);
             pm.worked(1);
             String tanksText = handleTanks(tanksList);
             bw.write(tanksText);
-            pm.worked(1);
-            String reservoirsText = handleReservoirs(reservoirsList);
-            bw.write(reservoirsText);
             pm.worked(1);
             String pumpsText = handlePumps(pumpsList);
             bw.write(pumpsText);
             pm.worked(1);
             String valvesText = handleValves(valvesList);
             bw.write(valvesText);
+            pm.worked(1);
+            String pipesText = handlePipes(pipesList);
+            bw.write(pipesText);
 
             /*
              * the time section
@@ -165,9 +165,11 @@ public class EpanetInpGenerator extends JGTModel {
             for( Entry<Object, Object> entry : entrySet ) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
-                bw.write(key + "\t" + value + "\n");
+                if (value.toString().length() > 0) {
+                    bw.write(key + "\t" + value + "\n");
+                }
             }
-            
+
             /*
              * the options section
              */
@@ -178,7 +180,9 @@ public class EpanetInpGenerator extends JGTModel {
             for( Entry<Object, Object> entry : optionsEntrySet ) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
-                bw.write(key + "\t" + value + "\n");
+                if (value.toString().length() > 0) {
+                    bw.write(key + "\t" + value + "\n");
+                }
             }
 
             /*

@@ -149,7 +149,7 @@ public interface EpanetNativeFunctions extends Library {
     int ENgetnodeindex( String charPtr1, int[] intPtr1 );
     int ENgetnodeid( int int1, ByteBuffer charPtr1 );
     int ENgetnodetype( int int1, int[] intPtr1 );
-    int ENgetnodevalue( int int1, int int2, FloatBuffer floatPtr1 );
+    int ENgetnodevalue( int int1, int int2, float[] floatPtr1 );
     int ENgetlinkindex( String charPtr1, int[] intPtr1 );
     int ENgetlinkid( int int1, ByteBuffer charPtr1 );
     int ENgetlinktype( int index, int[] typecode );
