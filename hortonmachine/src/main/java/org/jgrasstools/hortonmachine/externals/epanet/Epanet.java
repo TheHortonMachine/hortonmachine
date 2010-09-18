@@ -36,6 +36,7 @@ import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
 import org.jgrasstools.hortonmachine.externals.epanet.core.LinkTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Parameters;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
+import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodesStatistic;
 
 @Description("The main Epanet module")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -105,7 +106,7 @@ public class Epanet extends JGTModel {
         }
 
         /* Compute ranges (max - min) */
-        ep.ENsettimeparam(TimeParameterCodes.EN_STATISTIC, (long) EpanetNativeFunctions.EN_RANGE);
+        ep.ENsettimeparam(TimeParameterCodes.STATISTIC, (long) TimeParameterCodesStatistic.STATISTIC_RANGE.getCode());
 
         /* Solve hydraulics */
         ep.ENsolveH();

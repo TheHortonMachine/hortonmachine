@@ -2,32 +2,33 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
 
 @SuppressWarnings("nls")
 public enum TimeParameterCodes {
-    EN_DURATION(0, "Simulation duration "), //
-    EN_HYDSTEP(1, "Hydraulic time step "), //
-    EN_QUALSTEP(2, "Water quality time step "), //
-    EN_PATTERNSTEP(3, "Time pattern time step "), //
-    EN_PATTERNSTART(4, "Time pattern start time "), //
-    EN_REPORTSTEP(5, "Reporting time step "), //
-    EN_REPORTSTART(6, "Report starting time "), //
-    EN_RULESTEP(7, "Time step for evaluating rule-based controls "), //
-    EN_STATISTIC(8, "Type of time series post-processing to use "), //
-    EN_PERIODS(9, "Number of reporting periods saved to binary output file"), //
-
-    EN_STATISTIC_EN_NONE(0, "none "), //
-    EN_STATISTIC_EN_AVERAGE(1, "averaged "), //
-    EN_STATISTIC_EN_MINIMUM(2, "minimums "), //
-    EN_STATISTIC_EN_MAXIMUM(3, "maximums "), //
-    EN_STATISTIC_EN_RANGE(4, "ranges ");
+    DURATION(0, "DURATION", "Simulation duration"), //
+    HYDSTEP(1, "HYDRAULIC TIMESTEP", "Hydraulic time step"), //
+    QUALSTEP(2, "QUALITY TIMESTEP", "Water quality time step"), //
+    PATTERNSTEP(3, "PATTERN TIMESTEP", "Time pattern time step"), //
+    PATTERNSTART(4, "PATTERN START", "Time pattern start time"), //
+    REPORTSTEP(5, "REPORT TIMESTEP", "Reporting time step"), //
+    REPORTSTART(6, "REPORT START", "Report starting time"), //
+    RULESTEP(7, "RULE TIMESTEP", "Time step for evaluating rule-based controls"), //
+    STATISTIC(8, "STATISTIC", "Type of time series post-processing to use"), //
+    STARTCLOCKTIME(-1, "START CLOCKTIME", "The time of the day at which the simulation begins"), //
+    PERIODS(9, "", "Number of reporting periods saved to binary output file");
 
     private int code;
+    private String key;
     private String description;
-    TimeParameterCodes( int code, String description ) {
+    TimeParameterCodes( int code, String key, String description ) {
         this.code = code;
+        this.key = key;
         this.description = description;
     }
 
     public int getCode() {
         return code;
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public String getDescription() {
@@ -42,5 +43,15 @@ public enum TimeParameterCodes {
             }
         }
         throw new IllegalArgumentException("No type for the given code: " + i);
+    }
+
+    public static TimeParameterCodes forKey( String key ) {
+        TimeParameterCodes[] values = values();
+        for( TimeParameterCodes type : values ) {
+            if (type.key.equals(key)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("No type for the given key: " + key);
     }
 }
