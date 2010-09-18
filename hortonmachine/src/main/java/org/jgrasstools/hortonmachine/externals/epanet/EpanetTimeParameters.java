@@ -18,6 +18,10 @@
  */
 package org.jgrasstools.hortonmachine.externals.epanet;
 
+import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -25,11 +29,13 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 
 @Description("The time related parameters of the epanet inp file")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -50,26 +56,26 @@ public class EpanetTimeParameters extends JGTModel {
     @In
     public Double patternTimestep = null;
 
-    @Description("The time offset at which all patterns will start.")
+    @Description("The time offset in minutes at which all patterns will start.")
     @In
     public Double patternStart = null;
 
-    @Description("Sets the timestep interval of the report. Default is 60 minutes.")
+    @Description("Sets the timestep interval of the report in minutes. Default is 60 minutes.")
     @In
     public Double reportTimestep = null;
 
-    @Description("The time offset at which the report will start.")
+    @Description("The time offset in minutes at which the report will start.")
     @In
-    public Double ReportStart = null;
+    public Double reportStart = null;
 
-    @Description("The time of the day at which the simulation begins [0-24].")
+    @Description("The time of the day at which the simulation begins. format is: [HH:MM AM/PM]")
     @In
-    public Double StartClockTime = null;
+    public String startClockTime = null;
 
     @Description("Kind of postprocessing that should be done on time series.")
     @Label("STATISTIC")
     @In
-    public String Statistic = null;
+    public String statistic = null;
 
     @Description("The progress monitor.")
     @In
@@ -78,10 +84,51 @@ public class EpanetTimeParameters extends JGTModel {
     @Description("Properties file containing the time options.")
     @In
     public String inFile = null;
-    
+
+    @Description("The Properties needed for epanet.")
+    @Out
+    public Properties outProperties = new Properties();
+
+    private static final String MIN = " MIN"; //$NON-NLS-1$
+
+    /**
+     * The title of the time section in the inp file.
+     */
+    public static final String TIMESECTION = "[TIMES]"; //$NON-NLS-1$
+
     @Execute
     public void process() throws Exception {
-        
+        if (inFile != null) {
+            File file = new File(inFile);
+            outProperties.load(new FileReader(file));
+        } else {
+            if (duration != null) {
+                outProperties.put(TimeParameterCodes.DURATION.getKey(), duration + MIN);
+            } else {
+                outProperties.put(TimeParameterCodes.DURATION.getKey(), 0 + MIN);
+            }
+            if (hydraulicTimestep != null) {
+                outProperties.put(TimeParameterCodes.HYDSTEP.getKey(), hydraulicTimestep + MIN);
+            }
+            if (patternTimestep != null) {
+                outProperties.put(TimeParameterCodes.PATTERNSTEP.getKey(), patternTimestep + MIN);
+            }
+            if (patternStart != null) {
+                outProperties.put(TimeParameterCodes.PATTERNSTART.getKey(), patternStart + MIN);
+            }
+            if (reportTimestep != null) {
+                outProperties.put(TimeParameterCodes.REPORTSTEP.getKey(), reportTimestep + MIN);
+            }
+            if (reportStart != null) {
+                outProperties.put(TimeParameterCodes.REPORTSTART.getKey(), reportStart + MIN);
+            }
+            if (startClockTime != null) {
+                outProperties.put(TimeParameterCodes.STARTCLOCKTIME.getKey(), startClockTime);
+            }
+            if (statistic != null) {
+                outProperties.put(TimeParameterCodes.STATISTIC.getKey(), statistic);
+            }
+        }
     }
 
 }

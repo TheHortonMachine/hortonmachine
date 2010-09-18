@@ -22,6 +22,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -57,6 +60,10 @@ import com.vividsolutions.jts.geom.Geometry;
 @SuppressWarnings("nls")
 public class EpanetInpGenerator extends JGTModel {
 
+    @Description("The time parameters.")
+    @In
+    public EpanetTimeParameters inTime = null;
+
     @Description("The junctions features.")
     @In
     public SimpleFeatureCollection inJunctions = null;
@@ -90,7 +97,7 @@ public class EpanetInpGenerator extends JGTModel {
     public String outFile = null;
 
     private static final String NL = "\n";
-    private static final String SPACER = " ";
+    private static final String SPACER = "\t\t";
 
     @Execute
     public void process() throws Exception {
@@ -106,7 +113,7 @@ public class EpanetInpGenerator extends JGTModel {
 
         BufferedWriter bw = null;
         try {
-            pm.beginTask("Generating inp file...", 7);
+            pm.beginTask("Generating inp file...", 8);
             bw = new BufferedWriter(new FileWriter(outputFile));
             bw.write("[TITLE]");
             pm.worked(1);
@@ -134,6 +141,19 @@ public class EpanetInpGenerator extends JGTModel {
             pm.worked(1);
             String valvesText = handleValves(inValves);
             bw.write(valvesText);
+
+            /*
+             * the time section
+             */
+            pm.worked(1);
+            bw.write("\n\n" + EpanetTimeParameters.TIMESECTION + "\n");
+            Properties timeParameters = inTime.outProperties;
+            Set<Entry<Object, Object>> entrySet = timeParameters.entrySet();
+            for( Entry<Object, Object> entry : entrySet ) {
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                bw.write(key + "\t" + value + "\n");
+            }
         } finally {
             pm.done();
             bw.close();

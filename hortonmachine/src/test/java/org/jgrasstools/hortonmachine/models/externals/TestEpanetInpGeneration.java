@@ -5,8 +5,8 @@ import java.io.File;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.utils.FileUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetInpGenerator;
+import org.jgrasstools.hortonmachine.externals.epanet.EpanetTimeParameters;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
@@ -24,7 +24,7 @@ public class TestEpanetInpGeneration extends HMTestCase {
     public void testEpanet() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        String folder = "D:\\data\\epanet\\data\\network\\";
+        String folder = "C:\\TMP\\epanettests\\test\\";
 
         String inpFilePath = folder + File.separator + "aaaaa.inp";
 
@@ -40,6 +40,9 @@ public class TestEpanetInpGeneration extends HMTestCase {
         SimpleFeatureCollection piFC = ShapefileFeatureReader.readShapefile(piPath);
         SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
         SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
+        
+        EpanetTimeParameters time= new EpanetTimeParameters();
+        time.process();
 
         EpanetInpGenerator gen = new EpanetInpGenerator();
         gen.pm = pm;
@@ -49,8 +52,9 @@ public class TestEpanetInpGeneration extends HMTestCase {
         gen.inPipes = piFC;
         gen.inValves = vFC;
         gen.inReservoirs = rFC;
+        gen.inTime = time;
         gen.outFile = inpFilePath;
-
+        
         gen.process();
 
         File file = new File(inpFilePath);
