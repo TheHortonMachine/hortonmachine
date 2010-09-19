@@ -49,7 +49,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Synchronizes the features of the different epanet layers.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Epanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")

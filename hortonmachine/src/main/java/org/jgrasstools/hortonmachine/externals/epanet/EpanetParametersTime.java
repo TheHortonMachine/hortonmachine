@@ -38,7 +38,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 
 @Description("The time related parameters of the epanet inp file")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Epanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")

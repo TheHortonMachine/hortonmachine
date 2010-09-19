@@ -19,6 +19,8 @@
 package org.jgrasstools.hortonmachine.externals.epanet;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -34,6 +36,7 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetException;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetNativeFunctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
 import org.jgrasstools.hortonmachine.externals.epanet.core.LinkTypes;
@@ -42,9 +45,10 @@ import org.jgrasstools.hortonmachine.externals.epanet.core.NodeParameters;
 import org.jgrasstools.hortonmachine.externals.epanet.core.NodeTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodesStatistic;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Pipe;
 
 @Description("The main Epanet module")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Epanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
@@ -57,6 +61,17 @@ public class Epanet extends JGTModel {
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    
+    
+    @Description("The pipes result data.")
+    @In
+    public List<Pipe> pipesList = new ArrayList<Pipe>();
+    
+    
+
+    private float avgEn = 0;
+    private float maxEn = Float.NEGATIVE_INFINITY;
+    private int runs = 0;
 
     @Execute
     public void process() throws Exception {
@@ -96,6 +111,8 @@ public class Epanet extends JGTModel {
 
         ep.ENclose();
 
+        System.out.println("AVG EN: " + (avgEn / runs) + " - MAX EN: " + maxEn);
+
     }
     private void reportLinks( EpanetWrapper ep ) throws EpanetException {
         int linksNum = ep.ENgetcount(Components.EN_LINKCOUNT);
@@ -107,8 +124,17 @@ public class Epanet extends JGTModel {
             float vel = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
             float headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
             float status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+            float energy = Float.NaN;
+            if (type == LinkTypes.EN_PUMP) {
+                energy = ep.ENgetlinkvalue(i, LinkParameters.EN_ENERGY);
+                avgEn = avgEn + energy;
+                if (energy > maxEn) {
+                    maxEn = energy;
+                }
+                runs++;
+            }
             System.out.println(linkId + " - " + type.getDescription() + " - " + flow + " - " + vel + " - " + status + " - "
-                    + headloss);
+                    + headloss + " - " + energy);
         }
     }
 

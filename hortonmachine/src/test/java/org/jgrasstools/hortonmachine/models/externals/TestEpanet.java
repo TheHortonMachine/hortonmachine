@@ -13,15 +13,15 @@ public class TestEpanet extends HMTestCase {
     public void testEpanet() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-//        String inp = "D:\\data\\epanet\\Esempio1\\Esempio1.inp";
-         String inp = "C:\\TMP\\epanettests\\test\\aaaaa.inp";
+        // String inp = "C:\\TMP\\epanettests\\Esempio2\\Esempio2.inp";
+        String inp = "C:\\TMP\\epanettests\\test2\\aaaaa.inp";
 
         Epanet gen = new Epanet();
         gen.inInp = inp;
         gen.process();
 
     }
-    
+
     public static void main( String[] args ) {
         try {
             new TestEpanet().testEpanet();

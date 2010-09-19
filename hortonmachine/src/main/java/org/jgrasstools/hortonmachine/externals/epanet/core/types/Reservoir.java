@@ -16,26 +16,32 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.externals.epanet.core;
+package org.jgrasstools.hortonmachine.externals.epanet.core.types;
 
-@SuppressWarnings("nls")
-public enum Headloss {
-    H_W("H-W", "The Hazen-Williams formula"), //
-    D_W("D-W", "The Darcy-Weissbach formula"), //
-    C_M("C-M", "The Chezy-Manning formula");
+import org.joda.time.DateTime;
 
-    private String name;
-    private String description;
-    Headloss( String name, String description ) {
-        this.name = name;
-        this.description = description;
-    }
+/**
+ * A class representing Reservoir data for a given time instant.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public class Reservoir {
+    /**
+     * Current time instant.
+     */
+    public DateTime time;
 
-    public String getName() {
-        return name;
-    }
+    public String id;
 
-    public String getDescription() {
-        return description;
+    public float demand;
+
+    public float head;
+
+    public float quality;
+
+    @SuppressWarnings("nls")
+    @Override
+    public String toString() {
+        return id + "\t" + demand + "\t" + head + "\t" + quality;
     }
 }
