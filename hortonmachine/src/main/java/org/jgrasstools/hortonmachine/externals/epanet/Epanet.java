@@ -67,6 +67,10 @@ public class Epanet extends JGTModel {
     @In
     public String tStart = "1970-01-01 00:00"; //$NON-NLS-1$
 
+    @Description("The current time.")
+    @Out
+    public String tCurrent = null;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -103,15 +107,26 @@ public class Epanet extends JGTModel {
 
     private DateTime current = null;
 
+    @Initialize
+    public void initProcess() {
+        // activate time
+        doProcess = true;
+    }
+
     @Execute
     public void process() throws Exception {
         if (ep == null) {
             ep = new EpanetWrapper("epanet2_64bit", //$NON-NLS-1$
                     "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
             current = formatter.parseDateTime(tStart);
-            ep.ENopen(inInp, "", "");
+            tCurrent = tStart;
+
+            ep.ENopen(inInp, inInp + ".rpt", "");
             ep.ENopenH();
             ep.ENinitH(0);
+        } else {
+            current = current.plusSeconds((int) tstep[0]);
+            tCurrent = current.toString(formatter);
         }
 
         pipesList = new ArrayList<Pipe>();
@@ -128,7 +143,9 @@ public class Epanet extends JGTModel {
 
         ep.ENnextH(tstep);
 
-        current = current.plusSeconds((int) tstep[0]);
+        if (tstep[0] <= 0) {
+            doProcess = false;
+        }
     }
 
     public void finish() throws EpanetException {
