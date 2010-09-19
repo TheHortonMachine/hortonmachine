@@ -67,6 +67,7 @@ public class EpanetFeatureTypes {
     private static final String ENDNODE_STR = "endnode";
     private static final String SPEED_STR = "speed";
     private static final String PRICE_STR = "price";
+    private static final String PRICE_PATTERN_STR = "pri_pat_id";
     private static final String EFFICIENCY_ID_STR = "effic_id";
 
     /**
@@ -286,6 +287,10 @@ public class EpanetFeatureTypes {
          * The average cost per KWh.
          */
         PRICE(PRICE_STR, Double.class), //
+        /**
+         * The id of the time pattern for energy price.
+         */
+        PRICE_PATTERN(PRICE_PATTERN_STR, String.class), //
         /**
          * The id of the efficiency curve.
          */
