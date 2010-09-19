@@ -46,6 +46,7 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.FileUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
@@ -98,9 +99,13 @@ public class EpanetInpGenerator extends JGTModel {
     @In
     public SimpleFeatureCollection inPipes = null;
 
-    @Description("The patterns, curves, demand (etc) folder.")
+    @Description("The patterns, curves folder.")
     @In
     public String inExtras = null;
+
+    @Description("The demands file.")
+    @In
+    public String inDemand = null;
 
     @Description("The progress monitor.")
     @In
@@ -119,7 +124,6 @@ public class EpanetInpGenerator extends JGTModel {
 
     private List<String> curvesFilesList = new ArrayList<String>();
     private List<String> patternsFilesList = new ArrayList<String>();
-    private List<String> demandsFilesList = new ArrayList<String>();
 
     @Execute
     public void process() throws Exception {
@@ -148,7 +152,7 @@ public class EpanetInpGenerator extends JGTModel {
 
         BufferedWriter bw = null;
         try {
-            pm.beginTask("Generating inp file...", 10);
+            pm.beginTask("Generating inp file...", 13);
             bw = new BufferedWriter(new FileWriter(outputFile));
             bw.write("[TITLE]");
             pm.worked(1);
@@ -176,6 +180,36 @@ public class EpanetInpGenerator extends JGTModel {
             pm.worked(1);
             String pipesText = handlePipes(pipesList);
             bw.write(pipesText);
+
+            /*
+             * the demands section
+             */
+            pm.worked(1);
+            if (inDemand != null) {
+                bw.write("\n\n[DEMANDS]\n");
+                String demandSection = FileUtilities.readFile(new File(inDemand));
+                bw.write(demandSection);
+            }
+
+            /*
+             * the patterns section
+             */
+            pm.worked(1);
+            bw.write("\n\n[PATTERNS]\n");
+            for( String patternsFilePath : patternsFilesList ) {
+                String patternString = FileUtilities.readFile(new File(patternsFilePath));
+                bw.write(patternString);
+            }
+
+            /*
+             * the curves section
+             */
+            pm.worked(1);
+            bw.write("\n\n[CURVES]\n");
+            for( String curveFilePath : curvesFilesList ) {
+                String curveString = FileUtilities.readFile(new File(curveFilePath));
+                bw.write(curveString);
+            }
 
             /*
              * the time section
@@ -206,35 +240,7 @@ public class EpanetInpGenerator extends JGTModel {
                     bw.write(key + "\t" + value + "\n");
                 }
             }
-            
-            /*
-             * the curves section
-             */
-            pm.worked(1);
-            bw.write("\n\n[CURVES]\n");
-            for( String curveFilePath : curvesFilesList ) {
-                String curveString = FileUtilities.readFile(new File(curveFilePath));
-                bw.write(curveString);
-            }
-            /*
-             * the patterns section
-             */
-            pm.worked(1);
-            bw.write("\n\n[PATTERNS]\n");
-            for( String patternsFilePath : patternsFilesList ) {
-                String patternString = FileUtilities.readFile(new File(patternsFilePath));
-                bw.write(patternString);
-            }
-            /*
-             * the demands section
-             */
-            pm.worked(1);
-            bw.write("\n\n[DEMANDS]\n");
-            for( String demandsFilePath : demandsFilesList ) {
-                String demandsString = FileUtilities.readFile(new File(demandsFilePath));
-                bw.write(demandsString);
-            }
-            
+
             /*
              * coordinates and vertices
              */
@@ -328,8 +334,14 @@ public class EpanetInpGenerator extends JGTModel {
             sbJunctions.append(demand.toString());
             sbJunctions.append(SPACER);
             Object pattern = getAttribute(junction, Junctions.PATTERN.getAttributeName());
-            sbJunctions.append(pattern.toString());
+            String patternId = pattern.toString();
+            sbJunctions.append(patternId);
             sbJunctions.append(NL);
+
+            String path = patternId2Path.get(patternId);
+            if (path != null) {
+                patternsFilesList.add(path);
+            }
         }
 
         sbJunctions.append("\n\n");
@@ -350,8 +362,12 @@ public class EpanetInpGenerator extends JGTModel {
 
         for( SimpleFeature pipe : pipesList ) {
             // [PIPES]
-            Object dc_id = getAttribute(pipe, Pipes.ID.getAttributeName());
-            sbPipes.append(dc_id.toString());
+            Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
+            String idString = id.toString();
+            if (idString.equalsIgnoreCase(EpanetConstants.DUMMYPIPE.toString())) {
+                continue;
+            }
+            sbPipes.append(idString);
             sbPipes.append(SPACER);
             Object node1 = getAttribute(pipe, Pipes.START_NODE.getAttributeName());
             sbPipes.append(node1.toString());
@@ -395,8 +411,14 @@ public class EpanetInpGenerator extends JGTModel {
             sbReservoirs.append(head.toString());
             sbReservoirs.append(SPACER);
             Object pattern = getAttribute(reservoir, Reservoirs.HEAD_PATTERN.getAttributeName());
-            sbReservoirs.append(pattern.toString());
+            String patternId = pattern.toString();
+            sbReservoirs.append(patternId);
             sbReservoirs.append(NL);
+
+            String path = patternId2Path.get(patternId);
+            if (path != null) {
+                patternsFilesList.add(path);
+            }
         }
 
         return sbReservoirs.toString();
@@ -454,17 +476,21 @@ public class EpanetInpGenerator extends JGTModel {
 
     private String handlePumps( List<SimpleFeature> pumpsList ) throws IOException {
         StringBuilder sbPumps = new StringBuilder();
+        StringBuilder sbEnergy = new StringBuilder();
         sbPumps.append("\n\n[PUMPS]\n");
         sbPumps.append(";ID").append(SPACER);
         sbPumps.append("NODE1").append(SPACER);
         sbPumps.append("NODE2").append(SPACER);
         sbPumps.append("PARAMETERS").append(NL);
 
+        sbEnergy.append("\n\n[ENERGY]\n");
+
         for( SimpleFeature pump : pumpsList ) {
             // [PUMPS]
             // ;ID Node1 Node2 Parameters(key1 value1 key2 value2...)
             Object dc_id = getAttribute(pump, Pumps.ID.getAttributeName());
-            sbPumps.append(dc_id.toString());
+            String pumpId = dc_id.toString();
+            sbPumps.append(pumpId);
             sbPumps.append(SPACER);
             Object node1 = getAttribute(pump, Pumps.START_NODE.getAttributeName());
             sbPumps.append(node1.toString());
@@ -496,12 +522,49 @@ public class EpanetInpGenerator extends JGTModel {
             }
             Object speedPattern = getAttribute(pump, Pumps.SPEED_PATTERN.getAttributeName());
             if (speedPattern != null) {
-                sbPumps.append("PATTERN " + speedPattern.toString());
+                String patternId = speedPattern.toString();
+                sbPumps.append("PATTERN " + patternId);
                 sbPumps.append(SPACER);
+
+                String path = patternId2Path.get(patternId);
+                if (path != null) {
+                    patternsFilesList.add(path);
+                }
             }
             sbPumps.append(NL);
+            
+            
+            /*
+             * energy part
+             */
+            Object price = getAttribute(pump, Pumps.PRICE.getAttributeName());
+            if (price != null) {
+                String priceStr = price.toString();
+                sbEnergy.append("PUMP " + pumpId);
+                sbEnergy.append(SPACER);
+                sbEnergy.append("PRICE " + priceStr);
+                sbEnergy.append(NL);
+            }
+            Object pricePattern = getAttribute(pump, Pumps.PRICE_PATTERN.getAttributeName());
+            if (pricePattern != null) {
+                String pricePatternStr = pricePattern.toString();
+                sbEnergy.append("PUMP " + pumpId);
+                sbEnergy.append(SPACER);
+                sbEnergy.append("PATTERN " + pricePatternStr);
+                sbEnergy.append(NL);
+            }
+            Object effic = getAttribute(pump, Pumps.EFFICIENCY.getAttributeName());
+            if (effic != null) {
+                String effStr = effic.toString();
+                sbEnergy.append("PUMP " + pumpId);
+                sbEnergy.append(SPACER);
+                sbEnergy.append("EFFIC " + effStr);
+                sbEnergy.append(NL);
+            }
         }
 
+        sbPumps.append(NL).append(NL);
+        sbPumps.append(sbEnergy);
         return sbPumps.toString();
     }
 
@@ -588,11 +651,15 @@ public class EpanetInpGenerator extends JGTModel {
             Coordinate[] coordinates = geometry.getCoordinates();
 
             // [PIPES]
-            Object dc_id = getAttribute(pipe, Pipes.ID.getAttributeName());
+            Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
+            String idString = id.toString();
+            if (idString.equalsIgnoreCase(EpanetConstants.DUMMYPIPE.toString())) {
+                continue;
+            }
 
             // [VERTICES]
             for( Coordinate coordinate : coordinates ) {
-                sbPipesVertices.append(dc_id.toString());
+                sbPipesVertices.append(idString);
                 sbPipesVertices.append(SPACER);
                 sbPipesVertices.append(coordinate.x);
                 sbPipesVertices.append(SPACER);
