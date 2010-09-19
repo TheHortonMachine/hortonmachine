@@ -21,8 +21,10 @@ package org.jgrasstools.hortonmachine.externals.epanet;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -43,6 +45,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
@@ -94,6 +97,10 @@ public class EpanetInpGenerator extends JGTModel {
     @In
     public SimpleFeatureCollection inPipes = null;
 
+    @Description("The patterns, curves, demand (etc) folder.")
+    @In
+    public String inExtras = null;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -105,6 +112,15 @@ public class EpanetInpGenerator extends JGTModel {
     private static final String NL = "\n";
     private static final String SPACER = "\t\t";
 
+    private HashMap<String, String> curveId2Path = new HashMap<String, String>();
+    private HashMap<String, String> patternId2Path = new HashMap<String, String>();
+    private HashMap<String, String> demandId2Path = new HashMap<String, String>();
+    
+    private List<String> curvesFilesList = new ArrayList<String>();
+    private List<String> patternsFilesList = new ArrayList<String>();
+    private List<String> demandsFilesList = new ArrayList<String>();
+    
+    
     @Execute
     public void process() throws Exception {
         checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes, outFile);
@@ -113,6 +129,12 @@ public class EpanetInpGenerator extends JGTModel {
         int tanksSize = inTanks.size();
         if (resSize + tanksSize < 1) {
             throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this);
+        }
+
+        if (inExtras != null) {
+            handleCurves();
+            handlePatterns();
+            handleDemands();
         }
 
         List<SimpleFeature> junctionsList = FeatureUtilities.featureCollectionToList(inJunctions);
@@ -198,6 +220,63 @@ public class EpanetInpGenerator extends JGTModel {
         } finally {
             pm.done();
             bw.close();
+        }
+    }
+
+    private void handleCurves() {
+        final String prefix = EpanetConstants.CURVES_FILE_PREFIX.toString();
+        File folder = new File(inExtras);
+        File[] curvefiles = folder.listFiles(new FilenameFilter(){
+            public boolean accept( File dir, String name ) {
+                if (name.toLowerCase().startsWith(prefix)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        for( File curveFile : curvefiles ) {
+            String name = curveFile.getName();
+            String id = name.replaceFirst(prefix + "_", "");
+            curveId2Path.put(id, curveFile.getAbsolutePath());
+        }
+    }
+
+    private void handlePatterns() {
+        final String prefix = EpanetConstants.PATTERNS_FILE_PREFIX.toString();
+        File folder = new File(inExtras);
+        File[] patternFiles = folder.listFiles(new FilenameFilter(){
+            public boolean accept( File dir, String name ) {
+                if (name.toLowerCase().startsWith(prefix)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        for( File patternFile : patternFiles ) {
+            String name = patternFile.getName();
+            String id = name.replaceFirst(prefix + "_", "");
+            patternId2Path.put(id, patternFile.getAbsolutePath());
+        }
+    }
+
+    private void handleDemands() {
+        final String prefix = EpanetConstants.DEMANDS_FILE_PREFIX.toString();
+        File folder = new File(inExtras);
+        File[] demandsFiles = folder.listFiles(new FilenameFilter(){
+            public boolean accept( File dir, String name ) {
+                if (name.toLowerCase().startsWith(prefix)) {
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        for( File demandsFile : demandsFiles ) {
+            String name = demandsFile.getName();
+            String id = name.replaceFirst(prefix + "_", "");
+            demandId2Path.put(id, demandsFile.getAbsolutePath());
         }
     }
 
@@ -332,8 +411,14 @@ public class EpanetInpGenerator extends JGTModel {
             sbTanks.append(minVol.toString());
             sbTanks.append(SPACER);
             Object volCurve = getAttribute(tank, Tanks.VOLUME_CURVE_ID.getAttributeName());
-            sbTanks.append(volCurve.toString());
+            String volCurveId = volCurve.toString();
+            sbTanks.append(volCurveId);
             sbTanks.append(NL);
+            
+            String path = curveId2Path.get(volCurveId);
+            if (path != null) {
+                curvesFilesList.add(path);
+            }
         }
 
         return sbTanks.toString();

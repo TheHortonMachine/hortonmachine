@@ -7,7 +7,6 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetFeaturesSynchronizer;
-import org.jgrasstools.hortonmachine.externals.epanet.EpanetInpGenerator;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
@@ -22,11 +21,11 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
  */
 public class TestEpanetSynchronizer extends HMTestCase {
 
-    public void testEpanet() throws Exception {
+    public void testEpanetSynchronizer() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        String folder = "C:\\TMP\\epanettests\\shape_orig_esempio1\\";
-        String newFolder = "C:\\TMP\\epanettests\\test_out\\";
+        String folder = "C:\\TMP\\epanettests\\shape_orig_esempio2\\";
+        String newFolder = "C:\\TMP\\epanettests\\test_out2\\";
 
         String jPath = folder + File.separator + Junctions.ID.getShapefileName();
         String tPath = folder + File.separator + Tanks.ID.getShapefileName();
@@ -58,9 +57,21 @@ public class TestEpanetSynchronizer extends HMTestCase {
 
         jPath = newFolder + File.separator + Junctions.ID.getShapefileName();
         piPath = newFolder + File.separator + Pipes.ID.getShapefileName();
+        vPath = newFolder + File.separator + Valves.ID.getShapefileName();
+        puPath = newFolder + File.separator + Pumps.ID.getShapefileName();
         ShapefileFeatureWriter.writeShapefile(jPath, sync.inJunctions);
         ShapefileFeatureWriter.writeShapefile(piPath, sync.inPipes);
+        ShapefileFeatureWriter.writeShapefile(puPath, sync.inPumps);
+        ShapefileFeatureWriter.writeShapefile(vPath, sync.inValves);
 
+    }
+    
+    public static void main( String[] args ) {
+        try {
+            new TestEpanetSynchronizer().testEpanetSynchronizer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

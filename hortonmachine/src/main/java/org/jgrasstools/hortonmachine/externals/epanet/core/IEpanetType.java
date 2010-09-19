@@ -21,7 +21,6 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
  * Interface for all epanet feature types.
  */
 public interface IEpanetType {
-
     /**
      * Getter for the binding class.
      * 

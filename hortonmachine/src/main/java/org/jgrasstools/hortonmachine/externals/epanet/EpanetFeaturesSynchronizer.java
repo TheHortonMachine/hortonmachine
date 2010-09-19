@@ -19,7 +19,6 @@
 package org.jgrasstools.hortonmachine.externals.epanet;
 
 import java.awt.geom.Point2D;
-import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -33,15 +32,17 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Tanks;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Valves;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -106,10 +107,15 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         List<SimpleFeature> tanksList = FeatureUtilities.featureCollectionToList(inTanks);
         List<SimpleFeature> reservoirsList = FeatureUtilities.featureCollectionToList(inReservoirs);
         List<SimpleFeature> pipesList = FeatureUtilities.featureCollectionToList(inPipes);
+        List<SimpleFeature> pumpsList = FeatureUtilities.featureCollectionToList(inPumps);
+        List<SimpleFeature> valvesList = FeatureUtilities.featureCollectionToList(inValves);
 
+        /*
+         * elevations for junctions and tanks on dem
+         */
         if (inDem != null) {
             inJunctions = FeatureCollections.newCollection();
-            pm.beginTask("Extracting elevations from dem...", junctionsList.size());
+            pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size());
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -118,11 +124,22 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 inJunctions.add(junction);
                 pm.worked(1);
             }
+            inTanks = FeatureCollections.newCollection();
+            for( SimpleFeature tank : tanksList ) {
+                Geometry geometry = (Geometry) tank.getDefaultGeometry();
+                Coordinate coordinate = geometry.getCoordinate();
+                double[] dest = inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), (double[]) null);
+                tank.setAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName(), dest[0]);
+                inTanks.add(tank);
+                pm.worked(1);
+            }
             pm.done();
         }
 
+        /*
+         * handle pipes and links to the junctions-tanks-reservoirs
+         */
         pm.beginTask("Extracting pipe-nodes links...", pipesList.size());
-        inPipes = FeatureCollections.newCollection();
         for( SimpleFeature pipe : pipesList ) {
             Geometry geometry = (Geometry) pipe.getDefaultGeometry();
             Coordinate[] coordinates = geometry.getCoordinates();
@@ -142,10 +159,66 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Object attribute = nearestLast.getAttribute(Junctions.ID.getAttributeName());
                 pipe.setAttribute(Pipes.END_NODE.getAttributeName(), attribute);
             }
-            inPipes.add(pipe);
             pm.worked(1);
         }
         pm.done();
+
+        /*
+         * handle pumps
+         */
+        pm.beginTask("Extracting pumps attributes...", pumpsList.size());
+        inPumps = FeatureCollections.newCollection();
+        for( SimpleFeature pump : pumpsList ) {
+            Geometry geometry = (Geometry) pump.getDefaultGeometry();
+            Geometry buffer = geometry.buffer(pTol);
+
+            for( SimpleFeature pipe : pipesList ) {
+                Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
+                if (pipeGeom.intersects(buffer)) {
+                    // pump is on pipe
+                    Object startNode = pipe.getAttribute(Pipes.START_NODE.getAttributeName());
+                    pump.setAttribute(Pumps.START_NODE.getAttributeName(), startNode);
+                    Object endNode = pipe.getAttribute(Pipes.END_NODE.getAttributeName());
+                    pump.setAttribute(Pumps.END_NODE.getAttributeName(), endNode);
+
+                    pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                }
+            }
+            inPumps.add(pump);
+            pm.worked(1);
+        }
+        pm.done();
+
+        /*
+         * handle valves
+         */
+        pm.beginTask("Extracting valves attributes...", valvesList.size());
+        inValves = FeatureCollections.newCollection();
+        for( SimpleFeature valve : valvesList ) {
+            Geometry geometry = (Geometry) valve.getDefaultGeometry();
+            Geometry buffer = geometry.buffer(pTol);
+
+            for( SimpleFeature pipe : pipesList ) {
+                Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
+                if (pipeGeom.intersects(buffer)) {
+                    // pump is on pipe
+                    Object startNode = pipe.getAttribute(Pipes.START_NODE.getAttributeName());
+                    valve.setAttribute(Valves.START_NODE.getAttributeName(), startNode);
+                    Object endNode = pipe.getAttribute(Pipes.END_NODE.getAttributeName());
+                    valve.setAttribute(Valves.END_NODE.getAttributeName(), endNode);
+                    // mark pipe as dummy
+                    pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                }
+            }
+            inValves.add(valve);
+            pm.worked(1);
+        }
+        pm.done();
+
+        inPipes = FeatureCollections.newCollection();
+        for( SimpleFeature pipe : pipesList ) {
+            inPipes.add(pipe);
+        }
 
     }
 
