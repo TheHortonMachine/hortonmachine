@@ -26,7 +26,8 @@ public class TestEpanetInpGeneration extends HMTestCase {
     public void testEpanet() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        String folder = "C:\\TMP\\epanettests\\test\\";
+        String folder = "C:\\TMP\\epanettests\\test2\\";
+        String extraFolder = folder + File.separator + "extra";
 
         String inpFilePath = folder + File.separator + "aaaaa.inp";
 
@@ -44,6 +45,12 @@ public class TestEpanetInpGeneration extends HMTestCase {
         SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
 
         EpanetParametersTime time = new EpanetParametersTime();
+        time.duration = 7200.0;
+        time.hydraulicTimestep = 60.0;
+        time.patternTimestep = 60.0;
+        time.patternStart = 0.0;
+        time.startClockTime = "12 AM";
+        time.statistic = "NONE";
         time.process();
 
         EpanetParametersOptions options = new EpanetParametersOptions();
@@ -61,6 +68,7 @@ public class TestEpanetInpGeneration extends HMTestCase {
         gen.inReservoirs = rFC;
         gen.inTime = time;
         gen.inOptions = options;
+        gen.inExtras = extraFolder;
         gen.outFile = inpFilePath;
 
         gen.process();

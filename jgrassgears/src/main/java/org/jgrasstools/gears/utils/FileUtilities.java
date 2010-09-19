@@ -151,6 +151,7 @@ public class FileUtilities {
             String line = null;
             while( (line = br.readLine()) != null ) {
                 sb.append(line);
+                sb.append("\n"); //$NON-NLS-1$
             }
             return sb.toString();
         } finally {

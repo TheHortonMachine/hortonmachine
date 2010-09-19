@@ -55,7 +55,8 @@ public class EpanetFeatureTypes {
     private static final String MAXIMUM_WATER_LEVEL_STR = "max_lev";
     private static final String MINIMUM_WATER_LEVEL_STR = "min_lev";
     private static final String INITIAL_WATER_LEVEL_STR = "init_lev";
-    private static final String HEAD_STR = "head_id";
+    private static final String HEAD_ID_STR = "head_id";
+    private static final String HEAD_STR = "head";
     private static final String POWER_STR = "power";
     private static final String MINORLOSS_STR = "min_loss";
     private static final String SETTING_STR = "setting";
@@ -272,7 +273,7 @@ public class EpanetFeatureTypes {
         /**
          * Id of curve that describes head vs. flow for the pump.
          */
-        HEAD_ID(HEAD_STR, String.class), //
+        HEAD_ID(HEAD_ID_STR, String.class), //
         /**
          * Relative speed. 
          * 

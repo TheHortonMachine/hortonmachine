@@ -46,7 +46,6 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.FileUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
@@ -340,7 +339,8 @@ public class EpanetInpGenerator extends JGTModel {
 
             String path = patternId2Path.get(patternId);
             if (path != null) {
-                patternsFilesList.add(path);
+                if (!patternsFilesList.contains(path))
+                    patternsFilesList.add(path);
             }
         }
 
@@ -417,7 +417,8 @@ public class EpanetInpGenerator extends JGTModel {
 
             String path = patternId2Path.get(patternId);
             if (path != null) {
-                patternsFilesList.add(path);
+                if (!patternsFilesList.contains(path))
+                    patternsFilesList.add(path);
             }
         }
 
@@ -467,7 +468,8 @@ public class EpanetInpGenerator extends JGTModel {
 
             String path = curveId2Path.get(volCurveId);
             if (path != null) {
-                curvesFilesList.add(path);
+                if (!curvesFilesList.contains(path))
+                    curvesFilesList.add(path);
             }
         }
 
@@ -500,45 +502,46 @@ public class EpanetInpGenerator extends JGTModel {
             sbPumps.append(SPACER);
 
             Object power = getAttribute(pump, Pumps.POWER.getAttributeName());
-            if (power != null) {
+            if (power != null && !power.toString().equals("")) {
                 sbPumps.append("POWER " + power.toString());
                 sbPumps.append(SPACER);
             }
             Object head = getAttribute(pump, Pumps.HEAD_ID.getAttributeName());
-            if (head != null) {
+            if (head != null && !head.toString().equals("")) {
                 String headId = head.toString();
                 sbPumps.append("HEAD " + headId);
                 sbPumps.append(SPACER);
 
                 String path = curveId2Path.get(headId);
                 if (path != null) {
-                    curvesFilesList.add(path);
+                    if (!curvesFilesList.contains(path))
+                        curvesFilesList.add(path);
                 }
             }
             Object speed = getAttribute(pump, Pumps.SPEED.getAttributeName());
-            if (speed != null) {
+            if (speed != null && !speed.toString().equals("")) {
                 sbPumps.append("SPEED " + speed.toString());
                 sbPumps.append(SPACER);
             }
             Object speedPattern = getAttribute(pump, Pumps.SPEED_PATTERN.getAttributeName());
-            if (speedPattern != null) {
+            if (speedPattern != null && !speedPattern.toString().equals("")) {
                 String patternId = speedPattern.toString();
                 sbPumps.append("PATTERN " + patternId);
                 sbPumps.append(SPACER);
 
                 String path = patternId2Path.get(patternId);
                 if (path != null) {
-                    patternsFilesList.add(path);
+                    if (!patternsFilesList.contains(path))
+                        patternsFilesList.add(path);
                 }
             }
             sbPumps.append(NL);
-            
-            
+
             /*
              * energy part
              */
             Object price = getAttribute(pump, Pumps.PRICE.getAttributeName());
-            if (price != null) {
+            if (price != null && !price.toString().equals("")) {
                 String priceStr = price.toString();
                 sbEnergy.append("PUMP " + pumpId);
                 sbEnergy.append(SPACER);
@@ -546,7 +549,7 @@ public class EpanetInpGenerator extends JGTModel {
                 sbEnergy.append(NL);
             }
             Object pricePattern = getAttribute(pump, Pumps.PRICE_PATTERN.getAttributeName());
-            if (pricePattern != null) {
+            if (pricePattern != null && !pricePattern.toString().equals("")) {
                 String pricePatternStr = pricePattern.toString();
                 sbEnergy.append("PUMP " + pumpId);
                 sbEnergy.append(SPACER);
@@ -554,12 +557,18 @@ public class EpanetInpGenerator extends JGTModel {
                 sbEnergy.append(NL);
             }
             Object effic = getAttribute(pump, Pumps.EFFICIENCY.getAttributeName());
-            if (effic != null) {
+            if (effic != null && !effic.toString().equals("")) {
                 String effStr = effic.toString();
                 sbEnergy.append("PUMP " + pumpId);
                 sbEnergy.append(SPACER);
                 sbEnergy.append("EFFIC " + effStr);
                 sbEnergy.append(NL);
+                
+                String path = curveId2Path.get(effStr);
+                if (path != null) {
+                    if (!curvesFilesList.contains(path))
+                        curvesFilesList.add(path);
+                }
             }
         }
 
