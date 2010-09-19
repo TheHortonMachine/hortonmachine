@@ -44,6 +44,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.FileUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
@@ -115,12 +116,11 @@ public class EpanetInpGenerator extends JGTModel {
     private HashMap<String, String> curveId2Path = new HashMap<String, String>();
     private HashMap<String, String> patternId2Path = new HashMap<String, String>();
     private HashMap<String, String> demandId2Path = new HashMap<String, String>();
-    
+
     private List<String> curvesFilesList = new ArrayList<String>();
     private List<String> patternsFilesList = new ArrayList<String>();
     private List<String> demandsFilesList = new ArrayList<String>();
-    
-    
+
     @Execute
     public void process() throws Exception {
         checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes, outFile);
@@ -206,7 +206,35 @@ public class EpanetInpGenerator extends JGTModel {
                     bw.write(key + "\t" + value + "\n");
                 }
             }
-
+            
+            /*
+             * the curves section
+             */
+            pm.worked(1);
+            bw.write("\n\n[CURVES]\n");
+            for( String curveFilePath : curvesFilesList ) {
+                String curveString = FileUtilities.readFile(new File(curveFilePath));
+                bw.write(curveString);
+            }
+            /*
+             * the patterns section
+             */
+            pm.worked(1);
+            bw.write("\n\n[PATTERNS]\n");
+            for( String patternsFilePath : patternsFilesList ) {
+                String patternString = FileUtilities.readFile(new File(patternsFilePath));
+                bw.write(patternString);
+            }
+            /*
+             * the demands section
+             */
+            pm.worked(1);
+            bw.write("\n\n[DEMANDS]\n");
+            for( String demandsFilePath : demandsFilesList ) {
+                String demandsString = FileUtilities.readFile(new File(demandsFilePath));
+                bw.write(demandsString);
+            }
+            
             /*
              * coordinates and vertices
              */
@@ -414,7 +442,7 @@ public class EpanetInpGenerator extends JGTModel {
             String volCurveId = volCurve.toString();
             sbTanks.append(volCurveId);
             sbTanks.append(NL);
-            
+
             String path = curveId2Path.get(volCurveId);
             if (path != null) {
                 curvesFilesList.add(path);
@@ -452,8 +480,14 @@ public class EpanetInpGenerator extends JGTModel {
             }
             Object head = getAttribute(pump, Pumps.HEAD_ID.getAttributeName());
             if (head != null) {
-                sbPumps.append("HEAD " + head.toString());
+                String headId = head.toString();
+                sbPumps.append("HEAD " + headId);
                 sbPumps.append(SPACER);
+
+                String path = curveId2Path.get(headId);
+                if (path != null) {
+                    curvesFilesList.add(path);
+                }
             }
             Object speed = getAttribute(pump, Pumps.SPEED.getAttributeName());
             if (speed != null) {
