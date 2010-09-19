@@ -66,6 +66,8 @@ public class EpanetFeatureTypes {
     private static final String STARTNODE_STR = "startnode";
     private static final String ENDNODE_STR = "endnode";
     private static final String SPEED_STR = "speed";
+    private static final String PRICE_STR = "price";
+    private static final String EFFICIENCY_ID_STR = "effic_id";
 
     /**
      * The {@link Junctions} attributes and classes.
@@ -279,7 +281,15 @@ public class EpanetFeatureTypes {
         /**
          * Id of time pattern that describes how speed varies with time.
          */
-        SPEED_PATTERN(PATTERN_STR, String.class);
+        SPEED_PATTERN(PATTERN_STR, String.class), //
+        /**
+         * The average cost per KWh.
+         */
+        PRICE(PRICE_STR, Double.class), //
+        /**
+         * The id of the efficiency curve.
+         */
+        EFFICIENCY(EFFICIENCY_ID_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
