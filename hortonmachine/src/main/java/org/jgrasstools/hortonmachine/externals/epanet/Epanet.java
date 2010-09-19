@@ -26,26 +26,31 @@ import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetException;
-import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
-import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetNativeFunctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
-import org.jgrasstools.hortonmachine.externals.epanet.core.LinkTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.LinkParameters;
+import org.jgrasstools.hortonmachine.externals.epanet.core.LinkTypes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.NodeParameters;
 import org.jgrasstools.hortonmachine.externals.epanet.core.NodeTypes;
-import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
-import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodesStatistic;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Junction;
 import org.jgrasstools.hortonmachine.externals.epanet.core.types.Pipe;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Pump;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Reservoir;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Tank;
+import org.jgrasstools.hortonmachine.externals.epanet.core.types.Valve;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
 
 @Description("The main Epanet module")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -58,96 +63,159 @@ public class Epanet extends JGTModel {
     @In
     public String inInp = null;
 
+    @Description("The start time.")
+    @In
+    public String tStart = "1970-01-01 00:00"; //$NON-NLS-1$
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
-    
-    
-    @Description("The pipes result data.")
-    @In
-    public List<Pipe> pipesList = new ArrayList<Pipe>();
-    
-    
 
-    private float avgEn = 0;
-    private float maxEn = Float.NEGATIVE_INFINITY;
-    private int runs = 0;
+    @Description("The pipes result data.")
+    @Out
+    public List<Pipe> pipesList = null;
+
+    @Description("The junctions result data.")
+    @Out
+    public List<Junction> junctionsList = null;
+
+    @Description("The pumps result data.")
+    @Out
+    public List<Pump> pumpsList = null;
+
+    @Description("The valves result data.")
+    @Out
+    public List<Valve> valvesList = null;
+
+    @Description("The tanks result data.")
+    @Out
+    public List<Tank> tanksList = null;
+
+    @Description("The reservoirs result data.")
+    @Out
+    public List<Reservoir> reservoirsList = null;
+
+    private EpanetWrapper ep;
+
+    private long[] t = new long[1];
+    private long[] tstep = new long[1];
+    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+
+    private DateTime current = null;
 
     @Execute
     public void process() throws Exception {
-        EpanetWrapper ep = new EpanetWrapper("epanet2_64bit",
-                "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
-
-        File inFile = new File(inInp);
-        String report = inFile.getAbsolutePath() + ".rpt";
-        ep.ENopen(inInp, report, "");
-
-        // reportLinks(ep);
-        // reportNodes(ep);
-
-        if (false) {
-            ep.ENsolveH();
-            ep.ENsaveH();
-            // ep.ENreport();
-        } else {
-            long[] t = new long[1];
-            long[] tstep = new long[1];
+        if (ep == null) {
+            ep = new EpanetWrapper("epanet2_64bit", //$NON-NLS-1$
+                    "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
+            current = formatter.parseDateTime(tStart);
+            ep.ENopen(inInp, "", "");
             ep.ENopenH();
             ep.ENinitH(0);
-            do {
-                ep.ENrunH(t);
-
-                reportLinks(ep);
-                reportNodes(ep);
-
-                ep.ENnextH(tstep);
-                System.out.println("TIME: " + t[0]);
-                System.out.println("TIMESTEP: " + tstep[0]);
-
-            } while( tstep[0] > 0 );
-
-            ep.ENcloseH();
         }
 
+        pipesList = new ArrayList<Pipe>();
+        junctionsList = new ArrayList<Junction>();
+        pumpsList = new ArrayList<Pump>();
+        valvesList = new ArrayList<Valve>();
+        tanksList = new ArrayList<Tank>();
+        reservoirsList = new ArrayList<Reservoir>();
+
+        ep.ENrunH(t);
+
+        extractLinksData(ep);
+        extractNodesData(ep);
+
+        ep.ENnextH(tstep);
+
+        current = current.plusSeconds((int) tstep[0]);
+    }
+
+    public void finish() throws EpanetException {
+        ep.ENcloseH();
         ep.ENclose();
-
-        System.out.println("AVG EN: " + (avgEn / runs) + " - MAX EN: " + maxEn);
-
     }
-    private void reportLinks( EpanetWrapper ep ) throws EpanetException {
+
+    private void extractLinksData( EpanetWrapper ep ) throws EpanetException {
         int linksNum = ep.ENgetcount(Components.EN_LINKCOUNT);
-        System.out.println("Links found: " + linksNum);
         for( int i = 1; i <= linksNum; i++ ) {
-            String linkId = ep.ENgetlinkid(i);
             LinkTypes type = ep.ENgetlinktype(i);
-            float flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
-            float vel = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
-            float headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
-            float status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
-            float energy = Float.NaN;
-            if (type == LinkTypes.EN_PUMP) {
-                energy = ep.ENgetlinkvalue(i, LinkParameters.EN_ENERGY);
-                avgEn = avgEn + energy;
-                if (energy > maxEn) {
-                    maxEn = energy;
-                }
-                runs++;
+
+            switch( type ) {
+            case EN_GPV:
+            case EN_PRV:
+            case EN_PSV:
+            case EN_PBV:
+            case EN_FCV:
+            case EN_TCV: {
+                Valve v = new Valve();
+                v.id = ep.ENgetlinkid(i);
+                v.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
+                v.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
+                v.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
+                v.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+                valvesList.add(v);
+                break;
             }
-            System.out.println(linkId + " - " + type.getDescription() + " - " + flow + " - " + vel + " - " + status + " - "
-                    + headloss + " - " + energy);
+            case EN_CVPIPE:
+            case EN_PIPE:
+                Pipe p = new Pipe();
+                p.id = ep.ENgetlinkid(i);
+                p.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
+                p.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
+                p.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
+                p.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+                pipesList.add(p);
+                break;
+            case EN_PUMP:
+                Pump pu = new Pump();
+                pu.id = ep.ENgetlinkid(i);
+                pu.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
+                pu.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
+                pu.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
+                pu.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+                pu.energy = ep.ENgetlinkvalue(i, LinkParameters.EN_ENERGY);
+                pumpsList.add(pu);
+                break;
+            default:
+                break;
+            }
         }
     }
 
-    private void reportNodes( EpanetWrapper ep ) throws EpanetException {
+    private void extractNodesData( EpanetWrapper ep ) throws EpanetException {
         int nodesNum = ep.ENgetcount(Components.EN_NODECOUNT);
-        System.out.println("Nodes found: " + nodesNum);
         for( int i = 1; i <= nodesNum; i++ ) {
-            String nodeId = ep.ENgetnodeid(i);
             NodeTypes type = ep.ENgetnodetype(i);
-            float dem = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
-            float head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
-            float press = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
-            System.out.println(nodeId + " - " + type.getDescription() + " - " + dem + " - " + head + " - " + press);
+
+            switch( type ) {
+            case EN_JUNCTION:
+                Junction j = new Junction();
+                j.id = ep.ENgetnodeid(i);
+                j.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
+                j.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
+                j.pressure = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
+                junctionsList.add(j);
+                break;
+            case EN_RESERVOIR:
+                Reservoir r = new Reservoir();
+                r.id = ep.ENgetnodeid(i);
+                r.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
+                r.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
+                reservoirsList.add(r);
+                break;
+            case EN_TANK:
+                Tank t = new Tank();
+                t.id = ep.ENgetnodeid(i);
+                t.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
+                t.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
+                t.pressure = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
+                tanksList.add(t);
+                break;
+
+            default:
+                break;
+            }
         }
     }
 
