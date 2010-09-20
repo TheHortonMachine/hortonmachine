@@ -1589,6 +1589,10 @@ public class ModelsEngine {
      * @param yStation the y coordinate of the stations
      * @param zStation the z coordinate of the stations
      * @param hStation the h value of the stations
+     * @param xTmp
+     * @param yTmp
+     * @param zTmp
+     * @param hTmp
      * @param i the current index
      * @param doMean if the h value of a double station have different value then do the mean.
      * @param pm
