@@ -31,7 +31,7 @@ public enum ResultsNodeParameters {
         this.description = description;
     }
 
-    public String getCode() {
+    public String getKey() {
         return key;
     }
 
