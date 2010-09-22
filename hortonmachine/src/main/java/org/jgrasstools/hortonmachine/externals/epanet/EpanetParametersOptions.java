@@ -222,8 +222,9 @@ public class EpanetParametersOptions extends JGTModel {
      * 
      * @param options the {@link HashMap} of values. The keys have to be from {@link OptionParameterCodes}.
      * @return the created {@link EpanetParametersOptions}.
+     * @throws Exception 
      */
-    public static EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) {
+    public static EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) throws Exception {
         EpanetParametersOptions epOptions = new EpanetParametersOptions();
         String units = options.get(OptionParameterCodes.UNITS);
         epOptions.units = units;
@@ -246,13 +247,14 @@ public class EpanetParametersOptions extends JGTModel {
         String unbalanced = options.get(OptionParameterCodes.UNBALANCED);
         epOptions.unbalanced = unbalanced;
         String pattern = options.get(OptionParameterCodes.PATTERN);
-        epOptions.trials = NumericsUtilities.isNumber(pattern, Integer.class);
+        epOptions.pattern = NumericsUtilities.isNumber(pattern, Integer.class);
         String demandMultiplier = options.get(OptionParameterCodes.DEMANDMULTIPLIER);
         epOptions.demandMultiplier = NumericsUtilities.isNumber(demandMultiplier, Double.class);
         String emitterExp = options.get(OptionParameterCodes.EMITEXPON);
         epOptions.emitterExponent = NumericsUtilities.isNumber(emitterExp, Double.class);
         String tolerance = options.get(OptionParameterCodes.TOLERANCE);
         epOptions.tolerance = NumericsUtilities.isNumber(tolerance, Double.class);
+        epOptions.process();
         return epOptions;
     }
 

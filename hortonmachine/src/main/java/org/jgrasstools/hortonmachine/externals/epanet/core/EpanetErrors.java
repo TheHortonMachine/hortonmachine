@@ -54,6 +54,20 @@ public class EpanetErrors {
         errors.put(307, "Cannot read hydraulics file ");
         errors.put(308, "Cannot save results to file ");
         errors.put(309, "Cannot write report to file ");
+
+        errors.put(1,
+                "System hydraulically unbalanced - convergence to a hydraulic solution was not achieved in the allowed number of trials.");
+        errors.put(2,
+                "System may be hydraulically unstable - hydraulic convergence was only achieved after the status of all links was held fixed.");
+        errors.put(3, "System disconnected - one or more nodes with positive demands were disconnected from all supply sources");
+        errors.put(
+                4,
+                "Pumps cannot deliver enough flow or head - one or more pumps were forced to either shut down (due to insufficient head) or operate beyond the maximum rated flow.");
+        errors.put(5,
+                "Valves cannot deliver enough flow - one or more flow control valves could not deliver the required flow even when fully open.");
+        errors.put(6,
+                "System has negative pressures - negative pressures occurred at one or more junctions with positive demand.");
+
     }
 
     public static void checkError( int errcode ) throws EpanetException {
@@ -62,7 +76,5 @@ public class EpanetErrors {
             throw new EpanetException(msg);
         }
     }
-    
-
 
 }

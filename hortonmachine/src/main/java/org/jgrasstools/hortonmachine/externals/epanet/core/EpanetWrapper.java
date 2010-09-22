@@ -678,7 +678,7 @@ public class EpanetWrapper {
             EpanetErrors.checkError(errcode);
         } catch (EpanetException e) {
             ENclose();
-            throw new EpanetException(e);
+            throw e;
         }
     }
 
