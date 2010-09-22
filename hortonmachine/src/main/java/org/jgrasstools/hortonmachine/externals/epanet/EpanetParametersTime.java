@@ -20,6 +20,7 @@ package org.jgrasstools.hortonmachine.externals.epanet;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Properties;
 
 import oms3.annotations.Author;
@@ -27,7 +28,6 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
-import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -35,6 +35,7 @@ import oms3.annotations.Status;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
 
 @Description("The time related parameters of the epanet inp file")
@@ -128,6 +129,34 @@ public class EpanetParametersTime extends JGTModel {
                 outProperties.put(TimeParameterCodes.STATISTIC.getKey(), statistic);
             }
         }
+    }
+
+    /**
+     * Create a {@link EpanetParametersTime} from a {@link HashMap} of values.
+     * 
+     * @param options the {@link HashMap} of values. The keys have to be from {@link TimeParameterCodes}.
+     * @return the created {@link EpanetParametersTime}.
+     */
+    public EpanetParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) {
+        EpanetParametersTime epTime = new EpanetParametersTime();
+        String duration = options.get(TimeParameterCodes.DURATION);
+        epTime.duration = NumericsUtilities.isNumber(duration, Double.class);
+        String hydrTiStep = options.get(TimeParameterCodes.HYDSTEP);
+        epTime.hydraulicTimestep = NumericsUtilities.isNumber(hydrTiStep, Double.class);
+        String pattTimeStep = options.get(TimeParameterCodes.PATTERNSTEP);
+        epTime.patternTimestep = NumericsUtilities.isNumber(pattTimeStep, Double.class);
+        String patternStart = options.get(TimeParameterCodes.PATTERNSTART);
+        epTime.patternStart = NumericsUtilities.isNumber(patternStart, Double.class);
+        String reportTimeStep = options.get(TimeParameterCodes.REPORTSTEP);
+        epTime.reportTimestep = NumericsUtilities.isNumber(reportTimeStep, Double.class);
+        String reportStart = options.get(TimeParameterCodes.REPORTSTART);
+        epTime.reportStart = NumericsUtilities.isNumber(reportStart, Double.class);
+        String startClockTime = options.get(TimeParameterCodes.STARTCLOCKTIME);
+        epTime.startClockTime = startClockTime;
+        String statistic = options.get(TimeParameterCodes.STATISTIC);
+        epTime.statistic = statistic;
+
+        return epTime;
     }
 
 }

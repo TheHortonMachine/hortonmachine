@@ -20,6 +20,7 @@ package org.jgrasstools.hortonmachine.externals.epanet;
 
 import java.io.File;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Properties;
 
 import oms3.annotations.Author;
@@ -32,6 +33,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.OptionParameterCodes;
 
 @Description("The options parameters of the epanet inp file")
@@ -213,6 +215,45 @@ public class EpanetParametersOptions extends JGTModel {
             }
             outProperties.put(OptionParameterCodes.TOLERANCE.getKey(), toStr);
         }
+    }
+
+    /**
+     * Create a {@link EpanetParametersOptions} from a {@link HashMap} of values.
+     * 
+     * @param options the {@link HashMap} of values. The keys have to be from {@link OptionParameterCodes}.
+     * @return the created {@link EpanetParametersOptions}.
+     */
+    public EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) {
+        EpanetParametersOptions epOptions = new EpanetParametersOptions();
+        String units = options.get(OptionParameterCodes.UNITS);
+        epOptions.units = units;
+        String headloss = options.get(OptionParameterCodes.HEADLOSS);
+        epOptions.headloss = headloss;
+        String hydraulics = options.get(OptionParameterCodes.HYDRAULICS);
+        epOptions.hydraulics = hydraulics;
+        String quality = options.get(OptionParameterCodes.QUALITY);
+        epOptions.quality = quality;
+        String viscosity = options.get(OptionParameterCodes.VISCOSITY);
+        epOptions.viscosity = NumericsUtilities.isNumber(viscosity, Double.class);
+        String diffusivity = options.get(OptionParameterCodes.DIFFUSIVITY);
+        epOptions.diffusivity = NumericsUtilities.isNumber(diffusivity, Double.class);
+        String specGravity = options.get(OptionParameterCodes.SPECIFICGRAVITY);
+        epOptions.specificGravity = NumericsUtilities.isNumber(specGravity, Double.class);
+        String trials = options.get(OptionParameterCodes.TRIALS);
+        epOptions.trials = NumericsUtilities.isNumber(trials, Integer.class);
+        String accuracy = options.get(OptionParameterCodes.ACCURACY);
+        epOptions.accuracy = NumericsUtilities.isNumber(accuracy, Double.class);
+        String unbalanced = options.get(OptionParameterCodes.UNBALANCED);
+        epOptions.unbalanced = unbalanced;
+        String pattern = options.get(OptionParameterCodes.PATTERN);
+        epOptions.trials = NumericsUtilities.isNumber(pattern, Integer.class);
+        String demandMultiplier = options.get(OptionParameterCodes.DEMANDMULTIPLIER);
+        epOptions.demandMultiplier = NumericsUtilities.isNumber(demandMultiplier, Double.class);
+        String emitterExp = options.get(OptionParameterCodes.EMITEXPON);
+        epOptions.emitterExponent = NumericsUtilities.isNumber(emitterExp, Double.class);
+        String tolerance = options.get(OptionParameterCodes.TOLERANCE);
+        epOptions.tolerance = NumericsUtilities.isNumber(tolerance, Double.class);
+        return epOptions;
     }
 
 }

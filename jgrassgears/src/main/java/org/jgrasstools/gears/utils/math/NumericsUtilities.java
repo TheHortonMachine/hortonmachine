@@ -182,7 +182,7 @@ public class NumericsUtilities {
      * 
      * @param value the string to check. 
      * @param adaptee the class to check against. If null, the more permissive {@link Double} will be used.
-     * @return the number or null, if the parsing fails.
+     * @return the number or <code>null</code>, if the parsing fails.
      */
     public static <T extends Number> T isNumber( String value, Class<T> adaptee ) {
         if (value == null) {
