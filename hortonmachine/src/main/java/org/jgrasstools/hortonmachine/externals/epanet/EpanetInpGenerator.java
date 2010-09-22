@@ -327,7 +327,9 @@ public class EpanetInpGenerator extends JGTModel {
             sbJunctions.append(dc_id.toString());
             sbJunctions.append(SPACER);
             Object elevation = getAttribute(junction, Junctions.ELEVATION.getAttributeName());
-            sbJunctions.append(elevation.toString());
+            Object depth = getAttribute(junction, Junctions.DEPTH.getAttributeName());
+            double elev = ((Double) elevation) - ((Double) depth);
+            sbJunctions.append(elev);
             sbJunctions.append(SPACER);
             Object demand = getAttribute(junction, Junctions.DEMAND.getAttributeName());
             sbJunctions.append(demand.toString());

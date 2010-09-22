@@ -70,6 +70,7 @@ public class EpanetFeatureTypes {
     private static final String PRICE_STR = "price";
     private static final String PRICE_PATTERN_STR = "pri_pat_id";
     private static final String EFFICIENCY_ID_STR = "effic_id";
+    private static final String DEPTH_STR = "DEPTH";
 
     /**
      * The {@link Junctions} attributes and classes.
@@ -83,6 +84,10 @@ public class EpanetFeatureTypes {
          * The elevation of the junction.
          */
         ELEVATION(ELEVATION_STR, Double.class), //
+        /**
+         * The depth of the junction below the elev value.
+         */
+        DEPTH(DEPTH_STR, Double.class), //
         /**
          * Base demand flow.
          */
