@@ -223,7 +223,7 @@ public class EpanetParametersOptions extends JGTModel {
      * @param options the {@link HashMap} of values. The keys have to be from {@link OptionParameterCodes}.
      * @return the created {@link EpanetParametersOptions}.
      */
-    public EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) {
+    public static EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) {
         EpanetParametersOptions epOptions = new EpanetParametersOptions();
         String units = options.get(OptionParameterCodes.UNITS);
         epOptions.units = units;

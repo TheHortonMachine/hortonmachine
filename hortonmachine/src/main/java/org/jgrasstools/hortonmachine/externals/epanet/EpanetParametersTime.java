@@ -137,7 +137,7 @@ public class EpanetParametersTime extends JGTModel {
      * @param options the {@link HashMap} of values. The keys have to be from {@link TimeParameterCodes}.
      * @return the created {@link EpanetParametersTime}.
      */
-    public EpanetParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) {
+    public static EpanetParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) {
         EpanetParametersTime epTime = new EpanetParametersTime();
         String duration = options.get(TimeParameterCodes.DURATION);
         epTime.duration = NumericsUtilities.isNumber(duration, Double.class);
