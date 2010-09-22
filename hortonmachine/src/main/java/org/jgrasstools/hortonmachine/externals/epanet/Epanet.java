@@ -36,6 +36,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.FileUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetException;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
@@ -58,6 +59,10 @@ import org.joda.time.format.DateTimeFormatter;
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Epanet extends JGTModel {
+
+    @Description("The epanet dynamic lib file.")
+    @In
+    public String inDll = null;
 
     @Description("The inp file.")
     @In
@@ -116,8 +121,15 @@ public class Epanet extends JGTModel {
     @Execute
     public void process() throws Exception {
         if (ep == null) {
-            ep = new EpanetWrapper("epanet2_64bit", //$NON-NLS-1$
-                    "D:\\development\\jgrasstools-hg\\jgrasstools\\hortonmachine\\src\\main\\resources\\");
+            if (inDll == null) {
+                // I am feeling lucky
+                ep = new EpanetWrapper("epanet2", null);
+            } else {
+                File dllFile = new File(inDll);
+                String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dllFile);
+                ep = new EpanetWrapper(nameWithoutExtention, dllFile.getParentFile().getAbsolutePath());
+            }
+
             current = formatter.parseDateTime(tStart);
             tCurrent = tStart;
 
@@ -147,7 +159,6 @@ public class Epanet extends JGTModel {
             doProcess = false;
         }
     }
-
     public void finish() throws EpanetException {
         ep.ENcloseH();
         ep.ENclose();

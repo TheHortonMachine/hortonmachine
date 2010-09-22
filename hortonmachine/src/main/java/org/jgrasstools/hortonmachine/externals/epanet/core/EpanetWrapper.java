@@ -48,7 +48,8 @@ public class EpanetWrapper {
     public EpanetWrapper( String lib, String nativeLibPath ) throws Exception {
         if (epanet == null) {
             try {
-                NativeLibrary.addSearchPath(lib, nativeLibPath);
+                if (nativeLibPath != null)
+                    NativeLibrary.addSearchPath(lib, nativeLibPath);
                 epanet = (EpanetNativeFunctions) Native.loadLibrary(lib, EpanetNativeFunctions.class);
             } catch (Exception e) {
                 throw new Exception("An error occurred while trying to load the epanet library.", e);
