@@ -108,7 +108,7 @@ public class Epanet extends JGTModel {
 
     private long[] t = new long[1];
     private long[] tstep = new long[1];
-    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    public DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
 
     private DateTime current = null;
 
