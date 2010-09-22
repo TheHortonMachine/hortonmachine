@@ -178,6 +178,7 @@ public class Epanet extends JGTModel {
             case EN_TCV: {
                 Valve v = new Valve();
                 v.id = ep.ENgetlinkid(i);
+                v.time = current;
                 v.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
                 v.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
                 v.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
@@ -189,6 +190,7 @@ public class Epanet extends JGTModel {
             case EN_PIPE:
                 Pipe p = new Pipe();
                 p.id = ep.ENgetlinkid(i);
+                p.time = current;
                 p.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
                 p.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
                 p.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
@@ -198,6 +200,7 @@ public class Epanet extends JGTModel {
             case EN_PUMP:
                 Pump pu = new Pump();
                 pu.id = ep.ENgetlinkid(i);
+                pu.time = current;
                 pu.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
                 pu.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
                 pu.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
@@ -220,6 +223,7 @@ public class Epanet extends JGTModel {
             case EN_JUNCTION:
                 Junction j = new Junction();
                 j.id = ep.ENgetnodeid(i);
+                j.time = current;
                 j.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
                 j.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
                 j.pressure = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
@@ -228,6 +232,7 @@ public class Epanet extends JGTModel {
             case EN_RESERVOIR:
                 Reservoir r = new Reservoir();
                 r.id = ep.ENgetnodeid(i);
+                r.time = current;
                 r.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
                 r.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
                 reservoirsList.add(r);
@@ -235,6 +240,7 @@ public class Epanet extends JGTModel {
             case EN_TANK:
                 Tank t = new Tank();
                 t.id = ep.ENgetnodeid(i);
+                t.time = current;
                 t.demand = ep.ENgetnodevalue(i, NodeParameters.EN_DEMAND);
                 t.head = ep.ENgetnodevalue(i, NodeParameters.EN_HEAD);
                 t.pressure = ep.ENgetnodevalue(i, NodeParameters.EN_PRESSURE);
