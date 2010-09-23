@@ -30,7 +30,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -59,7 +59,7 @@ public class IntersectionFinder extends JGTModel {
 
     @Description("The map to test for intersections.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inMap = null;
+    public SimpleFeatureCollection inMap = null;
 
     @Description("The progress monitor.")
     @In
@@ -67,11 +67,11 @@ public class IntersectionFinder extends JGTModel {
 
     @Description("The intersections points map.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outPointsMap = null;
+    public SimpleFeatureCollection outPointsMap = null;
 
     @Description("The intersections lines map.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outLinesMap = null;
+    public SimpleFeatureCollection outLinesMap = null;
 
     @Execute
     public void process() throws Exception {

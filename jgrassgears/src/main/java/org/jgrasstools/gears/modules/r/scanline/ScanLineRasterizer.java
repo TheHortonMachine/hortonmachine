@@ -41,7 +41,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -52,7 +52,6 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
 import org.opengis.referencing.operation.TransformException;
 
@@ -72,7 +71,7 @@ public class ScanLineRasterizer {
 
     @Description("The features to rasterize.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inGeodata = null;
+    public SimpleFeatureCollection inGeodata = null;
 
     @Description("The value to use as raster value if no field is given.")
     @In
@@ -138,7 +137,7 @@ public class ScanLineRasterizer {
 
     }
 
-    private void rasterizepolygon( FeatureCollection<SimpleFeatureType, SimpleFeature> polygonFC, WritableRaster rasterized,
+    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized,
             GridGeometry2D gridGeometry, String field, Double cat ) throws InvalidGridGeometryException, TransformException {
 
         int w = rasterized.getWidth();

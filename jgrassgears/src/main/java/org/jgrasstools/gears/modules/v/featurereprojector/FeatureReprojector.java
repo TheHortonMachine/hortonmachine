@@ -29,7 +29,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -54,7 +54,7 @@ public class FeatureReprojector extends JGTModel {
 
     @Description("The feature collection that has to be reprojected.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inGeodata;
+    public SimpleFeatureCollection inGeodata;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @In
@@ -70,7 +70,7 @@ public class FeatureReprojector extends JGTModel {
 
     @Description("The reprojected feature collection.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outGeodata = null;
+    public SimpleFeatureCollection outGeodata = null;
 
     @Execute
     public void process() throws Exception {

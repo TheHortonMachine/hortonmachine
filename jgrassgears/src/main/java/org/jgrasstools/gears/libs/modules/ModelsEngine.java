@@ -24,7 +24,7 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.utils.math.NumericsUtilities.*;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -44,7 +44,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -212,7 +212,7 @@ public class ModelsEngine {
      * @throws IOException
      * @throws TransformException
      */
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> net2ShapeOnly( RenderedImage flowImage,
+    public SimpleFeatureCollection net2ShapeOnly( RenderedImage flowImage,
             WritableRaster netNumImage, GridGeometry2D gridGeometry, List<Integer> nstream, IJGTProgressMonitor pm )
             throws IOException, TransformException {
 
@@ -307,7 +307,7 @@ public class ModelsEngine {
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
         int index = 0;
         for( LineString lineString : newGeometryVectorLine ) {
             Object[] values = new Object[]{lineString};
@@ -1589,6 +1589,10 @@ public class ModelsEngine {
      * @param yStation the y coordinate of the stations
      * @param zStation the z coordinate of the stations
      * @param hStation the h value of the stations
+     * @param xTmp
+     * @param yTmp
+     * @param zTmp
+     * @param hTmp
      * @param i the current index
      * @param doMean if the h value of a double station have different value then do the mean.
      * @param pm

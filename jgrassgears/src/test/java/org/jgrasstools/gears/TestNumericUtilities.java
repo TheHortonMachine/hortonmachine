@@ -1,9 +1,10 @@
 package org.jgrasstools.gears;
 
-import org.jgrasstools.gears.utils.HMTestCase;
-
 import static java.lang.Math.abs;
-import static org.jgrasstools.gears.utils.math.NumericsUtilities.*;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.fEq;
+
+import org.jgrasstools.gears.utils.HMTestCase;
 
 /**
  * Test numerics.

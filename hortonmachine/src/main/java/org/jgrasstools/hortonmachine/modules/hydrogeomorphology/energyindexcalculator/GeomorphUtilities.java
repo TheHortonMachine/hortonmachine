@@ -18,11 +18,15 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator;
 
+import static java.lang.Math.floor;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+import static java.lang.Math.tan;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
-import static java.lang.Math.*;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 /**
  * @author Stefano Endrizzi

@@ -38,7 +38,7 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -70,7 +70,7 @@ public class Adige extends JGTModel {
 
     @Description("The hillslope data.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inHillslope;
+    public SimpleFeatureCollection inHillslope;
 
     @Description("The a field name of the netnum attribute in the hillslope data.")
     @In
@@ -126,7 +126,7 @@ public class Adige extends JGTModel {
 
     @Description("The hydrometers monitoring points.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inHydrometers;
+    public SimpleFeatureCollection inHydrometers;
 
     @Description("The hydrometers data.")
     @In
@@ -134,7 +134,7 @@ public class Adige extends JGTModel {
 
     @Description("The dams monitoring points.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inDams;
+    public SimpleFeatureCollection inDams;
 
     @Description("The dams data.")
     @In
@@ -142,7 +142,7 @@ public class Adige extends JGTModel {
 
     @Description("The tributary monitoring points.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inTributary;
+    public SimpleFeatureCollection inTributary;
 
     @Description("The tributary data.")
     @In
@@ -150,7 +150,7 @@ public class Adige extends JGTModel {
 
     @Description("The offtakes monitoring points.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inOfftakes;
+    public SimpleFeatureCollection inOfftakes;
 
     @Description("The offtakes data.")
     @In
@@ -166,7 +166,7 @@ public class Adige extends JGTModel {
 
     @Description("The network data.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inNetwork;
+    public SimpleFeatureCollection inNetwork;
 
     @Description("The a field name of the pfafstetter enumeration attribute in the network data.")
     @In

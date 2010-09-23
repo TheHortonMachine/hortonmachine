@@ -26,14 +26,13 @@ import java.util.Map;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureSource;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTSFactoryFinder;
 import org.hibernate.Transaction;
 import org.hibernate.classic.Session;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -75,7 +74,7 @@ public class GeometryLoader {
         QueryHandler queryHandler = edcSessionFactory.getQueryHandler();
         try {
 
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = getFeatureCollectionFromShapefile(shapeFile);
+            SimpleFeatureCollection collection = getFeatureCollectionFromShapefile(shapeFile);
             FeatureIterator<SimpleFeature> iterator = collection.features();
 
             CoordinateReferenceSystem crs = null;
@@ -122,7 +121,7 @@ public class GeometryLoader {
         QueryHandler queryHandler = edcSessionFactory.getQueryHandler();
         try {
 
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = getFeatureCollectionFromShapefile(shapeFile);
+            SimpleFeatureCollection collection = getFeatureCollectionFromShapefile(shapeFile);
             FeatureIterator<SimpleFeature> iterator = collection.features();
 
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
@@ -188,7 +187,7 @@ public class GeometryLoader {
         QueryHandler queryHandler = edcSessionFactory.getQueryHandler();
         try {
 
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection = getFeatureCollectionFromShapefile(shapeFile);
+            SimpleFeatureCollection collection = getFeatureCollectionFromShapefile(shapeFile);
             FeatureIterator<SimpleFeature> iterator = collection.features();
 
             GeometryFactory geometryFactory = JTSFactoryFinder.getGeometryFactory(null);
@@ -222,16 +221,16 @@ public class GeometryLoader {
         }
     }
 
-    private FeatureCollection<SimpleFeatureType, SimpleFeature> getFeatureCollectionFromShapefile(
+    private SimpleFeatureCollection getFeatureCollectionFromShapefile(
             File shapeFile ) throws MalformedURLException, IOException {
         Map<String, Serializable> connectParameters = new HashMap<String, Serializable>();
         connectParameters.put("url", shapeFile.toURI().toURL());
         DataStore dataStore = DataStoreFinder.getDataStore(connectParameters);
         String typeName = dataStore.getTypeNames()[0];
 
-        FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = dataStore
+        SimpleFeatureSource featureSource = dataStore
                 .getFeatureSource(typeName);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> collection = featureSource
+        SimpleFeatureCollection collection = featureSource
                 .getFeatures();
         return collection;
     }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
@@ -14,8 +14,6 @@ import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.kriging.Kriging;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 /**
  * Test the kriging model.
  * 
@@ -38,12 +36,12 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
@@ -129,12 +127,12 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
@@ -222,12 +220,12 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
@@ -311,12 +309,12 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
@@ -405,12 +403,12 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();
@@ -499,11 +497,11 @@ public class TestKriging extends HMTestCase {
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> stationsFC = stationsReader.geodata;
+        SimpleFeatureCollection stationsFC = stationsReader.geodata;
         ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
         interpolatedPointsReader.file = puntiFile.getAbsolutePath();
         interpolatedPointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> interpolatedPointsFC = interpolatedPointsReader.geodata;
+        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
         reader.file = krigingRainFile.getAbsolutePath();

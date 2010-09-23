@@ -17,7 +17,7 @@
  */
 package eu.hydrologis.edc.databases.postgres;
 
-import static eu.hydrologis.edc.utils.Constants.*;
+import static eu.hydrologis.edc.utils.Constants.EDCGEOMETRIES_SCHEMA;
 import static eu.hydrologis.edc.utils.Constants.EDC_SCHEMA;
 import static eu.hydrologis.edc.utils.Constants.LANDSLIDES;
 import static eu.hydrologis.edc.utils.Constants.LANDSLIDESGEOMETRIES;

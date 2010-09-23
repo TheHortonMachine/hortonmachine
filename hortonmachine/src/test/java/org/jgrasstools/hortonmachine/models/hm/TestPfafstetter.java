@@ -19,13 +19,11 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.network.pfafstetter.Pfafstetter;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Test the {@link Pfafstetter} module.
@@ -54,7 +52,7 @@ public class TestPfafstetter extends HMTestCase {
 
         pfafstetter.process();
         
-        FeatureCollection<SimpleFeatureType, SimpleFeature> pfafstetterFC = pfafstetter.outPfaf;
+        SimpleFeatureCollection pfafstetterFC = pfafstetter.outPfaf;
         
         ShapefileFeatureWriter.writeShapefile(outputPath, pfafstetterFC);
 

@@ -23,7 +23,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
-import java.io.IOException;
 
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
@@ -37,6 +36,7 @@ import oms3.annotations.License;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
 import org.geotools.feature.FeatureCollection;
@@ -59,15 +59,12 @@ import org.geotools.styling.Stroke;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
-import org.geotools.styling.StyleFactoryImpl;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
@@ -88,11 +85,11 @@ public class MapsViewer {
 
     @Description("The feature collections to visualize.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature>[] featureCollections = new FeatureCollection[0];
+    public SimpleFeatureCollection[] featureCollections = new SimpleFeatureCollection[0];
 
     @Description("The feature collection to visualize.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = null;
+    public SimpleFeatureCollection featureCollection = null;
 
     @Description("The feature collections style layer.")
     @In
@@ -117,7 +114,7 @@ public class MapsViewer {
         addCoverages(map, sb, rasterSym);
 
         if (featureCollection != null) {
-            featureCollections = new FeatureCollection[]{featureCollection};
+            featureCollections = new SimpleFeatureCollection[]{featureCollection};
             // does it have style
             if (inSld != null) {
                 File sldFile = new File(inSld);
@@ -156,7 +153,7 @@ public class MapsViewer {
     }
 
     private void addFeatureCollections( MapContext map ) {
-        for( FeatureCollection<SimpleFeatureType, SimpleFeature> fc : featureCollections ) {
+        for( SimpleFeatureCollection fc : featureCollections ) {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GEOMETRYTYPE type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
@@ -279,7 +276,7 @@ public class MapsViewer {
     }
 
     public static synchronized void displayRasterAndFeatures( final GridCoverage2D raster,
-            final FeatureCollection<SimpleFeatureType, SimpleFeature> vector ) throws Exception {
+            final SimpleFeatureCollection vector ) throws Exception {
 
         new Thread(){
             @Override
@@ -289,7 +286,7 @@ public class MapsViewer {
                     viewer.coverages = new GridCoverage2D[]{raster};
                 }
                 if (vector != null) {
-                    viewer.featureCollections = new FeatureCollection[]{vector};
+                    viewer.featureCollections = new SimpleFeatureCollection[]{vector};
                 }
                 try {
                     viewer.displayMaps();
@@ -304,7 +301,7 @@ public class MapsViewer {
     @SuppressWarnings("nls")
     public static void main( String[] args ) throws Exception {
         GridCoverage2D coverage = RasterReader.readCoverage("/home/moovida/TMP/byumba_basins.asc");
-        FeatureCollection<SimpleFeatureType, SimpleFeature> shapefile = ShapefileFeatureReader
+        SimpleFeatureCollection shapefile = ShapefileFeatureReader
                 .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
         displayRasterAndFeatures(coverage, shapefile);
     }

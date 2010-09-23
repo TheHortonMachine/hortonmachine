@@ -32,7 +32,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.graph.build.line.BasicLineGraphGenerator;
@@ -47,7 +47,6 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -75,11 +74,11 @@ public class LineIntersectionCorrector extends JGTModel {
 
     @Description("The features to be smoothed.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> linesFeatures;
+    public SimpleFeatureCollection linesFeatures;
 
     @Description("The point features that define intersections.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> pointFeatures;
+    public SimpleFeatureCollection pointFeatures;
 
     @Description("Protection buffer.")
     @In
@@ -95,15 +94,15 @@ public class LineIntersectionCorrector extends JGTModel {
 
     @Description("The untouched features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> untouchedFeatures;
+    public SimpleFeatureCollection untouchedFeatures;
 
     @Description("The corrected features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> correctedFeatures;
+    public SimpleFeatureCollection correctedFeatures;
 
     @Description("The non corrected features.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> errorFeatures;
+    public SimpleFeatureCollection errorFeatures;
 
     private static final double DELTA5 = 0.00001;
     private static final double DELTA6 = 0.000001;

@@ -35,7 +35,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Role;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -122,7 +122,7 @@ public class NetNumbering extends JGTModel {
 
     @Description("The monitoringpoints features map.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inPoints = null;
+    public SimpleFeatureCollection inPoints = null;
 
     @Role(Role.PARAMETER)
     @Description("The running mode.")

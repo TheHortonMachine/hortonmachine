@@ -33,6 +33,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Role;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
@@ -44,7 +45,6 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import Jama.Matrix;
 
@@ -76,7 +76,7 @@ public class Kriging extends JGTModel {
 
     @Description("The collection of the measurement point, containing the position of the station.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inStations = null;
+    public SimpleFeatureCollection inStations = null;
 
     @Description("The field of the stations collections, defining the id.")
     @In
@@ -95,7 +95,7 @@ public class Kriging extends JGTModel {
 
     @Description("The collection of the points in which the data needs to be interpolated.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inInterpolate = null;
+    public SimpleFeatureCollection inInterpolate = null;
 
     @Description("The field of the interpolated points collections, defining the id.")
     @In
@@ -605,7 +605,7 @@ public class Kriging extends JGTModel {
      * @throws Exception if a fiel of elevation isn't the same of the collection
      */
     private HashMap<Integer, Coordinate> getCoordinate( int nStaz,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> collection, String idField ) throws Exception {
+            SimpleFeatureCollection collection, String idField ) throws Exception {
         HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
         FeatureIterator<SimpleFeature> iterator = collection.features();
         Coordinate coordinate = null;
@@ -639,7 +639,7 @@ public class Kriging extends JGTModel {
      * @return
      * @throws ModelsIOException 
      */
-    private int getNumPoint( FeatureCollection<SimpleFeatureType, SimpleFeature> collection ) throws ModelsIOException {
+    private int getNumPoint( SimpleFeatureCollection collection ) throws ModelsIOException {
         int nStaz = 0;
         if (collection != null) {
             nStaz = collection.size();

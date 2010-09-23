@@ -46,7 +46,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -112,7 +112,7 @@ public class Pfafstetter extends JGTModel {
 
     @Description("The map of channel features.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inChannelfeatures = null;
+    public SimpleFeatureCollection inChannelfeatures = null;
 
     @Description("The progress monitor.")
     @In
@@ -124,7 +124,7 @@ public class Pfafstetter extends JGTModel {
 
     @Description("The Pfafstetter feature collection of the network.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outPfaf = null;
+    public SimpleFeatureCollection outPfaf = null;
 
     /*
      * INTERNAL VARIABLES

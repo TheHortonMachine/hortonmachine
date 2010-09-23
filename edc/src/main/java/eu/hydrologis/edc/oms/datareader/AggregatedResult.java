@@ -18,8 +18,6 @@
  */
 package eu.hydrologis.edc.oms.datareader;
 
-import static java.lang.Double.NaN;
-
 import java.util.LinkedHashMap;
 import java.util.List;
 

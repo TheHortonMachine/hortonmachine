@@ -18,9 +18,13 @@
  */
 package org.jgrasstools.gears.utils;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -130,6 +134,46 @@ public class FileUtilities {
 
         String file = new String(bArray);
         return file;
+    }
+
+    /**
+     * Read text from a file in one line.
+     * 
+     * @param file the file to read.
+     * @return the read string.
+     * @throws IOException 
+     */
+    public static String readFile( File file ) throws IOException {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(file));
+            StringBuilder sb = new StringBuilder(200);
+            String line = null;
+            while( (line = br.readLine()) != null ) {
+                sb.append(line);
+                sb.append("\n"); //$NON-NLS-1$
+            }
+            return sb.toString();
+        } finally {
+            br.close();
+        }
+    }
+
+    /**
+     * Write text to a file in one line.
+     * 
+     * @param text the text to write.
+     * @param file the file to write to.
+     * @throws IOException 
+     */
+    public static void writeFile( String text, File file ) throws IOException {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(file));
+            bw.write(text);
+        } finally {
+            bw.close();
+        }
     }
 
     public static String replaceBackSlashes( String path ) {

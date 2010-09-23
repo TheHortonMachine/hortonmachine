@@ -28,11 +28,11 @@ import java.util.Set;
 
 import org.geotools.data.DataStore;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -107,9 +107,9 @@ public class PostgresQueryHandler implements QueryHandler {
         }
 
         DataStore spatialDataStore = postgresSessionFactory.getSpatialDataStore();
-        FeatureSource<SimpleFeatureType, SimpleFeature> featureSource = spatialDataStore
+        SimpleFeatureSource featureSource = spatialDataStore
                 .getFeatureSource(tableName);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = featureSource
+        SimpleFeatureCollection featureCollection = featureSource
                 .getFeatures(filter);
         FeatureIterator<SimpleFeature> featureIterator = featureCollection.features();
 
@@ -218,7 +218,7 @@ public class PostgresQueryHandler implements QueryHandler {
             Object[] values = new Object[]{reporjectedPoint, id};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(tableName + "." + id);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+            SimpleFeatureCollection newCollection = FeatureCollections
                     .newCollection();
             newCollection.add(feature);
 
@@ -266,7 +266,7 @@ public class PostgresQueryHandler implements QueryHandler {
             Object[] values = new Object[]{reporjectedLinestring, id};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(tableName + "." + id);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+            SimpleFeatureCollection newCollection = FeatureCollections
                     .newCollection();
             newCollection.add(feature);
 
@@ -364,7 +364,7 @@ public class PostgresQueryHandler implements QueryHandler {
             Object[] values = new Object[]{reporjectedPolygon, id};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(tableName + "." + id);
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
+            SimpleFeatureCollection newCollection = FeatureCollections
                     .newCollection();
             newCollection.add(feature);
 

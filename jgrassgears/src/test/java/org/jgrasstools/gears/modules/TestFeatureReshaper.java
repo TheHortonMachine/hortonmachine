@@ -18,13 +18,12 @@
  */
 package org.jgrasstools.gears.modules;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.modules.v.reshape.FeatureReshaper;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 /**
  * Test for the reshaper modules.
  * 
@@ -35,13 +34,13 @@ public class TestFeatureReshaper extends HMTestCase {
     @SuppressWarnings("nls")
     public void testFeatureReshaper() throws Exception {
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         FeatureReshaper reshaper = new FeatureReshaper();
         reshaper.inFeatures = testFC;
         reshaper.pCql = "newcat=cat*2";
         reshaper.process();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outFC = reshaper.outFeatures;
+        SimpleFeatureCollection outFC = reshaper.outFeatures;
 
         FeatureIterator<SimpleFeature> featureIterator = outFC.features();
         SimpleFeature feature = featureIterator.next();

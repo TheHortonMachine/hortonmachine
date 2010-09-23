@@ -1,18 +1,16 @@
 package org.jgrasstools.hortonmachine.models.hm;
-import java.net.URL;
 import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.netnumbering.NetNumbering;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test netnumbering.
@@ -86,7 +84,7 @@ public class TestNetnumbering extends HMTestCase {
         ShapefileFeatureReader pointsReader = new ShapefileFeatureReader();
         pointsReader.file = pointsFile.getAbsolutePath();
         pointsReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> pointsFC = pointsReader.geodata;
+        SimpleFeatureCollection pointsFC = pointsReader.geodata;
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet1Data;
@@ -119,7 +117,7 @@ public class TestNetnumbering extends HMTestCase {
 //        ShapefileFeatureReader pointsReader = new ShapefileFeatureReader();
 //        pointsReader.file = pointsFile.getAbsolutePath();
 //        pointsReader.readFeatureCollection();
-//        FeatureCollection<SimpleFeatureType, SimpleFeature> pointsFC = pointsReader.geodata;
+//        SimpleFeatureCollection pointsFC = pointsReader.geodata;
 //        double[][] flowData = HMTestMaps.mflowDataBorder;
 //        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 //        double[][] netData = HMTestMaps.extractNet1Data;

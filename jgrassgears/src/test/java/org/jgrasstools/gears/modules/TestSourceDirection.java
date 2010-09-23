@@ -19,15 +19,13 @@
 package org.jgrasstools.gears.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.v.sourcesdirection.SourcesDirectionCalculator;
 import org.jgrasstools.gears.utils.HMTestCase;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Test for the {@link SourcesDirectionCalculator} module.
@@ -52,7 +50,7 @@ public class TestSourceDirection extends HMTestCase {
     // double n = 5140020.0 - 4 * res; // 4 pixels down
     // double w = 1640650.0 + 5 * res; // 5 pixels right
     // Coordinate coord = new Coordinate(w, n);
-    // FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = HMTestMaps.createFcFromPoint(
+    // SimpleFeatureCollection pointFC = HMTestMaps.createFcFromPoint(
     // coord, crs);
     //
     // SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
@@ -61,7 +59,7 @@ public class TestSourceDirection extends HMTestCase {
     // sourceDirection.pRes = newRes;
     // sourceDirection.process();
     //
-    // FeatureCollection<SimpleFeatureType, SimpleFeature> outSources = sourceDirection.outSources;
+    // SimpleFeatureCollection outSources = sourceDirection.outSources;
     // SimpleFeature feature = outSources.features().next();
     //        double azimuth = ((Number) feature.getAttribute("azimuth")).doubleValue(); //$NON-NLS-1$
     // assertEquals(270.0, azimuth);
@@ -81,7 +79,7 @@ public class TestSourceDirection extends HMTestCase {
         ShapefileFeatureReader shpReader = new ShapefileFeatureReader();
         shpReader.file = shape;
         shpReader.readFeatureCollection();
-        FeatureCollection<SimpleFeatureType, SimpleFeature> pointFC = shpReader.geodata;
+        SimpleFeatureCollection pointFC = shpReader.geodata;
         
         GridCoverage2D coverage = ArcgridCoverageReader.readCoverage(coveragePath);
         
@@ -94,7 +92,7 @@ public class TestSourceDirection extends HMTestCase {
         sourceDirection.pRes = 10.0;
         sourceDirection.process();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> outSources = sourceDirection.outSources;
+        SimpleFeatureCollection outSources = sourceDirection.outSources;
 
         ShapefileFeatureWriter shpWriter = new ShapefileFeatureWriter();
         shpWriter.file = outshape;

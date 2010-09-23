@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,11 +33,13 @@ import java.util.Set;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -180,8 +183,8 @@ public class FeatureUtilities {
      * @param features - the vectore of features
      * @return the created featurecollection
      */
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> createFeatureCollection( SimpleFeature... features ) {
-        FeatureCollection<SimpleFeatureType, SimpleFeature> fcollection = FeatureCollections.newCollection();
+    public static SimpleFeatureCollection createFeatureCollection( SimpleFeature... features ) {
+        SimpleFeatureCollection fcollection = FeatureCollections.newCollection();
 
         for( SimpleFeature feature : features ) {
             fcollection.add(feature);
@@ -208,8 +211,8 @@ public class FeatureUtilities {
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    public static FeatureCollection<SimpleFeatureType, SimpleFeature> csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs, LinkedHashMap<String, Integer> fieldsAndTypesIndex,
-            String separator, IJGTProgressMonitor pm ) throws Exception {
+    public static SimpleFeatureCollection csvFileToFeatureCollection( File csvFile, CoordinateReferenceSystem crs,
+            LinkedHashMap<String, Integer> fieldsAndTypesIndex, String separator, IJGTProgressMonitor pm ) throws Exception {
         GeometryFactory gf = new GeometryFactory();
         Map<String, Class< ? >> typesMap = JGrassConstants.CSVTYPESCLASSESMAP;
         String[] typesArray = JGrassConstants.CSVTYPESARRAY;
@@ -242,7 +245,7 @@ public class FeatureUtilities {
         }
         SimpleFeatureType featureType = b.buildFeatureType();
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         Collection<Integer> orderedTypeIndexes = fieldsAndTypesIndex.values();
         Integer[] orderedTypeIndexesArray = (Integer[]) orderedTypeIndexes.toArray(new Integer[orderedTypeIndexes.size()]);
 
@@ -310,7 +313,8 @@ public class FeatureUtilities {
      * @param fet the featurecollection
      * @throws IOException 
      */
-    public static synchronized boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs, FeatureCollection<SimpleFeatureType, SimpleFeature> fet ) throws IOException {
+    public static synchronized boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs,
+            SimpleFeatureCollection fet ) throws IOException {
 
         // Create the file you want to write to
         File file = null;
@@ -330,7 +334,8 @@ public class FeatureUtilities {
         if (crs != null)
             newDataStore.forceSchemaCRS(crs);
         Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore.getFeatureSource();
+        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
+                .getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
             featureStore.addFeatures(fet);
@@ -354,7 +359,8 @@ public class FeatureUtilities {
      * @throws Exception 
      */
     @SuppressWarnings("nls")
-    public static synchronized ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec, CoordinateReferenceSystem crs ) throws Exception {
+    public static synchronized ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec,
+            CoordinateReferenceSystem crs ) throws Exception {
         // Create the file you want to write to
         File file = null;
         if (name.toLowerCase().endsWith(".shp")) {
@@ -391,7 +397,8 @@ public class FeatureUtilities {
      * @param collection the featurecollection
      * @throws IOException 
      */
-    private static synchronized boolean writeToShapefile( ShapefileDataStore data, FeatureCollection<SimpleFeatureType, SimpleFeature> collection ) throws IOException {
+    private static synchronized boolean writeToShapefile( ShapefileDataStore data, SimpleFeatureCollection collection )
+            throws IOException {
         String featureName = data.getTypeNames()[0]; // there is only one in
         // a shapefile
         FeatureStore<SimpleFeatureType, SimpleFeature> store = null;
@@ -404,7 +411,7 @@ public class FeatureUtilities {
 
             // Tell it the name of the shapefile it should look for in our
             // DataStore
-            FeatureSource<SimpleFeatureType, SimpleFeature> source = data.getFeatureSource(featureName);
+            SimpleFeatureSource source = data.getFeatureSource(featureName);
             store = (FeatureStore<SimpleFeatureType, SimpleFeature>) source;
             store.addFeatures(collection);
             data.getFeatureWriter(transaction);
@@ -431,9 +438,27 @@ public class FeatureUtilities {
      * @throws FactoryRegistryException 
      * @throws SchemaException
      */
-    public static FeatureExtender createFeatureExteder( SimpleFeatureType oldFeatureType, String[] fieldArray, Class[] classesArray ) throws FactoryRegistryException, SchemaException {
+    public static FeatureExtender createFeatureExteder( SimpleFeatureType oldFeatureType, String[] fieldArray,
+            Class[] classesArray ) throws FactoryRegistryException, SchemaException {
         FeatureExtender fExt = new FeatureExtender(oldFeatureType, fieldArray, classesArray);
         return fExt;
+    }
+
+    /**
+     * Extracts features from a {@link FeatureCollection} into an {@link ArrayList}.
+     * 
+     * @param collection the feature collection.
+     * @return the list with the features.
+     */
+    public static List<SimpleFeature> featureCollectionToList( SimpleFeatureCollection collection ) {
+        List<SimpleFeature> featuresList = new ArrayList<SimpleFeature>();
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            featuresList.add(feature);
+        }
+        featureIterator.close();
+        return featuresList;
     }
 
 }

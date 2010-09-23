@@ -3,7 +3,7 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -11,7 +11,6 @@ import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwo
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -50,7 +49,7 @@ public class TestExtractNetwork1 extends HMTestCase{
         GridCoverage2D networkCoverage = extractNetwork.outNet;
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
         
-        FeatureCollection<SimpleFeatureType, SimpleFeature> networkFC = extractNetwork.outNetfc;
+        SimpleFeatureCollection networkFC = extractNetwork.outNetfc;
         
         FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
         while( featureIterator.hasNext() ) {

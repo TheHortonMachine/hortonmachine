@@ -1,8 +1,10 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.tca3d;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static java.lang.Math.*;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;

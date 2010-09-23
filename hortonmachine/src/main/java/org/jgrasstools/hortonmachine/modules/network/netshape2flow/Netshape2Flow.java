@@ -38,7 +38,7 @@ import oms3.annotations.Role;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -70,7 +70,7 @@ public class Netshape2Flow extends JGTModel {
 
     @Description("The network features.")
     @In
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> inNet = null;
+    public SimpleFeatureCollection inNet = null;
 
     @Description("The grid geometry of the region on which to create the output rasters.")
     @In
@@ -101,7 +101,7 @@ public class Netshape2Flow extends JGTModel {
 
     @Description("The problems features points.")
     @Out
-    public FeatureCollection<SimpleFeatureType, SimpleFeature> outProblems = null;
+    public SimpleFeatureCollection outProblems = null;
 
     @Description("The progress monitor.")
     @In
@@ -285,7 +285,7 @@ public class Netshape2Flow extends JGTModel {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
             GeometryFactory gf = GeometryUtilities.gf();
-            FeatureCollection<SimpleFeatureType, SimpleFeature> featureCollection = FeatureCollections.newCollection();
+            SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
             for( int i = 0; i < problemPointsList.size(); i++ ) {
                 MultiPoint mPoint = gf.createMultiPoint(new Coordinate[]{problemPointsList.get(i)});
                 Object[] values = new Object[]{mPoint, i};
