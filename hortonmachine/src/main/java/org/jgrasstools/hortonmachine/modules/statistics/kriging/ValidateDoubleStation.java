@@ -132,7 +132,7 @@ public class ValidateDoubleStation extends JGTModel {
 		int j = 0;
 		hStation[k] = hStationList.get(0);
 		idStation[k] = idStationList.get(0);
-		ModelsEngine modelsEngine = new ModelsEngine();
+		
 		List<Integer> idStationtoDelete = new ArrayList<Integer>();
 		outData = new HashMap<Integer, double[]>();
 		for (int i = 1; i < xStation.length; i++) {
@@ -141,7 +141,7 @@ public class ValidateDoubleStation extends JGTModel {
 			double yTmp = yStationList.get(i);
 			double zTmp = zStationList.get(i);
 			double hTmp = hStationList.get(i);
-			boolean doubleStation = modelsEngine.verifyDoubleStation(xStation,
+			boolean doubleStation = ModelsEngine.verifyDoubleStation(xStation,
 					yStation, zStation, hStation, xTmp, yTmp, zTmp, hTmp, i,
 					doMean, null);
 

@@ -145,7 +145,7 @@ public class ExtractNetwork extends JGTModel {
      * INTERNAL VARIABLES
      */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
+    
 
     private int cols;
     private int rows;
@@ -186,10 +186,10 @@ public class ExtractNetwork extends JGTModel {
             RandomIter flowIter = RandomIterFactory.create(flowRI, null);
             RandomIter networkIter = RandomIterFactory.create(networkWR, null);
 
-            WritableRaster netNumWR = modelsEngine.netNumbering(nstream, flowIter, networkIter, cols, rows, pm);
+            WritableRaster netNumWR = ModelsEngine.netNumbering(nstream, flowIter, networkIter, cols, rows, pm);
             CoverageUtilities.setNovalueBorder(netNumWR);
             // calculates the shape...
-            outNetfc = modelsEngine.net2ShapeOnly(flowRI, netNumWR, inFlow.getGridGeometry(), nstream, pm);
+            outNetfc = ModelsEngine.net2ShapeOnly(flowRI, netNumWR, inFlow.getGridGeometry(), nstream, pm);
         }
     }
     /**
@@ -219,12 +219,12 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                             return null;
                         while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
                                 && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
                             netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                                 return null;
                         }
 
@@ -269,12 +269,12 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                             return null;
                         while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
                                 && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
                             netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                                 return null;
                         }
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
@@ -317,12 +317,12 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                             return null;
                         while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
                                 && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
                             netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!modelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                                 return null;
                         }
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {

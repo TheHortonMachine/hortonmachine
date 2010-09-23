@@ -102,7 +102,7 @@ public class HackLength extends JGTModel {
     public GridCoverage2D outHacklength = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
+    
 
     private int nCols;
 
@@ -158,25 +158,25 @@ public class HackLength extends JGTModel {
                 } else {
                     flow[0] = i;
                     flow[1] = j;
-                    if (modelsEngine.isSourcePixel(flowIter, flow[0], flow[1])) {
+                    if (ModelsEngine.isSourcePixel(flowIter, flow[0], flow[1])) {
                         count = 0;
                         maz = 1;
                         hacklengthIter.setSample(flow[0], flow[1], 0, count);
                         oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         while( (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) && flowIter.getSampleDouble(flow[0],
                                 flow[1], 0) != 10.0)
-                                && modelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count) ) {
+                                && ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count) ) {
                             count += grid[(int) oldir];
                             hacklengthIter.setSample(flow[0], flow[1], 0, count);
                             maz = tcaIter.getSampleDouble(flow[0], flow[1], 0);
                             oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;
                         }
                         if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
-                            if (modelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count)) {
+                            if (ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count)) {
                                 count += grid[(int) oldir];
                                 hacklengthIter.setSample(flow[0], flow[1], 0, count);
                             }

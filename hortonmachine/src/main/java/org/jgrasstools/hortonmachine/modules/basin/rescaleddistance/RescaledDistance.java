@@ -121,7 +121,7 @@ public class RescaledDistance extends JGTModel {
     public GridCoverage2D outRescaled = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
+    
 
     @Execute
     public void process() {
@@ -173,7 +173,7 @@ public class RescaledDistance extends JGTModel {
                             && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
                         a = flowIter.getSampleDouble(flow[0], flow[1], 0);
                         count += grid[(int) a] * pRatio;
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
+                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
                                 flow[1], 0)))
                             throw new ModelsIllegalargumentException(
                                     "Error while going downstream!", this.getClass()
@@ -183,7 +183,7 @@ public class RescaledDistance extends JGTModel {
                             && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
                         a = flowIter.getSampleDouble(flow[0], flow[1], 0);
                         count = count + grid[(int) a];
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
+                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
                                 flow[1], 0)))
                             throw new ModelsIllegalargumentException(
                                     "Error while going downstream!", this.getClass()

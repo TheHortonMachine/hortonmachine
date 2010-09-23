@@ -18,10 +18,13 @@
  */
 package org.jgrasstools.gears.utils.math;
 
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.doubleNMoment;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.split2realvectors;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.vectorizeDoubleMatrix;
+
 import java.awt.image.RenderedImage;
 
 import org.jgrasstools.gears.i18n.GearsMessageHandler;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.SplitVectors;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
@@ -75,23 +78,22 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
  * </p>
  */
 public class CoupledFieldsMoments {
-    public double[][] process( RenderedImage map1RI, RenderedImage map2RI, int pBins, int pFirst,
-            int pLast, IJGTProgressMonitor pm, int binmode ) {
+    public double[][] process( RenderedImage map1RI, RenderedImage map2RI, int pBins, int pFirst, int pLast,
+            IJGTProgressMonitor pm, int binmode ) {
         if (map2RI == null) {
             map2RI = map1RI;
         }
-        ModelsEngine modelsEngine = new ModelsEngine();
         GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
         pm.message(msg.message("cb.vectorize"));
-        double[] U = modelsEngine.vectorizeDoubleMatrix(map1RI);
+        double[] U = vectorizeDoubleMatrix(map1RI);
         double[] T = null;
         QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
         if (map2RI == null) {
             T = U;
             t.sort(U, null);
         } else {
-            T = modelsEngine.vectorizeDoubleMatrix(map2RI);
+            T = vectorizeDoubleMatrix(map2RI);
             t.sort(U, T);
         }
 
@@ -101,7 +103,7 @@ public class CoupledFieldsMoments {
          * if (bintype == 1) {
          */
         pm.message(msg.message("cb.splitvector"));
-        modelsEngine.split2realvectors(U, T, theSplit, pBins, num_max, pm);
+        split2realvectors(U, T, theSplit, pBins, num_max, pm);
         /*
          * } else { delta = FluidUtils.exponentialsplit2realvectors(U, T,
          * theSplit, N, num_max, base); }
@@ -113,16 +115,14 @@ public class CoupledFieldsMoments {
         if (binmode == 1) // always true for now, other modes not implemented yet
         {
             for( int h = 0; h < theSplit.splitIndex.length; h++ ) {
-                outCb[h][0] = modelsEngine.doubleNMoment(theSplit.splitValues1[h],
-                        (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                outCb[h][0] = doubleNMoment(theSplit.splitValues1[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
                 outCb[h][1] = theSplit.splitIndex[h];
-                outCb[h][2] = modelsEngine.doubleNMoment(theSplit.splitValues2[h],
-                        (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
+                outCb[h][2] = doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], 0.0, 1.0, pm);
                 if (pFirst == 1)
                     pFirst++;
                 for( int k = pFirst; k <= pLast; k++ ) {
-                    outCb[h][k - pFirst + 3] = modelsEngine.doubleNMoment(theSplit.splitValues2[h],
-                            (int) theSplit.splitIndex[h], outCb[h][1], (double) k, pm);
+                    outCb[h][k - pFirst + 3] = doubleNMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h], outCb[h][1],
+                            (double) k, pm);
                 }
             }
         }

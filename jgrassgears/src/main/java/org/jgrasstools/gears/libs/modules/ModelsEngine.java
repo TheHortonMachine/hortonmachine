@@ -82,7 +82,7 @@ public class ModelsEngine {
 
     private static int[][] dirIn = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
-    private GearsMessageHandler msg = GearsMessageHandler.getInstance();
+    private static GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
     public static PixelInCell DEFAULTPIXELANCHOR = PixelInCell.CELL_CENTER;
 
@@ -97,7 +97,7 @@ public class ModelsEngine {
      *            the current flowdirection number.
      * @return true if everything went well.
      */
-    public boolean go_downstream( int[] rowCol, double flowdirection ) {
+    public static boolean go_downstream( int[] rowCol, double flowdirection ) {
 
         int n = (int) flowdirection;
         if (n == 10) {
@@ -120,7 +120,8 @@ public class ModelsEngine {
      * @param lRandomIter
      * @param param
      */
-    public void go_upstream_a( int[] p, RandomIter flowRandomIter, RandomIter tcaRandomIter, RandomIter lRandomIter, int[] param ) {
+    public static void go_upstream_a( int[] p, RandomIter flowRandomIter, RandomIter tcaRandomIter, RandomIter lRandomIter,
+            int[] param ) {
         double area = 0, lenght = 0;
         int[] point = new int[2];
         int kk = 0, count = 0;
@@ -169,7 +170,7 @@ public class ModelsEngine {
      * @param netnumIterator
      * @param param
      */
-    public void goUpStreamOnNetFixed( int[] colRow, RandomIter flowIterator, RandomIter netnumIterator, int[] param ) {
+    public static void goUpStreamOnNetFixed( int[] colRow, RandomIter flowIterator, RandomIter netnumIterator, int[] param ) {
 
         int kk = 0, count = 0;
         int[] point = new int[2];
@@ -212,9 +213,8 @@ public class ModelsEngine {
      * @throws IOException
      * @throws TransformException
      */
-    public SimpleFeatureCollection net2ShapeOnly( RenderedImage flowImage,
-            WritableRaster netNumImage, GridGeometry2D gridGeometry, List<Integer> nstream, IJGTProgressMonitor pm )
-            throws IOException, TransformException {
+    public static SimpleFeatureCollection net2ShapeOnly( RenderedImage flowImage, WritableRaster netNumImage,
+            GridGeometry2D gridGeometry, List<Integer> nstream, IJGTProgressMonitor pm ) throws IOException, TransformException {
 
         int activecols = flowImage.getWidth();
         int activerows = flowImage.getHeight();
@@ -333,7 +333,7 @@ public class ModelsEngine {
      * @throws IOException
      * @throws TransformException
      */
-    public List<MultiLineString> net2ShapeGeometries( WritableRandomIter flowIter, RandomIter netNumIter, int[] nstream,
+    public static List<MultiLineString> net2ShapeGeometries( WritableRandomIter flowIter, RandomIter netNumIter, int[] nstream,
             GridGeometry2D gridGeometry, IJGTProgressMonitor pm ) throws IOException, TransformException {
 
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
@@ -437,7 +437,7 @@ public class ModelsEngine {
      *            {@link RandomIter iterator} of the netnumbering map.
      * @return
      */
-    public boolean sourcesNet( RandomIter flowIterator, int[] colRow, int num, RandomIter netNum ) {
+    public static boolean sourcesNet( RandomIter flowIterator, int[] colRow, int num, RandomIter netNum ) {
         int[][] dir = {{0, 0, 0}, {1, 0, 5}, {1, -1, 6}, {0, -1, 7}, {-1, -1, 8}, {-1, 0, 1}, {-1, 1, 2}, {0, 1, 3}, {1, 1, 4}};
 
         if (flowIterator.getSampleDouble(colRow[0], colRow[1], 0) <= 10.0
@@ -461,7 +461,7 @@ public class ModelsEngine {
      * @param input
      * @return
      */
-    public double[] vectorizeDoubleMatrix( RenderedImage input ) {
+    public static double[] vectorizeDoubleMatrix( RenderedImage input ) {
         double[] U = new double[input.getWidth() * input.getHeight()];
         RandomIter inputRandomIter = RandomIterFactory.create(input, null);
 
@@ -490,7 +490,7 @@ public class ModelsEngine {
      * @param out
      * @return
      */
-    public double split2realvectors( double[] U, double[] T, SplitVectors theSplit, int binNum, int num_max,
+    public static double split2realvectors( double[] U, double[] T, SplitVectors theSplit, int binNum, int num_max,
             IJGTProgressMonitor pm ) {
 
         double binStep = 0, minValue = 0, maxValue;
@@ -629,7 +629,7 @@ public class ModelsEngine {
         return binStep;
     }
 
-    public double doubleNMoment( double[] m, int nh, double mean, double NN, IJGTProgressMonitor pm ) {
+    public static double doubleNMoment( double[] m, int nh, double mean, double NN, IJGTProgressMonitor pm ) {
         double moment = 0.0, n;
 
         n = 0;
@@ -691,7 +691,7 @@ public class ModelsEngine {
     /**
      * this method numerating every stream
      */
-    public WritableRaster netNumbering( List<Integer> nstream, RandomIter flowIter, RandomIter networkIter, int width,
+    public static WritableRaster netNumbering( List<Integer> nstream, RandomIter flowIter, RandomIter networkIter, int width,
             int height, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
@@ -756,7 +756,7 @@ public class ModelsEngine {
      * this method numerating every stream and subdivide the stream when tca is
      * greater than a threshold
      */
-    public WritableRaster netNumberingWithTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
+    public static WritableRaster netNumberingWithTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
             RandomIter tcaRandomIter, int cols, int rows, double tcaTh, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
@@ -835,7 +835,7 @@ public class ModelsEngine {
      * @throws TransformException 
      * @throws InvalidGridGeometryException 
      */
-    public WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
+    public static WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
             int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
             IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
@@ -969,10 +969,10 @@ public class ModelsEngine {
      * @throws TransformException 
      * @throws InvalidGridGeometryException 
      */
-    public WritableRaster netNumberingWithPointsAndTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            RandomIter tcaRandomIter, double tcaTh, int rows, int cols, List<HashMap<String, ? >> attributePoints,
-            List<Geometry> geomVect, GridGeometry2D gridGeometry, IJGTProgressMonitor pm ) throws InvalidGridGeometryException,
-            TransformException {
+    public static WritableRaster netNumberingWithPointsAndTca( List<Integer> nstream, RandomIter mRandomIter,
+            RandomIter netRandomIter, RandomIter tcaRandomIter, double tcaTh, int rows, int cols,
+            List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
+            IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
 
@@ -1128,7 +1128,7 @@ public class ModelsEngine {
      *            the netnumbering map.
      * @return the map of subbasin
      */
-    public WritableRaster extractSubbasins( WritableRandomIter flowRandomIter, RandomIter netRandomIter,
+    public static WritableRaster extractSubbasins( WritableRandomIter flowRandomIter, RandomIter netRandomIter,
             WritableRandomIter netNumberRandomIter, int rows, int cols, IJGTProgressMonitor pm ) {
 
         for( int l = 0; l < rows; l++ ) {
@@ -1161,7 +1161,8 @@ public class ModelsEngine {
      * @param att
      * @param dist
      */
-    public WritableRaster go2channel( RandomIter mRandomIter, RandomIter attRandomIter, int cols, int rows, IJGTProgressMonitor pm ) {
+    public static WritableRaster go2channel( RandomIter mRandomIter, RandomIter attRandomIter, int cols, int rows,
+            IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         double value = 0.0;
 
@@ -1213,7 +1214,7 @@ public class ModelsEngine {
      * @param colRow the col and row of the point to check.
      * @return
      */
-    public boolean isSourcePixel( RandomIter flowRaster, int col, int row ) {
+    public static boolean isSourcePixel( RandomIter flowRaster, int col, int row ) {
         int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
         if (flowRaster.getSampleDouble(col, row, 0) < 9.0 && flowRaster.getSampleDouble(col, row, 0) > 0.0) {
 
@@ -1259,7 +1260,7 @@ public class ModelsEngine {
      *            - column of data in which you find the y values
      * @return
      */
-    public double width_interpolate( double[][] data, double x, int nx, int ny ) {
+    public static double width_interpolate( double[][] data, double x, int nx, int ny ) {
 
         int rows = data.length;
         double xuno = 0, xdue = 0, yuno = 0, ydue = 0, y = 0;
@@ -1301,7 +1302,7 @@ public class ModelsEngine {
      * @param tp
      * @return
      */
-    public double henderson( double[][] data, int tp ) {
+    public static double henderson( double[][] data, int tp ) {
 
         int rows = data.length;
 
@@ -1379,7 +1380,7 @@ public class ModelsEngine {
      * @param pm the monitor.
      * @return the summed map.
      */
-    public WritableRaster sumDownstream( RandomIter flowIter, RandomIter mapToSumIter, int width, int height,
+    public static WritableRaster sumDownstream( RandomIter flowIter, RandomIter mapToSumIter, int width, int height,
             IJGTProgressMonitor pm ) {
         int[] point = new int[2];
         WritableRaster summedMapWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
@@ -1414,7 +1415,8 @@ public class ModelsEngine {
         return summedMapWR;
     }
 
-    public boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz, double diss ) {
+    public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz,
+            double diss ) {
         int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
         for( int k = 1; k <= 8; k++ ) {
@@ -1436,7 +1438,7 @@ public class ModelsEngine {
      * @param sunVector
      * @return
      */
-    public double[] calcInverseSunVector( double[] sunVector ) {
+    public static double[] calcInverseSunVector( double[] sunVector ) {
         double m = Math.max(Math.abs(sunVector[0]), Math.abs(sunVector[1]));
         return new double[]{-sunVector[0] / m, -sunVector[1] / m, -sunVector[2] / m};
     }
@@ -1447,7 +1449,7 @@ public class ModelsEngine {
      * @param sunVector
      * @return
      */
-    public double[] calcNormalSunVector( double[] sunVector ) {
+    public static double[] calcNormalSunVector( double[] sunVector ) {
         double[] normalSunVector = new double[3];
         normalSunVector[2] = Math.sqrt(Math.pow(sunVector[0], 2) + Math.pow(sunVector[1], 2));
         normalSunVector[0] = -sunVector[0] * sunVector[2] / normalSunVector[2];
@@ -1464,7 +1466,7 @@ public class ModelsEngine {
      *            is a vector.
      * @return the dot product of a and b.
      */
-    public double scalarProduct( double[] a, double[] b ) {
+    public static double scalarProduct( double[] a, double[] b ) {
         double c = 0;
         for( int i = 0; i < a.length; i++ ) {
             c = c + a[i] * b[i];
@@ -1487,7 +1489,7 @@ public class ModelsEngine {
     *            the resolution of the elevation map.
     * @return the shadow map.
     */
-    public WritableRaster calculateFactor( int h, int w, double[] sunVector, double[] inverseSunVector,
+    public static WritableRaster calculateFactor( int h, int w, double[] sunVector, double[] inverseSunVector,
             double[] normalSunVector, WritableRaster demWR, double dx ) {
 
         double casx = 1e6 * sunVector[0];
@@ -1536,7 +1538,7 @@ public class ModelsEngine {
      * @param inverseSunVector
      * @return
      */
-    private WritableRaster shadow( int i, int j, WritableRaster tmpWR, WritableRaster demWR, double res,
+    private static WritableRaster shadow( int i, int j, WritableRaster tmpWR, WritableRaster demWR, double res,
             double[] normalSunVector, double[] inverseSunVector ) {
         int n = 0;
         double zcompare = -Double.MAX_VALUE;
@@ -1599,28 +1601,23 @@ public class ModelsEngine {
      * @return true if there is already this station.
      * @throws Exception
      */
-    public boolean verifyDoubleStation( double[] xStation, double[] yStation, double[] zStation, double[] hStation, double xTmp,
-            double yTmp, double zTmp, double hTmp, int i, boolean doMean, IJGTProgressMonitor pm ) throws Exception {
+    public static boolean verifyDoubleStation( double[] xStation, double[] yStation, double[] zStation, double[] hStation,
+            double xTmp, double yTmp, double zTmp, double hTmp, int i, boolean doMean, IJGTProgressMonitor pm ) throws Exception {
 
         for( int j = 0; j < i - 1; j++ ) {
 
-            if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j])
-                    && dEq(hTmp, hStation[j])) {
-                if(!doMean){
-                    throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp,this);
-            //    pm.errorMessage(msg.message("verifyStation.equalsStation1") + xTmp + ";" + yTmp);
-            //    throw new Exception(msg.message("verifyStation.run"));
-            }
+            if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j]) && dEq(hTmp, hStation[j])) {
+                if (!doMean) {
+                    throw new IllegalArgumentException(msg.message("verifyStation.equalsStation1") + xTmp + "/" + yTmp);
+                }
                 return true;
             } else if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j])) {
                 if (!doMean) {
-                    throw new  ModelsIllegalargumentException(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp,this);
-                   // pm.errorMessage(msg.message("verifyStation.equalsStation2") + xTmp + ";" + yTmp);
-                  //  throw new Exceptio(msg.message("verifyStation.run"));
+                    throw new IllegalArgumentException(msg.message("verifyStation.equalsStation2") + xTmp + "/" + yTmp);
                 }
-                if(!isNovalue(hStation[j])&& !isNovalue(hTmp)){
-                hStation[j] = (hStation[j] + hTmp) / 2;}
-                else{
+                if (!isNovalue(hStation[j]) && !isNovalue(hTmp)) {
+                    hStation[j] = (hStation[j] + hTmp) / 2;
+                } else {
                     hStation[j] = doubleNovalue;
                 }
                 return true;

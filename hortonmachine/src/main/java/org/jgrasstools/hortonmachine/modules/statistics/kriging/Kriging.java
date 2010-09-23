@@ -291,14 +291,14 @@ public class Kriging extends JGTModel {
             zStation[0] = zStationList.get(0);
             hStation[0] = hStationList.get(0);
             double previousValue = hStation[0];
-            ModelsEngine modelsEngine = new ModelsEngine();
+            
             for( int i = 1; i < nStaz; i++ ) {
 
                 double xTmp = xStationList.get(i);
                 double yTmp = yStationList.get(i);
                 double zTmp = zStationList.get(i);
                 double hTmp = hStationList.get(i);
-                boolean doubleStation = modelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp,
+                boolean doubleStation = ModelsEngine.verifyDoubleStation(xStation, yStation, zStation, hStation, xTmp, yTmp,
                         zTmp, hTmp, i, false, pm);
                 if (!doubleStation) {
                     xStation[i] = xTmp;

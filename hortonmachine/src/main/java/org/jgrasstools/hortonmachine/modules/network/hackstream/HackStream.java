@@ -132,7 +132,7 @@ public class HackStream extends JGTModel {
 
     int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
+    
 
     private int nCols;
 
@@ -242,7 +242,7 @@ public class HackStream extends JGTModel {
                         } else if (flowIter.getSampleDouble(i, j, 0) != 10 || !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
                             // after the call to go_downstream the flow is the
                             // next pixel in the channel.
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
                             // this if is true if there is a fork (segna==10 but
                             // m!=10) so add one to the hack number.
@@ -268,7 +268,7 @@ public class HackStream extends JGTModel {
                 kk = 0;
                 // the flow point is changed in order to follow the drainage
                 // direction.
-                modelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+                ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
                 // the direction
                 kk = param[0];
                 // number of pixel which drainage into this pixel, N.B. in a
@@ -293,7 +293,7 @@ public class HackStream extends JGTModel {
                     flow_p[0] = flow[0];
                     flow_p[1] = flow[1];
                     kk = 0;
-                    modelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+                    ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
                     kk = param[0];
                     count = param[1];
                     double temp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
@@ -357,7 +357,7 @@ public class HackStream extends JGTModel {
                             // why these checks if segnaRandomIter is a copy of
                             // flowRandomIter?
                         } else if (flowIter.getSampleDouble(i, j, 0) != 10 && !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
                             double tmp = 0;
                             if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -388,7 +388,7 @@ public class HackStream extends JGTModel {
                 flow_p[0] = flow[0];
                 flow_p[1] = flow[1];
                 kk = 0;
-                modelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+                ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
                 kk = param[0];
                 count = param[1];
                 double tmp = 0;
@@ -407,7 +407,7 @@ public class HackStream extends JGTModel {
                     flow_p[0] = flow[0];
                     flow_p[1] = flow[1];
                     kk = 0;
-                    modelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+                    ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
                     kk = param[0];
                     count = param[1];
                     tmp = hackstreamIter.getSample(punto[0], punto[1], 0);
@@ -441,14 +441,14 @@ public class HackStream extends JGTModel {
                             if (netnumIter.getSampleDouble(n, l, 0) == channel) {
                                 flow[0] = n;
                                 flow[1] = l;
-                                if (modelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
+                                if (ModelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
                                     punto[0] = flow[0];
                                     punto[1] = flow[1];
-                                    modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                                    ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                                     while( netnumIter.getSampleDouble(flow[0], flow[1], 0) == channel ) {
                                         flow_p[0] = flow[0];
                                         flow_p[1] = flow[1];
-                                        modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                                         channelLength++;
                                     }
                                     double tmp = 0.;
@@ -463,7 +463,7 @@ public class HackStream extends JGTModel {
                                         flow_p[0] = punto[0];
                                         flow_p[1] = punto[1];
                                         hackstreamIter.setSample(punto[0], punto[1], 0, hacksValue);
-                                        modelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
+                                        ModelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
                                         length++;
                                     }
                                     break;
