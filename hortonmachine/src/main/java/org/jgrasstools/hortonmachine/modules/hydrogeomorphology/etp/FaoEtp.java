@@ -45,7 +45,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FaoEtp extends JGTModel {
 
-    @Description("The net Radiation at the grass surface.")
+    @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
     @In
     @Unit("MJ m-2 hour-1")
     public HashMap<Integer, double[]> inNetradiation;
@@ -85,7 +85,7 @@ public class FaoEtp extends JGTModel {
     @Unit("%")
     public double defaultRh = 70.0;
 
-    @Description("The atmospheric pressure.")
+    @Description("The atmospheric pressure in hPa.")
     @In
     @Unit("KPa")
     public HashMap<Integer, double[]> inPressure;
@@ -123,6 +123,8 @@ public class FaoEtp extends JGTModel {
             double netradiation = inNetradiation.get(basinId)[0];
             if (isNovalue(netradiation)) {
                 netradiation = defaultNetradiation;
+            }else {
+                netradiation = inNetradiation.get(basinId)[0] * 3.6 / 1000.0;
             }
 
             double wind = inWind.get(basinId)[0];
@@ -133,6 +135,8 @@ public class FaoEtp extends JGTModel {
             double pressure = inPressure.get(basinId)[0];
             if (isNovalue(pressure)) {
                 pressure = defaultPressure;
+            }else {
+                pressure = inPressure.get(basinId)[0] / 10.0;
             }
 
             double rh = inRh.get(basinId)[0];
