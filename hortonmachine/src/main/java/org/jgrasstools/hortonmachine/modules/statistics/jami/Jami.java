@@ -151,13 +151,13 @@ public class Jami extends JGTModel {
     public double defaultDtmonth = 7.0;
 
     @Role(Role.PARAMETER)
-    @Description("*** DESCRIBE ME ***")
+    @Description("Number of hours of tollerance in Tmin")
     @Unit("hours")
     @In
     public double defaultTolltmin = 2.0;
 
     @Role(Role.PARAMETER)
-    @Description("*** DESCRIBE ME ***")
+    @Description("Number of hours of tollerance in Tmax")
     @Unit("hours")
     @In
     public double defaultTolltmax = 2.0;
@@ -946,10 +946,14 @@ public class Jami extends JGTModel {
                  */
                 // i is the column (basin) index
                 // the station id index can be taken from the idStationIndexMap
+              //  System.out.print("STATIONS for basin " + basinindex2basinidMap.get(i) + ": ");
                 for( Integer stationIdToEnable : stationsToUse ) {
                     int stIndex = stationid2StationindexMap.get(stationIdToEnable);
                     stationsBasins[stIndex][i] = 1;
+                    
+                //    System.out.print(stationIdToEnable + ", ");
                 }
+              //  System.out.println();
                 activeStationsForThisBasin = activeStationsForThisBasin + stationsToUse.size();
             }
 
