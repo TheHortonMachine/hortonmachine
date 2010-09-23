@@ -78,7 +78,7 @@ public class LineSmoother extends JGTModel {
     @In
     public int pLookahead = 7;
 
-    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is removed.")
+    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is not smoothed (if circle, it is removed).")
     @In
     public int pLimit = 0;
 
@@ -141,7 +141,7 @@ public class LineSmoother extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        linesFeatures.close(inFeatureIterator);
+        inFeatureIterator.close();
 
     }
 
@@ -151,33 +151,37 @@ public class LineSmoother extends JGTModel {
         for( int i = 0; i < numGeometries; i++ ) {
             Geometry geometryN = geometry.getGeometryN(i);
             double length = geometryN.getLength();
+            Coordinate[] smoothedArray = geometryN.getCoordinates();
+            Coordinate first = smoothedArray[0];
+            Coordinate last = smoothedArray[smoothedArray.length - 1];
             if (length <= pLimit) {
-                continue;
-            }
-            if (densify != -1) {
-                geometryN = Densifier.densify(geometryN, pDensify);
-            }
-            List<Coordinate> smoothedCoords = Collections.emptyList();;
-            switch( pType ) {
-            case 0:
-            default:
-                FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
-                smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
-            }
-
-            Coordinate[] smoothedArray = null;
-            if (smoothedCoords != null) {
-                smoothedArray = (Coordinate[]) smoothedCoords.toArray(new Coordinate[smoothedCoords
-                        .size()]);
+                // if it is circle remove it, else just do not smooth it
+                if (first.distance(last) < 0.1) {
+                    continue;
+                }
             } else {
-                smoothedArray = geometryN.getCoordinates();
+                if (densify != -1) {
+                    geometryN = Densifier.densify(geometryN, pDensify);
+                }
+                List<Coordinate> smoothedCoords = Collections.emptyList();;
+                switch( pType ) {
+                case 0:
+                default:
+                    FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
+                    smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
+                }
+
+                if (smoothedCoords != null) {
+                    smoothedArray = (Coordinate[]) smoothedCoords.toArray(new Coordinate[smoothedCoords.size()]);
+                } else {
+                    smoothedArray = geometryN.getCoordinates();
+                }
             }
 
             LineString lineString = gF.createLineString(smoothedArray);
 
             if (simplify != -1) {
-                TopologyPreservingSimplifier tpSimplifier = new TopologyPreservingSimplifier(
-                        lineString);
+                TopologyPreservingSimplifier tpSimplifier = new TopologyPreservingSimplifier(lineString);
                 tpSimplifier.setDistanceTolerance(pSimplify);
                 lineString = (LineString) tpSimplifier.getResultGeometry();
             }
@@ -201,8 +205,7 @@ public class LineSmoother extends JGTModel {
      */
     public static void defaultSmoothShapefile( String shapePath, String outPath ) throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        SimpleFeatureCollection initialFC = ShapefileFeatureReader
-                .readShapefile(shapePath);
+        SimpleFeatureCollection initialFC = ShapefileFeatureReader.readShapefile(shapePath);
 
         LineSmoother smoother = new LineSmoother();
         smoother.pm = pm;
