@@ -139,6 +139,17 @@ public class FileUtilities {
     /**
      * Read text from a file in one line.
      * 
+     * @param filePath the path to the file to read.
+     * @return the read string.
+     * @throws IOException 
+     */
+    public static String readFile( String filePath ) throws IOException {
+        return readFile(new File(filePath));
+    }
+
+    /**
+     * Read text from a file in one line.
+     * 
      * @param file the file to read.
      * @return the read string.
      * @throws IOException 
@@ -154,6 +165,39 @@ public class FileUtilities {
                 sb.append("\n"); //$NON-NLS-1$
             }
             return sb.toString();
+        } finally {
+            br.close();
+        }
+    }
+
+    /**
+     * Read text from a file to a list of lines.
+     * 
+     * @param file the path to the file to read.
+     * @return the list of lines.
+     * @throws IOException 
+     */
+    public static List<String> readFileToLinesList( String filePath ) throws IOException {
+        return readFileToLinesList(new File(filePath));
+    }
+
+    /**
+     * Read text from a file to a list of lines.
+     * 
+     * @param file the file to read.
+     * @return the list of lines.
+     * @throws IOException 
+     */
+    public static List<String> readFileToLinesList( File file ) throws IOException {
+        BufferedReader br = null;
+        List<String> lines = new ArrayList<String>();
+        try {
+            br = new BufferedReader(new FileReader(file));
+            String line = null;
+            while( (line = br.readLine()) != null ) {
+                lines.add(line);
+            }
+            return lines;
         } finally {
             br.close();
         }
@@ -176,14 +220,51 @@ public class FileUtilities {
         }
     }
 
-    public static String replaceBackSlashes( String path ) {
-        return path.replaceAll("\\\\", "\\\\\\\\");
+    /**
+     * Write a list of lines to a file.
+     * 
+     * @param lines the list of lines to write.
+     * @param file the path to the file to write to.
+     * @throws IOException 
+     */
+    public static void writeFile( List<String> lines, String filePath ) throws IOException {
+        writeFile(lines, new File(filePath));
+    }
+    
+    /**
+     * Write a list of lines to a file.
+     * 
+     * @param lines the list of lines to write.
+     * @param file the file to write to.
+     * @throws IOException 
+     */
+    public static void writeFile( List<String> lines, File file ) throws IOException {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new FileWriter(file));
+            for( String line : lines ) {
+                bw.write(line);
+                bw.write("\n"); //$NON-NLS-1$
+            }
+        } finally {
+            bw.close();
+        }
     }
 
+    public static String replaceBackSlashes( String path ) {
+        return path.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    /**
+     * Returns the name of the file without the extention.
+     * 
+     * @param file the file to trim.
+     * @return the name without extention.
+     */
     public static String getNameWithoutExtention( File file ) {
         String name = file.getName();
-        int lastDot = name.lastIndexOf(".");
+        int lastDot = name.lastIndexOf("."); //$NON-NLS-1$
         name = name.substring(0, lastDot);
         return name;
     }
-} // end of class
+}

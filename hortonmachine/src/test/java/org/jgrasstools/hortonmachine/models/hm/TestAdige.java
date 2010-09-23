@@ -1,10 +1,8 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.utcDateFormatterYYYYMMDDHHMM;
-
 import java.util.HashMap;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionWriter;
@@ -14,11 +12,7 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.PenmanEtp;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Test Adige.
@@ -41,6 +35,13 @@ public class TestAdige extends HMTestCase {
         String hillslopePath = shpFolder + "basins_passirio_width0.shp";
 
         String rainDataPath = dataFolder + "kriging_interpolated.csv";
+        // String netradiationDataPath = "";
+        // String shortradiationDataPath = "";
+        // String temperatureDataPath = "";
+        // String humidityDataPath = "";
+        // String windspeedDataPath = "";
+        // String pressureDataPath = "";
+        // String sweDataPath = "";
 
         String hydrometersPath = shpFolder + "hydrometers.shp";
         String hydrometersDataPath = dataFolder + "hydrometers_new.csv";
@@ -60,10 +61,28 @@ public class TestAdige extends HMTestCase {
 
         String fId = "ID";
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
+        SimpleFeatureCollection hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
 
         // meteo
         TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value netradiationReader = getTimeseriesReader(
+        // netradiationDataPath, fId, startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value shortradiationReader = getTimeseriesReader(
+        // shortradiationDataPath, fId, startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value temperatureReader =
+        // getTimeseriesReader(temperatureDataPath,
+        // fId, startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value humidityReader = getTimeseriesReader(humidityDataPath,
+        // fId,
+        // startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value windspeedReader = getTimeseriesReader(windspeedDataPath,
+        // fId, startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value pressureReader = getTimeseriesReader(pressureDataPath,
+        // fId,
+        // startDate, endDate, timeStepMinutes);
+        // TimeseriesByStepReaderId2Value sweReader = getTimeseriesReader(sweDataPath, fId,
+        // startDate,
+        // endDate, timeStepMinutes);
 
         TimeseriesByStepReaderId2Value hydrometersReader = getTimeseriesReader(hydrometersDataPath, fId, startDate, endDate,
                 timeStepMinutes);
@@ -74,10 +93,10 @@ public class TestAdige extends HMTestCase {
         // fId,
         // startDate, endDate, timeStepMinutes);
 
-        FeatureCollection<SimpleFeatureType, SimpleFeature> hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> damsFC = ShapefileFeatureReader.readShapefile(damsPath);
-        FeatureCollection<SimpleFeatureType, SimpleFeature> tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
-        // FeatureCollection<SimpleFeatureType, SimpleFeature> offtakesFC = ShapefileFeatureReader
+        SimpleFeatureCollection hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
+        SimpleFeatureCollection damsFC = ShapefileFeatureReader.readShapefile(damsPath);
+        SimpleFeatureCollection tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
+        // SimpleFeatureCollection offtakesFC = ShapefileFeatureReader
         // .readShapefile(offtakesPath);
 
         VegetationLibraryReader vegetationReader = new VegetationLibraryReader();
@@ -86,15 +105,14 @@ public class TestAdige extends HMTestCase {
         HashMap<Integer, VegetationLibraryRecord> vegetationData = vegetationReader.data;
         vegetationReader.close();
 
-        PenmanEtp etp = new PenmanEtp();
-
-        FeatureCollection<SimpleFeatureType, SimpleFeature> networkFC = ShapefileFeatureReader.readShapefile(networkPath);
+        SimpleFeatureCollection networkFC = ShapefileFeatureReader.readShapefile(networkPath);
 
         Adige adige = new Adige();
         adige.pm = pm;
         adige.inHillslope = hillslopeFC;
         adige.fNetnum = "netnum";
         adige.fBaricenter = "avgz";
+        // adige.fVegetation = "uso_reclas";
         adige.fAvg_sub = "mean_sub";
         adige.fVar_sub = "sd_sub";
         adige.fAvg_sup_10 = "mean_10";
@@ -109,6 +127,7 @@ public class TestAdige extends HMTestCase {
         adige.inDams = damsFC;
         adige.inTributary = tributaryFC;
         // adige.inOfftakes = offtakesFC;
+        // adige.inVegetation = vegetationData;
         adige.pPfafids = "514.11,514.9";
         adige.fMonpointid = "id_punti_m";
         adige.inNetwork = networkFC;
@@ -152,6 +171,27 @@ public class TestAdige extends HMTestCase {
             rainReader.nextRecord();
             adige.inRain = rainReader.data;
 
+            // netradiationReader.nextRecord();
+            // adige.inNetradiation = netradiationReader.data;
+            //
+            // shortradiationReader.nextRecord();
+            // adige.inShortradiation = shortradiationReader.data;
+            //
+            // temperatureReader.nextRecord();
+            // adige.inTemperature = temperatureReader.data;
+            //
+            // humidityReader.nextRecord();
+            // adige.inHumidity = humidityReader.data;
+            //
+            // windspeedReader.nextRecord();
+            // adige.inWindspeed = windspeedReader.data;
+            //
+            // pressureReader.nextRecord();
+            // adige.inPressure = pressureReader.data;
+            //
+            // sweReader.nextRecord();
+            // adige.inSwe = sweReader.data;
+
             hydrometersReader.nextRecord();
             adige.inHydrometerdata = hydrometersReader.data;
 
@@ -160,6 +200,9 @@ public class TestAdige extends HMTestCase {
 
             tributaryReader.nextRecord();
             adige.inTributarydata = tributaryReader.data;
+
+            // offtakesReader.nextRecord();
+            // adige.inOfftakesdata = offtakesReader.data;
 
             adige.process();
 
@@ -170,10 +213,18 @@ public class TestAdige extends HMTestCase {
         }
 
         rainReader.close();
+        // netradiationReader.close();
+        // shortradiationReader.close();
+        // temperatureReader.close();
+        // humidityReader.close();
+        // windspeedReader.close();
+        // pressureReader.close();
+        // sweReader.close();
 
         hydrometersReader.close();
         damsReader.close();
         tributaryReader.close();
+        // offtakesReader.close();
 
         AdigeBoundaryConditionWriter boundaryConditionWriter = new AdigeBoundaryConditionWriter();
         boundaryConditionWriter.file = outBoundaryConditionsPath;
@@ -182,6 +233,7 @@ public class TestAdige extends HMTestCase {
         boundaryConditionWriter.close();
 
     }
+
     private TimeseriesByStepReaderId2Value getTimeseriesReader( String path, String id, String startDate, String endDate,
             int timeStepMinutes ) {
         TimeseriesByStepReaderId2Value dataReader = new TimeseriesByStepReaderId2Value();
