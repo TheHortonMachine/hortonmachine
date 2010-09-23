@@ -253,7 +253,7 @@ public class Kriging extends JGTModel {
                     continue;
                 }
                 if (defaultVariogramMode == 0) {
-                    if (Math.abs(h[0]) >= TOLL) {
+                    if (Math.abs(h[0]) >= 0.0) { //TOLL
                         xStationList.add(coordinate.x);
                         yStationList.add(coordinate.y);
                         zStationList.add(z);

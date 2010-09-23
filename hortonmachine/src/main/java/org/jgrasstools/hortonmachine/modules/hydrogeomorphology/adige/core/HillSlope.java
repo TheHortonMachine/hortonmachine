@@ -21,12 +21,9 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -40,8 +37,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * @author Andrea Antonello - www.hydrologis.com
  */
 public class HillSlope implements Comparator<HillSlope> {
-    private static Evapotranspiration evapTransCalculator = new Evapotranspiration();
-
     private int hillslopeId = -1;
 
     private SimpleFeature hillslopeFeature = null;
@@ -68,12 +63,10 @@ public class HillSlope implements Comparator<HillSlope> {
     public final Parameters parameters;
 
     private boolean hasVegetation = false;
-    private final int vegetationIdFieldIndex;
 
     public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature, PfafstetterNumber pfafNumber, int hillslopeId,
-            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
-            int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield, double pPorosity, Double pEtrate,
-            double pSatconst, double pDepthmnsat ) {
+            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex, double pKs,
+            double pMstexp, double pSpecyield, double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat ) {
 
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
@@ -82,7 +75,6 @@ public class HillSlope implements Comparator<HillSlope> {
         this.baricenterElevationAttributeIndex = baricenterElevationFieldIndex;
         this.linkStartElevationAttributeIndex = linkStartElevationFieldIndex;
         this.linkEndElevationAttributeIndex = linkEndElevationFieldIndex;
-        this.vegetationIdFieldIndex = vegetationIdFieldIndex;
 
         if (baricenterElevationAttributeIndex == -1) {
             throw new IllegalArgumentException("The baricenter field index can't be -1.");
@@ -465,8 +457,6 @@ public class HillSlope implements Comparator<HillSlope> {
         private final double s1residual;
         private final double s2residual;
 
-        private VegetationLibraryRecord vegetation;
-
         private double qsupmin;
         private double qsubmin;
         private final double pDepthmnsat;
@@ -508,50 +498,6 @@ public class HillSlope implements Comparator<HillSlope> {
 
             qsupmin = 0.30 * 0.001;
             qsubmin = 0.70 * 0.001;
-        }
-
-        /**
-         * Set the vegetation library parameters.
-         * 
-         * @param vegetationLibrary the map of vegetation index versus 
-         *          vegetation parameters.
-         */
-        public void setVegetationLibrary( HashMap<Integer, VegetationLibraryRecord> vegetationLibrary ) {
-            if (vegetationIdFieldIndex != -1) {
-                int vegetationId = ((Number) hillslopeFeature.getAttribute(vegetationIdFieldIndex)).intValue();
-                if (vegetationId != -1) {
-                    hasVegetation = true;
-                    vegetation = vegetationLibrary.get(vegetationId);
-                }
-            }
-        }
-
-        /**
-         * Calculates the evapotraspiration.
-         * 
-         * @param month the current month index.
-         * @param radiation net radiation from energy balance (W/m2).
-         * @param pressure air pressure.
-         * @param temperature air temperature.
-         * @param shortRadiaton shortwave net radiation.
-         * @param relativeHumidity air humidity.
-         * @param windSpeed wind speed.
-         * @param soilMoisture soil moisture.
-         * @param snow water equivalent
-         * @return evapotraspiration.
-         */
-        public double calculateEvapoTranspiration( int month, double radiation, double pressure, double temperature,
-                double shortRadiaton, double relativeHumidity, double windSpeed, double soilMoisture, double snowWaterEquivalent ) {
-            if (!hasVegetation()) {
-                throw new ModelsIllegalargumentException(
-                        "Evapotranspiration can be calculated only if the vegetation library has been defined. check your syntax...",
-                        this);
-            }
-            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation, vegetation.getMinStomatalResistance(),
-                    vegetation.getArchitecturalResistance(), vegetation.getLai(month), vegetation.getRgl(),
-                    vegetation.getDisplacement(month), vegetation.getRoughness(month), s2max, pressure, temperature,
-                    shortRadiaton, relativeHumidity, windSpeed, soilMoisture, snowWaterEquivalent);
-            return evap;
         }
 
         public double getDepthMnSat() {
@@ -596,30 +542,6 @@ public class HillSlope implements Comparator<HillSlope> {
 
         public double getqqsubmin() {
             return qsubmin;
-        }
-
-        public double getLai( int month ) {
-            return vegetation.getLai(month);
-        }
-
-        public double getDisplacement( int month ) {
-            return vegetation.getDisplacement(month);
-        }
-
-        public double getRoughness( int month ) {
-            return vegetation.getRoughness(month);
-        }
-
-        public double getRGL() {
-            return vegetation.getRgl();
-        }
-
-        public double getRs() {
-            return vegetation.getMinStomatalResistance();
-        }
-
-        public double getRarc() {
-            return vegetation.getArchitecturalResistance();
         }
 
         // public double So() {

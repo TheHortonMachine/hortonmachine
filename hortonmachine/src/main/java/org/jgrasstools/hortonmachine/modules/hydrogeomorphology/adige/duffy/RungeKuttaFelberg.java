@@ -43,7 +43,7 @@ import org.joda.time.DateTime;
  */
 public class RungeKuttaFelberg {
 
-    private IBasicFunction theFunction;
+    private DuffyModel duffy;
     /**
      * An array containing the value of the function that was last calculated by the RKF algoritm
      */
@@ -56,8 +56,7 @@ public class RungeKuttaFelberg {
             {1631. / 55296., 175. / 512., 575. / 13824., 44275. / 110592., 253. / 4096.}};
 
     private double[] c = {37. / 378., 0., 250. / 621., 125. / 594., 0., 512. / 1771.};
-    private double[] cStar = {2825. / 27648., 0., 18575. / 48384., 13525. / 55296., 277. / 14336.,
-            1. / 4.};
+    private double[] cStar = {2825. / 27648., 0., 18575. / 48384., 13525. / 55296., 277. / 14336., 1. / 4.};
 
     private final boolean doLog;
 
@@ -72,9 +71,8 @@ public class RungeKuttaFelberg {
      * @param basTs The step size
      * @param doLog
      */
-    public RungeKuttaFelberg( IBasicFunction fu, double eps, double basTs, IJGTProgressMonitor out,
-            boolean doLog ) {
-        theFunction = fu;
+    public RungeKuttaFelberg( DuffyModel fu, double eps, double basTs, IJGTProgressMonitor out, boolean doLog ) {
+        duffy = fu;
         epsilon = eps;
         basicTimeStepInMinutes = basTs;
         this.outputStream = out;
@@ -89,68 +87,47 @@ public class RungeKuttaFelberg {
      * @param timeStepInMinutes The desired step size
      * @param finalize A boolean indicating in the timeStep provided is final or if it needs to be
      *        refined
-     * @return The value of the multivatiate function
+     * @param currentSolution
+     * @param rainArray
+     * @param etpArray
      */
-    private void step( double currentTimeInMinutes, double[] initialConditions,
-            double timeStepInMinutes, boolean finalize, CurrentTimestepSolution currentSolution,
-            double[] rainArray, double[] radiationArray, double[] netshortArray,
-            double[] temperatureArray, double[] humidityArray, double[] windspeedArray,
-            double[] pressureArray, double[] snowWaterEquivalentArray ) {
+    private void step( double currentTimeInMinutes, double[] initialConditions, double timeStepInMinutes, boolean finalize,
+            CurrentTimestepSolution currentSolution, double[] rainArray, double[] etpArray ) {
 
         double[] carrier = new double[initialConditions.length];
 
-        double[] k0 = theFunction.eval(currentTimeInMinutes, initialConditions, rainArray,
-                radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,
-                pressureArray, snowWaterEquivalentArray, false);
+        double[] k0 = duffy.eval(currentTimeInMinutes, initialConditions, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes * b[1][0] * k0[i]);
 
-        double[] k1 = theFunction.eval(currentTimeInMinutes, carrier, rainArray, radiationArray,
-                netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                snowWaterEquivalentArray, false);
+        double[] k1 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
-            carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
-                    * (b[2][0] * k0[i] + b[2][1] * k1[i]));
+            carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes * (b[2][0] * k0[i] + b[2][1] * k1[i]));
 
-        double[] k2 = theFunction.eval(currentTimeInMinutes, carrier, rainArray, radiationArray,
-                netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                snowWaterEquivalentArray, false);
+        double[] k2 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
                     * (b[3][0] * k0[i] + b[3][1] * k1[i] + b[3][2] * k2[i]));
 
-        double[] k3 = theFunction.eval(currentTimeInMinutes, carrier, rainArray, radiationArray,
-                netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                snowWaterEquivalentArray, false);
+        double[] k3 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
             carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
                     * (b[4][0] * k0[i] + b[4][1] * k1[i] + b[4][2] * k2[i] + b[4][3] * k3[i]));
 
-        double[] k4 = theFunction.eval(currentTimeInMinutes, carrier, rainArray, radiationArray,
-                netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                snowWaterEquivalentArray, false);
+        double[] k4 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, false);
         for( int i = 0; i < initialConditions.length; i++ )
-            carrier[i] = Math.max(0,
-                    initialConditions[i]
-                            + timeStepInMinutes
-                            * (b[5][0] * k0[i] + b[5][1] * k1[i] + b[5][2] * k2[i] + b[5][3]
-                                    * k3[i] + b[5][4] * k4[i]));
+            carrier[i] = Math.max(0, initialConditions[i] + timeStepInMinutes
+                    * (b[5][0] * k0[i] + b[5][1] * k1[i] + b[5][2] * k2[i] + b[5][3] * k3[i] + b[5][4] * k4[i]));
 
-        double[] k5 = theFunction.eval(currentTimeInMinutes, carrier, rainArray, radiationArray,
-                netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                snowWaterEquivalentArray, isAtFinalSubtimestep);
+        double[] k5 = duffy.eval(currentTimeInMinutes, carrier, rainArray, etpArray, isAtFinalSubtimestep);
 
         double[] newY = new double[initialConditions.length];
         for( int i = 0; i < initialConditions.length; i++ ) {
-            newY[i] = initialConditions[i]
-                    + timeStepInMinutes
-                    * (c[0] * k0[i] + c[1] * k1[i] + c[2] * k2[i] + c[3] * k3[i] + c[4] * k4[i] + c[5]
-                            * k5[i]);
+            newY[i] = initialConditions[i] + timeStepInMinutes
+                    * (c[0] * k0[i] + c[1] * k1[i] + c[2] * k2[i] + c[3] * k3[i] + c[4] * k4[i] + c[5] * k5[i]);
             newY[i] = Math.max(0, newY[i]);
             if (Double.isInfinite(newY[i]) || newY[i] != newY[i]) {
-                throw new ModelsIllegalargumentException(
-                        "Problems occure during the integration procedure.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("An error occurred during the integration procedure.", this);
             }
         }
 
@@ -158,21 +135,18 @@ public class RungeKuttaFelberg {
         for( int i = 0; i < initialConditions.length; i++ ) {
             newYstar[i] = initialConditions[i]
                     + timeStepInMinutes
-                    * (cStar[0] * k0[i] + cStar[1] * k1[i] + cStar[2] * k2[i] + cStar[3] * k3[i]
-                            + cStar[4] * k4[i] + cStar[5] * k5[i]);
+                    * (cStar[0] * k0[i] + cStar[1] * k1[i] + cStar[2] * k2[i] + cStar[3] * k3[i] + cStar[4] * k4[i] + cStar[5]
+                            * k5[i]);
             newYstar[i] = Math.max(0, newYstar[i]);
             if (Double.isInfinite(newYstar[i]) || newYstar[i] != newYstar[i]) {
-                throw new ModelsIllegalargumentException(
-                        "Problems occure during the integration procedure.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("An error occurred during the integration procedure.", this);
             }
         }
 
         double delta = 0;
         for( int i = 0; i < initialConditions.length; i++ ) {
             if ((newY[i] + newYstar[i]) > 0)
-                delta = Math.max(delta, Math.abs(2 * (newY[i] - newYstar[i])
-                        / (newY[i] + newYstar[i])));
+                delta = Math.max(delta, Math.abs(2 * (newY[i] - newYstar[i]) / (newY[i] + newYstar[i])));
         }
 
         double newTimeStepInMinutes = timeStepInMinutes;
@@ -198,17 +172,14 @@ public class RungeKuttaFelberg {
             // System.out.println(" --> "+timeStep+" "+epsilon+" "+Delta+" "+factor+"
             // "+newTimeStep+" ("+java.util.Calendar.getInstance().getTime()+")");
 
-            step(currentTimeInMinutes, initialConditions, newTimeStepInMinutes, true,
-                    currentSolution, rainArray, radiationArray, netshortArray, temperatureArray,
-                    humidityArray, windspeedArray, pressureArray, snowWaterEquivalentArray);
+            step(currentTimeInMinutes, initialConditions, newTimeStepInMinutes, true, currentSolution, rainArray, etpArray);
         }
 
     }
 
     public void printDate( double minutes ) {
         double millis = minutes * 1000d * 60d;
-        System.out.println(new DateTime((long) millis)
-                .toString(JGTConstants.utcDateFormatterYYYYMMDDHHMM));
+        System.out.println(new DateTime((long) millis).toString(JGTConstants.utcDateFormatterYYYYMMDDHHMM));
     }
 
     /**
@@ -221,21 +192,11 @@ public class RungeKuttaFelberg {
      * @param intervalEndTimeInMinutes The final time of the solution
      * @param timeStepInMinutes How often the values are desired
      * @param initialConditions The value of the initial condition
-     * @param pressureArray 
-     * @param windspeedArray 
-     * @param humidityArray 
-     * @param temperatureArray 
-     * @param netshortArray 
-     * @param radiationArray 
-     * @param snowWaterEquivalentArray 
-     * @throws java.io.IOException Captures errors while writing to the file
+     * @param etpArray 
      */
     @SuppressWarnings("nls")
-    public void solve( DateTime currentTimstamp, int modelTimestepInMinutes,
-            double internalTimestepInMinutes, double[] initialConditions, double[] rainArray,
-            double[] radiationArray, double[] netshortArray, double[] temperatureArray,
-            double[] humidityArray, double[] windspeedArray, double[] pressureArray,
-            double[] snowWaterEquivalentArray ) throws IOException {
+    public void solve( DateTime currentTimstamp, int modelTimestepInMinutes, double internalTimestepInMinutes,
+            double[] initialConditions, double[] rainArray, double[] etpArray ) throws IOException {
         isAtFinalSubtimestep = false;
 
         double intervalStartTimeInMinutes = currentTimstamp.getMillis() / 1000d / 60d;
@@ -259,10 +220,7 @@ public class RungeKuttaFelberg {
                  * inside step the intervals of time timeStepInMinutes are splitted again in
                  * intervals that begin with basicTimeStepInMinutes and are changed while iteration.
                  */
-                step(currentTimeInMinutes, initialConditions, basicTimeStepInMinutes, false,
-                        currentSolution, rainArray, radiationArray, netshortArray,
-                        temperatureArray, humidityArray, windspeedArray, pressureArray,
-                        snowWaterEquivalentArray);
+                step(currentTimeInMinutes, initialConditions, basicTimeStepInMinutes, false, currentSolution, rainArray, etpArray);
                 if (currentTimeInMinutes + currentSolution.newTimeStepInMinutes > targetTimeInMinutes) {
                     break;
                 }
@@ -272,9 +230,8 @@ public class RungeKuttaFelberg {
                 initialConditions = currentSolution.solution;
                 for( int i = 0; i < initialConditions.length; i++ ) {
                     if (initialConditions[i] != initialConditions[i]) {
-                        throw new ModelsIllegalargumentException(
-                                "Problems occure during the integration procedure.", this
-                                        .getClass().getSimpleName());
+                        throw new ModelsIllegalargumentException("Problems occure during the integration procedure.", this
+                                .getClass().getSimpleName());
                     }
                 }
             }
@@ -283,10 +240,8 @@ public class RungeKuttaFelberg {
                 break;
             }
 
-            step(currentTimeInMinutes, initialConditions, targetTimeInMinutes
-                    - currentTimeInMinutes, true, currentSolution, rainArray, radiationArray,
-                    netshortArray, temperatureArray, humidityArray, windspeedArray, pressureArray,
-                    snowWaterEquivalentArray);
+            step(currentTimeInMinutes, initialConditions, targetTimeInMinutes - currentTimeInMinutes, true, currentSolution,
+                    rainArray, etpArray);
 
             if (currentTimeInMinutes + currentSolution.newTimeStepInMinutes >= intervalEndTimeInMinutes) {
                 break;
@@ -303,20 +258,16 @@ public class RungeKuttaFelberg {
             initialConditions = currentSolution.solution;
             for( int i = 0; i < initialConditions.length; i++ ) {
                 if (initialConditions[i] != initialConditions[i]) {
-                    throw new ModelsIllegalargumentException(
-                            "Problems occure during the integration procedure.", this.getClass()
-                                    .getSimpleName());
+                    throw new ModelsIllegalargumentException("Problems occure during the integration procedure.", this.getClass()
+                            .getSimpleName());
                 }
             }
 
             if (doLog) {
                 outputStream.message("->  "
-                        + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0))
-                                .toString(Adige.adigeFormatter)
-                        + " / "
-                        + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.))
-                                .toString(Adige.adigeFormatter) + " Outlet Duffy Discharge: "
-                        + initialConditions[0]);
+                        + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(Adige.adigeFormatter) + " / "
+                        + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(Adige.adigeFormatter)
+                        + " Outlet Duffy Discharge: " + initialConditions[0]);
             }
             // int hillslopeNum = rainArray.length;
             // for( int i = 0; i < hillslopeNum; i++ ) {
@@ -339,21 +290,18 @@ public class RungeKuttaFelberg {
         }
 
         isAtFinalSubtimestep = true;
-        // 
+        //
         if (NumericsUtilities.dEq(currentTimeInMinutes, intervalEndTimeInMinutes) && initialConditions[0] > 1e-3) {
-            step(currentTimeInMinutes, initialConditions, intervalEndTimeInMinutes
-                    - currentTimeInMinutes - 1. / 60., true, currentSolution, rainArray,
-                    radiationArray, netshortArray, temperatureArray, humidityArray, windspeedArray,
-                    pressureArray, snowWaterEquivalentArray);
+            step(currentTimeInMinutes, initialConditions, intervalEndTimeInMinutes - currentTimeInMinutes - 1. / 60., true,
+                    currentSolution, rainArray, etpArray);
             basicTimeStepInMinutes = currentSolution.newTimeStepInMinutes;
             currentTimeInMinutes += basicTimeStepInMinutes;
             currentSolution.newTimeStepInMinutes = currentTimeInMinutes;
             initialConditions = currentSolution.solution;
             for( int i = 0; i < initialConditions.length; i++ ) {
                 if (initialConditions[i] != initialConditions[i]) {
-                    throw new ModelsIllegalargumentException(
-                            "Problems occure during the integration procedure.", this.getClass()
-                                    .getSimpleName());
+                    throw new ModelsIllegalargumentException("Problems occure during the integration procedure.", this.getClass()
+                            .getSimpleName());
                 }
             }
 
@@ -366,12 +314,9 @@ public class RungeKuttaFelberg {
             double currentDischarge = initialConditions[0] + initialConditions[hillslopeNum];
 
             outputStream.message("->  "
-                    + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0))
-                            .toString(Adige.adigeFormatter)
-                    + " / "
-                    + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.))
-                            .toString(Adige.adigeFormatter) + " " + currentDischarge
-                    + " with avg rain: " + sum);
+                    + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(Adige.adigeFormatter) + " / "
+                    + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(Adige.adigeFormatter) + " "
+                    + currentDischarge + " with avg rain: " + sum);
         } else {
             outputStream.errorMessage("WARNING, UNEXPECTED");
         }

@@ -64,6 +64,10 @@ public class TimeseriesByStepWriterId2Value {
     @In
     public int tTimestep = -1;
 
+    @Description("The novalue to use in the file (default is -9999.0).")
+    @In
+    public String fileNovalue = "-9999.0";
+
     private MemoryTable memoryTable;
 
     private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
@@ -157,7 +161,11 @@ public class TimeseriesByStepWriterId2Value {
         for( Integer id : idsSet ) {
             double[] dataArray = data.get(id);
             double value = dataArray[0];
-            valuesRow[index++] = String.valueOf(value);
+            if(JGTConstants.isNovalue(value)){
+                valuesRow[index++] = fileNovalue;
+            }else{
+                valuesRow[index++] = String.valueOf(value);
+            }
         }
         memoryTable.addRow(valuesRow);
         
