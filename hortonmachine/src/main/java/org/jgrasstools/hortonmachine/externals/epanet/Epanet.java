@@ -36,7 +36,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.FileUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetException;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetWrapper;
