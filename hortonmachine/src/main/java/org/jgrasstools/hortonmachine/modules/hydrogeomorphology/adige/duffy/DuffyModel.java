@@ -307,7 +307,8 @@ public class DuffyModel {
                     int index = orderedHillslopes.indexOf(hillSlope);
                     boolean doCalculate = true;
                     for( IDischargeContributor dContributor : dischargeContributorList ) {
-                        Double contributedDischarge = dContributor.getDischarge(pNum.toString(), input[index]);
+                        Double contributedDischarge = dContributor.getDischarge(pNum.toString());
+                        contributedDischarge = dContributor.mergeWithDischarge(contributedDischarge, input[index]);
                         if (!isNovalue(contributedDischarge)) {
                             if (doLog && doPrint) {
                                 pm.message("----> For hillslope " + currentHillslope.getPfafstetterNumber()

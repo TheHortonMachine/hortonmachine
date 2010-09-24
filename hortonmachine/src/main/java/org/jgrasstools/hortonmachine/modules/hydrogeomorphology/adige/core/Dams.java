@@ -42,7 +42,7 @@ public class Dams implements IDischargeContributor {
         this.dams_pfaff2idMap = dams_pfaff2idMap;
     }
 
-    public Double getDischarge( String pNum, double inputDischarge ) {
+    public Double getDischarge( String pNum ) {
         Integer damId = dams_pfaff2idMap.get(pNum);
         if (damId != null) {
             double[] discharge = dams_id2valuesQMap.get(damId);
@@ -55,6 +55,10 @@ public class Dams implements IDischargeContributor {
 
     public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         dams_id2valuesQMap = currentDataMap;
+    }
+
+    public double mergeWithDischarge( double contributorDischarge, double inputDischarge ) {
+        return contributorDischarge;
     }
 
 }

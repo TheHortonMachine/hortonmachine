@@ -6,13 +6,12 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;
 import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionWriter;
-import org.jgrasstools.gears.io.adige.VegetationLibraryReader;
-import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodInputs;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
 /**
@@ -229,6 +228,159 @@ public class TestAdige extends HMTestCase {
 
     }
 
+    @SuppressWarnings("nls")
+    public void testAdigeHymod() throws Exception {
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+        String startDate = "2005-05-01 00:00";
+        String endDate = "2005-05-01 03:00";
+        int timeStepMinutes = 60;
+
+        String shpFolder = "/home/moovida/data/newage/sampledata/shapefiles/";
+        String dataFolder = "/home/moovida/data/newage/sampledata/";
+
+        String hillslopePath = shpFolder + "basins_passirio_width0.shp";
+
+        String rainDataPath = dataFolder + "energy_out_pnet_hour.csv";
+        String etpDataPath = dataFolder + "etpfao_out_hour.csv";
+        // String netradiationDataPath = "";
+        // String shortradiationDataPath = "";
+        // String temperatureDataPath = "";
+        // String humidityDataPath = "";
+        // String windspeedDataPath = "";
+        // String pressureDataPath = "";
+        // String sweDataPath = "";
+
+        String hydrometersPath = shpFolder + "hydrometers.shp";
+        String hydrometersDataPath = dataFolder + "hydrometers_new.csv";
+        String damsPath = shpFolder + "dams.shp";
+        String damsDataPath = dataFolder + "dams_new.csv";
+        String tributaryPath = shpFolder + "tributaries.shp";
+        String tributaryDataPath = dataFolder + "tributaries_new.csv";
+        // String offtakesPath = shpFolder + "offtakes.shp";
+        // String offtakesDataPath = dataFolder + "offtakes_new.csv";
+
+        String networkPath = shpFolder + "net_passirio.shp";
+
+        String fId = "ID";
+
+        SimpleFeatureCollection hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
+
+        // meteo
+        TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value hydrometersReader = getTimeseriesReader(hydrometersDataPath, fId, startDate, endDate,
+                timeStepMinutes);
+        TimeseriesByStepReaderId2Value damsReader = getTimeseriesReader(damsDataPath, fId, startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value tributaryReader = getTimeseriesReader(tributaryDataPath, fId, startDate, endDate,
+                timeStepMinutes);
+
+        // etp
+        TimeseriesByStepReaderId2Value etpReader = getTimeseriesReader(etpDataPath, fId, startDate, endDate, timeStepMinutes);
+
+        SimpleFeatureCollection hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
+        SimpleFeatureCollection damsFC = ShapefileFeatureReader.readShapefile(damsPath);
+        SimpleFeatureCollection tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
+
+        SimpleFeatureCollection networkFC = ShapefileFeatureReader.readShapefile(networkPath);
+
+        HymodInputs hymodInputs = new HymodInputs();
+        hymodInputs.pCmax = 72.45;
+        hymodInputs.pB = 4.9;
+        hymodInputs.pAlpha = 0.76;
+        hymodInputs.pRs = 0.00014;
+        hymodInputs.pRq = 0.12;
+        hymodInputs.pQ0 = 10.0;
+
+        Adige adige = new Adige();
+        adige.pm = pm;
+        adige.inHymodInput = hymodInputs;
+        adige.inHillslope = hillslopeFC;
+        adige.fNetnum = "netnum";
+        adige.fBaricenter = "avgz";
+        // adige.fVegetation = "uso_reclas";
+        adige.inHydrometers = hydrometersFC;
+        adige.inDams = damsFC;
+        adige.inTributary = tributaryFC;
+        // adige.inOfftakes = offtakesFC;
+        // adige.inVegetation = vegetationData;
+        adige.pPfafids = "514.11,514.9";
+        adige.fMonpointid = "id_punti_m";
+        adige.inNetwork = networkFC;
+        adige.fPfaff = "pfafstette";
+        adige.fNetelevstart = "elevfirstp";
+        adige.fNetelevend = "elevlastpo";
+
+        adige.pRainintensity = -1;
+        adige.pRainduration = -1;
+        adige.doLog = false;
+
+        adige.tTimestep = timeStepMinutes;
+        adige.tStart = startDate;
+        adige.tEnd = endDate;
+
+        rainReader.initProcess();
+        while( rainReader.doProcess ) {
+            rainReader.nextRecord();
+            adige.inRain = rainReader.data;
+
+            etpReader.nextRecord();
+            adige.inEtp = etpReader.data;
+
+            // netradiationReader.nextRecord();
+            // adige.inNetradiation = netradiationReader.data;
+            //
+            // shortradiationReader.nextRecord();
+            // adige.inShortradiation = shortradiationReader.data;
+            //
+            // temperatureReader.nextRecord();
+            // adige.inTemperature = temperatureReader.data;
+            //
+            // humidityReader.nextRecord();
+            // adige.inHumidity = humidityReader.data;
+            //
+            // windspeedReader.nextRecord();
+            // adige.inWindspeed = windspeedReader.data;
+            //
+            // pressureReader.nextRecord();
+            // adige.inPressure = pressureReader.data;
+            //
+            // sweReader.nextRecord();
+            // adige.inSwe = sweReader.data;
+
+            hydrometersReader.nextRecord();
+            adige.inHydrometerdata = hydrometersReader.data;
+
+            damsReader.nextRecord();
+            adige.inDamsdata = damsReader.data;
+
+            tributaryReader.nextRecord();
+            adige.inTributarydata = tributaryReader.data;
+
+            // offtakesReader.nextRecord();
+            // adige.inOfftakesdata = offtakesReader.data;
+
+            adige.process();
+
+            HashMap<Integer, double[]> outDischarge = adige.outDischarge;
+            HashMap<Integer, double[]> outSubDischarge = adige.outSubdischarge;
+        }
+
+        rainReader.close();
+        // netradiationReader.close();
+        // shortradiationReader.close();
+        // temperatureReader.close();
+        // humidityReader.close();
+        // windspeedReader.close();
+        // pressureReader.close();
+        // sweReader.close();
+
+        hydrometersReader.close();
+        damsReader.close();
+        tributaryReader.close();
+        // offtakesReader.close();
+
+    }
+
     private TimeseriesByStepReaderId2Value getTimeseriesReader( String path, String id, String startDate, String endDate,
             int timeStepMinutes ) {
         TimeseriesByStepReaderId2Value dataReader = new TimeseriesByStepReaderId2Value();
@@ -239,5 +391,9 @@ public class TestAdige extends HMTestCase {
         dataReader.tTimestep = timeStepMinutes;
         dataReader.tEnd = endDate;
         return dataReader;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        new TestAdige().testAdigeHymod();
     }
 }

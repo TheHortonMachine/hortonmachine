@@ -90,7 +90,7 @@ public interface IHillSlope extends Comparator<IHillSlope> {
      * element isn't added.
      * <p>
      * <b>Don't use this, this should usually be called only by:
-     * {@link HillSlope#addConnectedDownstreamElementWithChech(HillSlope)}</b>
+     * {@link HillSlope#addConnectedDownstreamElementWithCheck(HillSlope)}</b>
      * </p>
      * 
      * @param element the element that is tried to be added
@@ -106,7 +106,7 @@ public interface IHillSlope extends Comparator<IHillSlope> {
      * @param element the element that is tried to be added
      * @return
      */
-    public abstract boolean addConnectedDownstreamElementWithChech( IHillSlope element );
+    public abstract boolean addConnectedDownstreamElementWithCheck( IHillSlope element );
 
     /**
      * @param pNum pfafstetter number object

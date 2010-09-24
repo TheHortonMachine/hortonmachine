@@ -1,3 +1,21 @@
+/*
+ * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Foundation, Inc., 59
+ * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 
 import java.io.IOException;
@@ -9,13 +27,19 @@ import java.util.Map.Entry;
 
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.IAdigeEngine;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
 import org.joda.time.DateTime;
 
+/**
+ * The Duffy engine for the {@link Adige} framework.
+ *  
+ * @author Andrea Antonello (www.hydrologis.com)
+ * @author Silvia Franceschi (www.hydrologis.com)
+ */
 public class DuffyAdigeEngine implements IAdigeEngine {
 
     private DuffyModel duffyEvaluator;

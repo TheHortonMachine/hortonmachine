@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io;
+package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 
 import java.util.HashMap;
 
@@ -28,10 +28,10 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+
 @Description("Inputs for the duffy model")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology")

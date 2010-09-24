@@ -53,7 +53,9 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Offta
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Tributaries;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyAdigeEngine;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodAdigeEngine;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodInputs;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -173,6 +175,10 @@ public class Adige extends JGTModel {
     @Description("The inputs in the case of Duffy elaboration.")
     @In
     public DuffyInputs inDuffyInput = null;
+
+    @Description("The inputs in the case of HyMod elaboration.")
+    @In
+    public HymodInputs inHymodInput = null;
 
     @Description("The progress monitor.")
     @In
@@ -464,8 +470,12 @@ public class Adige extends JGTModel {
                 adigeEngine = new DuffyAdigeEngine(orderedHillslopes, inDuffyInput, pm, doLog, initialConditions, basinid2Index,
                         index2Basinid, pfaffsList, pfaff2Index, outDischarge, outSubdischarge, startTimestamp, endTimestamp,
                         tTimestep);
-            } else {
+            } else if (inHymodInput != null) {
                 initialConditions = new double[hillsSlopeNum * 2];
+                adigeEngine = new HymodAdigeEngine(inHymodInput, orderedHillslopes, index2Basinid, outDischarge, outSubdischarge,
+                        doLog, doLog, pm);
+            } else {
+                throw new ModelsIllegalargumentException("No parameters for any model were defined. Check your syntax.", this);
             }
 
             if (hydrometersHandler != null) {
@@ -504,11 +514,10 @@ public class Adige extends JGTModel {
              * The only thing that changes, is that after the rainEndDate, the rain intensity is
              * set to 0.
              */
+            rainArray = new double[netPfaffsList.size()];
             if (currentTimstamp.isBefore(rainEndTimestamp)) {
-                rainArray = new double[netPfaffsList.size()];
                 Arrays.fill(rainArray, pRainintensity);
             } else {
-                rainArray = new double[netPfaffsList.size()];
                 Arrays.fill(rainArray, 0);
             }
 
@@ -516,6 +525,7 @@ public class Adige extends JGTModel {
             // read rainfall from input link scalar set and transform into a rainfall intensity
             // [mm/h]
             rainArray = new double[hillsSlopeNum];
+            etpArray = new double[hillsSlopeNum];
             setDataArray(inRain, rainArray);
 
             if (inEtp != null) {
@@ -546,126 +556,5 @@ public class Adige extends JGTModel {
             endArray[index] = value[0] / (tTimestep / 60.0);
         }
     }
-
-    // private void readVegetationLibrary( ScalarSet vegetationLibScalarSet,
-    // HashMap<Integer, HashMap<Integer, Double>> vegindex2laiMap,
-    // HashMap<Integer, HashMap<Integer, Double>> vegindex2displacementMap,
-    // HashMap<Integer, HashMap<Integer, Double>> vegindex2roughnessMap,
-    // HashMap<Integer, Double> vegindex2RGLMap, HashMap<Integer, Double> vegindex2rsMap,
-    // HashMap<Integer, Double> vegindex2rarcMap ) throws ModelsIOException {
-    // Double columns = vegetationLibScalarSet.get(0);
-    // int vegIndexesNum = 56;
-    // if (columns != vegIndexesNum) {
-    // throw new ModelsIOException(
-    // "The vegetation library scalarset contains a wrong number of columns. Check your data.",
-    // this);
-    // }
-    // for( int i = 1; i < vegetationLibScalarSet.size(); i = i + vegIndexesNum ) {
-    // // 0-id,1-architectural_resistance,2-min_stomatal_resistance,
-    // int id = vegetationLibScalarSet.get(i + 0).intValue();
-    // double archResistance = vegetationLibScalarSet.get(i + 1);
-    // vegindex2rarcMap.put(id, archResistance);
-    // double minStomatalResistance = vegetationLibScalarSet.get(i + 2);
-    // vegindex2rsMap.put(id, minStomatalResistance);
-    // // 3-lai_jan,4-lai_feb,5-lai_mar,6-lai_apr,7-lai_maj,8-lai_jun,
-    // // 9-lai_jul,9-lai_aug,11-lai_sep,12-lai_oct,13-lai_nov,14-lai_dec
-    // double laiJan = vegetationLibScalarSet.get(i + 3);
-    // double laiFeb = vegetationLibScalarSet.get(i + 4);
-    // double laiMar = vegetationLibScalarSet.get(i + 5);
-    // double laiApr = vegetationLibScalarSet.get(i + 6);
-    // double laiMay = vegetationLibScalarSet.get(i + 7);
-    // double laiGiu = vegetationLibScalarSet.get(i + 8);
-    // double laiJul = vegetationLibScalarSet.get(i + 9);
-    // double laiAug = vegetationLibScalarSet.get(i + 10);
-    // double laiSep = vegetationLibScalarSet.get(i + 11);
-    // double laiOct = vegetationLibScalarSet.get(i + 12);
-    // double laiNov = vegetationLibScalarSet.get(i + 13);
-    // double laiDec = vegetationLibScalarSet.get(i + 14);
-    // HashMap<Integer, Double> laiMap = new HashMap<Integer, Double>();
-    // laiMap.put(1, laiJan);
-    // laiMap.put(2, laiFeb);
-    // laiMap.put(3, laiMar);
-    // laiMap.put(4, laiApr);
-    // laiMap.put(5, laiMay);
-    // laiMap.put(6, laiGiu);
-    // laiMap.put(7, laiJul);
-    // laiMap.put(8, laiAug);
-    // laiMap.put(9, laiSep);
-    // laiMap.put(10, laiOct);
-    // laiMap.put(11, laiNov);
-    // laiMap.put(12, laiDec);
-    // vegindex2laiMap.put(id, laiMap);
-    // // ALBEDO - for now not used
-    // // ,15-jan_albedo,16-feb_albedo,
-    // // 17-mar_albedo,18-apr_albedo,19-maj_albedo,20-jun_albedo,21-jul_albedo,
-    // // 22-ago_albedo,23-sep_albedo,24-oct_albedo,25-nov_albedo,26-dec_albedo,
-    //
-    // // 27-rough_jan,28-rough_feb,29-rough_mar,30-rough_apr,31-rough_maj,
-    // // 32-rough_jun,33-rough_jul,34-rough_ago,35-rough_sep,36-rough_oct,
-    // // 37-rough_nov,38-rough_dec
-    // double roughnessJan = vegetationLibScalarSet.get(i + 27);
-    // double roughnessFeb = vegetationLibScalarSet.get(i + 28);
-    // double roughnessMar = vegetationLibScalarSet.get(i + 29);
-    // double roughnessApr = vegetationLibScalarSet.get(i + 30);
-    // double roughnessMay = vegetationLibScalarSet.get(i + 31);
-    // double roughnessGiu = vegetationLibScalarSet.get(i + 32);
-    // double roughnessJul = vegetationLibScalarSet.get(i + 33);
-    // double roughnessAug = vegetationLibScalarSet.get(i + 34);
-    // double roughnessSep = vegetationLibScalarSet.get(i + 35);
-    // double roughnessOct = vegetationLibScalarSet.get(i + 36);
-    // double roughnessNov = vegetationLibScalarSet.get(i + 37);
-    // double roughnessDec = vegetationLibScalarSet.get(i + 38);
-    // HashMap<Integer, Double> roughnessMap = new HashMap<Integer, Double>();
-    // roughnessMap.put(1, roughnessJan);
-    // roughnessMap.put(2, roughnessFeb);
-    // roughnessMap.put(3, roughnessMar);
-    // roughnessMap.put(4, roughnessApr);
-    // roughnessMap.put(5, roughnessMay);
-    // roughnessMap.put(6, roughnessGiu);
-    // roughnessMap.put(7, roughnessJul);
-    // roughnessMap.put(8, roughnessAug);
-    // roughnessMap.put(9, roughnessSep);
-    // roughnessMap.put(10, roughnessOct);
-    // roughnessMap.put(11, roughnessNov);
-    // roughnessMap.put(12, roughnessDec);
-    // vegindex2roughnessMap.put(id, roughnessMap);
-    //
-    // // 39-displ_jan,40-displ_feb,41-displ_mar,
-    // // 42-displ_apr,43-displ_maj,44-displ_jun,45-displ_jul,46-displ_ago,
-    // // 47-displ_sep,48-displ_oct,49-displ_nov,50-displ_dec,
-    // double displacementJan = vegetationLibScalarSet.get(i + 39);
-    // double displacementFeb = vegetationLibScalarSet.get(i + 40);
-    // double displacementMar = vegetationLibScalarSet.get(i + 41);
-    // double displacementApr = vegetationLibScalarSet.get(i + 42);
-    // double displacementMay = vegetationLibScalarSet.get(i + 43);
-    // double displacementGiu = vegetationLibScalarSet.get(i + 44);
-    // double displacementJul = vegetationLibScalarSet.get(i + 45);
-    // double displacementAug = vegetationLibScalarSet.get(i + 46);
-    // double displacementSep = vegetationLibScalarSet.get(i + 47);
-    // double displacementOct = vegetationLibScalarSet.get(i + 48);
-    // double displacementNov = vegetationLibScalarSet.get(i + 49);
-    // double displacementDec = vegetationLibScalarSet.get(i + 50);
-    // HashMap<Integer, Double> displacementMap = new HashMap<Integer, Double>();
-    // displacementMap.put(1, displacementJan);
-    // displacementMap.put(2, displacementFeb);
-    // displacementMap.put(3, displacementMar);
-    // displacementMap.put(4, displacementApr);
-    // displacementMap.put(5, displacementMay);
-    // displacementMap.put(6, displacementGiu);
-    // displacementMap.put(7, displacementJul);
-    // displacementMap.put(8, displacementAug);
-    // displacementMap.put(9, displacementSep);
-    // displacementMap.put(10, displacementOct);
-    // displacementMap.put(11, displacementNov);
-    // displacementMap.put(12, displacementDec);
-    // vegindex2displacementMap.put(id, displacementMap);
-    //
-    // // 51-wind_height,
-    // // 52-rgl
-    // double rgl = vegetationLibScalarSet.get(i + 52);
-    // vegindex2RGLMap.put(id, rgl);
-    // // 53-rad_atten,54-wind_atten,55-trunk_ratio,
-    // }
-    // }
 
 }

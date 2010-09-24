@@ -276,7 +276,7 @@ public class HillSlope implements IHillSlope {
         if (PfafstetterNumber.areConnectedUpstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             if (!upstreamElements.contains(element)) {
                 upstreamElements.add(element);
-                element.addConnectedDownstreamElementWithChech(this);
+                element.addConnectedDownstreamElementWithCheck(this);
             }
             return true;
         }
@@ -286,7 +286,7 @@ public class HillSlope implements IHillSlope {
     /* (non-Javadoc)
      * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#addConnectedDownstreamElementWithChech(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope)
      */
-    public boolean addConnectedDownstreamElementWithChech( IHillSlope element ) {
+    public boolean addConnectedDownstreamElementWithCheck( IHillSlope element ) {
         if (PfafstetterNumber.areConnectedDownstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             downstreamElement = element;
             element.addConnectedUpstreamElementWithCheck(this);
@@ -392,7 +392,7 @@ public class HillSlope implements IHillSlope {
             IHillSlope elem = elements.get(i);
             for( int j = i + 1; j < elements.size(); j++ ) {
                 IHillSlope tmp = elements.get(j);
-                elem.addConnectedDownstreamElementWithChech(tmp);
+                elem.addConnectedDownstreamElementWithCheck(tmp);
             }
         }
     }

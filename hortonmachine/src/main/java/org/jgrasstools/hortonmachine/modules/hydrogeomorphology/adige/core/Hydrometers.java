@@ -42,7 +42,7 @@ public class Hydrometers implements IDischargeContributor {
         this.hydrometer_pfaff2idMap = hydrometer_pfaff2idMap;
     }
 
-    public Double getDischarge( String pfafstetterNumber, double inputDischarge ) {
+    public Double getDischarge( String pfafstetterNumber ) {
         Integer hydroId = hydrometer_pfaff2idMap.get(pfafstetterNumber);
         if (hydroId != null) {
             double[] value = hydrometer_id2valuesMap.get(hydroId);
@@ -55,6 +55,10 @@ public class Hydrometers implements IDischargeContributor {
 
     public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         hydrometer_id2valuesMap = currentDataMap;
+    }
+
+    public double mergeWithDischarge( double contributorDischarge, double inputDischarge ) {
+        return contributorDischarge;
     }
 
 }

@@ -20,7 +20,7 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 import java.util.List;
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -215,8 +215,8 @@ public class HillSlopeDuffy implements IHillSlope {
         return hillSlope.addConnectedUpstreamElementWithCheck(element);
     }
 
-    public boolean addConnectedDownstreamElementWithChech( IHillSlope element ) {
-        return hillSlope.addConnectedDownstreamElementWithChech(element);
+    public boolean addConnectedDownstreamElementWithCheck( IHillSlope element ) {
+        return hillSlope.addConnectedDownstreamElementWithCheck(element);
     }
 
     public IHillSlope getUpstreamElementAtPfafstetter( PfafstetterNumber pNum ) {
