@@ -73,11 +73,11 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
 
     @Description("The number of rows to aggregate (default is 1, i.e. no aggregation).")
     @In
-    public int pNum;
+    public int pNum = 1;;
 
     @Description("The aggregation type to use (0 = sum, 1 = avg).")
     @In
-    public int pAggregation;
+    public int pAggregation = 0;
 
     @Description("The time at which start to read (format: yyyy-MM-dd HH:mm ).")
     @In
