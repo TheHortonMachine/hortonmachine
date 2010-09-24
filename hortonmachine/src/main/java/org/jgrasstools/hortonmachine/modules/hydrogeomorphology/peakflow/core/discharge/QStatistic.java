@@ -43,8 +43,6 @@ public class QStatistic implements DischargeCalculator {
 
     private double[][] ampidiff = null;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     private final IJGTProgressMonitor pm;
 
     /**
@@ -55,8 +53,7 @@ public class QStatistic implements DischargeCalculator {
      * @param jeffC - abstraction of the jeff calculator
      * @param pm
      */
-    public QStatistic( ParameterBox fixedParameters, IUHCalculator iuhC, StatisticJeff jeffC,
-            IJGTProgressMonitor pm ) {
+    public QStatistic( ParameterBox fixedParameters, IUHCalculator iuhC, StatisticJeff jeffC, IJGTProgressMonitor pm ) {
         this.fixedParams = fixedParameters;
 
         this.iuhC = iuhC;
@@ -83,9 +80,8 @@ public class QStatistic implements DischargeCalculator {
             area_tot = area_super;
         }
 
-        double qmax = (double) (J * area_tot * (modelsEngine.width_interpolate(ampidiff, iuhC
-                .getTstarMax(), 0, 2) - modelsEngine.width_interpolate(ampidiff, iuhC.getTstarMax()
-                - tpmax, 0, 2)));
+        double qmax = (double) (J * area_tot * (ModelsEngine.width_interpolate(ampidiff, iuhC.getTstarMax(), 0, 2) - ModelsEngine
+                .width_interpolate(ampidiff, iuhC.getTstarMax() - tpmax, 0, 2)));
 
         return qmax;
     }
@@ -115,14 +111,13 @@ public class QStatistic implements DischargeCalculator {
 
             if (t <= tpmax) {
                 Q[j][0] = t;
-                Q[j][1] = (double) (J * area_tot * modelsEngine
-                        .width_interpolate(ampidiff, t, 0, 2));
+                Q[j][1] = (double) (J * area_tot * ModelsEngine.width_interpolate(ampidiff, t, 0, 2));
                 Q[j][2] = Q[j - 1][2] + Q[j][1];
                 Q[j][3] = h;
             } else {
                 Q[j][0] = t;
-                Q[j][1] = (double) (J * area_tot * (modelsEngine.width_interpolate(ampidiff, t, 0,
-                        2) - modelsEngine.width_interpolate(ampidiff, t - tpmax, 0, 2)));
+                Q[j][1] = (double) (J * area_tot * (ModelsEngine.width_interpolate(ampidiff, t, 0, 2) - ModelsEngine
+                        .width_interpolate(ampidiff, t - tpmax, 0, 2)));
                 Q[j][2] = Q[j - 1][2] + Q[j][1];
                 Q[j][3] = 0.0;
             }
@@ -137,8 +132,8 @@ public class QStatistic implements DischargeCalculator {
         for( double t = tcorr; t < (tcorr + tpmax); t += timestep ) {
             j = (int) Math.floor(((int) t) / timestep);
             Q[j][0] = t;
-            Q[j][1] = (double) (J * area_tot * (ampidiff[ampidiff.length - 1][2] - modelsEngine
-                    .width_interpolate(ampidiff, t - tpmax, 0, 2)));
+            Q[j][1] = (double) (J * area_tot * (ampidiff[ampidiff.length - 1][2] - ModelsEngine.width_interpolate(ampidiff, t
+                    - tpmax, 0, 2)));
             Q[j][2] = Q[j - 1][2] + Q[j][1];
             Q[j][3] = 0.0;
             pm.worked((int) timestep);

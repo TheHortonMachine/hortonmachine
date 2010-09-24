@@ -49,13 +49,10 @@ public class QReal implements DischargeCalculator {
 
     private final IJGTProgressMonitor pm;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
      * Calculate the discharge with rainfall data
      */
-    public QReal( ParameterBox fixedParameters, IUHCalculator iuhC, RealJeff jeffC,
-            IJGTProgressMonitor pm ) {
+    public QReal( ParameterBox fixedParameters, IUHCalculator iuhC, RealJeff jeffC, IJGTProgressMonitor pm ) {
         this.jeffC = jeffC;
 
         this.fixedParams = fixedParameters;
@@ -97,8 +94,8 @@ public class QReal implements DischargeCalculator {
         double tcorr = ampi[ampi.length - 1][0];
         tpmax = (double) raintimestep;
         int rainLength = jeff.size();
-        double[][] totalQshiftMatrix = new double[rainLength][(int) (Math.floor((tcorr + tpmax)
-                / timestep) + 1 + rainLength * raintimestep / timestep)];
+        double[][] totalQshiftMatrix = new double[rainLength][(int) (Math.floor((tcorr + tpmax) / timestep) + 1 + rainLength
+                * raintimestep / timestep)];
         double[][] Q = new double[(int) Math.floor((tcorr + tpmax) / timestep) + 1][3];
 
         if (area_sub != -9999.0) {
@@ -121,13 +118,13 @@ public class QReal implements DischargeCalculator {
 
                 if (t <= tpmax) {
                     Q[j][0] = t;
-                    double widthInterpolate = modelsEngine.width_interpolate(ampi, t, 0, 2);
+                    double widthInterpolate = ModelsEngine.width_interpolate(ampi, t, 0, 2);
                     Q[j][1] = (double) (J * area_tot * widthInterpolate);
                     Q[j][2] = Q[j - 1][2] + Q[j][1];
                 } else {
                     Q[j][0] = t;
-                    Q[j][1] = (double) (J * area_tot * (modelsEngine.width_interpolate(ampi, t, 0,
-                            2) - modelsEngine.width_interpolate(ampi, t - tpmax, 0, 2)));
+                    Q[j][1] = (double) (J * area_tot * (ModelsEngine.width_interpolate(ampi, t, 0, 2) - ModelsEngine
+                            .width_interpolate(ampi, t - tpmax, 0, 2)));
                     Q[j][2] = Q[j - 1][2] + Q[j][1];
                 }
             }
@@ -139,8 +136,8 @@ public class QReal implements DischargeCalculator {
             for( double t = tcorr; t < (tcorr + tpmax); t += timestep ) {
                 j = (int) Math.floor(((int) t) / timestep);
                 Q[j][0] = t;
-                Q[j][1] = (double) (J * area_tot * (ampi[ampi.length - 1][2] - modelsEngine
-                        .width_interpolate(ampi, t - tpmax, 0, 2)));
+                Q[j][1] = (double) (J * area_tot * (ampi[ampi.length - 1][2] - ModelsEngine.width_interpolate(ampi, t - tpmax, 0,
+                        2)));
                 Q[j][2] = Q[j - 1][2] + Q[j][1];
             }
 

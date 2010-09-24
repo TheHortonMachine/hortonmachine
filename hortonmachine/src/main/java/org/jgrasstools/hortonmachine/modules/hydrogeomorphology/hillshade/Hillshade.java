@@ -16,6 +16,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade;
 
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateFactor;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -40,7 +45,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -85,7 +89,6 @@ public class Hillshade extends JGTModel {
     @In
     public double defaultElevation = 90;
 
-    private ModelsEngine engine = new ModelsEngine();
     private final static double doubleNoValue = JGTConstants.doubleNovalue;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -167,17 +170,17 @@ public class Hillshade extends JGTModel {
         defaultElevation = Math.toRadians(defaultElevation);
 
         double[] sunVector = calcSunVector();
-        double[] normalSunVector = engine.calcNormalSunVector(sunVector);
-        double[] inverseSunVector = engine.calcInverseSunVector(sunVector);
+        double[] normalSunVector = calcNormalSunVector(sunVector);
+        double[] inverseSunVector = calcInverseSunVector(sunVector);
         int rows = pitWR.getHeight();
         int cols = pitWR.getWidth();
-        WritableRaster sOmbraWR = engine.calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, dx);
+        WritableRaster sOmbraWR = calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, dx);
         pm.beginTask(msg.message("hillshade.calculating"), rows * cols);
         for( int j = 1; j < rows - 1; j++ ) {
             for( int i = 1; i < cols - 1; i++ ) {
 
                 double[] ng = gradientWR.getPixel(i, j, new double[3]);
-                double cosinc = engine.scalarProduct(sunVector, ng);
+                double cosinc = scalarProduct(sunVector, ng);
                 if (cosinc < 0) {
                     sOmbraWR.setSample(i, j, 0, 0);
                 }

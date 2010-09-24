@@ -22,6 +22,9 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -44,7 +47,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -84,7 +86,6 @@ public class Skyview extends JGTModel {
     private int rows = 0;
     private int cols = 0;
     private WritableRaster normalVectorWR;
-    private ModelsEngine engine = new ModelsEngine();
 
     @Execute
     public void process() throws Exception {
@@ -247,8 +248,8 @@ public class Skyview extends JGTModel {
 
                 elevation = Math.toRadians(j * 1.0);
                 double[] sunVector = calcSunVector();
-                double[] inverseSunVector = engine.calcInverseSunVector(sunVector);
-                double[] normalSunVector = engine.calcNormalSunVector(sunVector);
+                double[] inverseSunVector = calcInverseSunVector(sunVector);
+                double[] normalSunVector = calcNormalSunVector(sunVector);
                 calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, skyViewWR, res);
 
             }
@@ -297,9 +298,9 @@ public class Skyview extends JGTModel {
             vectorToOrigin[0] = dx * res;
             vectorToOrigin[1] = dy * res;
             vectorToOrigin[2] = pitWR.getSampleDouble(idx, jdy, 0);
-            double zprojection = engine.scalarProduct(vectorToOrigin, normalSunVector);
+            double zprojection = scalarProduct(vectorToOrigin, normalSunVector);
             double nGrad[] = normalVectorWR.getPixel(idx, jdy, new double[3]);
-            double cosinc = engine.scalarProduct(sunVector, nGrad);
+            double cosinc = scalarProduct(sunVector, nGrad);
             double elevRad = elevation;
             if ((cosinc >= 0) && (zprojection > zcompare)) {
                 tmpWR.setSample(idx, jdy, 0, elevRad);

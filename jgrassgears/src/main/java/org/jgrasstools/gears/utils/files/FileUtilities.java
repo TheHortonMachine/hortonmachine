@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.utils;
+package org.jgrasstools.gears.utils.files;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

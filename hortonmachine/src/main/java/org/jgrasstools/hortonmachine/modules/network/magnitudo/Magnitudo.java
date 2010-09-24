@@ -17,8 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.magnitudo;
 
+
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.isSourcePixel;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -37,7 +40,6 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -98,16 +100,15 @@ public class Magnitudo extends JGTModel {
             for( int i = 0; i < cols; i++ ) {
                 flow[0] = i;
                 flow[1] = j;
-                ModelsEngine magEng = new ModelsEngine();
                 // looks for the source
-                if (magEng.isSourcePixel(flowIter, flow[0], flow[1])) {
+                if (isSourcePixel(flowIter, flow[0], flow[1])) {
                     magWR.setSample(flow[0], flow[1], 0, magIter.getSampleDouble(flow[0], flow[1], 0) + 1.0);
-                    if (!magEng.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                    if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                         return;
                     while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                             && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                         magWR.setSample(flow[0], flow[1], 0, magIter.getSampleDouble(flow[0], flow[1], 0) + 1.0);
-                        if (!magEng.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                     }
 

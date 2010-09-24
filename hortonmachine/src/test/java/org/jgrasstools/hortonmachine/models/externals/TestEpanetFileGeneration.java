@@ -3,7 +3,7 @@ package org.jgrasstools.hortonmachine.models.externals;
 import java.io.File;
 
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.utils.FileUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.EpanetProjectFilesGenerator;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;

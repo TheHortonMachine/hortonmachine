@@ -29,8 +29,6 @@ public class ConvolutionExponentialPeakflow extends SimpsonIntegral implements I
     private double t = 0.0;
     private final double[][] ampi_sub;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
      * Calculates the integral of the exponential equation
      * 
@@ -41,9 +39,8 @@ public class ConvolutionExponentialPeakflow extends SimpsonIntegral implements I
      * @param invasoConstant
      * @param timeDischargeInterpolator
      */
-    public ConvolutionExponentialPeakflow( double lowerintegrationlimit,
-            double upperintegrationlimit, int maximalsteps, double integrationaccuracy,
-            double[][] ampifunction, double invasoConstant, double time ) {
+    public ConvolutionExponentialPeakflow( double lowerintegrationlimit, double upperintegrationlimit, int maximalsteps,
+            double integrationaccuracy, double[][] ampifunction, double invasoConstant, double time ) {
         lowerlimit = lowerintegrationlimit;
         upperlimit = upperintegrationlimit;
         maxsteps = maximalsteps;
@@ -55,8 +52,7 @@ public class ConvolutionExponentialPeakflow extends SimpsonIntegral implements I
     }
 
     protected double equation( double time ) {
-        double d = 1.0 / k * Math.exp(-t / k)
-                * modelsEngine.width_interpolate(ampi_sub, time, 0, 1);
+        double d = 1.0 / k * Math.exp(-t / k) * ModelsEngine.width_interpolate(ampi_sub, time, 0, 1);
         return d;
     }
 

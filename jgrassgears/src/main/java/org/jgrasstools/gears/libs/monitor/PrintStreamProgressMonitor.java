@@ -38,6 +38,7 @@ public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
     protected int totalWork;
     protected int runningWork;
     protected int lastPercentage = -1;
+    private String prefix = null;
 
     public PrintStreamProgressMonitor() {
         this(System.out, System.err);
@@ -48,10 +49,19 @@ public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
         this.errStream = errorStream;
     }
 
+    public PrintStreamProgressMonitor( String prefix, PrintStream outStream, PrintStream errorStream ) {
+        this.prefix = prefix;
+        this.outStream = outStream;
+        this.errStream = errorStream;
+    }
+
     public void beginTask( String name, int totalWork ) {
         this.taskName = name;
         this.totalWork = totalWork;
         runningWork = 0;
+        if (prefix != null) {
+            outStream.print(prefix);
+        }
         outStream.println(taskName);
     }
 
@@ -59,10 +69,16 @@ public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
         this.taskName = name;
         this.totalWork = -1;
         runningWork = 0;
+        if (prefix != null) {
+            outStream.print(prefix);
+        }
         outStream.println(taskName);
     }
 
     public void done() {
+        if (prefix != null) {
+            outStream.print(prefix);
+        }
         outStream.println("Finished.");
     }
 
@@ -86,13 +102,22 @@ public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
 
     public void worked( int work ) {
         if (totalWork == -1) {
+            if (prefix != null) {
+                outStream.print(prefix);
+            }
             outStream.print("..."); //$NON-NLS-1$ 
         } else {
             runningWork = runningWork + work;
             // calculate %
             int percentage = 100 * runningWork / totalWork;
             if (percentage % 10 == 0 && percentage != lastPercentage) {
-                outStream.print(percentage + "%... "); //$NON-NLS-1$ //$NON-NLS-2$
+                if (prefix != null) {
+                    outStream.print(prefix);
+                }
+                outStream.print(percentage + "%... "); //$NON-NLS-1$
+                if (prefix != null) {
+                    outStream.println();
+                }
                 lastPercentage = percentage;
             }
         }

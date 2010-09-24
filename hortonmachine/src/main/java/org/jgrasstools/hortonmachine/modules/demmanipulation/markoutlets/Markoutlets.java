@@ -19,6 +19,8 @@ package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.isSourcePixel;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -38,7 +40,6 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -141,17 +142,15 @@ public class Markoutlets extends JGTModel {
                 punto[1] = i;
 
                 double flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
-                ModelsEngine prova = new ModelsEngine();
-                ModelsEngine prova1 = new ModelsEngine();
 
-                if (prova.isSourcePixel(flowIter, punto[0], punto[1])) {
+                if (isSourcePixel(flowIter, punto[0], punto[1])) {
                     oldpunto[0] = punto[0];
                     oldpunto[1] = punto[1];
 
                     while( flowSample < 9.0 && (!isNovalue(flowSample)) ) {
                         oldpunto[0] = punto[0];
                         oldpunto[1] = punto[1];
-                        if (!prova1.go_downstream(punto, flowSample)) {
+                        if (!go_downstream(punto, flowSample)) {
                             return;
                         }
                         flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
@@ -165,7 +164,7 @@ public class Markoutlets extends JGTModel {
         }
         pm.done();
 
-        outFlow = CoverageUtilities.buildCoverage("markoutlet", mflowWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        outFlow = CoverageUtilities.buildCoverage("markoutlets", mflowWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
 }

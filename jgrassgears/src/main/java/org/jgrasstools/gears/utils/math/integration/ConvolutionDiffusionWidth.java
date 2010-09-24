@@ -31,8 +31,6 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
 
     private double t = 0;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
      * Calculates the integral of the diffusion equation
      * 
@@ -45,9 +43,8 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
      * @param time
      * @param integrationtype
      */
-    public ConvolutionDiffusionWidth( double lowerintegrationlimit, double upperintegrationlimit,
-            int maximalsteps, double integrationaccuracy, double[][] ampiFunction,
-            double diffusionparam, double time ) {
+    public ConvolutionDiffusionWidth( double lowerintegrationlimit, double upperintegrationlimit, int maximalsteps,
+            double integrationaccuracy, double[][] ampiFunction, double diffusionparam, double time ) {
         lowerlimit = lowerintegrationlimit;
         upperlimit = upperintegrationlimit;
         maxsteps = maximalsteps;
@@ -68,8 +65,7 @@ public class ConvolutionDiffusionWidth extends SimpsonIntegral implements Integr
 
     protected double equation( double x ) {
         double result = x > ampi_diffusion[ampi_diffusion.length - 1][0] ? 0.0 : 1
-                / Math.sqrt(4 * Math.PI * D * Math.pow(t, 3.0f))
-                * modelsEngine.width_interpolate(ampi_diffusion, x, 0, 1) * x
+                / Math.sqrt(4 * Math.PI * D * Math.pow(t, 3.0f)) * ModelsEngine.width_interpolate(ampi_diffusion, x, 0, 1) * x
                 / (Math.exp(Math.pow((x - t), 2) / (4 * D * t)));
 
         return result;

@@ -152,7 +152,7 @@ public class NetNumbering extends JGTModel {
             return;
         }
         
-        ModelsEngine modelsEngine = new ModelsEngine();
+        
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -208,26 +208,26 @@ public class NetNumbering extends JGTModel {
 
         WritableRaster netNumWR = null;
         if (pMode == 0) {
-            netNumWR = modelsEngine.netNumbering(nstream, flowIter, netIter, nCols, nRows, pm);
+            netNumWR = ModelsEngine.netNumbering(nstream, flowIter, netIter, nCols, nRows, pm);
         } else if (pMode == 1) {
             if (tcaIter == null) {
                 throw new ModelsIllegalargumentException("This method needs the map of tca.", this);
             }
-            netNumWR = modelsEngine.netNumberingWithTca(nstream, flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
+            netNumWR = ModelsEngine.netNumberingWithTca(nstream, flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
         } else if (pMode == 2) {
             if (attributeVect == null || geomVect == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
             }
-            netNumWR = modelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
         } else {
             if (attributeVect == null || geomVect == null || tcaIter == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection and the map of tca.", this);
             }
-            netNumWR = modelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
         }
 
         WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);
-        WritableRaster basinWR = modelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
+        WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
 
         outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
         outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());

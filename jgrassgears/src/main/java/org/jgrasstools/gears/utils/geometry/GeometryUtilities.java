@@ -275,11 +275,4 @@ public class GeometryUtilities {
         return (area < 0 ? -area : area);
     }
     
-    public <T> T convert(Class<T> toGeometryClass, Geometry geometry) {
-        
-        
-        
-        
-        return null;
-    }
 }

@@ -18,6 +18,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.insolation;
 
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateFactor;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -41,9 +46,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -125,11 +128,8 @@ public class Insolation extends JGTModel {
 
     private double omega;
 
-    private final static double doubleNoValue = JGTConstants.doubleNovalue;
-
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    private ModelsEngine engine = new ModelsEngine();
 
     @Execute
     public void process() throws Exception { // transform the
@@ -227,12 +227,12 @@ public class Insolation extends JGTModel {
             // calculating the vector related to the sun
             double sunVector[] = calcSunVector();
             double zenith = calcZenith(sunVector[2]);
-            double[] inverseSunVector = engine.calcInverseSunVector(sunVector);
-            double[] normalSunVector = engine.calcNormalSunVector(sunVector);
+            double[] inverseSunVector = calcInverseSunVector(sunVector);
+            double[] normalSunVector = calcNormalSunVector(sunVector);
 
             int height = demWR.getHeight();
             int width = demWR.getWidth();
-            WritableRaster sOmbraWR = engine.calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR,
+            WritableRaster sOmbraWR = calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR,
                     dx);
             double mr = 1 / (sunVector[2] + 0.15 * Math.pow((93.885 - zenith), (-1.253)));
             for( int j = 0; j < height; j++ ) {
@@ -276,7 +276,7 @@ public class Insolation extends JGTModel {
 
         double In = 0.9751 * SOLARCTE * taur * tauo * taug * tauw * taua;
 
-        double cosinc = engine.scalarProduct(sunVector, gradientWR.getPixel(i, j, new double[3]));
+        double cosinc = scalarProduct(sunVector, gradientWR.getPixel(i, j, new double[3]));
 
         if (cosinc < 0) {
             cosinc = 0;
