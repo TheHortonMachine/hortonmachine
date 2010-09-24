@@ -72,7 +72,7 @@ public class Adige extends JGTModel {
     @In
     public SimpleFeatureCollection inHillslope;
 
-    @Description("The a field name of the netnum attribute in the hillslope data.")
+    @Description("The field name of the netnum attribute in the hillslope data.")
     @In
     public String fNetnum = null;
 
@@ -84,13 +84,13 @@ public class Adige extends JGTModel {
     @Unit("mm/h")
     @In
     @Out
-    public double pRainintensity;
+    public double pRainintensity = -1.0;
 
     @Description("The duration of the constant rain in minutes.")
     @Unit("min")
     @In
     @Out
-    public int pRainduration;
+    public int pRainduration = -1;
 
     @Description("The rainfall data.")
     @In
@@ -132,7 +132,7 @@ public class Adige extends JGTModel {
     @In
     public String pPfafids = null;
 
-    @Description("The a field name of the monitoring point's id attribute in the monitoring points data.")
+    @Description("The field name of the monitoring point's id attribute in the monitoring points data.")
     @In
     public String fMonpointid = null;
 
