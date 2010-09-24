@@ -32,7 +32,7 @@ import org.jgrasstools.gears.libs.modules.ModelsEngine;
  * @author Silvia Franceschi (www.hydrologis.com)
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class NashDischargeDistributor extends DischargeDistributor {
+public class NashDischargeDistributor extends ADischargeDistributor {
 
     private static final double N_THRESHOLD = 10.0;
     private double avgSup10;
@@ -66,16 +66,16 @@ public class NashDischargeDistributor extends DischargeDistributor {
         this.startDateMillis = startDateMillis;
         this.endDateMillis = endDateMillis;
 
-        avgSup10 = parameters.get(DischargeDistributor.PARAMS_AVG_SUP_10);
-        avgSup30 = parameters.get(DischargeDistributor.PARAMS_AVG_SUP_30);
-        avgSup60 = parameters.get(DischargeDistributor.PARAMS_AVG_SUP_60);
-        varSup10 = parameters.get(DischargeDistributor.PARAMS_VAR_SUP_10);
-        varSup30 = parameters.get(DischargeDistributor.PARAMS_VAR_SUP_30);
-        varSup60 = parameters.get(DischargeDistributor.PARAMS_VAR_SUP_60);
-        avgSub = parameters.get(DischargeDistributor.PARAMS_AVG_SUB);
-        varSub = parameters.get(DischargeDistributor.PARAMS_VAR_SUB);
-        vSup = parameters.get(DischargeDistributor.PARAMS_V_SUP);
-        vSub = parameters.get(DischargeDistributor.PARAMS_V_SUB);
+        avgSup10 = parameters.get(ADischargeDistributor.PARAMS_AVG_SUP_10);
+        avgSup30 = parameters.get(ADischargeDistributor.PARAMS_AVG_SUP_30);
+        avgSup60 = parameters.get(ADischargeDistributor.PARAMS_AVG_SUP_60);
+        varSup10 = parameters.get(ADischargeDistributor.PARAMS_VAR_SUP_10);
+        varSup30 = parameters.get(ADischargeDistributor.PARAMS_VAR_SUP_30);
+        varSup60 = parameters.get(ADischargeDistributor.PARAMS_VAR_SUP_60);
+        avgSub = parameters.get(ADischargeDistributor.PARAMS_AVG_SUB);
+        varSub = parameters.get(ADischargeDistributor.PARAMS_VAR_SUB);
+        vSup = parameters.get(ADischargeDistributor.PARAMS_V_SUP);
+        vSub = parameters.get(ADischargeDistributor.PARAMS_V_SUB);
 
         /*
          * valori fissi solo per test
@@ -325,19 +325,19 @@ public class NashDischargeDistributor extends DischargeDistributor {
         long timeStep = 1800000l;
 
         HashMap<Integer, Double> params = new HashMap<Integer, Double>();
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_10, 14491.22);
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_30, 14491.22);
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_60, 14491.22);
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_10, 34367480.0);
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_30, 34367480.0);
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_60, 34367480.0);
-        params.put(DischargeDistributor.PARAMS_AVG_SUB, 14491.22);
-        params.put(DischargeDistributor.PARAMS_VAR_SUB, 34367480.0);
-        params.put(DischargeDistributor.PARAMS_V_SUP, 2.0);
-        params.put(DischargeDistributor.PARAMS_V_SUB, 0.1);
+        params.put(ADischargeDistributor.PARAMS_AVG_SUP_10, 14491.22);
+        params.put(ADischargeDistributor.PARAMS_AVG_SUP_30, 14491.22);
+        params.put(ADischargeDistributor.PARAMS_AVG_SUP_60, 14491.22);
+        params.put(ADischargeDistributor.PARAMS_VAR_SUP_10, 34367480.0);
+        params.put(ADischargeDistributor.PARAMS_VAR_SUP_30, 34367480.0);
+        params.put(ADischargeDistributor.PARAMS_VAR_SUP_60, 34367480.0);
+        params.put(ADischargeDistributor.PARAMS_AVG_SUB, 14491.22);
+        params.put(ADischargeDistributor.PARAMS_VAR_SUB, 34367480.0);
+        params.put(ADischargeDistributor.PARAMS_V_SUP, 2.0);
+        params.put(ADischargeDistributor.PARAMS_V_SUB, 0.1);
 
-        DischargeDistributor dDistr = DischargeDistributor.createDischargeDistributor(
-                DischargeDistributor.DISTRIBUTOR_TYPE_NASH, startDate, endDate, timeStep, params);
+        ADischargeDistributor dDistr = ADischargeDistributor.createDischargeDistributor(
+                ADischargeDistributor.DISTRIBUTOR_TYPE_NASH, startDate, endDate, timeStep, params);
 
         double q = 100.0;
 

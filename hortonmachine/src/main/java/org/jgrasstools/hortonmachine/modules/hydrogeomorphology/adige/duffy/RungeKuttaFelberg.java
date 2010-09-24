@@ -49,7 +49,7 @@ public class RungeKuttaFelberg {
      */
     private double[] finalCond;
     private double epsilon;
-    private double basicTimeStepInMinutes;
+    private double basicTimeStepInMinutes = 10. / 60.;
     // private double[] a = {0., 1. / 5., 3. / 10., 3. / 5., 1., 7. / 8.};
     private double[][] b = {{0.}, {1. / 5.}, {3. / 40., 9. / 40.}, {3. / 10., -9. / 10., 6. / 5.},
             {-11. / 54., 5. / 2., -70. / 27., 35. / 27.},
@@ -323,14 +323,6 @@ public class RungeKuttaFelberg {
 
         finalCond = initialConditions;
 
-    }
-    /**
-     * Sets the valuo of the algorithm time step
-     * 
-     * @param newBTS The time step to assign
-     */
-    public void setBasicTimeStep( double newBTS ) {
-        basicTimeStepInMinutes = newBTS;
     }
 
     public double[] getFinalCond() {

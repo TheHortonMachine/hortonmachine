@@ -27,7 +27,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Hydrometers implements DischargeContributor {
+public class Hydrometers implements IDischargeContributor {
 
     private final HashMap<String, Integer> hydrometer_pfaff2idMap;
     private HashMap<Integer, double[]> hydrometer_id2valuesMap;

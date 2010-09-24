@@ -34,29 +34,27 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Dams;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.DischargeContributor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Hydrometers;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.NetBasinsManager;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Offtakes;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Tributaries;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DischargeDistributor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyModel;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.RungeKuttaFelberg;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyAdigeEngine;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
@@ -80,45 +78,17 @@ public class Adige extends JGTModel {
     @In
     public String fBaricenter = null;
 
-    @Description("The a field name of the avg_sub attribute in the hillslope data.")
+    @Description("A constant value of rain intensity.")
+    @Unit("mm/h")
     @In
-    public String fAvg_sub = null;
+    @Out
+    public double pRainintensity;
 
-    @Description("The a field name of the var_sub attribute in the hillslope data.")
+    @Description("The duration of the constant rain in minutes.")
+    @Unit("min")
     @In
-    public String fVar_sub = null;
-
-    @Description("The a field name of the avg_sup_10 attribute in the hillslope data.")
-    @In
-    public String fAvg_sup_10 = null;
-
-    @Description("The a field name of the var_sup_10 attribute in the hillslope data.")
-    @In
-    public String fVar_sup_10 = null;
-
-    @Description("The a field name of the avg_sup_30 attribute in the hillslope data.")
-    @In
-    public String fAvg_sup_30 = null;
-
-    @Description("The a field name of the var_sup_30 attribute in the hillslope data.")
-    @In
-    public String fVar_sup_30 = null;
-
-    @Description("The a field name of the avg_sup_60 attribute in the hillslope data.")
-    @In
-    public String fAvg_sup_60 = null;
-
-    @Description("The a field name of the var_sup_60 attribute in the hillslope data.")
-    @In
-    public String fVar_sup_60 = null;
-
-    @Description("The average speed for superficial runoff.")
-    @In
-    public double pV_sup = -1;
-
-    @Description("The average speed for sub-superficial runoff.")
-    @In
-    public double pV_sub = -1;
+    @Out
+    public int pRainduration;
 
     @Description("The rainfall data.")
     @In
@@ -180,56 +150,10 @@ public class Adige extends JGTModel {
     @In
     public String fNetelevend = null;
 
-    @Description("Saturated hydraulic conductivity.")
-    @In
-    public double pKs = 3.0;
-
-    @Description("Mstexp")
-    @In
-    public double pMstexp = 11.0;
-
-    @Description("Mstexp")
-    @In
-    public double pDepthmnsat = 2.0;
-
-    @Description("Specyield")
-    @In
-    public double pSpecyield = 0.01;
-
-    @Description("Porosity")
-    @In
-    public double pPorosity = 0.41;
-
-    @Description("Etrate")
-    @In
-    public Double pEtrate = null;
-    
     @Description("The evapotranspiration data.")
     @In
     public HashMap<Integer, double[]> inEtp;
 
-    @Description("Satconst")
-    @In
-    public double pSatconst = 0.3;
-
-    @Role(Role.PARAMETER)
-    @Description("The routing model type to use.")
-    @In
-    public int pRouting = 3;
-
-    @Role(Role.PARAMETER)
-    @Description("A constant value of rain intensity.")
-    @Unit("mm/h")
-    @In
-    public double pRainintensity;
-
-    @Role(Role.PARAMETER)
-    @Description("The duration of the constant rain in minutes.")
-    @Unit("min")
-    @In
-    public int pRainduration;
-
-    @Role(Role.PARAMETER)
     @Description("Switch to activate additional logging to file.")
     @In
     public boolean doLog = false;
@@ -246,29 +170,9 @@ public class Adige extends JGTModel {
     @In
     public String tEnd = null;
 
-    @Description("Switch to write final boundary conditions.")
+    @Description("The inputs in the case of Duffy elaboration.")
     @In
-    public boolean doBoundary = false;
-
-    @Description("The initial conditions of the model.")
-    @In
-    public HashMap<Integer, AdigeBoundaryCondition> inInitialconditions = null;
-
-    @Description("Start discharge per unit area")
-    @In
-    public double pDischargePerUnitArea = 0.01; // m3/s per km2 of upstream drainage area
-
-    @Description("Start superficial discharge fraction")
-    @In
-    public double pStartSuperficialDischargeFraction = 0.3;
-
-    @Description("Start saturated volume fraction")
-    @In
-    public double pMaxSatVolumeS1 = 0.2;
-
-    @Description("Start unsaturated volume fraction")
-    @In
-    public double pMaxSatVolumeS2 = 0.25;
+    public DuffyInputs inDuffyInput = null;
 
     @Description("The progress monitor.")
     @In
@@ -281,18 +185,6 @@ public class Adige extends JGTModel {
     @Description("The sub-superficial discharge for every basin id.")
     @Out
     public HashMap<Integer, double[]> outSubdischarge;
-
-    @Description("The water content in non saturated soil for every basin id.")
-    @Out
-    public HashMap<Integer, double[]> outS1;
-
-    @Description("The water content in saturated soil for every basin id.")
-    @Out
-    public HashMap<Integer, double[]> outS2;
-
-    @Description("The final conditions of the model to persist.")
-    @In
-    public HashMap<Integer, AdigeBoundaryCondition> outFinalconditions = null;
 
     // public String startDateArg = null;
     // public String endDateArg = null;
@@ -307,28 +199,27 @@ public class Adige extends JGTModel {
     /** the running rain array */
     private double[] rainArray = null;
     private double[] etpArray;
-    
+
     /** the running discharge array, which at the begin holds the initial conditions */
     private double[] initialConditions = null;
 
-    private RungeKuttaFelberg rainRunoffRaining;
+    private IAdigeEngine adigeEngine = null;
     private List<PfafstetterNumber> netPfaffsList;
-    private DuffyModel duffyEvaluator;
 
     // hydrometers
-    private DischargeContributor hydrometersHandler;
+    private IDischargeContributor hydrometersHandler;
     private HashMap<String, Integer> hydrometer_pfaff2idMap;
 
     // dams
-    private DischargeContributor damsHandler;
+    private IDischargeContributor damsHandler;
     private HashMap<String, Integer> dams_pfaff2idMap;
 
     // tributaries
-    private DischargeContributor tributaryHandler;
+    private IDischargeContributor tributaryHandler;
     private HashMap<String, Integer> tributary_pfaff2idMap;
 
     // offtakes
-    private DischargeContributor offtakesHandler;
+    private IDischargeContributor offtakesHandler;
     private HashMap<String, Integer> offtakes_pfaff2idMap;
 
     private HashMap<Integer, Integer> basinid2Index;
@@ -337,7 +228,7 @@ public class Adige extends JGTModel {
     private int hillsSlopeNum;
     private int outletHillslopeId = -1;
     private HashMap<String, Integer> pfaff2Index;
-    private List<HillSlope> orderedHillslopes;
+    private List<IHillSlope> orderedHillslopes;
 
     public static DateTimeFormatter adigeFormatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
 
@@ -355,13 +246,12 @@ public class Adige extends JGTModel {
         if (startTimestamp == null) {
             outDischarge = new HashMap<Integer, double[]>();
             outSubdischarge = new HashMap<Integer, double[]>();
-            outS1 = new HashMap<Integer, double[]>();
-            outS2 = new HashMap<Integer, double[]>();
 
             startTimestamp = adigeFormatter.parseDateTime(tStart);
             endTimestamp = adigeFormatter.parseDateTime(tEnd);
 
             currentTimstamp = startTimestamp;
+
             if (pRainintensity != -1) {
                 if (pRainduration != -1) {
                     rainEndTimestamp = startTimestamp.plusMinutes(pRainduration);
@@ -529,10 +419,17 @@ public class Adige extends JGTModel {
             hillsSlopeNum = inHillslope.size();
 
             // at the first round create the hillslopes and network hierarchy
-            NetBasinsManager nbMan = new NetBasinsManager();
-            orderedHillslopes = nbMan.operateOnLayers(inNetwork, inHillslope, fNetnum, fPfaff, fNetelevstart, fNetelevend,
-                    fBaricenter, pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat, pm);
-            HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor = new HashMap<Integer, DischargeDistributor>();
+            orderedHillslopes = AdigeUtilities.generateHillSlopes(inNetwork, inHillslope, fNetnum, fPfaff, fNetelevstart,
+                    fNetelevend, fBaricenter, pm);
+            if (inDuffyInput != null) {
+                List<IHillSlope> duffyHillslopes = new ArrayList<IHillSlope>();
+                for( IHillSlope hillSlope : orderedHillslopes ) {
+                    IHillSlope newHS = new HillSlopeDuffy(hillSlope, inDuffyInput);
+                    duffyHillslopes.add(newHS);
+                }
+                orderedHillslopes = duffyHillslopes;
+            }
+
             outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
             netPfaffsList = new ArrayList<PfafstetterNumber>();
             pfaff2Index = new HashMap<String, Integer>();
@@ -540,7 +437,7 @@ public class Adige extends JGTModel {
             index2Basinid = new HashMap<Integer, Integer>();
             pm.beginTask("Analaysing hillslopes and calculating distribution curves...", orderedHillslopes.size());
             for( int i = 0; i < orderedHillslopes.size(); i++ ) {
-                HillSlope hillSlope = orderedHillslopes.get(i);
+                IHillSlope hillSlope = orderedHillslopes.get(i);
                 PfafstetterNumber pfafstetterNumber = hillSlope.getPfafstetterNumber();
                 netPfaffsList.add(pfafstetterNumber);
                 int hillslopeId = hillSlope.getHillslopeId();
@@ -548,76 +445,41 @@ public class Adige extends JGTModel {
                 index2Basinid.put(i, hillslopeId);
                 pfaff2Index.put(pfafstetterNumber.toString(), i);
                 // the distributor
-                HashMap<Integer, Double> params = fillParameters(hillSlope);
-                System.out.println("Bacino: " + hillslopeId);
-                hillslopeId2DischargeDistributor.put(hillslopeId, DischargeDistributor.createDischargeDistributor(
-                        DischargeDistributor.DISTRIBUTOR_TYPE_NASH, startTimestamp.getMillis(), endTimestamp.getMillis(),
-                        (long) tTimestep * 60L * 1000L, params));
                 pm.worked(1);
             }
             pm.done();
 
-            duffyEvaluator = new DuffyModel(orderedHillslopes, pRouting, pm, doLog);
+            if (pPfafids == null) {
+                pPfafids = String.valueOf(outletHillslopeId);
+            }
+            if (pfaffsList == null) {
+                String[] split = pPfafids.split(",");
+                for( int i = 0; i < split.length; i++ ) {
+                    split[i] = split[i].trim();
+                }
+                pfaffsList = Arrays.asList(split);
+            }
+            if (inDuffyInput != null) {
+                initialConditions = new double[hillsSlopeNum * 4];
+                adigeEngine = new DuffyAdigeEngine(orderedHillslopes, inDuffyInput, pm, doLog, initialConditions, basinid2Index,
+                        index2Basinid, pfaffsList, pfaff2Index, outDischarge, outSubdischarge, startTimestamp, endTimestamp,
+                        tTimestep);
+            } else {
+                initialConditions = new double[hillsSlopeNum * 2];
+            }
+
             if (hydrometersHandler != null) {
-                duffyEvaluator.addDischargeContributor(hydrometersHandler);
+                adigeEngine.addDischargeContributor(hydrometersHandler);
             }
             if (damsHandler != null) {
-                duffyEvaluator.addDischargeContributor(damsHandler);
+                adigeEngine.addDischargeContributor(damsHandler);
             }
             if (tributaryHandler != null) {
-                duffyEvaluator.addDischargeContributor(tributaryHandler);
+                adigeEngine.addDischargeContributor(tributaryHandler);
             }
             if (offtakesHandler != null) {
-                duffyEvaluator.addDischargeContributor(offtakesHandler);
+                adigeEngine.addDischargeContributor(offtakesHandler);
             }
-            duffyEvaluator.addDischargeDistributor(hillslopeId2DischargeDistributor);
-            /*
-             * read the initial conditions. 
-             */
-            initialConditions = new double[hillsSlopeNum * 4];
-
-            if (inInitialconditions != null) {
-                Set<Entry<Integer, AdigeBoundaryCondition>> entries = inInitialconditions.entrySet();
-                for( Entry<Integer, AdigeBoundaryCondition> entry : entries ) {
-                    Integer hillslopeId = entry.getKey();
-                    Integer index = basinid2Index.get(hillslopeId);
-                    if (index == null)
-                        continue;
-                    AdigeBoundaryCondition condition = entry.getValue();
-                    initialConditions[index] = condition.discharge;
-                    initialConditions[index + hillsSlopeNum] = condition.dischargeSub;
-                    initialConditions[index + 2 * hillsSlopeNum] = condition.S1;
-                    initialConditions[index + 3 * hillsSlopeNum] = condition.S2;
-                }
-            } else {
-                double startSubsuperficialDischargeFraction = 1.0 - pStartSuperficialDischargeFraction;
-                for( int i = 0; i < orderedHillslopes.size(); i++ ) {
-                    HillSlope currentHillslope = orderedHillslopes.get(i);
-                    // initialize with a default discharge per unit of drainage area in km2
-                    double hillslopeTotalDischarge = currentHillslope.getUpstreamArea(null) / 1000000.0 * pDischargePerUnitArea;
-                    initialConditions[i] = pStartSuperficialDischargeFraction * hillslopeTotalDischarge;
-                    // initial subsuperficial flow is setted at a percentage of the total
-                    // discharge
-                    initialConditions[i + hillsSlopeNum] = startSubsuperficialDischargeFraction * hillslopeTotalDischarge;
-                    // initial water content in the saturated hillslope volume is set to
-                    // have:
-                    // saturation surface at the 10% of the total area
-                    double maxSaturatedVolume = currentHillslope.parameters.getS2max();
-                    // initial water content in the non saturated hillslope volume is set to
-                    initialConditions[i + 2 * hillsSlopeNum] = pMaxSatVolumeS1 * maxSaturatedVolume;
-                    initialConditions[i + 3 * hillsSlopeNum] = pMaxSatVolumeS2 * maxSaturatedVolume;
-                }
-            }
-
-            // print of the initial conditions values, just for check
-            System.out.println("bacino\tQ\tQs\tS1\tS2");
-            for( int i = 0; i < hillsSlopeNum; i++ ) {
-                int currentBasinId = index2Basinid.get(i);
-                System.out.println(currentBasinId + "\t" + initialConditions[i] + "\t" + initialConditions[i + hillsSlopeNum]
-                        + "\t" + initialConditions[i + 2 * hillsSlopeNum] + "\t" + initialConditions[i + 3 * hillsSlopeNum]);
-            }
-
-            rainRunoffRaining = new RungeKuttaFelberg(duffyEvaluator, 1e-2, 10 / 60., pm, doLog);
 
         } else {
             currentTimstamp = currentTimstamp.plusMinutes(tTimestep);
@@ -656,7 +518,7 @@ public class Adige extends JGTModel {
             rainArray = new double[hillsSlopeNum];
             setDataArray(inRain, rainArray);
 
-            if (pEtrate == null) {
+            if (inEtp != null) {
                 setDataArray(inEtp, etpArray);
             }
         }
@@ -665,57 +527,8 @@ public class Adige extends JGTModel {
         // double intervalStartTimeInMinutes = runningDateInMinutes;
         // double intervalEndTimeInMinutes = runningDateInMinutes + tTimestep;
 
-        rainRunoffRaining.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, etpArray);
-        initialConditions = rainRunoffRaining.getFinalCond();
-        rainRunoffRaining.setBasicTimeStep(10. / 60.);
+        initialConditions = adigeEngine.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, etpArray);
 
-        // Calculate the average rain on the basin
-        double avgRain = 0;
-        for( int i = 0; i < rainArray.length; i++ ) {
-            avgRain = avgRain + rainArray[i];
-        }
-        avgRain = avgRain / rainArray.length;
-
-        if (pPfafids == null) {
-            pPfafids = String.valueOf(outletHillslopeId);
-        }
-        if (pfaffsList == null) {
-            String[] split = pPfafids.split(",");
-            for( int i = 0; i < split.length; i++ ) {
-                split[i] = split[i].trim();
-            }
-            pfaffsList = Arrays.asList(split);
-        }
-
-        if (doBoundary)
-            outFinalconditions = new HashMap<Integer, AdigeBoundaryCondition>();
-
-        Set<Entry<String, Integer>> entrySet = pfaff2Index.entrySet();
-        for( Entry<String, Integer> entry : entrySet ) {
-            String pfaf = entry.getKey();
-            Integer index = entry.getValue();
-            Integer basinId = index2Basinid.get(index);
-            double[] discharge = {initialConditions[index]};
-            double[] subdischarge = {initialConditions[index + hillsSlopeNum]};
-            double[] s1 = {initialConditions[index + 2 * hillsSlopeNum]};
-            double[] s2 = {initialConditions[index + 3 * hillsSlopeNum]};
-
-            if (pfaffsList.contains(pfaf)) {
-                outDischarge.put(basinId, discharge);
-                outSubdischarge.put(basinId, subdischarge);
-                outS1.put(basinId, s1);
-                outS2.put(basinId, s2);
-            }
-            if (doBoundary) {
-                AdigeBoundaryCondition bc = new AdigeBoundaryCondition();
-                bc.basinId = basinId;
-                bc.discharge = discharge[0];
-                bc.dischargeSub = subdischarge[0];
-                bc.S1 = s1[0];
-                bc.S2 = s2[0];
-                outFinalconditions.put(basinId, bc);
-            }
-        }
     }
 
     private void setDataArray( HashMap<Integer, double[]> dataMap, double[] endArray ) {
@@ -732,39 +545,6 @@ public class Adige extends JGTModel {
             }
             endArray[index] = value[0] / (tTimestep / 60.0);
         }
-    }
-
-    private HashMap<Integer, Double> fillParameters( HillSlope hillSlope ) {
-        HashMap<Integer, Double> params = new HashMap<Integer, Double>();
-        // Double attribute = (Double)
-        // hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_10);
-        Double attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_10)).doubleValue();
-
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_10, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_30);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_30)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_30, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUP_60);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sup_60)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_AVG_SUP_60, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_10);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_10)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_10, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_30);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_30)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_30, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUP_60);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sup_60)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_VAR_SUP_60, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_AVG_SUB);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fAvg_sub)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_AVG_SUB, attribute);
-        // attribute = (Double) hillSlope.getHillslopeFeature().getAttribute(PARAMS_VAR_SUB);
-        attribute = ((Number) hillSlope.getHillslopeFeature().getAttribute(fVar_sub)).doubleValue();
-        params.put(DischargeDistributor.PARAMS_VAR_SUB, attribute);
-        params.put(DischargeDistributor.PARAMS_V_SUP, pV_sup);
-        params.put(DischargeDistributor.PARAMS_V_SUB, pV_sub);
-        return params;
     }
 
     // private void readVegetationLibrary( ScalarSet vegetationLibScalarSet,

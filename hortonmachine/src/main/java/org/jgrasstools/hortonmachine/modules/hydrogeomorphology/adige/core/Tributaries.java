@@ -9,7 +9,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Tributaries implements DischargeContributor {
+public class Tributaries implements IDischargeContributor {
 
     private final HashMap<String, Integer> tributary_pfaff2idMap;
     private HashMap<Integer, double[]> tributary_id2valuesQMap;

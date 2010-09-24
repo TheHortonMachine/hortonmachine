@@ -28,14 +28,15 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.DischargeContributor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy.Parameters;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
 /**
  * The duffy model.
@@ -65,13 +66,13 @@ public class DuffyModel {
     public static final int ROUTING_MANNING = 4;
     private static final double MSTMAX = 1;
     private int routingType = ROUTING_CHEZY;
-    private List<HillSlope> orderedHillslopes = null;
+    private List<IHillSlope> orderedHillslopes = null;
     private boolean doLog = false;
     private final IJGTProgressMonitor pm;
 
     private boolean doPrint = false;
-    private List<DischargeContributor> dischargeContributorList = new ArrayList<DischargeContributor>();
-    private HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor;
+    private List<IDischargeContributor> dischargeContributorList = new ArrayList<IDischargeContributor>();
+    private HashMap<Integer, ADischargeDistributor> hillslopeId2DischargeDistributor;
 
     /**
      * Duffy model function.
@@ -87,7 +88,7 @@ public class DuffyModel {
      * @param deltaTinMinutes 
      * @param doLog
      */
-    public DuffyModel( List<HillSlope> orderedHillslopes, int routingType, IJGTProgressMonitor pm, boolean doLog ) {
+    public DuffyModel( List<IHillSlope> orderedHillslopes, int routingType, IJGTProgressMonitor pm, boolean doLog ) {
         this.orderedHillslopes = orderedHillslopes;
         this.routingType = routingType;
         this.pm = pm;
@@ -145,7 +146,8 @@ public class DuffyModel {
 
         for( int i = linksNum - 1; i >= 0; i-- ) {
             // start from the last pieces
-            HillSlope currentHillslope = orderedHillslopes.get(i);
+            HillSlopeDuffy currentHillslope = (HillSlopeDuffy) orderedHillslopes.get(i);
+            Parameters parameters = currentHillslope.getParameters();
             /*
              * NOTE: Initial conditions are ... input[i] for link discharge
              * input[i+nLi] for link base flow input[i+2*nLi] for unsaturated
@@ -163,7 +165,7 @@ public class DuffyModel {
             // if (input[i + 3 * linksNum] != input[i + 3 * linksNum]) {
             // System.out.println();
             // }
-            double minsupdischarge = currentHillslope.parameters.getqqsupmin() * currentHillslope.getUpstreamArea(null) / 1E6;
+            double minsupdischarge = parameters.getqqsupmin() * currentHillslope.getUpstreamArea(null) / 1E6;
             if (input[i] < minsupdischarge) {
                 input[i] = minsupdischarge;
                 // System.out
@@ -171,7 +173,7 @@ public class DuffyModel {
                 // "Current superficial discharge is less than the minimum value, setted to it for the basin "
                 // + currentHillslope.getHillslopeId());
             }
-            double minsubdischarge = currentHillslope.parameters.getqqsubmin() * currentHillslope.getUpstreamArea(null) / 1E6;
+            double minsubdischarge = parameters.getqqsubmin() * currentHillslope.getUpstreamArea(null) / 1E6;
             if (input[i + linksNum] < minsubdischarge) {
                 input[i + linksNum] = minsubdischarge;
                 // System.out
@@ -179,15 +181,15 @@ public class DuffyModel {
                 // "Current subsuperficial discharge is less than the minimum value, setted to it for the basin "
                 // + currentHillslope.getHillslopeId());
             }
-            if (input[i + 2 * linksNum] < currentHillslope.parameters.getS1residual()) {
-                input[i + 2 * linksNum] = currentHillslope.parameters.getS1residual();
+            if (input[i + 2 * linksNum] < parameters.getS1residual()) {
+                input[i + 2 * linksNum] = parameters.getS1residual();
                 // System.out
                 // .println(
                 // "Current S1 parameter is less than the minimum value, setted to it for the basin "
                 // + currentHillslope.getHillslopeId());
             }
-            if (input[i + 3 * linksNum] < currentHillslope.parameters.getS2residual()) {
-                input[i + 3 * linksNum] = currentHillslope.parameters.getS2residual();
+            if (input[i + 3 * linksNum] < parameters.getS2residual()) {
+                input[i + 3 * linksNum] = parameters.getS2residual();
                 // System.out
                 // .println(
                 // "Current S2 parameter is less than the minimum value, setted to it for the basin "
@@ -195,9 +197,9 @@ public class DuffyModel {
             }
 
             /* HILLSLOPE FLUX CONDITIONS */
-            satsurf = currentHillslope.parameters.getS2Param() * (input[i + 3 * linksNum]); // dimless
+            satsurf = parameters.getS2Param() * (input[i + 3 * linksNum]); // dimless
             // double areasat = satsurf * area_m2;
-            mst = (input[i + 2 * linksNum]) / (currentHillslope.parameters.getS2max() - (input[i + 3 * linksNum])); // dimless
+            mst = (input[i + 2 * linksNum]) / (parameters.getS2max() - (input[i + 3 * linksNum])); // dimless
             if (Double.isInfinite(mst)) {
                 mst = MSTMAX;
             }
@@ -211,19 +213,19 @@ public class DuffyModel {
             // mphr
 
             /* HILLSLOPE S1-SURFACE FLUX VALUES */
-            if (prec_mphr < currentHillslope.parameters.getKs()) {
+            if (prec_mphr < parameters.getKs()) {
                 inf = (1.0 - satsurf) * area_m2 * prec_mphr; // m3phr
                 qdh = 0.0; // m3phr
             } else {
-                inf = (1.0 - satsurf) * area_m2 * currentHillslope.parameters.getKs(); // m3phr
-                qdh = (1.0 - satsurf) * area_m2 * (prec_mphr - currentHillslope.parameters.getKs()); // m3phr
+                inf = (1.0 - satsurf) * area_m2 * parameters.getKs(); // m3phr
+                qdh = (1.0 - satsurf) * area_m2 * (prec_mphr - parameters.getKs()); // m3phr
             }
 
-            Double eTrate = currentHillslope.parameters.getETrate();
-            if (eTrate == null && currentHillslope.hasVegetation()) {
+            Double eTrate = parameters.getETrate();
+            if (etpArray != null) {
                 qe1 = etpArray[i];
             } else {
-                if (input[i + 2 * linksNum] > currentHillslope.parameters.getS1residual()) {
+                if (input[i + 2 * linksNum] > parameters.getS1residual()) {
                     qe1 = eTrate * area_m2 * (1.0 - satsurf) * mst; // m3phr
                 } else {
                     qe1 = 0.0;
@@ -232,24 +234,23 @@ public class DuffyModel {
 
             /* HILLSLOPE S1-S2 FLUX VALUE */
             // re = 1100.0
-            // * (input[i + 2 * linksNum] / currentHillslope.parameters.getS2max())
+            // * (input[i + 2 * linksNum] / parameters.getS2max())
             // + 300.0
-            // * ((input[i + 2 * linksNum] / currentHillslope.parameters.getS2max()) + 5)
-            // * Math.pow((input[i + 3 * linksNum] / currentHillslope.parameters.getS2max()),
+            // * ((input[i + 2 * linksNum] / parameters.getS2max()) + 5)
+            // * Math.pow((input[i + 3 * linksNum] / parameters.getS2max()),
             // 2.0);
-            re = currentHillslope.parameters.getKs() * area_m2 * (1.0 - satsurf)
-                    * (Math.pow(mst, currentHillslope.parameters.getMstExp())); // m3phr
+            re = parameters.getKs() * area_m2 * (1.0 - satsurf) * (Math.pow(mst, parameters.getMstExp())); // m3phr
 
             /* HILLSLOPE S2-SURFACE FLUX VALUES */
             qds = satsurf * area_m2 * prec_mphr; // m3phr
 
-            if (eTrate == null && currentHillslope.hasVegetation()) {
+            if (etpArray != null) {
                 qe2 = etpArray[i];
             } else {
                 qe2 = eTrate * area_m2 * satsurf; // m3phr,
             }
 
-            qs = currentHillslope.parameters.getRecParam() * (input[i + 3 * linksNum]); // m3phr
+            qs = parameters.getRecParam() * (input[i + 3 * linksNum]); // m3phr
 
             /* HILLSLOPE DIRECT RUNOFF (TOTAL) FLUXES */
             // System.out.println("qdh = " + qdh);
@@ -280,7 +281,7 @@ public class DuffyModel {
             if (area_m2 > THRESHOLD_AREA) {
                 // distribute the discharge
                 int hillslopeId = currentHillslope.getHillslopeId();
-                DischargeDistributor dischargeDistributor = hillslopeId2DischargeDistributor.get(hillslopeId);
+                ADischargeDistributor dischargeDistributor = hillslopeId2DischargeDistributor.get(hillslopeId);
                 qs = dischargeDistributor.calculateSubsuperficialDischarge(qs, satsurf, currentTimeInMillis);
                 qd = dischargeDistributor.calculateSuperficialDischarge(qd, satsurf, currentTimeInMillis);
             }
@@ -298,14 +299,14 @@ public class DuffyModel {
             Q_trib = 0.0D;
             Qs_trib = 0.0D;
 
-            List<HillSlope> connectedUpstreamHillSlopes = currentHillslope.getConnectedUpstreamElements();
+            List<IHillSlope> connectedUpstreamHillSlopes = currentHillslope.getConnectedUpstreamElements();
 
             if (connectedUpstreamHillSlopes != null) {
-                for( HillSlope hillSlope : connectedUpstreamHillSlopes ) {
+                for( IHillSlope hillSlope : connectedUpstreamHillSlopes ) {
                     PfafstetterNumber pNum = hillSlope.getPfafstetterNumber();
                     int index = orderedHillslopes.indexOf(hillSlope);
                     boolean doCalculate = true;
-                    for( DischargeContributor dContributor : dischargeContributorList ) {
+                    for( IDischargeContributor dContributor : dischargeContributorList ) {
                         Double contributedDischarge = dContributor.getDischarge(pNum.toString(), input[index]);
                         if (!isNovalue(contributedDischarge)) {
                             if (doLog && doPrint) {
@@ -400,7 +401,7 @@ public class DuffyModel {
                     qe1 = 0.0;
                     qe2 = 0.0;
                     re = 0.0;
-                    System.out.println("All the contributes are setted to zero.");
+                    System.out.println("All the contributes are set to zero.");
                 }
             }
 
@@ -435,11 +436,11 @@ public class DuffyModel {
 
         return output;
     }
-    public void addDischargeContributor( DischargeContributor dischargeContributor ) {
+    public void addDischargeContributor( IDischargeContributor dischargeContributor ) {
         dischargeContributorList.add(dischargeContributor);
     }
 
-    public void addDischargeDistributor( HashMap<Integer, DischargeDistributor> hillslopeId2DischargeDistributor ) {
+    public void addDischargeDistributor( HashMap<Integer, ADischargeDistributor> hillslopeId2DischargeDistributor ) {
         this.hillslopeId2DischargeDistributor = hillslopeId2DischargeDistributor;
     }
 }

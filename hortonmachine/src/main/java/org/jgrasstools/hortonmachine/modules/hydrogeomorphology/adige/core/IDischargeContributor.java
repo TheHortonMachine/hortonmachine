@@ -27,7 +27,7 @@ import java.util.HashMap;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public interface DischargeContributor {
+public interface IDischargeContributor {
 
     /**
      * Returns the discharge for the given location of the network.

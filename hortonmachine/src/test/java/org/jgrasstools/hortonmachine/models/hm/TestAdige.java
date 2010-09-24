@@ -12,6 +12,7 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.io.DuffyInputs;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
 /**
@@ -22,7 +23,7 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
 public class TestAdige extends HMTestCase {
 
     @SuppressWarnings("nls")
-    public void testAdige() throws Exception {
+    public void testAdigeDuffy() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         String startDate = "2005-05-01 00:00";
@@ -99,30 +100,47 @@ public class TestAdige extends HMTestCase {
         // SimpleFeatureCollection offtakesFC = ShapefileFeatureReader
         // .readShapefile(offtakesPath);
 
-        VegetationLibraryReader vegetationReader = new VegetationLibraryReader();
-        vegetationReader.file = vegetationPath;
-        vegetationReader.read();
-        HashMap<Integer, VegetationLibraryRecord> vegetationData = vegetationReader.data;
-        vegetationReader.close();
-
         SimpleFeatureCollection networkFC = ShapefileFeatureReader.readShapefile(networkPath);
+
+        DuffyInputs duffyInputs = new DuffyInputs();
+        duffyInputs.fAvg_sub = "mean_sub";
+        duffyInputs.fVar_sub = "sd_sub";
+        duffyInputs.fAvg_sup_10 = "mean_10";
+        duffyInputs.fVar_sup_10 = "sd_10";
+        duffyInputs.fAvg_sup_30 = "mean_30";
+        duffyInputs.fVar_sup_30 = "sd_30";
+        duffyInputs.fAvg_sup_60 = "mean_60";
+        duffyInputs.fVar_sup_60 = "sd_60";
+        duffyInputs.pV_sup = 0.5;
+        duffyInputs.pV_sub = 0.5;
+        duffyInputs.pKs = 3.0;
+        duffyInputs.pMstexp = 11.0;
+        duffyInputs.pDepthmnsat = 2.0;
+        duffyInputs.pSpecyield = 0.01;
+        duffyInputs.pPorosity = 0.41;
+        duffyInputs.pEtrate = 0.001;
+        duffyInputs.pSatconst = 0.3;
+        duffyInputs.pRouting = 3;
+        duffyInputs.doBoundary = true;
+        AdigeBoundaryConditionReader boundaryConditionReader = new AdigeBoundaryConditionReader();
+        boundaryConditionReader.file = inBoundaryConditionsPath;
+        boundaryConditionReader.read();
+        HashMap<Integer, AdigeBoundaryCondition> inBoundaryConditions = boundaryConditionReader.data;
+        boundaryConditionReader.close();
+        duffyInputs.inInitialconditions = inBoundaryConditions;
+        duffyInputs.pDischargePerUnitArea = 0.01;
+        duffyInputs.pStartSuperficialDischargeFraction = 0.3;
+        duffyInputs.pMaxSatVolumeS1 = 0.2;
+        duffyInputs.pMaxSatVolumeS2 = 0.25;
+        // adige.inInitialconditions = inBoundaryConditions;
 
         Adige adige = new Adige();
         adige.pm = pm;
+        adige.inDuffyInput = duffyInputs;
         adige.inHillslope = hillslopeFC;
         adige.fNetnum = "netnum";
         adige.fBaricenter = "avgz";
         // adige.fVegetation = "uso_reclas";
-        adige.fAvg_sub = "mean_sub";
-        adige.fVar_sub = "sd_sub";
-        adige.fAvg_sup_10 = "mean_10";
-        adige.fVar_sup_10 = "sd_10";
-        adige.fAvg_sup_30 = "mean_30";
-        adige.fVar_sup_30 = "sd_30";
-        adige.fAvg_sup_60 = "mean_60";
-        adige.fVar_sup_60 = "sd_60";
-        adige.pV_sup = 0.5;
-        adige.pV_sub = 0.5;
         adige.inHydrometers = hydrometersFC;
         adige.inDams = damsFC;
         adige.inTributary = tributaryFC;
@@ -135,15 +153,6 @@ public class TestAdige extends HMTestCase {
         adige.fNetelevstart = "elevfirstp";
         adige.fNetelevend = "elevlastpo";
 
-        adige.pKs = 3.0;
-        adige.pMstexp = 11.0;
-        adige.pDepthmnsat = 2.0;
-        adige.pSpecyield = 0.01;
-        adige.pPorosity = 0.41;
-        adige.pEtrate = 0.001;
-        adige.pSatconst = 0.3;
-
-        adige.pRouting = 3;
         adige.pRainintensity = -1;
         adige.pRainduration = -1;
         adige.doLog = false;
@@ -151,20 +160,6 @@ public class TestAdige extends HMTestCase {
         adige.tTimestep = timeStepMinutes;
         adige.tStart = startDate;
         adige.tEnd = endDate;
-
-        adige.doBoundary = true;
-        AdigeBoundaryConditionReader boundaryConditionReader = new AdigeBoundaryConditionReader();
-        boundaryConditionReader.file = inBoundaryConditionsPath;
-        boundaryConditionReader.read();
-        HashMap<Integer, AdigeBoundaryCondition> inBoundaryConditions = boundaryConditionReader.data;
-        boundaryConditionReader.close();
-        adige.inInitialconditions = inBoundaryConditions;
-
-        adige.pDischargePerUnitArea = 0.01;
-        adige.pStartSuperficialDischargeFraction = 0.3;
-        adige.pMaxSatVolumeS1 = 0.2;
-        adige.pMaxSatVolumeS2 = 0.25;
-        // adige.inInitialconditions = inBoundaryConditions;
 
         rainReader.initProcess();
         while( rainReader.doProcess ) {
@@ -208,8 +203,8 @@ public class TestAdige extends HMTestCase {
 
             HashMap<Integer, double[]> outDischarge = adige.outDischarge;
             HashMap<Integer, double[]> outSubDischarge = adige.outSubdischarge;
-            HashMap<Integer, double[]> outS1 = adige.outS1;
-            HashMap<Integer, double[]> outS2 = adige.outS2;
+            HashMap<Integer, double[]> outS1 = duffyInputs.outS1;
+            HashMap<Integer, double[]> outS2 = duffyInputs.outS2;
         }
 
         rainReader.close();
@@ -228,7 +223,7 @@ public class TestAdige extends HMTestCase {
 
         AdigeBoundaryConditionWriter boundaryConditionWriter = new AdigeBoundaryConditionWriter();
         boundaryConditionWriter.file = outBoundaryConditionsPath;
-        boundaryConditionWriter.data = adige.outFinalconditions;
+        boundaryConditionWriter.data = duffyInputs.outFinalconditions;
         boundaryConditionWriter.write();
         boundaryConditionWriter.close();
 

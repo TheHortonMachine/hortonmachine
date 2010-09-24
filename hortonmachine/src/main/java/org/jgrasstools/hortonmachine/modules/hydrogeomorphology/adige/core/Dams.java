@@ -27,7 +27,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Dams implements DischargeContributor {
+public class Dams implements IDischargeContributor {
 
     private final HashMap<String, Integer> dams_pfaff2idMap;
     private HashMap<Integer, double[]> dams_id2valuesQMap;

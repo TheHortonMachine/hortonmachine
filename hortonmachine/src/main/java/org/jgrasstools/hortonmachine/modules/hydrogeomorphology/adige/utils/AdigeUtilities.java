@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
+package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -24,20 +24,21 @@ import java.util.List;
 
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class NetBasinsManager {
-
-    private List<SimpleFeature> hillslopeFeaturesList;
-    private List<Integer> hillslopeIdsList;
+public class AdigeUtilities {
 
     /**
+     * Generates {@link HillSlope}s from the informations gathered in the provided feature layers.
+     * 
      * @param netFeatureCollection the network features
      * @param hillslopeFeatureCollection the hillslope features
      * @param netnumAttr the attribute name of the field connecting the two layers
@@ -45,21 +46,13 @@ public class NetBasinsManager {
      * @param startelevAttr the field name of the start elevation of the net (can be null)
      * @param endelevAttr the field name of the end elevation of the net (can be null)
      * @param baricenterAttr the field holding the baricenter of the hasin elevation (can be null)
-     * @param pSatconst 
-     * @param pEtrate 
-     * @param pPorosity 
-     * @param pSpecyield 
-     * @param pMstexp 
-     * @param pKs 
-     * @param pDepthmnsat 
      * @param out a printstream for logging
      * @return the list of ordered hillslopes, starting from the most downstream one
      * @throws Exception
      */
-    public List<HillSlope> operateOnLayers( FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
+    public static List<IHillSlope> generateHillSlopes( FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
             FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection, String netnumAttr, String pfafAttr,
-            String startelevAttr, String endelevAttr, String baricenterAttr, double pKs, double pMstexp, double pSpecyield,
-            double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat, IJGTProgressMonitor out ) throws Exception {
+            String startelevAttr, String endelevAttr, String baricenterAttr, IJGTProgressMonitor out ) throws Exception {
 
         SimpleFeatureType fT = netFeatureCollection.getSchema();
         // netnum attribute
@@ -68,7 +61,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this);
+            throw new IllegalArgumentException(newPattern);
         }
         // pfafstetter attribute
         int pAttrIndex = fT.indexOf(pfafAttr);
@@ -76,7 +69,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{pfafAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this);
+            throw new IllegalArgumentException(newPattern);
         }
         // net start elevation attribute
         int startNetElevAttrIndex = -1;
@@ -86,7 +79,7 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{startelevAttr, fT.getTypeName()};
                 String newPattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+                throw new IllegalArgumentException(newPattern.getClass().getSimpleName());
             }
         }
         // net end elevation attribute
@@ -97,7 +90,7 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{endelevAttr, fT.getTypeName()};
                 String newPattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+                throw new IllegalArgumentException(newPattern);
             }
         }
 
@@ -140,7 +133,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, ft.getTypeName()};
             pattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(pattern, this);
+            throw new IllegalArgumentException(pattern);
         }
 
         // baricenter attribute
@@ -151,12 +144,12 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{baricenterAttr, ft.getTypeName()};
                 pattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(pattern, this);
+                throw new IllegalArgumentException(pattern);
             }
         }
 
-        hillslopeFeaturesList = new ArrayList<SimpleFeature>();
-        hillslopeIdsList = new ArrayList<Integer>();
+        List<SimpleFeature> hillslopeFeaturesList = new ArrayList<SimpleFeature>();
+        List<Integer> hillslopeIdsList = new ArrayList<Integer>();
         FeatureIterator<SimpleFeature> hillslopeIterator = hillslopeFeatureCollection.features();
         SimpleFeature mostDownstreamHillslopeFeature = null;
         while( hillslopeIterator.hasNext() ) {
@@ -172,13 +165,12 @@ public class NetBasinsManager {
          * create all the hillslopes and connect them with their net feature and other hillslopes
          */
         out.message("Linking together network and hillslopes layers...");
-        ArrayList<HillSlope> hillslopeElements = new ArrayList<HillSlope>();
-        HillSlope mostDownstreamHillslope = null;
+        ArrayList<IHillSlope> hillslopeElements = new ArrayList<IHillSlope>();
+        IHillSlope mostDownstreamHillslope = null;
         if (mostDownStreamPNumber.isEndPiece()) {
             Integer basinId = hillslopeIdsList.get(0);
-            HillSlope tmpHslp = new HillSlope(mostDownStreamNetFeature, mostDownstreamHillslopeFeature, mostDownStreamPNumber,
-                    basinId.intValue(), baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex, pKs, pMstexp,
-                    pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat);
+            IHillSlope tmpHslp = new HillSlope(mostDownStreamNetFeature, mostDownstreamHillslopeFeature, mostDownStreamPNumber,
+                    basinId.intValue(), baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex);
             hillslopeElements.add(tmpHslp);
             mostDownstreamHillslope = tmpHslp;
         } else {
@@ -194,9 +186,8 @@ public class NetBasinsManager {
                     Integer netNum = netIdsList.get(j);
                     if (netNum.equals(link)) {
                         SimpleFeature netFeature = netFeaturesList.get(j);
-                        HillSlope tmpHslp = new HillSlope(netFeature, basinFeature, netPfaffsList.get(j), netNum.intValue(),
-                                baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex, pKs, pMstexp, pSpecyield,
-                                pPorosity, pEtrate, pSatconst, pDepthmnsat);
+                        IHillSlope tmpHslp = new HillSlope(netFeature, basinFeature, netPfaffsList.get(j), netNum.intValue(),
+                                baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex);
                         hillslopeElements.add(tmpHslp);
                         selectedNetFeatureList.add(netFeature);
                         selectedNetId.add(netNum);
@@ -235,7 +226,7 @@ public class NetBasinsManager {
             throw new RuntimeException();
         HillSlope.connectElements(hillslopeElements);
 
-        List<HillSlope> orderedHillslopes = new ArrayList<HillSlope>();
+        List<IHillSlope> orderedHillslopes = new ArrayList<IHillSlope>();
         mostDownstreamHillslope.getAllUpstreamElements(orderedHillslopes, null);
 
         return orderedHillslopes;

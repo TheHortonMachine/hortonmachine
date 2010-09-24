@@ -30,7 +30,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Offtakes implements DischargeContributor {
+public class Offtakes implements IDischargeContributor {
 
     private final HashMap<String, Integer> offtakes_pfaff2idMap;
     private HashMap<Integer, double[]> offtakes_id2valuesQMap;
