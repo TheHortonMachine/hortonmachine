@@ -29,8 +29,8 @@ public class TestAdige extends HMTestCase {
         String endDate = "2005-05-01 03:00";
         int timeStepMinutes = 30;
 
-        String shpFolder = "/home/moovida/data/newage/sampledata/shapefiles/";
-        String dataFolder = "/home/moovida/data/newage/sampledata/";
+        String shpFolder = "/Users/silli/lavori_tmp/newage/newage_oms/sampledata/shapefiles/";
+        String dataFolder = "/Users/silli/lavori_tmp/newage/newage_oms/sampledata/";
 
         String hillslopePath = shpFolder + "basins_passirio_width0.shp";
 
@@ -236,8 +236,8 @@ public class TestAdige extends HMTestCase {
         String endDate = "2005-05-01 03:00";
         int timeStepMinutes = 60;
 
-        String shpFolder = "/home/moovida/data/newage/sampledata/shapefiles/";
-        String dataFolder = "/home/moovida/data/newage/sampledata/";
+        String shpFolder = "/Users/silli/lavori_tmp/newage/newage_oms/jami_input/";
+        String dataFolder = "/Users/silli/lavori_tmp/newage/newage_oms/jami_input/";
 
         String hillslopePath = shpFolder + "basins_passirio_width0.shp";
 
