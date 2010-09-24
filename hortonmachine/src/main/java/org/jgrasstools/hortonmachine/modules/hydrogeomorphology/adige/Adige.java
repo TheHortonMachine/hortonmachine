@@ -436,7 +436,8 @@ public class Adige extends JGTModel {
                 orderedHillslopes = duffyHillslopes;
             }
 
-            outletHillslopeId = orderedHillslopes.get(0).getHillslopeId();
+            IHillSlope outletHillSlope = orderedHillslopes.get(0);
+            outletHillslopeId = outletHillSlope.getHillslopeId();
             netPfaffsList = new ArrayList<PfafstetterNumber>();
             pfaff2Index = new HashMap<String, Integer>();
             basinid2Index = new HashMap<Integer, Integer>();
@@ -456,7 +457,7 @@ public class Adige extends JGTModel {
             pm.done();
 
             if (pPfafids == null) {
-                pPfafids = String.valueOf(outletHillslopeId);
+                pPfafids = outletHillSlope.getPfafstetterNumber().toString();
             }
             if (pfaffsList == null) {
                 String[] split = pPfafids.split(",");
@@ -473,7 +474,7 @@ public class Adige extends JGTModel {
             } else if (inHymodInput != null) {
                 initialConditions = new double[hillsSlopeNum * 2];
                 adigeEngine = new HymodAdigeEngine(inHymodInput, orderedHillslopes, index2Basinid, outDischarge, outSubdischarge,
-                        doLog, doLog, pm);
+                        pfaffsList, doLog, doLog, pm);
             } else {
                 throw new ModelsIllegalargumentException("No parameters for any model were defined. Check your syntax.", this);
             }
