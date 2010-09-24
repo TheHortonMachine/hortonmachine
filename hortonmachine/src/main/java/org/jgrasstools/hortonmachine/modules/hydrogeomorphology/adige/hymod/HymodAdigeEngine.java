@@ -60,6 +60,7 @@ public class HymodAdigeEngine implements IAdigeEngine {
     private final boolean doLog;
     private final IJGTProgressMonitor pm;
     private final List<String> pfaffsList;
+    private double udo;
 
     public HymodAdigeEngine( HymodInputs hymodInputs, List<IHillSlope> orderedHillslopes,
             HashMap<Integer, Integer> index2Basinid, HashMap<Integer, double[]> outDischarge,
@@ -75,6 +76,10 @@ public class HymodAdigeEngine implements IAdigeEngine {
         this.doPrint = doPrint;
         this.pm = pm;
         outDischargeInternal = new HashMap<Integer, double[]>();
+
+        double totalArea = orderedHillslopes.get(0).getUpstreamArea(null);
+        udo = hymodInputs.pQ0 / (totalArea / 1E6);
+
     }
 
     public void addDischargeContributor( IDischargeContributor dischargeContributor ) {
@@ -100,9 +105,9 @@ public class HymodAdigeEngine implements IAdigeEngine {
 
         for( int i = orderedHillslopes.size() - 1; i >= 0; i-- ) {
             IHillSlope hillSlope = orderedHillslopes.get(i);
-            double areaKm2 = hillSlope.getHillslopeArea()/1E6;
+            double areaKm2 = hillSlope.getHillslopeArea() / 1E6;
             double coeff = (pow(10, 9)) * tTimestep * 60 / (areaKm2 * (pow(10, 12)));
-            xSlow[i] = hymodInputs.pQ0 * coeff / hymodInputs.pRs;
+            xSlow[i] = udo * areaKm2 * coeff / hymodInputs.pRs;
 
             double rain = rainArray[i];
             double etp = etpArray[i];
