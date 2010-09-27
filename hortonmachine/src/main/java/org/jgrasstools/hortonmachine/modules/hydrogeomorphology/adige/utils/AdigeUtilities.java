@@ -16,28 +16,29 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
+package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class NetBasinsManager {
-
-    private List<SimpleFeature> hillslopeFeaturesList;
-    private List<Long> hillslopeIdsList;
+public class AdigeUtilities {
 
     /**
+     * Generates {@link HillSlope}s from the informations gathered in the provided feature layers.
+     * 
      * @param netFeatureCollection the network features
      * @param hillslopeFeatureCollection the hillslope features
      * @param netnumAttr the attribute name of the field connecting the two layers
@@ -45,23 +46,13 @@ public class NetBasinsManager {
      * @param startelevAttr the field name of the start elevation of the net (can be null)
      * @param endelevAttr the field name of the end elevation of the net (can be null)
      * @param baricenterAttr the field holding the baricenter of the hasin elevation (can be null)
-     * @param vegetationAttributeName the field holding the vegetation id of the hasin (can be null)
-     * @param pSatconst 
-     * @param pEtrate 
-     * @param pPorosity 
-     * @param pSpecyield 
-     * @param pMstexp 
-     * @param pKs 
-     * @param pDepthmnsat 
      * @param out a printstream for logging
      * @return the list of ordered hillslopes, starting from the most downstream one
      * @throws Exception
      */
-    public List<HillSlope> operateOnLayers( SimpleFeatureCollection netFeatureCollection,
-            SimpleFeatureCollection hillslopeFeatureCollection, String netnumAttr, String pfafAttr,
-            String startelevAttr, String endelevAttr, String baricenterAttr, String vegetationAttributeName, double pKs,
-            double pMstexp, double pSpecyield, double pPorosity, Double pEtrate, double pSatconst, double pDepthmnsat,
-            IJGTProgressMonitor out ) throws Exception {
+    public static List<IHillSlope> generateHillSlopes( FeatureCollection<SimpleFeatureType, SimpleFeature> netFeatureCollection,
+            FeatureCollection<SimpleFeatureType, SimpleFeature> hillslopeFeatureCollection, String netnumAttr, String pfafAttr,
+            String startelevAttr, String endelevAttr, String baricenterAttr, IJGTProgressMonitor out ) throws Exception {
 
         SimpleFeatureType fT = netFeatureCollection.getSchema();
         // netnum attribute
@@ -70,7 +61,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this);
+            throw new IllegalArgumentException(newPattern);
         }
         // pfafstetter attribute
         int pAttrIndex = fT.indexOf(pfafAttr);
@@ -78,7 +69,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{pfafAttr, fT.getTypeName()};
             String newPattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(newPattern, this);
+            throw new IllegalArgumentException(newPattern);
         }
         // net start elevation attribute
         int startNetElevAttrIndex = -1;
@@ -88,7 +79,7 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{startelevAttr, fT.getTypeName()};
                 String newPattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+                throw new IllegalArgumentException(newPattern.getClass().getSimpleName());
             }
         }
         // net end elevation attribute
@@ -99,23 +90,23 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{endelevAttr, fT.getTypeName()};
                 String newPattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(newPattern, this.getClass().getSimpleName());
+                throw new IllegalArgumentException(newPattern);
             }
         }
 
         out.message("Analizing the network layer...");
         List<SimpleFeature> netFeaturesList = new ArrayList<SimpleFeature>();
-        List<Long> netIdsList = new ArrayList<Long>();
+        List<Integer> netIdsList = new ArrayList<Integer>();
         ArrayList<PfafstetterNumber> netPfaffsList = new ArrayList<PfafstetterNumber>();
         FeatureIterator<SimpleFeature> featureIterator = netFeatureCollection.features();
         PfafstetterNumber mostDownStreamPNumber = null;
         SimpleFeature mostDownStreamNetFeature = null;
-        Long mostDownStreamLinkId = -1l;
+        Integer mostDownStreamLinkId = -1;
         while( featureIterator.hasNext() ) {
             SimpleFeature f = (SimpleFeature) featureIterator.next();
             String attribute = (String) f.getAttribute(pAttrIndex);
             PfafstetterNumber current = new PfafstetterNumber(attribute);
-            Long tmpId = ((Number) f.getAttribute(lAttrIndex)).longValue();
+            Integer tmpId = ((Number) f.getAttribute(lAttrIndex)).intValue();
             if (mostDownStreamPNumber == null) {
                 mostDownStreamPNumber = current;
             } else {
@@ -142,7 +133,7 @@ public class NetBasinsManager {
             String pattern = "Attribute {0} not found in layer {1}.";
             Object[] args = new Object[]{netnumAttr, ft.getTypeName()};
             pattern = MessageFormat.format(pattern, args);
-            throw new ModelsIllegalargumentException(pattern, this);
+            throw new IllegalArgumentException(pattern);
         }
 
         // baricenter attribute
@@ -153,27 +144,17 @@ public class NetBasinsManager {
                 String pattern = "Attribute {0} not found in layer {1}.";
                 Object[] args = new Object[]{baricenterAttr, ft.getTypeName()};
                 pattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(pattern, this);
-            }
-        }
-        int vegetationAttributeIndex = -1;
-        if (vegetationAttributeName != null) {
-            vegetationAttributeIndex = ft.indexOf(vegetationAttributeName);
-            if (vegetationAttributeIndex == -1) {
-                String pattern = "Attribute {0} not found in layer {1}.";
-                Object[] args = new Object[]{vegetationAttributeName, ft.getTypeName()};
-                pattern = MessageFormat.format(pattern, args);
-                throw new ModelsIllegalargumentException(pattern, this);
+                throw new IllegalArgumentException(pattern);
             }
         }
 
-        hillslopeFeaturesList = new ArrayList<SimpleFeature>();
-        hillslopeIdsList = new ArrayList<Long>();
+        List<SimpleFeature> hillslopeFeaturesList = new ArrayList<SimpleFeature>();
+        List<Integer> hillslopeIdsList = new ArrayList<Integer>();
         FeatureIterator<SimpleFeature> hillslopeIterator = hillslopeFeatureCollection.features();
         SimpleFeature mostDownstreamHillslopeFeature = null;
         while( hillslopeIterator.hasNext() ) {
             SimpleFeature f = hillslopeIterator.next();
-            Long linkAttribute = ((Number) f.getAttribute(linkAttrIndexInBasinLayerIndex)).longValue();
+            Integer linkAttribute = ((Number) f.getAttribute(linkAttrIndexInBasinLayerIndex)).intValue();
             if (mostDownStreamLinkId == linkAttribute) {
                 mostDownstreamHillslopeFeature = f;
             }
@@ -184,12 +165,12 @@ public class NetBasinsManager {
          * create all the hillslopes and connect them with their net feature and other hillslopes
          */
         out.message("Linking together network and hillslopes layers...");
-        ArrayList<HillSlope> hillslopeElements = new ArrayList<HillSlope>();
-        HillSlope mostDownstreamHillslope = null;
+        ArrayList<IHillSlope> hillslopeElements = new ArrayList<IHillSlope>();
+        IHillSlope mostDownstreamHillslope = null;
         if (mostDownStreamPNumber.isEndPiece()) {
-            HillSlope tmpHslp = new HillSlope(mostDownStreamNetFeature, mostDownstreamHillslopeFeature, mostDownStreamPNumber,
-                    hillslopeIdsList.get(0).intValue(), baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex,
-                    vegetationAttributeIndex, pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat);
+            Integer basinId = hillslopeIdsList.get(0);
+            IHillSlope tmpHslp = new HillSlope(mostDownStreamNetFeature, mostDownstreamHillslopeFeature, mostDownStreamPNumber,
+                    basinId.intValue(), baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex);
             hillslopeElements.add(tmpHslp);
             mostDownstreamHillslope = tmpHslp;
         } else {
@@ -197,17 +178,16 @@ public class NetBasinsManager {
              * almost there, now get from the basins list the ones with that netNums
              */
             ArrayList<SimpleFeature> selectedNetFeatureList = new ArrayList<SimpleFeature>();
-            ArrayList<Long> selectedNetId = new ArrayList<Long>();
+            ArrayList<Integer> selectedNetId = new ArrayList<Integer>();
             for( int i = 0; i < hillslopeFeaturesList.size(); i++ ) {
                 SimpleFeature basinFeature = hillslopeFeaturesList.get(i);
-                Long link = hillslopeIdsList.get(i);
+                Integer link = hillslopeIdsList.get(i);
                 for( int j = 0; j < netFeaturesList.size(); j++ ) {
-                    Long netNum = netIdsList.get(j);
+                    Integer netNum = netIdsList.get(j);
                     if (netNum.equals(link)) {
                         SimpleFeature netFeature = netFeaturesList.get(j);
-                        HillSlope tmpHslp = new HillSlope(netFeature, basinFeature, netPfaffsList.get(j), netNum.intValue(),
-                                baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex, vegetationAttributeIndex,
-                                pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat);
+                        IHillSlope tmpHslp = new HillSlope(netFeature, basinFeature, netPfaffsList.get(j), netNum.intValue(),
+                                baricenterAttributeIndex, startNetElevAttrIndex, endNetElevAttrIndex);
                         hillslopeElements.add(tmpHslp);
                         selectedNetFeatureList.add(netFeature);
                         selectedNetId.add(netNum);
@@ -217,11 +197,11 @@ public class NetBasinsManager {
             }
 
             mostDownStreamPNumber = null;
-            Long mostDownStreamNetId = null;
+            Integer mostDownStreamNetId = null;
             for( SimpleFeature feature : selectedNetFeatureList ) {
                 String attribute = (String) feature.getAttribute(pAttrIndex);
                 PfafstetterNumber current = new PfafstetterNumber(attribute);
-                Long tmpId = ((Number) feature.getAttribute(lAttrIndex)).longValue();
+                Integer tmpId = ((Number) feature.getAttribute(lAttrIndex)).intValue();
                 if (mostDownStreamPNumber == null) {
                     mostDownStreamPNumber = current;
                 } else {
@@ -233,7 +213,7 @@ public class NetBasinsManager {
             }
 
             for( int i = 0; i < hillslopeElements.size(); i++ ) {
-                Long hId = hillslopeIdsList.get(i);
+                Integer hId = hillslopeIdsList.get(i);
                 if (hId.equals(mostDownStreamNetId)) {
                     mostDownstreamHillslope = hillslopeElements.get(i);
                     break;
@@ -246,7 +226,7 @@ public class NetBasinsManager {
             throw new RuntimeException();
         HillSlope.connectElements(hillslopeElements);
 
-        List<HillSlope> orderedHillslopes = new ArrayList<HillSlope>();
+        List<IHillSlope> orderedHillslopes = new ArrayList<IHillSlope>();
         mostDownstreamHillslope.getAllUpstreamElements(orderedHillslopes, null);
 
         return orderedHillslopes;

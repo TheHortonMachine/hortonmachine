@@ -25,7 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy;
 
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 
 /**
  * The purpose of this class is to be a centralized database for all the
@@ -41,56 +41,56 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillS
  */
 public class HillSlopesInfo {
 
-    public double So( HillSlope hillSlope ) {
+    public double So( IHillSlope hillSlope ) {
         return 1.0; // So is max storage in the hillslope and i is the i-th link
     }
 
-    public double Ts( HillSlope hillSlope ) {
+    public double Ts( IHillSlope hillSlope ) {
         return 10.0;
     }
 
-    public double Te( HillSlope hillSlope ) {
+    public double Te( IHillSlope hillSlope ) {
         return 1e20;
     }
 
     /* PF ADDITION - START ... */
     /* Working units are m, hr, .... */
-    public double depthMnSat( HillSlope hillSlope ) {
+    public double depthMnSat( IHillSlope hillSlope ) {
         double depth_m = 2.5; // meters
         return depth_m;
     }
 
-    public double ks( HillSlope hillSlope ) {
+    public double ks( IHillSlope hillSlope ) {
         // double ks_mpd = 1.023 * 10000.0;
         // double ks_mphr = ks_mpd * (1. / 24.);
         double ks_mphr = 0.01;
         return ks_mphr;
     }
 
-    public double mstExp( HillSlope hillSlope ) {
+    public double mstExp( IHillSlope hillSlope ) {
         return 11.0; // 11.0 this value dimensionless
     }
 
-    public double recParam( HillSlope hillSlope ) {
+    public double recParam( IHillSlope hillSlope ) {
         double area_m2 = hillSlope.getHillslopeArea();
         double spec_yield = 0.01; // dimensionless
         double d3_phr = (3.0 * ks(hillSlope) * depthMnSat(hillSlope)) / (spec_yield * area_m2);
         return d3_phr; // [1/T]
     }
 
-    public double s2Param( HillSlope hillSlope ) {
+    public double s2Param( IHillSlope hillSlope ) {
         double area_m2 = hillSlope.getHillslopeArea();
         double porosity = 0.46; // 0.41; dimensionless
         double d4_pm3 = 0.905 * (1. / (porosity * depthMnSat(hillSlope) * area_m2));
         return d4_pm3; // [1/L^3]
     }
 
-    public double s2max( HillSlope hillSlope ) {
+    public double s2max( IHillSlope hillSlope ) {
         double s2max_m3 = (1.0 / s2Param(hillSlope));
         return s2max_m3;
     }
 
-    public double eTrate( HillSlope hillSlope ) {
+    public double eTrate( IHillSlope hillSlope ) {
         double etrate_mpd = 0.34; // 0.0034;
         double etrate_mphr = etrate_mpd * (1. / 24.);
         return etrate_mphr;

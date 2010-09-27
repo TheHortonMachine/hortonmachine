@@ -211,6 +211,14 @@ public class EnergyBalance extends JGTModel {
     @Out
     public HashMap<Integer, double[]> outSwe;
 
+    @Description("Net radiation for each basin.")
+    @Out
+    public HashMap<Integer, double[]> outNetradiation;
+    
+    @Description("Net shortwave radiation for each basin.")
+    @Out
+    public HashMap<Integer, double[]> outNetshortradiation;
+
     /*
      * Model's variables definition
      */
@@ -279,6 +287,8 @@ public class EnergyBalance extends JGTModel {
         outPrain = new HashMap<Integer, double[]>();
         outPsnow = new HashMap<Integer, double[]>();
         outSwe = new HashMap<Integer, double[]>();
+        outNetradiation = new HashMap<Integer, double[]>();
+        outNetshortradiation = new HashMap<Integer, double[]>();
 
         if (safePoint == null)
             safePoint = new SafePoint();
@@ -795,6 +805,8 @@ public class EnergyBalance extends JGTModel {
         double tmpPrain = 0.0;
         double tmpPsnow = 0.0;
         double tmpSwe = 0.0;
+        double tmpNetradiation = 0.0;
+        double tmpNetShortRadiation = 0.0;
         for( int j = 0; j < num_ES; j++ ) { // per tutte le BANDE
             // ALTIMETRICHE
 
@@ -1051,6 +1063,8 @@ public class EnergyBalance extends JGTModel {
                 tmpPnet = tmpPnet + Pnet * (A[j][k][i] / Abasin[i]);
                 tmpPrain = tmpPrain + Prain * (A[j][k][i] / Abasin[i]);
                 tmpPsnow = tmpPsnow + Psnow * (A[j][k][i] / Abasin[i]);
+                tmpNetradiation = tmpNetradiation + netRadiation[0] * (A[j][k][i] / Abasin[i]);
+                tmpNetShortRadiation = tmpNetShortRadiation + netShortRadiation[0] * (A[j][k][i] / Abasin[i]);
                 // System.out.println("swe = " + fullAdigeData[8 * i + 8]);
             }
             averageTemperature[2 * i + 1] += T[j];
@@ -1060,6 +1074,8 @@ public class EnergyBalance extends JGTModel {
         outPnet.put(basinId, new double[]{tmpPnet});
         outPrain.put(basinId, new double[]{tmpPrain});
         outPsnow.put(basinId, new double[]{tmpPsnow});
+        outNetradiation.put(basinId, new double[]{tmpNetradiation});
+        outNetshortradiation.put(basinId, new double[]{tmpNetShortRadiation});
 
         // System.out.println("rad media= " + fullAdigeData[8 * i + 2]);
         // System.out.println("short media= " + fullAdigeData[8 * i + 3]);

@@ -26,7 +26,7 @@ import java.util.HashMap;
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
-public abstract class DischargeDistributor {
+public abstract class ADischargeDistributor {
     /**
      * Identifier for usage of Nash distribution.
      */
@@ -55,12 +55,12 @@ public abstract class DischargeDistributor {
     /**
      * Creates a discharge distributor called from the extending class.
      * 
-     * @param startDateMillis see {@link DischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
-     * @param endDateMillis see {@link DischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
-     * @param timeStepMillis see {@link DischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
-     * @param parameters see {@link DischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
+     * @param startDateMillis see {@link ADischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
+     * @param endDateMillis see {@link ADischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
+     * @param timeStepMillis see {@link ADischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
+     * @param parameters see {@link ADischargeDistributor#createDischargeDistributor(int, long, long, long)} doc.
      */
-    protected DischargeDistributor( long startDateMillis, long endDateMillis, long timeStepMillis,
+    protected ADischargeDistributor( long startDateMillis, long endDateMillis, long timeStepMillis,
             HashMap<Integer, Double> parameters ) {
         this.startDateMillis = startDateMillis;
         this.timeStepMillis = timeStepMillis;
@@ -71,11 +71,11 @@ public abstract class DischargeDistributor {
     }
 
     /**
-     * Creates a {@link DischargeDistributor discharge distributor}.
+     * Creates a {@link ADischargeDistributor discharge distributor}.
      * 
      * @param distributorType defines the type to be used. Possible values are:
      *              <ul>
-     *              <li>{@link DischargeDistributor#DISTRIBUTOR_TYPE_NASH NASH: 0}</li>
+     *              <li>{@link ADischargeDistributor#DISTRIBUTOR_TYPE_NASH NASH: 0}</li>
      *              </ul>
      * @param startDateMillis the start time used to define the complete time horizont.
      * @param endDateMillis the end time used to define the complete time horizont.
@@ -83,37 +83,37 @@ public abstract class DischargeDistributor {
      * @param parameters a {@link HashMap map of parameters} to be used for the 
      *              distribution model. Supported values are:
      *              <ul>
-     *              <li>{@link DischargeDistributor#PARAMS_AVG_SUP_10}: the mean 
+     *              <li>{@link ADischargeDistributor#PARAMS_AVG_SUP_10}: the mean 
      *              of the width function for 10% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_AVG_SUP_30}: the mean 
+     *              <li>{@link ADischargeDistributor#PARAMS_AVG_SUP_30}: the mean 
      *              of the width function for 30% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_AVG_SUP_60}: the mean 
+     *              <li>{@link ADischargeDistributor#PARAMS_AVG_SUP_60}: the mean 
      *              of the width function for 60% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_VAR_SUP_10}: the variance 
+     *              <li>{@link ADischargeDistributor#PARAMS_VAR_SUP_10}: the variance 
      *              of the width function for 10% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_VAR_SUP_30}: the variance 
+     *              <li>{@link ADischargeDistributor#PARAMS_VAR_SUP_30}: the variance 
      *              of the width function for 30% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_VAR_SUP_60}: the variance 
+     *              <li>{@link ADischargeDistributor#PARAMS_VAR_SUP_60}: the variance 
      *              of the width function for 60% of saturated areas
      *              for the superficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_AVG_SUB}: the mean 
+     *              <li>{@link ADischargeDistributor#PARAMS_AVG_SUB}: the mean 
      *              of the width function for the subsuperficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_VAR_SUB}: the variance 
+     *              <li>{@link ADischargeDistributor#PARAMS_VAR_SUB}: the variance 
      *              of the width function for the subsuperficial flow case.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_V_SUP}: the 
+     *              <li>{@link ADischargeDistributor#PARAMS_V_SUP}: the 
      *              speed of the superficial flow.</li>
-     *              <li>{@link DischargeDistributor#PARAMS_V_SUB}: the 
+     *              <li>{@link ADischargeDistributor#PARAMS_V_SUB}: the 
      *              speed of the subsuperficial flow.</li>
      *              </ul>
      *
      * @return the created discharge distributor.
      */
-    public static DischargeDistributor createDischargeDistributor( int distributorType,
+    public static ADischargeDistributor createDischargeDistributor( int distributorType,
             long startDateMillis, long endDateMillis, long timeStepMillis,
             HashMap<Integer, Double> parameters ) {
         if (distributorType == DISTRIBUTOR_TYPE_NASH) {

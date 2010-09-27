@@ -4,13 +4,18 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
+import org.jgrasstools.gears.io.eicalculator.EIAreas;
+import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
 import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayWriter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
@@ -29,6 +34,13 @@ public class TestJami extends HMTestCase {
 
         URL altimUrl = this.getClass().getClassLoader().getResource("eicalculator_out_altimetry.csv");
         File altimetryFile = new File(altimUrl.toURI());
+
+        URL areasUrl = this.getClass().getClassLoader().getResource("eicalculator_out_areas.csv");
+        File areasFile = new File(areasUrl.toURI());
+
+        File outputFileForEtp = new File(altimetryFile.getParentFile(), "etp_in_temp.csv");
+        outputFileForEtp = classesTestFile2srcTestResourcesFile(outputFileForEtp);
+
         File outputFile = new File(altimetryFile.getParentFile(), "jami_out_temp.csv");
         outputFile = classesTestFile2srcTestResourcesFile(outputFile);
 
@@ -44,6 +56,14 @@ public class TestJami extends HMTestCase {
         altim.read();
         List<EIAltimetry> altimList = altim.outAltimetry;
         altim.close();
+
+        EIAreasReader areas = new EIAreasReader();
+        areas.file = areasFile.getAbsolutePath();
+        areas.pSeparator = "\\s+";
+        areas.pm = pm;
+        areas.read();
+        List<EIAreas> areasList = areas.outAreas;
+        areas.close();
 
         ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
         stationsReader.file = new File(stationsUrl.toURI()).getAbsolutePath();
@@ -68,6 +88,7 @@ public class TestJami extends HMTestCase {
         Jami jami = new Jami();
         jami.pm = pm;
         jami.inAltimetry = altimList;
+        jami.inAreas = areasList;
         jami.fStationid = "id_punti_m";
         jami.fStationelev = "quota";
         jami.fBasinid = "netnum";
@@ -82,6 +103,11 @@ public class TestJami extends HMTestCase {
         writer.pSeparator = " ";
         writer.fileNovalue = "-9999.0";
 
+        TimeseriesByStepWriterId2Value tsWriter = new TimeseriesByStepWriterId2Value();
+        tsWriter.file = outputFileForEtp.getAbsolutePath();
+        tsWriter.tStart = dataReader.tStart;
+        tsWriter.tTimestep = dataReader.tTimestep;
+
         DateTimeFormatter dF = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
         // 1 5 2005 - 1 6 2005
         // 30 min
@@ -94,16 +120,37 @@ public class TestJami extends HMTestCase {
 
             jami.process();
 
+            HashMap<Integer, double[]> interpolationPointId2MeteoDataMapBands = jami.outInterpolatedBand;
             HashMap<Integer, double[]> interpolationPointId2MeteoDataMap = jami.outInterpolated;
 
-            writer.data = interpolationPointId2MeteoDataMap;
+            // Set<Entry<Integer, double[]>> entrySet =
+            // interpolationPointId2MeteoDataMapBands.entrySet();
+            // for( Entry<Integer, double[]> entry : entrySet ) {
+            // Integer basinId = entry.getKey();
+            // double[] valuePerBand = entry.getValue();
+            // double value = interpolationPointId2MeteoDataMap.get(basinId)[0];
+            // System.out.println("basin: " + basinId);
+            // System.out.print("per band: ");
+            // for( double bandValue : valuePerBand ) {
+            // System.out.print(" " + bandValue);
+            // }
+            // System.out.println("per band: ");
+            // System.out.println("interpolated on basin: " + value);
+            // System.out.println("****************************");
+            // }
+
+            writer.data = interpolationPointId2MeteoDataMapBands;
             writer.writeNextLine();
+
+            tsWriter.data = interpolationPointId2MeteoDataMap;
+            tsWriter.writeNextLine();
 
             runningDate = runningDate.plusMinutes(30);
         }
 
         dataReader.close();
         writer.close();
+        tsWriter.close();
 
         // for now there is no writer... waiting for the apposite module
 

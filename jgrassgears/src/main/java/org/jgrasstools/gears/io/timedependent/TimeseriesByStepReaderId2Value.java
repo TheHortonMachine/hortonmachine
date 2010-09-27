@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.io.timedependent;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,6 +70,14 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
     @Description("The internal novalue to use (usually not changed).")
     @In
     public double novalue = JGTConstants.doubleNovalue;
+
+    @Description("The number of rows to aggregate (default is 1, i.e. no aggregation).")
+    @In
+    public int pNum = 1;;
+
+    @Description("The aggregation type to use (0 = sum, 1 = avg).")
+    @In
+    public int pAggregation = 0;
 
     @Description("The time at which start to read (format: yyyy-MM-dd HH:mm ).")
     @In
@@ -139,9 +149,8 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
                 Integer idInteger = new Integer(id);
                 idList.add(idInteger);
             } catch (Exception e) {
-                throw new ModelsIllegalargumentException(
-                        "The id value doesn't seem to be an integer.", this.getClass()
-                                .getSimpleName());
+                throw new ModelsIllegalargumentException("The id value doesn't seem to be an integer.", this.getClass()
+                        .getSimpleName());
             }
         }
 
@@ -184,13 +193,73 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
      * @return the row that is aligned with the expected timestep.
      * @throws IOException if the expected timestep is < than the current.
      */
-    private String[] getExpectedRow( TableIterator<String[]> tableRowIterator, DateTime expectedDT )
-            throws IOException {
+    private String[] getExpectedRow( TableIterator<String[]> tableRowIterator, DateTime expectedDT ) throws IOException {
         while( tableRowIterator.hasNext() ) {
             String[] row = tableRowIterator.next();
             DateTime currentTimestamp = formatter.parseDateTime(row[1]);
             if (currentTimestamp.equals(expectedDT)) {
-                return row;
+                if (pNum == 1) {
+                    return row;
+                } else {
+                    String[][] allRows = new String[pNum][];
+                    allRows[0] = row;
+                    int rowNum = 1;
+                    for( int i = 1; i < pNum; i++ ) {
+                        if (tableRowIterator.hasNext()) {
+                            String[] nextRow = tableRowIterator.next();
+                            allRows[i] = nextRow;
+                            rowNum++;
+                        }
+                    }
+                    // now aggregate
+                    String[] aggregatedRow = new String[row.length];
+                    // date is the one of the first instant
+                    aggregatedRow[0] = allRows[0][0];
+                    aggregatedRow[1] = allRows[0][1];
+                    for( int col = 2; col < allRows[0].length; col++ ) {
+
+                        boolean hasOne = false;
+                        switch( pAggregation ) {
+                        case 0:
+                            double sum = 0;
+                            for( int j = 0; j < rowNum; j++ ) {
+                                String valueStr = allRows[j][col];
+                                if (!valueStr.equals(fileNovalue)) {
+                                    double value = Double.parseDouble(valueStr);
+                                    sum = sum + value;
+                                    hasOne = true;
+                                }
+                            }
+                            if (!hasOne) {
+                                sum = doubleNovalue;
+                            }
+                            aggregatedRow[col] = String.valueOf(sum);
+                            break;
+                        case 1:
+                            double avg = 0;
+                            for( int j = 0; j < rowNum; j++ ) {
+                                String valueStr = allRows[j][col];
+                                if (!valueStr.equals(fileNovalue)) {
+                                    double value = Double.parseDouble(valueStr);
+                                    avg = avg + value;
+                                    hasOne = true;
+                                }
+                            }
+                            if (!hasOne) {
+                                avg = doubleNovalue;
+                            } else {
+                                avg = avg / pNum;
+                            }
+                            aggregatedRow[col] = String.valueOf(avg);
+                            break;
+
+                        default:
+                            break;
+                        }
+
+                    }
+                    return aggregatedRow;
+                }
             } else if (currentTimestamp.isBefore(expectedDT)) {
                 // browse until the instant is found
                 continue;
@@ -199,9 +268,7 @@ public class TimeseriesByStepReaderId2Value extends JGTModel {
                  * lost the moment, for now throw exception.
                  * Could be enhanced in future.
                  */
-                throw new IOException(
-                        "The data are not aligned with the simulation interval. Check your data file: "
-                                + file);
+                throw new IOException("The data are not aligned with the simulation interval. Check your data file: " + file);
             }
 
         }

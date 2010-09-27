@@ -27,18 +27,30 @@ import java.util.HashMap;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public interface DischargeContributor {
+public interface IDischargeContributor {
 
     /**
      * Returns the discharge for the given location of the network.
      * 
      * @param pfafstetterNumber the number identifying the network position.
-     * @param inputDischarge the input discharge in the contributing point. May 
-     *                      be useful to calculate the output discharge. 
      * @return the discharge for the given network point. Double.NaN has to be 
      *                      returned for invalid values.
      */
-    public abstract Double getDischarge( String pfafstetterNumber, double inputDischarge );
+    public abstract Double getDischarge( String pfafstetterNumber );
+
+    /**
+     * Returns the discarge of the contributor merged with the main discharge.
+     * 
+     * <p>This is useful because the contributor knows if it has to
+     * sumor subtract.
+     * 
+     * @param contributorDischarge the discharge provided by the contributor itself
+     *                  (taken from the result of {@link #getDischarge(String)}.
+     * @param inputDischarge the input discharge in the contributing point. May 
+     *                      be useful to calculate the output discharge. 
+     * @return the merged discharge.
+     */
+    public abstract double mergeWithDischarge(double contributorDischarge, double inputDischarge );
 
     public abstract void setCurrentData( HashMap<Integer, double[]> currentDataMap );
 

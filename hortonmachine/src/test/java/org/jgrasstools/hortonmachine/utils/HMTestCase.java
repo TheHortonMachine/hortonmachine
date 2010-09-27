@@ -32,7 +32,7 @@ import javax.media.jai.iterator.RectIterFactory;
 import junit.framework.TestCase;
 @SuppressWarnings("nls")
 public class HMTestCase extends TestCase {
-    public void testDummy(){
+    public void testDummy() {
         // done to not make the maven test fail
     }
 
@@ -66,8 +66,8 @@ public class HMTestCase extends TestCase {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
                 if (isNovalue(value)) {
-                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got "
-                            + expectedResult, isNovalue(expectedResult));
+                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got " + expectedResult,
+                            isNovalue(expectedResult));
                 } else {
                     assertEquals("Difference at position: " + x + " " + y, expectedResult, value);
                 }
@@ -109,9 +109,8 @@ public class HMTestCase extends TestCase {
      */
     protected File classesTestFile2srcTestResourcesFile( File classesTestFile ) {
         String classesTestPath = classesTestFile.getAbsolutePath();
-        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator
-                + File.separator + "test");
-        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources");
+        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
+        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources//");
 
         File srcTestResourcesFile = new File(classesTestPath);
         return srcTestResourcesFile;

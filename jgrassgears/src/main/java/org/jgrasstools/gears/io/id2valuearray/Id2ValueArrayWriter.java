@@ -24,8 +24,8 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -34,12 +34,12 @@ import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+
 @Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
@@ -65,7 +65,7 @@ public class Id2ValueArrayWriter {
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The map of ids and values arrays to write.")
-    @Out
+    @In
     public HashMap<Integer, double[]> data;
 
     private BufferedWriter csvWriter;
