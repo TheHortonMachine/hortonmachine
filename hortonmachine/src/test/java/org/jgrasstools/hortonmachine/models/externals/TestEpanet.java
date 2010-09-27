@@ -21,43 +21,44 @@ public class TestEpanet extends HMTestCase {
     public void testEpanet() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
-        // String inp = "C:\\TMP\\epanettests\\Esempio2\\Esempio2.inp";
-        String inp = "C:\\TMP\\epanettests\\test2\\aaaaa.inp";
+        String inp = "C:\\TMP\\epanettests\\test2\\input2.inp";
+        // String inp = "C:\\TMP\\epanettests\\test2\\aaaaa.inp";
 
         Epanet gen = new Epanet();
         gen.inInp = inp;
+        gen.inDll = "D:\\development\\hydrologis-hg\\hydrologis\\epanet\\eu.hydrologis.jgrass.epanet\\nativelibs\\epanet2_64bit.dll";
 
         gen.initProcess();
         while( gen.doProcess ) {
             gen.process();
 
-            System.out.println();
+            // System.out.println();
             System.out.println("NODE RESULTS AT " + gen.tCurrent);
-            List<Junction> junctionsList = gen.junctionsList;
-            for( Junction junction : junctionsList ) {
-                System.out.println(junction.toString());
-            }
-            List<Reservoir> reservoirsList = gen.reservoirsList;
-            for( Reservoir reservoir : reservoirsList ) {
-                System.out.println(reservoir.toString());
-            }
-            List<Tank> tankList = gen.tanksList;
-            for( Tank tank : tankList ) {
-                System.out.println(tank.toString());
-            }
-            System.out.println("LINK RESULTS AT " + gen.tCurrent);
-            List<Pipe> pipesList = gen.pipesList;
-            for( Pipe pipe : pipesList ) {
-                System.out.println(pipe.toString());
-            }
-            List<Pump> pumpsList = gen.pumpsList;
-            for( Pump pump : pumpsList ) {
-                System.out.println(pump.toString());
-            }
-            List<Valve> valvesList = gen.valvesList;
-            for( Valve valve : valvesList ) {
-                System.out.println(valve.toString());
-            }
+            // List<Junction> junctionsList = gen.junctionsList;
+            // for( Junction junction : junctionsList ) {
+            // System.out.println(junction.toString());
+            // }
+            // List<Reservoir> reservoirsList = gen.reservoirsList;
+            // for( Reservoir reservoir : reservoirsList ) {
+            // System.out.println(reservoir.toString());
+            // }
+            // List<Tank> tankList = gen.tanksList;
+            // for( Tank tank : tankList ) {
+            // System.out.println(tank.toString());
+            // }
+            // System.out.println("LINK RESULTS AT " + gen.tCurrent);
+            // List<Pipe> pipesList = gen.pipesList;
+            // for( Pipe pipe : pipesList ) {
+            // System.out.println(pipe.toString());
+            // }
+            // List<Pump> pumpsList = gen.pumpsList;
+            // for( Pump pump : pumpsList ) {
+            // System.out.println(pump.toString());
+            // }
+            // List<Valve> valvesList = gen.valvesList;
+            // for( Valve valve : valvesList ) {
+            // System.out.println(valve.toString());
+            // }
         }
         gen.finish();
 

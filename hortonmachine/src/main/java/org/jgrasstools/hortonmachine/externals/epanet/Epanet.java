@@ -70,7 +70,7 @@ public class Epanet extends JGTModel {
 
     @Description("The start time.")
     @In
-    public String tStart = "1970-01-01 00:00"; //$NON-NLS-1$
+    public String tStart = "1970-01-01 00:00:00"; //$NON-NLS-1$
 
     @Description("The current time.")
     @Out
@@ -108,7 +108,7 @@ public class Epanet extends JGTModel {
 
     private long[] t = new long[1];
     private long[] tstep = new long[1];
-    public static DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    public static DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMMSS;
 
     private DateTime current = null;
 
