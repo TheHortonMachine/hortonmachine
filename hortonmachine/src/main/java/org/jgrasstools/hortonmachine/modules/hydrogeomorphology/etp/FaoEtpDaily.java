@@ -18,12 +18,12 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static java.lang.Math.exp;
+import static java.lang.Math.pow;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
-import static java.lang.Math.*;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -46,14 +46,14 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FaoEtpDaily extends JGTModel {
 
-    @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
+    @Description("The net Radiation at the grass surface in W/m2 for the current day.")
     @In
-    @Unit("MJ m-2 hour-1")
+    @Unit("MJ m-2 day-1")
     public HashMap<Integer, double[]> inNetradiation;
 
     @Description("The net Radiation default value in case of missing data.")
     @In
-    @Unit("MJ m-2 hour-1")
+    @Unit("MJ m-2 day-1")
     public double defaultNetradiation = 2.0;
 
     @Description("The average daily wind speed.")
@@ -120,8 +120,6 @@ public class FaoEtpDaily extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        checkNull(inNetradiation, inWind, inMaxTemp, inMinTemp, inRh);
-
         outFaoEtp = new HashMap<Integer, double[]>();
 
         Set<Entry<Integer, double[]>> entrySet = inMaxTemp.entrySet();
@@ -161,13 +159,11 @@ public class FaoEtpDaily extends JGTModel {
             double etp = compute(netradiation, wind, maxTemperature, minTemperature, rh, pressure);
             outFaoEtp.put(basinId, new double[]{etp});
         }
-
     }
 
     private double compute( double netradiation, double wind, double maxtemperature, double mintemperature, double rh, double pressure ) {
 
         // Computation of Delta [KPa °C-1]
-
         double meanTemperature = (maxtemperature + mintemperature) / 2.0;
         double denDelta = pow(meanTemperature + 237.3, 2);
         double expDelta = (17.27 * meanTemperature) / (meanTemperature + 237.3);

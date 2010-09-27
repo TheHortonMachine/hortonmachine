@@ -2,11 +2,14 @@ package org.jgrasstools.hortonmachine.models.hm;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 
+import org.geotools.data.DataUtilities;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.FaoEtpDaily;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
@@ -29,37 +32,21 @@ public class TestFaoEtpDaily extends HMTestCase {
         String fId = "ID";
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-        
-        String folder = "/Users/silli/development/jgrasstools-hg/jgrasstools/hortonmachine/src/test/resources/";
 
-        // URL maxTempUrl = this.getClass().getClassLoader().getResource("faoetpday_in_tmax.csv");
-        // URL minTempUrl = this.getClass().getClassLoader().getResource("faoetpday_in_tmin.csv");
-        // URL windUrl = this.getClass().getClassLoader().getResource("faoetpday_in_wind.csv");
-        // URL humidityUrl = this.getClass().getClassLoader().getResource("faoetpday_in_rh.csv");
-        //
-        // URL netradiationUrl =
-        // this.getClass().getClassLoader().getResource("faoetpday_in_rad.csv");
-
-        String maxTempUrl = folder + "faoetpday_in_tmax.csv";
-        String minTempUrl = folder + "faoetpday_in_tmin.csv";
-        String windUrl = folder + "faoetpday_in_wind.csv";
-        String humidityUrl = folder + "faoetpday_in_rh.csv";
-        String netradiationUrl = folder + "faoetpday_in_rad.csv";
-
-        // File maxTempFile = new File(maxTempUrl.toURI());
-        File outputFile = new File(folder + "faoetpday_out.csv");
-        outputFile = classesTestFile2srcTestResourcesFile(outputFile);
+        URL maxTempUrl = this.getClass().getClassLoader().getResource("faoetpday_in_tmax.csv");
+        URL minTempUrl = this.getClass().getClassLoader().getResource("faoetpday_in_tmin.csv");
+        URL windUrl = this.getClass().getClassLoader().getResource("faoetpday_in_wind.csv");
+        URL humidityUrl = this.getClass().getClassLoader().getResource("faoetpday_in_rh.csv");
+        URL netradiationUrl = this.getClass().getClassLoader().getResource("faoetpday_in_rad.csv");
 
         TimeseriesByStepReaderId2Value maxtempReader = getTimeseriesReader(maxTempUrl, fId, startDate, endDate, timeStepMinutes);
         TimeseriesByStepReaderId2Value mintempReader = getTimeseriesReader(minTempUrl, fId, startDate, endDate, timeStepMinutes);
         TimeseriesByStepReaderId2Value windReader = getTimeseriesReader(windUrl, fId, startDate, endDate, timeStepMinutes);
         TimeseriesByStepReaderId2Value humReader = getTimeseriesReader(humidityUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate, timeStepMinutes);
+        TimeseriesByStepReaderId2Value netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate,
+                timeStepMinutes);
 
         FaoEtpDaily faoEtpDaily = new FaoEtpDaily();
-
-        TimeseriesByStepWriterId2Value etpWriter = new TimeseriesByStepWriterId2Value();
-        etpWriter.file = outputFile.getAbsolutePath();
 
         while( maxtempReader.doProcess ) {
             maxtempReader.nextRecord();
@@ -91,10 +78,9 @@ public class TestFaoEtpDaily extends HMTestCase {
 
             HashMap<Integer, double[]> outEtp = faoEtpDaily.outFaoEtp;
 
-            etpWriter.tStart = startDate;
-            etpWriter.tTimestep = timeStepMinutes;
-            etpWriter.data = outEtp;
-            etpWriter.writeNextLine();
+            double value = outEtp.get(1221)[0];
+            assertTrue(NumericsUtilities.dEq(value, 3.7612114870933824));
+            break;
         }
 
         maxtempReader.close();
@@ -102,13 +88,12 @@ public class TestFaoEtpDaily extends HMTestCase {
         humReader.close();
         netradReader.close();
 
-        etpWriter.close();
-
     }
 
-    private TimeseriesByStepReaderId2Value getTimeseriesReader( String path, String id, String startDate, String endDate, int timeStepMinutes ) throws URISyntaxException {
+    private TimeseriesByStepReaderId2Value getTimeseriesReader( URL url, String id, String startDate, String endDate,
+            int timeStepMinutes ) throws URISyntaxException {
         TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
-        reader.file = path;
+        reader.file = DataUtilities.urlToFile(url).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2005-05-01 00:00";
         reader.tTimestep = 1440;
