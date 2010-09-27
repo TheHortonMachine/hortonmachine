@@ -26,11 +26,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -72,6 +76,11 @@ import com.vividsolutions.jts.geom.Geometry;
  *         giuseppe formetta.
  * @author Andrea Antonello (www.hydrologis.com).
  */
+@Description("Ordinary kriging algorithm")
+@Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Kriging, Hydrology")
+@Status(Status.CERTIFIED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Kriging extends JGTModel {
 
     @Description("The collection of the measurement point, containing the position of the station.")

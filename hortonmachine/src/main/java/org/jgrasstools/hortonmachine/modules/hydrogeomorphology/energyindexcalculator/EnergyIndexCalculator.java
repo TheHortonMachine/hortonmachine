@@ -72,7 +72,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Description("The Adige model.")
 @Author(name = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology, Energy")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyIndexCalculator extends JGTModel {
 

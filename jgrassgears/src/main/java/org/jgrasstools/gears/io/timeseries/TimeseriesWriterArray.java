@@ -44,7 +44,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Description("Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesWriterArray {
     @Description("The csv file to write to.")

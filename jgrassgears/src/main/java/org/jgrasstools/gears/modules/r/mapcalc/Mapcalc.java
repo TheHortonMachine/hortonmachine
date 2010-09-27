@@ -54,7 +54,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for doing raster map algebra")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Mapcalc, Raster")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Mapcalc extends JGTModel {
 

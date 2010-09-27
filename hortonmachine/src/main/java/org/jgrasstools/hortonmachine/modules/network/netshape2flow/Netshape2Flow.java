@@ -29,11 +29,15 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -60,12 +64,12 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
-/**
- * OpenMi based netshape2flow model
- * 
- * @author Andrea Antonello - www.hydrologis.com
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it
- */
+
+@Description("Transforms the network shape to a flow map.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Network, Flowdirections")
+@Status(Status.CERTIFIED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Netshape2Flow extends JGTModel {
 
     @Description("The network features.")

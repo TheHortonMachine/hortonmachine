@@ -55,22 +55,50 @@ public class WikiPageModulesOverviewCreator {
         StringBuilder sb = new StringBuilder();
 
         sb.append("#summary An overview of the modules implemented in the jgrasstools\n\n");
-        sb.append("<wiki:toc max_depth=\"3\" />\n\n");
+        sb.append("<wiki:toc max_depth=\"4\" />\n\n");
         sb.append("= JGrassTools Modules Overview =\n");
         sb.append("== !HortonMachine Modules ==\n");
 
-        dumpModules(hmModules, hmNamesArray, sb);
+        String status = "CERTIFIED";
+        sb.append("=== Release ready ==\n");
+        dumpModules(hmModules, hmNamesArray, sb, status);
+        status = "TESTED";
+        sb.append("=== Tested but not for upcoming release ==\n");
+        dumpModules(hmModules, hmNamesArray, sb, status);
+        status = "DRAFT";
+        sb.append("=== Module that are not passing the QA rules yet ==\n");
+        dumpModules(hmModules, hmNamesArray, sb, status);
 
         sb.append("\n<BR/><BR/><BR/>\n\n");
         sb.append("== Gears Modules ==\n");
-        dumpModules(jggModules, jggNamesArray, sb);
+        status = "CERTIFIED";
+        sb.append("=== Release ready ==\n");
+        dumpModules(jggModules, jggNamesArray, sb, status);
+        status = "TESTED";
+        sb.append("=== Tested but not for upcoming release ==\n");
+        dumpModules(jggModules, jggNamesArray, sb, status);
+        status = "DRAFT";
+        sb.append("=== Module that are not passing the QA rules yet ==\n");
+        dumpModules(jggModules, jggNamesArray, sb, status);
 
         System.out.println(sb.toString());
     }
 
     private static void dumpModules( LinkedHashMap<String, List<ClassField>> modulesMap, String[] modulesNamesArray,
-            StringBuilder sb ) {
+            StringBuilder sb, String status ) {
         for( String moduleName : modulesNamesArray ) {
+            List<ClassField> fieldsList = modulesMap.get(moduleName);
+            if (fieldsList==null) {
+                System.out.println(moduleName);
+            }
+            if (fieldsList.size() > 0) {
+                ClassField tmp = fieldsList.get(0);
+                String parentClassStatus = tmp.parentClassStatus;
+                if (!parentClassStatus.equals(status)) {
+                    continue;
+                }
+            }
+
             // check if it is camelcase
             boolean isCamelCase = false;
             int length = moduleName.length();
@@ -87,35 +115,33 @@ public class WikiPageModulesOverviewCreator {
             }
 
             sb.append("\n<BR/><BR/>\n----\n<BR/> ");
-            sb.append("\n\n\n=== ");
+            sb.append("\n\n\n==== ");
             if (isCamelCase)
                 sb.append("!");
-            sb.append(moduleName).append(" ===\n");
-
-            List<ClassField> fieldsList = modulesMap.get(moduleName);
+            sb.append(moduleName).append(" ====\n");
 
             sb.append("Parameters\n");
             // input parameters
             for( ClassField classField : fieldsList ) {
                 if (classField.fieldName.startsWith("p") || classField.fieldName.startsWith("do")) {
-                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription).append(
-                            " ||\n");
+                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription)
+                            .append(" ||\n");
                 }
             }
             // input data
             sb.append("\nInput Data\n");
             for( ClassField classField : fieldsList ) {
                 if (classField.isIn && !classField.fieldName.startsWith("p") && !classField.fieldName.startsWith("do")) {
-                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription).append(
-                            " ||\n");
+                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription)
+                            .append(" ||\n");
                 }
             }
             // input data
             sb.append("\nOutput Data\n");
             for( ClassField classField : fieldsList ) {
                 if (classField.isOut && !classField.fieldName.startsWith("p") && !classField.fieldName.startsWith("do")) {
-                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription).append(
-                            " ||\n");
+                    sb.append("|| *").append(classField.fieldName).append("* || ").append(classField.fieldDescription)
+                            .append(" ||\n");
                 }
             }
         }

@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Creates a Feature collection of the subbasins create with the netnumbering module.")
 @Author(name = "Erica Ghesla, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class BasinShape extends JGTModel {
 

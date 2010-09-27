@@ -46,7 +46,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Description("Utility class for writing geotools featurecollections to shapefile.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Writing")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureWriter extends JGTModel {
     @Description("The shapefile to which to write to.")

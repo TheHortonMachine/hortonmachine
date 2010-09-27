@@ -70,7 +70,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Jami - Just another meteo interpolator")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Meteo, Hydrology")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Jami extends JGTModel {
 

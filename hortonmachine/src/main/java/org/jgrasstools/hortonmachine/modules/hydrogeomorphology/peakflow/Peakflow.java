@@ -59,7 +59,7 @@ import org.joda.time.DateTime;
 @Description("The Peakflow semidistributed hydrologic model.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Peakflow, Discharge, Hydrologic")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Peakflow extends JGTModel {
 

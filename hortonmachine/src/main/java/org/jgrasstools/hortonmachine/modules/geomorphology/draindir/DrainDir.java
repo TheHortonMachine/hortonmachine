@@ -100,7 +100,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
 @Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DrainDir extends JGTModel {
 

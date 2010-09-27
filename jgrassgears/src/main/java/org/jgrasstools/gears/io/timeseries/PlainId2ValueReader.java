@@ -41,7 +41,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class PlainId2ValueReader {
     @Description("The csv file to read from.")

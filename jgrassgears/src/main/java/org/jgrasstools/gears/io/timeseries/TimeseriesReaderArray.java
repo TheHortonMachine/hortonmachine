@@ -45,7 +45,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Description("Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesReaderArray extends JGTModel {
     @Description("The csv file to read from.")

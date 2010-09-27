@@ -87,7 +87,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Description("Creates a hierarchial form of the network.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Pfafstetter")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pfafstetter extends JGTModel {
 

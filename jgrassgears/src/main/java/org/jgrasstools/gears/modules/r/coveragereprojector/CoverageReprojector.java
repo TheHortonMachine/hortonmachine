@@ -37,7 +37,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Crs, Reprojection, Raster")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageReprojector extends JGTModel {
 

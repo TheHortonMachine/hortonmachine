@@ -58,7 +58,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23.")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("GPL3")
 public class Skyview extends JGTModel {
     @Description("The map of the elevation.")

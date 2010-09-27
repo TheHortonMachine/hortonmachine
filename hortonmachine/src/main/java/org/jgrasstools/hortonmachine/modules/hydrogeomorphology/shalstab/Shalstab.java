@@ -32,10 +32,14 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -155,6 +159,11 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Matteo Dall’Amico, Silvano
  *         Pisoni, Andrea Antonello, Riccardo Rigon
  */
+@Description("Shalstab algorithm")
+@Author(name = "Silvano Pisoni, Erica Ghesla, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Shalstab, Hydrology")
+@Status(Status.CERTIFIED)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Shalstab extends JGTModel {
 
     @Description("The map of slope.")
@@ -241,7 +250,7 @@ public class Shalstab extends JGTModel {
         if (!concatOr(outShalstab == null, doReset)) {
             return;
         }
-        
+
         if (pRock == -9999.0)
             pRock = 5.67;
 
@@ -302,22 +311,18 @@ public class Shalstab extends JGTModel {
     /**
      * Calculates the trasmissivity in every pixel of the map.
      */
-    private void qcrit( RenderedImage slope, RenderedImage ab, RandomIter trasmissivityRI,
-            RandomIter frictionRI, RandomIter cohesionRI, RandomIter soildRI,
-            RandomIter effectiveRI, RandomIter densityRI ) {
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inSlope);
+    private void qcrit( RenderedImage slope, RenderedImage ab, RandomIter trasmissivityRI, RandomIter frictionRI,
+            RandomIter cohesionRI, RandomIter soildRI, RandomIter effectiveRI, RandomIter densityRI ) {
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inSlope);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
         RandomIter slopeRI = RandomIterFactory.create(slope, null);
         RandomIter abRI = RandomIterFactory.create(ab, null);
 
-        WritableRaster qcritWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null,
-                null, null);
+        WritableRaster qcritWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter qcritIter = RandomIterFactory.createWritable(qcritWR, null);
-        WritableRaster classiWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null,
-                null, null);
+        WritableRaster classiWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter classiIter = RandomIterFactory.createWritable(classiWR, null);
 
         pm.beginTask("Creating qcrit map...", rows);
@@ -329,21 +334,19 @@ public class Shalstab extends JGTModel {
                 double cohValue = cohesionRI.getSampleDouble(i, j, 0);
                 double rhoValue = densityRI.getSampleDouble(i, j, 0);
                 double hsValue = soildRI.getSampleDouble(i, j, 0);
-                if (!isNovalue(slopeValue) && !isNovalue(tanPhiValue) && !isNovalue(cohValue)
-                        && !isNovalue(rhoValue)) {
+                if (!isNovalue(slopeValue) && !isNovalue(tanPhiValue) && !isNovalue(cohValue) && !isNovalue(rhoValue)) {
                     if (hsValue <= EPS || slopeValue > pRock) {
                         qcritIter.setSample(i, j, 0, ROCK);
                     } else {
-                        double checkUnstable = tanPhiValue + cohValue
-                                / (9810.0 * rhoValue * hsValue) * (1 + pow(slopeValue, 2));
+                        double checkUnstable = tanPhiValue + cohValue / (9810.0 * rhoValue * hsValue) * (1 + pow(slopeValue, 2));
                         if (slopeValue >= checkUnstable) {
                             /*
                              * uncond unstable
                              */
                             qcritIter.setSample(i, j, 0, 5);
                         } else {
-                            double checkStable = tanPhiValue * (1 - 1 / rhoValue) + cohValue
-                                    / (9810 * rhoValue * hsValue) * (1 + pow(slopeValue, 2));
+                            double checkStable = tanPhiValue * (1 - 1 / rhoValue) + cohValue / (9810 * rhoValue * hsValue)
+                                    * (1 + pow(slopeValue, 2));
                             if (slopeValue < checkStable) {
                                 /*
                                  * uncond. stable
@@ -354,8 +357,7 @@ public class Shalstab extends JGTModel {
                                         * sin(atan(slopeValue))
                                         / abRI.getSampleDouble(i, j, 0)
                                         * rhoValue
-                                        * (1 - slopeValue / tanPhiValue + cohValue
-                                                / (9810 * rhoValue * hsValue * tanPhiValue)
+                                        * (1 - slopeValue / tanPhiValue + cohValue / (9810 * rhoValue * hsValue * tanPhiValue)
                                                 * (1 + pow(slopeValue, 2))) * 1000;
                                 qcritIter.setSample(i, j, 0, qCrit);
                                 /*
@@ -392,8 +394,7 @@ public class Shalstab extends JGTModel {
         for( int j = 0; j < rows; j++ ) {
             pm.worked(1);
             for( int i = 0; i < cols; i++ ) {
-                Tq = trasmissivityRI.getSampleDouble(i, j, 0)
-                        / effectiveRI.getSampleDouble(i, j, 0) / 1000.0;
+                Tq = trasmissivityRI.getSampleDouble(i, j, 0) / effectiveRI.getSampleDouble(i, j, 0) / 1000.0;
                 double slopeValue = slopeRI.getSampleDouble(i, j, 0);
                 double abValue = abRI.getSampleDouble(i, j, 0);
                 double tangPhiValue = frictionRI.getSampleDouble(i, j, 0);
@@ -401,27 +402,25 @@ public class Shalstab extends JGTModel {
                 double rhoValue = densityRI.getSampleDouble(i, j, 0);
                 double hsValue = soildRI.getSampleDouble(i, j, 0);
 
-                if (!isNovalue(slopeValue) && !isNovalue(abValue) && !isNovalue(tangPhiValue)
-                        && !isNovalue(cohValue) && !isNovalue(rhoValue)) {
+                if (!isNovalue(slopeValue) && !isNovalue(abValue) && !isNovalue(tangPhiValue) && !isNovalue(cohValue)
+                        && !isNovalue(rhoValue)) {
                     if (hsValue <= EPS || slopeValue > pRock) {
                         classiIter.setSample(i, j, 0, ROCK);
                     } else {
-                        double checkUncondUnstable = tangPhiValue + cohValue
-                                / (9810 * rhoValue * hsValue) * (1 + pow(slopeValue, 2));
-                        double checkUncondStable = tangPhiValue * (1 - 1 / rhoValue) + cohValue
-                                / (9810 * rhoValue * hsValue) * (1 + pow(slopeValue, 2));
+                        double checkUncondUnstable = tangPhiValue + cohValue / (9810 * rhoValue * hsValue)
+                                * (1 + pow(slopeValue, 2));
+                        double checkUncondStable = tangPhiValue * (1 - 1 / rhoValue) + cohValue / (9810 * rhoValue * hsValue)
+                                * (1 + pow(slopeValue, 2));
                         double checkStable = Tq
                                 * sin(atan(slopeValue))
                                 * rhoValue
-                                * (1 - slopeValue / tangPhiValue + cohValue
-                                        / (9810 * rhoValue * hsValue * tangPhiValue)
+                                * (1 - slopeValue / tangPhiValue + cohValue / (9810 * rhoValue * hsValue * tangPhiValue)
                                         * (1 + pow(slopeValue, 2)));
                         if (slopeValue >= checkUncondUnstable) {
                             classiIter.setSample(i, j, 0, 1);
                         } else if (slopeValue < checkUncondStable) {
                             classiIter.setSample(i, j, 0, 2);
-                        } else if (abValue < checkStable
-                                && classiIter.getSampleDouble(i, j, 0) != 1
+                        } else if (abValue < checkStable && classiIter.getSampleDouble(i, j, 0) != 1
                                 && classiIter.getSampleDouble(i, j, 0) != 2) {
                             classiIter.setSample(i, j, 0, 3);
                         } else {
@@ -435,10 +434,8 @@ public class Shalstab extends JGTModel {
         }
         pm.done();
 
-        outQcrit = CoverageUtilities.buildCoverage("qcrit", qcritWR, regionMap, inSlope
-                .getCoordinateReferenceSystem());
-        outShalstab = CoverageUtilities.buildCoverage("classi", classiWR, regionMap,
-                inSlope.getCoordinateReferenceSystem());
+        outQcrit = CoverageUtilities.buildCoverage("qcrit", qcritWR, regionMap, inSlope.getCoordinateReferenceSystem());
+        outShalstab = CoverageUtilities.buildCoverage("classi", classiWR, regionMap, inSlope.getCoordinateReferenceSystem());
 
     }
 

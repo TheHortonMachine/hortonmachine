@@ -30,6 +30,7 @@ public class ClassField implements Comparable<ClassField> {
     public String fieldDescription = null;
     public Class< ? > parentClass = null;
     public Class< ? > fieldClass = null;
+    public String parentClassStatus = null;
 
     public int compareTo( ClassField o ) {
         return fieldName.compareTo(o.fieldName);

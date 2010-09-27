@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Point;
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("GPL3")
 public class Insolation extends JGTModel {
     @Description("The map of the elevation.")

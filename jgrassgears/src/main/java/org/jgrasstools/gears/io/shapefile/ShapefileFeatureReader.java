@@ -44,7 +44,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Description("Utility class for reading shapefiles to geotools featurecollections.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureReader extends JGTModel {
     @Description("The shapefile.")

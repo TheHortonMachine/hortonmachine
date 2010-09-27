@@ -28,11 +28,15 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -107,6 +111,12 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Andrea Cozzini, Riccardo
  *         Rigon, (2004).
  */
+@Description("Assigns * numbers to the network's links and can be used by hillslope2channelattribute "
+        + "to label the hillslope flowing into the link with the same number")
+@Author(name = "Erica Ghesla, Riccardo Rigon, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Network")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class NetNumbering extends JGTModel {
     @Description("The map of flowdirections.")
     @In
@@ -151,8 +161,7 @@ public class NetNumbering extends JGTModel {
         if (!concatOr(outNetnum == null, doReset)) {
             return;
         }
-        
-        
+
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -165,7 +174,7 @@ public class NetNumbering extends JGTModel {
         RandomIter netIter = RandomIterFactory.create(netRI, null);
 
         RandomIter tcaIter = null;
-        if (pMode == 1 || pMode==3) {
+        if (pMode == 1 || pMode == 3) {
             RenderedImage tcaRI = inTca.getRenderedImage();
             tcaIter = RandomIterFactory.create(tcaRI, null);
         }
@@ -218,12 +227,15 @@ public class NetNumbering extends JGTModel {
             if (attributeVect == null || geomVect == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
             }
-            netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
+                    inFlow.getGridGeometry(), pm);
         } else {
             if (attributeVect == null || geomVect == null || tcaIter == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection and the map of tca.", this);
+                throw new ModelsIllegalargumentException(
+                        "This processing mode needs a point featurecollection and the map of tca.", this);
             }
-            netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols, attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols,
+                    attributeVect, geomVect, inFlow.getGridGeometry(), pm);
         }
 
         WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);

@@ -81,7 +81,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Generates a watershed basin from a drainage direction map and a set of coordinates representing the outlet point of watershed")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Wateroutlet extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")

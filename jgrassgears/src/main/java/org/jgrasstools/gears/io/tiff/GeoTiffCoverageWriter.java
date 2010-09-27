@@ -43,7 +43,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Description("Utility class for writing geotools coverages to geotiffs.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Geotiff, Coverage, Raster, Writing")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GeoTiffCoverageWriter extends JGTModel {
     @Role(Role.PARAMETER)

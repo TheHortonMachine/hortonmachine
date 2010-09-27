@@ -57,7 +57,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/")
 public class Hillshade extends JGTModel {
     @Description("The map of the elevation.")

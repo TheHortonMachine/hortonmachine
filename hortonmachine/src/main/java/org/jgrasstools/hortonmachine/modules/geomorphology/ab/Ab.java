@@ -76,7 +76,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("It calculates the draining area per length unit (A/b), where A is the total area and b is the length of the contour line which is assumed as drained by the A area")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Ab extends JGTModel {
     @Description("The map of the total contributing area.")

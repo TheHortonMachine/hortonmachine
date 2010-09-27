@@ -41,7 +41,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Description("Utility class for writing geotools coverages to arcgrids.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Arcgrid, Coverage, Raster, Writing")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ArcgridCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")

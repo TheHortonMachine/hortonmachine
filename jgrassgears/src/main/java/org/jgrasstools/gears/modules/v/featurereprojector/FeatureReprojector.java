@@ -48,7 +48,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Module for vector reprojection")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Crs, Reprojection, Vector")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FeatureReprojector extends JGTModel {
 

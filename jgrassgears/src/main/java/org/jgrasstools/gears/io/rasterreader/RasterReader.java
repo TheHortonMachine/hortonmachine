@@ -89,7 +89,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Generic geotools coverage reader.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Reading")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RasterReader extends JGTModel {
     @Description("The coverage file path.")

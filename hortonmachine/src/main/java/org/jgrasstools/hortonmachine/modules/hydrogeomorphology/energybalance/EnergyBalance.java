@@ -82,7 +82,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("The module for calculating the energybalance")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Snow, Energybalance")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyBalance extends JGTModel {
 

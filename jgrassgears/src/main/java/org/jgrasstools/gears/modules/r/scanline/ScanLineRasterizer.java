@@ -64,7 +64,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Module for vector to raster conversion")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
 public class ScanLineRasterizer {

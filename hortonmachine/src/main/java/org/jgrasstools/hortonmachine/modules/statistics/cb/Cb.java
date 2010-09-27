@@ -40,7 +40,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
         + "with respect to the set of data contained in another matrix")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Histogram, Geomorphology, Statistic")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Cb extends JGTModel {
     @Description("The first coverage to analyse.")
