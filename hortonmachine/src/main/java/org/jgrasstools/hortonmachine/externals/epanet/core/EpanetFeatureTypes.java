@@ -350,7 +350,7 @@ public class EpanetFeatureTypes {
         /**
          * Diameter.
          */
-        DIAMETER(DIAMETER_STR, Integer.class), //
+        DIAMETER(DIAMETER_STR, Double.class), //
         /**
          * The valve type.
          * 
@@ -436,7 +436,7 @@ public class EpanetFeatureTypes {
         /**
          * Diameter.
          */
-        DIAMETER(DIAMETER_STR, Integer.class), //
+        DIAMETER(DIAMETER_STR, Double.class), //
         /**
          * Roughness coefficient.
          */
