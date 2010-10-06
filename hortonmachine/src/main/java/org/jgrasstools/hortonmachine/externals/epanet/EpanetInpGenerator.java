@@ -328,6 +328,9 @@ public class EpanetInpGenerator extends JGTModel {
             sbJunctions.append(SPACER);
             Object elevation = getAttribute(junction, Junctions.ELEVATION.getAttributeName());
             Object depth = getAttribute(junction, Junctions.DEPTH.getAttributeName());
+            if (depth == null) {
+                depth = new Double(0);
+            }
             double elev = ((Double) elevation) - ((Double) depth);
             sbJunctions.append(elev);
             sbJunctions.append(SPACER);
@@ -565,7 +568,7 @@ public class EpanetInpGenerator extends JGTModel {
                 sbEnergy.append(SPACER);
                 sbEnergy.append("EFFIC " + effStr);
                 sbEnergy.append(NL);
-                
+
                 String path = curveId2Path.get(effStr);
                 if (path != null) {
                     if (!curvesFilesList.contains(path))
