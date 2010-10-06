@@ -114,9 +114,7 @@ public class NumericsUtilities {
             return true;
         }
         double diffAbs = abs(a - b);
-        return a == b ? true : 
-            diffAbs < D_TOLERANCE ? true :
-            diffAbs / max(abs(a), abs(b)) < D_TOLERANCE;
+        return a == b ? true : diffAbs < D_TOLERANCE ? true : diffAbs / max(abs(a), abs(b)) < D_TOLERANCE;
     }
 
     /**
@@ -133,9 +131,7 @@ public class NumericsUtilities {
             return true;
         }
         double diffAbs = abs(a - b);
-        return a == b ? true : 
-            diffAbs < epsilon ? true :
-            diffAbs / max(abs(a), abs(b)) < epsilon;
+        return a == b ? true : diffAbs < epsilon ? true : diffAbs / max(abs(a), abs(b)) < epsilon;
     }
 
     /**
@@ -152,9 +148,7 @@ public class NumericsUtilities {
             return true;
         }
         float diffAbs = abs(a - b);
-        return a == b ? true : 
-            diffAbs < F_TOLERANCE ? true :
-            diffAbs / max(abs(a), abs(b)) < F_TOLERANCE;
+        return a == b ? true : diffAbs < F_TOLERANCE ? true : diffAbs / max(abs(a), abs(b)) < F_TOLERANCE;
     }
 
     /**
@@ -171,12 +165,9 @@ public class NumericsUtilities {
             return true;
         }
         float diffAbs = abs(a - b);
-        return a == b ? true : 
-            diffAbs < epsilon ? true :
-            diffAbs / max(abs(a), abs(b)) < epsilon;
+        return a == b ? true : diffAbs < epsilon ? true : diffAbs / max(abs(a), abs(b)) < epsilon;
     }
-    
-    
+
     /**
      * Checks if a string is a number (currently Double, Float, Integer).
      * 
@@ -207,7 +198,13 @@ public class NumericsUtilities {
                 Integer parsed = Integer.parseInt(value);
                 return adaptee.cast(parsed);
             } catch (Exception e) {
-                return null;
+                try {
+                    // try also double and convert by truncating
+                    Integer parsed = (int) Double.parseDouble(value);
+                    return adaptee.cast(parsed);
+                } catch (Exception ex) {
+                    return null;
+                }
             }
         } else {
             throw new IllegalArgumentException();
