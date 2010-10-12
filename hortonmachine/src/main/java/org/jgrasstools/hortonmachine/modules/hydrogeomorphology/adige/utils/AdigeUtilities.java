@@ -219,6 +219,9 @@ public class AdigeUtilities {
                     break;
                 }
             }
+            if (hillslopeElements.size() == 1) {
+                mostDownstreamHillslope = hillslopeElements.get(0);
+            }
 
         }
 
