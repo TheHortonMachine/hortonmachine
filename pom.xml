@@ -241,7 +241,7 @@
 
 		<repository>
 			<id>jgrasstools</id>
-			<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>
+			<url>https://bitbucket.org/moovida/jgrasstools/src/tip/mavenrepo</url>
 		</repository>
 
 		<repository>
@@ -254,6 +254,23 @@
 		</repository>
 
   </repositories>
+			<!--<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>-->
+  <!--
+    <distributionManagement>
+    <repository>
+      <id>jgrasstools.deploy</id>
+      <name>Repo</name>
+      <uniqueVersion>true</uniqueVersion>
+      <url>file:${jgrasstools.deploy.directory}/repo</url>
+    </repository>
+    <site>
+      <id>jgrasstools.site</id>
+      <name>Site</name>
+      <url>file:${jgrasstools.deploy.directory}/site</url>
+    </site>
+    <downloadUrl>http://code.google.com/p/jgrasstools/</downloadUrl>
+  </distributionManagement>
+-->
     
 	<!-- Build configuration -->
 	<build>

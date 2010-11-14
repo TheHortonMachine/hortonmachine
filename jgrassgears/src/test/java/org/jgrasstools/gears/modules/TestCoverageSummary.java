@@ -34,7 +34,6 @@ public class TestCoverageSummary extends HMTestCase {
         double sdev = summary.outSdev;
         double range = summary.outRange;
         double sum = summary.outSum;
-        double approxMedian = summary.outApproxmedian;
 
         assertEquals(2.0, min);
         assertEquals(2.0, max);
@@ -42,7 +41,6 @@ public class TestCoverageSummary extends HMTestCase {
         assertEquals(0.0, sdev);
         assertEquals(0.0, range);
         assertEquals(18.0, sum);
-        assertEquals(2.0, approxMedian);
 
         double[][] cb = summary.outCb;
         // for( int i = 0; i < cb.length; i++ ) {

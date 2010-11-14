@@ -49,7 +49,7 @@ public class TestShapefileIO extends HMTestCase {
 
         File tmpShape = File.createTempFile("testshp", ".shp");
         if (tmpShape.exists()) {
-            if (tmpShape.delete())
+            if (!tmpShape.delete())
                 throw new IOException();
         }
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();

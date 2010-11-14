@@ -81,10 +81,6 @@ public class CoverageSummary extends JGTModel {
     @Out
     public Double outSdev = null;
 
-    @Description("The approximate median value.")
-    @Out
-    public Double outApproxmedian = null;
-
     @Description("The range value.")
     @Out
     public Double outRange = null;
@@ -112,7 +108,6 @@ public class CoverageSummary extends JGTModel {
                 Statistic.MAX, 
                 Statistic.MEAN, 
                 Statistic.SDEV,
-//                Statistic.APPROX_MEDIAN,
                 Statistic.RANGE, 
                 Statistic.SUM};
         pb.setParameter("stats", stats);
@@ -138,9 +133,6 @@ public class CoverageSummary extends JGTModel {
                 break;
             case SDEV:
                 outSdev = value;
-                break;
-            case APPROX_MEDIAN:
-                outApproxmedian = value;
                 break;
             case RANGE:
                 outRange = value;
