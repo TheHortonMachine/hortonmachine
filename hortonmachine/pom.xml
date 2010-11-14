@@ -45,6 +45,7 @@
 					<target>1.5</target>
 				</configuration>
 			</plugin>
+            <!-- create a runnable jar with all dependencies in it which is able to run OMS3 scripts -->
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
@@ -66,6 +67,18 @@
                   </goals>
                 </execution>
               </executions>
+            </plugin>
+            <!-- 
+                 copy all dependency jars in a folder - to have all needed jars 
+
+                 this can be run through: mvn dependency:copy-dependencies
+             -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.build.directory}/jars</outputDirectory>
+                </configuration>
             </plugin>
 		</plugins>
 	</build>
