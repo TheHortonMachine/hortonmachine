@@ -74,7 +74,7 @@ public class JGrassCoverageWriter extends JGTModel {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
 
         GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-        GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL());
+        GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
 
         GeneralParameterValue[] readParams = null;
         if (doActive) {
