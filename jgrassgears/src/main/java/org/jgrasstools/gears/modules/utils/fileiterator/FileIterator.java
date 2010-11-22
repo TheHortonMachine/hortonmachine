@@ -20,6 +20,7 @@ package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -33,7 +34,12 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that iterates over files in a folder")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
@@ -50,20 +56,34 @@ public class FileIterator extends JGTModel {
     @In
     public String pRegex = null;
 
+    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @In
+    public String pCode;
+
     @Description("The current file of the list of files in the folder.")
     @Out
     public String outCurrentfile = null;
 
-    private List<File> filesList = null;
+    @Description("All the files that were found matching.")
+    @Out
+    public List<File> filesList = null;
+
     private int fileIndex = 0;
-    
+
+    private String prjWkt;
+
     @Initialize
     public void initProcess() {
         doProcess = true;
     }
-    
+
     @Execute
-    public void process() {
+    public void process() throws Exception {
+        if (pCode != null) {
+            CoordinateReferenceSystem crs = CRS.decode(pCode);
+            prjWkt = crs.toWKT();
+        }
+
         if (filesList == null) {
             File folderFile = new File(inFolder);
             File[] listFiles = folderFile.listFiles(new FilenameFilter(){
@@ -80,6 +100,18 @@ public class FileIterator extends JGTModel {
                 }
             });
             filesList = Arrays.asList(listFiles);
+
+            if (prjWkt != null) {
+                for( File file : listFiles ) {
+                    String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
+                    File prjFile = new File(nameWithoutExtention + ".prj");
+                    if (!prjFile.exists()) {
+                        // create it
+                        FileUtilities.writeFile(prjWkt, prjFile);
+                    }
+                }
+            }
+
         }
 
         outCurrentfile = filesList.get(fileIndex).getAbsolutePath();
