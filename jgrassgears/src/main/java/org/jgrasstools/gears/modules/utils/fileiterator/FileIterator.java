@@ -20,7 +20,6 @@ package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -37,8 +36,6 @@ import oms3.annotations.Status;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that iterates over files in a folder")
@@ -92,7 +89,7 @@ public class FileIterator extends JGTModel {
                         // all files
                         return true;
                     } else {
-                        if (name.matches(pRegex)) {
+                        if (name.matches(".*" + pRegex + ".*")) { //$NON-NLS-1$//$NON-NLS-2$
                             return true;
                         }
                         return false;
@@ -104,7 +101,7 @@ public class FileIterator extends JGTModel {
             if (prjWkt != null) {
                 for( File file : listFiles ) {
                     String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
-                    File prjFile = new File(nameWithoutExtention + ".prj");
+                    File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj");
                     if (!prjFile.exists()) {
                         // create it
                         FileUtilities.writeFile(prjWkt, prjFile);

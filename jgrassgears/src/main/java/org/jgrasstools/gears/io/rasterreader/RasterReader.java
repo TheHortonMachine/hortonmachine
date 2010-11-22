@@ -77,6 +77,7 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.geotools.geometry.GeneralEnvelope;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -119,6 +120,10 @@ public class RasterReader extends JGTModel {
     @In
     public String pType = null;
 
+    @Description("Flag to read only envelope (if true, the output geodata is null).")
+    @In
+    public boolean doEnvelope = false;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -126,6 +131,10 @@ public class RasterReader extends JGTModel {
     @Description("The read output coverage map.")
     @Out
     public GridCoverage2D geodata = null;
+
+    @Description("The original envelope of the coverage.")
+    @Out
+    public GeneralEnvelope originalEnvelope;
 
     private GeneralParameterValue[] generalParameter = null;
 
@@ -229,22 +238,26 @@ public class RasterReader extends JGTModel {
         GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
         geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
     }
+    
     private void readGrass( File mapFile ) throws Exception {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
 
         if (generalParameter == null) {
-            generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(), jGrassRegion
-                    .getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
+            generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
+                    jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
         }
 
         GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
         GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
-        geodata = (GridCoverage2D) reader.read(generalParameter);
+        originalEnvelope = reader.getOriginalEnvelope();
+        if (!doEnvelope) {
+            geodata = (GridCoverage2D) reader.read(generalParameter);
 
-        resample();
-        checkNovalues();
+            resample();
+            checkNovalues();
+        }
     }
 
     private void readAig( File mapFile ) throws IllegalArgumentException, IOException {
@@ -257,29 +270,38 @@ public class RasterReader extends JGTModel {
         final URL url = mapFile.toURI().toURL();
         final Object source = url;
         final BaseGDALGridCoverage2DReader reader = new AIGReader(source, hints);
-        GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
-        geodata = coverage.view(ViewType.GEOPHYSICS);
+        originalEnvelope = reader.getOriginalEnvelope();
+        if (!doEnvelope) {
+            GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
+            geodata = coverage.view(ViewType.GEOPHYSICS);
 
-        resample();
-        checkNovalues();
+            resample();
+            checkNovalues();
+        }
     }
 
     private void readGeotiff( File mapFile ) throws IOException {
         GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
-        GridCoverage2D coverage = geoTiffReader.read(generalParameter);
-        geodata = coverage.view(ViewType.GEOPHYSICS);
+        originalEnvelope = geoTiffReader.getOriginalEnvelope();
+        if (!doEnvelope) {
+            GridCoverage2D coverage = geoTiffReader.read(generalParameter);
+            geodata = coverage.view(ViewType.GEOPHYSICS);
 
-        resample();
-        checkNovalues();
+            resample();
+            checkNovalues();
+        }
     }
 
     private void readArcGrid( File mapFile ) throws IllegalArgumentException, IOException {
         ArcGridReader arcGridReader = new ArcGridReader(mapFile);
-        GridCoverage2D coverage = arcGridReader.read(generalParameter);
-        geodata = coverage.view(ViewType.GEOPHYSICS);
+        originalEnvelope = arcGridReader.getOriginalEnvelope();
+        if (!doEnvelope) {
+            GridCoverage2D coverage = arcGridReader.read(generalParameter);
+            geodata = coverage.view(ViewType.GEOPHYSICS);
 
-        resample();
-        checkNovalues();
+            resample();
+            checkNovalues();
+        }
     }
 
     private void checkNovalues() {

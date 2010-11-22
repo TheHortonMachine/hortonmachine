@@ -18,13 +18,16 @@
  */
 package org.jgrasstools.gears.modules;
 
+import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.mosaic.Mosaic;
+import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
 import org.jgrasstools.gears.ui.CoverageViewer;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
@@ -35,13 +38,18 @@ import org.jgrasstools.gears.utils.HMTestCase;
 public class TestMosaic extends HMTestCase {
     public void testMosaic() throws Exception {
 
-        GridCoverage2D c1 = RasterReader.readCoverage("/home/moovida/TMP/geologico_dtm_test/dsm000007_wgs.asc"); //$NON-NLS-1$
-        GridCoverage2D c2 = RasterReader.readCoverage("/home/moovida/TMP/geologico_dtm_test/dsm000008_wgs.asc"); //$NON-NLS-1$
-        GridCoverage2D c3 = RasterReader.readCoverage("/home/moovida/TMP/geologico_dtm_test/dsm000009_wgs.asc"); //$NON-NLS-1$
-
+        FileIterator fiter = new FileIterator();
+        fiter.inFolder = "/home/moovida/TMP/geologico_dtm_test/";
+        fiter.pRegex = "asc";
+        fiter.pCode = "EPSG:32632";
+        fiter.process();
+        List<File> filesList = fiter.filesList;
+        for( File file : filesList ) {
+            System.out.println(file.getAbsolutePath());
+        }
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
         Mosaic mosaic = new Mosaic();
-        mosaic.inGeodata = Arrays.asList(c1, c2, c3);
+        mosaic.inGeodataFiles = filesList;
         mosaic.pm = pm;
         mosaic.process();
         GridCoverage2D outMap = mosaic.outGeodata;

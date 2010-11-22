@@ -25,6 +25,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,12 +47,14 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -60,9 +63,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Mosaic extends JGTModel {
 
-    @Description("The coverages that have to be patched.")
+    @Description("The list of files that have to be patched (used if inGeodata is null).")
     @In
-    public List<GridCoverage2D> inGeodata;
+    public List<File> inGeodataFiles;
 
     @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
     @In
@@ -76,13 +79,19 @@ public class Mosaic extends JGTModel {
     @Out
     public GridCoverage2D outGeodata = null;
 
+    private CoordinateReferenceSystem crs;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outGeodata == null, doReset)) {
             return;
         }
 
-        if (inGeodata.size() < 2) {
+        if (inGeodataFiles == null) {
+            throw new ModelsIllegalargumentException("No input data have been provided.", this);
+        }
+
+        if (inGeodataFiles != null && inGeodataFiles.size() < 2) {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
         }
 
@@ -97,12 +106,15 @@ public class Mosaic extends JGTModel {
         int ep = Integer.MIN_VALUE;
         int wp = Integer.MAX_VALUE;
 
-        pm.beginTask("Calculating final bounds...", inGeodata.size());
-        for( GridCoverage2D coverage : inGeodata ) {
+        pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
+        for( File coverageFile : inGeodataFiles ) {
+
+            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
 
             if (referenceGridGeometry == null) {
                 // take the first as reference
                 referenceGridGeometry = coverage.getGridGeometry();
+                crs = coverage.getCoordinateReferenceSystem();
             }
 
             Envelope2D worldEnv = coverage.getEnvelope2D();
@@ -146,7 +158,9 @@ public class Mosaic extends JGTModel {
         int offestX = Math.abs(wp);
         int offestY = Math.abs(sp);
         int index = 1;
-        for( GridCoverage2D coverage : inGeodata ) {
+        for( File coverageFile : inGeodataFiles ) {
+            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+
             RenderedImage renderedImage = coverage.getRenderedImage();
             RandomIter randomIter = RandomIterFactory.create(renderedImage, null);
 
@@ -181,8 +195,7 @@ public class Mosaic extends JGTModel {
         envelopeParams.put(WEST, w);
         envelopeParams.put(EAST, e);
 
-        outGeodata = CoverageUtilities.buildCoverage("patch", outputWR, envelopeParams, inGeodata.get(0) //$NON-NLS-1$
-                .getCoordinateReferenceSystem());
+        outGeodata = CoverageUtilities.buildCoverage("patch", outputWR, envelopeParams, crs); //$NON-NLS-1$
 
     }
 
