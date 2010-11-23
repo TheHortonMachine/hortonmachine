@@ -353,7 +353,15 @@ public class GrassRasterWriter extends MapWriter {
     }
 
     public boolean open( String mapPath ) {
-        return false;
+        File mapFile = new File(mapPath);
+
+        String fileName = mapFile.getName();
+
+        File mapsetFile = mapFile.getParentFile().getParentFile();
+        String mapsetName = mapsetFile.getName();
+        String locationPath = mapsetFile.getParent();
+
+        return open(fileName, locationPath, mapsetName);
     }
 
 }

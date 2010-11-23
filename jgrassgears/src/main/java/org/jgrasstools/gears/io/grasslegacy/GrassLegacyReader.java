@@ -57,6 +57,10 @@ public class GrassLegacyReader extends JGTModel {
     @In
     public boolean doActive = true;
 
+    @Description("The region to read.")
+    @In
+    public Window inWindow = null;
+
     @Description("The read output map.")
     @Out
     public double[][] geodata = null;
@@ -68,18 +72,21 @@ public class GrassLegacyReader extends JGTModel {
         }
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         JGrassRegion jGrassRegion = null;
-        if (doActive) {
-            jGrassRegion = mapEnvironment.getActiveRegion();
-        } else {
-            jGrassRegion = mapEnvironment.getFileRegion();
+        if (inWindow == null) {
+            if (doActive) {
+                jGrassRegion = mapEnvironment.getActiveRegion();
+            } else {
+                jGrassRegion = mapEnvironment.getFileRegion();
+            }
+            inWindow = new Window(jGrassRegion.getWest(), jGrassRegion.getEast(), jGrassRegion.getSouth(),
+                    jGrassRegion.getNorth(), jGrassRegion.getWEResolution(), jGrassRegion.getNSResolution());
         }
 
         GrassRasterReader reader = new GrassRasterReader();
         try {
             reader.setReaderType(MapReader.RASTER_READER);
             reader.setOutputDataObject(new double[0][0]);
-            reader.setDataWindow(new Window(jGrassRegion.getWest(), jGrassRegion.getEast(), jGrassRegion.getSouth(), jGrassRegion
-                    .getNorth(), jGrassRegion.getWEResolution(), jGrassRegion.getNSResolution()));
+            reader.setDataWindow(inWindow);
 
             reader.open(mapEnvironment.getCELL().getAbsolutePath());
             if (reader.hasMoreData(pm)) {

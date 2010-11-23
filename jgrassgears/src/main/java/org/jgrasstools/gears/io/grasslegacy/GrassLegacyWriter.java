@@ -47,7 +47,7 @@ public class GrassLegacyWriter extends JGTModel {
 
     @Description("The region for the map to be written.")
     @In
-    public Window inWidnow = null;
+    public Window inWindow = null;
 
     @Description("The progress monitor.")
     @In
@@ -60,7 +60,7 @@ public class GrassLegacyWriter extends JGTModel {
     private boolean hasWritten = false;
 
     @Execute
-    public void writeCoverage() throws Exception {
+    public void writeRaster() throws Exception {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
@@ -69,7 +69,7 @@ public class GrassLegacyWriter extends JGTModel {
         GrassRasterWriter writer = new GrassRasterWriter();
         try {
             writer.setOutputDataObject(new double[0][0]);
-            writer.setDataWindow(inWidnow);
+            writer.setDataWindow(inWindow);
             writer.open(mapEnvironment.getCELL().getAbsolutePath());
             writer.write(geodata);
         } finally {
