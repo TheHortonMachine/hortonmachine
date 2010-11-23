@@ -41,6 +41,7 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -78,7 +79,7 @@ public class LineSmoother extends JGTModel {
     @In
     public int pLookahead = 7;
 
-    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is not smoothed (if circle, it is removed).")
+    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is not smoothed (if circle or alone, it is removed).")
     @In
     public int pLimit = 0;
 
@@ -102,10 +103,13 @@ public class LineSmoother extends JGTModel {
     @Out
     public SimpleFeatureCollection outFeatures;
 
+    private static final double SAMEPOINTTHRESHOLD = 0.1;
     private GeometryFactory gF = GeometryUtilities.gf();
 
     private double densify = -1;
     private double simplify = -1;
+
+    private List<SimpleFeature> linesList;
 
     @Execute
     public void process() throws Exception {
@@ -123,26 +127,24 @@ public class LineSmoother extends JGTModel {
         outFeatures = FeatureCollections.newCollection();
 
         int id = 0;
-        FeatureIterator<SimpleFeature> inFeatureIterator = linesFeatures.features();
+        pm.message("Collecting geometries...");
+        linesList = FeatureUtilities.featureCollectionToList(linesFeatures);
         int size = linesFeatures.size();
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(linesFeatures.getSchema());
         pm.beginTask("Smoothing features...", size);
-        while( inFeatureIterator.hasNext() ) {
-            SimpleFeature feature = inFeatureIterator.next();
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        for( SimpleFeature line : linesList ) {
+            Geometry geometry = (Geometry) line.getDefaultGeometry();
             List<LineString> lsList = smoothGeometries(geometry);
             if (lsList.size() != 0) {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
-                SimpleFeature newFeature = fGS.substituteGeometry(feature, multiLineString, id);
+                SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString, id);
                 outFeatures.add(newFeature);
                 id++;
             }
             pm.worked(1);
         }
         pm.done();
-        inFeatureIterator.close();
-
     }
 
     private List<LineString> smoothGeometries( Geometry geometry ) {
@@ -156,7 +158,11 @@ public class LineSmoother extends JGTModel {
             Coordinate last = smoothedArray[smoothedArray.length - 1];
             if (length <= pLimit) {
                 // if it is circle remove it, else just do not smooth it
-                if (first.distance(last) < 0.1) {
+                if (first.distance(last) < SAMEPOINTTHRESHOLD) {
+                    continue;
+                }
+                // check if the line is an error lying around somewhere
+                if (isAlone(geometryN)) {
                     continue;
                 }
             } else {
@@ -189,6 +195,41 @@ public class LineSmoother extends JGTModel {
             lsList.add(lineString);
         }
         return lsList;
+    }
+
+    /**
+     * Checks if the given geometry is connected to any other line.
+     * 
+     * @param geometryN the geometry to test.
+     * @return true if the geometry is alone in the space, i.e. not connected at
+     *              one of the ends to any other geometry.
+     */
+    private boolean isAlone( Geometry geometryN ) {
+        Coordinate[] coordinates = geometryN.getCoordinates();
+        if (coordinates.length > 1) {
+            Coordinate first = coordinates[0];
+            Coordinate last = coordinates[coordinates.length - 1];
+            for( SimpleFeature line : linesList ) {
+                Geometry lineGeom = (Geometry) line.getDefaultGeometry();
+                int numGeometries = lineGeom.getNumGeometries();
+                for( int i = 0; i < numGeometries; i++ ) {
+                    Geometry subGeom = lineGeom.getGeometryN(i);
+                    Coordinate[] lineCoordinates = subGeom.getCoordinates();
+                    if (lineCoordinates.length < 2) {
+                        continue;
+                    } else {
+                        Coordinate tmpFirst = lineCoordinates[0];
+                        Coordinate tmpLast = lineCoordinates[lineCoordinates.length - 1];
+                        if (tmpFirst.distance(first) < SAMEPOINTTHRESHOLD || tmpFirst.distance(last) < SAMEPOINTTHRESHOLD
+                                || tmpLast.distance(first) < SAMEPOINTTHRESHOLD || tmpLast.distance(last) < SAMEPOINTTHRESHOLD) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        // 1 point line or no connection, mark it as alone for removal
+        return true;
     }
 
     /**
