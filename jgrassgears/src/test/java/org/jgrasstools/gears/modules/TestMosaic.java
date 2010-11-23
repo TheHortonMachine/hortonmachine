@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
+import org.jgrasstools.gears.io.grasslegacy.modules.GrassMosaicLegacy;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.mosaic.Mosaic;
@@ -31,15 +32,42 @@ import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
 import org.jgrasstools.gears.ui.CoverageViewer;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
- * Test for the mosaic module.
+ * Test for the mosaic modules.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestMosaic extends HMTestCase {
-    public void testMosaic() throws Exception {
+    // public void testMosaic() throws Exception {
+    //
+    // FileIterator fiter = new FileIterator();
+    // fiter.inFolder = "/home/moovida/TMP/geologico_dtm_test/";
+    // fiter.pRegex = "asc";
+    // fiter.pCode = "EPSG:32632";
+    // fiter.process();
+    // List<File> filesList = fiter.filesList;
+    // for( File file : filesList ) {
+    // System.out.println(file.getAbsolutePath());
+    // }
+    // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    // Mosaic mosaic = new Mosaic();
+    // mosaic.inGeodataFiles = filesList;
+    // mosaic.pm = pm;
+    // mosaic.process();
+    // GridCoverage2D outMap = mosaic.outGeodata;
+    //
+    // ArcgridCoverageWriter.writeArcgrid("/home/moovida/TMP/geologico_dtm_test/dsm00000ALL_wgs.asc",
+    // outMap);
+    //
+    // CoverageViewer cv = new CoverageViewer();
+    // cv.coverage =
+    // RasterReader.readCoverage("/home/moovida/TMP/geologico_dtm_test/dsm00000ALL_wgs.asc");
+    // cv.viewCoverage();
+    // }
+
+    public void testGrassMosaicLegacy() throws Exception {
 
         FileIterator fiter = new FileIterator();
-        fiter.inFolder = "/home/moovida/DTM_TRENTINO/unzipped/";
+        fiter.inFolder = "/home/moovida/TMP/geologico_dtm_test/";
         fiter.pRegex = "asc";
         fiter.pCode = "EPSG:32632";
         fiter.process();
@@ -48,25 +76,17 @@ public class TestMosaic extends HMTestCase {
             System.out.println(file.getAbsolutePath());
         }
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        Mosaic mosaic = new Mosaic();
+        GrassMosaicLegacy mosaic = new GrassMosaicLegacy();
         mosaic.inGeodataFiles = filesList;
         mosaic.pm = pm;
+        mosaic.outFile = "/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/aidi/cell/dsm_all_wgs";
+        mosaic.pRes = 2.0;
         mosaic.process();
-        GridCoverage2D outMap = mosaic.outGeodata;
 
-        ArcgridCoverageWriter.writeArcgrid("/home/moovida/DTM_TRENTINO/dtm_2x2_all_wgs.asc", outMap);
-
-        CoverageViewer cv = new CoverageViewer();
-        cv.coverage = RasterReader.readCoverage("/home/moovida/TMP/geologico_dtm_test/dsm00000ALL_wgs.asc");
-        cv.viewCoverage();
-    }
-    
-    public static void main( String[] args ) {
-        try {
-            new TestMosaic().testMosaic();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // CoverageViewer cv = new CoverageViewer();
+        // cv.coverage = RasterReader
+        // .readCoverage("/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/aidi/cell/dsm_all_wgs");
+        // cv.viewCoverage();
     }
 
 }
