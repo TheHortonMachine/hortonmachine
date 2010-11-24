@@ -67,7 +67,7 @@ public class TestMosaic extends HMTestCase {
     public void testGrassMosaicLegacy() throws Exception {
 
         FileIterator fiter = new FileIterator();
-        fiter.inFolder = "/home/moovida/TMP/geologico_dtm_test/";
+        fiter.inFolder = "/home/moovida/DTM_TRENTINO/1x1/unzipped/";
         fiter.pRegex = "asc";
         fiter.pCode = "EPSG:32632";
         fiter.process();
@@ -79,14 +79,35 @@ public class TestMosaic extends HMTestCase {
         GrassMosaicLegacy mosaic = new GrassMosaicLegacy();
         mosaic.inGeodataFiles = filesList;
         mosaic.pm = pm;
-        mosaic.outFile = "/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/aidi/cell/dsm_all_wgs";
+        mosaic.outFile = "/home/moovida/DTM_TRENTINO/grassdb/trentino/dtm2009/cell/dsm_all_1x1_right_wgs";
         mosaic.pRes = 2.0;
+        // left
+//        mosaic.pBounds = new double[]{5158010.0, 5059990.0, 611990.0, 672000.0}; // n,s,w,e
+        // right
+        mosaic.pBounds = new double[]{5158010.0, 5059990.0, 672000.0, 732010.0};
+
+        // 1x1 upper left
+        // mosaic.pBounds = new double[]{5158010.0, 5109000.0, 611990.0, 672000.0};
+        // 1x1 upper right
+        // mosaic.pBounds = new double[]{5158010.0, 5109000.0, 672000.0, 732010.0};
+        // 1x1 lower left
+        // mosaic.pBounds = new double[]{5109000.0, 5059990.0, 611990.0, 672000.0};
+        // 1x1 upper right
+        // mosaic.pBounds = new double[]{5109000.0, 5059990.0, 672000.0, 732010.0};
         mosaic.process();
 
         // CoverageViewer cv = new CoverageViewer();
         // cv.coverage = RasterReader
         // .readCoverage("/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/aidi/cell/dsm_all_wgs");
         // cv.viewCoverage();
+    }
+
+    public static void main( String[] args ) {
+        try {
+            new TestMosaic().testGrassMosaicLegacy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
