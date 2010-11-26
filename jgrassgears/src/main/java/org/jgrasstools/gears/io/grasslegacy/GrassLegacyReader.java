@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.io.grasslegacy;
 
 import java.io.File;
+import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -33,10 +34,15 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterReader;
 import org.jgrasstools.gears.io.grasslegacy.io.MapReader;
+import org.jgrasstools.gears.io.grasslegacy.utils.JGrassUtilities;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 @Description("Legacy class for reading grass data the old way.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -96,4 +102,49 @@ public class GrassLegacyReader extends JGTModel {
             reader.close();
         }
     }
+
+    /**
+     * Get a single value in a position of the raster.
+     * 
+     * @param window the grid on which to base on (if <code>null</code>, the active region is picked).
+     * @param coordinate the coordinate in which the value is read.
+     * @param filePath the path to the map.
+     * @return the value read in the given coordinate.
+     * @param pm the progress monitor or null.
+     * @throws Exception
+     */
+    public static double getValueAt( Window window, Coordinate coordinate, String filePath, IJGTProgressMonitor pm )
+            throws Exception {
+        JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(filePath));
+        if (window == null) {
+            JGrassRegion jgr = mapEnvironment.getActiveRegion();
+            window = new Window(jgr.getWest(), jgr.getEast(), jgr.getSouth(), jgr.getNorth(), jgr.getWEResolution(),
+                    jgr.getNSResolution());
+        }
+        Window rectangleAroundPoint = JGrassUtilities.getRectangleAroundPoint(window, coordinate.x, coordinate.y);
+
+        GrassLegacyReader reader = new GrassLegacyReader();
+        reader.file = filePath;
+        reader.inWindow = rectangleAroundPoint;
+        if (pm != null)
+            reader.pm = pm;
+        reader.readCoverage();
+        double[][] data = reader.geodata;
+
+        if (data.length != 1 || data[0].length != 1) {
+            throw new IllegalAccessException("Wrong region extracted for picking a single point.");
+        }
+
+        return data[0][0];
+    }
+
+    // public static void main( String[] args ) throws Exception {
+    // // 660205.062241|5116931.07884||932.92|
+    // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    // double value = getValueAt(null, new Coordinate(660205.062241, 5116931.07884),
+    // "/home/moovida/DTM_TRENTINO/grassdb/trentino/solo/cell/dtm_all_wgs", pm);
+    // System.out.println(value);
+    //
+    // }
+
 }
