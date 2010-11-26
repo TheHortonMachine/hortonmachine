@@ -32,6 +32,7 @@ import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.io.grasslegacy.map.attribute.AttributeTable;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorMapBuffer;
 import org.jgrasstools.gears.io.grasslegacy.utils.FileUtilities;
@@ -288,7 +289,7 @@ public class GrassRasterReader extends MapReader {
                     // double datansres2 = datansres / 2;
                     /* Iterate through all the rows of the data window. */
                     // int lastpos = 0;
-                    monitor.beginTask("Reading raster" + filename, dataWindow //$NON-NLS-1$
+                    monitor.beginTask(GearsMessageHandler.getInstance().message("grass.legacy.reading") + filename, dataWindow //$NON-NLS-1$
                             .getRows());
                     int stepRowsForPercentage = dataWindow.getRows() / 100;
                     for( double row = 0; row < dataWindow.getRows(); row++ ) {
