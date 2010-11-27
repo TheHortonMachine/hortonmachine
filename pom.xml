@@ -241,7 +241,8 @@
 
 		<repository>
 			<id>jgrasstools</id>
-			<url>https://bitbucket.org/moovida/jgrasstools/src/tip/mavenrepo</url>
+			<url>https://wiki.jgrasstools.googlecode.com/hg/mavenrepo</url>
+			<!--<url>https://bitbucket.org/moovida/jgrasstools/src/tip/mavenrepo</url>-->
 		</repository>
 
 		<repository>
