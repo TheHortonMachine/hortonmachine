@@ -276,7 +276,7 @@ public class MapsViewer {
     }
 
     public static synchronized void displayRasterAndFeatures( final GridCoverage2D raster,
-            final SimpleFeatureCollection vector ) throws Exception {
+            final SimpleFeatureCollection... vectors ) throws Exception {
 
         new Thread(){
             @Override
@@ -285,8 +285,8 @@ public class MapsViewer {
                 if (raster != null) {
                     viewer.coverages = new GridCoverage2D[]{raster};
                 }
-                if (vector != null) {
-                    viewer.featureCollections = new SimpleFeatureCollection[]{vector};
+                if (vectors != null) {
+                    viewer.featureCollections = vectors;
                 }
                 try {
                     viewer.displayMaps();
