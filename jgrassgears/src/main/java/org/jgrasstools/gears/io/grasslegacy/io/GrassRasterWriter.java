@@ -53,8 +53,6 @@ public class GrassRasterWriter extends MapWriter {
 
     private double range[] = new double[2];
 
-    private Object novalue = new Double(Double.NaN);
-
     private static final String ERROR_IN_WRITING_RASTER = "Error in writing raster: ";
 
     /**
@@ -62,7 +60,6 @@ public class GrassRasterWriter extends MapWriter {
      */
     private int outputToDiskType = 2;
 
-    private boolean jump = false;
 
     /**
      * 
@@ -120,13 +117,11 @@ public class GrassRasterWriter extends MapWriter {
         /*
          * finally writing to disk
          */
-        CompressesRasterWriter crwriter = new CompressesRasterWriter(outputToDiskType, novalue, jump, range,
-                pointerInFilePosition, rowaddresses, dataWindow);
+        CompressesRasterWriter crwriter = new CompressesRasterWriter(outputToDiskType, range, pointerInFilePosition,
+                rowaddresses, dataWindow);
         crwriter.compressAndWriteObj(theCreatedFile, theCreatedNullFile, dataObject);
         // not sure I have to do this, have to check sooner or later
         outputToDiskType = crwriter.getOutputToDiskType();
-        novalue = crwriter.getNovalue();
-        jump = crwriter.isJump();
         range = crwriter.getRange();
         pointerInFilePosition = crwriter.getPointerInFilePosition();
         rowaddresses = crwriter.getRowaddresses();
@@ -343,9 +338,6 @@ public class GrassRasterWriter extends MapWriter {
      * @see jgrass.io.MapWriter#setParameter(java.lang.String, java.lang.Object)
      */
     public void setParameter( String key, Object obj ) {
-        if (key.equals("novalue")) {
-            novalue = obj;
-        }
     }
 
     public void setDataWindow( Window window ) {

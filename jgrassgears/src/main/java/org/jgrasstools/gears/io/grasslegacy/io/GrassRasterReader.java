@@ -25,26 +25,17 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.BitSet;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
 
+import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.io.grasslegacy.map.attribute.AttributeTable;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorMapBuffer;
-import org.jgrasstools.gears.io.grasslegacy.map.color.ColorRule;
-import org.jgrasstools.gears.io.grasslegacy.map.color.ColorTable;
-import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
-import org.jgrasstools.gears.io.grasslegacy.messages.Messages;
 import org.jgrasstools.gears.io.grasslegacy.utils.FileUtilities;
-import org.jgrasstools.gears.io.grasslegacy.utils.Format;
-import org.jgrasstools.gears.io.grasslegacy.utils.GDataObject;
 import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.JlsTokenizer;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
@@ -298,7 +289,7 @@ public class GrassRasterReader extends MapReader {
                     // double datansres2 = datansres / 2;
                     /* Iterate through all the rows of the data window. */
                     // int lastpos = 0;
-                    monitor.beginTask(Messages.getString("GrassRasterReader.readingraster") + filename, dataWindow //$NON-NLS-1$
+                    monitor.beginTask(GearsMessageHandler.getInstance().message("grass.legacy.reading") + filename, dataWindow //$NON-NLS-1$
                             .getRows());
                     int stepRowsForPercentage = dataWindow.getRows() / 100;
                     for( double row = 0; row < dataWindow.getRows(); row++ ) {

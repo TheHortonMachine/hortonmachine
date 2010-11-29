@@ -37,6 +37,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
@@ -46,6 +47,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -66,6 +68,10 @@ public class GrassMosaicLegacy extends JGTModel {
     @In
     public Double pRes = null;
 
+    @Description("The optional requested boundary coordinates as array of [n, s, w, e].")
+    @In
+    public double[] pBounds = null;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -73,6 +79,8 @@ public class GrassMosaicLegacy extends JGTModel {
     @Description("The grass file path to which to write to.")
     @In
     public String outFile = null;
+
+    private Envelope2D requestedEnvelope;
 
     @Execute
     public void process() throws Exception {
@@ -91,6 +99,12 @@ public class GrassMosaicLegacy extends JGTModel {
 
         GridGeometry2D referenceGridGeometry = null;
 
+        if (pBounds != null) {
+            DirectPosition2D first = new DirectPosition2D(pBounds[2], pBounds[1]);
+            DirectPosition2D second = new DirectPosition2D(pBounds[3], pBounds[0]);
+            requestedEnvelope = new Envelope2D(first, second);
+        }
+
         double n = Double.MIN_VALUE;
         double s = Double.MAX_VALUE;
         double e = Double.MIN_VALUE;
@@ -98,15 +112,21 @@ public class GrassMosaicLegacy extends JGTModel {
 
         pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
         for( File coverageFile : inGeodataFiles ) {
-
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
-
             if (referenceGridGeometry == null) {
                 // take the first as reference
                 referenceGridGeometry = coverage.getGridGeometry();
             }
 
             Envelope2D worldEnv = coverage.getEnvelope2D();
+            if (requestedEnvelope != null) {
+                if (!requestedEnvelope.intersects(worldEnv)) {
+                    // if a constraint envelope was supplied, only handle what is inside
+                    pm.worked(1);
+                    continue;
+                }
+            }
+
             double minWX = worldEnv.getMinX();
             double minWY = worldEnv.getMinY();
             double maxWX = worldEnv.getMaxX();
@@ -124,8 +144,13 @@ public class GrassMosaicLegacy extends JGTModel {
         pm.done();
 
         Window writeWindow = new Window(w, e, s, n, pRes, pRes);
+
         int rows = writeWindow.getRows();
         int cols = writeWindow.getCols();
+
+        long megabytes = (rows * (long) cols) * 8 / 1024l / 1024l;
+
+        pm.message("Will allocate " + (rows * (long) cols) + " cells, equal to about " + megabytes);
 
         double[][] outputData = new double[rows][cols];
         for( int i = 0; i < outputData.length; i++ ) {
@@ -133,15 +158,21 @@ public class GrassMosaicLegacy extends JGTModel {
                 outputData[i][j] = JGTConstants.doubleNovalue;
             }
         }
+        pm.message("Memory allocated.");
 
         int index = 1;
         for( File coverageFile : inGeodataFiles ) {
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+            Envelope2D env = coverage.getEnvelope2D();
+            if (requestedEnvelope != null) {
+                if (!requestedEnvelope.intersects(env)) {
+                    // if a constraint envelope was supplied, only handle what is inside
+                    continue;
+                }
+            }
 
             RenderedImage renderedImage = coverage.getRenderedImage();
             RandomIter randomIter = RandomIterFactory.create(renderedImage, null);
-
-            Envelope2D env = coverage.getEnvelope2D();
 
             double east = env.getMaxX();
             double south = env.getMinY();
@@ -153,15 +184,19 @@ public class GrassMosaicLegacy extends JGTModel {
             double startRow = (writeWindow.getNorth() - tmpWindow.getNorth()) / pRes;
             double startCol = (tmpWindow.getWest() - writeWindow.getWest()) / pRes;
 
-            double[] value = new double[1];
             pm.beginTask("Patch map " + index++, tmpWindow.getRows()); //$NON-NLS-1$
+            double[] value = new double[1];
             for( int row = 0; row < tmpWindow.getRows(); row++ ) {
                 double northing = north - row * pRes;
                 for( int col = 0; col < tmpWindow.getCols(); col++ ) {
                     double easting = west + col * pRes;
                     coverage.evaluate(new Point2D.Double(easting, northing), value);
 
-                    outputData[(int) (row + startRow)][(int) (col + startCol)] = value[0];
+                    if (!Double.isNaN(value[0])) {
+                        if (Double.isNaN(outputData[(int) (row + startRow)][(int) (col + startCol)])) {
+                            outputData[(int) (row + startRow)][(int) (col + startCol)] = value[0];
+                        }
+                    }
                 }
                 pm.worked(1);
             }
@@ -169,6 +204,7 @@ public class GrassMosaicLegacy extends JGTModel {
             randomIter.done();
         }
 
+        pm.message("Writing mosaic map.");
         GrassLegacyWriter writer = new GrassLegacyWriter();
         writer.geodata = outputData;
         writer.file = outFile;

@@ -16,7 +16,7 @@
 
     <packaging>pom</packaging>
     <name>JGrasstools - the engine that backs up JGrass</name>
-    <url>http://code.google.com/p/jgrasstools</url>
+    <url>http://www.jgrasstools.org</url>
 
 
   <organization>
@@ -241,7 +241,7 @@
 
 		<repository>
 			<id>jgrasstools</id>
-			<url>https://bitbucket.org/moovida/jgrasstools/src/tip/mavenrepo</url>
+			<url>http://wiki.jgrasstools.googlecode.com/hg/mavenrepo</url>
 		</repository>
 
 		<repository>
@@ -254,7 +254,7 @@
 		</repository>
 
   </repositories>
-			<!--<url>https://jgrasstools.googlecode.com/hg/mavenrepo</url>-->
+			
   <!--
     <distributionManagement>
     <repository>
