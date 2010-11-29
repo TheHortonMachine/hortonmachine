@@ -51,10 +51,6 @@ public class EpanetParametersOptions extends JGTModel {
     @In
     public String headloss = null;
 
-    @Description("Hydraulics.")
-    @In
-    public String hydraulics = null;
-
     @Description("Quality.")
     @In
     public String quality = null;
@@ -127,11 +123,6 @@ public class EpanetParametersOptions extends JGTModel {
                 headloss = OptionParameterCodes.HEADLOSS.getDefault();
             }
             outProperties.put(OptionParameterCodes.HEADLOSS.getKey(), headloss);
-
-            if (hydraulics == null) {
-                hydraulics = OptionParameterCodes.HYDRAULICS.getDefault();
-            }
-            outProperties.put(OptionParameterCodes.HYDRAULICS.getKey(), hydraulics);
 
             if (quality == null) {
                 quality = OptionParameterCodes.QUALITY.getDefault();
@@ -230,8 +221,6 @@ public class EpanetParametersOptions extends JGTModel {
         epOptions.units = units;
         String headloss = options.get(OptionParameterCodes.HEADLOSS);
         epOptions.headloss = headloss;
-        String hydraulics = options.get(OptionParameterCodes.HYDRAULICS);
-        epOptions.hydraulics = hydraulics;
         String quality = options.get(OptionParameterCodes.QUALITY);
         epOptions.quality = quality;
         String viscosity = options.get(OptionParameterCodes.VISCOSITY);

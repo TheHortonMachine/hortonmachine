@@ -21,8 +21,7 @@ package org.jgrasstools.hortonmachine.externals.epanet.core;
 @SuppressWarnings("nls")
 public enum OptionParameterCodes {
     UNITS(-1, "UNITS", "Units of flow rates", "LPS"), //
-    HEADLOSS(-1, "HEADLOSS", "Headloss formula for flow through pipe", "H-W"), //
-    HYDRAULICS(-1, "HYDRAULICS", "Save the current solution or use a previously saved solution", ""), //
+    HEADLOSS(-1, "HEADLOSS", "Headloss formula for flow through pipe", "D-W"), //
     QUALITY(-1, "QUALITY", "Type of water quality analysis", "NONE"), //
     VISCOSITY(-1, "VISCOSITY", "Cinematic viscosity at 20 celcius degrees", "1.0"), //
     DIFFUSIVITY(-1, "DIFFUSIVITY", "Molecular diffusivity in water", "1.0"), //
