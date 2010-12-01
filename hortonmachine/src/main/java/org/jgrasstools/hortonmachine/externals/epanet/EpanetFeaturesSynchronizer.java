@@ -107,7 +107,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
     @Execute
     @SuppressWarnings("unchecked")
     public void process() throws Exception {
-        checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes);
+        checkNull(inJunctions, inPipes);
 
         List<SimpleFeature> junctionsList = FeatureUtilities.featureCollectionToList(inJunctions);
         List<SimpleFeature> tanksList = FeatureUtilities.featureCollectionToList(inTanks);

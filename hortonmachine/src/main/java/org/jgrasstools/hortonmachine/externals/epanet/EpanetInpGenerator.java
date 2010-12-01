@@ -39,7 +39,6 @@ import oms3.annotations.License;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -105,7 +104,7 @@ public class EpanetInpGenerator extends JGTModel {
     @Description("The demands file.")
     @In
     public String inDemand = null;
-    
+
     @Description("The controls file.")
     @In
     public String inControl = null;
@@ -130,8 +129,11 @@ public class EpanetInpGenerator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inJunctions, inTanks, inReservoirs, inPumps, inValves, inPipes, outFile);
+        checkNull(inJunctions, inPipes, outFile);
 
+        if (inReservoirs == null && inTanks == null) {
+            throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this);
+        }
         int resSize = inReservoirs.size();
         int tanksSize = inTanks.size();
         if (resSize + tanksSize < 1) {
@@ -159,13 +161,6 @@ public class EpanetInpGenerator extends JGTModel {
             bw = new BufferedWriter(new FileWriter(outputFile));
             bw.write("[TITLE]");
             pm.worked(1);
-
-            // TODO better check layer availability
-            if (inPipes == null || inJunctions == null) {
-                pm.worked(8);
-                throw new ModelsIOException("Not all necessary layer are available.", this);
-            }
-
             String junctionsText = handleJunctions(junctionsList);
             bw.write(junctionsText);
             pm.worked(1);
