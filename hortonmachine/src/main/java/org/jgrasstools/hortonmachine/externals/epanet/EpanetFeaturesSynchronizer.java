@@ -119,7 +119,12 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
-                double[] dest = inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), (double[]) null);
+                double[] dest = new double[]{-9999.0};
+                try {
+                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                } catch (Exception e) {
+                    // if an error occurs, use the default value
+                }
                 junction.setAttribute(Junctions.ELEVATION.getAttributeName(), dest[0]);
                 inJunctions.add(junction);
                 pm.worked(1);
@@ -128,7 +133,12 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             for( SimpleFeature tank : tanksList ) {
                 Geometry geometry = (Geometry) tank.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
-                double[] dest = inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), (double[]) null);
+                double[] dest = new double[]{-9999.0};
+                try {
+                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                } catch (Exception e) {
+                    // if an error occurs, use the default value
+                }
                 tank.setAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName(), dest[0]);
                 inTanks.add(tank);
                 pm.worked(1);
