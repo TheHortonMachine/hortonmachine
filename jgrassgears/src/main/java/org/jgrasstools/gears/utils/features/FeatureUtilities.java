@@ -448,10 +448,13 @@ public class FeatureUtilities {
      * Extracts features from a {@link FeatureCollection} into an {@link ArrayList}.
      * 
      * @param collection the feature collection.
-     * @return the list with the features.
+     * @return the list with the features or an empty list if no features present.
      */
     public static List<SimpleFeature> featureCollectionToList( SimpleFeatureCollection collection ) {
         List<SimpleFeature> featuresList = new ArrayList<SimpleFeature>();
+        if (collection == null) {
+            return featuresList;
+        }
         SimpleFeatureIterator featureIterator = collection.features();
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
