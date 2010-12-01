@@ -98,6 +98,12 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
+    @Description("Warning messages if something odd happened but is no error.")
+    @Out
+    public String outWarning = "";
+
+    private StringBuilder warningBuilder = new StringBuilder();
+
     @Execute
     @SuppressWarnings("unchecked")
     public void process() throws Exception {
@@ -122,10 +128,11 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 double[] dest = new double[]{-9999.0};
                 try {
                     inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    junction.setAttribute(Junctions.ELEVATION.getAttributeName(), dest[0]);
                 } catch (Exception e) {
-                    // if an error occurs, use the default value
+                    appendWarning("No elevation available for junction: ",
+                            (String) junction.getAttribute(Junctions.ID.getAttributeName()));
                 }
-                junction.setAttribute(Junctions.ELEVATION.getAttributeName(), dest[0]);
                 inJunctions.add(junction);
                 pm.worked(1);
             }
@@ -136,10 +143,10 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 double[] dest = new double[]{-9999.0};
                 try {
                     inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    tank.setAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName(), dest[0]);
                 } catch (Exception e) {
-                    // if an error occurs, use the default value
+                    appendWarning("No elevation available for tank: ", (String) tank.getAttribute(Tanks.ID.getAttributeName()));
                 }
-                tank.setAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName(), dest[0]);
                 inTanks.add(tank);
                 pm.worked(1);
             }
@@ -163,11 +170,15 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             if (nearestFirst != null) {
                 Object attribute = nearestFirst.getAttribute(Junctions.ID.getAttributeName());
                 pipe.setAttribute(Pipes.START_NODE.getAttributeName(), attribute);
+            } else {
+                appendWarning("No start node found for pipe: ", (String) pipe.getAttribute(Pipes.ID.getAttributeName()));
             }
             SimpleFeature nearestLast = findWithinTolerance(last, junctionsList, tanksList, reservoirsList);
             if (nearestLast != null) {
                 Object attribute = nearestLast.getAttribute(Junctions.ID.getAttributeName());
                 pipe.setAttribute(Pipes.END_NODE.getAttributeName(), attribute);
+            } else {
+                appendWarning("No end node found for pipe: ", (String) pipe.getAttribute(Pipes.ID.getAttributeName()));
             }
             pm.worked(1);
         }
@@ -182,6 +193,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             Geometry geometry = (Geometry) pump.getDefaultGeometry();
             Geometry buffer = geometry.buffer(pTol);
 
+            boolean gotIt = false;
             for( SimpleFeature pipe : pipesList ) {
                 Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
                 if (pipeGeom.intersects(buffer)) {
@@ -192,7 +204,12 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                     pump.setAttribute(Pumps.END_NODE.getAttributeName(), endNode);
 
                     pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                    gotIt = true;
                 }
+            }
+            if (!gotIt) {
+                appendWarning("Pump ", (String) pump.getAttribute(Pumps.ID.getAttributeName()),
+                        " could not be placed on any pipe");
             }
             inPumps.add(pump);
             pm.worked(1);
@@ -208,6 +225,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             Geometry geometry = (Geometry) valve.getDefaultGeometry();
             Geometry buffer = geometry.buffer(pTol);
 
+            boolean gotIt = false;
             for( SimpleFeature pipe : pipesList ) {
                 Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
                 if (pipeGeom.intersects(buffer)) {
@@ -218,7 +236,12 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                     valve.setAttribute(Valves.END_NODE.getAttributeName(), endNode);
                     // mark pipe as dummy
                     pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                    gotIt = true;
                 }
+            }
+            if (!gotIt) {
+                appendWarning("Valve ", (String) valve.getAttribute(Valves.ID.getAttributeName()),
+                        " could not be placed on any pipe");
             }
             inValves.add(valve);
             pm.worked(1);
@@ -229,7 +252,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         for( SimpleFeature pipe : pipesList ) {
             inPipes.add(pipe);
         }
-
+        
+        outWarning = warningBuilder.toString();
     }
 
     private SimpleFeature findWithinTolerance( Coordinate c, List<SimpleFeature>... nodesLists ) {
@@ -243,6 +267,13 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             }
         }
         return null;
+    }
+
+    private void appendWarning( String... msgs ) {
+        for( String msg : msgs ) {
+            warningBuilder.append(msg);
+        }
+        warningBuilder.append("\n");
     }
 
 }
