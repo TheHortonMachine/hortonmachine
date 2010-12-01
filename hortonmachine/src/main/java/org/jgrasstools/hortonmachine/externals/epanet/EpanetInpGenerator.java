@@ -105,6 +105,10 @@ public class EpanetInpGenerator extends JGTModel {
     @Description("The demands file.")
     @In
     public String inDemand = null;
+    
+    @Description("The controls file.")
+    @In
+    public String inControl = null;
 
     @Description("The progress monitor.")
     @In
@@ -187,6 +191,16 @@ public class EpanetInpGenerator extends JGTModel {
             if (inDemand != null) {
                 bw.write("\n\n[DEMANDS]\n");
                 String demandSection = FileUtilities.readFile(new File(inDemand));
+                bw.write(demandSection);
+            }
+
+            /*
+             * the controls section
+             */
+            pm.worked(1);
+            if (inControl != null) {
+                bw.write("\n\n[CONTROLS]\n");
+                String demandSection = FileUtilities.readFile(new File(inControl));
                 bw.write(demandSection);
             }
 
