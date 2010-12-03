@@ -29,6 +29,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
 
+import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.grasslegacy.map.RasterData;
@@ -53,7 +54,7 @@ import com.vividsolutions.jts.geom.LineString;
  * @author Andrea Antonello - www.hydrologis.com
  * @since 1.1.0
  */
-public class JGrassUtilities {
+public class GrassLegacyUtilities {
     public static final String[] COLORS = {"snow", "GhostWhite", "WhiteSmoke", "gainsboro", "FloralWhite", "OldLace", "linen",
             "antiquewhite", "papaya whip", "PapayaWhip", "blanched almond", "BlanchedAlmond", "bisque", "peach puff",
             "PeachPuff", "navajo white", "NavajoWhite", "moccasin", "cornsilk", "ivory", "lemon chiffon", "LemonChiffon",
@@ -293,8 +294,8 @@ public class JGrassUtilities {
     public static boolean checkRasterMapConsistence( String mapsetPath, String mapname ) {
         File file = null;
         File file2 = null;
-        file = new File(mapsetPath + File.separator + JGrassConstans.FCELL + File.separator + mapname);
-        file2 = new File(mapsetPath + File.separator + JGrassConstans.CELL + File.separator + mapname);
+        file = new File(mapsetPath + File.separator + GrassLegacyConstans.FCELL + File.separator + mapname);
+        file2 = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL + File.separator + mapname);
         // the map is in one of the two
         if (!file.exists() && !file2.exists())
             return false;
@@ -302,12 +303,12 @@ public class JGrassUtilities {
         /*
          * helper files
          */
-        file = new File(mapsetPath + File.separator + JGrassConstans.CELLHD + File.separator + mapname);
+        file = new File(mapsetPath + File.separator + GrassLegacyConstans.CELLHD + File.separator + mapname);
         if (!file.exists())
             return false;
         // it is important that the folder cell_misc/mapname comes before the
         // files in it
-        file = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname);
+        file = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname);
         if (!file.exists())
             return false;
 
@@ -499,7 +500,7 @@ public class JGrassUtilities {
      * </p>
      * <p>
      * NOTE: basically the inverse of
-     * {@link JGrassUtilities#coordinateToNearestRowCol(Window, Coordinate)}
+     * {@link GrassLegacyUtilities#coordinateToNearestRowCol(Window, Coordinate)}
      * </p>
      * 
      * @param active - the active region (can be null)
@@ -526,7 +527,7 @@ public class JGrassUtilities {
      * </p>
      * <p>
      * NOTE: basically the inverse of
-     * {@link JGrassUtilities#rowColToCenterCoordinates(Window, int, int)}
+     * {@link GrassLegacyUtilities#rowColToCenterCoordinates(Window, int, int)}
      * </p>
      * 
      * @param active the active region
@@ -684,23 +685,23 @@ public class JGrassUtilities {
      */
     public static String[] filesOfRasterMap( String mapsetPath, String mapname ) {
         String filesOfRaster[] = new String[]{
-                mapsetPath + File.separator + JGrassConstans.FCELL + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.CELL + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.CATS + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.HIST + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.CELLHD + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.COLR + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.FCELL + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.CELL + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.CATS + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.HIST + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.CELLHD + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.COLR + File.separator + mapname,
                 // it is very important that the folder cell_misc/mapname comes
                 // before the files in it
-                mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname,
-                mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname + File.separator
-                        + JGrassConstans.CELLMISC_FORMAT,
-                mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname + File.separator
-                        + JGrassConstans.CELLMISC_QUANT,
-                mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname + File.separator
-                        + JGrassConstans.CELLMISC_RANGE,
-                mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + mapname + File.separator
-                        + JGrassConstans.CELLMISC_NULL};
+                mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname,
+                mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname + File.separator
+                        + GrassLegacyConstans.CELLMISC_FORMAT,
+                mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname + File.separator
+                        + GrassLegacyConstans.CELLMISC_QUANT,
+                mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname + File.separator
+                        + GrassLegacyConstans.CELLMISC_RANGE,
+                mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + mapname + File.separator
+                        + GrassLegacyConstans.CELLMISC_NULL};
         return filesOfRaster;
     }
 
@@ -736,4 +737,11 @@ public class JGrassUtilities {
         }
         return fact;
     }
+
+    public static Window jgrassRegion2legacyWindow( JGrassRegion region ) {
+        Window window = new Window(region.getWest(), region.getEast(), region.getSouth(), region.getNorth(),
+                region.getWEResolution(), region.getNSResolution());
+        return window;
+    }
+
 }

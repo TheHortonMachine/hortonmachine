@@ -22,7 +22,7 @@ import java.io.IOException;
 
 import org.jgrasstools.gears.io.grasslegacy.io.MapIOFactory;
 import org.jgrasstools.gears.io.grasslegacy.io.MapReader;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -52,7 +52,7 @@ public class JGrassRasterMapReader {
      * <p>Optional parameters are:
      * <ul>
      * <li>the number to use internally instead of the map novalues</li>
-     * <li>the raster map type to read (ex. {@link JGrassConstans#GRASSBINARYRASTERMAP})</li>
+     * <li>the raster map type to read (ex. {@link GrassLegacyConstans#GRASSBINARYRASTERMAP})</li>
      * <li>a monitor object</li>
      * </ul>
      * </p>
@@ -62,8 +62,8 @@ public class JGrassRasterMapReader {
         private final String mapPath;
         private final Window readWindow;
         // optional parameters
-        private double novalue = JGrassConstans.defaultNovalue;
-        private String maptype = JGrassConstans.GRASSBINARYRASTERMAP;
+        private double novalue = GrassLegacyConstans.defaultNovalue;
+        private String maptype = GrassLegacyConstans.GRASSBINARYRASTERMAP;
         private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
         /**
@@ -135,7 +135,7 @@ public class JGrassRasterMapReader {
      * <p>Optional parameters are:
      * <ul>
      * <li>the number to use internally instead of the map novalues</li>
-     * <li>the raster map type to read (ex. {@link JGrassConstans#GRASSBINARYRASTERMAP})</li>
+     * <li>the raster map type to read (ex. {@link GrassLegacyConstans#GRASSBINARYRASTERMAP})</li>
      * <li>a monitor object</li>
      * </ul>
      * </p>
@@ -147,8 +147,8 @@ public class JGrassRasterMapReader {
         private String mapsetName = null;
         private String locationPath = null;
         // optional parameters
-        private double novalue = JGrassConstans.defaultNovalue;
-        private String maptype = JGrassConstans.GRASSBINARYRASTERMAP;
+        private double novalue = GrassLegacyConstans.defaultNovalue;
+        private String maptype = GrassLegacyConstans.GRASSBINARYRASTERMAP;
         private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
         /**
@@ -232,7 +232,7 @@ public class JGrassRasterMapReader {
         reader.setDataWindow(builder.readWindow);
         reader.setOutputDataObject(new double[0][0]);
 
-        fullMapPath = locationPath + File.separator + mapsetName + File.separator + JGrassConstans.CELL + File.separator
+        fullMapPath = locationPath + File.separator + mapsetName + File.separator + GrassLegacyConstans.CELL + File.separator
                 + mapName;
 
     }

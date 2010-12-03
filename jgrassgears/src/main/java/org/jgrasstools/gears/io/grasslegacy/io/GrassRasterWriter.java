@@ -25,7 +25,7 @@ import java.io.RandomAccessFile;
 import java.util.Date;
 
 import org.jgrasstools.gears.io.grasslegacy.utils.FileUtilities;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 
 /**
@@ -81,7 +81,7 @@ public class GrassRasterWriter extends MapWriter {
             name = fileName;
             this.locationPath = locationPath;
             this.mapsetPath = locationPath + File.separator + mapsetName;
-            fcellFilePath = mapsetPath + File.separator + JGrassConstans.FCELL + File.separator + name;
+            fcellFilePath = mapsetPath + File.separator + GrassLegacyConstans.FCELL + File.separator + name;
 
             if (!checkStructure())
                 return false;
@@ -110,8 +110,8 @@ public class GrassRasterWriter extends MapWriter {
          */
         File ds1 = new File(fcellFilePath);
         RandomAccessFile theCreatedFile = new RandomAccessFile(ds1, "rw"); //$NON-NLS-1$
-        File ds2 = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + name + File.separator
-                + JGrassConstans.CELLMISC_NULL);
+        File ds2 = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name + File.separator
+                + GrassLegacyConstans.CELLMISC_NULL);
         RandomAccessFile theCreatedNullFile = new RandomAccessFile(ds2, "rw"); //$NON-NLS-1$
 
         /*
@@ -142,35 +142,35 @@ public class GrassRasterWriter extends MapWriter {
     private boolean checkStructure() {
         File ds;
 
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CATS + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CATS + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + name);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.FCELL + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.FCELL + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELLHD + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELLHD + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.COLR + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.COLR + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
-        ds = new File(mapsetPath + File.separator + JGrassConstans.HIST + File.separator);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.HIST + File.separator);
         if (!ds.exists())
             if (!ds.mkdir())
                 return false;
@@ -221,13 +221,13 @@ public class GrassRasterWriter extends MapWriter {
     private void createUtilityFiles() throws Exception {
         // create the right files in the right places
         // cats/<name>
-        File ds = new File(mapsetPath + File.separator + JGrassConstans.CATS + File.separator + name);
+        File ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CATS + File.separator + name);
         OutputStreamWriter catsWriter = new OutputStreamWriter(new FileOutputStream(ds));
         catsWriter.write("# xyz categories\n#\n#\n 0.00 0.00 0.00 0.00");
         catsWriter.close();
 
         // cell/<name>
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL + File.separator + name);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL + File.separator + name);
         OutputStreamWriter cellWriter = new OutputStreamWriter(new FileOutputStream(ds));
         cellWriter.write("");
         cellWriter.close();
@@ -238,8 +238,8 @@ public class GrassRasterWriter extends MapWriter {
         // extended)
 
         // f_format
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + name + File.separator
-                + JGrassConstans.CELLMISC_FORMAT);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name + File.separator
+                + GrassLegacyConstans.CELLMISC_FORMAT);
         OutputStreamWriter cell_miscFormatWriter = new OutputStreamWriter(new FileOutputStream(ds));
         if (outputToDiskType * 4 == 8) {
             cell_miscFormatWriter.write("type: double\nbyte_order: xdr\nlzw_compression_bits: -1");
@@ -250,15 +250,15 @@ public class GrassRasterWriter extends MapWriter {
         cell_miscFormatWriter.close();
 
         // f_quant
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + name + File.separator
-                + JGrassConstans.CELLMISC_QUANT);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name + File.separator
+                + GrassLegacyConstans.CELLMISC_QUANT);
         OutputStreamWriter cell_miscQantWriter = new OutputStreamWriter(new FileOutputStream(ds));
         cell_miscQantWriter.write("round");
         cell_miscQantWriter.close();
 
         // f_range
-        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + name + File.separator
-                + JGrassConstans.CELLMISC_RANGE);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name + File.separator
+                + GrassLegacyConstans.CELLMISC_RANGE);
         OutputStream cell_miscRangeStream = new FileOutputStream(ds);
         // if (logger.isDebugEnabled())
         // logger.debug("RRRRRRRRRRRRRANGES: " + range[0] + "/" + range[1]);
@@ -283,14 +283,14 @@ public class GrassRasterWriter extends MapWriter {
          * need to reread the wind file to get the proj and zone (GRASS will not work if the cellhd
          * is not equal to the WIND proj)
          */
-        Window tmp = new Window(locationPath + File.separator + JGrassConstans.PERMANENT_MAPSET + File.separator
-                + JGrassConstans.WIND);
+        Window tmp = new Window(locationPath + File.separator + GrassLegacyConstans.PERMANENT_MAPSET + File.separator
+                + GrassLegacyConstans.WIND);
         createCellhd(tmp.getProj(), tmp.getZone(), dataWindow.getNorth(), dataWindow.getSouth(), dataWindow.getEast(),
                 dataWindow.getWest(), dataWindow.getCols(), dataWindow.getRows(), dataWindow.getNSResolution(),
                 dataWindow.getWEResolution(), -1, 1);
 
         // hist/<name>
-        ds = new File(mapsetPath + File.separator + JGrassConstans.HIST + File.separator + name);
+        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.HIST + File.separator + name);
         OutputStreamWriter windFile = new OutputStreamWriter(new FileOutputStream(ds));
         Date date = new Date();
         windFile.write(date + "\n");
@@ -315,7 +315,7 @@ public class GrassRasterWriter extends MapWriter {
                 .append("cols:   " + chcols + "\n").append("rows:   " + chrows + "\n").append("n-s resol:   " + chnsres + "\n")
                 .append("e-w resol:   " + chewres + "\n").append("format:   " + chformat + "\n")
                 .append("compressed:   " + chcompressed);
-        File ds = new File(mapsetPath + File.separator + JGrassConstans.CELLHD + File.separator + name);
+        File ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELLHD + File.separator + name);
         OutputStreamWriter windFile = new OutputStreamWriter(new FileOutputStream(ds));
         windFile.write(data.toString());
         windFile.close();

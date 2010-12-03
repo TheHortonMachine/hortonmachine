@@ -24,7 +24,7 @@ import java.util.Date;
 import org.jgrasstools.gears.io.grasslegacy.io.MapIOFactory;
 import org.jgrasstools.gears.io.grasslegacy.io.MapWriter;
 import org.jgrasstools.gears.io.grasslegacy.io.RasterWritingFailureException;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -62,7 +62,7 @@ public class JGrassRasterMapWriter {
      * @param mapsetName the name of the mapset
      * @param locationPath the path to the location
      * @param _novalue the value to write as novalue
-     * @param mapType the raster map type to read (ex. {@link JGrassConstans#GRASSBINARYRASTERMAP})
+     * @param mapType the raster map type to read (ex. {@link GrassLegacyConstans#GRASSBINARYRASTERMAP})
      * @param monitor a monitor object (if no monitro present, {@link NullProgressMonitor} can be
      *        used)
      */
@@ -78,7 +78,7 @@ public class JGrassRasterMapWriter {
         writer.setOutputDataObject(new Double(2)); // write data to
         writer.setHistoryComment("Created by JGrass in " + new Date().toString());
 
-        fullMapPath = locationPath + File.separator + mapsetName + File.separator + JGrassConstans.CELL + File.separator
+        fullMapPath = locationPath + File.separator + mapsetName + File.separator + GrassLegacyConstans.CELL + File.separator
                 + mapName;
 
     }
@@ -96,7 +96,7 @@ public class JGrassRasterMapWriter {
      * @param mapsetName the name of the mapset
      * @param locationPath the path to the location
      * @param _novalue the value to write as novalue
-     * @param mapType the raster map type to read (ex. {@link JGrassConstans#GRASSBINARYRASTERMAP})
+     * @param mapType the raster map type to read (ex. {@link GrassLegacyConstans#GRASSBINARYRASTERMAP})
      * @param monitor a monitor object (if no monitro present, {@link NullProgressMonitor} can be
      *        used)
      */
@@ -133,7 +133,7 @@ public class JGrassRasterMapWriter {
     public JGrassRasterMapWriter( Window writeWindow, String mapName, String mapsetName, String locationPath, Object novalue,
             IJGTProgressMonitor monitor ) {
 
-        this(writeWindow, mapName, mapsetName, locationPath, novalue, JGrassConstans.GRASSBINARYRASTERMAP, monitor);
+        this(writeWindow, mapName, mapsetName, locationPath, novalue, GrassLegacyConstans.GRASSBINARYRASTERMAP, monitor);
     }
 
     /**
@@ -149,20 +149,20 @@ public class JGrassRasterMapWriter {
      * @param mapName the name of the map
      * @param mapsetName the name of the mapset
      * @param locationPath the path to the location
-     * @param mapType the raster map type to read (ex. {@link JGrassConstans#GRASSBINARYRASTERMAP})
+     * @param mapType the raster map type to read (ex. {@link GrassLegacyConstans#GRASSBINARYRASTERMAP})
      * @param monitor a monitor object (if no monitro present, {@link NullProgressMonitor} can be
      *        used)
      */
     public JGrassRasterMapWriter( Window writeWindow, String mapName, String mapsetName, String locationPath, String mapType,
             IJGTProgressMonitor monitor ) {
 
-        this(writeWindow, mapName, mapsetName, locationPath, JGrassConstans.defaultNovalue, mapType, monitor);
+        this(writeWindow, mapName, mapsetName, locationPath, GrassLegacyConstans.defaultNovalue, mapType, monitor);
     }
 
     /**
      * <p>
      * Creates a jgrass raster map reader with some default values (data are read as double values,
-     * novalue is default {@link JGrassConstans#defaultNovalue}).
+     * novalue is default {@link GrassLegacyConstans#defaultNovalue}).
      * </p>
      * <p>
      * <b>NOTE:</b> This doesn't need a working udig environment to run. It just uses paths.
@@ -179,7 +179,7 @@ public class JGrassRasterMapWriter {
     public JGrassRasterMapWriter( Window writeWindow, String mapName, String mapsetName, String locationPath,
             IJGTProgressMonitor monitor ) {
 
-        this(writeWindow, mapName, mapsetName, locationPath, JGrassConstans.defaultNovalue, JGrassConstans.GRASSBINARYRASTERMAP,
+        this(writeWindow, mapName, mapsetName, locationPath, GrassLegacyConstans.defaultNovalue, GrassLegacyConstans.GRASSBINARYRASTERMAP,
                 monitor);
     }
 
@@ -235,11 +235,11 @@ public class JGrassRasterMapWriter {
         String readerMapPath = jgReader.getFullMapPath();
         String tmpMapName = new File(readerMapPath).getName();
         File mapsetFile = new File(readerMapPath).getParentFile().getParentFile();
-        String colorFilePath = mapsetFile.getAbsolutePath() + File.separator + JGrassConstans.COLR + File.separator + tmpMapName;
+        String colorFilePath = mapsetFile.getAbsolutePath() + File.separator + GrassLegacyConstans.COLR + File.separator + tmpMapName;
         // destination
         String destMapName = new File(fullMapPath).getName();
         File destMapsetFile = new File(fullMapPath).getParentFile().getParentFile();
-        String destColorFilePath = destMapsetFile.getAbsolutePath() + File.separator + JGrassConstans.COLR + File.separator
+        String destColorFilePath = destMapsetFile.getAbsolutePath() + File.separator + GrassLegacyConstans.COLR + File.separator
                 + destMapName;
 
         // copy it over
@@ -251,11 +251,11 @@ public class JGrassRasterMapWriter {
         String readerMapPath = jgReader.getFullMapPath();
         String tmpMapName = new File(readerMapPath).getName();
         File mapsetFile = new File(readerMapPath).getParentFile().getParentFile();
-        String catsFilePath = mapsetFile.getAbsolutePath() + File.separator + JGrassConstans.CATS + File.separator + tmpMapName;
+        String catsFilePath = mapsetFile.getAbsolutePath() + File.separator + GrassLegacyConstans.CATS + File.separator + tmpMapName;
         // destination
         String destMapName = new File(fullMapPath).getName();
         File destMapsetFile = new File(fullMapPath).getParentFile().getParentFile();
-        String destCatsFilePath = destMapsetFile.getAbsolutePath() + File.separator + JGrassConstans.CATS + File.separator
+        String destCatsFilePath = destMapsetFile.getAbsolutePath() + File.separator + GrassLegacyConstans.CATS + File.separator
                 + destMapName;
 
         // copy it over

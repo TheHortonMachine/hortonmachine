@@ -462,7 +462,7 @@ public class Window extends Object {
      * @return the active Window object of that mapset
      */
     public static Window getActiveWindowFromMapset( String mapsetPath ) {
-        File windFile = new File(mapsetPath + File.separator + JGrassConstans.WIND);
+        File windFile = new File(mapsetPath + File.separator + GrassLegacyConstans.WIND);
         if (!windFile.exists()) {
             return null;
         }
@@ -478,7 +478,7 @@ public class Window extends Object {
      * @throws IOException 
      */
     public static void writeActiveWindowToMapset( String mapsetPath, Window window ) throws IOException {
-        writeWindowFile(mapsetPath + File.separator + JGrassConstans.WIND, window);
+        writeWindowFile(mapsetPath + File.separator + GrassLegacyConstans.WIND, window);
     }
 
     /**
@@ -489,8 +489,8 @@ public class Window extends Object {
      * @throws IOException 
      */
     public static void writeDefaultWindowToLocation( String locationPath, Window window ) throws IOException {
-        writeWindowFile(locationPath + File.separator + JGrassConstans.PERMANENT_MAPSET + File.separator
-                + JGrassConstans.DEFAULT_WIND, window);
+        writeWindowFile(locationPath + File.separator + GrassLegacyConstans.PERMANENT_MAPSET + File.separator
+                + GrassLegacyConstans.DEFAULT_WIND, window);
     }
 
     /**

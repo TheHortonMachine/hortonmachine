@@ -26,7 +26,7 @@
  * @since 1.1.0
  */
 @SuppressWarnings("nls")
-public interface JGrassConstans {
+public interface GrassLegacyConstans {
 
     /*
      * jgrass database files and folders

@@ -19,7 +19,6 @@
 package org.jgrasstools.gears.io.grasslegacy;
 
 import java.io.File;
-import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -34,13 +33,12 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterReader;
 import org.jgrasstools.gears.io.grasslegacy.io.MapReader;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassUtilities;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -106,11 +104,36 @@ public class GrassLegacyReader extends JGTModel {
     /**
      * Get a single value in a position of the raster.
      * 
+     * @param coordinate the coordinate in which the value is read.
+     * @return the value read in the given coordinate.
+     */
+    public double getValueAt( Coordinate coordinate ) {
+        if (geodata == null) {
+            throw new IllegalArgumentException("The data have first to be read!");
+        }
+        int[] coordinateToNearestRowCol = GrassLegacyUtilities.coordinateToNearestRowCol(inWindow, coordinate);
+        if (coordinateToNearestRowCol != null) {
+            int row = coordinateToNearestRowCol[0];
+            int col = coordinateToNearestRowCol[1];
+            if (row > 0 && row < geodata.length) {
+                if (col > 0 && col < geodata[0].length) {
+                    return geodata[row][col];
+                }
+            }
+        }
+        return JGTConstants.doubleNovalue;
+    }
+
+    /**
+     * Get a single value in a position of the raster.
+     * 
+     * <p>This opens and closes the raster every time it is called. Bad performance on many calls.
+     * 
      * @param window the grid on which to base on (if <code>null</code>, the active region is picked).
      * @param coordinate the coordinate in which the value is read.
      * @param filePath the path to the map.
-     * @return the value read in the given coordinate.
      * @param pm the progress monitor or null.
+     * @return the value read in the given coordinate.
      * @throws Exception
      */
     public static double getValueAt( Window window, Coordinate coordinate, String filePath, IJGTProgressMonitor pm )
@@ -121,7 +144,7 @@ public class GrassLegacyReader extends JGTModel {
             window = new Window(jgr.getWest(), jgr.getEast(), jgr.getSouth(), jgr.getNorth(), jgr.getWEResolution(),
                     jgr.getNSResolution());
         }
-        Window rectangleAroundPoint = JGrassUtilities.getRectangleAroundPoint(window, coordinate.x, coordinate.y);
+        Window rectangleAroundPoint = GrassLegacyUtilities.getRectangleAroundPoint(window, coordinate.x, coordinate.y);
 
         GrassLegacyReader reader = new GrassLegacyReader();
         reader.file = filePath;

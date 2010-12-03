@@ -32,7 +32,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import org.jgrasstools.gears.io.grasslegacy.map.JGrassRasterMapReader;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.JlsTokenizer;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 
@@ -52,7 +52,7 @@ public class GrassColorTable extends ColorTable {
 
     public GrassColorTable( String mapsetPath, String mapName, double[] dataRange )
             throws IOException {
-        this(mapsetPath + File.separator + JGrassConstans.COLR + File.separator + mapName,
+        this(mapsetPath + File.separator + GrassLegacyConstans.COLR + File.separator + mapName,
                 dataRange);
     }
 
@@ -289,10 +289,10 @@ public class GrassColorTable extends ColorTable {
             String mapsetPath = mapsetFile.getAbsolutePath();
             String mapsetName = mapsetFile.getName();
             String locationPath = mapsetFile.getParent();
-            String activeWindowPath = mapsetPath + File.separator + JGrassConstans.WIND;
+            String activeWindowPath = mapsetPath + File.separator + GrassLegacyConstans.WIND;
 
             // first try to read the range file
-            String rangePath = mapsetPath + File.separator + JGrassConstans.CELL_MISC
+            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC
                     + File.separator + name + File.separator + "f_range";
             File ds = new File(rangePath);
             boolean fileok = true;
@@ -393,10 +393,10 @@ public class GrassColorTable extends ColorTable {
             String mapsetPath = mapsetFile.getAbsolutePath();
             String mapsetName = mapsetFile.getName();
             String locationPath = mapsetFile.getParent();
-            String activeWindowPath = mapsetPath + File.separator + JGrassConstans.WIND;
+            String activeWindowPath = mapsetPath + File.separator + GrassLegacyConstans.WIND;
 
             // first try to read the range file
-            String rangePath = mapsetPath + File.separator + JGrassConstans.CELL_MISC
+            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC
                     + File.separator + name + File.separator + "f_range";
             File ds = new File(rangePath);
             boolean fileok = true;

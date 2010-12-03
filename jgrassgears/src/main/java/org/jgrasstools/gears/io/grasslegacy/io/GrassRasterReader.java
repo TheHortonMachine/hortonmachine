@@ -36,7 +36,7 @@ import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.io.grasslegacy.map.attribute.AttributeTable;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorMapBuffer;
 import org.jgrasstools.gears.io.grasslegacy.utils.FileUtilities;
-import org.jgrasstools.gears.io.grasslegacy.utils.JGrassConstans;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.JlsTokenizer;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -209,7 +209,7 @@ public class GrassRasterReader extends MapReader {
             /*
              * File is a standard file where the categories values are stored in the cats directory.
              */
-            ds1 = new File(themapsetPath + File.separator + JGrassConstans.CATS + File.separator + thefilename);
+            ds1 = new File(themapsetPath + File.separator + GrassLegacyConstans.CATS + File.separator + thefilename);
             if (!ds1.exists()) {
                 return null;
             }
@@ -437,7 +437,7 @@ public class GrassRasterReader extends MapReader {
      * Returns the path to the map relative to the mapset.
      */
     public String getMapPath() {
-        return JGrassConstans.CELL;
+        return GrassLegacyConstans.CELL;
     }
 
     /**
@@ -506,7 +506,7 @@ public class GrassRasterReader extends MapReader {
 
         reclassTable = null;
         try {
-            File ds4 = new File(mapsetPath + File.separator + JGrassConstans.CELLHD + File.separator + fname);
+            File ds4 = new File(mapsetPath + File.separator + GrassLegacyConstans.CELLHD + File.separator + fname);
             cellhead = new BufferedReader(new FileReader(ds4));
             cellhead.mark(128);
             /*
@@ -551,7 +551,7 @@ public class GrassRasterReader extends MapReader {
                 /* Construct original data file path */
                 reclassPath = locationPath + File.separator + reclassMapset + File.separator;
                 /* Test for its existence */
-                ds4 = new File(reclassPath + JGrassConstans.CELLHD + File.separator + reclassFile);
+                ds4 = new File(reclassPath + GrassLegacyConstans.CELLHD + File.separator + reclassFile);
                 if (!ds4.exists()) {
                     return false;
                 }
@@ -615,9 +615,9 @@ public class GrassRasterReader extends MapReader {
                     /* Instantiate cell file object. */
                     File ds = null;
                     if (reclassPath == null)
-                        ds = new File(mapsetPath + File.separator + JGrassConstans.CELL + File.separator + fname);
+                        ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL + File.separator + fname);
                     else
-                        ds = new File(reclassPath + JGrassConstans.CELL + File.separator + reclassFile);
+                        ds = new File(reclassPath + GrassLegacyConstans.CELL + File.separator + reclassFile);
                     if (ds.exists()) {
                         cellFile = new RandomAccessFile(ds, "r"); //$NON-NLS-1$
                         if (cellFile == null) {
@@ -634,11 +634,11 @@ public class GrassRasterReader extends MapReader {
                         /* Check if null file exists. */
                         nullFile = null;
                         if (reclassPath == null)
-                            ds = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + filename
-                                    + File.separator + JGrassConstans.CELLMISC_NULL);
+                            ds = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + filename
+                                    + File.separator + GrassLegacyConstans.CELLMISC_NULL);
                         else
-                            ds = new File(reclassPath + JGrassConstans.CELL_MISC + File.separator + reclassFile + File.separator
-                                    + JGrassConstans.CELLMISC_NULL);
+                            ds = new File(reclassPath + GrassLegacyConstans.CELL_MISC + File.separator + reclassFile + File.separator
+                                    + GrassLegacyConstans.CELLMISC_NULL);
                         if (ds.exists()) {
                             nullFile = new RandomAccessFile(ds, "r"); //$NON-NLS-1$
                             if (nullFile == null) {
@@ -665,11 +665,11 @@ public class GrassRasterReader extends MapReader {
                      */
                     File ds5 = null;
                     if (reclassPath == null)
-                        ds5 = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + fname
-                                + File.separator + JGrassConstans.CELLMISC_FORMAT);
+                        ds5 = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + fname
+                                + File.separator + GrassLegacyConstans.CELLMISC_FORMAT);
                     else
-                        ds5 = new File(reclassPath + JGrassConstans.CELL_MISC + File.separator + reclassFile + File.separator
-                                + JGrassConstans.CELLMISC_FORMAT);
+                        ds5 = new File(reclassPath + GrassLegacyConstans.CELL_MISC + File.separator + reclassFile + File.separator
+                                + GrassLegacyConstans.CELLMISC_FORMAT);
                     if (ds5.exists()) {
                         /*
                          * if the file f_format exists, then we are talking about floating maps
@@ -718,9 +718,9 @@ public class GrassRasterReader extends MapReader {
                     isOldIntegerMap = false;
                     /* Instantiate cell file and null file objects */
                     if (reclassPath == null)
-                        ds5 = new File(mapsetPath + File.separator + JGrassConstans.FCELL + File.separator + fname);
+                        ds5 = new File(mapsetPath + File.separator + GrassLegacyConstans.FCELL + File.separator + fname);
                     else
-                        ds5 = new File(reclassPath + JGrassConstans.FCELL + File.separator + reclassFile);
+                        ds5 = new File(reclassPath + GrassLegacyConstans.FCELL + File.separator + reclassFile);
                     if (ds5.exists()) {
                         cellFile = new RandomAccessFile(ds5, "r"); //$NON-NLS-1$
                         if (cellFile == null) {
@@ -738,11 +738,11 @@ public class GrassRasterReader extends MapReader {
                         }
                         nullFile = null;
                         if (reclassPath == null)
-                            ds5 = new File(mapsetPath + File.separator + JGrassConstans.CELL_MISC + File.separator + filename
-                                    + File.separator + JGrassConstans.CELLMISC_NULL);
+                            ds5 = new File(mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + filename
+                                    + File.separator + GrassLegacyConstans.CELLMISC_NULL);
                         else
-                            ds5 = new File(reclassPath + JGrassConstans.CELL_MISC + File.separator + reclassFile + File.separator
-                                    + JGrassConstans.CELLMISC_NULL);
+                            ds5 = new File(reclassPath + GrassLegacyConstans.CELL_MISC + File.separator + reclassFile + File.separator
+                                    + GrassLegacyConstans.CELLMISC_NULL);
                         if (ds5.exists()) {
                             nullFile = new RandomAccessFile(ds5, "r"); //$NON-NLS-1$
                             if (nullFile == null) {
