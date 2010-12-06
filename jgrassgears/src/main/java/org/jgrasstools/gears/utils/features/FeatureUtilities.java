@@ -464,4 +464,25 @@ public class FeatureUtilities {
         return featuresList;
     }
 
+    /**
+     * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of its geometries.
+     * 
+     * @param collection the feature collection.
+     * @return the list with the geometries or an empty list if no features present.
+     */
+    public static List<Geometry> featureCollectionToGeometriesList( SimpleFeatureCollection collection ) {
+        List<Geometry> geometriesList = new ArrayList<Geometry>();
+        if (collection == null) {
+            return geometriesList;
+        }
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            geometriesList.add(geometry);
+        }
+        featureIterator.close();
+        return geometriesList;
+    }
+
 }
