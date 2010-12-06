@@ -77,7 +77,7 @@ public class FeatureFilter extends JGTModel {
             SimpleFeature feature = iterator.next();
             outFeatures.add(feature);
         }
-        subCollection.close(iterator);
+        iterator.close();
     }
 
 }
