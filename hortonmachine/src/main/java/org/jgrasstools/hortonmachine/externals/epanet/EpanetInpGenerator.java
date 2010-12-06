@@ -109,6 +109,10 @@ public class EpanetInpGenerator extends JGTModel {
     @In
     public String inControl = null;
 
+    @Description("The rules file.")
+    @In
+    public String inRules = null;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
@@ -157,7 +161,7 @@ public class EpanetInpGenerator extends JGTModel {
 
         BufferedWriter bw = null;
         try {
-            pm.beginTask("Generating inp file...", 13);
+            pm.beginTask("Generating inp file...", 14);
             bw = new BufferedWriter(new FileWriter(outputFile));
             bw.write("[TITLE]");
             pm.worked(1);
@@ -196,6 +200,16 @@ public class EpanetInpGenerator extends JGTModel {
             if (inControl != null) {
                 bw.write("\n\n[CONTROLS]\n");
                 String demandSection = FileUtilities.readFile(new File(inControl));
+                bw.write(demandSection);
+            }
+            
+            /*
+             * the rules section
+             */
+            pm.worked(1);
+            if (inControl != null) {
+                bw.write("\n\n[RULES]\n");
+                String demandSection = FileUtilities.readFile(new File(inRules));
                 bw.write(demandSection);
             }
 
