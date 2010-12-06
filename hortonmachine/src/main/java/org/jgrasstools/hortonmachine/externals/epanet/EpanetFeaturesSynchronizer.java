@@ -18,8 +18,15 @@
  */
 package org.jgrasstools.hortonmachine.externals.epanet;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
+
+import jj2000.j2k.util.MathUtil;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -37,14 +44,17 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pumps;
+import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Reservoirs;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Tanks;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Valves;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.sun.media.jai.util.MathJAI;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -109,19 +119,19 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
     public void process() throws Exception {
         checkNull(inJunctions, inPipes);
 
-        List<SimpleFeature> junctionsList = FeatureUtilities.featureCollectionToList(inJunctions);
-        List<SimpleFeature> tanksList = FeatureUtilities.featureCollectionToList(inTanks);
-        List<SimpleFeature> reservoirsList = FeatureUtilities.featureCollectionToList(inReservoirs);
-        List<SimpleFeature> pipesList = FeatureUtilities.featureCollectionToList(inPipes);
-        List<SimpleFeature> pumpsList = FeatureUtilities.featureCollectionToList(inPumps);
-        List<SimpleFeature> valvesList = FeatureUtilities.featureCollectionToList(inValves);
+        List<SimpleFeature> junctionsList = toList(inJunctions);
+        List<SimpleFeature> tanksList = toList(inTanks);
+        List<SimpleFeature> reservoirsList = toList(inReservoirs);
+        List<SimpleFeature> pipesList = toList(inPipes);
+        List<SimpleFeature> pumpsList = toList(inPumps);
+        List<SimpleFeature> valvesList = toList(inValves);
 
         /*
          * elevations for junctions and tanks on dem
          */
         if (inDem != null) {
             inJunctions = FeatureCollections.newCollection();
-            pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size());
+            pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size() + reservoirsList.size());
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -150,6 +160,21 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 inTanks.add(tank);
                 pm.worked(1);
             }
+            inReservoirs = FeatureCollections.newCollection();
+            for( SimpleFeature reservoir : reservoirsList ) {
+                Geometry geometry = (Geometry) reservoir.getDefaultGeometry();
+                Coordinate coordinate = geometry.getCoordinate();
+                double[] dest = new double[]{-9999.0};
+                try {
+                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    reservoir.setAttribute(Reservoirs.HEAD.getAttributeName(), dest[0]);
+                } catch (Exception e) {
+                    appendWarning("No elevation available for reservoir: ",
+                            (String) reservoir.getAttribute(Tanks.ID.getAttributeName()));
+                }
+                inReservoirs.add(reservoir);
+                pm.worked(1);
+            }
             pm.done();
         }
 
@@ -162,9 +187,6 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             Coordinate[] coordinates = geometry.getCoordinates();
             Coordinate first = coordinates[0];
             Coordinate last = coordinates[coordinates.length - 1];
-
-            double length = geometry.getLength();
-            pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length);
 
             SimpleFeature nearestFirst = findWithinTolerance(first, junctionsList, tanksList, reservoirsList);
             if (nearestFirst != null) {
@@ -179,6 +201,22 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 pipe.setAttribute(Pipes.END_NODE.getAttributeName(), attribute);
             } else {
                 appendWarning("No end node found for pipe: ", (String) pipe.getAttribute(Pipes.ID.getAttributeName()));
+            }
+
+            // get length considering 3d
+            Object elev1Obj = nearestFirst.getAttribute(Junctions.ELEVATION.getAttributeName());
+            Object elev2Obj = nearestLast.getAttribute(Junctions.ELEVATION.getAttributeName());
+            if (elev1Obj != null && elev2Obj != null) {
+                if (elev1Obj instanceof Double) {
+                    double elev1 = (Double) elev1Obj;
+                    double elev2 = (Double) elev2Obj;
+
+                    double length = geometry.getLength();
+
+                    double length3d = sqrt(pow(abs(elev2 - elev1), 2.0) + pow(length, 2.0));
+
+                    pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length3d);
+                }
             }
             pm.worked(1);
         }
@@ -252,8 +290,15 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         for( SimpleFeature pipe : pipesList ) {
             inPipes.add(pipe);
         }
-        
+
         outWarning = warningBuilder.toString();
+    }
+
+    private List<SimpleFeature> toList( SimpleFeatureCollection fc ) {
+        List<SimpleFeature> list = new ArrayList<SimpleFeature>();
+        if (fc != null)
+            list = FeatureUtilities.featureCollectionToList(fc);
+        return list;
     }
 
     private SimpleFeature findWithinTolerance( Coordinate c, List<SimpleFeature>... nodesLists ) {
