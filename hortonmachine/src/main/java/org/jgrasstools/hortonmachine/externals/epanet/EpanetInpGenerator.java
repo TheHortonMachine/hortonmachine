@@ -207,7 +207,7 @@ public class EpanetInpGenerator extends JGTModel {
              * the rules section
              */
             pm.worked(1);
-            if (inControl != null) {
+            if (inRules != null) {
                 bw.write("\n\n[RULES]\n");
                 String demandSection = FileUtilities.readFile(new File(inRules));
                 bw.write(demandSection);
