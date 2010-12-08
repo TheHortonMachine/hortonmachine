@@ -35,6 +35,11 @@ public class EpanetWrapper {
     private static EpanetNativeFunctions epanet;
 
     /**
+     * A warning message related to the last method called.
+     */
+    private String warningMessage = null;
+
+    /**
      * Contructor for the {@link EpanetWrapper}.
      * 
      * <p>This also takes care to load the native library, if needed. 
@@ -676,10 +681,15 @@ public class EpanetWrapper {
     public void checkError( int errcode ) throws EpanetException {
         try {
             EpanetErrors.checkError(errcode);
+            warningMessage = EpanetErrors.checkWarning(errcode);
         } catch (EpanetException e) {
             ENclose();
             throw e;
         }
+    }
+    
+    public String getWarningMessage() {
+        return warningMessage;
     }
 
     private String byteBuffer2String( ByteBuffer bb ) {

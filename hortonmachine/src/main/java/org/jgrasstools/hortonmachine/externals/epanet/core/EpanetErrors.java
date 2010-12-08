@@ -71,10 +71,18 @@ public class EpanetErrors {
     }
 
     public static void checkError( int errcode ) throws EpanetException {
-        if (errcode > 0) {
+        if (errcode > 100) {
             String msg = errors.get(errcode);
             throw new EpanetException(msg);
         }
+    }
+
+    public static String checkWarning( int errcode ) {
+        if (errcode > 0 && errcode < 7) {
+            String msg = errors.get(errcode);
+            return msg;
+        }
+        return null;
     }
 
 }

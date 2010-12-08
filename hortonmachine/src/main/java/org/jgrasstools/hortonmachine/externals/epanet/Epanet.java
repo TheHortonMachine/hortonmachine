@@ -104,6 +104,10 @@ public class Epanet extends JGTModel {
     @Out
     public List<Reservoir> reservoirsList = null;
 
+    @Description("Warning messages for the run.")
+    @Out
+    public String warnings = null;
+
     private EpanetWrapper ep;
 
     private long[] t = new long[1];
@@ -118,8 +122,10 @@ public class Epanet extends JGTModel {
         doProcess = true;
     }
 
+    @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
+        StringBuilder sb = new StringBuilder("");
         if (ep == null) {
             if (inDll == null) {
                 // I am feeling lucky
@@ -134,8 +140,17 @@ public class Epanet extends JGTModel {
             tCurrent = tStart;
 
             ep.ENopen(inInp, inInp + ".rpt", "");
+            String w = ep.getWarningMessage();
+            if (w != null)
+                sb.append(w).append("\n");
             ep.ENopenH();
+            w = ep.getWarningMessage();
+            if (w != null)
+                sb.append(w).append("\n");
             ep.ENinitH(0);
+            w = ep.getWarningMessage();
+            if (w != null)
+                sb.append(w).append("\n");
         } else {
             current = current.plusSeconds((int) tstep[0]);
             tCurrent = current.toString(formatter);
@@ -149,16 +164,28 @@ public class Epanet extends JGTModel {
         reservoirsList = new ArrayList<Reservoir>();
 
         ep.ENrunH(t);
+        String w = ep.getWarningMessage();
+        if (w != null)
+            sb.append(w).append("\n");
 
         extractLinksData(ep);
         extractNodesData(ep);
 
         ep.ENnextH(tstep);
+        w = ep.getWarningMessage();
+        if (w != null)
+            sb.append(w).append("\n");
 
         if (tstep[0] <= 0) {
             doProcess = false;
         }
+
+        String warningsBuffer = sb.toString();
+        if (warningsBuffer.length() > 0) {
+            warnings = warningsBuffer;
+        }
     }
+
     public void finish() throws EpanetException {
         ep.ENcloseH();
         ep.ENclose();
