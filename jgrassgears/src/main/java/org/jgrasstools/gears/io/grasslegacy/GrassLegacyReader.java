@@ -29,6 +29,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterReader;
@@ -39,6 +40,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -65,7 +67,11 @@ public class GrassLegacyReader extends JGTModel {
     @In
     public Window inWindow = null;
 
-    @Description("The read output map.")
+    @Description("The read output map as limited coverage version.")
+    @Out
+    public GridCoverage2D outGC = null;
+
+    @Description("The read output map data.")
     @Out
     public double[][] geodata = null;
 
@@ -99,6 +105,9 @@ public class GrassLegacyReader extends JGTModel {
         } finally {
             reader.close();
         }
+        
+        CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
+        outGC = new GrassLegacyGridCoverage2D(inWindow, geodata, crs);
     }
 
     /**
