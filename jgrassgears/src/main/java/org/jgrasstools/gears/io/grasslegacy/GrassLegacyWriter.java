@@ -48,7 +48,7 @@ public class GrassLegacyWriter extends JGTModel {
     @Description("The region for the map to be written.")
     @In
     public Window inWindow = null;
-
+    
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();

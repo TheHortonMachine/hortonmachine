@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.io.grass;
 
 import java.io.File;
+import java.util.HashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,6 +36,9 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -72,19 +76,34 @@ public class JGrassCoverageWriter extends JGTModel {
             return;
         }
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
-
-        GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-        GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
-
         GeneralParameterValue[] readParams = null;
-        if (doActive) {
-            JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
-            readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
-                    jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(),
-                    mapEnvironment.getCoordinateReferenceSystem());
+        JGrassRegion jGrassRegion = null;
+        boolean doLarge = false;
+        if (geodata instanceof GrassLegacyGridCoverage2D) {
+            doLarge = true;
         }
+        if (doActive) {
+            jGrassRegion = mapEnvironment.getActiveRegion();
+            if (!doLarge) {
+                readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
+                        jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(),
+                        mapEnvironment.getCoordinateReferenceSystem());
+            }
+        } 
 
-        writer.write(geodata, readParams);
+        if (!doLarge) {
+            GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+            GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
+            writer.write(geodata, readParams);
+            writer.dispose();
+        }else{
+            GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) geodata;
+            GrassLegacyWriter writer = new GrassLegacyWriter();
+            writer.geodata = gd2.getData();
+            writer.file = file;
+            writer.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
+            writer.writeRaster();
+        }
         hasWritten = true;
     }
 
