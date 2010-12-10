@@ -276,4 +276,13 @@ public class GrassLegacyGridCoverage2D extends GridCoverage2D {
         return window.toString();
     }
 
+    /**
+     * Getter for the data matrix that is backed by this {@link GridCoverage2D}.
+     * 
+     * @return the data matrix.
+     */
+    public double[][] getData() {
+        return data;
+    }
+
 }

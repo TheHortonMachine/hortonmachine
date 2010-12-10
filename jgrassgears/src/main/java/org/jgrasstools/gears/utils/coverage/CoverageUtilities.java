@@ -51,6 +51,8 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
@@ -81,6 +83,48 @@ public class CoverageUtilities {
     public static final String YRES = "YRES"; //$NON-NLS-1$
     public static final String ROWS = "ROWS"; //$NON-NLS-1$
     public static final String COLS = "COLS"; //$NON-NLS-1$
+
+    /**
+     * Creates a {@link RandomIter} for the given {@link GridCoverage2D}.
+     * 
+     * <p>It is important to use this method since it supports also 
+     * large GRASS rasters.
+     * 
+     * @param coverage the coverage on which to wrap a {@link RandomIter}.
+     * @return the iterator.
+     */
+    public static RandomIter getRandomIterator( GridCoverage2D coverage ) {
+        if (coverage instanceof GrassLegacyGridCoverage2D) {
+            GrassLegacyGridCoverage2D grassGC = (GrassLegacyGridCoverage2D) coverage;
+            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(grassGC.getData());
+            return iter;
+        }
+        RenderedImage renderedImage = coverage.getRenderedImage();
+        RandomIter iter = RandomIterFactory.create(renderedImage, null);
+        return iter;
+    }
+
+    /**
+     * Creates a {@link WritableRandomIter} for the given {@link GridCoverage2D}.
+     * 
+     * <p>It is important to use this method since it supports also 
+     * large GRASS rasters.
+     * 
+     * <p>If the size would throw an integer overflow, a {@link GrassLegacyRandomIter}
+     * will be proposed to try to save the saveable.
+     * 
+     * @param coverage the coverage on which to wrap a {@link WritableRandomIter}.
+     * @return the iterator.
+     */
+    public static WritableRandomIter getWritableRandomIterator( int width, int height ) {
+        if ((long) width * (long) height > Integer.MAX_VALUE) {
+            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(new double[height][width]);
+            return iter;
+        }
+        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+        WritableRandomIter iter = RandomIterFactory.createWritable(pitRaster, null);
+        return iter;
+    }
 
     /**
      * Creates a {@link WritableRaster writable raster}.

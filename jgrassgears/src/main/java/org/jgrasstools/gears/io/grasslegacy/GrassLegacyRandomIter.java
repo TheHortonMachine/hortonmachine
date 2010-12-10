@@ -1,8 +1,18 @@
 package org.jgrasstools.gears.io.grasslegacy;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
-public class GrassLegacyRandomIter implements RandomIter {
+/**
+ * This iterator is part of the large GRASS raster support.
+ * 
+ * <p>For better understanding of resaons for this hack, please see
+ * the {@link GrassLegacyGridCoverage2D} documentation.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ * @see GrassLegacyGridCoverage2D
+ */
+public class GrassLegacyRandomIter implements RandomIter, WritableRandomIter {
 
     private final double[][] data;
 
@@ -47,6 +57,30 @@ public class GrassLegacyRandomIter implements RandomIter {
 
     public float getSampleFloat( int x, int y, int b ) {
         return (float) data[y][x];
+    }
+
+    public void setPixel( int x, int y, int[] iArray ) {
+        data[y][x] = iArray[0];
+    }
+
+    public void setPixel( int x, int y, float[] fArray ) {
+        data[y][x] = fArray[0];
+    }
+
+    public void setPixel( int x, int y, double[] dArray ) {
+        data[y][x] = dArray[0];
+    }
+
+    public void setSample( int x, int y, int b, int s ) {
+        data[y][x] = s;
+    }
+
+    public void setSample( int x, int y, int b, float s ) {
+        data[y][x] = s;
+    }
+
+    public void setSample( int x, int y, int b, double s ) {
+        data[y][x] = s;
     }
 
 }
