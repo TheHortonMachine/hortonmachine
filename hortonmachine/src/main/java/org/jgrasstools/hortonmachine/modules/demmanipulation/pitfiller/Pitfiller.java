@@ -138,22 +138,17 @@ public class Pitfiller extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
-
-        // input iterator
-        elevationIter = RandomIterFactory.create(elevationRI, null);
+        elevationIter = CoverageUtilities.getRandomIterator(inDem);
 
         // output raster
-        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null,
-                null, null);
-        pitIter = RandomIterFactory.createWritable(pitRaster, null);
+        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
+        pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
 
         for( int i = 0; i < nRows; i++ ) {
             if (isCanceled(pm)) {
@@ -190,8 +185,7 @@ public class Pitfiller extends JGTModel {
         }
         pitIter.done();
 
-        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inDem
-                .getCoordinateReferenceSystem());
+        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inDem.getCoordinateReferenceSystem());
     }
 
     /**
@@ -384,8 +378,7 @@ public class Pitfiller extends JGTModel {
                     // if the point isn't in this pool but on the edge then
                     // check the minimun elevation edge
                     if (apool[jn][in] != pooln) {
-                        et = max2(pitIter.getSampleDouble(j, i, 0), pitIter.getSampleDouble(jn, in,
-                                0));
+                        et = max2(pitIter.getSampleDouble(j, i, 0), pitIter.getSampleDouble(jn, in, 0));
                         if (nf == 0) {
                             emin = et;
                             nf = 1;
@@ -414,8 +407,7 @@ public class Pitfiller extends JGTModel {
                     for( ip = 1; ip <= 8; ip++ ) {
                         jn = j + DIR_WITHFLOW_EXITING_INVERTED[ip][0];
                         in = i + DIR_WITHFLOW_EXITING_INVERTED[ip][1];
-                        if ((pitIter.getSampleDouble(jn, in, 0) > pitIter.getSampleDouble(j, i, 0))
-                                && (dir[jn][in] > 0)) {
+                        if ((pitIter.getSampleDouble(jn, in, 0) > pitIter.getSampleDouble(j, i, 0)) && (dir[jn][in] > 0)) {
                             /*
                              * Only zero direction of neighbors that are higher - because lower or
                              * equal may be a pour point in a pit that must not be disrupted
@@ -521,11 +513,10 @@ public class Pitfiller extends JGTModel {
                 for( int ip = 1; ip <= n; ip++ ) {
 
                     ed = pitIter.getSampleDouble(js[ip], is[ip], 0)
-                            - pitIter.getSampleDouble(js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0],
-                                    is[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][1], 0);
+                            - pitIter.getSampleDouble(js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0], is[ip]
+                                    + DIR_WITHFLOW_EXITING_INVERTED[k][1], 0);
                     if ((ed >= 0.)
-                            && ((dir[js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0]][is[ip]
-                                    + DIR_WITHFLOW_EXITING_INVERTED[k][1]] != 0) && (dn[ip] == 0)))
+                            && ((dir[js[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][0]][is[ip] + DIR_WITHFLOW_EXITING_INVERTED[k][1]] != 0) && (dn[ip] == 0)))
                         dn[ip] = k;
 
                 }
@@ -538,8 +529,7 @@ public class Pitfiller extends JGTModel {
                     nis++;
                     is[nis] = is[ip];
                     js[nis] = js[ip];
-                    if (pitIter.getSampleDouble(js[nis], is[nis], 0) < pitIter.getSampleDouble(
-                            js[imin], is[imin], 0))
+                    if (pitIter.getSampleDouble(js[nis], is[nis], 0) < pitIter.getSampleDouble(js[imin], is[imin], 0))
                         imin = nis;
                 }
             }
@@ -582,8 +572,7 @@ public class Pitfiller extends JGTModel {
                     jn = j + DIR_WITHFLOW_EXITING_INVERTED[k][0];
                     /* test if neighbor drains towards cell excluding boundaries */
                     if (((dir[jn][in] > 0) && ((dir[jn][in] - k == 4) || (dir[jn][in] - k == -4)))
-                            || ((dir[jn][in] == 0) && (pitIter.getSampleDouble(jn, in, 0) >= pitIter
-                                    .getSampleDouble(j, i, 0)))) {
+                            || ((dir[jn][in] == 0) && (pitIter.getSampleDouble(jn, in, 0) >= pitIter.getSampleDouble(j, i, 0)))) {
                         /* so that adjacent flats get included */
                         pool(in, jn);
                     }
@@ -631,8 +620,7 @@ public class Pitfiller extends JGTModel {
             }
 
             if (dir[j][i] != -1) {
-                slope = fact[k]
-                        * (pitIter.getSampleDouble(j, i, 0) - pitIter.getSampleDouble(jn, in, 0));
+                slope = fact[k] * (pitIter.getSampleDouble(j, i, 0) - pitIter.getSampleDouble(jn, in, 0));
 
                 if (slope > smax) {
                     smax = slope;
@@ -656,10 +644,8 @@ public class Pitfiller extends JGTModel {
         // direction factor, where the components are 1/length
         double[] fact = new double[9];
         for( int k = 1; k <= 8; k++ ) {
-            fact[k] = 1.0 / (Math.sqrt(DIR_WITHFLOW_EXITING_INVERTED[k][0] * dy
-                    * DIR_WITHFLOW_EXITING_INVERTED[k][0] * dy
-                    + DIR_WITHFLOW_EXITING_INVERTED[k][1] * DIR_WITHFLOW_EXITING_INVERTED[k][1]
-                    * dx * dx));
+            fact[k] = 1.0 / (Math.sqrt(DIR_WITHFLOW_EXITING_INVERTED[k][0] * dy * DIR_WITHFLOW_EXITING_INVERTED[k][0] * dy
+                    + DIR_WITHFLOW_EXITING_INVERTED[k][1] * DIR_WITHFLOW_EXITING_INVERTED[k][1] * dx * dx));
         }
         return fact;
     }

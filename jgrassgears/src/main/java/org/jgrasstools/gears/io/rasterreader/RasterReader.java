@@ -82,6 +82,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -256,7 +257,7 @@ public class RasterReader extends JGTModel {
         if (!doEnvelope) {
             int r = jGrassRegion.getRows();
             int c = jGrassRegion.getCols();
-            if ((long) r * (long) c < Integer.MAX_VALUE) {
+            if (!JGTConstants.doesOverFlow(r, c)) {
                 if (generalParameter == null) {
                     generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
                             jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
