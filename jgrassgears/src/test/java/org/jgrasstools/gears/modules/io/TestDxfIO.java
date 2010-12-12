@@ -42,6 +42,7 @@ public class TestDxfIO {
             if (pointsFC.size() > 0)
                 ShapefileFeatureWriter.writeShapefile(parent + File.separator + name + "_points.shp", pointsFC);
 
+            
         }
 
         // System.out.println(pointsFC.size() + " / " + linesFC.size());
