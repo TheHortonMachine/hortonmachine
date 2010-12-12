@@ -150,9 +150,9 @@ public class RasterReader extends JGTModel {
             return;
         }
 
-        // if (pRes != null || pRowcol != null) {
-        // throw new RuntimeException("Resampling is not implemented yet.");
-        // }
+        if (pBounds != null && (pRes == null && pRowcol == null)) {
+            throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
+        }
 
         if (pType == null) {
             // try to guess from the extension
@@ -254,6 +254,21 @@ public class RasterReader extends JGTModel {
         Envelope env = fileRegion.getEnvelope();
         originalEnvelope = new GeneralEnvelope(new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(),
                 crs));
+
+        // if bounds supplied, use them as region
+        if (pBounds != null) {
+            // n, s, w, e
+            double n = pBounds[0];
+            double s = pBounds[1];
+            double w = pBounds[2];
+            double e = pBounds[3];
+            if (pRes != null) {
+                jGrassRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
+            } else if (pRowcol != null) {
+                jGrassRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
+            }
+        }
+
         if (!doEnvelope) {
             int r = jGrassRegion.getRows();
             int c = jGrassRegion.getCols();
@@ -265,17 +280,14 @@ public class RasterReader extends JGTModel {
                 GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
                 GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
                 geodata = (GridCoverage2D) reader.read(generalParameter);
-                resample();
-                checkNovalues();
             } else {
                 GrassLegacyReader reader = new GrassLegacyReader();
                 reader.file = file;
                 reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
                 reader.readCoverage();
                 geodata = reader.outGC;
-                resample();
-                checkNovalues();
             }
+            checkNovalues();
         }
     }
 
