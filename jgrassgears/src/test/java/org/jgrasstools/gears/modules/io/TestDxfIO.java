@@ -37,9 +37,9 @@ public class TestDxfIO {
             SimpleFeatureCollection linesFC = reader.lineFC;
 
             String parent = dxfFile.getParent();
-            if (pointsFC.size() > 0)
-                ShapefileFeatureWriter.writeShapefile(parent + File.separator + name + "_lines.shp", linesFC);
             if (linesFC.size() > 0)
+                ShapefileFeatureWriter.writeShapefile(parent + File.separator + name + "_lines.shp", linesFC);
+            if (pointsFC.size() > 0)
                 ShapefileFeatureWriter.writeShapefile(parent + File.separator + name + "_points.shp", pointsFC);
 
         }
