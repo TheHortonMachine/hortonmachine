@@ -77,8 +77,7 @@ public class DxfENTITIES {
                         group = DxfGroup.readGroup(raf);
                     }
                 } else {
-                    // System.out.println("Group " + group.getCode() + " " + group.getValue() +
-                    // " UNKNOWN");
+                    System.out.println("Group " + group.getCode() + " " + group.getValue() + " UNKNOWN");
                     group = DxfGroup.readGroup(raf);
                 }
             }
