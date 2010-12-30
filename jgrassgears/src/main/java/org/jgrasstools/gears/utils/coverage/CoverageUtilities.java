@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.utils.coverage;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doesOverFlow;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.geom.AffineTransform;
@@ -51,7 +53,10 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
+import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -83,6 +88,70 @@ public class CoverageUtilities {
     public static final String COLS = "COLS"; //$NON-NLS-1$
 
     /**
+     * Creates a {@link RandomIter} for the given {@link GridCoverage2D}.
+     * 
+     * <p>It is important to use this method since it supports also 
+     * large GRASS rasters.
+     * 
+     * @param coverage the coverage on which to wrap a {@link RandomIter}.
+     * @return the iterator.
+     */
+    public static RandomIter getRandomIterator( GridCoverage2D coverage ) {
+        if (coverage instanceof GrassLegacyGridCoverage2D) {
+            GrassLegacyGridCoverage2D grassGC = (GrassLegacyGridCoverage2D) coverage;
+            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(grassGC.getData());
+            return iter;
+        }
+        RenderedImage renderedImage = coverage.getRenderedImage();
+        RandomIter iter = RandomIterFactory.create(renderedImage, null);
+        return iter;
+    }
+
+    /**
+     * Creates a {@link WritableRandomIter}.
+     * 
+     * <p>It is important to use this method since it supports also 
+     * large GRASS rasters.
+     * 
+     * <p>If the size would throw an integer overflow, a {@link GrassLegacyRandomIter}
+     * will be proposed to try to save the saveable.
+     * 
+     * @param coverage the coverage on which to wrap a {@link WritableRandomIter}.
+     * @return the iterator.
+     */
+    public static WritableRandomIter getWritableRandomIterator( int width, int height ) {
+        if (doesOverFlow(width, height)) {
+            GrassLegacyRandomIter iter = new GrassLegacyRandomIter(new double[height][width]);
+            return iter;
+        }
+        WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+        WritableRandomIter iter = RandomIterFactory.createWritable(pitRaster, null);
+        return iter;
+    }
+
+    /**
+     * Creates a {@link WritableRandomIter}.
+     * 
+     * <p>It is important to use this method since it supports also 
+     * large GRASS rasters.
+     * 
+     * <p>If the size would throw an integer overflow, a {@link GrassLegacyRandomIter}
+     * will be proposed to try to save the saveable.
+     * 
+     * @param coverage the coverage on which to wrap a {@link WritableRandomIter}.
+     * @return the iterator.
+     */
+    public static WritableRandomIter getWritableRandomIterator( WritableRaster raster ) {
+        if (raster instanceof GrassLegacyWritableRaster) {
+            GrassLegacyWritableRaster wRaster = (GrassLegacyWritableRaster) raster;
+            double[][] data = wRaster.getData();
+            getWritableRandomIterator(data[0].length, data.length);
+        }
+        WritableRandomIter iter = RandomIterFactory.createWritable(raster, null);
+        return iter;
+    }
+
+    /**
      * Creates a {@link WritableRaster writable raster}.
      * 
      * @param width width of the raster to create.
@@ -106,22 +175,28 @@ public class CoverageUtilities {
                 dataType = DataBuffer.TYPE_BYTE;
             }
         }
-        if (sampleModel == null) {
-            sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
-        }
 
-        WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
-        if (value != null) {
-            // autobox only once
-            double v = value;
+        if (!doesOverFlow(width, height)) {
+            if (sampleModel == null) {
+                sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
+            }
 
-            for( int y = 0; y < height; y++ ) {
-                for( int x = 0; x < width; x++ ) {
-                    raster.setSample(x, y, 0, v);
+            WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
+            if (value != null) {
+                // autobox only once
+                double v = value;
+
+                for( int y = 0; y < height; y++ ) {
+                    for( int x = 0; x < width; x++ ) {
+                        raster.setSample(x, y, 0, v);
+                    }
                 }
             }
+            return raster;
+        } else {
+            WritableRaster raster = new GrassLegacyWritableRaster(new double[height][width]);
+            return raster;
         }
-        return raster;
     }
 
     /**
@@ -385,7 +460,7 @@ public class CoverageUtilities {
             for( int x = 0; x < width; x++ ) {
                 double value = (double) pixels[index];
                 if (value == 0) {
-                    value = JGTConstants.doubleNovalue;
+                    value = doubleNovalue;
                 }
                 writableRaster.setSample(x, y, 0, value);
                 index++;
@@ -460,16 +535,28 @@ public class CoverageUtilities {
      */
     public static GridCoverage2D buildCoverage( String name, WritableRaster writableRaster,
             HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
+        if (writableRaster instanceof GrassLegacyWritableRaster) {
+            GrassLegacyWritableRaster wRaster = (GrassLegacyWritableRaster) writableRaster;
+            double west = envelopeParams.get(WEST);
+            double south = envelopeParams.get(SOUTH);
+            double east = envelopeParams.get(EAST);
+            double north = envelopeParams.get(NORTH);
+            int rows = envelopeParams.get(ROWS).intValue();
+            int cols = envelopeParams.get(COLS).intValue();
+            Window window = new Window(west, east, south, north, rows, cols);
+            GrassLegacyGridCoverage2D coverage2D = new GrassLegacyGridCoverage2D(window, wRaster.getData(), crs);
+            return coverage2D;
+        } else {
+            double west = envelopeParams.get(WEST);
+            double south = envelopeParams.get(SOUTH);
+            double east = envelopeParams.get(EAST);
+            double north = envelopeParams.get(NORTH);
+            Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+            GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
 
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
-        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
-        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
-
-        GridCoverage2D coverage2D = factory.create(name, writableRaster, writeEnvelope);
-        return coverage2D;
+            GridCoverage2D coverage2D = factory.create(name, writableRaster, writeEnvelope);
+            return coverage2D;
+        }
     }
 
     /**
@@ -509,12 +596,12 @@ public class CoverageUtilities {
         writableRaster.setDataElements(0, 0, data);
         if (nullBorders) {
             for( int c = 0; c < width; c++ ) {
-                writableRaster.setSample(c, 0, 0, JGTConstants.doubleNovalue);
-                writableRaster.setSample(c, height - 1, 0, JGTConstants.doubleNovalue);
+                writableRaster.setSample(c, 0, 0, doubleNovalue);
+                writableRaster.setSample(c, height - 1, 0, doubleNovalue);
             }
             for( int r = 0; r < height; r++ ) {
-                writableRaster.setSample(0, r, 0, JGTConstants.doubleNovalue);
-                writableRaster.setSample(width - 1, r, 0, JGTConstants.doubleNovalue);
+                writableRaster.setSample(0, r, 0, doubleNovalue);
+                writableRaster.setSample(width - 1, r, 0, doubleNovalue);
             }
         }
 
@@ -531,12 +618,12 @@ public class CoverageUtilities {
         int height = raster.getHeight();
 
         for( int c = 0; c < width; c++ ) {
-            raster.setSample(c, 0, 0, JGTConstants.doubleNovalue);
-            raster.setSample(c, height - 1, 0, JGTConstants.doubleNovalue);
+            raster.setSample(c, 0, 0, doubleNovalue);
+            raster.setSample(c, height - 1, 0, doubleNovalue);
         }
         for( int r = 0; r < height; r++ ) {
-            raster.setSample(0, r, 0, JGTConstants.doubleNovalue);
-            raster.setSample(width - 1, r, 0, JGTConstants.doubleNovalue);
+            raster.setSample(0, r, 0, doubleNovalue);
+            raster.setSample(width - 1, r, 0, doubleNovalue);
         }
     }
 

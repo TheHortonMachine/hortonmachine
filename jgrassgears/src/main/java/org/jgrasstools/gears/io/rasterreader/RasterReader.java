@@ -78,13 +78,19 @@ import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Envelope;
 
 @Description("Generic geotools coverage reader.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -144,9 +150,9 @@ public class RasterReader extends JGTModel {
             return;
         }
 
-        // if (pRes != null || pRowcol != null) {
-        // throw new RuntimeException("Resampling is not implemented yet.");
-        // }
+        if (pBounds != null && (pRes == null && pRowcol == null)) {
+            throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
+        }
 
         if (pType == null) {
             // try to guess from the extension
@@ -238,24 +244,49 @@ public class RasterReader extends JGTModel {
         GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
         geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
     }
-    
+
     private void readGrass( File mapFile ) throws Exception {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
+        JGrassRegion fileRegion = mapEnvironment.getFileRegion();
 
-        if (generalParameter == null) {
-            generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
-                    jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
+        Envelope env = fileRegion.getEnvelope();
+        originalEnvelope = new GeneralEnvelope(new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(),
+                crs));
+
+        // if bounds supplied, use them as region
+        if (pBounds != null) {
+            // n, s, w, e
+            double n = pBounds[0];
+            double s = pBounds[1];
+            double w = pBounds[2];
+            double e = pBounds[3];
+            if (pRes != null) {
+                jGrassRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
+            } else if (pRowcol != null) {
+                jGrassRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
+            }
         }
 
-        GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-        GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
-        originalEnvelope = reader.getOriginalEnvelope();
         if (!doEnvelope) {
-            geodata = (GridCoverage2D) reader.read(generalParameter);
-
-            resample();
+            int r = jGrassRegion.getRows();
+            int c = jGrassRegion.getCols();
+            if (!JGTConstants.doesOverFlow(r, c)) {
+                if (generalParameter == null) {
+                    generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
+                            jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
+                }
+                GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+                GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
+                geodata = (GridCoverage2D) reader.read(generalParameter);
+            } else {
+                GrassLegacyReader reader = new GrassLegacyReader();
+                reader.file = file;
+                reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
+                reader.readCoverage();
+                geodata = reader.outGC;
+            }
             checkNovalues();
         }
     }

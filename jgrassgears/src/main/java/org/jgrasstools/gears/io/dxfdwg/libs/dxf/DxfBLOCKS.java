@@ -32,7 +32,6 @@ import org.geotools.feature.FeatureCollections;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-
 /**
  * A DXF block contains a block of geometries. The dxf driver can read entities
  * inside a block, but it will not remember that the entities are in a same
@@ -42,7 +41,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
  */
 @SuppressWarnings("nls")
 public class DxfBLOCKS {
-    //final static FeatureSchema DXF_SCHEMA = new FeatureSchema();
+    // final static FeatureSchema DXF_SCHEMA = new FeatureSchema();
     FeatureCollection<SimpleFeatureType, SimpleFeature> pointEntities;
     FeatureCollection<SimpleFeatureType, SimpleFeature> lineEntities;
     FeatureCollection<SimpleFeatureType, SimpleFeature> polygonEntities;
@@ -61,47 +60,46 @@ public class DxfBLOCKS {
         polygonEntities = FeatureCollections.newCollection();
     }
 
-    public static DxfBLOCKS readBlocks(RandomAccessFile raf) throws IOException {
+    public static DxfBLOCKS readBlocks( RandomAccessFile raf ) throws IOException {
         DxfBLOCKS blocks = new DxfBLOCKS();
         try {
             DxfGroup group = null;
-            while (null != (group = DxfGroup.readGroup(raf)) &&
-                   !group.equals(DxfFile.ENDSEC)) {
+            while( null != (group = DxfGroup.readGroup(raf)) && !group.equals(DxfFile.ENDSEC) ) {
             }
-        } catch(IOException ioe) {throw ioe;}
+        } catch (IOException ioe) {
+            throw ioe;
+        }
         return blocks;
     }
 
-    public static DxfBLOCKS readEntities(RandomAccessFile raf) throws IOException {
+    public static DxfBLOCKS readEntities( RandomAccessFile raf ) throws IOException {
         DxfBLOCKS dxfEntities = new DxfBLOCKS();
         try {
             DxfGroup group = new DxfGroup(2, "BLOCKS");
-            while (!group.equals(DxfFile.ENDSEC)) {
-                 //System.out.println("Group " + group.getCode() + " " + group.getValue());
-                 if (group.getCode() == 0) {
-                     if (group.getValue().equals("POINT")) {
-                         group = DxfPOINT.readEntity(raf, dxfEntities.pointEntities);
-                     }
-                     else if (group.getValue().equals("TEXT")) {
-                         group = DxfTEXT.readEntity(raf, dxfEntities.pointEntities);
-                     }
-                     else if (group.getValue().equals("LINE")) {
-                         group = DxfLINE.readEntity(raf, dxfEntities.lineEntities);
-                     }
-                     else if (group.getValue().equals("POLYLINE")) {
-                         group = DxfPOLYLINE.readEntity(raf, dxfEntities.lineEntities);
-                     }
-                     else if (group.getValue().equals("TEXT")) {
-                         group = DxfTEXT.readEntity(raf, dxfEntities.pointEntities);
-                     }
-                     else {group = DxfGroup.readGroup(raf);}
-                 }
-                 else {
-                     //System.out.println("Group " + group.getCode() + " " + group.getValue() + " UNKNOWN");
-                     group = DxfGroup.readGroup(raf);
-                 }
+            while( !group.equals(DxfFile.ENDSEC) ) {
+                // System.out.println("Group " + group.getCode() + " " + group.getValue());
+                if (group.getCode() == 0) {
+                    if (group.getValue().equals("POINT")) {
+                        group = DxfPOINT.readEntity(raf, dxfEntities.pointEntities);
+                    } else if (group.getValue().equals("TEXT")) {
+                        group = DxfTEXT.readEntity(raf, dxfEntities.pointEntities);
+                    } else if (group.getValue().equals("LINE")) {
+                        group = DxfLINE.readEntity(raf, dxfEntities.lineEntities);
+                    } else if (group.getValue().equals("POLYLINE")) {
+                        group = DxfPOLYLINE.readEntity(raf, dxfEntities.lineEntities);
+                    } else if (group.getValue().equals("TEXT")) {
+                        group = DxfTEXT.readEntity(raf, dxfEntities.pointEntities);
+                    } else {
+                        group = DxfGroup.readGroup(raf);
+                    }
+                } else {
+                    System.out.println("Group " + group.getCode() + " " + group.getValue() + " UNKNOWN");
+                    group = DxfGroup.readGroup(raf);
+                }
             }
-        } catch(IOException ioe) {throw ioe;}
+        } catch (IOException ioe) {
+            throw ioe;
+        }
         return dxfEntities;
     }
 

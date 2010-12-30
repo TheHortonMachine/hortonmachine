@@ -31,15 +31,18 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
+import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -80,14 +83,23 @@ public class JGrassCoverageReader extends JGTModel {
             jGrassRegion = mapEnvironment.getFileRegion();
         }
 
-        GeneralParameterValue[] readParams = CoverageUtilities.createGridGeometryGeneralParameter(
-                jGrassRegion.getCols(), jGrassRegion.getRows(), jGrassRegion.getWest(),
-                jGrassRegion.getEast(), jGrassRegion.getSouth(), jGrassRegion.getNorth(), crs);
+        int r = jGrassRegion.getRows();
+        int c = jGrassRegion.getCols();
+        if (!JGTConstants.doesOverFlow(r, c)) {
+            GeneralParameterValue[] readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(),
+                    jGrassRegion.getRows(), jGrassRegion.getWest(), jGrassRegion.getEast(), jGrassRegion.getSouth(),
+                    jGrassRegion.getNorth(), crs);
 
-        AbstractGridFormat format = (AbstractGridFormat) new GrassCoverageFormatFactory()
-                .createFormat();
-        GridCoverageReader reader = format.getReader(mapEnvironment.getCELL());
-        geodata = ((GridCoverage2D) reader.read(readParams));
-        geodata = geodata.view(ViewType.GEOPHYSICS);
+            AbstractGridFormat format = (AbstractGridFormat) new GrassCoverageFormatFactory().createFormat();
+            AbstractGridCoverage2DReader reader = format.getReader(mapEnvironment.getCELL());
+            geodata = ((GridCoverage2D) reader.read(readParams));
+            geodata = geodata.view(ViewType.GEOPHYSICS);
+        } else {
+            GrassLegacyReader reader = new GrassLegacyReader();
+            reader.file = file;
+            reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
+            reader.readCoverage();
+            geodata = reader.outGC;
+        }
     }
 }

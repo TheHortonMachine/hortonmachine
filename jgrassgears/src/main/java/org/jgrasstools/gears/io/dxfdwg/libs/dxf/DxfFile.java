@@ -203,11 +203,12 @@ public class DxfFile {
                     dxfFile.polygonFeatures.addAll(dxfFile.entities.polygonEntities);
                 } else if (group.equals(OBJECTS)) {
                     // objects = DxfOBJECTS.readObjects(br);
+                    System.out.println("Jump objects: " + group.getValue());
                 } else if (group.getCode() == 999) {
-                    System.out.println("Commentaire : " + group.getValue());
+                    System.out.println("Jump 999: " + group.getValue());
                 } else {
-                    // System.out.println("Group " + group.getCode() + " " + group.getValue() +
-                    // " UNKNOWN");
+                     System.out.println("Group " + group.getCode() + " " + group.getValue() +
+                     " UNKNOWN");
                 }
             } else if (group.getCode() == 999) {
                 // System.out.println("Commentaire : " + group.getValue());

@@ -92,6 +92,21 @@ public class JGTConstants {
     }
 
     /**
+     * Check if the width and height of a raster would lead to a numeric overflow.
+     * 
+     * @param width width of the matrix or raster.
+     * @param height height of the matrix or raster.
+     * @return true if there is overfow.
+     */
+    public static boolean doesOverFlow( int width, int height ) {
+        if ((long) width * (long) height < Integer.MAX_VALUE) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Global formatter for joda datetime (yyyy-MM-dd HH:mm:ss).
      */
     public static String dateTimeFormatterYYYYMMDDHHMMSS_string = "yyyy-MM-dd HH:mm:ss";
@@ -109,8 +124,8 @@ public class JGTConstants {
     public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMMSS = DateTimeFormat.forPattern(
             utcDateFormatterYYYYMMDDHHMMSS_string).withZone(DateTimeZone.UTC);
     public static String utcDateFormatterYYYYMMDDHHMM_string = "yyyy-MM-dd HH:mm";
-    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(
-            utcDateFormatterYYYYMMDDHHMM_string).withZone(DateTimeZone.UTC);
+    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(utcDateFormatterYYYYMMDDHHMM_string)
+            .withZone(DateTimeZone.UTC);
 
     /**
      * Enumeration defining meteo types.
