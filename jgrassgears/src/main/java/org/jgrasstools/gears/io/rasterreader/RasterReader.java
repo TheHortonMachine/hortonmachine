@@ -124,7 +124,7 @@ public class RasterReader extends JGTModel {
     @In
     public double[] pRowcol = null;
 
-    @Description("The novalue wanted in the coverage.")
+    @Description("The raster type to read (Supported are: asc, tiff, grassraster, adf).")
     @In
     public String pType = null;
 
