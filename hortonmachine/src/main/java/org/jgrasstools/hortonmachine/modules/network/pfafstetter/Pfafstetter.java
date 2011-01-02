@@ -36,6 +36,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -55,6 +56,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -87,6 +89,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Description("Creates a hierarchial form of the network.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Pfafstetter")
+@Category(JGTConstants.NETWORK)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pfafstetter extends JGTModel {

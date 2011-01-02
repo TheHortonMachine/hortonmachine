@@ -26,7 +26,6 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -59,6 +59,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Mosaic, Raster")
+@Category(JGTConstants.RASTERPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Mosaic extends JGTModel {

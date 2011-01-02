@@ -21,6 +21,7 @@ package org.jgrasstools.gears.io.grass;
 import java.io.File;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -49,6 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Utility class for reading grass rasters to geotools coverages.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Coverage, Raster, Reading")
+@Category(JGTConstants.RASTERREADER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class JGrassCoverageReader extends JGTModel {

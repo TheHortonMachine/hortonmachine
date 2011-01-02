@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -70,6 +71,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Jami - Just another meteo interpolator")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Meteo, Hydrology")
+@Category(JGTConstants.STATISTICS)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Jami extends JGTModel {

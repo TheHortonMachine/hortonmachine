@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -36,6 +37,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.dxfdwg.libs.dxf.DxfFile;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -43,6 +45,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Utility class for reading dxf files to geotools featurecollections (based on Michael Michauds work).")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, DXF, Feature, Vector, Reading")
+@Category(JGTConstants.FEATUREREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DxfFeatureReader extends JGTModel {

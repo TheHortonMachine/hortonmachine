@@ -22,6 +22,7 @@ import java.io.File;
 import java.util.HashMap;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -39,6 +40,7 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -48,6 +50,7 @@ import org.opengis.parameter.GeneralParameterValue;
 @Description("Utility class for writing geotools coverages to grass rasters.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Coverage, Raster, Writing")
+@Category(JGTConstants.RASTERWRITER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class JGrassCoverageWriter extends JGTModel {

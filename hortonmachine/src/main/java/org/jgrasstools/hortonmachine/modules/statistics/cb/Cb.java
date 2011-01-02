@@ -21,6 +21,7 @@ package org.jgrasstools.hortonmachine.modules.statistics.cb;
 import java.awt.image.RenderedImage;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -31,6 +32,7 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -40,6 +42,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
         + "with respect to the set of data contained in another matrix")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("Histogram, Geomorphology, Statistic")
+@Category(JGTConstants.STATISTICS)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Cb extends JGTModel {

@@ -26,6 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -45,6 +46,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -60,6 +62,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.DRAFT)
+@Category(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class SourcesDirectionCalculator extends JGTModel {
 

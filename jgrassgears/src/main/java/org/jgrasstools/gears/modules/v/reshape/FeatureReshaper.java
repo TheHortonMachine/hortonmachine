@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -40,6 +41,7 @@ import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
@@ -63,6 +65,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = "Andrea Antonello, Jody Garnett", contact = "www.hydrologis.com")
 @Keywords("Reshape, Vector")
 @Status(Status.DRAFT)
+@Category(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
 public class FeatureReshaper extends JGTModel {

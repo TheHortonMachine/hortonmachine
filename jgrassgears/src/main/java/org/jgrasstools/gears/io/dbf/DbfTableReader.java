@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -36,11 +37,13 @@ import oms3.annotations.Status;
 
 import org.geotools.data.shapefile.dbf.DbaseFileHeader;
 import org.geotools.data.shapefile.dbf.DbaseFileReader;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description("Utility class for reading dbf tables.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
+@Category(JGTConstants.GENERICREADER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DbfTableReader extends JGTModel {

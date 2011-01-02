@@ -35,6 +35,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -46,6 +47,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -69,7 +71,8 @@ import com.vividsolutions.jts.geom.Point;
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Status(Status.CERTIFIED)
+@Category(JGTConstants.HYDROGEOMORPHOLOGY)
+@Status(Status.DRAFT)
 @License("GPL3")
 public class Insolation extends JGTModel {
     @Description("The map of the elevation.")

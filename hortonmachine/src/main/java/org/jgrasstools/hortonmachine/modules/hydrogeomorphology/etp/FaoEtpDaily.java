@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -35,6 +36,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -42,6 +44,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Calculates evapotranspiration at daily timestep.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Evapotranspiration, Hydrologic")
+@Category(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FaoEtpDaily extends JGTModel {

@@ -2,9 +2,6 @@ package org.jgrasstools.gears.io.grasslegacy;
 
 import java.awt.image.WritableRaster;
 
-import org.jgrasstools.gears.io.grasslegacy.utils.Window;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 /**
  * This iterator is part of the large GRASS raster support.
  * 

@@ -205,4 +205,23 @@ public class JGTConstants {
     public static final String GEOTIF = "tif";
     public static final String GRASSRASTER = "grassraster";
 
+    /*
+     * modules categories
+     */
+    public static final String RASTERPROCESSING = "Raster Processing";
+    public static final String VECTORPROCESSING = "Vector Processing";
+    public static final String GENERICREADER = "Generic Reader";
+    public static final String GENERICWRITER = "Generic Writer";
+    public static final String RASTERREADER = "Raster Reader";
+    public static final String RASTERWRITER = "Raster Writer";
+    public static final String FEATUREREADER = "Vector Reader";
+    public static final String FEATUREWRITER = "Vector Writer";
+    public static final String BASIN = "Basin";
+    public static final String DEMMANIPULATION = "Dem Manipulation";
+    public static final String GEOMORPHOLOGY = "Geomorphology";
+    public static final String HYDROGEOMORPHOLOGY = "Hydro-Geomorphology";
+    public static final String HILLSLOPE = "Hillslope";
+    public static final String NETWORK = "Network";
+    public static final String STATISTICS = "Statistics";
+
 }

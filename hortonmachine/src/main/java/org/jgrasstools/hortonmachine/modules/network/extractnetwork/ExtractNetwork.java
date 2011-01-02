@@ -32,6 +32,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -91,6 +92,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Extracts the network from an elevation model.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Vector")
+@Category(JGTConstants.NETWORK)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ExtractNetwork extends JGTModel {

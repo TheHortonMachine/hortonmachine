@@ -31,6 +31,7 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -49,6 +50,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @Description("Raster map base statistics")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Statistics, Raster")
+@Category(JGTConstants.RASTERPROCESSING)
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageSummary extends JGTModel {

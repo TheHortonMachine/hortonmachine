@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -41,6 +42,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Description("Utility class for writing a id2value map to a OMS formatted csv file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
+@Category(JGTConstants.GENERICWRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepWriterId2Value {

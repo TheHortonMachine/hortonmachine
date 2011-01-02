@@ -38,6 +38,7 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -52,6 +53,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -69,7 +71,8 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Module for raster to vector conversion")
 @Author(name = "Andrea Antonello, Daniele Andreis", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
-@Status(Status.TESTED)
+@Status(Status.DRAFT)
+@Category(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
 public class MarchingSquaresVectorializer extends JGTModel {

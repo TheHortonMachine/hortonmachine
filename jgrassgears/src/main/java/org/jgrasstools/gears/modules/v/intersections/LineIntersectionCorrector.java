@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -42,6 +43,7 @@ import org.geotools.graph.structure.Edge;
 import org.geotools.graph.structure.Graph;
 import org.geotools.graph.structure.Node;
 import org.geotools.graph.traverse.standard.DijkstraIterator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -68,6 +70,7 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
         + "linear interpolation between old and new position.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Smoothing, Vector")
+@Category(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class LineIntersectionCorrector extends JGTModel {

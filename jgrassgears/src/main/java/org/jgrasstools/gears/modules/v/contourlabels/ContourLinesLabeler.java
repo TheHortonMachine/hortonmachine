@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.modules.v.contourlabels;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -34,6 +35,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -53,6 +55,7 @@ import com.vividsolutions.jts.geom.Point;
         + "reference lines intersecting them with a layer of countourlines.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Contourlines, Vector")
+@Category(JGTConstants.VECTORPROCESSING)
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ContourLinesLabeler extends JGTModel {

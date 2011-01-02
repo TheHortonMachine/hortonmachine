@@ -21,6 +21,7 @@ package org.jgrasstools.gears.io.grasslegacy;
 import java.io.File;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -47,6 +48,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Description("Legacy class for reading grass data the old way.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Raster, Reading")
+@Category(JGTConstants.RASTERREADER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyReader extends JGTModel {

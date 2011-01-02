@@ -30,6 +30,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -41,6 +42,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -95,6 +97,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Calculates the rescaled distance of each pixel from the outlet")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
+@Category(JGTConstants.BASIN)
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RescaledDistance extends JGTModel {

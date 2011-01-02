@@ -21,6 +21,7 @@ package org.jgrasstools.gears.modules.v.featurereprojector;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -35,6 +36,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -48,6 +50,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Module for vector reprojection")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Crs, Reprojection, Vector")
+@Category(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FeatureReprojector extends JGTModel {

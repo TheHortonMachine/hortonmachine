@@ -20,11 +20,10 @@ package org.jgrasstools.gears.io.adige;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Category;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -37,11 +36,13 @@ import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description("Utility class for reading the initial boundary conditions of the model adige from an OMS formatted csv file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
+@Category(JGTConstants.GENERICREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class AdigeBoundaryConditionReader extends JGTModel {
