@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -59,13 +60,12 @@ public class DwgReader {
     int chosenLayerType = -1;
 
     // different feature types
-    private Vector<SimpleFeature> contourFeatures = new Vector<SimpleFeature>();
-    private Vector<SimpleFeature> multiLineFeatures = new Vector<SimpleFeature>();
-    private Vector<SimpleFeature> multiPointFeatures = new Vector<SimpleFeature>();
-    private Vector<SimpleFeature> multiPolygonFeatures = new Vector<SimpleFeature>();
-    private Vector<SimpleFeature> textFeatures = new Vector<SimpleFeature>();
-    private Vector<SimpleFeature> attributesFeatures = new Vector<SimpleFeature>();
-    private boolean gogo = false;
+    private SimpleFeatureCollection contourFeatures = FeatureCollections.newCollection();
+    private SimpleFeatureCollection multiLineFeatures = FeatureCollections.newCollection();
+    private SimpleFeatureCollection multiPointFeatures = FeatureCollections.newCollection();
+    private SimpleFeatureCollection multiPolygonFeatures = FeatureCollections.newCollection();
+    private SimpleFeatureCollection textFeatures = FeatureCollections.newCollection();
+    private SimpleFeatureCollection attributesFeatures = FeatureCollections.newCollection();
 
     /**
      * A basic reader based on a DwgFile.
@@ -92,8 +92,7 @@ public class DwgReader {
                 multiLineFeatures.add(feature);
             } else if (entity instanceof DwgCircle) {
                 DwgCircle circle = (DwgCircle) entity;
-                SimpleFeature feature = gTranslator.convertDwgCircle("polygons", layerName, circle,
-                        cat);
+                SimpleFeature feature = gTranslator.convertDwgCircle("polygons", layerName, circle, cat);
                 multiPolygonFeatures.add(feature);
             } else if (entity instanceof DwgLine) {
                 DwgLine line = (DwgLine) entity;
@@ -101,19 +100,16 @@ public class DwgReader {
                 multiLineFeatures.add(feature);
             } else if (entity instanceof DwgPoint) {
                 DwgPoint point = (DwgPoint) entity;
-                SimpleFeature feature = gTranslator
-                        .convertDwgPoint("points", layerName, point, cat);
+                SimpleFeature feature = gTranslator.convertDwgPoint("points", layerName, point, cat);
                 multiPointFeatures.add(feature);
             } else if (entity instanceof DwgPolyline2D) {
                 DwgPolyline2D polyline2d = (DwgPolyline2D) entity;
-                SimpleFeature feature = gTranslator.convertDwgPolyline2D("lines", layerName,
-                        polyline2d, cat);
+                SimpleFeature feature = gTranslator.convertDwgPolyline2D("lines", layerName, polyline2d, cat);
                 if (feature != null)
                     multiLineFeatures.add(feature);
             } else if (entity instanceof DwgPolyline3D) {
                 DwgPolyline3D polyline3d = (DwgPolyline3D) entity;
-                SimpleFeature feature = gTranslator.convertDwgPolyline3D("lines", layerName,
-                        polyline3d, cat);
+                SimpleFeature feature = gTranslator.convertDwgPolyline3D("lines", layerName, polyline3d, cat);
                 if (feature != null)
                     multiLineFeatures.add(feature);
                 // contourFeatures.add(f);
@@ -123,8 +119,7 @@ public class DwgReader {
                 textFeatures.add(feature);
             } else if (entity instanceof DwgAttrib) {
                 DwgAttrib attribute = ((DwgAttrib) entity);
-                SimpleFeature feature = gTranslator.convertDwgAttribute("text", layerName,
-                        attribute, cat);
+                SimpleFeature feature = gTranslator.convertDwgAttribute("text", layerName, attribute, cat);
                 attributesFeatures.add(feature);
             } else if (entity instanceof DwgMText) {
                 DwgMText text = ((DwgMText) entity);
@@ -132,13 +127,11 @@ public class DwgReader {
                 textFeatures.add(feature);
             } else if (entity instanceof DwgSolid) {
                 DwgSolid solid = (DwgSolid) entity;
-                SimpleFeature feature = gTranslator.convertDwgSolid("polygon", layerName, solid,
-                        cat);
+                SimpleFeature feature = gTranslator.convertDwgSolid("polygon", layerName, solid, cat);
                 multiPolygonFeatures.add(feature);
             } else if (entity instanceof DwgLwPolyline) {
                 DwgLwPolyline lwPolyline = (DwgLwPolyline) entity;
-                SimpleFeature feature = gTranslator.convertDwgLwPolyline("lines", layerName,
-                        lwPolyline, cat);
+                SimpleFeature feature = gTranslator.convertDwgLwPolyline("lines", layerName, lwPolyline, cat);
                 multiLineFeatures.add(feature);
             }
             cat++;
@@ -146,60 +139,50 @@ public class DwgReader {
         }
     }
 
-    public HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>> getFeatureCollectionsMap()
-            throws IOException {
-
+    public HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>> getFeatureCollectionsMap() throws IOException {
         HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>> map = new HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>>();
-
         if (textFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : textFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("text", newCollection);
+            map.put("text", textFeatures);
         }
         if (attributesFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : attributesFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("text", newCollection);
+            map.put("text", attributesFeatures);
         }
         if (multiLineFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : multiLineFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("lines", newCollection);
+            map.put("lines", multiLineFeatures);
         }
         if (contourFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : contourFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("lines", newCollection);
+            map.put("lines", contourFeatures);
         }
         if (multiPointFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : multiPointFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("points", newCollection);
+            map.put("points", multiPointFeatures);
         }
         if (multiPolygonFeatures.size() > 0) {
-            FeatureCollection<SimpleFeatureType, SimpleFeature> newCollection = FeatureCollections
-                    .newCollection();
-            for( SimpleFeature f : multiPolygonFeatures ) {
-                newCollection.add(f);
-            }
-            map.put("polygons", newCollection);
+            map.put("polygons", multiPolygonFeatures);
         }
         return map;
+    }
+
+    public SimpleFeatureCollection getTextFeatures() {
+        return textFeatures;
+    }
+
+    public SimpleFeatureCollection getAttributesFeatures() {
+        return attributesFeatures;
+    }
+    public SimpleFeatureCollection getMultiLineFeatures() {
+        return multiLineFeatures;
+    }
+
+    public SimpleFeatureCollection getContourFeatures() {
+        return contourFeatures;
+    }
+
+    public SimpleFeatureCollection getMultiPointFeatures() {
+        return multiPointFeatures;
+    }
+
+    public SimpleFeatureCollection getMultiPolygonFeatures() {
+        return multiPolygonFeatures;
     }
 
     public synchronized void close() throws IOException {

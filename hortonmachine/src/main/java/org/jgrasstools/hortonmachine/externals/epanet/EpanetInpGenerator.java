@@ -202,7 +202,7 @@ public class EpanetInpGenerator extends JGTModel {
                 String demandSection = FileUtilities.readFile(new File(inControl));
                 bw.write(demandSection);
             }
-            
+
             /*
              * the rules section
              */
@@ -344,11 +344,17 @@ public class EpanetInpGenerator extends JGTModel {
         sbJunctions.append("DEMAND").append(SPACER);
         sbJunctions.append("PATTERN").append(NL);
 
+        StringBuilder sbEmitters = new StringBuilder();
+        sbEmitters.append("\n\n[EMITTERS]\n");
+        sbEmitters.append(";JUNCTION").append(SPACER);
+        sbEmitters.append("COEFFICIENT").append(NL);
+
         for( SimpleFeature junction : junctionsList ) {
             // [JUNCTIONS]
             Object dc_id = getAttribute(junction, Junctions.ID.getAttributeName());
             sbJunctions.append(dc_id.toString());
             sbJunctions.append(SPACER);
+
             Object elevation = getAttribute(junction, Junctions.ELEVATION.getAttributeName());
             Object depth = getAttribute(junction, Junctions.DEPTH.getAttributeName());
             if (depth == null) {
@@ -370,8 +376,21 @@ public class EpanetInpGenerator extends JGTModel {
                 if (!patternsFilesList.contains(path))
                     patternsFilesList.add(path);
             }
+
+            // emitters
+            Object emitterCoeff = getAttribute(junction, Junctions.EMITTER_COEFFICIENT.getAttributeName());
+            if (emitterCoeff instanceof Double) {
+                double coeff = (Double) emitterCoeff;
+                sbEmitters.append(dc_id.toString());
+                sbEmitters.append(SPACER);
+                sbEmitters.append(coeff);
+                sbEmitters.append(NL);
+            }
+
         }
 
+        sbJunctions.append("\n\n");
+        sbJunctions.append(sbEmitters.toString());
         sbJunctions.append("\n\n");
         return sbJunctions.toString();
     }
