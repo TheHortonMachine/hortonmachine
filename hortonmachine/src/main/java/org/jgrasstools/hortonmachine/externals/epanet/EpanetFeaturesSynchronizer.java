@@ -204,19 +204,19 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             }
 
             // get length considering 3d
-            Object elev1Obj = nearestFirst.getAttribute(Junctions.ELEVATION.getAttributeName());
-            Object elev2Obj = nearestLast.getAttribute(Junctions.ELEVATION.getAttributeName());
+            Object elev1Obj = getElevation(nearestFirst);
+            Object elev2Obj = getElevation(nearestLast);
+            double length = geometry.getLength();
             if (elev1Obj != null && elev2Obj != null) {
                 if (elev1Obj instanceof Double) {
                     double elev1 = (Double) elev1Obj;
                     double elev2 = (Double) elev2Obj;
-
-                    double length = geometry.getLength();
-
                     double length3d = sqrt(pow(abs(elev2 - elev1), 2.0) + pow(length, 2.0));
-
                     pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length3d);
                 }
+            } else {
+                // 2D
+                pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length);
             }
             pm.worked(1);
         }
@@ -292,6 +292,19 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         }
 
         outWarning = warningBuilder.toString();
+    }
+
+    private Object getElevation( SimpleFeature nearestFirst ) {
+        Object elevObj = nearestFirst.getAttribute(Junctions.ELEVATION.getAttributeName());
+        if (elevObj == null) {
+            // try tank
+            elevObj = nearestFirst.getAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName());
+        }
+        if (elevObj == null) {
+            // try
+            elevObj = nearestFirst.getAttribute(Reservoirs.HEAD.getAttributeName());
+        }
+        return elevObj;
     }
 
     private List<SimpleFeature> toList( SimpleFeatureCollection fc ) {

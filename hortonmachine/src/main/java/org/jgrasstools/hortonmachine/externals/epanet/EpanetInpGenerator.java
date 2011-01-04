@@ -352,10 +352,15 @@ public class EpanetInpGenerator extends JGTModel {
         for( SimpleFeature junction : junctionsList ) {
             // [JUNCTIONS]
             Object dc_id = getAttribute(junction, Junctions.ID.getAttributeName());
+            if (dc_id == null)
+                throw new IOException("Found a junction without ID. Please check your data!");
             sbJunctions.append(dc_id.toString());
             sbJunctions.append(SPACER);
 
             Object elevation = getAttribute(junction, Junctions.ELEVATION.getAttributeName());
+            if (elevation == null) {
+                elevation = new Double(0);
+            }
             Object depth = getAttribute(junction, Junctions.DEPTH.getAttributeName());
             if (depth == null) {
                 depth = new Double(0);
@@ -364,9 +369,15 @@ public class EpanetInpGenerator extends JGTModel {
             sbJunctions.append(elev);
             sbJunctions.append(SPACER);
             Object demand = getAttribute(junction, Junctions.DEMAND.getAttributeName());
+            if (demand == null) {
+                demand = new Double(0);
+            }
             sbJunctions.append(demand.toString());
             sbJunctions.append(SPACER);
             Object pattern = getAttribute(junction, Junctions.PATTERN.getAttributeName());
+            if (pattern == null) {
+                pattern = new Double(0);
+            }
             String patternId = pattern.toString();
             sbJunctions.append(patternId);
             sbJunctions.append(NL);
@@ -410,6 +421,8 @@ public class EpanetInpGenerator extends JGTModel {
         for( SimpleFeature pipe : pipesList ) {
             // [PIPES]
             Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
+            if (id == null)
+                throw new IOException("Found a pipe without ID. Please check your data!");
             String idString = id.toString();
             if (idString.equalsIgnoreCase(EpanetConstants.DUMMYPIPE.toString())) {
                 continue;
@@ -417,30 +430,61 @@ public class EpanetInpGenerator extends JGTModel {
             sbPipes.append(idString);
             sbPipes.append(SPACER);
             Object node1 = getAttribute(pipe, Pipes.START_NODE.getAttributeName());
+            if (node1 == null) {
+                throwError(idString, "pipe", "startnode");
+            }
             sbPipes.append(node1.toString());
             sbPipes.append(SPACER);
             Object node2 = getAttribute(pipe, Pipes.END_NODE.getAttributeName());
+            if (node2 == null)
+                throwError(idString, "pipe", "endnode");
             sbPipes.append(node2.toString());
             sbPipes.append(SPACER);
             Object length = getAttribute(pipe, Pipes.LENGTH.getAttributeName());
+            if (length == null)
+                throwError(idString, "pipe", "length");
             sbPipes.append(length.toString());
             sbPipes.append(SPACER);
             Object diameter = getAttribute(pipe, Pipes.DIAMETER.getAttributeName());
+            if (diameter == null)
+                throwError(idString, "pipe", "diameter");
             sbPipes.append(diameter.toString());
             sbPipes.append(SPACER);
             Object roughness = getAttribute(pipe, Pipes.ROUGHNESS.getAttributeName());
+            if (roughness == null)
+                throwError(idString, "pipe", "roughness");
             sbPipes.append(roughness.toString());
             sbPipes.append(SPACER);
             Object minorloss = getAttribute(pipe, Pipes.MINORLOSS.getAttributeName());
-            sbPipes.append(minorloss.toString());
+            if (minorloss == null) {
+                sbPipes.append("0");
+            } else {
+                sbPipes.append(minorloss.toString());
+            }
             sbPipes.append(SPACER);
             Object status = getAttribute(pipe, Pipes.STATUS.getAttributeName());
-            sbPipes.append(status.toString());
+            if (status == null) {
+                sbPipes.append("open");
+            } else {
+                sbPipes.append(status.toString());
+            }
             sbPipes.append(NL);
         }
 
         sbPipes.append("\n\n");
         return sbPipes.toString();
+    }
+
+    private void throwError( String idString, String who, String what ) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("The ");
+        sb.append(who);
+        sb.append(" ");
+        sb.append(idString);
+        sb.append(" has no ");
+        sb.append(what);
+        sb.append(" defined. Please check your data.");
+        throw new IOException(sb.toString());
     }
 
     private String handleReservoirs( List<SimpleFeature> reservoirsList ) throws IOException {
@@ -452,14 +496,22 @@ public class EpanetInpGenerator extends JGTModel {
         for( SimpleFeature reservoir : reservoirsList ) {
             // [RESERVOIRS]
             Object dc_id = getAttribute(reservoir, Reservoirs.ID.getAttributeName());
-            sbReservoirs.append(dc_id.toString());
+            if (dc_id == null)
+                throw new IOException("Found a reservoir without ID. Please check your data!");
+            String idString = dc_id.toString();
+            sbReservoirs.append(idString);
             sbReservoirs.append(SPACER);
             Object head = getAttribute(reservoir, Reservoirs.HEAD.getAttributeName());
+            if (head == null)
+                throwError(idString, "reservoir", "head");
             sbReservoirs.append(head.toString());
             sbReservoirs.append(SPACER);
             Object pattern = getAttribute(reservoir, Reservoirs.HEAD_PATTERN.getAttributeName());
-            String patternId = pattern.toString();
-            sbReservoirs.append(patternId);
+            String patternId = "0";
+            if (pattern != null) {
+                patternId = pattern.toString();
+                sbReservoirs.append(patternId);
+            }
             sbReservoirs.append(NL);
 
             String path = patternId2Path.get(patternId);
@@ -488,27 +540,58 @@ public class EpanetInpGenerator extends JGTModel {
             // [TANKS]
             // ;ID Elevation InitLevel MinLevel MaxLevel Diameter MinVol VolCurve
             Object dc_id = getAttribute(tank, Tanks.ID.getAttributeName());
+            if (dc_id == null)
+                throw new IOException("Found a tank without ID. Please check your data!");
             sbTanks.append(dc_id.toString());
             sbTanks.append(SPACER);
             Object elevation = getAttribute(tank, Tanks.BOTTOM_ELEVATION.getAttributeName());
-            sbTanks.append(elevation.toString());
+            if (elevation != null) {
+                sbTanks.append(elevation.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object initLevel = getAttribute(tank, Tanks.INITIAL_WATER_LEVEL.getAttributeName());
-            sbTanks.append(initLevel.toString());
+            if (initLevel != null) {
+                sbTanks.append(initLevel.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object minLevel = getAttribute(tank, Tanks.MINIMUM_WATER_LEVEL.getAttributeName());
-            sbTanks.append(minLevel.toString());
+            if (minLevel != null) {
+                sbTanks.append(minLevel.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object maxLevel = getAttribute(tank, Tanks.MAXIMUM_WATER_LEVEL.getAttributeName());
-            sbTanks.append(maxLevel.toString());
+            if (maxLevel != null) {
+                sbTanks.append(maxLevel.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object diameter = getAttribute(tank, Tanks.DIAMETER.getAttributeName());
-            sbTanks.append(diameter.toString());
+            if (diameter != null) {
+                sbTanks.append(diameter.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object minVol = getAttribute(tank, Tanks.MINIMUM_VOLUME.getAttributeName());
-            sbTanks.append(minVol.toString());
+            if (minVol != null) {
+                sbTanks.append(minVol.toString());
+            } else {
+                sbTanks.append("0");
+            }
             sbTanks.append(SPACER);
             Object volCurve = getAttribute(tank, Tanks.VOLUME_CURVE_ID.getAttributeName());
+            if (volCurve != null) {
+                sbTanks.append(volCurve.toString());
+            } else {
+                sbTanks.append("0");
+            }
             String volCurveId = volCurve.toString();
             sbTanks.append(volCurveId);
             sbTanks.append(NL);
@@ -538,13 +621,21 @@ public class EpanetInpGenerator extends JGTModel {
             // [PUMPS]
             // ;ID Node1 Node2 Parameters(key1 value1 key2 value2...)
             Object dc_id = getAttribute(pump, Pumps.ID.getAttributeName());
+            if (dc_id == null)
+                throw new IOException("Found a pump without ID. Please check your data!");
             String pumpId = dc_id.toString();
             sbPumps.append(pumpId);
             sbPumps.append(SPACER);
             Object node1 = getAttribute(pump, Pumps.START_NODE.getAttributeName());
+            if (node1 == null) {
+                throwError(pumpId, "pump", "startnode");
+            }
             sbPumps.append(node1.toString());
             sbPumps.append(SPACER);
             Object node2 = getAttribute(pump, Pumps.END_NODE.getAttributeName());
+            if (node2 == null) {
+                throwError(pumpId, "pump", "endnode");
+            }
             sbPumps.append(node2.toString());
             sbPumps.append(SPACER);
 
@@ -639,25 +730,48 @@ public class EpanetInpGenerator extends JGTModel {
             // [VALVES]
             // ;ID Node1 Node2 Diameter Type Setting MinorLoss
             Object dc_id = getAttribute(valve, Valves.ID.getAttributeName());
-            sbValves.append(dc_id.toString());
+            if (dc_id == null)
+                throw new IOException("Found a valve without ID. Please check your data!");
+            String idString = dc_id.toString();
+            sbValves.append(idString);
             sbValves.append(SPACER);
             Object node1 = getAttribute(valve, Valves.START_NODE.getAttributeName());
+            if (node1 == null) {
+                throwError(idString, "valve", "startnode");
+            }
             sbValves.append(node1.toString());
             sbValves.append(SPACER);
             Object node2 = getAttribute(valve, Valves.END_NODE.getAttributeName());
+            if (node2 == null) {
+                throwError(idString, "valve", "endnode");
+            }
             sbValves.append(node2.toString());
             sbValves.append(SPACER);
             Object diameter = getAttribute(valve, Valves.DIAMETER.getAttributeName());
+            if (diameter == null) {
+                throwError(idString, "valve", "diameter");
+            }
             sbValves.append(diameter.toString());
             sbValves.append(SPACER);
             Object type = getAttribute(valve, Valves.TYPE.getAttributeName());
+            if (type == null) {
+                throwError(idString, "valve", "type");
+            }
             sbValves.append(type.toString());
             sbValves.append(SPACER);
             Object setting = getAttribute(valve, Valves.SETTING.getAttributeName());
-            sbValves.append(setting.toString());
+            if (setting != null) {
+                sbValves.append(setting.toString());
+            } else {
+                sbValves.append("0");
+            }
             sbValves.append(SPACER);
             Object minorLoss = getAttribute(valve, Valves.MINORLOSS.getAttributeName());
-            sbValves.append(minorLoss.toString());
+            if (setting != null) {
+                sbValves.append(minorLoss.toString());
+            } else {
+                sbValves.append("0");
+            }
             sbValves.append(NL);
         }
 
