@@ -33,7 +33,7 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -86,7 +86,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Calculates the gradient in each point of the map.")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
 @Keywords("Geomorphology")
-@Category(JGTConstants.GEOMORPHOLOGY)
+@Label(JGTConstants.GEOMORPHOLOGY)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Gradient extends JGTModel {

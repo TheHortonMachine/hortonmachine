@@ -35,7 +35,7 @@ import javax.media.jai.RasterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -59,7 +59,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23.")
-@Category(JGTConstants.HYDROGEOMORPHOLOGY)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.DRAFT)
 @License("GPL3")
 public class Skyview extends JGTModel {

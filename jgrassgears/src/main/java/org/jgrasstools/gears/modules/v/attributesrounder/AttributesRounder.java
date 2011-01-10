@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules.v.attributesrounder;
 import java.text.DecimalFormat;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -42,7 +42,7 @@ import org.opengis.feature.simple.SimpleFeature;
 @Description("Module that joins attributes from one featurecollection into another based on a common field.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Join, Vector")
-@Category(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class AttributesRounder extends JGTModel {

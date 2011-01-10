@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules.r.coveragereprojector;
 import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -39,7 +39,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Crs, Reprojection, Raster")
-@Category(JGTConstants.RASTERPROCESSING)
+@Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageReprojector extends JGTModel {

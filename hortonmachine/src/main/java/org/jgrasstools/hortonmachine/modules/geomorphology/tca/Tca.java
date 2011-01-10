@@ -31,7 +31,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -51,7 +51,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("The OMS3 component representation of the tca model. The upslope catchment (or simply contributing) areas represent the planar projection of the areas afferent to a point in the basin. Once the drainage directions have been defined, it is possible to calculate, for each site, the total drainage area afferent to it, indicated as TCA (Total Contributing Area).")
 @Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
 @Bibliography("Take this from the Horton Manual")
-@Category(JGTConstants.GEOMORPHOLOGY)
+@Label(JGTConstants.GEOMORPHOLOGY)
 @Status(Status.DRAFT)
 @License("GPL3")
 public class Tca extends JGTModel {

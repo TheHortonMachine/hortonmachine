@@ -31,7 +31,7 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -49,7 +49,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.")
 @Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Category(JGTConstants.NETWORK)
+@Label(JGTConstants.NETWORK)
 @Status(Status.DRAFT)
 @License("GPL3")
 public class Magnitudo extends JGTModel {

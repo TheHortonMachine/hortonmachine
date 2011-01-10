@@ -21,7 +21,7 @@ package org.jgrasstools.gears.io.grasslegacy;
 import java.io.File;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -40,7 +40,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Legacy class for writing grass rasters.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Raster, Writing")
-@Category(JGTConstants.RASTERWRITER)
+@Label(JGTConstants.RASTERWRITER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyWriter extends JGTModel {

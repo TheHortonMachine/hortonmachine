@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -81,7 +81,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Ordinary kriging algorithm")
 @Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Kriging, Hydrology")
-@Category(JGTConstants.STATISTICS)
+@Label(JGTConstants.STATISTICS)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Kriging extends JGTModel {

@@ -32,7 +32,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -71,7 +71,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Creates a Feature collection of the subbasins create with the netnumbering module.")
 @Author(name = "Erica Ghesla, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
-@Category(JGTConstants.BASIN)
+@Label(JGTConstants.BASIN)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class BasinShape extends JGTModel {

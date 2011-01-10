@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -42,7 +42,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Description("Utility class for reading the initial boundary conditions of the model adige from an OMS formatted csv file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Category(JGTConstants.GENERICREADER)
+@Label(JGTConstants.GENERICREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class AdigeBoundaryConditionReader extends JGTModel {

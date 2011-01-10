@@ -30,7 +30,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -102,7 +102,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
 @Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
-@Category(JGTConstants.GEOMORPHOLOGY)
+@Label(JGTConstants.GEOMORPHOLOGY)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DrainDir extends JGTModel {

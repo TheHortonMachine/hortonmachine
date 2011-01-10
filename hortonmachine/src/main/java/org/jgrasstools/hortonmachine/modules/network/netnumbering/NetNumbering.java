@@ -29,7 +29,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -117,7 +117,7 @@ import com.vividsolutions.jts.geom.Geometry;
         + "to label the hillslope flowing into the link with the same number")
 @Author(name = "Erica Ghesla, Riccardo Rigon, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network")
-@Category(JGTConstants.NETWORK)
+@Label(JGTConstants.NETWORK)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class NetNumbering extends JGTModel {

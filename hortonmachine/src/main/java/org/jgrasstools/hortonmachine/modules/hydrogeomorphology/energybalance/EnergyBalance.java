@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -83,7 +83,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("The module for calculating the energybalance")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Snow, Energybalance")
-@Category(JGTConstants.HYDROGEOMORPHOLOGY)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyBalance extends JGTModel {

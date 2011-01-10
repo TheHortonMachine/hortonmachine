@@ -55,7 +55,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -96,7 +96,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Description("Generic geotools coverage reader.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Reading")
-@Category(JGTConstants.RASTERREADER)
+@Label(JGTConstants.RASTERREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RasterReader extends JGTModel {

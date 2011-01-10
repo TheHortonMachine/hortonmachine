@@ -24,7 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -70,7 +70,7 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
         + "linear interpolation between old and new position.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Smoothing, Vector")
-@Category(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class LineIntersectionCorrector extends JGTModel {

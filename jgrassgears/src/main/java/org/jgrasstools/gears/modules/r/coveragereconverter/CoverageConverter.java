@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules.r.coveragereconverter;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -43,7 +43,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Description("Coverage converter.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Convert")
-@Category(JGTConstants.RASTERPROCESSING)
+@Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageConverter extends JGTModel {

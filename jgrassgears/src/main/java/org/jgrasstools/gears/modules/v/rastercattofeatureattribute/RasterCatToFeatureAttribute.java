@@ -27,7 +27,7 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -61,7 +61,7 @@ import com.vividsolutions.jts.geom.Point;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.TESTED)
-@Category(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
 public class RasterCatToFeatureAttribute {

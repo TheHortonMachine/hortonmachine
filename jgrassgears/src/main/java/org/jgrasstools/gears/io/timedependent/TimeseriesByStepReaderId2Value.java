@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -51,7 +51,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Description("Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Category(JGTConstants.GENERICREADER)
+@Label(JGTConstants.GENERICREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepReaderId2Value extends JGTModel {

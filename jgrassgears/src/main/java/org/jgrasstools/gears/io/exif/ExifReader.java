@@ -28,7 +28,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.FileImageInputStream;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -47,7 +47,7 @@ import org.w3c.dom.NodeList;
 @Description("Utility class for reading exif tags in jpegs.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Jpeg, Exif, Reading")
-@Category(JGTConstants.GENERICREADER)
+@Label(JGTConstants.GENERICREADER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ExifReader extends JGTModel {

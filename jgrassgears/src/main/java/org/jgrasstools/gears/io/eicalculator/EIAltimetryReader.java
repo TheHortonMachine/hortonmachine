@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Utility class for reading altimetry data from csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Category(JGTConstants.GENERICREADER)
+@Label(JGTConstants.GENERICREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EIAltimetryReader extends JGTModel {

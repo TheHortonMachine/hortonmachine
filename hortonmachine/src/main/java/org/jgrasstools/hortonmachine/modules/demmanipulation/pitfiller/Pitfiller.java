@@ -30,7 +30,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -50,7 +50,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Straight port of the pitfiller correction model found in the TARDEM suite.")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology")
-@Category(JGTConstants.DEMMANIPULATION)
+@Label(JGTConstants.DEMMANIPULATION)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pitfiller extends JGTModel {

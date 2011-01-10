@@ -33,7 +33,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -164,7 +164,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Description("Shalstab algorithm")
 @Author(name = "Silvano Pisoni, Erica Ghesla, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Shalstab, Hydrology")
-@Category(JGTConstants.HYDROGEOMORPHOLOGY)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Shalstab extends JGTModel {

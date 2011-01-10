@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -45,7 +45,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
 @Status(Status.CERTIFIED)
-@Category(JGTConstants.GENERICWRITER)
+@Label(JGTConstants.GENERICWRITER)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class AdigeBoundaryConditionWriter {
     @Description("The csv file to write to.")

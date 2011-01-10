@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -43,7 +43,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Utility class for reading geotiffs to geotools coverages.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Geotiff, Coverage, Raster, Reading")
-@Category(JGTConstants.RASTERREADER)
+@Label(JGTConstants.RASTERREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GeoTiffCoverageReader extends JGTModel{

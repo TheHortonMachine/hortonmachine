@@ -33,7 +33,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -59,7 +59,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
 @Status(Status.DRAFT)
-@Category(JGTConstants.HYDROGEOMORPHOLOGY)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @License("http://www.gnu.org/licenses/")
 public class Hillshade extends JGTModel {
     @Description("The map of the elevation.")

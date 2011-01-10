@@ -22,7 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -41,7 +41,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Description("Utility class for reading shapefiles to geotools featurecollections.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Category(JGTConstants.FEATUREREADER)
+@Label(JGTConstants.FEATUREREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureReader extends JGTModel {

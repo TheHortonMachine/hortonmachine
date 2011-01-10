@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Description("Finds intersection geometries in feature collections")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Vector")
-@Category(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class IntersectionFinder extends JGTModel {

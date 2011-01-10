@@ -29,7 +29,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Category;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -48,7 +48,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Description("Module for raster thresholding and masking")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Threshold")
-@Category(JGTConstants.RASTERPROCESSING)
+@Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CutOut extends JGTModel {
