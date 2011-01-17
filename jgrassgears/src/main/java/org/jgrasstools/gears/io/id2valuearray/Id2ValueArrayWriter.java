@@ -39,7 +39,7 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
@@ -65,7 +65,7 @@ public class Id2ValueArrayWriter {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of ids and values arrays to write.")
     @In

@@ -37,7 +37,7 @@ import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -95,7 +95,7 @@ public class PenmanEtp extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Daily evapotranspiration.")
     @Unit("mm/day")

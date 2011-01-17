@@ -34,7 +34,7 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.Components;
@@ -78,7 +78,7 @@ public class Epanet extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The pipes result data.")
     @Out

@@ -42,7 +42,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
@@ -75,7 +75,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Execute
     public void process() throws Exception {

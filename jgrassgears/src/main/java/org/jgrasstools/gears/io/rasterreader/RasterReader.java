@@ -85,7 +85,7 @@ import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
@@ -134,7 +134,7 @@ public class RasterReader extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The read output coverage map.")
     @Out

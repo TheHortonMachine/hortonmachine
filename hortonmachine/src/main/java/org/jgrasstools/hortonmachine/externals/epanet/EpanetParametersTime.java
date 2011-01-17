@@ -33,7 +33,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.TimeParameterCodes;
@@ -79,7 +79,7 @@ public class EpanetParametersTime extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Properties file containing the time options.")
     @In

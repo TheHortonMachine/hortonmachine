@@ -20,13 +20,13 @@ package org.jgrasstools.gears.utils.sorting;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class QuickSortAlgorithm {
     private double[] valuesToSort;
     private int number;
     private double[] valuesToFollow;
-    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+    private IJGTProgressMonitor monitor = new LogProgressMonitor();
 
     public QuickSortAlgorithm( IJGTProgressMonitor monitor ) {
         if (monitor != null)

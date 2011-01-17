@@ -48,7 +48,7 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -80,7 +80,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The source point features with the added azimuth angle.")
     @Out

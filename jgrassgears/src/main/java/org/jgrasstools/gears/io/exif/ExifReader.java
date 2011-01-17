@@ -40,7 +40,7 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.w3c.dom.NodeList;
 
@@ -59,7 +59,7 @@ public class ExifReader extends JGTModel {
     @Role(Role.PARAMETER)
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Role(Role.PARAMETER)
     @Description("The read exif tags.")

@@ -19,14 +19,12 @@ public class TestMapcalc extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
                 elevationData, envelopeParams, crs, true);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
         HashMap<String, GridCoverage2D> maps = new HashMap<String, GridCoverage2D>();
         maps.put("map1", elevationCoverage);
         maps.put("map2", elevationCoverage);
 
         Mapcalc mapcalc = new Mapcalc();
-        mapcalc.pm = pm;
         mapcalc.inMaps = maps;
         mapcalc.pFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\"";
 

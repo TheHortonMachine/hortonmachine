@@ -26,7 +26,7 @@ import org.jgrasstools.gears.io.grasslegacy.io.MapWriter;
 import org.jgrasstools.gears.io.grasslegacy.io.RasterWritingFailureException;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
@@ -41,7 +41,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 public class JGrassRasterMapWriter {
 
     private MapWriter writer = null;
-    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+    private IJGTProgressMonitor monitor = new LogProgressMonitor();
     private String mapName = null;
     private String mapsetName = null;
     private String locationPath = null;

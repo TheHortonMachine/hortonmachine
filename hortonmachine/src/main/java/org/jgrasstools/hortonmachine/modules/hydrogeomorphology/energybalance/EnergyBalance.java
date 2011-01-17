@@ -72,7 +72,7 @@ import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -195,7 +195,7 @@ public class EnergyBalance extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Net precipitation.")
     @Out

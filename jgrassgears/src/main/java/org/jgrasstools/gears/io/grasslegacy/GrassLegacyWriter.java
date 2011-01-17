@@ -34,7 +34,7 @@ import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Legacy class for writing grass rasters.")
@@ -54,7 +54,7 @@ public class GrassLegacyWriter extends JGTModel {
     
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The file to the map to be written (the cell file).")
     @In

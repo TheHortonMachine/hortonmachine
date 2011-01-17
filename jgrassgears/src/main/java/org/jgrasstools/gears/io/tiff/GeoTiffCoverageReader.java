@@ -37,7 +37,7 @@ import org.geotools.coverage.grid.ViewType;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Utility class for reading geotiffs to geotools coverages.")
@@ -55,7 +55,7 @@ public class GeoTiffCoverageReader extends JGTModel{
     @Role(Role.PARAMETER)
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Role(Role.PARAMETER)
     @Description("The read output coverage map.")

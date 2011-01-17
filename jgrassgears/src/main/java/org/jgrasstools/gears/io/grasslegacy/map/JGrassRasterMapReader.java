@@ -24,7 +24,7 @@ import org.jgrasstools.gears.io.grasslegacy.io.MapIOFactory;
 import org.jgrasstools.gears.io.grasslegacy.io.MapReader;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyConstans;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 /**
@@ -64,7 +64,7 @@ public class JGrassRasterMapReader {
         // optional parameters
         private double novalue = GrassLegacyConstans.defaultNovalue;
         private String maptype = GrassLegacyConstans.GRASSBINARYRASTERMAP;
-        private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+        private IJGTProgressMonitor monitor = new LogProgressMonitor();
 
         /**
          * Constructor for the {@link BuilderFromGeoresource} with the required parameters.
@@ -149,7 +149,7 @@ public class JGrassRasterMapReader {
         // optional parameters
         private double novalue = GrassLegacyConstans.defaultNovalue;
         private String maptype = GrassLegacyConstans.GRASSBINARYRASTERMAP;
-        private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+        private IJGTProgressMonitor monitor = new LogProgressMonitor();
 
         /**
          * Constructor for the {@link BuilderFromGeoresource} with the required paraeters.

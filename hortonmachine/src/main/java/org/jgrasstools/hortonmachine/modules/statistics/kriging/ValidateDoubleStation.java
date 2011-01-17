@@ -18,7 +18,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
@@ -56,7 +56,7 @@ public class ValidateDoubleStation extends JGTModel {
 	@Role(Role.PARAMETER)
 	@Description("The progress monitor.")
 	@In
-	public IJGTProgressMonitor pm = new DummyProgressMonitor();
+	public IJGTProgressMonitor pm = new LogProgressMonitor();
 
 	@Role(Role.PARAMETER)
 	@Description("Select if do the mean between double value or delete one of these if they are equals.")

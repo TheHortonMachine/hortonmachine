@@ -38,7 +38,7 @@ import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Description("Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -68,7 +68,7 @@ public class PlainId2ValueReader {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The read map of ids and values.")
     @Out
