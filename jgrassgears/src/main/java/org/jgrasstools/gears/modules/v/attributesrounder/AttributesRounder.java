@@ -91,6 +91,7 @@ public class AttributesRounder extends JGTModel {
             if (attribute instanceof Number) {
                 double num = ((Number) attribute).doubleValue();
                 String numStr = formatter.format(num);
+                numStr = numStr.replaceFirst(",", ".");
                 num = Double.parseDouble(numStr);
                 feature.setAttribute(fRound, num);
             }
@@ -100,7 +101,7 @@ public class AttributesRounder extends JGTModel {
         }
         pm.done();
 
-        inFeatures.close(inFeatureIterator);
+        inFeatureIterator.close();
 
     }
 
