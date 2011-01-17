@@ -211,4 +211,15 @@ public class NumericsUtilities {
         }
     }
 
+    /**
+     * Calculates the hypothenuse as of the Pythagorean theorem.
+     * 
+     * @param d1 the length of the first leg.
+     * @param d2 the length of the second leg.
+     * @return the length of the hypothenuse.
+     */
+    public static double pythagoras( double d1, double d2 ) {
+        return sqrt(pow(d1, 2.0) + pow(d2, 2.0));
+    }
+
 }
