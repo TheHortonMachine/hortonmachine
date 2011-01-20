@@ -28,7 +28,6 @@ import oms3.ComponentAccess;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.Initialize;
-import oms3.annotations.Out;
 
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
@@ -58,7 +57,7 @@ public class JGTModel implements Process {
      * </ul>
      * </p>
      */
-    @Out
+    // TODO check this out???? @Out
     public boolean doProcess = false;
 
     /**
@@ -90,8 +89,7 @@ public class JGTModel implements Process {
         return false;
     }
 
-    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor )
-            throws ProcessException {
+    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
         // the geotools monitor is wrapped into the internal progress monitor
         GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
         input.put("pm", pm); //$NON-NLS-1$
@@ -151,9 +149,8 @@ public class JGTModel implements Process {
     protected void checkNull( Object... objects ) {
         for( Object object : objects ) {
             if (object == null) {
-                throw new ModelsIllegalargumentException(
-                        "Mandatory input argument is missing. Check your syntax...", this
-                                .getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...", this
+                        .getClass().getSimpleName());
             }
         }
     }
