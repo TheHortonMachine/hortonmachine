@@ -46,6 +46,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureReader extends JGTModel {
     @Description("The shapefile.")
+    @Label("file")
     @In
     public String file = null;
 

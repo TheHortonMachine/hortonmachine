@@ -51,6 +51,7 @@ public class EIAltimetryWriter extends JGTModel {
     public List<EIAltimetry> inAltimetry;
 
     @Description("The csv file to write to.")
+    @Label("file")
     @In
     public String file = null;
 

@@ -51,6 +51,7 @@ public class EIEnergyWriter extends JGTModel {
     public List<EIEnergy> inEnergy;
 
     @Description("The csv file to write to.")
+    @Label("file")
     @In
     public String file = null;
 

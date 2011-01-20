@@ -19,16 +19,14 @@
 package org.jgrasstools.gears.io.grass;
 
 import java.io.File;
-import java.util.HashMap;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -42,8 +40,8 @@ import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 
@@ -55,6 +53,7 @@ import org.opengis.parameter.GeneralParameterValue;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class JGrassCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
+    @Label("file")
     @In
     public GridCoverage2D geodata = null;
 

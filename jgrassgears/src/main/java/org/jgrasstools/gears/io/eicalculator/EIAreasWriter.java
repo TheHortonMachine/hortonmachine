@@ -51,6 +51,7 @@ public class EIAreasWriter extends JGTModel {
     public List<EIAreas> inAreas;
 
     @Description("The csv file to write to.")
+    @Label("file")
     @In
     public String file = null;
 

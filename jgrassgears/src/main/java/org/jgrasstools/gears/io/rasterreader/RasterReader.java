@@ -100,6 +100,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RasterReader extends JGTModel {
+    @Label("file")
     @Description("The coverage file path.")
     @In
     public String file = null;

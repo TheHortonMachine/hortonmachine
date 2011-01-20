@@ -50,6 +50,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Id2ValueArrayWriter {
     @Description("The csv file to write to.")
+    @Label("file")
     @In
     public String file = null;
 

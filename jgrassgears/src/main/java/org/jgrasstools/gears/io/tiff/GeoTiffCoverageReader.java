@@ -49,6 +49,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class GeoTiffCoverageReader extends JGTModel{
     @Role(Role.PARAMETER)
     @Description("The geotiff file.")
+    @Label("file")
     @In
     public String file = null;
 

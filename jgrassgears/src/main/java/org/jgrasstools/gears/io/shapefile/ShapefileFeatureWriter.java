@@ -25,11 +25,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Status;
 
@@ -53,6 +53,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureWriter extends JGTModel {
     @Description("The shapefile to which to write to.")
+    @Label("file")
     @In
     public String file = null;
 

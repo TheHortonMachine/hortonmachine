@@ -56,6 +56,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ArcgridCoverageReader extends JGTModel {
     @Description("The arcgrid file path.")
+    @Label("file")
     @In
     public String file = null;
 
