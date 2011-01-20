@@ -53,7 +53,7 @@ import org.opengis.parameter.GeneralParameterValue;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class JGrassCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public GridCoverage2D geodata = null;
 

@@ -50,7 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DxfFeatureReader extends JGTModel {
     @Description("The dxf file.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

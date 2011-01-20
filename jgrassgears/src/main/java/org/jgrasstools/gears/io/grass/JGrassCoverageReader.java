@@ -55,7 +55,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class JGrassCoverageReader extends JGTModel {
     @Description("The file to the map to be read (the cell file).")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

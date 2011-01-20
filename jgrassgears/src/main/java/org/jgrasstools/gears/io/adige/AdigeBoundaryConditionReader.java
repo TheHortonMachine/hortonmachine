@@ -47,7 +47,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class AdigeBoundaryConditionReader extends JGTModel {
     @Description("The csv file to read from.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

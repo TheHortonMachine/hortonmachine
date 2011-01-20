@@ -223,5 +223,11 @@ public class JGTConstants {
     public static final String HILLSLOPE = "Hillslope";
     public static final String NETWORK = "Network";
     public static final String STATISTICS = "Statistics";
+    
+    /*
+     * vars labels
+     */
+    public static final String FILE_LABEL = "file";
+    public static final String FOLDER_LABEL = "folder";
 
 }

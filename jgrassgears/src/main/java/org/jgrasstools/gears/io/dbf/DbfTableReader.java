@@ -48,7 +48,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DbfTableReader extends JGTModel {
     @Description("The dbf file.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

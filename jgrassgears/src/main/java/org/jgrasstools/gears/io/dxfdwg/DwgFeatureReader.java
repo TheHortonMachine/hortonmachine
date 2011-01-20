@@ -38,6 +38,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.dxfdwg.libs.DwgHandler;
 import org.jgrasstools.gears.io.dxfdwg.libs.DwgReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -49,7 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DwgFeatureReader extends JGTModel {
     @Description("The dwg file.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

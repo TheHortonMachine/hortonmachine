@@ -56,7 +56,7 @@ import org.joda.time.format.DateTimeFormatter;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepReaderId2Value extends JGTModel {
     @Description("The csv file to read from.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 

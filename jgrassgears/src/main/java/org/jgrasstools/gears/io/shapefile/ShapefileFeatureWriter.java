@@ -53,7 +53,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureWriter extends JGTModel {
     @Description("The shapefile to which to write to.")
-    @Label("file")
+    @Label(JGTConstants.FILE_LABEL)
     @In
     public String file = null;
 
