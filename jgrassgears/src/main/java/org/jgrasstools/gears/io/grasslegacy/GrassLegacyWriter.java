@@ -21,21 +21,22 @@ package org.jgrasstools.gears.io.grasslegacy;
 import java.io.File;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Legacy class for writing grass rasters.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -45,7 +46,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyWriter extends JGTModel {
     @Description("The map that needs to be written.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public double[][] geodata = null;
 

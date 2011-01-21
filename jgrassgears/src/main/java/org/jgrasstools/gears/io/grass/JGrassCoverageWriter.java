@@ -28,6 +28,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.grassraster.GrassCoverageWriter;
@@ -66,7 +67,7 @@ public class JGrassCoverageWriter extends JGTModel {
     public boolean doActive = true;
 
     @Description("The file to the map to be written (the cell file).")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String file = null;
 

@@ -22,14 +22,14 @@ import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
@@ -50,7 +50,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GeoTiffCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public GridCoverage2D geodata = null;
 

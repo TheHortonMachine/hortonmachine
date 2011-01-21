@@ -22,23 +22,24 @@ import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.ViewType;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Utility class for reading geotiffs to geotools coverages.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -49,7 +50,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class GeoTiffCoverageReader extends JGTModel{
     @Role(Role.PARAMETER)
     @Description("The geotiff file.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String file = null;
 

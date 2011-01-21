@@ -24,23 +24,24 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -50,7 +51,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Id2ValueArrayWriter {
     @Description("The csv file to write to.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String file = null;
 

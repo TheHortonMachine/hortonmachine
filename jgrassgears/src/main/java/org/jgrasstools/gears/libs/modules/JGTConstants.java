@@ -225,9 +225,9 @@ public class JGTConstants {
     public static final String STATISTICS = "Statistics";
     
     /*
-     * vars labels
+     * vars ui hints
      */
-    public static final String FILE_LABEL = "file";
-    public static final String FOLDER_LABEL = "folder";
+    public static final String FILE_UI_HINT = "file";
+    public static final String FOLDER_UI_HINT = "folder";
 
 }

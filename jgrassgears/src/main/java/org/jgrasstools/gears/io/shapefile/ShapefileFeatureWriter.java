@@ -32,6 +32,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.DefaultTransaction;
@@ -53,7 +54,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureWriter extends JGTModel {
     @Description("The shapefile to which to write to.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String file = null;
 

@@ -27,17 +27,18 @@ import java.util.HashMap;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.io.CSTable;
 import oms3.io.DataIO;
 import oms3.io.TableIterator;
@@ -56,7 +57,7 @@ import org.joda.time.format.DateTimeFormatter;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepReaderId2Value extends JGTModel {
     @Description("The csv file to read from.")
-    @Label(JGTConstants.FILE_LABEL)
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String file = null;
 

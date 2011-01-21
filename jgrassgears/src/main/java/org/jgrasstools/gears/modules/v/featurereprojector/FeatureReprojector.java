@@ -34,6 +34,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -86,6 +87,8 @@ public class FeatureReprojector extends JGTModel {
 
         CoordinateReferenceSystem dataCRS = featureType.getCoordinateReferenceSystem();
         CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
+        
+        SimpleFeatureType newFeatureType = SimpleFeatureTypeBuilder.retype(featureType, targetCrs);
 
         MathTransform transform = CRS.findMathTransform(dataCRS, targetCrs, doLenient);
 
@@ -96,9 +99,9 @@ public class FeatureReprojector extends JGTModel {
             SimpleFeature feature = inFeatureIterator.next();
             List<Object> attributesList = feature.getAttributes();
 
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
             builder.addAll(attributesList);
-            SimpleFeature newFeature = builder.buildFeature(featureType.getTypeName() + "." + id++);
+            SimpleFeature newFeature = builder.buildFeature(newFeatureType.getTypeName() + "." + id++);
 
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             Geometry reprojectedGeometry = JTS.transform(geometry, transform);
