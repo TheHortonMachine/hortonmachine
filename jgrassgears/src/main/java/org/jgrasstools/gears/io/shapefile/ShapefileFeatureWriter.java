@@ -36,14 +36,15 @@ import oms3.annotations.UI;
 
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.opengis.feature.simple.SimpleFeature;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description("Utility class for writing geotools featurecollections to shapefile.")
@@ -62,6 +63,10 @@ public class ShapefileFeatureWriter extends JGTModel {
     @In
     public SimpleFeatureCollection geodata = null;
 
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+
     private boolean hasWritten = false;
 
     @Execute
@@ -69,6 +74,8 @@ public class ShapefileFeatureWriter extends JGTModel {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
+
+        pm.beginTask("Writing features to shapefile...", -1);
 
         if (!file.endsWith(".shp")) {
             file = file + ".shp";
@@ -80,15 +87,13 @@ public class ShapefileFeatureWriter extends JGTModel {
         // params.put("create spatial index", Boolean.TRUE);
 
         SimpleFeatureType type = geodata.getSchema();
-        ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory
-                .createNewDataStore(params);
+        ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
         newDataStore.createSchema(type);
         newDataStore.forceSchemaCRS(type.getCoordinateReferenceSystem());
 
         Transaction transaction = new DefaultTransaction("create");
         String typeName = newDataStore.getTypeNames()[0];
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource(typeName);
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource(typeName);
 
         featureStore.setTransaction(transaction);
         try {
@@ -99,14 +104,13 @@ public class ShapefileFeatureWriter extends JGTModel {
             throw new IOException(problem.getLocalizedMessage());
         } finally {
             transaction.close();
+            pm.done();
         }
 
         hasWritten = true;
     }
 
-    public static void writeShapefile( String path,
-            SimpleFeatureCollection featureCollection )
-            throws IOException {
+    public static void writeShapefile( String path, SimpleFeatureCollection featureCollection ) throws IOException {
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = path;
         writer.geodata = featureCollection;

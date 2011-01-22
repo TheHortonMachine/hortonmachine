@@ -94,6 +94,7 @@ public class FeatureReprojector extends JGTModel {
 
         FeatureIterator<SimpleFeature> inFeatureIterator = inGeodata.features();
         int id = 0;
+        pm.beginTask("Reprojecting features...", inGeodata.size());
         while( inFeatureIterator.hasNext() ) {
             // copy the contents of each feature and transform the geometry
             SimpleFeature feature = inFeatureIterator.next();
@@ -108,7 +109,9 @@ public class FeatureReprojector extends JGTModel {
 
             newFeature.setDefaultGeometry(reprojectedGeometry);
             outGeodata.add(newFeature);
+            pm.worked(1);
         }
+        pm.done();
         inFeatureIterator.close();
     }
 

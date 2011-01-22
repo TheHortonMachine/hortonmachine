@@ -42,7 +42,8 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             taskName = prefix + taskName;
         }
-        log.info(taskName);
+        System.out.println(taskName);
+        // log.info(taskName);
     }
 
     public void beginTask( String name ) {
@@ -52,7 +53,8 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             taskName = prefix + taskName;
         }
-        log.info(taskName);
+        System.out.println(taskName);
+        // log.info(taskName);
     }
 
     public void done() {
@@ -60,7 +62,9 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         if (prefix != null) {
             msg = prefix + msg;
         }
-        log.info(msg);
+
+        System.out.println(msg);
+        // log.info(msg);
     }
 
     public void internalWorked( double work ) {
@@ -87,7 +91,8 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
             if (prefix != null) {
                 msg = prefix + msg;
             }
-            log.info(msg);
+            System.out.println(msg);
+            // log.info(msg);
         } else {
             runningWork = runningWork + work;
             // calculate %
@@ -97,7 +102,8 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
                 if (prefix != null) {
                     msg = prefix + msg;
                 }
-                log.info(msg);
+                System.out.println(msg);
+                // log.info(msg);
                 lastPercentage = percentage;
             }
         }
@@ -108,10 +114,12 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
     }
 
     public void errorMessage( String message ) {
-        log.severe(message);
+        System.err.println(message);
+        // log.severe(message);
     }
 
     public void message( String message ) {
-        log.info(message);
+        System.out.println(message);
+        // log.info(message);
     }
 }

@@ -38,6 +38,8 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Utility class for reading shapefiles to geotools featurecollections.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -51,6 +53,10 @@ public class ShapefileFeatureReader extends JGTModel {
     @In
     public String file = null;
 
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+
     @Description("The read feature collection.")
     @Out
     public SimpleFeatureCollection geodata = null;
@@ -60,10 +66,16 @@ public class ShapefileFeatureReader extends JGTModel {
         if (!concatOr(geodata == null, doReset)) {
             return;
         }
-        File shapeFile = new File(file);
-        ShapefileDataStore store = new ShapefileDataStore(shapeFile.toURI().toURL());
-        SimpleFeatureSource featureSource = store.getFeatureSource();
-        geodata = featureSource.getFeatures();
+
+        pm.beginTask("Reading features from shapefile...", -1);
+        try {
+            File shapeFile = new File(file);
+            ShapefileDataStore store = new ShapefileDataStore(shapeFile.toURI().toURL());
+            SimpleFeatureSource featureSource = store.getFeatureSource();
+            geodata = featureSource.getFeatures();
+        } finally {
+            pm.done();
+        }
     }
 
     /**
