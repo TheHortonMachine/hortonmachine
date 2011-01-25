@@ -24,22 +24,16 @@ import groovy.lang.GroovyShell;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.logging.Level;
 
 import oms3.CLI;
-
-import org.jgrasstools.gears.JGrassGears;
-import org.jgrasstools.hortonmachine.HortonMachine;
 
 /**
  * Launches an OMS3 script.
  *  
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ScriptLauncher {
+public class ScriptLauncherCli {
 
     public static void main( String[] args ) throws Exception {
         if (args.length == 0) {
@@ -81,36 +75,31 @@ public class ScriptLauncher {
 
         String script = CLI.readFile(scriptPath);
 
-        // add modules imports
-        LinkedHashMap<String, Class< ? >> modulename2class = HortonMachine.getInstance().moduleName2Class;
-        Set<Entry<String, Class< ? >>> entries = modulename2class.entrySet();
-        for( Entry<String, Class< ? >> entry : entries ) {
-            // there has to be at least a whitespace before the name
-            String name = entry.getKey();
-            Class< ? > class1 = entry.getValue();
-            script = substituteClass(script, name, class1);
-        }
-        modulename2class = JGrassGears.getInstance().moduleName2Class;
-        entries = modulename2class.entrySet();
-        for( Entry<String, Class< ? >> entry : entries ) {
-            String name = entry.getKey();
-            Class< ? > class1 = entry.getValue();
-            script = substituteClass(script, name, class1);
-        }
-
         Object o = createSim(script, false, mode);
-//        CLI.invoke(o, "run");
+        o.getClass().getMethod("run").invoke(o);
+        // the result of dispatching the method represented by this object on obj with parameters
+        // args
+        // CLI.invoke(o, "run");
+
     }
 
+    /**
+     * Create a simulation.
+     * 
+     * @param script
+     * @param groovy
+     * @param loggingMode can be OFF|ALL|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST.
+     * @return
+     */
     @SuppressWarnings("nls")
     public static Object createSim( String script, boolean groovy, String loggingMode ) {
         Level.parse(loggingMode);
         StringBuilder sb = new StringBuilder();
         sb.append("import static oms3.SimConst.*\n");
-//        sb.append("import java.util.*\n");
+        sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
-//        sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
-//        sb.append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
+        // sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
+        // sb.append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
         sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         sb.append(script);
         String finalScript = sb.toString();
@@ -122,20 +111,6 @@ public class ScriptLauncher {
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());
         return shell.evaluate(finalScript);
-    }
-
-    @SuppressWarnings("nls")
-    private static String substituteClass( String script, String name, Class< ? > class1 ) {
-        // names of modules are between apici: 'name'
-        // script = script.replaceAll("\\\\'" + name + "\\\\'", "'" + class1.getCanonicalName() +
-        // "'");
-        script = script.replaceAll("(?<=')" + name + "(?=')", class1.getCanonicalName());
-
-        // script = script.replaceAll("'{1}" + name, "'" + class1.getCanonicalName());
-        // script = script.replaceAll(" {1}" + name, " " + class1.getCanonicalName());
-        // script = script.replaceAll("\t{1}" + name, "\t" + class1.getCanonicalName());
-        // script = script.replaceAll("\n{1}" + name, "\n" + class1.getCanonicalName());
-        return script;
     }
 
     private static void printUsage() {
