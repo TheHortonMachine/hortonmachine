@@ -29,6 +29,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
@@ -48,6 +49,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageConverter extends JGTModel {
     @Description("The coverage file path.")
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String inputFile = null;
 
@@ -56,6 +58,7 @@ public class CoverageConverter extends JGTModel {
     public String pType = "asc";
 
     @Description("The output coverage file path.")
+    @UI(JGTConstants.FILE_UI_HINT)
     @Out
     public String outputFile = null;
 

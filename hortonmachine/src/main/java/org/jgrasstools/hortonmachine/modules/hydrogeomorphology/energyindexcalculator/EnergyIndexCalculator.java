@@ -103,17 +103,14 @@ public class EnergyIndexCalculator extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Role(Role.PARAMETER)
     @Description("Number of altimetric bands.")
     @In
     public int pEs = -1;
 
-    @Role(Role.PARAMETER)
     @Description("Number of energetic bands.")
     @In
     public int pEi = -1;
 
-    @Role(Role.PARAMETER)
     @Description("Aggregation interval of the data.")
     @In
     public double pDt = -1;

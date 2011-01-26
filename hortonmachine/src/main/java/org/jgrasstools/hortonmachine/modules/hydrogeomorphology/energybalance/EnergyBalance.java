@@ -64,6 +64,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -186,10 +187,12 @@ public class EnergyBalance extends JGTModel {
     public List<EIAreas> inAreas = null;
 
     @Description("The path to the safepoint to use as initial conditions.")
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String pInitsafepoint;
 
     @Description("The path to which to write the safepoint.")
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String pEndsafepoint;
 

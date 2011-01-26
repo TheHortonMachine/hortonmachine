@@ -212,6 +212,8 @@ public class JGTConstants {
     public static final String VECTORPROCESSING = "Vector Processing";
     public static final String GENERICREADER = "Generic Reader";
     public static final String GENERICWRITER = "Generic Writer";
+    public static final String HASHMAP_DOUBLEARRAY_READER = "HashMap Double Array Reader";
+    public static final String HASHMAP_DOUBLEARRAY_WRITER = "HashMap Double Array Writer";
     public static final String RASTERREADER = "Raster Reader";
     public static final String RASTERWRITER = "Raster Writer";
     public static final String FEATUREREADER = "Vector Reader";

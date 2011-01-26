@@ -43,7 +43,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Description("Utility class for writing a id2value map to a OMS formatted csv file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
-@Label(JGTConstants.GENERICWRITER)
+@Label(JGTConstants.HASHMAP_DOUBLEARRAY_WRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepWriterId2Value {
