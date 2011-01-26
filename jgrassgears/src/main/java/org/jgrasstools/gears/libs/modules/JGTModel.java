@@ -28,6 +28,7 @@ import oms3.ComponentAccess;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.Initialize;
+import oms3.annotations.UI;
 
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
@@ -37,7 +38,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.util.ProgressListener;
 
 /**
- * Superclass for horton machine modules.
+ * Superclass for modules.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -58,6 +59,7 @@ public class JGTModel implements Process {
      * </p>
      */
     // TODO check this out???? @Out
+    @UI(JGTConstants.ITERATOR_UI_HINT)
     public boolean doProcess = false;
 
     /**

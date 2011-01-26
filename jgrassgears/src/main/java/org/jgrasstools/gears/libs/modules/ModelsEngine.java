@@ -31,6 +31,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -1276,7 +1277,8 @@ public class ModelsEngine {
 
         // if it is less than 0 and bigger than the maximum, throw error
         if (x > data[(rows - 1)][nx] || x < 0) {
-            throw new RuntimeException("Error in the interpolation algorithm");
+            throw new RuntimeException(MessageFormat.format(
+                    "Error in the interpolation algorithm: entering with x = {0} (min = 0.0 max = {1}", x, data[(rows - 1)][nx]));
         }
 
         /* trovo i valori limite entro i quali effettuo l'interpolazione lineare */

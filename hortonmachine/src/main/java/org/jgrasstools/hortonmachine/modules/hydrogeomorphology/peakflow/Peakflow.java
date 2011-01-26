@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
@@ -114,14 +115,9 @@ public class Peakflow extends JGTModel {
     @In
     public List<double[]> inRainfall;
 
-    @Description("The peakflow timesteps.")
-    @Out
-    public List<DateTime> outTimestamps;
-
     @Description("The peakflow output per timestep.")
     @Out
-    public List<double[]> outDischarge;
-
+    public LinkedHashMap<DateTime, double[]> outDischarge;
 
     public double oututstepArg = 100;
 
@@ -159,8 +155,7 @@ public class Peakflow extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inTopindex);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTopindex);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
@@ -194,8 +189,7 @@ public class Peakflow extends JGTModel {
         RandomIter topindexIter = RandomIterFactory.create(topindexRI, null);
 
         RenderedImage supRescaledRI = inRescaledsup.getRenderedImage();
-        WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(
-                supRescaledRI, false);
+        WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(supRescaledRI, false);
 
         WritableRaster subRescaledWR = null;
         if (inRescaledsub != null) {
@@ -215,14 +209,14 @@ public class Peakflow extends JGTModel {
             }
         }
 
-        GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup",
-                supRescaledWR, regionMap, inTopindex.getCoordinateReferenceSystem());
+        GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup", supRescaledWR, regionMap,
+                inTopindex.getCoordinateReferenceSystem());
         double[][] widthfunctionSupCb = doCb(widthfunctionSupCoverage);
 
         double[][] widthfunctionSubCb = null;
         if (inRescaledsub != null) {
-            GridCoverage2D widthfunctionSubCoverage = CoverageUtilities.buildCoverage("sub",
-                    subRescaledWR, regionMap, inTopindex.getCoordinateReferenceSystem());
+            GridCoverage2D widthfunctionSubCoverage = CoverageUtilities.buildCoverage("sub", subRescaledWR, regionMap,
+                    inTopindex.getCoordinateReferenceSystem());
             widthfunctionSubCb = doCb(widthfunctionSubCoverage);
         }
 
@@ -232,20 +226,17 @@ public class Peakflow extends JGTModel {
         }
 
         // check the case
-        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1
-                && pDiffusion != -1) {
-            pm.message("h.peakflow launched in statistic mode...");
+        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1) {
+            pm.message("Peakflow launched in statistic mode...");
             isStatistics = true;
             isReal = false;
-        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1
-                && inRainfall != null) {
-            pm.message("h.peakflow launched with real rain...");
+        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1 && inRainfall != null) {
+            pm.message("Peakflow launched with real rain...");
             isStatistics = false;
             isReal = true;
         } else {
             throw new ModelsIllegalargumentException(
-                    "Problems occurred in parsing the command arguments. Please check your arguments.",
-                    this);
+                    "Problems occurred in parsing the command arguments. Please check your arguments.", this);
         }
 
         // the internal timestep is always 1 second
@@ -306,8 +297,7 @@ public class Peakflow extends JGTModel {
         // }
 
         effectsBox.setRainDataExists(inRainfall != null ? true : false);
-        outTimestamps = new ArrayList<DateTime>();
-        outDischarge = new ArrayList<double[]>();
+        outDischarge = new LinkedHashMap<DateTime, double[]>();
         if (isStatistics) {
             DateTime dummyDate = new DateTime();
             IUHCalculator iuhC = null;
@@ -332,10 +322,9 @@ public class Peakflow extends JGTModel {
                 if (i % oututstepArg != 0)
                     continue;
                 DateTime tmpDate = dummyDate.plusSeconds((int) calculateQ[i][0]);
-                outTimestamps.add(tmpDate);
                 double[] value = new double[1];
                 value[0] = calculateQ[i][1];
-                outDischarge.add(value);
+                outDischarge.put(tmpDate, value);
             }
         } else if (isReal) {
             IUHCalculator iuhC = null;
@@ -362,15 +351,13 @@ public class Peakflow extends JGTModel {
                 if (i % oututstepArg != 0)
                     continue;
                 DateTime tmpDate = firstDate.plusSeconds((int) calculateQ[i][0]);
-                outTimestamps.add(tmpDate);
                 double[] value = new double[1];
                 value[0] = calculateQ[i][1];
-                outDischarge.add(value);
+                outDischarge.put(tmpDate, value);
             }
         } else {
-            throw new ModelsIllegalargumentException(
-                    "Statistic and real rain are implemented only.", this.getClass()
-                            .getSimpleName());
+            throw new ModelsIllegalargumentException("Statistic and real rain are implemented only.", this.getClass()
+                    .getSimpleName());
         }
 
         /*
@@ -404,15 +391,13 @@ public class Peakflow extends JGTModel {
         }
 
         areaSup = pixelTotalSup * xRes * yRes;
-        deltaSup = (timeSupArray[widthFunctionLength - 1] - timeSupArray[0])
-                / (widthFunctionLength - 1);
+        deltaSup = (timeSupArray[widthFunctionLength - 1] - timeSupArray[0]) / (widthFunctionLength - 1);
         // double avgTime = timeTotalNum / amplitudeFunctionLength;
         widthFunctionSuperficial = new double[widthFunctionLength][3];
         double cum = 0.0;
         for( int i = 0; i < widthFunctionLength; i++ ) {
             widthFunctionSuperficial[i][0] = timeSupArray[i] / pCelerity;
-            widthFunctionSuperficial[i][1] = pixelSupArray[i] * xRes * yRes / deltaSup
-                    * pCelerity;
+            widthFunctionSuperficial[i][1] = pixelSupArray[i] * xRes * yRes / deltaSup * pCelerity;
             double tmpSum = pixelSupArray[i] / pixelTotalSup;
             cum = cum + tmpSum;
             widthFunctionSuperficial[i][2] = cum;
@@ -436,8 +421,7 @@ public class Peakflow extends JGTModel {
         }
 
         areaSub = pixelTotalSub * xRes * yRes;
-        deltaSub = (timeSubArray[widthFunctionLength - 1] - timeSubArray[0])
-                / (widthFunctionLength - 1);
+        deltaSub = (timeSubArray[widthFunctionLength - 1] - timeSubArray[0]) / (widthFunctionLength - 1);
         double avgTime = timeTotalNum / widthFunctionLength;
 
         residentTime = avgTime / pCelerity;
@@ -447,8 +431,7 @@ public class Peakflow extends JGTModel {
         double cum = 0f;
         for( int i = 0; i < widthFunctionLength; i++ ) {
             widthFunctionSubSuperficialHelper[i][0] = timeSubArray[i] / pCelerity;
-            widthFunctionSubSuperficialHelper[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub
-                    * pCelerity;
+            widthFunctionSubSuperficialHelper[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub * pCelerity;
             cum = cum + pixelSubArray[i] / pixelTotalSub;
             widthFunctionSubSuperficialHelper[i][2] = cum;
         }

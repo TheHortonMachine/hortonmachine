@@ -34,6 +34,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -45,6 +46,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Evapotranspiration, Hydrologic")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@UI(JGTConstants.ITERATOR_UI_HINT)
 @Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FaoEtpDaily extends JGTModel {
