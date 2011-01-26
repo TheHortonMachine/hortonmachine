@@ -29,6 +29,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -43,6 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that iterates over files in a folder")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Iterator, File")
+@Label(JGTConstants.LIST_READER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FileIterator extends JGTModel {

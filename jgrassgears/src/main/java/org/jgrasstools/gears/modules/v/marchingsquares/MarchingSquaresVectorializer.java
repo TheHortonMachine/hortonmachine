@@ -101,8 +101,6 @@ public class MarchingSquaresVectorializer extends JGTModel {
     @Out
     public SimpleFeatureCollection outGeodata = null;
 
-    @Description("The extracted polygons in the image space.")
-    @Out
     public List<java.awt.Polygon> awtGeometriesList;
 
     private RandomIter iter = null;

@@ -43,7 +43,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Description("Utility class for writing area data (for EICalculator) to csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
-@Label(JGTConstants.GENERICWRITER)
+@Label(JGTConstants.LIST_WRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EIAreasWriter extends JGTModel {

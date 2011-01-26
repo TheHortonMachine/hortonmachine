@@ -45,7 +45,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Description("Utility class for reading energy data from csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Label(JGTConstants.GENERICREADER)
+@Label(JGTConstants.LIST_READER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EIEnergyReader extends JGTModel {
