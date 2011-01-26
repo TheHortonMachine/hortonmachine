@@ -107,13 +107,9 @@ public class Peakflow extends JGTModel {
     @In
     public GridCoverage2D inRescaledsub = null;
 
-    @Description("The rainfall input timesteps.")
-    @In
-    public List<DateTime> inTimestamps;
-
     @Description("The rainfall input per timestep.")
     @In
-    public List<double[]> inRainfall;
+    public LinkedHashMap<DateTime, double[]> inRainfall;
 
     @Description("The peakflow output per timestep.")
     @Out
@@ -339,7 +335,7 @@ public class Peakflow extends JGTModel {
             pm.message("Read rain data...");
 
             pm.message("Real Jeff...");
-            RealJeff jeffC = new RealJeff(inTimestamps, inRainfall);
+            RealJeff jeffC = new RealJeff(inRainfall);
             pm.message("Q calculation...");
             QReal qtotal = new QReal(parameterBox, iuhC, jeffC, pm);
             double[][] calculateQ = qtotal.calculateQ();
