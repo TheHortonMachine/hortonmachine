@@ -26,6 +26,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,6 +54,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -109,13 +111,17 @@ public class Mosaic extends JGTModel {
 
         pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
         for( File coverageFile : inGeodataFiles ) {
-
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+            // pm.message(MessageFormat.format("Reading map: {0} with crs: {1}",
+            // coverageFile.getAbsolutePath(),
+            // CrsUtilities.getCodeFromCrs(crs)));
 
             if (referenceGridGeometry == null) {
                 // take the first as reference
-                referenceGridGeometry = coverage.getGridGeometry();
                 crs = coverage.getCoordinateReferenceSystem();
+                referenceGridGeometry = coverage.getGridGeometry();
+
+                pm.message("Using crs: " + CrsUtilities.getCodeFromCrs(crs));
             }
 
             Envelope2D worldEnv = coverage.getEnvelope2D();
