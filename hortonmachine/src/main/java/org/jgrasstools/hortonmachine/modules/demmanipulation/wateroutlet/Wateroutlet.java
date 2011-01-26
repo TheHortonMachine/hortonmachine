@@ -37,6 +37,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -88,10 +89,12 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Wateroutlet extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
+    @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public double pNorth = -1.0;
 
     @Description("The eastern coordinate of the watershed outlet.")
+    @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
 
