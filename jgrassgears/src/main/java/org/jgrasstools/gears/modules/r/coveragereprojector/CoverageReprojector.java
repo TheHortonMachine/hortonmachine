@@ -29,6 +29,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.processing.Operations;
@@ -49,6 +50,7 @@ public class CoverageReprojector extends JGTModel {
     public GridCoverage2D inGeodata;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 

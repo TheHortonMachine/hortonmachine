@@ -55,6 +55,7 @@ public class DwgFeatureReader extends JGTModel {
     public String file = null;
 
     @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 

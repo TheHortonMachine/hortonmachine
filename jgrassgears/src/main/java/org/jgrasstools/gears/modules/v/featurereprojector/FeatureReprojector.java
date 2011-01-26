@@ -29,6 +29,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -61,6 +62,7 @@ public class FeatureReprojector extends JGTModel {
     public SimpleFeatureCollection inGeodata;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 

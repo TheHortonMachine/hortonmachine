@@ -229,5 +229,6 @@ public class JGTConstants {
      */
     public static final String FILE_UI_HINT = "file";
     public static final String FOLDER_UI_HINT = "folder";
+    public static final String CRS_UI_HINT = "crs";
 
 }

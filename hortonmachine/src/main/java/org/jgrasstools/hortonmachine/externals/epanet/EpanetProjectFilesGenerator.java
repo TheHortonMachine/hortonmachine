@@ -32,6 +32,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureStore;
@@ -41,6 +42,7 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -70,6 +72,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
     public String inFolder = null;
 
     @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
