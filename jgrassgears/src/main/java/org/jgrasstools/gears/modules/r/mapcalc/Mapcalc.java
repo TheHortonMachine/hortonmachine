@@ -43,6 +43,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -66,6 +67,7 @@ public class Mapcalc extends JGTModel {
     public HashMap<String, GridCoverage2D> inMaps;
 
     @Description("The function to process.")
+    @UI(JGTConstants.MULTILINE_UI_HINT + "5")
     @In
     public String pFunction;
 
@@ -105,8 +107,7 @@ public class Mapcalc extends JGTModel {
             imgParams.put(name, renderedImage);
         }
         if (regionMap == null) {
-            throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass()
-                    .getSimpleName());
+            throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
         }
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
