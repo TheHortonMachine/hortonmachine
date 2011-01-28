@@ -25,19 +25,37 @@ import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestMarchingSquaresAndRasterizer extends HMTestCase {
+
+    private void setBounds( ScanLineRasterizer rast, GridGeometry2D gridGeom ) {
+        HashMap<String, Double> envelopeParams = gridGeometry2RegionParamsMap(gridGeom);
+        double west = envelopeParams.get(WEST);
+        double south = envelopeParams.get(SOUTH);
+        double east = envelopeParams.get(EAST);
+        double north = envelopeParams.get(NORTH);
+        int rows = envelopeParams.get(ROWS).intValue();
+        int cols = envelopeParams.get(COLS).intValue();
+
+        rast.north = north;
+        rast.south = south;
+        rast.east = east;
+        rast.west = west;
+        rast.cols = cols;
+        rast.rows = rows;
+    }
 
     public void testMarchingSquaresAndRasterizer1() throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
@@ -48,7 +66,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractNet1Data = HMTestMaps.marchingSq1;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -66,7 +84,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = 2.0;
         rasterizer.process();
 
@@ -88,7 +106,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractNet1Data = HMTestMaps.marchingSq2;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -106,7 +124,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = 2.0;
         rasterizer.process();
 
@@ -128,7 +146,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractData = HMTestMaps.marchingSq3;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -146,7 +164,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = 2.0;
         rasterizer.process();
 
@@ -177,7 +195,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractData = HMTestMaps.marchingSq4;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -195,7 +213,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = 2.0;
         rasterizer.process();
 
@@ -226,7 +244,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractData = HMTestMaps.marchingSq3;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -244,7 +262,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = 2.0;
         rasterizer.process();
 
@@ -275,7 +293,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractData = HMTestMaps.marchingSq6;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -293,7 +311,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = null;
         rasterizer.fValueToRasterize = squares.defaultFeatureField;
         rasterizer.process();
@@ -316,7 +334,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         double[][] extractData = HMTestMaps.marchingSq7;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", extractData, envelopeParams, crs, true);
+        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
         GridCoverage2D geodata = netCoverage;
 
         MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
@@ -334,7 +352,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         ScanLineRasterizer rasterizer = new ScanLineRasterizer();
         rasterizer.inGeodata = outGeodata;
         rasterizer.pm = pm;
-        rasterizer.pGrid = geodata.getGridGeometry();
+        setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = null;
         rasterizer.fValueToRasterize = squares.defaultFeatureField;
         rasterizer.process();

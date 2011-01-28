@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
@@ -54,7 +55,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -88,9 +91,29 @@ public class ScanLineRasterizer {
     @In
     public String fValueToRasterize = null;
 
-    @Description("The gridgeometry on which to perform rasterization.")
+    @Description("The north bound of the region to consider")
     @In
-    public GridGeometry2D pGrid = null;
+    public Double north = null;
+
+    @Description("The south bound of the region to consider")
+    @In
+    public Double south = null;
+
+    @Description("The west bound of the region to consider")
+    @In
+    public Double west = null;
+
+    @Description("The east bound of the region to consider")
+    @In
+    public Double east = null;
+
+    @Description("The rows of the region to consider")
+    @In
+    public Integer rows = null;
+
+    @Description("The cols of the region to consider")
+    @In
+    public Integer cols = null;
 
     @Description("The progress monitor.")
     @In
@@ -114,6 +137,9 @@ public class ScanLineRasterizer {
 
     @Execute
     public void process() throws Exception {
+        SimpleFeatureType schema = inGeodata.getSchema();
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        GridGeometry2D pGrid = gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
         if (outWR == null) {
             paramsMap = gridGeometry2RegionParamsMap(pGrid);
             height = paramsMap.get(ROWS).intValue();
@@ -123,7 +149,7 @@ public class ScanLineRasterizer {
             outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
         }
 
-        GeometryType type = inGeodata.getSchema().getGeometryDescriptor().getType();
+        GeometryType type = schema.getGeometryDescriptor().getType();
         if (getGeometryType(type) == GEOMETRYTYPE.POINT || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
             throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {

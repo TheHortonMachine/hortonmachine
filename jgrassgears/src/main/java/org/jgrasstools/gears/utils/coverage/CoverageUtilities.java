@@ -301,7 +301,6 @@ public class CoverageUtilities {
 
     public static GridGeometry2D gridGeometryFromRegionParams( HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs ) {
-
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
         double east = envelopeParams.get(EAST);
@@ -309,17 +308,15 @@ public class CoverageUtilities {
         int rows = envelopeParams.get(ROWS).intValue();
         int cols = envelopeParams.get(COLS).intValue();
 
-        // GridToEnvelopeMapper g2eMapper = new GridToEnvelopeMapper();
-        // g2eMapper.setEnvelope(envelope);
-        // g2eMapper.setGridRange(gridRange);
-        // g2eMapper.setPixelAnchor(ModelsEngine.DEFAULTPIXELANCHOR);
-        // MathTransform gridToEnvelopeTransform = g2eMapper.createTransform();
-        // g2eMapper.getG
+        return gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
+    }
+
+    public static GridGeometry2D gridGeometryFromRegionValues( double north, double south, double east, double west, int cols,
+            int rows, CoordinateReferenceSystem crs ) {
         Envelope envelope = new Envelope2D(crs, west, south, east - west, north - south);
         GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
         GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
         return gridGeometry2D;
-
     }
 
     /**
