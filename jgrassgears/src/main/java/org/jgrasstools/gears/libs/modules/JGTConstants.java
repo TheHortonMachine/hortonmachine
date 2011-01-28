@@ -227,7 +227,7 @@ public class JGTConstants {
     public static final String HILLSLOPE = "Hillslope";
     public static final String NETWORK = "Network";
     public static final String STATISTICS = "Statistics";
-    
+
     /*
      * vars ui hints
      */
@@ -238,5 +238,13 @@ public class JGTConstants {
     public static final String NORTHING_UI_HINT = "northing";
     public static final String EASTING_UI_HINT = "easting";
     public static final String MULTILINE_UI_HINT = "multiline";
+    public static final String PROCESS_NORTH_UI_HINT = "process_north";
+    public static final String PROCESS_SOUTH_UI_HINT = "process_south";
+    public static final String PROCESS_EAST_UI_HINT = "process_east";
+    public static final String PROCESS_WEST_UI_HINT = "process_west";
+    public static final String PROCESS_COLS_UI_HINT = "process_cols";
+    public static final String PROCESS_ROWS_UI_HINT = "process_rows";
+    public static final String PROCESS_XRES_UI_HINT = "process_xres";
+    public static final String PROCESS_YRES_UI_HINT = "process_yres";
 
 }

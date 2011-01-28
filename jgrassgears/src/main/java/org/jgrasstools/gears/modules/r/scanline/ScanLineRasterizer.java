@@ -38,6 +38,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -92,26 +93,32 @@ public class ScanLineRasterizer {
     public String fValueToRasterize = null;
 
     @Description("The north bound of the region to consider")
+    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double north = null;
 
     @Description("The south bound of the region to consider")
+    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double south = null;
 
     @Description("The west bound of the region to consider")
+    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double west = null;
 
     @Description("The east bound of the region to consider")
+    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double east = null;
 
     @Description("The rows of the region to consider")
+    @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer rows = null;
 
     @Description("The cols of the region to consider")
+    @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer cols = null;
 
@@ -166,8 +173,8 @@ public class ScanLineRasterizer {
 
     }
 
-    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized,
-            GridGeometry2D gridGeometry, String field, Double cat ) throws InvalidGridGeometryException, TransformException {
+    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized, GridGeometry2D gridGeometry,
+            String field, Double cat ) throws InvalidGridGeometryException, TransformException {
 
         int w = rasterized.getWidth();
         int h = rasterized.getHeight();
