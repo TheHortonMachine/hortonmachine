@@ -36,8 +36,12 @@ public class TestRasterReader extends HMTestCase {
         double yres = 30.0;
         reader = new RasterReader();
         reader.file = path;
-        reader.pBounds = new double[]{n, s, w, e};
-        reader.pRes = new double[]{xres, yres};
+        reader.pNorth = n;
+        reader.pSouth = s;
+        reader.pWest = w;
+        reader.pEast = e;
+        reader.pXres = xres;
+        reader.pYres = yres;
         reader.process();
         readCoverage = reader.geodata;
 

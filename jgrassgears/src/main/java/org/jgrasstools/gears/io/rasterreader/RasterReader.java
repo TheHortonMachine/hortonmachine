@@ -115,34 +115,42 @@ public class RasterReader extends JGTModel {
     public Double geodataNovalue = doubleNovalue;
 
     @Description("The optional requested boundary north coordinate.")
+    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
     @Description("The optional requested boundary south coordinate.")
+    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
     @Description("The optional requested boundary west coordinate.")
+    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
     @Description("The optional requested boundary east coordinate.")
+    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
     @Description("The optional requested resolution in x.")
+    @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
     @Description("The optional requested resolution in y.")
+    @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
     @Description("The optional requested numer of rows.")
+    @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
     @Description("The optional requested numer of cols.")
+    @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
