@@ -114,25 +114,41 @@ public class RasterReader extends JGTModel {
     @In
     public Double geodataNovalue = doubleNovalue;
 
-    @Description("The optional requested boundary coordinates as array of [n, s, w, e].")
+    @Description("The optional requested boundary north coordinate.")
     @In
-    public double[] pBounds = null;
+    public Double pNorth = null;
 
-    @Description("The optional requested resolution in x and y as [xres, yres].")
+    @Description("The optional requested boundary south coordinate.")
     @In
-    public double[] pRes = null;
+    public Double pSouth = null;
 
-    @Description("The optional requested numer of rows and columns as [rows, cols].")
+    @Description("The optional requested boundary west coordinate.")
     @In
-    public double[] pRowcol = null;
+    public Double pWest = null;
+
+    @Description("The optional requested boundary east coordinate.")
+    @In
+    public Double pEast = null;
+
+    @Description("The optional requested resolution in x.")
+    @In
+    public Double pXres = null;
+
+    @Description("The optional requested resolution in y.")
+    @In
+    public Double pYres = null;
+
+    @Description("The optional requested numer of rows.")
+    @In
+    public Integer pRows = null;
+
+    @Description("The optional requested numer of cols.")
+    @In
+    public Integer pCols = null;
 
     @Description("The raster type to read (Supported are: asc, tiff, grassraster, adf).")
     @In
     public String pType = null;
-
-    @Description("Flag to read only envelope (if true, the output geodata is null).")
-    @In
-    public boolean doEnvelope = false;
 
     @Description("The progress monitor.")
     @In
@@ -142,11 +158,22 @@ public class RasterReader extends JGTModel {
     @Out
     public GridCoverage2D geodata = null;
 
-    @Description("The original envelope of the coverage.")
-    @Out
+    /**
+     * Flag to read only envelope (if true, the output geodata is null).
+     */
+    public boolean doEnvelope = false;
+
+    /**
+     * The original envelope of the coverage.
+     */
     public GeneralEnvelope originalEnvelope;
 
     private GeneralParameterValue[] generalParameter = null;
+
+    private double[] pBounds;
+
+    private double[] pRes;
+    private int[] pRowcol;
 
     @Execute
     public void process() throws Exception {
@@ -154,7 +181,7 @@ public class RasterReader extends JGTModel {
             return;
         }
 
-        if (pBounds != null && (pRes == null && pRowcol == null)) {
+        if (hasBoundsRequest() && (!hasResolutionRequest() && !hasRowColsRequest())) {
             throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
         }
 
@@ -198,7 +225,8 @@ public class RasterReader extends JGTModel {
     }
 
     private void resample() {
-        if (pRes == null && pRowcol == null && pBounds == null) {
+        if (!hasBoundsRequest() && !hasResolutionRequest() && !hasRowColsRequest()) {
+            // no resample required
             return;
         }
 
@@ -212,11 +240,19 @@ public class RasterReader extends JGTModel {
 
         if (pBounds == null) {
             pBounds = new double[]{north, south, west, east};
+        } else {
+            pBounds = new double[]{pNorth, pSouth, pWest, pEast};
         }
 
-        if (pRes == null && pRowcol == null) {
+        if (!hasResolutionRequest() && !hasRowColsRequest()) {
             // means only bounds are set -> set resolution and recalc rows/cols
             pRes = new double[]{xres, yres};
+        } else {
+            if (hasResolutionRequest()) {
+                pRes = new double[]{pXres, pYres};
+            } else if (hasRowColsRequest()) {
+                pRowcol = new int[]{pRows, pCols};
+            }
         }
 
         double n = pBounds[0];
@@ -235,7 +271,7 @@ public class RasterReader extends JGTModel {
                 pRes[0] = (e - w) / (double) newCols;
                 pRes[1] = (n - s) / (double) newRows;
             } else if (pRes != null) {
-                pRowcol = new double[2];
+                pRowcol = new int[2];
                 newRows = (int) Math.round((n - s) / pRes[1]);
                 newCols = (int) Math.round((e - w) / pRes[0]);
             }
@@ -384,6 +420,18 @@ public class RasterReader extends JGTModel {
         reader.process();
         GridCoverage2D geodata = reader.geodata;
         return geodata;
+    }
+
+    private boolean hasBoundsRequest() {
+        return pNorth != null && pSouth != null && pWest != null && pEast != null;
+    }
+
+    private boolean hasRowColsRequest() {
+        return pRows != null && pCols != null;
+    }
+
+    private boolean hasResolutionRequest() {
+        return pXres != null && pYres != null;
     }
 
 }

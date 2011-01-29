@@ -231,6 +231,7 @@ public class JGTConstants {
     /*
      * vars ui hints
      */
+    public static final String HIDE_UI_HINT = "hide";
     public static final String FILE_UI_HINT = "file";
     public static final String FOLDER_UI_HINT = "folder";
     public static final String CRS_UI_HINT = "crs";

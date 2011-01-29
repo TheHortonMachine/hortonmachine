@@ -50,6 +50,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Raster, Reading")
 @Label(JGTConstants.RASTERREADER)
+@UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyReader extends JGTModel {
