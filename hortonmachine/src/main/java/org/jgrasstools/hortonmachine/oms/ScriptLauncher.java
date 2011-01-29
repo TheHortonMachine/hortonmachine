@@ -107,11 +107,7 @@ public class ScriptLauncher {
         Level.parse(loggingMode);
         StringBuilder sb = new StringBuilder();
         sb.append("import static oms3.SimConst.*\n");
-//        sb.append("import java.util.*\n");
         sb.append("import oms3.SimBuilder\n");
-//        sb.append("import org.jgrasstools.gears.libs.monitor.*\n");
-//        sb.append("org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor pm = (org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor) new PrintStreamProgressMonitor(System.out, System.err);\n");
-        sb.append("def sb = new SimBuilder(logging:'" + loggingMode + "');\n");
         sb.append(script);
         String finalScript = sb.toString();
 
