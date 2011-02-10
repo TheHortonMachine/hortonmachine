@@ -1,8 +1,6 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
 import java.util.HashMap;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -34,48 +32,16 @@ public class TestSlope extends HMTestCase {
         flow.inPit = pitfillerCoverage;
         flow.process();
 
-        // then create the slope map mode 0
+        // then create the slope map
         Slope slope = new Slope();
         slope.inDem = pitfillerCoverage;
         slope.inFlow = flow.outFlow;
-        slope.doRadiants=false;
         slope.pm = pm;
 
         slope.process();
 
-        GridCoverage2D slopeCoverage_mode0 = slope.outSlope;
-        checkMatrixEqual(slopeCoverage_mode0.getRenderedImage(), HMTestMaps.slopeData, 0.01);
-        
-        double [][] slope_data_in_radiant=new double [HMTestMaps.slopeData.length][HMTestMaps.slopeData[0].length];
-        for(int i=0;i<HMTestMaps.slopeData.length;i++){
-        	for(int j=0;j<HMTestMaps.slopeData[0].length;j++){
-        		
-        		if(HMTestMaps.slopeData[i][j]!=HMTestMaps.slopeData[i][j]){
-        			
-        			slope_data_in_radiant[i][j]=doubleNovalue;
-        		}
-        		else{
-        			slope_data_in_radiant[i][j]=Math.atan(HMTestMaps.slopeData[i][j])*Math.PI/180.0;
-        			
-        		}
-        		
-        	}
-        	
-        }	
-            Slope slope1 = new Slope();
-            slope1.inDem = pitfillerCoverage;
-            slope1.inFlow = flow.outFlow;
-            slope1.doRadiants=true;
-            slope1.pm = pm;
-
-            slope1.process();
-
-            GridCoverage2D slopeCoverage_mode1 = slope1.outSlope;
-            checkMatrixEqual(slopeCoverage_mode1.getRenderedImage(), slope_data_in_radiant, 0.01);        	
-        
-        
-        
-        
+        GridCoverage2D slopeCoverage = slope.outSlope;
+        checkMatrixEqual(slopeCoverage.getRenderedImage(), HMTestMaps.slopeData, 0.01);
     }
 
 }

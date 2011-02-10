@@ -59,7 +59,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.operation.TransformException;
@@ -160,12 +159,6 @@ public class BasinShape extends JGTModel {
         SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
-        double []error=new double [nstream[0]];
-        HortonMessageHandler msg2 = HortonMessageHandler.getInstance();
-        StringBuilder sb=new StringBuilder();
-        StringBuilder sb2=new StringBuilder();
-        StringBuilder sb3=new StringBuilder();
-        int cont_error=0;
         for( int num = 1; num <= nstream[0]; num++ ) {
             Object[] values = new Object[8];
 
@@ -250,6 +243,7 @@ public class BasinShape extends JGTModel {
                 }
 
                 // extract the feature polygon of that basin number
+
                 MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
                 try {
                     squares.inGeodata = inBasins;
@@ -257,13 +251,8 @@ public class BasinShape extends JGTModel {
                     squares.doReset = true;
                     squares.pValue = (double) num;
                     squares.process();
-
-                    pm.message(sb.toString());
                 } catch (Exception e) {
-                   // pm.errorMessage(e.getLocalizedMessage());
-                	error[cont_error]=num;
-                	cont_error+=1;
-                    
+                    pm.errorMessage(e.getLocalizedMessage());
                     continue;
                 }
 
@@ -314,16 +303,7 @@ public class BasinShape extends JGTModel {
                 featureCollection.add(feature);
             }
         }
-        if(cont_error>0){
-        	sb.append(msg2.message("basinshape.totalerror1"));
-        	pm.message(sb.toString());
-        	for(int i=0;i<cont_error;i++){
-        		sb2.append(error[i]);
-        		pm.message(sb2.toString());
-        	}
-        	sb3.append(msg2.message("basinshape.totalerror2"));
-        	pm.message(sb3.toString());
-        }
+
         basinsRandomIter.done();
         basinsWR = null;
         return featureCollection;

@@ -68,11 +68,6 @@ public class Slope extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
-
-    @Description("Switch to define whether create the output map in degrees (default) or radiants.")
-    @In
-    public boolean doRadiants = false;
-    
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -120,7 +115,6 @@ public class Slope extends JGTModel {
         // a pixel is on the border its value will be equal to novalue
 
         pm.beginTask(msg.message("slope.calculating"), nRows);
-        if(doRadiants==false){
         for( int c = 0; c < nCols; c++ ) {
             for( int r = 0; r < nRows; r++ ) {
                 int flowDir = (int) flowIter.getSampleDouble(c, r, 0);
@@ -139,32 +133,6 @@ public class Slope extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        
-        }
-        if(doRadiants==true){
-            for( int c = 0; c < nCols; c++ ) {
-                for( int r = 0; r < nRows; r++ ) {
-                    int flowDir = (int) flowIter.getSampleDouble(c, r, 0);
-                    if (flowDir == 10) {
-                        pm.errorMessage(msg.message("slope.outleterror"));
-                    }
-                    double value = doubleNovalue;
-                    if (!isNovalue(flowDir)) {
-                        point[0] = c + DIR[flowDir][1];
-                        point[1] = r + DIR[flowDir][0];
-                        value = (elevationIter.getSampleDouble(c, r, 0) - elevationIter.getSampleDouble(point[0], point[1], 0))
-                                / grid[flowDir];
-                        value=Math.atan(value)*Math.PI/180.0;
-                    }
-                    slopeWR.setSample(c, r, 0, value);
-                }
-                pm.worked(1);
-            }
-            pm.done();
-        	
-        	
-        	
-        }
 
         outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inDem.getCoordinateReferenceSystem());
     }
