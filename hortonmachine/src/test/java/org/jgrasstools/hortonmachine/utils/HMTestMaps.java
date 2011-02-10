@@ -144,6 +144,8 @@ public class HMTestMaps {
             {NaN, 4.67, 6.84, 2.36, 2.36, 2.36, 2.36, 6.67, 10, NaN}, {NaN, 0.33, 8, 6.67, 5.89, 4.71, 3.54, 0, 0, NaN}, {NaN, 4.67, 0.47, 2.33, 3.33, 3.33, 3.33, 0, 0, NaN},
             {NaN, 4.01, 9, 8.33, 6.13, 4.01, 3.54, 6.67, 11.67, NaN}, {NaN, 4.71, 3.54, 2.36, 0.71, 0.71, 7, 5.89, 5.89, NaN}, {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
 
+
+    
     public static double[][] tcaData = new double[][]{
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, 
             {NaN, NaN, 1, 1, 1, 1, 1, 1, 1, NaN}, 
