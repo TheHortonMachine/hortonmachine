@@ -8,6 +8,7 @@
 		<jgt.version>0.1-SNAPSHOT</jgt.version>
 		<gt.version>2.7-SNAPSHOT</gt.version>
 		<gt.version.exp>2.7-SNAPSHOT</gt.version.exp>
+		<jaitools.version>1.1-SNAPSHOT</jaitools.version>
 	</properties>
 
     <groupId>${jgt.groupId}</groupId>
@@ -161,13 +162,13 @@
 		<dependency>
 			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>jiffle</artifactId>
-			<version>1.0.1</version>
+			<version>${jaitools.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>zonalstats</artifactId>
-			<version>1.0.1</version>
+			<version>${jaitools.version}</version>
 		</dependency>
 
         <dependency>
