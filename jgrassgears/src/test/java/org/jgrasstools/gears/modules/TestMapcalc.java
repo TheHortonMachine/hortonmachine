@@ -3,7 +3,6 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -11,6 +10,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class TestMapcalc extends HMTestCase {
+    @SuppressWarnings("nls")
     public void testMapcalc() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
@@ -26,7 +26,7 @@ public class TestMapcalc extends HMTestCase {
 
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\"";
+        mapcalc.pFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\";";
 
         mapcalc.process();
 
