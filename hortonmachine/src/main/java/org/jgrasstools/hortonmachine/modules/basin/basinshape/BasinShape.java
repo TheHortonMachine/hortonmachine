@@ -32,11 +32,11 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -44,7 +44,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -54,14 +53,13 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -102,6 +100,7 @@ public class BasinShape extends JGTModel {
         if (!concatOr(outBasins == null, doReset)) {
             return;
         }
+        checkNull(inBasins);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
@@ -110,13 +109,9 @@ public class BasinShape extends JGTModel {
         // double yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage basinsRI = inBasins.getRenderedImage();
-        RenderedImage pitRI = inPit.getRenderedImage();
-
-        outBasins = basinShape(basinsRI, pitRI);
-    }
-
-    private SimpleFeatureCollection basinShape( RenderedImage basinsRI, RenderedImage pitRI )
-            throws InvalidGridGeometryException, TransformException {
+        RenderedImage pitRI = null;
+        if (inPit != null)
+            pitRI = inPit.getRenderedImage();
 
         int[] nstream = new int[1];
         // nstream[0] = 1508;
@@ -142,7 +137,7 @@ public class BasinShape extends JGTModel {
         b.setName("basinshape"); //$NON-NLS-1$
         // add a geometry property
         String defaultGeometryName = "the_geom";//$NON-NLS-1$
-        b.setCRS(inPit.getCoordinateReferenceSystem());
+        b.setCRS(inBasins.getCoordinateReferenceSystem());
         b.add(defaultGeometryName, MultiPolygon.class);
         // add some properties
         b.add("area", Float.class); //$NON-NLS-1$
@@ -155,8 +150,7 @@ public class BasinShape extends JGTModel {
 
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
-
-        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
+        outBasins = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
         for( int num = 1; num <= nstream[0]; num++ ) {
@@ -243,20 +237,19 @@ public class BasinShape extends JGTModel {
                 }
 
                 // extract the feature polygon of that basin number
-
-                MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+                Vectorizer vectorizer = new Vectorizer();
                 try {
-                    squares.inGeodata = inBasins;
-                    squares.pm = pm;
-                    squares.doReset = true;
-                    squares.pValue = (double) num;
-                    squares.process();
+                    vectorizer.inGeodata = inBasins;
+                    vectorizer.pm = pm;
+                    vectorizer.doReset = true;
+                    vectorizer.pValue = (double) num;
+                    vectorizer.process();
                 } catch (Exception e) {
                     pm.errorMessage(e.getLocalizedMessage());
                     continue;
                 }
 
-                SimpleFeatureCollection outGeodata = squares.outGeodata;
+                SimpleFeatureCollection outGeodata = vectorizer.outGeodata;
                 FeatureIterator<SimpleFeature> outGeodataIterator = outGeodata.features();
                 List<Polygon> polygons = new ArrayList<Polygon>();
                 while( outGeodataIterator.hasNext() ) {
@@ -300,13 +293,12 @@ public class BasinShape extends JGTModel {
                 builder.addAll(values);
                 // build the feature with provided ID
                 SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + num);
-                featureCollection.add(feature);
+                outBasins.add(feature);
             }
         }
 
         basinsRandomIter.done();
         basinsWR = null;
-        return featureCollection;
     }
 
 }

@@ -221,11 +221,6 @@
   <!--     Maven repository is implicit and doesn't need to be specified. -->
   <!-- ================================================================== -->
   <repositories>
-    <repository>
-      <id>maven2-repository.dev.java.net</id>
-      <name>Java.net repository</name>
-      <url>http://download.java.net/maven/2</url>
-    </repository>
 
     <repository>
       <id>osgeo</id>
@@ -274,14 +269,6 @@
 			<url>http://wiki.jgrasstools.googlecode.com/hg/mavenrepo</url>
 		</repository>
 
-		<repository>
-			<id>jaitools-snapshots</id>
-			<name>jaitools snapshots</name>
-			<url>http://oss.sonatype.org/content/repositories/snapshots/</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
 
   </repositories>
 			
