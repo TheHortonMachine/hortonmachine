@@ -31,6 +31,7 @@ import java.awt.image.RenderedImage;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -81,11 +82,11 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
     private static final String resultName = "result"; //$NON-NLS-1$
 
     public static final String MAPWRAPPER = "\"";
-    private int previousProgress = 0;
-    private boolean hasFinished = false;
     private HashMap<String, Double> regionParameters = null;
 
     private CoordinateReferenceSystem crs;
+
+    private CountDownLatch latch;
 
     @Execute
     public void process() throws Exception {
@@ -114,8 +115,8 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
              */
             script = resultName + "=" + pFunction + "\n";
         }
-        script= script.trim();
-        
+        script = script.trim();
+
         // create the executor
         JiffleExecutor executor = new JiffleExecutor(1);
         executor.addEventListener(this);
@@ -177,6 +178,9 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
                 }
 
                 public long getUpdateInterval() {
+                    if (updateInterval == 0) {
+                        return 1;
+                    }
                     return updateInterval;
                 }
 
@@ -185,6 +189,9 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
                 }
             });
         }
+        
+        latch = new CountDownLatch(1);
+        latch.await();
 
         // try{
         // } catch (JiffleCompilationException e) {
@@ -205,14 +212,13 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         try {
             outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
         } finally {
-            pm.done();
-            hasFinished = true;
+            latch.countDown();
         }
     }
 
     public void onFailureEvent( JiffleEvent ev ) {
         String msg = ev.toString();
-        hasFinished = true;
+        latch.countDown();
         throw new ModelsRuntimeException(msg, this);
     }
 }

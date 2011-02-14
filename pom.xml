@@ -167,6 +167,30 @@
 		
 		<dependency>
 			<groupId>com.googlecode.jaitools</groupId>
+			<artifactId>contour</artifactId>
+			<version>${jaitools.version}</version>
+		</dependency>
+
+        <dependency>
+            <groupId>com.googlecode.jaitools</groupId>
+            <artifactId>regionalize</artifactId>
+            <version>${jaitools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.jaitools</groupId>
+            <artifactId>vectorize</artifactId>
+            <version>${jaitools.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.jaitools</groupId>
+            <artifactId>rangelookup</artifactId>
+            <version>${jaitools.version}</version>
+        </dependency>
+
+		<dependency>
+			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>zonalstats</artifactId>
 			<version>${jaitools.version}</version>
 		</dependency>
