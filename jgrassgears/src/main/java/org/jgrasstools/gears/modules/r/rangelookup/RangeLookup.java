@@ -107,8 +107,18 @@ public class RangeLookup extends JGTModel {
             String rangeNoBrac = range.replaceAll("\\[|\\]|\\(|\\)", "");
             String[] split = rangeNoBrac.trim().split("\\s+");
 
-            double min = Double.parseDouble(split[0]);
-            double max = Double.parseDouble(split[1]);
+            Double min = null;
+            try {
+                min = Double.parseDouble(split[0]);
+            } catch (Exception e) {
+                // can be null
+            }
+            Double max = null;
+            try {
+                max = Double.parseDouble(split[1]);
+            } catch (Exception e) {
+                // can be null
+            }
 
             Range<Double> r = new Range<Double>(min, minIncluded, max, maxIncluded);
             table.add(r, classNum);
