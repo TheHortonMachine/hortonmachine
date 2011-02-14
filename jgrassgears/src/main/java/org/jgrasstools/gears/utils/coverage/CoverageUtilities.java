@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.media.jai.ROI;
+import javax.media.jai.ROIShape;
 import javax.media.jai.RasterFactory;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -49,14 +51,18 @@ import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
+import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
+import org.jgrasstools.gears.utils.features.FastLiteShape;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -66,7 +72,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 /**
  * <p>
@@ -76,7 +84,6 @@ import com.vividsolutions.jts.geom.LineSegment;
  * @author Andrea Antonello - www.hydrologis.com
  * @since 0.1
  */
-@SuppressWarnings("deprecation")
 public class CoverageUtilities {
     public static final String NORTH = "NORTH"; //$NON-NLS-1$
     public static final String SOUTH = "SOUTH"; //$NON-NLS-1$
@@ -250,7 +257,7 @@ public class CoverageUtilities {
             }
         }
         if (gg == null) {
-            throw new IllegalArgumentException("No gridgeometry present");
+            throw new IllegalArgumentException("No gridgeometry present"); //$NON-NLS-1$
         }
         HashMap<String, Double> regionParams = gridGeometry2RegionParamsMap(gg);
         return regionParams;
@@ -713,6 +720,26 @@ public class CoverageUtilities {
         }
         pitTmpIterator.done();
         return tmpWR;
+    }
+
+    /**
+     * Utility method for transforming a geometry ROI into the raster space, using the provided affine transformation.
+     * 
+     * @param roi a {@link Geometry} in model space.
+     * @param mt2d an {@link AffineTransform} that maps from raster to model space. This is already referred to the pixel corner.
+     * @return a {@link ROI} suitable for using with JAI.
+     * @throws ProcessException in case there are problems with ivnerting the provided {@link AffineTransform}. Very unlikely to happen.
+     */
+    public static ROI prepareROI( Geometry roi, AffineTransform mt2d ) throws Exception {
+        // transform the geometry to raster space so that we can use it as a ROI source
+        Geometry rasterSpaceGeometry = JTS.transform(roi, new AffineTransform2D(mt2d.createInverse()));
+
+        // simplify the geometry so that it's as precise as the coverage, excess coordinates
+        // just make it slower to determine the point in polygon relationship
+        Geometry simplifiedGeometry = DouglasPeuckerSimplifier.simplify(rasterSpaceGeometry, 1);
+
+        // build a shape using a fast point in polygon wrapper
+        return new ROIShape(new FastLiteShape(simplifiedGeometry));
     }
 
 }
