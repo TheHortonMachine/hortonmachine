@@ -36,8 +36,10 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.ViewType;
 import org.geotools.coverage.processing.CoverageProcessor;
 import org.geotools.coverage.processing.Operations;
+import org.geotools.resources.image.ImageUtilities;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
@@ -96,30 +98,29 @@ public class CoverageResolutionResampler extends JGTModel {
         Operation resampleOp = processor.getOperation("Resample"); //$NON-NLS-1$
 
         ParameterValueGroup param = resampleOp.getParameters();
-        param.parameter("Source").setValue(inGeodata);
+        param.parameter("Source").setValue(inGeodata.view(ViewType.GEOPHYSICS));
         param.parameter("GridGeometry").setValue(newGridGeometry);
         param.parameter("CoordinateReferenceSystem").setValue(inGeodata.getCoordinateReferenceSystem());
 
         Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        String interpolationType = "NearestNeighbor";
         switch( pInterpolation ) {
         case Interpolation.INTERP_BILINEAR:
-            interpolationType = "Bilinear";
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
             break;
         case Interpolation.INTERP_BICUBIC:
-            interpolationType = "Bicubic";
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
             break;
         default:
             break;
         }
+        String interpolationType = ImageUtilities.getInterpolationName(interpolation);
         param.parameter("InterpolationType").setValue(interpolationType);
 
         pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
-        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, inGeodata.getCoordinateReferenceSystem(),
-                newGridGeometry, interpolation);
-        // outGeodata = (GridCoverage2D) processor.doOperation(param);
+        // outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata,
+        // inGeodata.getCoordinateReferenceSystem(),
+        // newGridGeometry, interpolation);
+        outGeodata = (GridCoverage2D) processor.doOperation(param);
         pm.done();
     }
 
