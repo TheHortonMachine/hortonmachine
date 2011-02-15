@@ -108,21 +108,33 @@ public class CoverageResolutionResampler extends JGTModel {
         GridCoverage2D interpolationCoverage = Interpolator2D.create(inGeodata, interpolation);
         int bandsNum = inGeodata.getSampleDimensions().length;
         final double[] value = new double[bandsNum];
-
+        final double[] defaultValue = new double[bandsNum];
+        for( int i = 0; i < defaultValue.length; i++ ) {
+            defaultValue[i] = JGTConstants.doubleNovalue;
+        }
         double north = region.getNorth();
         double west = region.getWest();
         double runningNorth = north;
         double runningWest = west;
+        int pointsOutside = 0;
         for( int i = 0; i < writableRaster.getHeight(); i++ ) {
             runningNorth = north - i * region.getWEResolution();
             for( int j = 0; j < writableRaster.getWidth(); j++ ) {
                 runningWest = west + j * region.getNSResolution();
                 Point2D pos = new Point2D.Double(runningWest, runningNorth);
-                interpolationCoverage.evaluate(pos, value);
-                rasterIter.setPixel(j, i, value);
+                try {
+                    interpolationCoverage.evaluate(pos, value);
+                    rasterIter.setPixel(j, i, value);
+                } catch (Exception e) {
+                    pointsOutside++;
+                    rasterIter.setPixel(j, i, defaultValue);
+                }
             }
         }
         rasterIter.done();
+
+        if (pointsOutside > 0)
+            pm.errorMessage("Jumped points outside coverage: " + pointsOutside);
 
         pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
         outGeodata = CoverageUtilities.buildCoverage("resampled", writableRaster, region.getRegionParams(),
