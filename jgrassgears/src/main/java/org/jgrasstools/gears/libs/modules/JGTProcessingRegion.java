@@ -757,10 +757,14 @@ public class JGTProcessingRegion {
      * @return the gridgeometry.
      */
     public GridGeometry2D getGridGeometry( CoordinateReferenceSystem crs ) {
+        GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(getRegionParams(), crs);
+        return gridGeometry;
+    }
+
+    public HashMap<String, Double> getRegionParams() {
         HashMap<String, Double> paramsMap = CoverageUtilities.makeRegionParamsMap(north, south, west, east, we_res, ns_res, cols,
                 rows);
-        GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(paramsMap, crs);
-        return gridGeometry;
+        return paramsMap;
     }
 
 }

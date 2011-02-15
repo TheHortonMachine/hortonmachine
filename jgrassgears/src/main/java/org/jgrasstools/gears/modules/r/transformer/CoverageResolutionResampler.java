@@ -18,6 +18,10 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+
 import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
@@ -33,13 +37,19 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.CoverageProcessor;
+import org.geotools.coverage.processing.Operations;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.coverage.Coverage;
 import org.opengis.coverage.processing.Operation;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("A simple middleman module  to do coverage conversion.")
+@Description("Module to do coverage resolution resampling.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Convert")
 @Label(JGTConstants.RASTERPROCESSING)
@@ -62,6 +72,10 @@ public class CoverageResolutionResampler extends JGTModel {
     @In
     public Double pYres;
 
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+
     @Description("The output coverage.")
     @Out
     public GridCoverage2D outGeodata;
@@ -70,7 +84,6 @@ public class CoverageResolutionResampler extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inGeodata, pXres);
-
         if (pYres == null) {
             pYres = pXres;
         }
@@ -85,20 +98,29 @@ public class CoverageResolutionResampler extends JGTModel {
         ParameterValueGroup param = resampleOp.getParameters();
         param.parameter("Source").setValue(inGeodata);
         param.parameter("GridGeometry").setValue(newGridGeometry);
+        param.parameter("CoordinateReferenceSystem").setValue(inGeodata.getCoordinateReferenceSystem());
+
+        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         String interpolationType = "NearestNeighbor";
         switch( pInterpolation ) {
         case Interpolation.INTERP_BILINEAR:
-            interpolationType = "bilinear";
+            interpolationType = "Bilinear";
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
             break;
         case Interpolation.INTERP_BICUBIC:
-            interpolationType = "bicubic";
+            interpolationType = "Bicubic";
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
             break;
         default:
             break;
         }
         param.parameter("InterpolationType").setValue(interpolationType);
 
-        outGeodata = (GridCoverage2D) processor.doOperation(param);
+        pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
+        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, inGeodata.getCoordinateReferenceSystem(),
+                newGridGeometry, interpolation);
+        // outGeodata = (GridCoverage2D) processor.doOperation(param);
+        pm.done();
     }
 
 }
