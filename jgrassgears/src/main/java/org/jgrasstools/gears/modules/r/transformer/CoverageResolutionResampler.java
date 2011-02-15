@@ -18,7 +18,13 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.Interpolation;
@@ -39,13 +45,23 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.Interpolator2D;
+import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.processing.CoverageProcessor;
+import org.geotools.referencing.operation.matrix.AffineTransform2D;
+import org.geotools.resources.image.ImageUtilities;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.coverage.processing.Operation;
+import org.opengis.parameter.ParameterValueGroup;
+
+import com.vividsolutions.jts.geom.util.AffineTransformationBuilder;
+import com.vividsolutions.jts.geom.util.AffineTransformationFactory;
 
 @Description("Module to do coverage resolution resampling.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -89,89 +105,36 @@ public class CoverageResolutionResampler extends JGTModel {
         region.setWEResolution(pXres);
         region.setNSResolution(pYres);
 
-        WritableRaster writableRaster = CoverageUtilities.createDoubleWritableRaster(region.getCols(), region.getRows(), null,
-                null, JGTConstants.doubleNovalue);
-        WritableRandomIter rasterIter = RandomIterFactory.createWritable(writableRaster, null);
+        GridGeometry2D newGridGeometry = region.getGridGeometry(inGeodata.getCoordinateReferenceSystem());
 
-        Interpolation interpolation = new InterpolationNearest();
+        CoverageProcessor processor = CoverageProcessor.getInstance();
+        Operation resampleOp = processor.getOperation("Resample"); //$NON-NLS-1$
+
+        ParameterValueGroup param = resampleOp.getParameters();
+        param.parameter("Source").setValue(inGeodata.view(ViewType.GEOPHYSICS));
+        param.parameter("GridGeometry").setValue(newGridGeometry);
+        param.parameter("CoordinateReferenceSystem").setValue(inGeodata.getCoordinateReferenceSystem());
+
+        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         switch( pInterpolation ) {
         case Interpolation.INTERP_BILINEAR:
-            interpolation = new InterpolationBilinear();
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
             break;
         case Interpolation.INTERP_BICUBIC:
-            interpolation = new InterpolationBicubic(1);
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
             break;
         default:
             break;
         }
-
-        GridCoverage2D interpolationCoverage = Interpolator2D.create(inGeodata, interpolation);
-        int bandsNum = inGeodata.getSampleDimensions().length;
-        final double[] value = new double[bandsNum];
-        final double[] defaultValue = new double[bandsNum];
-        for( int i = 0; i < defaultValue.length; i++ ) {
-            defaultValue[i] = JGTConstants.doubleNovalue;
-        }
-        double north = region.getNorth();
-        double west = region.getWest();
-        double runningNorth = north;
-        double runningWest = west;
-        int pointsOutside = 0;
-        for( int i = 0; i < writableRaster.getHeight(); i++ ) {
-            runningNorth = north - i * region.getWEResolution();
-            for( int j = 0; j < writableRaster.getWidth(); j++ ) {
-                runningWest = west + j * region.getNSResolution();
-                Point2D pos = new Point2D.Double(runningWest, runningNorth);
-                try {
-                    interpolationCoverage.evaluate(pos, value);
-                    rasterIter.setPixel(j, i, value);
-                } catch (Exception e) {
-                    pointsOutside++;
-                    rasterIter.setPixel(j, i, defaultValue);
-                }
-            }
-        }
-        rasterIter.done();
-
-        if (pointsOutside > 0)
-            pm.errorMessage("Jumped points outside coverage: " + pointsOutside);
+        String interpolationType = ImageUtilities.getInterpolationName(interpolation);
+        param.parameter("InterpolationType").setValue(interpolationType);
 
         pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
-        outGeodata = CoverageUtilities.buildCoverage("resampled", writableRaster, region.getRegionParams(),
-                inGeodata.getCoordinateReferenceSystem());
+        // outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata,
+        // inGeodata.getCoordinateReferenceSystem(),
+        // newGridGeometry, interpolation);
+        outGeodata = (GridCoverage2D) processor.doOperation(param);
         pm.done();
-
-        // GridGeometry2D newGridGeometry =
-        // region.getGridGeometry(inGeodata.getCoordinateReferenceSystem());
-        //
-        // CoverageProcessor processor = CoverageProcessor.getInstance();
-        //        Operation resampleOp = processor.getOperation("Resample"); //$NON-NLS-1$
-        //
-        // ParameterValueGroup param = resampleOp.getParameters();
-        // param.parameter("Source").setValue(inGeodata.view(ViewType.GEOPHYSICS));
-        // param.parameter("GridGeometry").setValue(newGridGeometry);
-        // param.parameter("CoordinateReferenceSystem").setValue(inGeodata.getCoordinateReferenceSystem());
-        //
-        // Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        // switch( pInterpolation ) {
-        // case Interpolation.INTERP_BILINEAR:
-        // interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        // break;
-        // case Interpolation.INTERP_BICUBIC:
-        // interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-        // break;
-        // default:
-        // break;
-        // }
-        // String interpolationType = ImageUtilities.getInterpolationName(interpolation);
-        // param.parameter("InterpolationType").setValue(interpolationType);
-        //
-        // pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
-        // // outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata,
-        // // inGeodata.getCoordinateReferenceSystem(),
-        // // newGridGeometry, interpolation);
-        // outGeodata = (GridCoverage2D) processor.doOperation(param);
-        // pm.done();
     }
 
 }
