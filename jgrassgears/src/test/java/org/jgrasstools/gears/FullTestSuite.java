@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.jgrasstools.gears.modules.TestCountourLinesLabeler;
-import org.jgrasstools.gears.modules.TestCoverageConverter;
 import org.jgrasstools.gears.modules.TestCoverageSummary;
 import org.jgrasstools.gears.modules.TestCutout;
 import org.jgrasstools.gears.modules.TestFeatureFilter;
@@ -38,7 +37,6 @@ public class FullTestSuite extends TestCase {
 
         // modules
         suite.addTestSuite(TestCountourLinesLabeler.class);
-        suite.addTestSuite(TestCoverageConverter.class);
         suite.addTestSuite(TestCoverageSummary.class);
         suite.addTestSuite(TestCutout.class);
         suite.addTestSuite(TestFeatureFilter.class);

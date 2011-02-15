@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.r.coveragereconverter;
+package org.jgrasstools.gears.modules.v.featureconverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -28,24 +28,24 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("A simple middleman module  to do coverage conversion.")
+@Description("A simple middleman module to do feature conversion.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Convert")
+@Keywords("IO, Feature, Vector, Convert")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CoverageConverter extends JGTModel {
-    @Description("The input coverage.")
+public class FeatureConverter extends JGTModel {
+    @Description("The input features.")
     @In
-    public GridCoverage2D inGeodata;
+    public SimpleFeatureCollection inGeodata;
 
-    @Description("The output coverage.")
+    @Description("The output features.")
     @Out
-    public GridCoverage2D outGeodata;
+    public SimpleFeatureCollection outGeodata;
 
     @Execute
     public void process() throws Exception {

@@ -61,10 +61,10 @@ public class JGrassCoverageWriter extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("Flag that defines if the map should be written on the whole (false) or"
-            + " only on the active region (true and default).")
+    @Description("Flag that defines if the map should be written as it is (false and default) or"
+            + " only on the active region (true).")
     @In
-    public boolean doActive = true;
+    public boolean doActive = false;
 
     @Description("The file to the map to be written (the cell file).")
     @UI(JGTConstants.FILE_UI_HINT)

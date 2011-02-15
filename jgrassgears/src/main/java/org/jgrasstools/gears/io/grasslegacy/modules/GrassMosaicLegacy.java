@@ -33,9 +33,9 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -45,9 +45,8 @@ import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -59,10 +58,6 @@ public class GrassMosaicLegacy extends JGTModel {
     @Description("The list of files that have to be patched (used if inGeodata is null).")
     @In
     public List<File> inGeodataFiles;
-
-    @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
-    @In
-    public int pInterpolation = 0;
 
     @Description("The output file resolution in meters.")
     @In
@@ -77,6 +72,7 @@ public class GrassMosaicLegacy extends JGTModel {
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The grass file path to which to write to.")
+    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public String outFile = null;
 
