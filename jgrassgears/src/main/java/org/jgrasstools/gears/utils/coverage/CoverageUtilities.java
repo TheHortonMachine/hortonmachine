@@ -244,6 +244,32 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
+    /**
+     * Get the array of region parameters covered by the {@link GridCoverage2D coverage}. 
+     * 
+     * @param gridCoverage the coverage.
+     * @return the array of region parameters as [n, s, w, e, xres, yres, cols, rows]
+     */
+    public static double[] getRegionArrayFromGridCoverage( GridCoverage2D gridCoverage ) {
+        Envelope envelope = gridCoverage.getEnvelope();
+        DirectPosition lowerCorner = envelope.getLowerCorner();
+        double[] westSouth = lowerCorner.getCoordinate();
+        DirectPosition upperCorner = envelope.getUpperCorner();
+        double[] eastNorth = upperCorner.getCoordinate();
+
+        GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
+        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+        int height = gridRange.height;
+        int width = gridRange.width;
+
+        AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
+        double xRes = XAffineTransform.getScaleX0(gridToCRS);
+        double yRes = XAffineTransform.getScaleY0(gridToCRS);
+
+        double[] params = new double[]{eastNorth[1], westSouth[1], westSouth[0], eastNorth[0], xRes, yRes, width, height};
+
+        return params;
+    }
     public static HashMap<String, Double> generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
         GridGeometry2D gg = null;
         if (params != null) {

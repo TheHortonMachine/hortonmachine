@@ -33,6 +33,9 @@ public class JGTConstants {
      */
     /**
      * The default double novalue. 
+     * 
+     * <p>Note: if this changes, also the checker methods like 
+     * {@link #isNovalue(double)} have to be changed.
      */
     public static final double doubleNovalue = Double.NaN;
 
@@ -49,6 +52,22 @@ public class JGTConstants {
      */
     public static boolean isNovalue( double value ) {
         return Double.isNaN(value);
+    }
+
+    /**
+     * Checker for a list of default double novalues.
+     * 
+     * @param values the list of values to check.
+     * @return true if one of the passes values is a novalue.
+     * 
+     * @see #isNovalue(double)
+     */
+    public static boolean isOneNovalue( double... values ) {
+        for( double value : values ) {
+            if (Double.isNaN(value))
+                return true;
+        }
+        return false;
     }
 
     /**
