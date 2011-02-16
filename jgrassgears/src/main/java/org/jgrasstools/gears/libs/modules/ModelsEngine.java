@@ -299,13 +299,10 @@ public class ModelsEngine {
 
         // create the feature type
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        // set the name
         b.setName("network"); //$NON-NLS-1$
-        // add a geometry property
+        b.setCRS(gridGeometry.getCoordinateReferenceSystem());
         b.add("the_geom", LineString.class); //$NON-NLS-1$
-        // build the type
         SimpleFeatureType type = b.buildFeatureType();
-        // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
         SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();

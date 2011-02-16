@@ -120,17 +120,14 @@ public class ExtractNetwork extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Role(Role.PARAMETER)
     @Description("The threshold on the map.")
     @In
     public double pThres = 0;
     
-    @Role(Role.PARAMETER)
     @Description("The processing mode.")
     @In
     public int pMode = 0;
     
-    @Role(Role.PARAMETER)
     @Description("switch to create a featurecollection of the network (default = false).")
     @In
     public boolean doNetfc = false;
@@ -208,7 +205,7 @@ public class ExtractNetwork extends JGTModel {
 
         int flw[] = new int[2];
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows);
+        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
         for( int j = 0; j < rows; j++ ) {
             if (isCanceled(pm)) {
                 return null;
@@ -260,7 +257,7 @@ public class ExtractNetwork extends JGTModel {
 
         int flw[] = new int[2];
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows);
+        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
         for( int j = 0; j < rows; j++ ) {
             if (isCanceled(pm)) {
                 return null;
@@ -308,7 +305,7 @@ public class ExtractNetwork extends JGTModel {
 
         int flw[] = new int[2];
 
-        pm.beginTask(msg.message("extractnetwork.extracting"), rows);
+        pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
         for( int j = 0; j < rows; j++ ) {
             if (isCanceled(pm)) {
                 return null;
