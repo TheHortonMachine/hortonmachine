@@ -1,6 +1,8 @@
 package org.jgrasstools.gears.modules;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
@@ -16,17 +18,15 @@ public class TestMapcalc extends HMTestCase {
         double[][] elevationData = HMTestMaps.outPitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele",
                 elevationData, envelopeParams, crs, true);
 
 
-        HashMap<String, GridCoverage2D> maps = new HashMap<String, GridCoverage2D>();
-        maps.put("map1", elevationCoverage);
-        maps.put("map2", elevationCoverage);
-
+        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
+        
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "\"map1\"*2-\"map2\" + sqrt(\"map1\"*\"map1\")-\"map1\";";
+        mapcalc.pFunction = "\"ele\"*2-\"ele\" + sqrt(\"ele\"*\"ele\")-\"ele\";";
 
         mapcalc.process();
 

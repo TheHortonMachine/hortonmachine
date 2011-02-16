@@ -29,8 +29,8 @@ import jaitools.jiffle.runtime.JiffleProgressListener;
 
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import oms3.annotations.Author;
@@ -62,9 +62,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Mapcalc extends JGTModel implements JiffleEventListener {
 
-    @Description("The maps that are used in the calculation.")
+    @Description("The maps (file paths) that are used in the calculation.")
     @In
-    public HashMap<String, GridCoverage2D> inMaps;
+    public List<GridCoverage2D> inMaps;
 
     @Description("The function to process.")
     @UI(JGTConstants.MULTILINE_UI_HINT + "5")
@@ -126,15 +126,14 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         // ad roles
         Map<String, Jiffle.ImageRole> imgRoles = CollectionFactory.map();
 
-        Set<String> mapNamesSet = inMaps.keySet();
-        for( String name : mapNamesSet ) {
-            GridCoverage2D gridCoverage = inMaps.get(name);
+        for( GridCoverage2D mapGC : inMaps ) {
             if (regionParameters == null) {
-                regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(gridCoverage);
-                crs = gridCoverage.getCoordinateReferenceSystem();
+                regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
+                crs = mapGC.getCoordinateReferenceSystem();
             }
-            RenderedImage renderedImage = gridCoverage.getRenderedImage();
+            RenderedImage renderedImage = mapGC.getRenderedImage();
             // add map
+            String name = mapGC.getName().toString();
             imgParams.put(name, renderedImage);
             // add role
             imgRoles.put(name, Jiffle.ImageRole.SOURCE);
@@ -189,7 +188,7 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
                 }
             });
         }
-        
+
         latch = new CountDownLatch(1);
         latch.await();
 
