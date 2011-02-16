@@ -105,7 +105,7 @@ public class SplitSubbasins extends JGTModel {
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
+        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         RenderedImage hacksRI = inHack.getRenderedImage();
         RenderedImage tcaRI = inTca.getRenderedImage();
 

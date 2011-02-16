@@ -153,6 +153,7 @@ public class BasinShape extends JGTModel {
         outBasins = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
+        pm.beginTask("Extracting basins...", nstream[0]);
         for( int num = 1; num <= nstream[0]; num++ ) {
             Object[] values = new Object[8];
 
@@ -295,7 +296,9 @@ public class BasinShape extends JGTModel {
                 SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + num);
                 outBasins.add(feature);
             }
+            pm.worked(1);
         }
+        pm.done();
 
         basinsRandomIter.done();
         basinsWR = null;
