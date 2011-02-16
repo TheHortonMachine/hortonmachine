@@ -3,7 +3,6 @@ package org.jgrasstools.hortonmachine.releasetestsuites;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.jgrasstools.gears.modules.TestCoverageConverter;
 import org.jgrasstools.gears.modules.TestCoverageSummary;
 import org.jgrasstools.gears.modules.TestCutout;
 import org.jgrasstools.gears.modules.TestFeatureFilter;
@@ -89,8 +88,6 @@ public class Release01TestSuite extends TestCase {
         suite.addTestSuite(TestMapcalc.class);
         suite.addTestSuite(TestMarchingSquaresAndRasterizer.class);
         suite.addTestSuite(TestRasterCatToFeatureAttribute.class);
-        suite.addTestSuite(TestCoverageConverter.class);
-        suite.addTestSuite(TestCoverageConverter.class);
         // suite.addTestSuite(TestGeometrySimplifier.class);
         // suite.addTestSuite(TestAttributesJoiner.class);
         // suite.addTestSuite(TestAttributesRounder.class);
