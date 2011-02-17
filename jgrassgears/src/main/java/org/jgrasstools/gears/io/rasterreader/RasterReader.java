@@ -220,7 +220,7 @@ public class RasterReader extends JGTModel {
         } else {
             throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
         }
-
+        
     }
 
     private boolean isGrass( String path ) {
@@ -411,7 +411,7 @@ public class RasterReader extends JGTModel {
                     }
                 }
             }
-            geodata = buildCoverage("newcoverage", tmpWR, params, geodata.getCoordinateReferenceSystem());
+            geodata = buildCoverage(new File(file).getName(), tmpWR, params, geodata.getCoordinateReferenceSystem());
         }
     }
 
