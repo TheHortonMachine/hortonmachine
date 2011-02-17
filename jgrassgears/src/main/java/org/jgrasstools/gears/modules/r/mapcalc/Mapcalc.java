@@ -156,9 +156,12 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         Jiffle jiffle = new Jiffle(script, imgRoles);
         if (jiffle.isCompiled()) {
             executor.submit(jiffle, imgParams, new JiffleProgressListener(){
-
+                private long count = 0;
                 public void update( long done ) {
-                    pm.worked(1);
+                    if (count == done) {
+                        pm.worked(1);
+                        count = count + updateInterval;
+                    }
                 }
 
                 public void start() {
@@ -166,14 +169,13 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
                 }
 
                 public void setUpdateInterval( double propPixels ) {
-
                 }
 
                 public void setUpdateInterval( long numPixels ) {
-
                 }
 
                 public void setTaskSize( long numPixels ) {
+                    count = updateInterval;
                 }
 
                 public long getUpdateInterval() {
