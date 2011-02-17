@@ -40,6 +40,8 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionPa
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.makeRegionParamsMap;
 
+import groovy.swing.factory.MapFactory;
+
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -209,18 +211,24 @@ public class RasterReader extends JGTModel {
         }
 
         File mapFile = new File(file);
-        if (pType.equals(ESRIGRID)) {
-            readArcGrid(mapFile);
-        } else if (pType.equals(GEOTIFF)) {
-            readGeotiff(mapFile);
-        } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
-            readAig(mapFile);
-        } else if (pType.equals(GRASSRASTER)) {
-            readGrass(mapFile);
-        } else {
-            throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
+        try {
+            pm.beginTask("Reading coverage: " + mapFile.getName(), IJGTProgressMonitor.UNKNOWN);
+
+            if (pType.equals(ESRIGRID)) {
+                readArcGrid(mapFile);
+            } else if (pType.equals(GEOTIFF)) {
+                readGeotiff(mapFile);
+            } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
+                readAig(mapFile);
+            } else if (pType.equals(GRASSRASTER)) {
+                readGrass(mapFile);
+            } else {
+                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
+            }
+        } finally {
+            pm.done();
         }
-        
+
     }
 
     private boolean isGrass( String path ) {
@@ -331,6 +339,7 @@ public class RasterReader extends JGTModel {
             } else {
                 GrassLegacyReader reader = new GrassLegacyReader();
                 reader.file = file;
+                reader.pm = pm;
                 reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
                 reader.readCoverage();
                 geodata = reader.outGC;

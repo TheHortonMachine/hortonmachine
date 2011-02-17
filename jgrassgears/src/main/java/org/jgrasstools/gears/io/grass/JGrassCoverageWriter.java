@@ -18,6 +18,11 @@
  */
 package org.jgrasstools.gears.io.grass;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
+
 import java.io.File;
 
 import oms3.annotations.Author;
@@ -39,6 +44,7 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -78,36 +84,43 @@ public class JGrassCoverageWriter extends JGTModel {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
-        JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
-        GeneralParameterValue[] readParams = null;
-        JGrassRegion jGrassRegion = null;
-        boolean doLarge = false;
-        if (geodata instanceof GrassLegacyGridCoverage2D) {
-            doLarge = true;
-        }
-        if (doActive) {
-            jGrassRegion = mapEnvironment.getActiveRegion();
-            if (!doLarge) {
-                readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
-                        jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(),
-                        mapEnvironment.getCoordinateReferenceSystem());
-            }
-        } 
 
-        if (!doLarge) {
-            GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
-            GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
-            writer.write(geodata, readParams);
-            writer.dispose();
-        }else{
-            GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) geodata;
-            GrassLegacyWriter writer = new GrassLegacyWriter();
-            writer.geodata = gd2.getData();
-            writer.file = file;
-            writer.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
-            writer.writeRaster();
+        try {
+            File cellFile = new File(file);
+            pm.beginTask("Writing grass raster: " + cellFile.getName(), IJGTProgressMonitor.UNKNOWN);
+            JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(cellFile);
+            GeneralParameterValue[] readParams = null;
+            JGrassRegion jGrassRegion = null;
+            boolean doLarge = false;
+            if (geodata instanceof GrassLegacyGridCoverage2D) {
+                doLarge = true;
+            }
+            if (doActive) {
+                jGrassRegion = mapEnvironment.getActiveRegion();
+                if (!doLarge) {
+                    readParams = CoverageUtilities.createGridGeometryGeneralParameter(jGrassRegion.getCols(),
+                            jGrassRegion.getRows(), jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(),
+                            jGrassRegion.getWest(), mapEnvironment.getCoordinateReferenceSystem());
+                }
+            }
+
+            if (!doLarge) {
+                GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
+                GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
+                writer.write(geodata, readParams);
+                writer.dispose();
+            } else {
+                GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) geodata;
+                GrassLegacyWriter writer = new GrassLegacyWriter();
+                writer.geodata = gd2.getData();
+                writer.file = file;
+                writer.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
+                writer.writeRaster();
+            }
+            hasWritten = true;
+        } finally {
+            pm.done();
         }
-        hasWritten = true;
     }
 
     public static void writeGrassRaster( String path, GridCoverage2D coverage ) throws Exception {
