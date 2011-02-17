@@ -26,7 +26,7 @@ public class TestMapcalc extends HMTestCase {
         
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "\"ele\"*2-\"ele\" + sqrt(\"ele\"*\"ele\")-\"ele\";";
+        mapcalc.pFunction = "\"ele\"*2-\"ele\" + sqrt(\"ele\"*\"ele\")-log(\"ele\");";
 
         mapcalc.process();
 

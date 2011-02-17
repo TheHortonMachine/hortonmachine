@@ -259,6 +259,7 @@ public class JGTConstants {
     public static final String NORTHING_UI_HINT = "northing";
     public static final String EASTING_UI_HINT = "easting";
     public static final String MULTILINE_UI_HINT = "multiline";
+    public static final String MAPCALC_UI_HINT = "mapcalc";
     public static final String PROCESS_NORTH_UI_HINT = "process_north";
     public static final String PROCESS_SOUTH_UI_HINT = "process_south";
     public static final String PROCESS_EAST_UI_HINT = "process_east";

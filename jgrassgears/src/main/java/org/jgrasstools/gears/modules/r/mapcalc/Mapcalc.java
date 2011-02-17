@@ -67,7 +67,7 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
     public List<GridCoverage2D> inMaps;
 
     @Description("The function to process.")
-    @UI(JGTConstants.MULTILINE_UI_HINT + "5")
+    @UI(JGTConstants.MULTILINE_UI_HINT + "5," + JGTConstants.MAPCALC_UI_HINT)
     @In
     public String pFunction;
 
