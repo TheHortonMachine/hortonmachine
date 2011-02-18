@@ -103,19 +103,19 @@ public class ExtractNetwork extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
-    
+
     @Description("The map of total contributing areas.")
     @In
     public GridCoverage2D inTca = null;
-    
+
     @Description("The map of slope.")
     @In
     public GridCoverage2D inSlope = null;
-    
+
     @Description("The map of aggregated topographic classes.")
     @In
     public GridCoverage2D inTc3 = null;
-    
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -123,7 +123,7 @@ public class ExtractNetwork extends JGTModel {
     @Description("The threshold on the map.")
     @In
     public double pThres = 0;
-    
+
     @Description("The processing mode (0 = threshold on tca, 1 = threshold on tca and slope, 2 = threshold on tca in convergent sites).")
     @In
     public int pMode = 0;
@@ -131,7 +131,7 @@ public class ExtractNetwork extends JGTModel {
     @Description("Tca exponent for the mode 1 and 2 cases (default = 1).")
     @In
     public double pExp = 1.0;
-    
+
     @Description("switch to create a featurecollection of the network (default = false).")
     @In
     public boolean doNetfc = false;
@@ -139,7 +139,7 @@ public class ExtractNetwork extends JGTModel {
     @Description("The extracted network map.")
     @Out
     public GridCoverage2D outNet = null;
-    
+
     @Description("The feature collection of the network.")
     @Out
     public SimpleFeatureCollection outNetfc = null;
@@ -148,7 +148,6 @@ public class ExtractNetwork extends JGTModel {
      * INTERNAL VARIABLES
      */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
 
     private int cols;
     private int rows;
@@ -158,7 +157,7 @@ public class ExtractNetwork extends JGTModel {
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
-        
+
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -207,7 +206,8 @@ public class ExtractNetwork extends JGTModel {
         // create new RasterData for the network matrix
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
-        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster netImage = CoverageUtilities
+                .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
@@ -226,15 +226,7 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                            return null;
-                        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
-                                && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
-                            netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                                return null;
-                        }
-
+                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
                         netRandomIter.setSample(i, j, 0, 2);
                     }
@@ -260,7 +252,8 @@ public class ExtractNetwork extends JGTModel {
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
 
         // create new RasterData for the network matrix
-        WritableRaster networkWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRaster networkWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null,
+                JGTConstants.doubleNovalue);
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
 
         int flw[] = new int[2];
@@ -278,14 +271,7 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                            return null;
-                        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
-                                && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
-                            netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                                return null;
-                        }
+                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
                         netRandomIter.setSample(i, j, 0, 2);
                     }
@@ -311,7 +297,7 @@ public class ExtractNetwork extends JGTModel {
         RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
         WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
-   // try the operation!!
+        // try the operation!!
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
@@ -330,14 +316,8 @@ public class ExtractNetwork extends JGTModel {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
-                        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                            return null;
-                        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
-                                && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
-                            netRandomIter.setSample(flw[0], flw[1], 0, 2);
-                            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                                return null;
-                        }
+
+                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
                         netRandomIter.setSample(i, j, 0, 2);
                     }
@@ -350,4 +330,17 @@ public class ExtractNetwork extends JGTModel {
         pm.done();
         return netImage;
     }
+
+    private boolean walkAlongTheChannel( int[] flw, RandomIter flowRandomIter, WritableRandomIter netRandomIter ) {
+        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+            return false;
+        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
+                && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
+            netRandomIter.setSample(flw[0], flw[1], 0, 2);
+            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
+                return false;
+        }
+        return true;
+    }
+
 }
