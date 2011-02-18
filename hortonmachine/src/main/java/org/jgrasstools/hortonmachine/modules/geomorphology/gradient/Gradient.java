@@ -102,7 +102,7 @@ public class Gradient extends JGTModel {
     @In
     public int defaultMode = 0;
 
-    @Description("The output type, if false = arctan of the angle (default), if true = degrees")
+    @Description("The output type, if false = tan of the angle (default), if true = degrees")
     @In
     public boolean doDegrees = false;
 
