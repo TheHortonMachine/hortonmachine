@@ -270,6 +270,22 @@ public class CoverageUtilities {
 
         return params;
     }
+
+    /**
+     * Get the array of rows and cols. 
+     * 
+     * @param gridCoverage the coverage.
+     * @return the array as [cols, rows]
+     */
+    public static int[] getRegionColsRows( GridCoverage2D gridCoverage ) {
+        GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
+        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+        int height = gridRange.height;
+        int width = gridRange.width;
+        int[] params = new int[]{width, height};
+        return params;
+    }
+
     public static HashMap<String, Double> generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
         GridGeometry2D gg = null;
         if (params != null) {

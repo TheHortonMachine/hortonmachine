@@ -133,9 +133,8 @@ public class HackStream extends JGTModel {
     @Out
     public GridCoverage2D outHackstream = null;
 
-    int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
+    private int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
 
     private int nCols;
 
@@ -315,8 +314,8 @@ public class HackStream extends JGTModel {
             }
         } while( contr == 1 );
 
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+                inFlow.getCoordinateReferenceSystem());
 
     }
 
@@ -480,8 +479,8 @@ public class HackStream extends JGTModel {
         }
         pm.done();
 
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+                inFlow.getCoordinateReferenceSystem());
 
     }
 

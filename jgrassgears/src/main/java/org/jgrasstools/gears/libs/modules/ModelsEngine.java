@@ -1376,26 +1376,46 @@ public class ModelsEngine {
      * @param mapToSumIter the map for which to sum downstream.
      * @param width the width of the resulting map.
      * @param height the height of the resulting map.
+     * @param upperThreshold the upper threshold, values above that are excluded. 
+     * @param lowerThreshold the lower threshold, values below that are excluded.
      * @param pm the monitor.
-     * @return the summed map.
+     * @return The map of downstream summed values.
      */
     public static WritableRaster sumDownstream( RandomIter flowIter, RandomIter mapToSumIter, int width, int height,
-            IJGTProgressMonitor pm ) {
+            Double upperThreshold, Double lowerThreshold, IJGTProgressMonitor pm ) {
         int[] point = new int[2];
         WritableRaster summedMapWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
         WritableRandomIter summedMapIter = RandomIterFactory.createWritable(summedMapWR, null);
 
+        double uThres = Double.POSITIVE_INFINITY;
+        if (upperThreshold != null) {
+            uThres = upperThreshold;
+        }
+        double lThres = Double.NEGATIVE_INFINITY;
+        if (lowerThreshold != null) {
+            lThres = lowerThreshold;
+        }
+
         pm.beginTask("Calculating downstream sum...", height);
         for( int j = 0; j < height; j++ ) {
             for( int i = 0; i < width; i++ ) {
-                if (!isNovalue(flowIter.getSampleDouble(i, j, 0))) {
+                double mapToSumValue = mapToSumIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(flowIter.getSampleDouble(i, j, 0)) && //
+                        mapToSumValue < uThres && //
+                        mapToSumValue > lThres //
+                ) {
                     point[0] = i;
                     point[1] = j;
                     while( flowIter.getSampleDouble(point[0], point[1], 0) < 9
-                            && !isNovalue(flowIter.getSampleDouble(point[0], point[1], 0)) ) {
+                            && //
+                            !isNovalue(flowIter.getSampleDouble(point[0], point[1], 0))
+                            && (checkRange(mapToSumIter.getSampleDouble(point[0], point[1], 0), uThres, lThres)) ) {
+
                         double sumValue = summedMapIter.getSampleDouble(point[0], point[1], 0)
                                 + mapToSumIter.getSampleDouble(i, j, 0);
+
                         summedMapIter.setSample(point[0], point[1], 0, sumValue);
+
                         if (!go_downstream(point, flowIter.getSampleDouble(point[0], point[1], 0)))
                             return null;
                     }
@@ -1412,6 +1432,13 @@ public class ModelsEngine {
         pm.done();
 
         return summedMapWR;
+    }
+
+    private static boolean checkRange( double value, double upper, double lower ) {
+        if (value < upper && value > lower) {
+            return true;
+        }
+        return false;
     }
 
     public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz,

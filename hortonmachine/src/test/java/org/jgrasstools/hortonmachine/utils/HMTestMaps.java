@@ -615,6 +615,52 @@ public class HMTestMaps {
             {NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN},
             };
     
+         
+         public static double[][] netFlowData = new double[][]{//
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                     {NaN, 8, NaN, NaN, NaN, NaN, NaN, 10, NaN, NaN}, //
+                     {NaN, NaN, 1, 1, 1, 1, 1, 3, NaN, NaN}, //
+                     {NaN, NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                     {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+         public static double[][] netOneData = new double[][]{//
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, 1, NaN, NaN}, //
+             {NaN, NaN, 1, 1, 1, 1, 1, 1, NaN, NaN}, //
+             {NaN, NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+         public static double[][] sumDownstreamData = new double[][]{//
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, 10, NaN, NaN}, //
+             {NaN, NaN, 2, 5, 6, 7, 8, 9, NaN, NaN}, //
+             {NaN, NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+         public static double[][] netOneThresData = new double[][]{//
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, 1, NaN, NaN}, //
+             {NaN, NaN, 1, 1, 5, 0, 1, 1, NaN, NaN}, //
+             {NaN, NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+         public static double[][] sumDownstreamThresData = new double[][]{//
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, 3, NaN, NaN}, //
+             {NaN, NaN, 2, 5, NaN, NaN, 1, 2, NaN, NaN}, //
+             {NaN, NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
     
     // public static void main( String[] args ) {
     // double radtodeg = 360.0 / (2 * Math.PI);
