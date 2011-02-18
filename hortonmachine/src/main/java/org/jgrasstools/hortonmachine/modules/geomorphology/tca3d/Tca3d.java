@@ -206,6 +206,6 @@ public class Tca3d extends JGTModel {
         }
         pm.message(msg.message("tca3d.summ")); //$NON-NLS-1$
         RandomIter flowIter = RandomIterFactory.create(flowImage, null);
-        return ModelsEngine.sumDownstream(flowIter, tca3dIter, cols, rows, pm);
+        return ModelsEngine.sumDownstream(flowIter, tca3dIter, cols, rows, null, null, pm);
     }
 }
