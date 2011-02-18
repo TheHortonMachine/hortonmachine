@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 
+import static java.lang.Math.pow;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -32,14 +33,13 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -47,8 +47,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 /**
@@ -124,9 +124,13 @@ public class ExtractNetwork extends JGTModel {
     @In
     public double pThres = 0;
     
-    @Description("The processing mode.")
+    @Description("The processing mode (0 = threshold on tca, 1 = threshold on tca and slope, 2 = threshold on tca in convergent sites).")
     @In
     public int pMode = 0;
+
+    @Description("Tca exponent for the mode 1 and 2 cases (default = 1).")
+    @In
+    public double pExp = 1.0;
     
     @Description("switch to create a featurecollection of the network (default = false).")
     @In
@@ -164,13 +168,17 @@ public class ExtractNetwork extends JGTModel {
 
         WritableRaster networkWR = null;
         if (pMode == 0) {
+            checkNull(flowRI, tcaRI);
             networkWR = extractNetMode0(flowRI, tcaRI);
         } else if (pMode == 1) {
             RenderedImage slopeRI = inSlope.getRenderedImage();
+            checkNull(flowRI, tcaRI, slopeRI);
             networkWR = extractNetMode1(flowRI, tcaRI, slopeRI);
         } else if (pMode == 2) {
             RenderedImage classRI = inTc3.getRenderedImage();
-            networkWR = extractNetMode2(flowRI, tcaRI, classRI);
+            RenderedImage slopeRI = inSlope.getRenderedImage();
+            checkNull(flowRI, tcaRI, slopeRI, classRI);
+            networkWR = extractNetMode2(flowRI, tcaRI, classRI, slopeRI);
         }
         if (isCanceled(pm)) {
             return;
@@ -263,8 +271,10 @@ public class ExtractNetwork extends JGTModel {
                 return null;
             }
             for( int i = 0; i < cols; i++ ) {
-                if (!isNovalue(tcaRandomIter.getSampleDouble(i, j, 0)) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
-                    if (tcaRandomIter.getSampleDouble(i, j, 0) * slopeRandomIter.getSampleDouble(i, j, 0) >= pThres) {
+                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
+                    tcaValue = pow(tcaValue, pExp);
+                    if (tcaValue * slopeRandomIter.getSampleDouble(i, j, 0) >= pThres) {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
@@ -293,13 +303,15 @@ public class ExtractNetwork extends JGTModel {
      * this method the network is extracted by considering only concave points
      * as being part of the channel network.
      */
-    private WritableRaster extractNetMode2( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage classRI ) {
+    private WritableRaster extractNetMode2( RenderedImage flowRI, RenderedImage tcaRI, RenderedImage classRI,
+            RenderedImage slopeRI ) {
         RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
         RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
         RandomIter classRandomIter = RandomIterFactory.create(classRI, null);
+        RandomIter slopeRandomIter = RandomIterFactory.create(slopeRI, null);
         WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
-        // try the operation!!
+   // try the operation!!
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
@@ -311,8 +323,10 @@ public class ExtractNetwork extends JGTModel {
                 return null;
             }
             for( int i = 0; i < cols; i++ ) {
-                if (!isNovalue(tcaRandomIter.getSampleDouble(i, j, 0)) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
-                    if (tcaRandomIter.getSampleDouble(i, j, 0) >= pThres && classRandomIter.getSample(i, j, 0) == 15.0) {
+                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
+                    tcaValue = pow(tcaValue, pExp) * slopeRandomIter.getSampleDouble(i, j, 0);
+                    if (tcaValue >= pThres && classRandomIter.getSample(i, j, 0) == 15.0) {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
