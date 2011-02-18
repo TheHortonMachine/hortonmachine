@@ -20,7 +20,7 @@ package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
+import static java.lang.Math.*;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -124,9 +124,13 @@ public class ExtractNetwork extends JGTModel {
     @In
     public double pThres = 0;
     
-    @Description("The processing mode.")
+    @Description("The processing mode (0 = threshold on tca, 1 = threshold on tca and slope, 2 = threshold on tca in convergent sites).")
     @In
     public int pMode = 0;
+
+    @Description("Tca exponent for the mode 1 case (default = 1).")
+    @In
+    public double pExp = 1.0;
     
     @Description("switch to create a featurecollection of the network (default = false).")
     @In
@@ -263,8 +267,10 @@ public class ExtractNetwork extends JGTModel {
                 return null;
             }
             for( int i = 0; i < cols; i++ ) {
-                if (!isNovalue(tcaRandomIter.getSampleDouble(i, j, 0)) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
-                    if (tcaRandomIter.getSampleDouble(i, j, 0) * slopeRandomIter.getSampleDouble(i, j, 0) >= pThres) {
+                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
+                    tcaValue = pow(tcaValue, pExp);
+                    if (tcaValue * slopeRandomIter.getSampleDouble(i, j, 0) >= pThres) {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
