@@ -51,44 +51,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the extractnetwork model. It extracts
- * the channel net from the drainage directions.
- * </p>
- * <p>
- * Usage: mode 0: h.extractnetwork --mode 0 --igrass-flow flow --igrass-tca tca
- * --threshold threshold --ograss-net net
- * </p>
- * <p>
- * Usage: mode 1: h.extractnetwork --mode 1 --igrass-flow flow --igrass-tca tca
- * --igrass-slope slope --threshold threshold --ograss-net net
- * </p>
- * <p>
- * Usage: mode 2: h.extractnetwork --mode 2 --igrass-flow flow --igrass-tca tca
- * --igrass-classi classi --threshold threshold --ograss-net net
- * </p>
- * <p>
- * It's also possible to create a ShapeFile containing the network:
- * </p>
- * <p>
- * Usage: mode 0: h.extractnetwork --mode 0 --igrass-flow flow --igrass-tca tca
- * --threshold threshold --ograss-net net --oshapefile-netshape "filePath"
- * </p>
- * <p>
- * Usage: mode 1: h.extractnetwork --mode 1 --igrass-flow flow --igrass-tca tca
- * --igrass-slope slope --threshold threshold --ograss-net net
- * --oshapefile-netshape "filePath"
- * </p>
- * <p>
- * Usage: mode 2: h.extractnetwork --mode 2 --igrass-flow flow --igrass-tca tca
- * --igrass-classi classi --threshold threshold --ograss-net net
- * --oshapefile-netshape "filePath"
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
- *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
- */
+
 @Description("Extracts the network from an elevation model.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Vector")
@@ -128,9 +91,9 @@ public class ExtractNetwork extends JGTModel {
     @In
     public int pMode = 0;
 
-    @Description("Tca exponent for the mode 1 and 2 cases (default = 1).")
+    @Description("Tca exponent for the mode 1 and 2 cases (default = 0.5).")
     @In
-    public double pExp = 1.0;
+    public double pExp = 0.5;
 
     @Description("switch to create a featurecollection of the network (default = false).")
     @In
