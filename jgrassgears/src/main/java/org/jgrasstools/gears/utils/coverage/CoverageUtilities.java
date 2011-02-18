@@ -768,4 +768,41 @@ public class CoverageUtilities {
         return new ROIShape(new FastLiteShape(simplifiedGeometry));
     }
 
+    /**
+     * Read the min, max, mean, sdev, valid cells count from a coverage.
+     * 
+     * @param coverage the coverage to browse.
+     * @return the min, max, mean, sdev, count.
+     */
+    public static double[] getMinMaxMeanSdevCount( GridCoverage2D coverage ) {
+        double[] minMaxMeanSdevCount = {Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0.0, 0.0, 0.0};
+        RandomIter coverageIter = getRandomIterator(coverage);
+        RenderedImage coverageRI = coverage.getRenderedImage();
+        int cellCount = 0;
+        double sum = 0;
+        double sumSquare = 0;
+        for( int i = 0; i < coverageRI.getWidth(); i++ ) {
+            for( int j = 0; j < coverageRI.getHeight(); j++ ) {
+                double value = coverageIter.getSampleDouble(i, j, 0);
+                if (isNovalue(value)) {
+                    continue;
+                }
+                if (value < minMaxMeanSdevCount[0]) {
+                    minMaxMeanSdevCount[0] = value;
+                }
+                if (value > minMaxMeanSdevCount[1]) {
+                    minMaxMeanSdevCount[1] = value;
+                }
+                cellCount++;
+                sum = sum + value;
+                sumSquare = sum + value * value;
+            }
+        }
+        minMaxMeanSdevCount[2] = sum / cellCount;
+        minMaxMeanSdevCount[3] = Math.sqrt(sumSquare / cellCount - minMaxMeanSdevCount[2] * minMaxMeanSdevCount[2]);
+        minMaxMeanSdevCount[4] = cellCount;
+
+        return minMaxMeanSdevCount;
+    }
+
 }
