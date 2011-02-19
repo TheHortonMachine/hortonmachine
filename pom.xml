@@ -73,6 +73,7 @@
     <modules>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
+		<module>oms</module>
     </modules>
 
 

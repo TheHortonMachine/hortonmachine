@@ -7,8 +7,8 @@ syntax: regexp
 ^hortonmachine.bin
 ^jgrassgears.target
 ^jgrassgears.bin
-^edc.target
-^edc.bin
+^oms.target
+^oms.bin
 ~$
 .class$
 .orig$
