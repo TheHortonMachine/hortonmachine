@@ -12,7 +12,15 @@
   <artifactId>oms3</artifactId>
   <version>3.0.19</version>
   <name>Object Modeling System (JGrasstools package)</name>
-
+  
+	<dependencies>
+		<dependency>
+			<groupId>jfree</groupId>
+			<artifactId>jfreechart</artifactId>
+			<version>1.0.13</version>
+		</dependency>
+	</dependencies>
+	
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
