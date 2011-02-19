@@ -71,7 +71,7 @@
     </developers>
 
     <modules>
-		<module>oms</module>
+		<module>oms3</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
     </modules>
@@ -287,7 +287,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-           <!-- 
+         
 		    <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
@@ -308,7 +308,7 @@
                     </execution>
                 </executions>
             </plugin>
-			-->
+			  <!-- -->
         </plugins>
     </build>
 

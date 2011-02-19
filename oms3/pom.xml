@@ -10,7 +10,7 @@
   
   <groupId>org.jgrasstools</groupId>
   <artifactId>oms3</artifactId>
-  <version>3.0.19</version>
+  <version>3.0-SNAPSHOT</version>
   <name>Object Modeling System (JGrasstools package)</name>
   
 	<dependencies>
