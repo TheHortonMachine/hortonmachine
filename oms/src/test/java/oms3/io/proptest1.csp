@@ -1,0 +1,13 @@
+@S, parameter
+ created, today
+ by, olaf
+
+@P, abc, "1.234"
+ mpath, /@temp
+ dim, 20
+
+# precip parameter
+@P, def, "2.456"
+
+@P, olaf, "test"
+ index, 1

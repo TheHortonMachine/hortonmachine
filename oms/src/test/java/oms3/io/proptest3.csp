@@ -1,0 +1,19 @@
+@S, parameter
+ created, today
+ by, olaf
+
+@P, temp, 1.234
+ mpath, /@temp
+ dim, 20
+
+@P, nhru, 5
+ role, dimension
+
+@H, temp, precip, runoff
+bound, nhru
+,2,3,4
+,2,3,4
+,2,3,4
+,2,3,4
+,2,3,4
+

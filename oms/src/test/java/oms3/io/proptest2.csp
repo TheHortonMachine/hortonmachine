@@ -1,0 +1,11 @@
+@S, parameter
+ created, today
+ by, olaf
+
+@P, temp, 1.234
+ mpath, /@temp
+ dim, 20
+
+# precip parameter
+@P, precip, 2.456
+

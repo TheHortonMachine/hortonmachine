@@ -1,0 +1,15 @@
+@S, parameter
+ created, today
+ by, olaf
+
+@P, nhru, 5
+ role, dimension
+
+@H, temp, precip, runoff
+bound, nhru
+ ,2,3,4
+ ,2,3,4
+ ,2,3,4
+ ,2,3,4
+ ,2,3,4
+
