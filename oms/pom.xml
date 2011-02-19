@@ -7,11 +7,11 @@
     <groupId>${jgt.groupId}</groupId>
     <version>${jgt.version}</version>
   </parent>
+  
   <groupId>org.jgrasstools</groupId>
-  <artifactId>oms</artifactId>
+  <artifactId>oms3</artifactId>
   <version>3.0.19</version>
-  <name>oms</name>
-  <url>http://maven.apache.org</url>
+  <name>Object Modeling System (JGrasstools package)</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -101,6 +101,39 @@
 			<version>1.1</version>
 		</dependency>
 		
+		<!-- other stuff -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.sun.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.0.9</version>
+		</dependency>
+		
+        <dependency>
+            <groupId>org.scannotation</groupId>
+            <artifactId>scannotation</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>geoscript</groupId>
+            <artifactId>geoscript-groovy</artifactId>
+            <version>0.9</version>
+        </dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>		
+
+		
 		<!-- GeoTools 	-->
 		<dependency>                                                                             
             <groupId>org.geotools</groupId>                                             
@@ -158,17 +191,7 @@
 			<version>1.11</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>1.7.1</version>
-		</dependency>
 
-		<dependency>
-			<groupId>oms</groupId>
-			<artifactId>oms</artifactId>
-			<version>3-SNAPSHOT</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -193,24 +216,7 @@
 			<version>${jaitools.version}</version>
 		</dependency>
 		
-        <dependency>
-            <groupId>org.scannotation</groupId>
-            <artifactId>scannotation</artifactId>
-            <version>1.0.2</version>
-        </dependency>
 
-        <dependency>
-            <groupId>geoscript</groupId>
-            <artifactId>geoscript-groovy</artifactId>
-            <version>0.9</version>
-        </dependency>
-
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.5</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	    
 	<distributionManagement>
@@ -281,7 +287,8 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
+           <!-- 
+		    <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
                     <execution>
@@ -301,6 +308,7 @@
                     </execution>
                 </executions>
             </plugin>
+			-->
         </plugins>
     </build>
 

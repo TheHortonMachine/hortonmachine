@@ -17,6 +17,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
+			<artifactId>oms3</artifactId>
+			<version>3.0.19</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgrassgears</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
@@ -26,26 +32,11 @@
 			<artifactId>jama</artifactId>
 			<version>1.0.2</version>
 		</dependency>
-<!--        <dependency>
-            <groupId>org.scannotation</groupId>
-            <artifactId>scannotation</artifactId>
-            <version>1.0.2</version>
-        </dependency> -->
-
-        
 	</dependencies>
 
 		<!-- Build configuration -->
+ <!-- create a runnable jar with all dependencies in it which is able to run OMS3 scripts 
 	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-            <!-- create a runnable jar with all dependencies in it which is able to run OMS3 scripts 
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
@@ -68,7 +59,7 @@
                 </execution>
               </executions>
             </plugin>
-			-->
 		</plugins>
 	</build>
+-->
 </project>

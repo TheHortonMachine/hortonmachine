@@ -1,0 +1,204 @@
+General
+====================
+Clear shell output
+    clear
+
+Parameter Management
+=====================
+new param <name...>
+    Create new parameter
+new dim <name...>
+    Create new dim parameter
+new array <name> <dim...>
+    Create new array parameter
+del <name...>
+    Delete paramter
+
+Conversions (MMS type files)
+============================
+con <file>.statvar
+   converts a MMS statvar file to csv
+
+con <file>.params
+   converts a MMS parameter file to csv
+
+con <file>.data
+   converts a MMS data file to csv
+
+Use absolute file names or relative files within the
+active project (work directory).
+
+Constants
+=====================
+(from Math)
+E     2.718281828459045
+PI    3.141592653589793
+
+
+Functions 
+=====================
+1. Math
+-------
+double abs(value)
+    Returns the absolute value of a double value
+double acos(double a)
+    Returns the arc cosine of a value; the returned angle is in the range 
+    0.0 through pi.
+double asin(double a)
+    Returns the arc sine of a value; the returned angle is in the 
+    range -pi/2 through pi/2.
+double atan(double a)
+    Returns the arc tangent of a value; the returned angle is in the 
+    range -pi/2 through pi/2.
+double atan2(double y, double x)
+    Returns the angle theta from the conversion of rectangular 
+    coordinates (x, y) to polar coordinates (r, theta).
+double cbrt(double a)
+    Returns the cube root of a double value.
+double ceil(double a)
+    Returns the smallest (closest to negative infinity) double value 
+    that is greater than or equal to the argument and is equal to a 
+    mathematical integer.
+double copySign(double magnitude, double sign)
+    Returns the first floating-point argument with the sign of the second 
+    floating-point argument.
+double cos(double a)
+    Returns the trigonometric cosine of an angle.
+double cosh(double x)
+    Returns the hyperbolic cosine of a double value.
+double exp(double a)
+    Returns Euler's number e raised to the power of a double value.
+double expm1(double x)
+    Returns ex -1.
+double floor(double a)
+    Returns the largest (closest to positive infinity) double value 
+    that is less than or equal to the argument and is equal to a 
+    mathematical integer.
+int getExponent(double d)
+    Returns the unbiased exponent used in the representation of a double.
+double hypot(double x, double y)
+    Returns sqrt(x2 +y2) without intermediate overflow or underflow.
+double IEEEremainder(double f1, double f2)
+    Computes the remainder operation on two arguments as prescribed by 
+    the IEEE 754 standard.
+double log(double a)
+    Returns the natural logarithm (base e) of a double value.
+double log10(double a)
+    Returns the base 10 logarithm of a double value.
+double log1p(double x)
+    Returns the natural logarithm of the sum of the argument and 1.
+double max(double a, double b)
+    Returns the greater of two double values.
+double min(double a, double b)
+    Returns the smaller of two double values.
+double nextAfter(double start, double direction)
+    Returns the floating-point number adjacent to the first argument in 
+    the direction of the second argument.
+double nextUp(double d)
+    Returns the floating-point value adjacent to d in the direction of 
+    positive infinity.
+double pow(double a, double b)
+    Returns the value of the first argument raised to the power of the 
+    second argument.
+double random()
+    Returns a double value with a positive sign, greater than or equal 
+    to 0.0 and less than 1.0.
+double rint(double a)
+    Returns the double value that is closest in value to the argument 
+    and is equal to a mathematical integer.
+double round(double a)
+    Returns the closest long to the argument.
+double scalb(double d, int scaleFactor)
+    Return d × 2scaleFactor rounded as if performed by a single correctly 
+    rounded floating-point multiply to a member of the double value set.
+double signum(double d)
+    Returns the signum function of the argument; zero if the argument is 
+    zero, 1.0 if the argument is greater than zero, -1.0 if the argument is 
+    less than zero.
+double sin(double a)
+    Returns the trigonometric sine of an angle.
+double sinh(double x)
+    Returns the hyperbolic sine of a double value.
+double sqrt(double a)
+    Returns the correctly rounded positive square root of a double value.
+double tan(double a)
+    Returns the trigonometric tangent of an angle.
+double tanh(double x)
+    Returns the hyperbolic tangent of a double value.
+double toDegrees(double angrad)
+    Converts an angle measured in radians to an approximately equivalent    
+    angle measured in degrees.
+double toRadians(double angdeg)
+    Converts an angle measured in degrees to an approximately equivalent 
+    angle measured in radians.
+double ulp(double d)
+    Returns the size of an ulp of the argument.
+
+2. Mathx
+--------
+int len(double[] arr)
+    Returns the length of a double array
+int len(int[] arr)
+    Returns the length of an int array
+double random(double min, double max)
+    Returns a normal distributed random number in the range from min to max
+double ramp(double start, double step)
+    Generates a range of values from start, incremented by step
+void reset_ramp()
+    Resets the range generator
+double round(double val, double places)
+    rounds a value by given decimal places
+
+3. Stats
+---------
+double norm_vec(double x, double y, double z) 
+    returns a normalized vector
+double max(double[] vals) 
+    returns the maximum value in a dataset
+double min(double[] vals) 
+    Returns a minimum value of a dataset
+double range(double[] vals) 
+    Returns the range of values in a data set
+int length(double[] vals) 
+    returns tha number of values in a data set
+double median(double[] vals) {
+    Returns the median in a data set
+double mean(double[] vals) 
+    Returns the mean of a data set
+double stddev(double[] vals)  
+    Returns the standard deviation.
+double stderr(double[] vals) 
+    returns the standard error.
+double variance(double[] vals) 
+    Returns the variance.
+double meandev(double[] vals)
+    Returns the mean deviation
+double sum(double[] vals)
+    Sum of all values in a dataset.
+double product(double[] vals) 
+    Product of all values in a dataset 
+double quantile(double[] vals, double phi)
+    quantile
+double lag1(double[] vals) {
+    Returns the lag-1 autocorrelation of a dataset
+double rmse(double[] pred, double[] obs) {
+    Root mean square error    
+double bias(double[] pred, double[] obs)
+    bias efficiency
+double nashsut(double[] prediction, double[] validation, double pow)
+    Nash & Sutcliffe (1970)  efficiency between the log values of a test 
+    data set and a verification data set
+double nashsut_log(double[] prediction, double[] validation, double pow)
+    Nash & Sutcliffe (1970)  efficiency between the log values of a test 
+    data set and a verification data set
+double err_sum(double[] validation, double[] prediction)
+    Accumulated error.
+double ioa(double[] prediction, double[] validation, double pow)
+    index of agreement (ioa) between a test data set and a verification 
+    data set. (Willmot & Wicks 1980)
+double gradient(double[] xData, double[] yData)
+    Calcs coefficients of linear regression between x, y data : gradient
+double intercept(double[] xData, double[] yData)
+    Calcs coefficients of linear regression between x, y data  : intercept
+double r2(double[] xData, double[] yData)
+    Calcs coefficients of linear regression between x, y data  : r²

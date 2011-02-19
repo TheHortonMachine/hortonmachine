@@ -13,22 +13,14 @@
 	<artifactId>jgrassgears</artifactId>
 	<packaging>jar</packaging>
 	<name>JGrass Gears</name>
-
-
-	<!-- Project dependencies -->
+	
+	<!-- "internal" deps -->
 	<dependencies>
-    <!-- all in the parent -->
+		<dependency>
+			<groupId>org.jgrasstools</groupId>
+			<artifactId>oms3</artifactId>
+			<version>3.0.19</version>
+		</dependency>
 	</dependencies>
-	<!-- Build configuration -->
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+
 </project>
