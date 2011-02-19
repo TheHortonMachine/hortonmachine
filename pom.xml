@@ -3,12 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <jgt.groupId>eu.hydrologis.jgrass</jgt.groupId>
+        <jgt.groupId>org.jgrasstools</jgt.groupId>
         <jgt.artifactId>jgrasstools</jgt.artifactId>
 		<jgt.version>0.1-SNAPSHOT</jgt.version>
 		<gt.version>2.7-SNAPSHOT</gt.version>
 		<gt.version.exp>2.7-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.1-M3</jaitools.version>
+		<performRelease>false</performRelease>
 	</properties>
 
     <groupId>${jgt.groupId}</groupId>
@@ -19,12 +20,31 @@
     <name>JGrasstools - the engine that backs up JGrass</name>
     <url>http://www.jgrasstools.org</url>
 
+	<issueManagement>
+        <url>http://code.google.com/p/jgrasstools/issues/list</url>
+    </issueManagement>
+
+    <mailingLists>
+        <mailingList>
+            <name>jgrasstools</name>
+            <subscribe>jgrasstools+subscribe@googlegroups.com</subscribe>
+            <unsubscribe>jgrasstools+unsubscribe@googlegroups.com</unsubscribe>
+            <post>jgrasstools@googlegroups.com</post>
+            <archive>http://groups.google.com/group/jgrasstools</archive>
+        </mailingList>
+    </mailingLists>
+
+    <scm>
+        <connection>scm:hg:http://jgrasstools.googlecode.com/hg/</connection>
+        <developerConnection>scm:hg:https://jgrasstools.googlecode.com/hg/</developerConnection>
+        <url>http://code.google.com/p/jgrasstools/source/browse/</url>
+    </scm>
 
   <organization>
     <name>HydroloGIS</name>
 	<url>http://www.hydrologis.eu</url>
   </organization>
-  <inceptionYear>1996</inceptionYear>
+  <inceptionYear>2005</inceptionYear>
 
   <licenses>
     <license>
@@ -34,12 +54,19 @@
     </license>
   </licenses>
 
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+		<artifactId>oss-parent</artifactId>
+		<version>6</version>
+	</parent>
 
     <developers>
         <developer>
             <id>moovida</id>
             <name>Andrea Antonello</name>
             <email>andrea.antonello@gmail.com</email>
+			<organization>HydroloGIS</organization>
+            <organizationUrl>http://www.hydrologis.eu/</organizationUrl>
         </developer>
     </developers>
 
@@ -184,14 +211,26 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
+	    
+	<distributionManagement>
+        <snapshotRepository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>jgrasstools snapshots</name>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <uniqueVersion>false</uniqueVersion>
+        </snapshotRepository>
+        <repository>
+            <id>sonatype-nexus-staging</id>
+            <name>jgrasstools staging repository</name>
+            <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
   <!-- ================================================================== -->
   <!--     Repositories. This is where Maven looks for dependencies. The  -->
   <!--     Maven repository is implicit and doesn't need to be specified. -->
   <!-- ================================================================== -->
   <repositories>
-
     <repository>
       <id>osgeo</id>
       <name>Open Source Geospatial Foundation Repository</name>
@@ -206,72 +245,93 @@
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
     </repository>
-
-		<repository>
-			<id>jboss</id>
-			<url>http://repository.jboss.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>jboss-snapshot</id>
-			<url>http://snapshots.jboss.org/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-
-		<repository>
-			<id>Geosolutions</id>
-			<url>http://mvn.geo-solutions.it/</url>
-		</repository>
-
-		<repository>
-			<id>jgrasstools</id>
-			<url>http://wiki.jgrasstools.googlecode.com/hg/mavenrepo</url>
-		</repository>
-
-
   </repositories>
-			
-  <!--
-    <distributionManagement>
-    <repository>
-      <id>jgrasstools.deploy</id>
-      <name>Repo</name>
-      <uniqueVersion>true</uniqueVersion>
-      <url>file:${jgrasstools.deploy.directory}/repo</url>
-    </repository>
-    <site>
-      <id>jgrasstools.site</id>
-      <name>Site</name>
-      <url>file:${jgrasstools.deploy.directory}/site</url>
-    </site>
-    <downloadUrl>http://code.google.com/p/jgrasstools/</downloadUrl>
-  </distributionManagement>
--->
+
     
 	<!-- Build configuration -->
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-webdav</artifactId>
+                <version>1.0-beta-2</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.0-beta-9</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <mavenExecutorId>forked-path</mavenExecutorId>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
+	<profiles>
+	  <profile>
+		<id>release-sign-artifacts</id>
+		<activation>
+		  <property>
+			<name>performRelease</name>
+			<value>true</value>
+		  </property>
+		</activation>
+		<build>
+		  <plugins>
+			<plugin>
+			  <groupId>org.apache.maven.plugins</groupId>
+			  <artifactId>maven-gpg-plugin</artifactId>
+			  <version>1.1</version>
+			  <executions>
+				<execution>
+				  <id>sign-artifacts</id>
+				  <phase>verify</phase>
+				  <goals>
+					<goal>sign</goal>
+				  </goals>
+				</execution>
+			  </executions>
+			</plugin>
+		  </plugins>
+		</build>
+	  </profile>
+	</profiles>
 
 
 </project>
