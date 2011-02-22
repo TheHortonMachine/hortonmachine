@@ -194,6 +194,15 @@ public class RasterReader extends JGTModel {
         if (hasBoundsRequest() && (!hasResolutionRequest() && !hasRowColsRequest())) {
             throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
         }
+        if (hasBoundsRequest()) {
+            pBounds = new double[]{pNorth, pSouth, pWest, pEast};
+        }
+        if (hasResolutionRequest()) {
+            pRes = new double[]{pXres, pYres};
+        }
+        if (hasRowColsRequest()) {
+            pRowcol = new int[]{pRows, pCols};
+        }
 
         if (pType == null) {
             // try to guess from the extension
@@ -230,7 +239,6 @@ public class RasterReader extends JGTModel {
         }
 
     }
-
     private boolean isGrass( String path ) {
         File file = new File(path);
         File cellFolderFile = file.getParentFile();
@@ -256,19 +264,9 @@ public class RasterReader extends JGTModel {
 
         if (pBounds == null) {
             pBounds = new double[]{north, south, west, east};
-        } else {
-            pBounds = new double[]{pNorth, pSouth, pWest, pEast};
         }
-
-        if (!hasResolutionRequest() && !hasRowColsRequest()) {
-            // means only bounds are set -> set resolution and recalc rows/cols
+        if (pRes == null) {
             pRes = new double[]{xres, yres};
-        } else {
-            if (hasResolutionRequest()) {
-                pRes = new double[]{pXres, pYres};
-            } else if (hasRowColsRequest()) {
-                pRowcol = new int[]{pRows, pCols};
-            }
         }
 
         double n = pBounds[0];
