@@ -16,7 +16,9 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.v.featureconverter;
+package org.jgrasstools.gears.modules.v.featuremerger;
+
+import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -29,19 +31,28 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollections;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.opengis.feature.simple.SimpleFeatureType;
 
-@Description("A simple middleman module to do feature conversion.")
+@Description("A simple module that merges same featurecollections into one single.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Feature, Vector, Convert")
+@Keywords("IO, Feature, Vector, Merge")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class FeatureConverter extends JGTModel {
+public class FeatureMerger extends JGTModel {
     @Description("The input features.")
     @In
-    public SimpleFeatureCollection inGeodata;
+    public List<SimpleFeatureCollection> inGeodata;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output features.")
     @Out
@@ -50,7 +61,25 @@ public class FeatureConverter extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inGeodata);
-        outGeodata = inGeodata;
-    }
 
+        SimpleFeatureType firstType = null;
+
+        pm.beginTask("Merging features...", IJGTProgressMonitor.UNKNOWN);
+        try {
+            outGeodata = FeatureCollections.newCollection();
+            for( SimpleFeatureCollection featureCollection : inGeodata ) {
+                if (firstType == null) {
+                    firstType = featureCollection.getSchema();
+                } else {
+                    SimpleFeatureType schema = featureCollection.getSchema();
+                    if (!schema.equals(firstType)) {
+                        throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this);
+                    }
+                }
+                outGeodata.addAll(featureCollection);
+            }
+        } finally {
+            pm.done();
+        }
+    }
 }
