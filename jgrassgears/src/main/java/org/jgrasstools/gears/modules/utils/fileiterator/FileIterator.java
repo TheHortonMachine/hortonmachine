@@ -19,9 +19,7 @@
 package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -73,6 +71,10 @@ public class FileIterator extends JGTModel {
     @Out
     public List<File> filesList = null;
 
+    @Description("All the file path that were found matching.")
+    @Out
+    public List<String> pathsList = null;
+
     private int fileIndex = 0;
 
     private String prjWkt;
@@ -91,14 +93,17 @@ public class FileIterator extends JGTModel {
 
         if (filesList == null) {
             filesList = new ArrayList<File>();
+            pathsList = new ArrayList<String>();
 
             new FileTraversal(){
                 public void onFile( final File f ) {
                     if (pRegex == null) {
                         filesList.add(f);
+                        pathsList.add(f.getAbsolutePath());
                     } else {
                         if (f.getName().matches(".*" + pRegex + ".*")) { //$NON-NLS-1$//$NON-NLS-2$
                             filesList.add(f);
+                            pathsList.add(f.getAbsolutePath());
                         }
                     }
                 }

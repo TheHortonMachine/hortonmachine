@@ -30,6 +30,7 @@ import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -64,7 +65,7 @@ public class FeatureMerger extends JGTModel {
 
         SimpleFeatureType firstType = null;
 
-        pm.beginTask("Merging features...", IJGTProgressMonitor.UNKNOWN);
+        pm.beginTask("Merging features...", inGeodata.size());
         try {
             outGeodata = FeatureCollections.newCollection();
             for( SimpleFeatureCollection featureCollection : inGeodata ) {
@@ -72,11 +73,13 @@ public class FeatureMerger extends JGTModel {
                     firstType = featureCollection.getSchema();
                 } else {
                     SimpleFeatureType schema = featureCollection.getSchema();
-                    if (!schema.equals(firstType)) {
+                    int compare = DataUtilities.compare(firstType, schema);
+                    if (compare != 0) {
                         throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this);
                     }
                 }
                 outGeodata.addAll(featureCollection);
+                pm.worked(1);
             }
         } finally {
             pm.done();
