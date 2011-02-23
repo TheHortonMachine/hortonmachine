@@ -20,6 +20,7 @@ package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -38,6 +39,7 @@ import oms3.annotations.UI;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.files.FileTraversal;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -88,26 +90,24 @@ public class FileIterator extends JGTModel {
         }
 
         if (filesList == null) {
-            File folderFile = new File(inFolder);
-            File[] listFiles = folderFile.listFiles(new FilenameFilter(){
-                public boolean accept( File dir, String name ) {
+            filesList = new ArrayList<File>();
+
+            new FileTraversal(){
+                public void onFile( final File f ) {
                     if (pRegex == null) {
-                        // all files
-                        return true;
+                        filesList.add(f);
                     } else {
-                        if (name.matches(".*" + pRegex + ".*")) { //$NON-NLS-1$//$NON-NLS-2$
-                            return true;
+                        if (f.getName().matches(".*" + pRegex + ".*")) { //$NON-NLS-1$//$NON-NLS-2$
+                            filesList.add(f);
                         }
-                        return false;
                     }
                 }
-            });
-            filesList = Arrays.asList(listFiles);
+            }.traverse(new File(inFolder));
 
             if (prjWkt != null) {
-                for( File file : listFiles ) {
+                for( File file : filesList ) {
                     String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
-                    File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj");
+                    File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj"); //$NON-NLS-1$
                     if (!prjFile.exists()) {
                         // create it
                         FileUtilities.writeFile(prjWkt, prjFile);
