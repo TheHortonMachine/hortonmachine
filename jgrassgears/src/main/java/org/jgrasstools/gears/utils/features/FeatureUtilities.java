@@ -465,6 +465,26 @@ public class FeatureUtilities {
     }
 
     /**
+     * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of {@link FeatureMate}s.
+     * 
+     * @param collection the feature collection.
+     * @return the list with the features or an empty list if no features present.
+     */
+    public static List<FeatureMate> featureCollectionToMatesList( SimpleFeatureCollection collection ) {
+        List<FeatureMate> featuresList = new ArrayList<FeatureMate>();
+        if (collection == null) {
+            return featuresList;
+        }
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            featuresList.add(new FeatureMate(feature));
+        }
+        featureIterator.close();
+        return featuresList;
+    }
+
+    /**
      * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of its geometries.
      * 
      * @param collection the feature collection.
