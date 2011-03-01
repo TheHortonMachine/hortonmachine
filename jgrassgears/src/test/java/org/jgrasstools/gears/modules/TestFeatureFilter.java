@@ -48,7 +48,7 @@ public class TestFeatureFilter extends HMTestCase {
 
         Integer attribute = (Integer) feature.getAttribute("cat");
         assertEquals(3, attribute.intValue());
-        outFC.close(featureIterator);
+        featureIterator.close();
 
     }
 }
