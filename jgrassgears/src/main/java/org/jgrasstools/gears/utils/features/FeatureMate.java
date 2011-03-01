@@ -134,6 +134,31 @@ public class FeatureMate {
     }
 
     /**
+     * Tries to convert the internal geometry to a {@link Point}.
+     * 
+     * <p>From this moment on the internal geometry (as got by the {@link #getGeometry()})
+     * will be the point type.
+     * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
+     */
+    public void convertToPoint() {
+        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        switch( geometryType ) {
+        case MULTIPOLYGON:
+        case POLYGON:
+        case LINE:
+        case MULTILINE:
+            // convert to line
+            Coordinate[] tmpCoords = geometry.getCoordinates();
+            geometry = GeometryUtilities.gf().createMultiPoint(tmpCoords);
+            // reset prepared geometry
+            preparedGeometry = null;
+            break;
+        default:
+            break;
+        }
+    }
+
+    /**
      * Resets the geometry, so that at the next call of {@link #getGeometry()} the original geometry is reread.
      */
     public void resetGeometry() {
