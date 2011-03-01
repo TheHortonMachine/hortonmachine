@@ -18,10 +18,14 @@
  */
 package org.jgrasstools.gears.utils.features;
 
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
@@ -97,6 +101,44 @@ public class FeatureMate {
      */
     public Geometry intersection( Geometry geometry ) {
         return getGeometry().intersection(geometry);
+    }
+
+    /**
+     * Tries to convert the internal geometry to a {@link LineString}.
+     * 
+     * <p>This works only for Polygon and Lines features. 
+     * <p>From this moment on the internal geometry (as got by the {@link #getGeometry()})
+     * will be the line type.
+     * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
+     *
+     * @throws IllegalArgumentException in the case the geometry is a point.
+     */
+    public void convertToLine() throws IllegalArgumentException {
+        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        switch( geometryType ) {
+        case MULTIPOLYGON:
+        case POLYGON:
+            // convert to line
+            Coordinate[] tmpCoords = geometry.getCoordinates();
+            geometry = GeometryUtilities.gf().createLineString(tmpCoords);
+            // reset prepared geometry
+            preparedGeometry = null;
+            break;
+        case LINE:
+        case MULTILINE:
+            // do nothing, is already line
+            break;
+        default:
+            throw new IllegalArgumentException("Points not supported");
+        }
+    }
+
+    /**
+     * Resets the geometry, so that at the next call of {@link #getGeometry()} the original geometry is reread.
+     */
+    public void resetGeometry() {
+        geometry = null;
+        preparedGeometry = null;
     }
 
 }
