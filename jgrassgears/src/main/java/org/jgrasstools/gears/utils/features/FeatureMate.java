@@ -73,6 +73,67 @@ public class FeatureMate {
     }
 
     /**
+     * Gets an attribute from the feature table, adapting to the supplied class.
+     * 
+     * @param attrName the attribute name to pick.
+     * @param adaptee the class to adapt to.
+     * @return the adapted value if possible.
+     */
+    public <T> T getAttribute( String attrName, Class<T> adaptee ) {
+        if (attrName == null) {
+            return null;
+        }
+        if (adaptee == null) {
+            adaptee = (Class<T>) String.class;
+        }
+
+        Object attribute = feature.getAttribute(attrName);
+        if (attribute instanceof Number) {
+            Number num = (Number) attribute;
+            if (adaptee.isAssignableFrom(Double.class)) {
+                return adaptee.cast(num.doubleValue());
+            } else if (adaptee.isAssignableFrom(Float.class)) {
+                return adaptee.cast(num.floatValue());
+            } else if (adaptee.isAssignableFrom(Integer.class)) {
+                return adaptee.cast(num.intValue());
+            } else if (adaptee.isAssignableFrom(String.class)) {
+                return adaptee.cast(num.toString());
+            } else {
+                throw new IllegalArgumentException();
+            }
+        } else if (attribute instanceof String) {
+            if (adaptee.isAssignableFrom(Double.class)) {
+                try {
+                    Double parsed = Double.parseDouble((String) attribute);
+                    return adaptee.cast(parsed);
+                } catch (Exception e) {
+                    return null;
+                }
+            } else if (adaptee.isAssignableFrom(Float.class)) {
+                try {
+                    Float parsed = Float.parseFloat((String) attribute);
+                    return adaptee.cast(parsed);
+                } catch (Exception e) {
+                    return null;
+                }
+            } else if (adaptee.isAssignableFrom(Integer.class)) {
+                try {
+                    Integer parsed = Integer.parseInt((String) attribute);
+                    return adaptee.cast(parsed);
+                } catch (Exception e) {
+                    return null;
+                }
+            } else if (adaptee.isAssignableFrom(String.class)) {
+                return adaptee.cast(attribute);
+            } else {
+                throw new IllegalArgumentException();
+            }
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    /**
      * Check for intersection.
      * 
      * @param geometry the geometry to check against.
@@ -90,6 +151,27 @@ public class FeatureMate {
             return preparedGeometry.intersects(geometry);
         } else {
             return getGeometry().intersects(geometry);
+        }
+    }
+
+    /**
+     * Check for cover.
+     * 
+     * @param geometry the geometry to check against.
+     * @param usePrepared use prepared geometry.
+     * @return true if the current geometries covers the supplied one.
+     */
+    public boolean covers( Geometry geometry, boolean usePrepared ) {
+        if (!getEnvelope().covers(geometry.getEnvelopeInternal())) {
+            return false;
+        }
+        if (usePrepared) {
+            if (preparedGeometry == null) {
+                preparedGeometry = PreparedGeometryFactory.prepare(getGeometry());
+            }
+            return preparedGeometry.covers(geometry);
+        } else {
+            return getGeometry().covers(geometry);
         }
     }
 
