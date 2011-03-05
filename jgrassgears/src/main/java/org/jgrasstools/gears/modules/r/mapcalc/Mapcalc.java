@@ -21,8 +21,6 @@ package org.jgrasstools.gears.modules.r.mapcalc;
 import jaitools.CollectionFactory;
 import jaitools.imageutils.ImageUtils;
 import jaitools.jiffle.Jiffle;
-import jaitools.jiffle.runtime.JiffleEvent;
-import jaitools.jiffle.runtime.JiffleEventListener;
 import jaitools.jiffle.runtime.JiffleExecutor;
 import jaitools.jiffle.runtime.JiffleExecutorResult;
 import jaitools.jiffle.runtime.JiffleProgressListener;
@@ -31,7 +29,6 @@ import java.awt.image.RenderedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -46,7 +43,6 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -60,7 +56,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Mapcalc extends JGTModel implements JiffleEventListener {
+public class Mapcalc extends JGTModel {
 
     @Description("The maps (file paths) that are used in the calculation.")
     @In
@@ -81,13 +77,11 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
 
     private static final String resultName = "result"; //$NON-NLS-1$
 
-    public static final String MAPWRAPPER = "\"";
     private HashMap<String, Double> regionParameters = null;
 
     private CoordinateReferenceSystem crs;
 
-    private CountDownLatch latch;
-
+    @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
         if (!concatOr(outMap == null, doReset)) {
@@ -97,7 +91,6 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         /*
          * prepare the function to be used by jiffle
          */
-        pFunction = pFunction.replaceAll(MAPWRAPPER, "");
         String script = null;
         String regex = resultName + "[\\s+]=";
         String[] split = pFunction.split(regex);
@@ -117,14 +110,10 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         }
         script = script.trim();
 
-        // create the executor
-        JiffleExecutor executor = new JiffleExecutor(1);
-        executor.addEventListener(this);
-
         // gather maps
-        HashMap<String, RenderedImage> imgParams = new HashMap<String, RenderedImage>();
+        Map<String, RenderedImage> images = CollectionFactory.map();
         // ad roles
-        Map<String, Jiffle.ImageRole> imgRoles = CollectionFactory.map();
+        Map<String, Jiffle.ImageRole> imageParams = CollectionFactory.map();
 
         for( GridCoverage2D mapGC : inMaps ) {
             if (regionParameters == null) {
@@ -134,9 +123,9 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
             RenderedImage renderedImage = mapGC.getRenderedImage();
             // add map
             String name = mapGC.getName().toString();
-            imgParams.put(name, renderedImage);
+            images.put(name, renderedImage);
             // add role
-            imgRoles.put(name, Jiffle.ImageRole.SOURCE);
+            imageParams.put(name, Jiffle.ImageRole.SOURCE);
         }
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
@@ -146,80 +135,61 @@ public class Mapcalc extends JGTModel implements JiffleEventListener {
         long pixelsNum = (long) nCols * nRows;
 
         // add the output map
-        imgParams.put(resultName, ImageUtils.createConstantImage(nCols, nRows, Double.valueOf(0d)));
+        images.put(resultName, ImageUtils.createConstantImage(nCols, nRows, 0d));
 
         // build the jiffle
-        imgRoles.put(resultName, Jiffle.ImageRole.DEST);
+        imageParams.put(resultName, Jiffle.ImageRole.DEST);
 
         final long updateInterval = pixelsNum / 100;
 
-        Jiffle jiffle = new Jiffle(script, imgRoles);
-        if (jiffle.isCompiled()) {
-            executor.submit(jiffle, imgParams, new JiffleProgressListener(){
-                private long count = 0;
-                public void update( long done ) {
-                    if (count == done) {
-                        pm.worked(1);
-                        count = count + updateInterval;
-                    }
+        Jiffle jiffle = new Jiffle(script, imageParams);
+        jiffle.compile();
+
+        // create the executor
+        JiffleExecutor executor = new JiffleExecutor(1);
+        WaitingListener listener = new WaitingListener();
+        executor.addEventListener(listener);
+        listener.setNumJobs(1);
+        int jobID = executor.submit(jiffle, images, new JiffleProgressListener(){
+            private long count = 0;
+            public void update( long done ) {
+                if (count == done) {
+                    pm.worked(1);
+                    count = count + updateInterval;
                 }
+            }
 
-                public void start() {
-                    pm.beginTask("Processing maps...", 100);
+            public void start() {
+                pm.beginTask("Processing maps...", 100);
+            }
+
+            public void setUpdateInterval( double propPixels ) {
+            }
+
+            public void setUpdateInterval( long numPixels ) {
+            }
+
+            public void setTaskSize( long numPixels ) {
+                count = updateInterval;
+            }
+
+            public long getUpdateInterval() {
+                if (updateInterval == 0) {
+                    return 1;
                 }
+                return updateInterval;
+            }
 
-                public void setUpdateInterval( double propPixels ) {
-                }
+            public void finish() {
+                pm.done();
+            }
+        });
+        listener.await();
 
-                public void setUpdateInterval( long numPixels ) {
-                }
-
-                public void setTaskSize( long numPixels ) {
-                    count = updateInterval;
-                }
-
-                public long getUpdateInterval() {
-                    if (updateInterval == 0) {
-                        return 1;
-                    }
-                    return updateInterval;
-                }
-
-                public void finish() {
-                    pm.done();
-                }
-            });
-        }
-
-        latch = new CountDownLatch(1);
-        latch.await();
-
-        // try{
-        // } catch (JiffleCompilationException e) {
-        // String message =
-        // "An error occurred during the compilation of the function. Please check your function.";
-        // throw new ModelsRuntimeException(message, this);
-        // } catch (JiffleInterpreterException e) {
-        // String message =
-        // "An error occurred during the interpretation of the function. Please check your function.";
-        // throw new ModelsRuntimeException(message, this);
-        // }
-
-    }
-
-    public void onCompletionEvent( JiffleEvent ev ) {
-        JiffleExecutorResult result = ev.getResult();
+        JiffleExecutorResult result = listener.getResult(jobID);
         RenderedImage resultImage = result.getImages().get(resultName);
-        try {
-            outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
-        } finally {
-            latch.countDown();
-        }
+        outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
+        executor.shutdown();
     }
 
-    public void onFailureEvent( JiffleEvent ev ) {
-        String msg = ev.toString();
-        latch.countDown();
-        throw new ModelsRuntimeException(msg, this);
-    }
 }

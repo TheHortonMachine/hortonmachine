@@ -26,7 +26,7 @@ public class TestMapcalc extends HMTestCase {
         
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "\"ele\"*2-\"ele\" + sqrt(\"ele\"*\"ele\")-log(\"ele\");";
+        mapcalc.pFunction = "ele*2-ele + sqrt(ele*ele)^2-exp(log(ele));";
 
         mapcalc.process();
 
@@ -34,4 +34,7 @@ public class TestMapcalc extends HMTestCase {
         checkMatrixEqual(outMap.getRenderedImage(), HMTestMaps.outPitData, 0);
     }
 
+    public static void main( String[] args ) throws Exception {
+        new TestMapcalc().testMapcalc();
+    }
 }
