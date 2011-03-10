@@ -50,6 +50,7 @@ import org.geotools.gce.grassraster.JGrassConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -503,6 +504,27 @@ public class FeatureUtilities {
         }
         featureIterator.close();
         return geometriesList;
+    }
+
+    public static Object getAttributeCaseChecked( SimpleFeature feature, String field ) {
+        Object attribute = feature.getAttribute(field);
+        if (attribute == null) {
+            attribute = feature.getAttribute(field.toLowerCase());
+            if (attribute == null) {
+                attribute = feature.getAttribute(field.toUpperCase());
+            }
+            // alright, serach for it
+            SimpleFeatureType featureType = feature.getFeatureType();
+            List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
+            for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+                String name = attributeDescriptor.getLocalName();
+                if (name.toLowerCase().equals(field.toLowerCase())) {
+                    attribute = feature.getAttribute(name);
+                    break;
+                }
+            }
+        }
+        return attribute;
     }
 
 }
