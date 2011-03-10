@@ -520,21 +520,24 @@ public class FeatureUtilities {
         Object attribute = feature.getAttribute(field);
         if (attribute == null) {
             attribute = feature.getAttribute(field.toLowerCase());
-            if (attribute == null) {
-                attribute = feature.getAttribute(field.toUpperCase());
-            }
-            // alright, serach for it
+            if (attribute != null)
+                return attribute;
+            attribute = feature.getAttribute(field.toUpperCase());
+            if (attribute != null)
+                return attribute;
+
+            // alright, last try, search for it
             SimpleFeatureType featureType = feature.getFeatureType();
             List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
             for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
                 String name = attributeDescriptor.getLocalName();
                 if (name.toLowerCase().equals(field.toLowerCase())) {
                     attribute = feature.getAttribute(name);
-                    break;
+                    return attribute;
                 }
             }
         }
-        return attribute;
+        return null;
     }
 
 }
