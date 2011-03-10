@@ -189,7 +189,7 @@ public class Mapcalc extends JGTModel {
         JiffleExecutorResult result = listener.getResult(jobID);
         RenderedImage resultImage = result.getImages().get(resultName);
         outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
-        executor.shutdown();
+        // executor.shutdown();
     }
 
 }

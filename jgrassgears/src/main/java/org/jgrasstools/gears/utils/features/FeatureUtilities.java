@@ -506,6 +506,16 @@ public class FeatureUtilities {
         return geometriesList;
     }
 
+    /**
+     * Getter for attributes of a feature.
+     * 
+     * <p>If the attribute is not found, checks are done in non
+     * case sensitive mode.
+     * 
+     * @param feature the feature from which to get the attribute.
+     * @param field the name of the field.
+     * @return the attribute or null if none found.
+     */
     public static Object getAttributeCaseChecked( SimpleFeature feature, String field ) {
         Object attribute = feature.getAttribute(field);
         if (attribute == null) {
