@@ -13,3 +13,4 @@ syntax: regexp
 .class$
 .orig$
 .swp$
+.directory
