@@ -67,9 +67,9 @@ public class ShapefileFeatureReader extends JGTModel {
             return;
         }
 
-        pm.beginTask("Reading features from shapefile...", -1);
         try {
             File shapeFile = new File(file);
+            pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
             ShapefileDataStore store = new ShapefileDataStore(shapeFile.toURI().toURL());
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
