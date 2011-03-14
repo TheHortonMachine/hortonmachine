@@ -117,6 +117,34 @@ public class HMTestCase extends TestCase {
 
     }
 
+
+    /**
+     * Verifiy a Matrix result.
+     * 
+     * @param matrix
+     * @param expectedMatrix
+     * @param tolerance
+     */
+    protected void checkMatrixEqual( double[][] matrix, double[][] expectedMatrix, double tolerance ) {
+        // assertEquals("different dimension", matrix.length,
+        // expectedMatrix.length);
+        // assertEquals("different dimension", matrix[0].length,
+        // expectedMatrix[0].length);
+
+        for( int j = 0; j < matrix.length; j++ ) {
+            for( int i = 0; i < matrix[0].length; i++ ) {
+                double expectedResult = expectedMatrix[j][i];
+                double value = matrix[j][i];
+                if (isNovalue(value)) {
+                    assertTrue("Difference at position: " + i + " " + j, isNovalue(expectedResult));
+                } else {
+                    assertEquals("Difference at position: " + i + " " + j, expectedResult, value, tolerance);
+                }
+            }
+        }
+
+    }
+
     /**
      * Method to translate resources names from class-test path to src resources.
      * 

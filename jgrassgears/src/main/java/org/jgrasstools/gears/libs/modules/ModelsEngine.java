@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears.libs.modules;
 import static java.lang.Math.PI;
+import static java.lang.Math.abs;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
 import static java.lang.Math.pow;
@@ -1652,4 +1653,109 @@ public class ModelsEngine {
         return false;
     }
 
+    /**
+     * Return the mean of a column of a matrix.
+     * 
+     * @param matrix matrix of the value to calculate.
+     * @param column index of the coulumn to calculate the variance.
+     * @return mean.
+     */
+    public static double meanDoublematrixColumn( double[][] matrix, int column ) {
+
+        double mean;
+
+        mean = 0;
+
+        int length = matrix.length;
+        for( int i = 0; i < length; i++ ) {
+            mean += matrix[i][column];
+        }
+
+        return mean / length;
+
+    }
+
+    /**
+     * Return the variance of a column of a matrix.
+     * 
+     * @param matrix matrix of the value to calculate.
+     * @param column index of the coulumn to calculate the variance.
+     * @param mean the mean value of the coulumn.
+     * @return variance.
+     */
+    public static double varianceDoublematrixColumn( double[][] matrix, int column, double mean )
+
+    {
+
+        double variance;
+
+        variance = 0;
+
+        for( int i = 0; i < matrix.length; i++ ) {
+            variance += (matrix[i][column] - mean) * (matrix[i][column] - mean);
+        }
+
+        return variance / matrix[0].length;
+
+    }
+
+    /**
+     * Sum columns.
+     * 
+     * <p>
+     * Store in a matrix (at index coulumn), the sum of the columns of another
+     * matrix. It's necessary to specify the initial and final index of the
+     * coluns to sum.
+     * </p>
+     * 
+     * 
+     * @param index index of the matrix2 where to put the result.
+     * @param matrix1 contains the value to sum.
+     * @param matrix2 where to put the result.
+     * @param col1 initial index of the colum to sum.
+     * @param col2 final index of the colum to sum.
+     * @return maximum value of the colum index of the matrix2.
+     */
+    public static double sumDoublematrixColumns( int index, double[][] matrix1, double[][] matrix2, int col1, int col2,
+            IJGTProgressMonitor pm ) {
+
+        double maximum;
+
+        maximum = 0;
+
+        if (matrix1.length != matrix2.length) {
+            pm.errorMessage(msg.message("trentoP.error.matrix")); //$NON-NLS-1$
+            throw new ArithmeticException(msg.message("trentoP.error.matrix")); //$NON-NLS-1$
+        }
+        if (col1 < 0 || col2 < col1) {
+            pm.errorMessage(msg.message("trentoP.error.nCol")); //$NON-NLS-1$
+            throw new ArithmeticException(msg.message("trentoP.error.nCol")); //$NON-NLS-1$
+        }
+        for( int i = 0; i < matrix1.length; ++i ) {
+            matrix2[i][index] = 0; /* Initializes element */
+
+            for( int j = col1; j <= col2; ++j ) {
+                matrix2[i][index] += matrix1[i][j];
+            }
+
+            if (matrix2[i][index] >= maximum) /* Saves maximum value */
+            {
+                maximum = matrix2[i][index];
+            }
+        }
+
+        return maximum;
+
+    }
+
+    /**
+     * Approximate to multiple.
+     * 
+     * @param tMAX2 value to approximate
+     * @param dt unity.
+     * @return multiple of dt (which is the best approximation of tMAX2).
+     */
+    public static double approximate2Multiple( double tMAX2, double dt ) {
+        return tMAX2 - abs(tMAX2 % dt);
+    }
 }
