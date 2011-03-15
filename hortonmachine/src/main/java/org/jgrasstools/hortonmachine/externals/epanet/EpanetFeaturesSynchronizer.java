@@ -221,6 +221,11 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         for( SimpleFeature pipe : pipesList ) {
             Geometry geometry = (Geometry) pipe.getDefaultGeometry();
             Coordinate[] coordinates = geometry.getCoordinates();
+            if (coordinates.length < 2) {
+                Object attribute = FeatureUtilities.getAttributeCaseChecked(pipe, Pipes.ID.getAttributeName());
+                appendWarning("Found pipe with less than 2 coordinates: ", attribute.toString());
+                continue;
+            }
             Coordinate first = coordinates[0];
             Coordinate last = coordinates[coordinates.length - 1];
 
