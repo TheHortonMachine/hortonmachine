@@ -528,13 +528,27 @@ public class FeatureUtilities {
 
             // alright, last try, search for it
             SimpleFeatureType featureType = feature.getFeatureType();
-            List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
-            for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-                String name = attributeDescriptor.getLocalName();
-                if (name.toLowerCase().equals(field.toLowerCase())) {
-                    attribute = feature.getAttribute(name);
-                    return attribute;
-                }
+            field = findAttributeName(featureType, field);
+            if (field != null) {
+                return feature.getAttribute(field);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Find the name of an attribute, case insensitive.
+     * 
+     * @param featureType te feature type to check.
+     * @param field the case insensitive field name.
+     * @return the real name of the field, or <code>null</code>, if none found.
+     */
+    public static String findAttributeName( SimpleFeatureType featureType, String field ) {
+        List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String name = attributeDescriptor.getLocalName();
+            if (name.toLowerCase().equals(field.toLowerCase())) {
+                return name;
             }
         }
         return null;
