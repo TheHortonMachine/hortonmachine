@@ -533,7 +533,7 @@ public class FeatureUtilities {
                 return feature.getAttribute(field);
             }
         }
-        return null;
+        return attribute;
     }
 
     /**

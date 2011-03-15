@@ -26,8 +26,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import jj2000.j2k.util.MathUtil;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -41,10 +39,9 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Pipes;
@@ -54,7 +51,6 @@ import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Ta
 import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Valves;
 import org.opengis.feature.simple.SimpleFeature;
 
-import com.sun.media.jai.util.MathJAI;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -114,6 +110,20 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
 
     private StringBuilder warningBuilder = new StringBuilder();
 
+    private String junctionElevatioAttributeName;
+    private String tanksElevationAttributeName;
+    private String reservoirHeadAttributeName;
+    private String pipesStartNodeAttributeName;
+    private String pipesEndNodeAttributeName;
+    private String pipesIdAttributeName;
+    private String lengthAttributeName;
+    private String pumpsStartNodeAttributeName;
+    private String pumpsEndNodeAttributeName;
+    private String pumpsIdAttributeName;
+    private String valvesStartNodeAttributeName;
+    private String valvesEndNodeAttributeName;
+    private String valvesIdAttributeName;
+
     @Execute
     @SuppressWarnings("unchecked")
     public void process() throws Exception {
@@ -127,50 +137,76 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         List<SimpleFeature> valvesList = toList(inValves);
 
         /*
+         * check field names
+         */
+        junctionElevatioAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
+                Junctions.ELEVATION.getAttributeName());
+        tanksElevationAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(),
+                Tanks.BOTTOM_ELEVATION.getAttributeName());
+        reservoirHeadAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
+                Reservoirs.HEAD.getAttributeName());
+        pipesStartNodeAttributeName = FeatureUtilities
+                .findAttributeName(inPipes.getSchema(), Pipes.START_NODE.getAttributeName());
+        pipesEndNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.END_NODE.getAttributeName());
+        pipesIdAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.ID.getAttributeName());
+        lengthAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.LENGTH.getAttributeName());
+        pumpsStartNodeAttributeName = FeatureUtilities
+                .findAttributeName(inPumps.getSchema(), Pumps.START_NODE.getAttributeName());
+        pumpsEndNodeAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.END_NODE.getAttributeName());
+        pumpsIdAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.ID.getAttributeName());
+        valvesStartNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(),
+                Valves.START_NODE.getAttributeName());
+        valvesEndNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.END_NODE.getAttributeName());
+        valvesIdAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.ID.getAttributeName());
+
+        /*
          * elevations for junctions and tanks on dem
          */
         if (inDem != null) {
             inJunctions = FeatureCollections.newCollection();
             pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size() + reservoirsList.size());
+
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
                     inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
-                    junction.setAttribute(Junctions.ELEVATION.getAttributeName(), dest[0]);
+                    junction.setAttribute(junctionElevatioAttributeName, dest[0]);
                 } catch (Exception e) {
                     appendWarning("No elevation available for junction: ",
-                            (String) junction.getAttribute(Junctions.ID.getAttributeName()));
+                            (String) junction.getAttribute(junctionElevatioAttributeName));
                 }
                 inJunctions.add(junction);
                 pm.worked(1);
             }
             inTanks = FeatureCollections.newCollection();
+
             for( SimpleFeature tank : tanksList ) {
                 Geometry geometry = (Geometry) tank.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
                     inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
-                    tank.setAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName(), dest[0]);
+                    tank.setAttribute(tanksElevationAttributeName, dest[0]);
                 } catch (Exception e) {
-                    appendWarning("No elevation available for tank: ", (String) tank.getAttribute(Tanks.ID.getAttributeName()));
+                    appendWarning("No elevation available for tank: ", (String) tank.getAttribute(tanksElevationAttributeName));
                 }
                 inTanks.add(tank);
                 pm.worked(1);
             }
             inReservoirs = FeatureCollections.newCollection();
+
             for( SimpleFeature reservoir : reservoirsList ) {
                 Geometry geometry = (Geometry) reservoir.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
                     inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
-                    reservoir.setAttribute(Reservoirs.HEAD.getAttributeName(), dest[0]);
+                    reservoir.setAttribute(reservoirHeadAttributeName, dest[0]);
                 } catch (Exception e) {
                     appendWarning("No elevation available for reservoir: ",
-                            (String) reservoir.getAttribute(Tanks.ID.getAttributeName()));
+                            (String) reservoir.getAttribute(reservoirHeadAttributeName));
                 }
                 inReservoirs.add(reservoir);
                 pm.worked(1);
@@ -190,33 +226,36 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
 
             SimpleFeature nearestFirst = findWithinTolerance(first, junctionsList, tanksList, reservoirsList);
             if (nearestFirst != null) {
-                Object attribute = nearestFirst.getAttribute(Junctions.ID.getAttributeName());
-                pipe.setAttribute(Pipes.START_NODE.getAttributeName(), attribute);
+                Object attribute = FeatureUtilities.getAttributeCaseChecked(nearestFirst, Junctions.ID.getAttributeName());
+                pipe.setAttribute(pipesStartNodeAttributeName, attribute);
             } else {
-                appendWarning("No start node found for pipe: ", (String) pipe.getAttribute(Pipes.ID.getAttributeName()));
+                Object attribute = pipe.getAttribute(pipesIdAttributeName);
+                appendWarning("No start node found for pipe: ", attribute.toString());
             }
             SimpleFeature nearestLast = findWithinTolerance(last, junctionsList, tanksList, reservoirsList);
             if (nearestLast != null) {
-                Object attribute = nearestLast.getAttribute(Junctions.ID.getAttributeName());
-                pipe.setAttribute(Pipes.END_NODE.getAttributeName(), attribute);
+                Object attribute = FeatureUtilities.getAttributeCaseChecked(nearestLast, Junctions.ID.getAttributeName());
+                pipe.setAttribute(pipesEndNodeAttributeName, attribute);
             } else {
-                appendWarning("No end node found for pipe: ", (String) pipe.getAttribute(Pipes.ID.getAttributeName()));
+                Object attribute = pipe.getAttribute(pipesIdAttributeName);
+                appendWarning("No end node found for pipe: ", attribute.toString());
             }
 
-            // get length considering 3d
-            Object elev1Obj = getElevation(nearestFirst);
-            Object elev2Obj = getElevation(nearestLast);
-            double length = geometry.getLength();
-            if (elev1Obj != null && elev2Obj != null) {
-                if (elev1Obj instanceof Double) {
-                    double elev1 = (Double) elev1Obj;
-                    double elev2 = (Double) elev2Obj;
-                    double length3d = sqrt(pow(abs(elev2 - elev1), 2.0) + pow(length, 2.0));
-                    pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length3d);
+            if (nearestFirst != null && nearestLast != null) {
+                Object elev1Obj = getElevation(nearestFirst);
+                Object elev2Obj = getElevation(nearestLast);
+                double length = geometry.getLength();
+                if (elev1Obj != null && elev2Obj != null) {
+                    if (elev1Obj instanceof Double) {
+                        double elev1 = (Double) elev1Obj;
+                        double elev2 = (Double) elev2Obj;
+                        double length3d = sqrt(pow(abs(elev2 - elev1), 2.0) + pow(length, 2.0));
+                        pipe.setAttribute(lengthAttributeName, length3d);
+                    }
+                } else {
+                    // 2D
+                    pipe.setAttribute(lengthAttributeName, length);
                 }
-            } else {
-                // 2D
-                pipe.setAttribute(Pipes.LENGTH.getAttributeName(), length);
             }
             pm.worked(1);
         }
@@ -236,18 +275,17 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
                 if (pipeGeom.intersects(buffer)) {
                     // pump is on pipe
-                    Object startNode = pipe.getAttribute(Pipes.START_NODE.getAttributeName());
-                    pump.setAttribute(Pumps.START_NODE.getAttributeName(), startNode);
-                    Object endNode = pipe.getAttribute(Pipes.END_NODE.getAttributeName());
-                    pump.setAttribute(Pumps.END_NODE.getAttributeName(), endNode);
+                    Object startNode = pipe.getAttribute(pipesStartNodeAttributeName);
+                    pump.setAttribute(pumpsStartNodeAttributeName, startNode);
+                    Object endNode = pipe.getAttribute(pipesEndNodeAttributeName);
+                    pump.setAttribute(pumpsEndNodeAttributeName, endNode);
 
-                    pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                    pipe.setAttribute(pipesIdAttributeName, EpanetConstants.DUMMYPIPE);
                     gotIt = true;
                 }
             }
             if (!gotIt) {
-                appendWarning("Pump ", (String) pump.getAttribute(Pumps.ID.getAttributeName()),
-                        " could not be placed on any pipe");
+                appendWarning("Pump ", (String) pump.getAttribute(pumpsIdAttributeName), " could not be placed on any pipe");
             }
             inPumps.add(pump);
             pm.worked(1);
@@ -268,18 +306,17 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Geometry pipeGeom = (Geometry) pipe.getDefaultGeometry();
                 if (pipeGeom.intersects(buffer)) {
                     // pump is on pipe
-                    Object startNode = pipe.getAttribute(Pipes.START_NODE.getAttributeName());
-                    valve.setAttribute(Valves.START_NODE.getAttributeName(), startNode);
-                    Object endNode = pipe.getAttribute(Pipes.END_NODE.getAttributeName());
-                    valve.setAttribute(Valves.END_NODE.getAttributeName(), endNode);
+                    Object startNode = pipe.getAttribute(pipesStartNodeAttributeName);
+                    valve.setAttribute(valvesStartNodeAttributeName, startNode);
+                    Object endNode = pipe.getAttribute(pipesEndNodeAttributeName);
+                    valve.setAttribute(valvesEndNodeAttributeName, endNode);
                     // mark pipe as dummy
-                    pipe.setAttribute(Pipes.ID.getAttributeName(), EpanetConstants.DUMMYPIPE);
+                    pipe.setAttribute(pipesIdAttributeName, EpanetConstants.DUMMYPIPE);
                     gotIt = true;
                 }
             }
             if (!gotIt) {
-                appendWarning("Valve ", (String) valve.getAttribute(Valves.ID.getAttributeName()),
-                        " could not be placed on any pipe");
+                appendWarning("Valve ", (String) valve.getAttribute(valvesIdAttributeName), " could not be placed on any pipe");
             }
             inValves.add(valve);
             pm.worked(1);
@@ -293,16 +330,15 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
 
         outWarning = warningBuilder.toString();
     }
-
     private Object getElevation( SimpleFeature nearestFirst ) {
-        Object elevObj = nearestFirst.getAttribute(Junctions.ELEVATION.getAttributeName());
+        Object elevObj = nearestFirst.getAttribute(junctionElevatioAttributeName);
         if (elevObj == null) {
             // try tank
-            elevObj = nearestFirst.getAttribute(Tanks.BOTTOM_ELEVATION.getAttributeName());
+            elevObj = nearestFirst.getAttribute(tanksElevationAttributeName);
         }
         if (elevObj == null) {
             // try
-            elevObj = nearestFirst.getAttribute(Reservoirs.HEAD.getAttributeName());
+            elevObj = nearestFirst.getAttribute(reservoirHeadAttributeName);
         }
         return elevObj;
     }
