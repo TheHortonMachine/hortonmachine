@@ -52,25 +52,30 @@ public class TestTimeSeriesByStepReader extends HMTestCase {
         reader.tStart = "1997-01-01 00:00";
         reader.tEnd = "2006-12-31 00:00";
         reader.tTimestep = 1440;
+        try {
+            reader.initProcess();
+            int count = 0;
+            while( reader.doProcess ) {
+                reader.nextRecord();
+                HashMap<Integer, double[]> id2ValueMap = reader.data;
+                if (count == 0) {
+                    assertEquals(14.9, id2ValueMap.get(1)[0]);
+                    assertEquals(15.2, id2ValueMap.get(2)[0]);
+                } else if (count == 1) {
+                    assertEquals(17.2, id2ValueMap.get(1)[0]);
+                    assertEquals(17.4, id2ValueMap.get(2)[0]);
+                } else if (count == 2) {
+                    assertEquals(19.8, id2ValueMap.get(1)[0]);
+                    assertEquals(20.0, id2ValueMap.get(2)[0]);
+                    break;
+                }
+                count++;
+            }
+        } finally {
+            reader.close();
+        }
 
-        reader.nextRecord();
-        HashMap<Integer, double[]> id2ValueMap = reader.data;
-        assertEquals(14.9, id2ValueMap.get(1)[0]);
-        assertEquals(15.2, id2ValueMap.get(2)[0]);
-
-        reader.nextRecord();
-        id2ValueMap = reader.data;
-        assertEquals(17.2, id2ValueMap.get(1)[0]);
-        assertEquals(17.4, id2ValueMap.get(2)[0]);
-
-        reader.nextRecord();
-        id2ValueMap = reader.data;
-        assertEquals(19.8, id2ValueMap.get(1)[0]);
-        assertEquals(20.0, id2ValueMap.get(2)[0]);
-
-        reader.close();
     }
-
     public static void main( String[] args ) throws Exception {
         new TestTimeSeriesByStepReader().testId2ValueReader2();
     }
