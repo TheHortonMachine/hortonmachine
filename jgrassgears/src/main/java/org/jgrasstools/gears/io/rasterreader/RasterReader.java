@@ -302,10 +302,9 @@ public class RasterReader extends JGTModel {
     private void readGrass( File mapFile ) throws Exception {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
-        JGrassRegion jGrassRegion = mapEnvironment.getActiveRegion();
-        JGrassRegion fileRegion = mapEnvironment.getFileRegion();
+        JGrassRegion readRegion = mapEnvironment.getFileRegion();
 
-        Envelope env = fileRegion.getEnvelope();
+        Envelope env = readRegion.getEnvelope();
         originalEnvelope = new GeneralEnvelope(new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(),
                 crs));
 
@@ -317,19 +316,19 @@ public class RasterReader extends JGTModel {
             double w = pBounds[2];
             double e = pBounds[3];
             if (pRes != null) {
-                jGrassRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
+                readRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
             } else if (pRowcol != null) {
-                jGrassRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
+                readRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
             }
         }
 
         if (!doEnvelope) {
-            int r = jGrassRegion.getRows();
-            int c = jGrassRegion.getCols();
+            int r = readRegion.getRows();
+            int c = readRegion.getCols();
             if (!JGTConstants.doesOverFlow(r, c)) {
                 if (generalParameter == null) {
-                    generalParameter = createGridGeometryGeneralParameter(jGrassRegion.getCols(), jGrassRegion.getRows(),
-                            jGrassRegion.getNorth(), jGrassRegion.getSouth(), jGrassRegion.getEast(), jGrassRegion.getWest(), crs);
+                    generalParameter = createGridGeometryGeneralParameter(readRegion.getCols(), readRegion.getRows(),
+                            readRegion.getNorth(), readRegion.getSouth(), readRegion.getEast(), readRegion.getWest(), crs);
                 }
                 GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
                 GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
@@ -338,7 +337,7 @@ public class RasterReader extends JGTModel {
                 GrassLegacyReader reader = new GrassLegacyReader();
                 reader.file = file;
                 reader.pm = pm;
-                reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
+                reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(readRegion);
                 reader.readCoverage();
                 geodata = reader.outGC;
             }

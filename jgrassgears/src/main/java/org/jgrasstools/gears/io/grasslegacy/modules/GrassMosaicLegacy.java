@@ -19,12 +19,8 @@
 package org.jgrasstools.gears.io.grasslegacy.modules;
 
 import java.awt.geom.Point2D;
-import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.List;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,10 +31,14 @@ import oms3.annotations.License;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
@@ -47,6 +47,10 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform2D;
 
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -93,8 +97,6 @@ public class GrassMosaicLegacy extends JGTModel {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
         }
 
-        GridGeometry2D referenceGridGeometry = null;
-
         if (pBounds != null) {
             DirectPosition2D first = new DirectPosition2D(pBounds[2], pBounds[1]);
             DirectPosition2D second = new DirectPosition2D(pBounds[3], pBounds[0]);
@@ -106,17 +108,20 @@ public class GrassMosaicLegacy extends JGTModel {
         double e = Double.MIN_VALUE;
         double w = Double.MAX_VALUE;
 
+        CoordinateReferenceSystem crs = null;
         pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
         for( File coverageFile : inGeodataFiles ) {
-            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
-            if (referenceGridGeometry == null) {
-                // take the first as reference
-                referenceGridGeometry = coverage.getGridGeometry();
+            RasterReader reader = new RasterReader();
+            reader.file = coverageFile.getAbsolutePath();
+            reader.doEnvelope = true;
+            reader.process();
+            GeneralEnvelope gEnv = reader.originalEnvelope;
+            ReferencedEnvelope worldEnv = new ReferencedEnvelope(gEnv);
+            if (crs == null) {
+                crs = gEnv.getCoordinateReferenceSystem();
             }
-
-            Envelope2D worldEnv = coverage.getEnvelope2D();
             if (requestedEnvelope != null) {
-                if (!requestedEnvelope.intersects(worldEnv)) {
+                if (!requestedEnvelope.intersects(gEnv.toRectangle2D())) {
                     // if a constraint envelope was supplied, only handle what is inside
                     pm.worked(1);
                     continue;
@@ -141,6 +146,9 @@ public class GrassMosaicLegacy extends JGTModel {
 
         Window writeWindow = new Window(w, e, s, n, pRes, pRes);
 
+        GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, writeWindow.getCols(),
+                writeWindow.getRows(), crs);
+
         int rows = writeWindow.getRows();
         int cols = writeWindow.getCols();
 
@@ -160,6 +168,7 @@ public class GrassMosaicLegacy extends JGTModel {
         for( File coverageFile : inGeodataFiles ) {
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
             Envelope2D env = coverage.getEnvelope2D();
+            GridGeometry2D gridGeometry = coverage.getGridGeometry();
             if (requestedEnvelope != null) {
                 if (!requestedEnvelope.intersects(env)) {
                     // if a constraint envelope was supplied, only handle what is inside
@@ -167,37 +176,31 @@ public class GrassMosaicLegacy extends JGTModel {
                 }
             }
 
-            RenderedImage renderedImage = coverage.getRenderedImage();
-            RandomIter randomIter = RandomIterFactory.create(renderedImage, null);
-
-            double east = env.getMaxX();
-            double south = env.getMinY();
-            double west = env.getMinX();
-            double north = env.getMaxY();
-
-            Window tmpWindow = new Window(west, east, south, north, pRes, pRes);
-
-            double startRow = (writeWindow.getNorth() - tmpWindow.getNorth()) / pRes;
-            double startCol = (tmpWindow.getWest() - writeWindow.getWest()) / pRes;
-
-            pm.beginTask("Patch map " + index++, tmpWindow.getRows()); //$NON-NLS-1$
             double[] value = new double[1];
-            for( int row = 0; row < tmpWindow.getRows(); row++ ) {
-                double northing = north - row * pRes;
-                for( int col = 0; col < tmpWindow.getCols(); col++ ) {
-                    double easting = west + col * pRes;
-                    coverage.evaluate(new Point2D.Double(easting, northing), value);
+            GridEnvelope2D gridRange2D = gridGeometry.getGridRange2D();
+            int grX = gridRange2D.x;
+            int grY = gridRange2D.y;
+            int grW = gridRange2D.width;
+            int grH = gridRange2D.height;
+            int grXEnd = grX + grW;
+            int grYEnd = grY + grH;
+            pm.beginTask("Patch map " + index++, grW); //$NON-NLS-1$
+            for( int i = grX; i < grXEnd; i++ ) {
+                for( int j = grY; j < grYEnd; j++ ) {
+                    GridCoordinates2D gCoord = new GridCoordinates2D(i, j);
+                    coverage.evaluate(gCoord, value);
+                    DirectPosition directPosition = gridGeometry.gridToWorld(gCoord);
+                    GridCoordinates2D gridCoord = writeGridGeometry.worldToGrid(directPosition);
 
                     if (!Double.isNaN(value[0])) {
-                        if (Double.isNaN(outputData[(int) (row + startRow)][(int) (col + startCol)])) {
-                            outputData[(int) (row + startRow)][(int) (col + startCol)] = value[0];
+                        if (Double.isNaN(outputData[gridCoord.y][gridCoord.x])) {
+                            outputData[gridCoord.y][gridCoord.x] = value[0];
                         }
                     }
                 }
                 pm.worked(1);
             }
             pm.done();
-            randomIter.done();
         }
 
         pm.message("Writing mosaic map.");
