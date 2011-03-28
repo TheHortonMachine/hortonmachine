@@ -122,11 +122,13 @@
             <version>1.0.2</version>
         </dependency>
 
+        <!--
         <dependency>
             <groupId>geoscript</groupId>
             <artifactId>geoscript-groovy</artifactId>
             <version>0.9</version>
         </dependency>
+        -->
 
 		<dependency>
 			<groupId>junit</groupId>
@@ -243,7 +245,7 @@
     <repository>
       <id>osgeo</id>
       <name>Open Source Geospatial Foundation Repository</name>
-      <url>http://download.osgeo.org/webdav/geotools/</url>
+      <url>http://download2.osgeo.org/webdav/geotools/</url>
     </repository>
 
     <repository>
@@ -253,6 +255,11 @@
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
       <url>http://repo.opengeo.org</url>
+    </repository>
+    <repository>
+      <id>JBOSS</id>
+      <name>JBoss Repository</name>
+      <url>http://repository.jboss.org/maven2/</url>
     </repository>
 
     <repository>
