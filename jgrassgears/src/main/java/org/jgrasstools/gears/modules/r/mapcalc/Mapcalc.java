@@ -150,7 +150,7 @@ public class Mapcalc extends JGTModel {
         WaitingListener listener = new WaitingListener();
         executor.addEventListener(listener);
         listener.setNumTasks(1);
-        
+
         int jobID = executor.submit(jiffle, images, new JiffleProgressListener(){
             private long count = 0;
             public void update( long done ) {
@@ -190,7 +190,7 @@ public class Mapcalc extends JGTModel {
         JiffleExecutorResult result = listener.getResults().get(0);
         RenderedImage resultImage = result.getImages().get(resultName);
         outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
-        // executor.shutdown();
+        executor.shutdown();
     }
 
 }
