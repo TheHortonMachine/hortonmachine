@@ -9,7 +9,8 @@
 		<jgt.version>0.1-SNAPSHOT</jgt.version>
 		<gt.version>2.8-SNAPSHOT</gt.version>
 		<gt.version.exp>2.8-SNAPSHOT</gt.version.exp>
-		<jaitools.version>1.1-SNAPSHOT</jaitools.version>
+		<jaitools.version>1.2-SNAPSHOT</jaitools.version>
+		<jiffle.version>0.1-SNAPSHOT</jiffle.version>
 		<performRelease>false</performRelease>
 	</properties>
 
@@ -136,11 +137,6 @@
 
 		
 		<!-- GeoTools 	-->
-		<dependency>                                                                             
-            <groupId>org.geotools</groupId>                                             
-            <artifactId>gt-epsg-h2</artifactId>                                              
-            <version>${gt.version}</version>                                                  
-        </dependency>  
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-data</artifactId>
@@ -215,6 +211,11 @@
 			<groupId>com.googlecode.jaitools</groupId>
 			<artifactId>jt-all</artifactId>
 			<version>${jaitools.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.googlecode.jaitools</groupId>
+			<artifactId>jt-jiffle-language</artifactId>
+			<version>${jiffle.version}</version>
 		</dependency>
 		
 

@@ -35,6 +35,22 @@ public class HMTestCase extends TestCase {
         // done to not make the maven test fail
     }
 
+    protected void printImage( RenderedImage image ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                System.out.print(value + " ");
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+            System.out.println();
+        } while( !rectIter.nextLineDone() );
+    }
+    
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;

@@ -1,5 +1,6 @@
 package org.jgrasstools.gears.modules;
 
+import java.awt.image.RenderedImage;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,12 +27,14 @@ public class TestMapcalc extends HMTestCase {
         
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "ele*2-ele + sqrt(ele*ele)^2-exp(log(ele));";
+        mapcalc.pFunction = "ele*2-ele + sqrt(ele)^2-exp(log(ele));";
 
         mapcalc.process();
 
         GridCoverage2D outMap = mapcalc.outMap;
-        checkMatrixEqual(outMap.getRenderedImage(), HMTestMaps.outPitData, 0);
+        RenderedImage renderedImage = outMap.getRenderedImage();
+        printImage(renderedImage);
+        checkMatrixEqual(renderedImage, HMTestMaps.outPitData, 0.000000001);
     }
 
     public static void main( String[] args ) throws Exception {
