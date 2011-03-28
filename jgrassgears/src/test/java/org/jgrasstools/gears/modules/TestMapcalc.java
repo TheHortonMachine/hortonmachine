@@ -19,12 +19,10 @@ public class TestMapcalc extends HMTestCase {
         double[][] elevationData = HMTestMaps.outPitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele",
-                elevationData, envelopeParams, crs, true);
-
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
-        
+
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
         mapcalc.pFunction = "ele*2-ele + sqrt(ele)^2-exp(log(ele));";
@@ -33,7 +31,7 @@ public class TestMapcalc extends HMTestCase {
 
         GridCoverage2D outMap = mapcalc.outMap;
         RenderedImage renderedImage = outMap.getRenderedImage();
-        printImage(renderedImage);
+        // printImage(renderedImage);
         checkMatrixEqual(renderedImage, HMTestMaps.outPitData, 0.000000001);
     }
 
