@@ -42,6 +42,8 @@ public class WikiPageModulesOverviewCreator {
 
         LinkedHashMap<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
         LinkedHashMap<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
+        LinkedHashMap<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
+        LinkedHashMap<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
 
         Set<String> hmNames = hmModules.keySet();
         String[] hmNamesArray = (String[]) hmNames.toArray(new String[hmNames.size()]);
@@ -61,34 +63,34 @@ public class WikiPageModulesOverviewCreator {
 
         String status = "CERTIFIED";
         sb.append("=== Release ready ==\n");
-        dumpModules(hmModules, hmNamesArray, sb, status);
+        dumpModules(hmModules, hmModulesClasses, hmNamesArray, sb, status);
         status = "TESTED";
         sb.append("=== Tested but not for upcoming release ==\n");
-        dumpModules(hmModules, hmNamesArray, sb, status);
+        dumpModules(hmModules, hmModulesClasses, hmNamesArray, sb, status);
         status = "DRAFT";
         sb.append("=== Module that are not passing the QA rules yet ==\n");
-        dumpModules(hmModules, hmNamesArray, sb, status);
+        dumpModules(hmModules, hmModulesClasses, hmNamesArray, sb, status);
 
         sb.append("\n<BR/><BR/><BR/>\n\n");
         sb.append("== Gears Modules ==\n");
         status = "CERTIFIED";
         sb.append("=== Release ready ==\n");
-        dumpModules(jggModules, jggNamesArray, sb, status);
+        dumpModules(jggModules, jggModulesClasses, jggNamesArray, sb, status);
         status = "TESTED";
         sb.append("=== Tested but not for upcoming release ==\n");
-        dumpModules(jggModules, jggNamesArray, sb, status);
+        dumpModules(jggModules, jggModulesClasses, jggNamesArray, sb, status);
         status = "DRAFT";
         sb.append("=== Module that are not passing the QA rules yet ==\n");
-        dumpModules(jggModules, jggNamesArray, sb, status);
+        dumpModules(jggModules, jggModulesClasses, jggNamesArray, sb, status);
 
         System.out.println(sb.toString());
     }
 
-    private static void dumpModules( LinkedHashMap<String, List<ClassField>> modulesMap, String[] modulesNamesArray,
-            StringBuilder sb, String status ) {
+    private static void dumpModules( LinkedHashMap<String, List<ClassField>> modulesMap,
+            LinkedHashMap<String, Class< ? >> modulesClasses, String[] modulesNamesArray, StringBuilder sb, String status ) {
         for( String moduleName : modulesNamesArray ) {
             List<ClassField> fieldsList = modulesMap.get(moduleName);
-            if (fieldsList==null) {
+            if (fieldsList == null) {
                 System.out.println(moduleName);
             }
             if (fieldsList.size() > 0) {
@@ -119,6 +121,8 @@ public class WikiPageModulesOverviewCreator {
             if (isCamelCase)
                 sb.append("!");
             sb.append(moduleName).append(" ====\n");
+
+            sb.append("Name to use in scripts: *").append(modulesClasses.get(moduleName).getCanonicalName()).append("*\n\n");
 
             sb.append("Parameters\n");
             // input parameters
