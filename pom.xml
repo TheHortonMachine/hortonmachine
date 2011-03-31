@@ -219,8 +219,6 @@
 			<artifactId>jt-jiffle-language</artifactId>
 			<version>${jiffle.version}</version>
 		</dependency>
-		
-
 	</dependencies>
 	    
 	<distributionManagement>

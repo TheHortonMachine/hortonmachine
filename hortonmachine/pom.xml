@@ -32,11 +32,44 @@
 			<artifactId>jama</artifactId>
 			<version>1.0.2</version>
 		</dependency>
+
+
+		<!-- the tools jar, needed for standalone mode 
+		<dependency>
+		  <groupId>com.sun</groupId>
+		  <artifactId>tools</artifactId>
+		  <version>1.6.0</version>
+		</dependency>
+                -->
 	</dependencies>
 
-		<!-- Build configuration -->
+
  <!-- create a runnable jar with all dependencies in it which is able to run OMS3 scripts 
 	<build>
+		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>install-commons-validator</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${java.home}/../lib/tools.jar</file>
+                            <groupId>com.sun</groupId>
+                            <artifactId>tools</artifactId>
+                            <version>1.6.0</version>
+                            <packaging>jar</packaging>
+                            <createChecksum>true</createChecksum>
+                            <generatePom>true</generatePom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+			
             <plugin>
               <artifactId>maven-assembly-plugin</artifactId>
               <configuration>
