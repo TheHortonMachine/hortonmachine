@@ -65,4 +65,15 @@ public class Resource {
         }
         return f;
     }
+
+    public List<File> filterDirectories() {
+        List<File> f = new ArrayList<File>();
+        for (String s : l) {
+            File sf = new File(s);
+            if (sf.isDirectory() && sf.exists()) {
+               f.add(sf);
+            }
+        }
+        return f;
+    }
 }

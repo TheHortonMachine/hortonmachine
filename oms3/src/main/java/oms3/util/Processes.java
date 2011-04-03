@@ -18,13 +18,8 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 
 /** ProcessExcecution. Helper class to execute external programs.
  *
@@ -41,6 +36,9 @@ public class Processes {
     private InputStream inp = System.in;
     private File executable;
     private Object[] args = new Object[]{};
+    //
+    boolean verbose;
+    Process process;
 
     /** Create a new ProcessExecution.
      *
@@ -49,15 +47,10 @@ public class Processes {
     public Processes(File executable) {
         this.executable = executable;
     }
-
   
     /** Set the execution arguments.
      *
      * @param args the command line arguments
-     */
-    /**
-     *
-     * @param args
      */
     public void setArguments(Object... args) {
         this.args = args;
@@ -115,13 +108,10 @@ public class Processes {
     public int getExitValue() {
         return exitValue;
     }
-    boolean verbose;
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
     }
-
-    Process process;
 
     /** Process execution. This call blocks until the process is done.
      *

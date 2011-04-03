@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -458,5 +459,25 @@ public class ComponentAccess {
             success = false;
         }
         return success;
+    }
+
+
+    public static String dump(Object comp) throws Exception {
+        StringBuilder b = new StringBuilder();
+        b.append("// In\n");
+        ComponentAccess cp = new ComponentAccess(comp);
+        for (Access in : cp.inputs()) {
+            String name = in.getField().getName();
+            Object val = in.getFieldValue();
+            b.append(name + ": " + Conversions.convert(val, String.class) + "\n");
+        }
+        b.append("// Out\n");
+        for (Access in : cp.outputs()) {
+            String name = in.getField().getName();
+            Object val = in.getFieldValue();
+            b.append(name + ": " + Conversions.convert(val, String.class) + "\n");
+        }
+        b.append("\n");
+        return b.toString();
     }
 }

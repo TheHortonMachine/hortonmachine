@@ -20,7 +20,7 @@ public class ConversionExample implements ConversionProvider {
             return new Converter<String, Currency>() {
 
                 @Override
-                public Currency convert(String src, Object... arg) {
+                public Currency convert(String src, Object arg) {
                     return Currency.getInstance(src);
                 }
             };
@@ -30,7 +30,7 @@ public class ConversionExample implements ConversionProvider {
                 return new Converter<String, Color>() {
 
                     @Override
-                    public Color convert(String src, Object... arg) {
+                    public Color convert(String src, Object arg) {
 
                         return new Color(Integer.parseInt(src, 16));
                     }
@@ -38,7 +38,5 @@ public class ConversionExample implements ConversionProvider {
             }
             return null;
         }
-
     }
-
 }

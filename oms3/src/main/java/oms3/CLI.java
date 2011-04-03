@@ -102,27 +102,29 @@ public class CLI {
                 + "def __sb__ = new oms3.SimBuilder(logging:'" + ll + "')\n"
                 + "__sb__.";
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
-        GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), new Binding());
+        Binding b = new Binding();
+        b.setVariable("oms_version", System.getProperty("oms.version"));
+        b.setVariable("oms_home", System.getProperty("oms.home"));
+        b.setVariable("oms_prj", System.getProperty("oms.prj"));
+        GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), b);
         return shell.evaluate(prefix + script);
     }
 
-// private
-    
+    public static Object evaluateGroovyScript(String file) throws Exception {
+        String content = readFile(file);
+        return createSim(content, true, "OFF");
+    }
+
     private static void setOMSProperties() {
         String oms_work = System.getProperty("oms3.work");
         if (oms_work != null) {
-            System.setProperty("oms3.prj", oms_work);
-            String jna = System.getProperty("jna.library.path");
-            if (jna != null) {
-                jna = jna + File.pathSeparator + new File(oms_work, "dist").toString();
-            } else {
-                jna = new File(oms_work, "dist").toString();
-            }
-            System.setProperty("jna.library.path", jna);
+            System.setProperty("oms.prj", oms_work);
         }
-        System.setProperty("oms3.version", oms3.Utils.getVersion());
-        System.setProperty("oms3.home", System.getProperty("user.home")
-                + File.separator + ".oms3" + File.separator + oms3.Utils.getVersion());
+        System.setProperty("oms.version", oms3.Utils.getVersion());
+        if (System.getProperty("oms.home") == null) {
+            System.setProperty("oms.home", System.getProperty("user.home")
+                    + File.separator + ".oms" + File.separator + oms3.Utils.getVersion());
+        }
     }
 
     private static void usage() {

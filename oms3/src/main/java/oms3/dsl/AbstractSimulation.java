@@ -26,6 +26,23 @@ abstract public class AbstractSimulation implements Buildable {
     OutputDescriptor output = new OutputDescriptor();
     List<Output> out = new ArrayList<Output>();
     Chart analysis;
+    //
+    RunContainer pre;
+    RunContainer post;
+
+    private RunContainer lazyPre() {
+        if (pre == null) {
+            pre = new RunContainer();
+        }
+        return pre;
+    }
+
+    private RunContainer lazyPost() {
+        if (post == null) {
+            post = new RunContainer();
+        }
+        return post;
+    }
 
     public void setName(String name) {
         this.name = name;
@@ -72,6 +89,19 @@ abstract public class AbstractSimulation implements Buildable {
             return analysis = new Chart();
         } else if (name.equals("outputstrategy")) {
             return output;
+        } else if (name.equals("pre")) {
+            return lazyPre();
+        } else if (name.equals("post")) {
+            return lazyPost();
+        } else if (name.equals("build")) {
+            File buildFile = new File(System.getProperty("oms.prj") + "/.oms/build.xml");
+            if (!buildFile.exists()) {
+                throw new IllegalArgumentException("No build file: " + buildFile);
+            }
+            Exec e = new Exec(Exec.Type.ANT);
+            e.setFile(buildFile.getAbsolutePath());
+            lazyPre().l.add(e);
+            return e;
         }
         throw new IllegalArgumentException(name.toString());
     }
@@ -84,7 +114,7 @@ abstract public class AbstractSimulation implements Buildable {
                 UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
             }
         } catch (Exception E) {
-            System.out.println("Cannot set native L&F.");
+            log.warning("Cannot set native L&F.");
         }
     }
 
@@ -100,6 +130,18 @@ abstract public class AbstractSimulation implements Buildable {
         } else {
             System.out.println("No analysis defined.");
         }
+    }
+
+    protected void doPreRuns() throws Exception {
+        if (pre == null)
+            return;
+        pre.run();
+    }
+
+    protected void doPostRuns() throws Exception {
+        if (post == null)
+            return;
+        post.run();
     }
 
     public void doc() throws Exception {
@@ -123,7 +165,7 @@ abstract public class AbstractSimulation implements Buildable {
                 if (lastFolder.exists()) {
                     desktop.open(lastFolder);
                 } else {
-                    System.out.println("Folder does not exist (yet): " + lastFolder);
+                    log.warning("Folder does not exist (yet): " + lastFolder);
                 }
             }
         }

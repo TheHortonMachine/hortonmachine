@@ -121,7 +121,6 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
         } else {
             result = super.getJavaFileForInput(location, className, kind);
         }
-
         return (result);
     }
 
@@ -180,9 +179,7 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
      *
      * @throws IOException if an I/O error occurs.
      */
-    protected List<JavaFileObject> listClassesFromUrl(final URL base,
-            final String packageName)
-            throws IOException {
+    protected List<JavaFileObject> listClassesFromUrl(final URL base, final String packageName) throws IOException {
         //TODO this will only work with file:// not jar://
 
         if (base == null) {
@@ -215,7 +212,6 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
                             } else {
                                 binaryName = packageName + "." + curSimpleName;
                             }
-
                             UrlJavaFileObject cur = new UrlJavaFileObject(curLine, url, Kind.CLASS, binaryName);
                             list.add(cur);
                         } catch (final URISyntaxException e) {
@@ -227,7 +223,6 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
         } finally {
             reader.close();
         }
-
         return (list);
     }
 }

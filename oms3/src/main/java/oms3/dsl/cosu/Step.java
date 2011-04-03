@@ -372,12 +372,12 @@ public class Step implements Buildable {
     }
 
 
-    public static void main(String[] args) {
-       ParameterData p = new ParameterData("ggg");
-       p.set(new double[] {2.3}, 0, 4, ParameterData.MEAN, new boolean[] {true});
-       System.out.println(p.getMean());
-       p.generateValues(4.0);
-       System.out.println(Arrays.toString(p.getDataValue()));
-       System.out.println(p.getMean());
-    }
+//    public static void main(String[] args) {
+//       ParameterData p = new ParameterData("ggg");
+//       p.set(new double[] {2.3}, 0, 4, ParameterData.MEAN, new boolean[] {true});
+//       System.out.println(p.getMean());
+//       p.generateValues(4.0);
+//       System.out.println(Arrays.toString(p.getDataValue()));
+//       System.out.println(p.getMean());
+//    }
 }

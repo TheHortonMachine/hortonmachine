@@ -73,21 +73,43 @@ public class Model implements Buildable {
         return params;
     }
 
+    public String getLibpath() {
+        List<File> f = res.filterDirectories();
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < f.size(); i++) {
+            b.append(f.get(i));
+            if (i<f.size()-1) {
+                b.append(File.pathSeparatorChar);
+            }
+        }
+        return b.toString();
+    }
+
     URLClassLoader getClassLoader() throws Exception {
         List<File> jars = res.filterFiles("jar");
-        URL[] urls = new URL[jars.size()];
-        for (int i = 0; i < urls.length; i++) {
-            urls[i] = jars.get(i).toURI().toURL();
+        List<File> dirs = res.filterDirectories();
+        List<URL> urls = new ArrayList<URL>();
+
+        for (int i = 0; i < jars.size(); i++) {
+            urls.add(jars.get(i).toURI().toURL());
         }
-        return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
+        for (int i = 0; i < dirs.size(); i++) {
+            urls.add(dirs.get(i).toURI().toURL());
+        }
+
+        URL[] u = urls.toArray(new URL[0]);
+        if (log.isLoggable(Level.CONFIG)) {
+            for (URL url : u) {
+                log.info("Resource " + url.toString());
+            }
+        }
+        return new URLClassLoader(u, Thread.currentThread().getContextClassLoader());
     }
 
     public Object getComponent() throws Exception {
         if (classname == null) {
-//            return getTLC();
             return getGeneratedComponent();
         }
-
         URLClassLoader loader = getClassLoader();
         try {
             Class c = loader.loadClass(classname);
@@ -219,11 +241,4 @@ public class Model implements Buildable {
         throw new IllegalArgumentException("Cannot find component for " + iter);
     }
 
-//    public static void main(String[] args) {
-//        System.out.println(UUID.randomUUID().toString().replace('-','_'));
-//        String a = "skkskssbbbbbb";
-//        String b[] = a.split("\\.");
-//        System.out.println(b[0]);
-//        System.out.println(b[1]);
-//    }
 }

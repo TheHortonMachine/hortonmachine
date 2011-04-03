@@ -31,6 +31,8 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.lang.reflect.Array;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -693,14 +695,13 @@ public class DataIO {
         if (col == -1) {
             throw new IllegalArgumentException("No such column: " + columnName);
         }
-        
        
-        SimpleDateFormat df = lookupDateFormat(t, col);
-        String fmt = df.toPattern();
-        
+        Conversions.Params p = new Conversions.Params();
+        p.add(String.class, Date.class, lookupDateFormat(t, col));
+
         List<Date> l = new ArrayList<Date>();
         for (String[] s : t.rows()) {
-            l.add(Conversions.convert(s[col], Date.class, fmt));
+            l.add(Conversions.convert(s[col], Date.class, p));
         }
         return l.toArray(new Date[0]);
     }
@@ -1087,7 +1088,7 @@ public class DataIO {
     private static String locate(CSVParser r, String name, String... type) throws IOException {
         if (name == null) {
             // match anything
-            name = ".*";
+            name = ".+";
         }
         Pattern p = Pattern.compile(name);
         String[] line = null;
@@ -1097,7 +1098,7 @@ public class DataIO {
                 continue;
             }
             for (String s : type) {
-                if (line[0].equalsIgnoreCase(s) && p.matcher(line[1]).matches()) {
+                if (line[0].equalsIgnoreCase(s) && p.matcher(line[1].trim()).matches()) {
                     return line[1];
                 }
             }

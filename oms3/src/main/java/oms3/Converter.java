@@ -1,5 +1,7 @@
 package oms3;
 
+import oms3.Conversions.Params;
+
 /**
  * Converter Interface
  * @param <F>
@@ -7,5 +9,5 @@ package oms3;
  */
 public interface Converter<F, T> {
 
-     T convert(F src, Object... arg);
+     T convert(F src, Object arg);
 }

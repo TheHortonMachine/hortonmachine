@@ -101,6 +101,18 @@ public class Sim extends AbstractSimulation {
                 Logger.getLogger("oms3.model." + comp).setLevel(level);
             }
 
+            // call the prerun scripts
+            doPreRuns();
+
+            // Path
+            String libPath = model.getLibpath();
+            if (libPath != null) {
+                System.setProperty("jna.library.path", libPath);
+                if (log.isLoggable(Level.CONFIG)) {
+                    log.config("Setting jna.library.path to " + libPath);
+                }
+            }
+
             Object comp = model.getComponent();
             if (log.isLoggable(Level.CONFIG)) {
                 log.config("TL component " + comp);
@@ -203,9 +215,12 @@ public class Sim extends AbstractSimulation {
                 e.done();
             }
 
+
             if (timing) {
                 System.out.println(" E: " + (t3 - t2) + "[ms]");
             }
+
+            doPostRuns();
             return comp;
         } catch (Throwable E) {
             handleException(E);
@@ -266,6 +281,7 @@ public class Sim extends AbstractSimulation {
     public void doc() throws Exception {
         try {
             OutputStragegy st = output.getOutputStrategy(getName());
+            st.lastOutputFolder().mkdirs();
             document(new File(st.lastOutputFolder(), getName() + ".xml").toString());
         } catch (Exception E) {
             handleException(E);
@@ -286,13 +302,13 @@ public class Sim extends AbstractSimulation {
         Locale locale = Locale.getDefault();
         if (System.getProperty("oms3.locale.lang") != null) {
             locale = new Locale(System.getProperty("oms3.locale.lang"));
-        } 
+        }
         Documents.db5Sim(new File(file.toString()), // output file
                 model.getComponent().getClass(), // the model class
                 model.getParameter(), // all merged parameter
                 getName(),
                 locale);// simulation name
-        
+
         System.out.println(" Generated: " + file);
     }
 

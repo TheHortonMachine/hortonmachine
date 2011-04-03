@@ -1,6 +1,5 @@
 package oms3.compiler;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -42,11 +39,6 @@ public final class Compiler {
                     "javax.tools.ToolProvider.getSystemJavaCompiler() returned null.");
         }
         fileManager = new MemoryOutputJavaFileManager(compiler.getStandardFileManager(null, null, null));
-//        try {
-//            fileManager.addClassPathUrl(new URL("file:/od/projects/ngmf.all/lib/oms-all.jar"));
-//        } catch (MalformedURLException ex) {
-//            throw new RuntimeException(ex);
-//        }
         for (URL url : getClassPathUrls()) {
             fileManager.addClassPathUrl(url);
         }
@@ -113,7 +105,6 @@ public final class Compiler {
     Class<?> compileSources(String className, String sourceCode) throws Exception {
         List<MemorySourceJavaFileObject> compUnits = new ArrayList<MemorySourceJavaFileObject>(1);
         compUnits.add(new MemorySourceJavaFileObject(className + ".java", sourceCode));
-
         DiagnosticCollector<JavaFileObject> diag = new DiagnosticCollector<JavaFileObject>();
         Boolean result = compiler.getTask(null, fileManager, diag, null, null, compUnits).call();
         if (!Boolean.TRUE.equals(result)) {
@@ -122,8 +113,7 @@ public final class Compiler {
 
         try {
             String classDotName = className.replace('/', '.');
-            Class<?> clazz = Class.forName(classDotName, true, loader);
-            return clazz;
+            return Class.forName(classDotName, true, loader);
         } catch (ClassNotFoundException e) {
             throw e;
         }

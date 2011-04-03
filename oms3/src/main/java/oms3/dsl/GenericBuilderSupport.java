@@ -23,18 +23,15 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
     private static final Logger log = Logger.getLogger("oms3.sim");
     private static final Logger model_log = Logger.getLogger("oms3.model");
     //
-    static ConsoleHandler conHandler = new ConsoleLoggingHandler();
+    static final ConsoleHandler conHandler = new ConsoleLoggingHandler();
 
     static {
         log.addHandler(conHandler);
         model_log.addHandler(conHandler);
         conHandler.setLevel(Level.ALL);
-//        log.setLevel(Level.WARNING);
     }
 
     public GenericBuilderSupport() {
-        System.setSecurityManager(null);        // for webstart 
-//        setLogging("WARNING");
     }
 
     public void setLogging(String level) {
@@ -64,7 +61,7 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
      * Provide the entry classes for a builder.
      * 
      * @param name
-     * @return the buildable object.
+     * @return the  builder object.
      */
     protected abstract Class<? extends Buildable> lookupTopLevel(Object name);
 

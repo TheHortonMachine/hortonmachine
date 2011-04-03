@@ -22,12 +22,13 @@
  */
 package oms3;
 
-import java.awt.Color;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,12 +43,45 @@ import java.util.regex.Pattern;
  */
 public class Conversions {
 
+    static private ServiceLoader<ConversionProvider> convServices = ServiceLoader.load(ConversionProvider.class);
     static final char LB = '{';
     static final char RB = '}';
     static final char SEP = ',';
     final static Pattern pattern = Pattern.compile("(\\w+)\\s*(\\[[0-9]+\\])*?");
     final static Pattern splitP = Pattern.compile(Character.toString(SEP));
     public static boolean debug = false;
+    /** Some common date patters */
+    static private final String[] fmt = {
+        "yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm",
+        "yyyy-MM-dd hh:mm",
+        "yyyy-MM-dd hh:mm:ss",
+        "yyyy-MM-dd", // ISO
+        "MM-dd-yyyy", // US
+        "MM/dd/yyyy",
+        "dd.MM.yyyy", // DE
+        "yyyy.MM.dd", // DE
+        "yyyy MM dd H m s" // MMS
+    };
+
+    public static class Params {
+
+        HashMap<String, Object> arg = new HashMap<String, Object>();
+
+        public void add(Class from, Class to, Object par) {
+            arg.put(key(from, to), par);
+        }
+
+        public Object get(Class from, Class to) {
+            return arg.get(key(from, to));
+        }
+    }
+
+    public static Params createDefault() {
+        Params p = new Params();
+        p.add(double.class, String.class, "10.5");
+        return p;
+    }
 
     /** Convert a String value into an object of a certain type
      *
@@ -56,7 +90,7 @@ public class Conversions {
      * @param arg conversion argument (e.g. Dateformat)
      * @return the object of a certain type.
      */
-    public static <T> T convert(Object from, Class<? extends T> to, Object... arg) {
+    public static <T> T convert(Object from, Class<? extends T> to, Params arg) {
         if (from == null) {
             throw new NullPointerException("from");
         }
@@ -67,23 +101,26 @@ public class Conversions {
             return new ArrayConverter((String) from).getArrayForType(to);
         }
         // get it from the internal cache.
-        Converter c = co.get(key(from.getClass(), to));
+        Converter<Object, T> c = co.get(key(from.getClass(), to));
         if (c == null) {
             // service provider lookup
             c = lookupConversionService(from.getClass(), to);
             if (c == null) {
-                throw new IllegalArgumentException("No Converter: " + from + "->" + to);
+                throw new IllegalArgumentException("No Converter: " + from + " (" + from.getClass() + ") -> " + to);
             }
             co.put(key(from.getClass(), to), c);
         }
-        return (T) c.convert(from, arg);
+        Object param = null;
+        if (arg != null) {
+            param = arg.get(from.getClass(), to);
+        }
+        return (T) c.convert(from, param);
     }
 
     public static <T> T convert(Object from, Class<? extends T> to) {
-        return convert(from, to, (Object[]) null);
+        return convert(from, to, null);
     }
     // SPI
-    static private ServiceLoader<ConversionProvider> convServices = ServiceLoader.load(ConversionProvider.class);
 
     /**
      * Lookup a conversion service
@@ -92,7 +129,7 @@ public class Conversions {
      * @param to
      * @return
      */
-    private static Converter<?, ?> lookupConversionService(Class from, Class to) {
+    private static <T> Converter<Object, T> lookupConversionService(Class from, Class to) {
         for (ConversionProvider converter : convServices) {
             Converter c = converter.getConverter(from, to);
             if (c != null) {
@@ -301,7 +338,7 @@ public class Conversions {
                                 index = index * 10 + (layout.charAt(idx++) - '0');
                             }
                             idx--;
-                            Object o = converter.convert(content[index]);
+                            Object o = converter.convert(content[index], null);
                             try {
                                 Array.set(arr, arridx, o);
                             } catch (IllegalArgumentException E) {
@@ -315,19 +352,6 @@ public class Conversions {
             }
         }
     }
-    /** Some common date patters */
-    static private final String[] fmt = {
-        "yyyy-MM-dd'T'HH:mm:ss",
-        "yyyy-MM-dd'T'HH:mm",
-        "yyyy-MM-dd hh:mm",
-        "yyyy-MM-dd hh:mm:ss",
-        "yyyy-MM-dd", // ISO
-        "MM-dd-yyyy", // US
-        "MM/dd/yyyy",
-        "dd.MM.yyyy", // DE
-        "yyyy.MM.dd", // DE
-        "yyyy MM dd H m s" // MMS
-    };
 
     public static String formatISO(Date date) {
         return ISO().format(date);
@@ -355,7 +379,8 @@ public class Conversions {
         throw new IllegalArgumentException(date);
     }
 
-    private static String key(Class from, Class to) {
+//    DecimalFormat dfmt
+    private final static String key(Class from, Class to) {
         return from.getName() + "->" + to.getName();
     }
     /**
@@ -364,25 +389,34 @@ public class Conversions {
     @SuppressWarnings("serial")
     private static Map<String, Converter> co = new HashMap<String, Converter>() {
 
+        @Override
+        public Converter put(String key, Converter value) {
+            Converter v = super.put(key, value);
+            if (v != null) {
+                throw new IllegalArgumentException("Duplicate Converter for " + key);
+            }
+            return v;
+        }
+
         {
             put(key(String.class, String.class), new Converter<String, String>() {
 
                 @Override
-                public String convert(String s, Object... arg) {
+                public String convert(String s, Object arg) {
                     return s;
                 }
             });
             put(key(BigDecimal.class, Double.class), new Converter<BigDecimal, Double>() {
 
                 @Override
-                public Double convert(BigDecimal s, Object... arg) {
+                public Double convert(BigDecimal s, Object arg) {
                     return s.doubleValue();
                 }
             });
             put(key(Integer.class, Double.class), new Converter<Integer, Double>() {
 
                 @Override
-                public Double convert(Integer s, Object... arg) {
+                public Double convert(Integer s, Object arg) {
                     return s.doubleValue();
                 }
             });
@@ -390,13 +424,28 @@ public class Conversions {
             put(key(double[].class, String.class), new Converter<double[], String>() {
 
                 @Override
-                public String convert(double[] s, Object... arg) {
-                    StringBuffer b = new StringBuffer("{");
+                public String convert(double[] s, Object arg) {
+                    StringBuilder b = new StringBuilder("{");
                     if (s.length > 0) {
                         for (int i = 0; i < s.length - 1; i++) {
                             b.append(s[i] + ", ");
                         }
                         b.append(s[s.length - 1]);
+                    }
+                    b.append("}");
+                    return b.toString();
+                }
+            });
+            put(key(double[][].class, String.class), new Converter<double[][], String>() {
+
+                @Override
+                public String convert(double[][] s, Object arg) {
+                    StringBuilder b = new StringBuilder("{");
+                    if (s.length > 0) {
+                        for (int i = 0; i < s.length - 1; i++) {
+                            b.append(Conversions.convert(s[i], String.class) + ", ");
+                        }
+                        b.append(Conversions.convert(s[s.length - 1], String.class));
                     }
                     b.append("}");
                     return b.toString();
@@ -405,8 +454,8 @@ public class Conversions {
             put(key(int[].class, String.class), new Converter<int[], String>() {
 
                 @Override
-                public String convert(int[] s, Object... arg) {
-                    StringBuffer b = new StringBuffer("{");
+                public String convert(int[] s, Object arg) {
+                    StringBuilder b = new StringBuilder("{");
                     if (s.length > 0) {
                         for (int i = 0; i < s.length - 1; i++) {
                             b.append(s[i] + ", ");
@@ -417,10 +466,25 @@ public class Conversions {
                     return b.toString();
                 }
             });
+            put(key(int[][].class, String.class), new Converter<int[][], String>() {
+
+                @Override
+                public String convert(int[][] s, Object arg) {
+                    StringBuilder b = new StringBuilder("{");
+                    if (s.length > 0) {
+                        for (int i = 0; i < s.length - 1; i++) {
+                            b.append(Conversions.convert(s[i], String.class) + ", ");
+                        }
+                        b.append(Conversions.convert(s[s.length - 1], String.class));
+                    }
+                    b.append("}");
+                    return b.toString();
+                }
+            });
             put(key(String.class, URL.class), new Converter<String, URL>() {    // File
 
                 @Override
-                public URL convert(String s, Object... arg) {
+                public URL convert(String s, Object arg) {
                     try {
                         return new URL(s);
                     } catch (MalformedURLException ex) {
@@ -431,46 +495,39 @@ public class Conversions {
             put(key(String.class, File.class), new Converter<String, File>() {    // File
 
                 @Override
-                public File convert(String s, Object... arg) {
+                public File convert(String s, Object arg) {
                     return new File(s);
                 }
             });
             put(key(String.class, Date.class), new Converter<String, Date>() {    // File
 
                 @Override
-                public Date convert(String s, Object... arg) {
-                    if (arg == null) {
-                        return parse(s);
-                    } else if (arg.length == 1) {
+                public Date convert(String s, Object arg) {
+                    if (arg instanceof DateFormat) {
                         try {
-                            SimpleDateFormat df = new SimpleDateFormat(arg[0].toString());
-                            return df.parse(s);
+                            return ((DateFormat) arg).parse(s);
                         } catch (ParseException E) {
                             throw new RuntimeException(E);
                         }
                     }
-                    throw new IllegalArgumentException();
-
+                    return parse(s);
                 }
             });
             put(key(String.class, Calendar.class), new Converter<String, Calendar>() {    // Calendar
 
                 @Override
-                public Calendar convert(String s, Object... arg) {
+                public Calendar convert(String s, Object arg) {
                     Date d = null;
-                    if (arg == null) {
-                        d = parse(s);
-                    } else if (arg.length == 1) {
+                    if (arg instanceof DateFormat) {
                         try {
-                            SimpleDateFormat df = new SimpleDateFormat(arg[0].toString());
-                            d = df.parse(s);
+                            d = ((DateFormat) arg).parse(s);
                         } catch (ParseException E) {
                             throw new RuntimeException(E);
                         }
                     } else {
-                        throw new IllegalArgumentException();
+                        d = parse(s);
                     }
-                    GregorianCalendar cal = new GregorianCalendar();
+                    Calendar cal = new GregorianCalendar();
                     cal.setTime(d);
                     return cal;
                 }
@@ -478,32 +535,43 @@ public class Conversions {
             put(key(GregorianCalendar.class, String.class), new Converter<GregorianCalendar, String>() {    // Calendar
 
                 @Override
-                public String convert(GregorianCalendar s, Object... arg) {
-                    if (arg != null && arg.length == 1) {
-                        return new SimpleDateFormat(arg[0].toString()).format(s.getTime());
+                public String convert(GregorianCalendar s, Object arg) {
+                    if (arg instanceof DateFormat) {
+                        return ((DateFormat) arg).format(s.getTime());
                     } else {
                         return ISO().format(s.getTime());
                     }
                 }
             });
-            put(key(Double.class, String.class), new Converter<Double, String>() {    // Calendar
+            put(key(Double.class, String.class), new Converter<Double, String>() {    // Double
 
                 @Override
-                public String convert(Double s, Object... arg) {
+                public String convert(Double s, Object arg) {
+                    if (arg instanceof NumberFormat) {
+                        NumberFormat nf = (NumberFormat) arg;
+                        return nf.format(s);
+                    }
+                    return s.toString();
+                }
+            });
+            put(key(Integer.class, String.class), new Converter<Integer, String>() {    // Integer
+
+                @Override
+                public String convert(Integer s, Object arg) {
                     return s.toString();
                 }
             });
             put(key(String.class, BigDecimal.class), new Converter<String, BigDecimal>() {    // File
 
                 @Override
-                public BigDecimal convert(String s, Object... arg) {
+                public BigDecimal convert(String s, Object arg) {
                     return new BigDecimal(s.trim());
                 }
             });
             put(key(String.class, double.class), new Converter<String, Double>() {    // double
 
                 @Override
-                public Double convert(String s, Object... arg) {
+                public Double convert(String s, Object arg) {
                     return Double.parseDouble(s.trim());
                 }
             });
@@ -511,7 +579,7 @@ public class Conversions {
             put(key(String.class, float.class), new Converter<String, Float>() {     // float
 
                 @Override
-                public Float convert(String s, Object... arg) {
+                public Float convert(String s, Object arg) {
                     return Float.parseFloat(s.trim());
                 }
             });
@@ -519,7 +587,7 @@ public class Conversions {
             put(key(String.class, long.class), new Converter<String, Long>() {       // long
 
                 @Override
-                public Long convert(String s, Object... arg) {
+                public Long convert(String s, Object arg) {
                     return Long.parseLong(s.trim());
                 }
             });
@@ -527,7 +595,7 @@ public class Conversions {
             put(key(String.class, int.class), new Converter<String, Integer>() {        // int
 
                 @Override
-                public Integer convert(String s, Object... arg) {
+                public Integer convert(String s, Object arg) {
                     return Integer.parseInt(s.trim());
                 }
             });
@@ -535,33 +603,39 @@ public class Conversions {
             put(key(String.class, short.class), new Converter<String, Short>() {      // short
 
                 @Override
-                public Short convert(String s, Object... arg) {
+                public Short convert(String s, Object arg) {
                     return Short.parseShort(s.trim());
                 }
             });
             put(key(String.class, Short.class), get(key(String.class, short.class)));
-
             put(key(String.class, byte.class), new Converter<String, Byte>() {         // byte
 
                 @Override
-                public Byte convert(String s, Object... arg) {
+                public Byte convert(String s, Object arg) {
                     return Byte.parseByte(s.trim());
                 }
             });
             put(key(String.class, Byte.class), get(key(String.class, byte.class)));
+            put(key(boolean.class, String.class), new Converter<Boolean, String>() {       // boolean
+
+                @Override
+                public String convert(Boolean s, Object arg) {
+                    return s.toString();
+                }
+            });
+            put(key(Boolean.class, String.class), get(key(boolean.class, String.class)));
             put(key(String.class, boolean.class), new Converter<String, Boolean>() {       // boolean
 
                 @Override
-                public Boolean convert(String s, Object... arg) {
+                public Boolean convert(String s, Object arg) {
                     return Boolean.parseBoolean(s.trim());
                 }
             });
             put(key(String.class, Boolean.class), get(key(String.class, boolean.class)));
-
             put(key(String.class, char.class), new Converter<String, Character>() {        // String
 
                 @Override
-                public Character convert(String s, Object... arg) {
+                public Character convert(String s, Object arg) {
                     return s.trim().charAt(0);
                 }
             });
@@ -572,19 +646,30 @@ public class Conversions {
 
     public static void main(String[] args) throws ParseException {
 
-        System.out.println("1 " + Double.class.isAssignableFrom(Object.class));
-        System.out.println("2 " + Object.class.isAssignableFrom(Double.class));
-        System.out.println("3 " + Number.class.isAssignableFrom(Double.class));
-        System.out.println("4 " + double.class.isAssignableFrom(Double.class));
-        System.out.println("5 " + Double.class.isAssignableFrom(double.class));
-        System.out.println("6 " + Double.class.getCanonicalName());
-        System.out.println("7 " + Double.class.getName());
-        System.out.println("8 " + Double.class.getSimpleName());
 
-        Currency c = convert("USD", Currency.class);
-        Color col = convert("ff0110", Color.class);
-        System.out.println(c);
-        System.out.println(col);
+        double a = 1231.2345672828288284;
+        System.out.println(String.format(Locale.US, "'%2.5f'", a));
+
+//        Formatter f = new Formatter();
+//        NumberFormat formatter = new DecimalFormat("#0.000");
+//        System.out.println(formatter.);
+
+//        System.out.println("1 " + Double.class.isAssignableFrom(Object.class));
+//        System.out.println("2 " + Object.class.isAssignableFrom(Double.class));
+//        System.out.println("3 " + Number.class.isAssignableFrom(Double.class));
+//        System.out.println("4 " + double.class.isAssignableFrom(Double.class));
+//        System.out.println("5 " + Double.class.isAssignableFrom(double.class));
+//        System.out.println("6 " + Double.class.getCanonicalName());
+//        System.out.println("7 " + Double.class.getName());
+//        System.out.println("8 " + Double.class.getSimpleName());
+//
+//        Currency c = convert("USD", Currency.class);
+//        Color col = convert("ff0110", Color.class);
+//        System.out.println(c);
+//        System.out.println(col);
+
+
+        System.out.print(co.keySet());
 
     }
 ////        String content = "{{   333.345, 12.23},  {444.1, 222.4},{1.2, 3.4}}";

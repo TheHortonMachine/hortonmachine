@@ -21,22 +21,21 @@ import oms3.gen.Access;
  *
  * @author od
  */
-class Utils {
+public class Utils {
 
-    // DO NOT edit the next line.
-    static String oms3_version = null;
+    static String oms_version = null;
 
     public static synchronized String getVersion() {
-        if (oms3_version == null) {
+        if (oms_version == null) {
             try {
                 BufferedReader r = new BufferedReader(new InputStreamReader(Utils.class.getResourceAsStream("version.txt")));
-                oms3_version = r.readLine();
+                oms_version = r.readLine();
                 r.close();
             } catch (Exception ex) {
-                oms3_version = "?";
+                oms_version = "?";
             }
         }
-        return oms3_version;
+        return oms_version;
     }
 
     public static void main(String[] args) {

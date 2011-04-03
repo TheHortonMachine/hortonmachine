@@ -41,8 +41,6 @@ public class SimBuilder extends GenericBuilderSupport {
             cl = "oms3.dsl.cosu.Fast";
         } else if (name.toString().equals("dds")) {
             cl = "oms3.dsl.cosu.DDS";
-//        } else if (name.toString().equals("cluster")) {
-//            cl = "oms3.dsl.cluster.Cluster";
         } else if (name.toString().equals("glue")) {
             cl = "oms3.dsl.cosu.Glue";
         } else if (name.toString().equals("test")) {
