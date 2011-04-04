@@ -31,7 +31,7 @@ public class TestMapcalc extends HMTestCase {
         GridCoverage2D outMap = mapcalc.outMap;
 
         RenderedImage renderedImage = outMap.getRenderedImage();
-        printImage(renderedImage);
+        // printImage(renderedImage);
         checkMatrixEqual(renderedImage, HMTestMaps.pitData, 0.000000001);
     }
 
@@ -66,13 +66,13 @@ public class TestMapcalc extends HMTestCase {
 
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "images{ele=read; dest=write;} dest = xstep()*ystep();";
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = xres()*yres();";
         mapcalc.process();
 
         GridCoverage2D outMap = mapcalc.outMap;
 
         RenderedImage renderedImage = outMap.getRenderedImage();
-        printImage(renderedImage);
+        // printImage(renderedImage);
 
         checkEqualsSinlgeValue(renderedImage, 900.0, 0.000000001);
     }

@@ -18,12 +18,10 @@
  */
 package org.jgrasstools.gears.modules.r.mapcalc;
 
-import jaitools.CollectionFactory;
 import jaitools.imageutils.ImageUtils;
 import jaitools.jiffle.Jiffle;
 import jaitools.jiffle.runtime.AffineCoordinateTransform;
 import jaitools.jiffle.runtime.CoordinateTransform;
-import jaitools.jiffle.runtime.CoordinateTransforms;
 import jaitools.jiffle.runtime.JiffleDirectRuntime;
 import jaitools.jiffle.runtime.JiffleExecutor;
 import jaitools.jiffle.runtime.JiffleExecutorResult;
@@ -59,8 +57,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.sun.media.jai.util.ImageUtil;
 
 @Description("Module for doing raster map algebra")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -102,7 +98,7 @@ public class Mapcalc extends JGTModel {
         if (!concatOr(outMap == null, doReset)) {
             return;
         }
-
+        
         String script = pFunction;
         script = script.trim();
 
@@ -114,7 +110,6 @@ public class Mapcalc extends JGTModel {
         CoordinateTransform jiffleCRS = null;
 
         // gather maps
-        Map<String, RenderedImage> images = CollectionFactory.map();
         for( GridCoverage2D mapGC : inMaps ) {
             if (regionParameters == null) {
                 regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
@@ -122,17 +117,17 @@ public class Mapcalc extends JGTModel {
 
                 worldBounds = mapGC.getEnvelope2D().getBounds2D();
                 Rectangle gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
+                
                 jiffleCRS = getTransform(worldBounds, gridBounds);
 
                 double xRes = regionParameters.get(CoverageUtilities.XRES).doubleValue();
                 double yRes = regionParameters.get(CoverageUtilities.YRES).doubleValue();
-                jiffleRuntime.setWorldByStepDistance(worldBounds, xRes, yRes);
+                jiffleRuntime.setWorldByResolution(worldBounds, xRes, yRes);
             }
             RenderedImage renderedImage = mapGC.getRenderedImage();
             // add map
             String name = mapGC.getName().toString();
             jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
-            images.put(name, renderedImage);
         }
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
@@ -149,7 +144,6 @@ public class Mapcalc extends JGTModel {
         String destName = jiffleRuntime.getDestinationVarNames()[0];
         WritableRenderedImage destImg = ImageUtils.createConstantImage(nCols, nRows, 0d);
         jiffleRuntime.setDestinationImage(destName, destImg, jiffleCRS);
-        images.put(destName, destImg);
 
         // create the executor
         JiffleExecutor executor = new JiffleExecutor();
@@ -157,7 +151,7 @@ public class Mapcalc extends JGTModel {
         executor.addEventListener(listener);
         listener.setNumTasks(1);
 
-        int jobID = executor.submit(jiffle, images, new JiffleProgressListener(){
+        int jobID = executor.submit(jiffleRuntime, new JiffleProgressListener(){
             private long count = 0;
             public void update( long done ) {
                 if (count == done) {
@@ -211,7 +205,7 @@ public class Mapcalc extends JGTModel {
         if (imageBounds == null || imageBounds.isEmpty()) {
             throw new IllegalArgumentException("imageBounds must not be null or empty");
         }
-
+        
         double xscale = (imageBounds.getMaxX() - imageBounds.getMinX()) / (worldBounds.getMaxX() - worldBounds.getMinX());
 
         double xoff = imageBounds.getMinX() - xscale * worldBounds.getMinX();
