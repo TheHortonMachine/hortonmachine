@@ -18,11 +18,6 @@
  */
 package org.jgrasstools.gears.io.grass;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
-
 import java.io.File;
 
 import oms3.annotations.Author;
@@ -44,7 +39,6 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
