@@ -10,7 +10,7 @@
 		<gt.version>2.8-SNAPSHOT</gt.version>
 		<gt.version.exp>2.8-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.2-SNAPSHOT</jaitools.version>
-		<jiffle.version>0.1-SNAPSHOT</jiffle.version>
+		<jiffle.version>0.2-SNAPSHOT</jiffle.version>
 		<performRelease>false</performRelease>
 	</properties>
 

@@ -21,14 +21,24 @@ package org.jgrasstools.gears.modules.r.mapcalc;
 import jaitools.CollectionFactory;
 import jaitools.imageutils.ImageUtils;
 import jaitools.jiffle.Jiffle;
+import jaitools.jiffle.runtime.AffineCoordinateTransform;
+import jaitools.jiffle.runtime.CoordinateTransform;
+import jaitools.jiffle.runtime.CoordinateTransforms;
+import jaitools.jiffle.runtime.JiffleDirectRuntime;
 import jaitools.jiffle.runtime.JiffleExecutor;
 import jaitools.jiffle.runtime.JiffleExecutorResult;
 import jaitools.jiffle.runtime.JiffleProgressListener;
 
+import java.awt.Rectangle;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRenderedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,6 +59,8 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.sun.media.jai.util.ImageUtil;
 
 @Description("Module for doing raster map algebra")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -71,15 +83,18 @@ public class Mapcalc extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The resulting map.")
+    @Description("The resulting map picked from the inserted function.")
     @Out
     public GridCoverage2D outMap = null;
-
-    private static final String resultName = "result"; //$NON-NLS-1$
 
     private HashMap<String, Double> regionParameters = null;
 
     private CoordinateReferenceSystem crs;
+
+    private Rectangle2D worldBounds;
+
+    private long updateInterval;
+    private long totalCount = 100;
 
     @SuppressWarnings("nls")
     @Execute
@@ -88,44 +103,36 @@ public class Mapcalc extends JGTModel {
             return;
         }
 
-        /*
-         * prepare the function to be used by jiffle
-         */
-        String script = null;
-        String regex = resultName + "[\\s+]=";
-        String[] split = pFunction.split(regex);
-        if (split.length > 1) {
-            /*
-             * if there is the result inside the function,
-             * then 
-             */
-            script = pFunction + "\n";
-        } else {
-            /*
-             * if there is no result inside, then we
-             * assume a form of:
-             * result = function
-             */
-            script = resultName + "=" + pFunction + "\n";
-        }
+        String script = pFunction;
         script = script.trim();
+
+        Jiffle jiffle = new Jiffle();
+        jiffle.setScript(script);
+        jiffle.compile();
+        JiffleDirectRuntime jiffleRuntime = jiffle.getRuntimeInstance();
+
+        CoordinateTransform jiffleCRS = null;
 
         // gather maps
         Map<String, RenderedImage> images = CollectionFactory.map();
-        // ad roles
-        Map<String, Jiffle.ImageRole> imageParams = CollectionFactory.map();
-
         for( GridCoverage2D mapGC : inMaps ) {
             if (regionParameters == null) {
                 regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
                 crs = mapGC.getCoordinateReferenceSystem();
+
+                worldBounds = mapGC.getEnvelope2D().getBounds2D();
+                Rectangle gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
+                jiffleCRS = getTransform(worldBounds, gridBounds);
+
+                double xRes = regionParameters.get(CoverageUtilities.XRES).doubleValue();
+                double yRes = regionParameters.get(CoverageUtilities.YRES).doubleValue();
+                jiffleRuntime.setWorldByStepDistance(worldBounds, xRes, yRes);
             }
             RenderedImage renderedImage = mapGC.getRenderedImage();
             // add map
             String name = mapGC.getName().toString();
+            jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
             images.put(name, renderedImage);
-            // add role
-            imageParams.put(name, Jiffle.ImageRole.SOURCE);
         }
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
@@ -134,16 +141,15 @@ public class Mapcalc extends JGTModel {
         int nRows = regionParameters.get(CoverageUtilities.ROWS).intValue();
         long pixelsNum = (long) nCols * nRows;
 
-        // add the output map
-        images.put(resultName, ImageUtils.createConstantImage(nCols, nRows, 0d));
+        if (pixelsNum < totalCount) {
+            totalCount = pixelsNum;
+        }
+        updateInterval = pixelsNum / totalCount;
 
-        // build the jiffle
-        imageParams.put(resultName, Jiffle.ImageRole.DEST);
-
-        final long updateInterval = pixelsNum / 100;
-
-        Jiffle jiffle = new Jiffle(script, imageParams);
-        // jiffle.compile();
+        String destName = jiffleRuntime.getDestinationVarNames()[0];
+        WritableRenderedImage destImg = ImageUtils.createConstantImage(nCols, nRows, 0d);
+        jiffleRuntime.setDestinationImage(destName, destImg, jiffleCRS);
+        images.put(destName, destImg);
 
         // create the executor
         JiffleExecutor executor = new JiffleExecutor();
@@ -161,7 +167,7 @@ public class Mapcalc extends JGTModel {
             }
 
             public void start() {
-                pm.beginTask("Processing maps...", 100);
+                pm.beginTask("Processing maps...", (int) totalCount);
             }
 
             public void setUpdateInterval( double propPixels ) {
@@ -188,9 +194,33 @@ public class Mapcalc extends JGTModel {
         listener.await();
 
         JiffleExecutorResult result = listener.getResults().get(0);
-        RenderedImage resultImage = result.getImages().get(resultName);
-        outMap = CoverageUtilities.buildCoverage(resultName, resultImage, regionParameters, crs);
+        Map<String, RenderedImage> imgMap = result.getImages();
+        Set<Entry<String, RenderedImage>> entrySet = imgMap.entrySet();
+        for( Entry<String, RenderedImage> entry : entrySet ) {
+            RenderedImage resultImage = entry.getValue();
+            outMap = CoverageUtilities.buildCoverage(entry.getKey(), resultImage, regionParameters, crs);
+            break;
+        }
         executor.shutdown();
+    }
+
+    private static CoordinateTransform getTransform( Rectangle2D worldBounds, Rectangle imageBounds ) {
+        if (worldBounds == null || worldBounds.isEmpty()) {
+            throw new IllegalArgumentException("worldBounds must not be null or empty");
+        }
+        if (imageBounds == null || imageBounds.isEmpty()) {
+            throw new IllegalArgumentException("imageBounds must not be null or empty");
+        }
+
+        double xscale = (imageBounds.getMaxX() - imageBounds.getMinX()) / (worldBounds.getMaxX() - worldBounds.getMinX());
+
+        double xoff = imageBounds.getMinX() - xscale * worldBounds.getMinX();
+
+        double yscale = (imageBounds.getMaxY() - imageBounds.getMinY()) / (worldBounds.getMaxY() - worldBounds.getMinY());
+
+        double yoff = imageBounds.getMinY() - yscale * worldBounds.getMinY();
+
+        return new AffineCoordinateTransform(new AffineTransform(xscale, 0, 0, yscale, xoff, yoff));
     }
 
 }

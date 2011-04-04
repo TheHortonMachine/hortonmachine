@@ -12,8 +12,8 @@ import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+@SuppressWarnings("nls")
 public class TestMapcalc extends HMTestCase {
-    @SuppressWarnings("nls")
     public void testMapcalc() throws Exception {
 
         double[][] elevationData = HMTestMaps.pitData;
@@ -21,21 +21,14 @@ public class TestMapcalc extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 
-        // GridCoverage2D elevationCoverage =
-        // RasterReader.readCoverage("/home/moovida/data/hydrocareworkspace/grassdb/utm35s_new/rwanda/cell/pit_rwanda");
-
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "if(pit_rwanda > 1000){    result = 1000; }else{    result = pit_rwanda; };";
-
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest=ele*2-ele + sqrt(ele)^2-exp(log(ele));";
         mapcalc.process();
 
         GridCoverage2D outMap = mapcalc.outMap;
-
-        // JGrassCoverageWriter.writeGrassRaster("/home/moovida/data/hydrocareworkspace/grassdb/utm35s_new/rwanda/cell/halfpit",
-        // outMap);
 
         RenderedImage renderedImage = outMap.getRenderedImage();
         printImage(renderedImage);
@@ -53,14 +46,44 @@ public class TestMapcalc extends HMTestCase {
 
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inMaps = maps;
-        mapcalc.pFunction = "(flow+flow)/2;";
+        mapcalc.pFunction = "images{flow=read; dest=write;} dest = (flow+flow)/2;";
 
         mapcalc.process();
 
         GridCoverage2D outMap = mapcalc.outMap;
         RenderedImage renderedImage = outMap.getRenderedImage();
-        printImage(renderedImage);
+        // printImage(renderedImage);
         checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
+    }
+
+    public void testMapcalc3() throws Exception {
+        double[][] elevationData = HMTestMaps.pitData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
+
+        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
+
+        Mapcalc mapcalc = new Mapcalc();
+        mapcalc.inMaps = maps;
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = xstep()*ystep();";
+        mapcalc.process();
+
+        GridCoverage2D outMap = mapcalc.outMap;
+
+        RenderedImage renderedImage = outMap.getRenderedImage();
+        printImage(renderedImage);
+
+        double[][] data = new double[][]{//
+        {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}, //
+                {900, 900, 900, 900, 900, 900, 900, 900}};
+        checkMatrixEqual(renderedImage, data, 0.000000001);
     }
 
     public static void main( String[] args ) throws Exception {

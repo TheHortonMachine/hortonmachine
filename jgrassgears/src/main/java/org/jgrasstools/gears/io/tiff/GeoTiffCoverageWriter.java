@@ -50,11 +50,11 @@ import org.opengis.parameter.ParameterValueGroup;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GeoTiffCoverageWriter extends JGTModel {
     @Description("The coverage map that needs to be written.")
-    @UI(JGTConstants.FILE_UI_HINT)
     @In
     public GridCoverage2D geodata = null;
 
     @Description("The output geotiff file.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 

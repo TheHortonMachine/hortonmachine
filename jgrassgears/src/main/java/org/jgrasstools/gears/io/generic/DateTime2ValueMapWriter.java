@@ -51,7 +51,7 @@ import org.joda.time.DateTime;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DateTime2ValueMapWriter {
     @Description("The csv file to write to.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 

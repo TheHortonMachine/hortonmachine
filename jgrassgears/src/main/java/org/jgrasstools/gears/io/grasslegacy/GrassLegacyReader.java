@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyReader extends JGTModel {
     @Description("The file to the map to be read (the cell file).")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 

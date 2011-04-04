@@ -46,7 +46,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyWriter extends JGTModel {
     @Description("The map that needs to be written.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public double[][] geodata = null;
 

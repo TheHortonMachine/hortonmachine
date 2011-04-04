@@ -51,7 +51,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 public class GeoTiffCoverageReader extends JGTModel{
     @Role(Role.PARAMETER)
     @Description("The geotiff file.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 

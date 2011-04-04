@@ -48,7 +48,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class VegetationLibraryReader extends JGTModel {
     @Description("The csv file to read from.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 

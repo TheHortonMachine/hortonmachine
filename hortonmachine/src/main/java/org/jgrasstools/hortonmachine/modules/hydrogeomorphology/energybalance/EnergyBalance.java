@@ -187,12 +187,12 @@ public class EnergyBalance extends JGTModel {
     public List<EIAreas> inAreas = null;
 
     @Description("The path to the safepoint to use as initial conditions.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String pInitsafepoint;
 
     @Description("The path to which to write the safepoint.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String pEndsafepoint;
 

@@ -251,8 +251,10 @@ public class JGTConstants {
      * vars ui hints
      */
     public static final String HIDE_UI_HINT = "hide";
-    public static final String FILE_UI_HINT = "file";
-    public static final String FOLDER_UI_HINT = "folder";
+    public static final String FILEIN_UI_HINT = "infile";
+    public static final String FOLDERIN_UI_HINT = "infolder";
+    public static final String FILEOUT_UI_HINT = "outfile";
+    public static final String FOLDEROUT_UI_HINT = "outfolder";
     public static final String FILESPATHLIST_UI_HINT = "filespathlist";
     public static final String CRS_UI_HINT = "crs";
     public static final String ITERATOR_UI_HINT = "iterator";

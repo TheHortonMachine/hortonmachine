@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.io.grasslegacy.modules;
 
-import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.List;
 
@@ -50,7 +49,6 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform2D;
 
 @Description("Module for raster patching")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -76,7 +74,7 @@ public class GrassMosaicLegacy extends JGTModel {
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The grass file path to which to write to.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outFile = null;
 

@@ -48,7 +48,7 @@ import org.joda.time.format.DateTimeFormatter;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TimeseriesByStepWriterId2Value {
     @Description("The csv file to write to.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 

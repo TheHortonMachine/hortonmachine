@@ -50,7 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class FileIterator extends JGTModel {
 
     @Description("The folder on which to iterate")
-    @UI(JGTConstants.FOLDER_UI_HINT)
+    @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 

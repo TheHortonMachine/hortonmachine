@@ -53,7 +53,7 @@ public class ArcgridCoverageWriter extends JGTModel {
     public GridCoverage2D geodata = null;
 
     @Description("The output arcgrid path.")
-    @UI(JGTConstants.FILE_UI_HINT)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 

@@ -54,14 +54,14 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureWriter extends JGTModel {
-    @Description("The shapefile to which to write to.")
-    @UI(JGTConstants.FILE_UI_HINT)
-    @In
-    public String file = null;
-
     @Description("The feature collection to write.")
     @In
     public SimpleFeatureCollection geodata = null;
+
+    @Description("The shapefile to which to write to.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String file = null;
 
     @Description("The progress monitor.")
     @In
