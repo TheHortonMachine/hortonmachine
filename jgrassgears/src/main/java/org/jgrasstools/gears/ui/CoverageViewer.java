@@ -33,6 +33,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.factory.CommonFactoryFinder;
@@ -46,12 +47,14 @@ import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.opengis.filter.expression.Expression;
 
 @Description("Utility class for viewing coverages.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Coverage, Raster, Viewer, UI")
-@Status(Status.DRAFT)
+@Status(Status.VALIDATED)
+@UI(JGTConstants.HIDE_UI_HINT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageViewer {
     @Description("The coverage to visualize.")

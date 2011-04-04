@@ -58,20 +58,17 @@ public class Cb extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Role(Role.PARAMETER)
     @Description("The number of bins into which divide the data range.")
     @In
-    public int pBins;
+    public int pBins = 100;
 
-    @Role(Role.PARAMETER)
     @Description("The first moment to consider.")
     @In
-    public int pFirst;
+    public int pFirst = 1;
 
-    @Role(Role.PARAMETER)
     @Description("The last moment to consider.")
     @In
-    public int pLast;
+    public int pLast = 2;
 
     @Description("A matrix containing " + "1) the mean value of the data in abscissa; "
             + "2) the number of elements in each interval; "

@@ -30,6 +30,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -68,7 +69,7 @@ public class SumDownStream extends JGTModel {
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of summed values.")
-    @In
+    @Out
     public GridCoverage2D outSummed = null;
 
     @Execute
