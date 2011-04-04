@@ -69,7 +69,25 @@ public class HMTestCase extends TestCase {
             rectIter.startPixels();
             y++;
         } while( !rectIter.nextLineDone() );
+    }
 
+    protected void checkEqualsSinlgeValue( RenderedImage image, double expectedResult, double delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
     }
 
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix ) {

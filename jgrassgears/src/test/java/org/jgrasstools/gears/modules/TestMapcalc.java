@@ -74,16 +74,7 @@ public class TestMapcalc extends HMTestCase {
         RenderedImage renderedImage = outMap.getRenderedImage();
         printImage(renderedImage);
 
-        double[][] data = new double[][]{//
-        {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}, //
-                {900, 900, 900, 900, 900, 900, 900, 900}};
-        checkMatrixEqual(renderedImage, data, 0.000000001);
+        checkEqualsSinlgeValue(renderedImage, 900.0, 0.000000001);
     }
 
     public static void main( String[] args ) throws Exception {
