@@ -227,8 +227,7 @@ public class JGTConstants {
     /*
      * modules categories
      */
-    public static final String RASTERPROCESSING = "Raster Processing";
-    public static final String VECTORPROCESSING = "Vector Processing";
+    // IO
     public static final String GENERICREADER = "Generic Reader";
     public static final String GENERICWRITER = "Generic Writer";
     public static final String HASHMAP_READER = "HashMap Data Reader";
@@ -239,6 +238,10 @@ public class JGTConstants {
     public static final String RASTERWRITER = "Raster Writer";
     public static final String FEATUREREADER = "Vector Reader";
     public static final String FEATUREWRITER = "Vector Writer";
+    // processing
+    public static final String RASTERPROCESSING = "Raster Processing";
+    public static final String VECTORPROCESSING = "Vector Processing";
+    // horton
     public static final String BASIN = "Basin";
     public static final String DEMMANIPULATION = "Dem Manipulation";
     public static final String GEOMORPHOLOGY = "Geomorphology";

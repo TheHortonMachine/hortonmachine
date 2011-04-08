@@ -38,7 +38,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -62,12 +61,10 @@ public class ArcgridCoverageReader extends JGTModel {
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
     @Description("The file novalue.")
     @In
     public double fileNovalue = -9999.0;
 
-    @Role(Role.PARAMETER)
     @Description("The novalue wanted in the coverage.")
     @In
     public double geodataNovalue = doubleNovalue;

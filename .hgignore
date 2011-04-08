@@ -9,6 +9,8 @@ syntax: regexp
 ^jgrassgears.bin
 ^oms3.target
 ^oms3.bin
+^docsbundle.target
+^docsbundle.bin
 ~$
 .class$
 .orig$
