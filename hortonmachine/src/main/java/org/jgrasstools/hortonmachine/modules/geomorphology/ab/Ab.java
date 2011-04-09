@@ -35,6 +35,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -47,11 +48,12 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("It calculates the draining area per length unit (A/b), where A is the total area and b is the length of the contour line which is assumed as drained by the A area")
+@Description("Calculates the draining area per length unit (A/b), where A is the total area and b is the length of the contour line which is assumed as drained by the A area")
 @Documentation("Ab.wiki")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
 @Label(JGTConstants.GEOMORPHOLOGY)
+@Name("ab")
 @Status(Status.CERTIFIED)
 @UI("hidden")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
