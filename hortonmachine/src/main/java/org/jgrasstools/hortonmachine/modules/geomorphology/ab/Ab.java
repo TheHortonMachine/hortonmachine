@@ -38,7 +38,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -69,11 +68,11 @@ public class Ab extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The map of alung.")
+    @Description("The map of area per length.")
     @Out
     public GridCoverage2D outAb = null;
     
-    @Description("The map of b.")
+    @Description("The map of contour line.")
     @Out
     public GridCoverage2D outB = null;
 
