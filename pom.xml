@@ -76,7 +76,6 @@
 		<module>oms3</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
-    <module>docsbundle</module>
   </modules>
 
 
