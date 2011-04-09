@@ -20,6 +20,7 @@ package org.jgrasstools.hortonmachine.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -41,7 +42,7 @@ import org.jgrasstools.hortonmachine.HortonMachine;
 @SuppressWarnings("nls")
 public class WikiModulesCreator {
 
-    private static final String outputWikiFolder = "";
+    private static final String outputWikiFolder = "/home/moovida/TMP/jgt_wiki_generated/";
 
     private static final String NEWLINE = "\n";
     private static final String IMAGES_HM_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/hortonmachine/";
@@ -50,7 +51,9 @@ public class WikiModulesCreator {
     private static final String IMAGES_JG_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/jgrassgears/";
     private static final String TESTCASES_JG_BASEURL = "http://code.google.com/p/jgrasstools/source/browse/jgrassgears/src/test/java/org/jgrasstools/gears/modules/";
 
-    public static void createModulesPages() throws IOException {
+    private static final String DOCSSUFFIX = ".html";
+
+    public static void createModulesPages() throws Exception {
 
         LinkedHashMap<String, List<ClassField>> hmModules = HortonMachine.getInstance().moduleName2Fields;
         LinkedHashMap<String, List<ClassField>> jggModules = JGrassGears.getInstance().moduleName2Fields;
@@ -64,8 +67,7 @@ public class WikiModulesCreator {
     }
 
     private static void dump( LinkedHashMap<String, List<ClassField>> modulesMap,
-            LinkedHashMap<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl )
-            throws IOException {
+            LinkedHashMap<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl ) throws Exception {
 
         Set<String> nameSet = modulesClassesMap.keySet();
         for( String moduleName : nameSet ) {
@@ -87,7 +89,17 @@ public class WikiModulesCreator {
             sb.append(NEWLINE);
 
             Documentation documentation = abClass.getAnnotation(Documentation.class);
+            if (documentation == null) {
+                System.out.println("Jumping " + moduleName);
+                continue;
+            }
             String documentationStr = documentation.value();
+            if (documentationStr.endsWith(DOCSSUFFIX)) {
+                // have to get the file
+                URL resource = abClass.getResource(documentationStr);
+                File resourceFile = new File(resource.toURI());
+                documentationStr = FileUtilities.readFile(resourceFile);
+            }
             sb.append(documentationStr);
 
             // general info
@@ -105,6 +117,10 @@ public class WikiModulesCreator {
             sb.append(NEWLINE);
             sb.append(NEWLINE);
             Name name = abClass.getAnnotation(Name.class);
+            if (name == null) {
+                System.out.println("Jumping " + moduleName);
+                continue;
+            }
             String nameStr = name.value();
             sb.append("Name to use in a script: <b>" + nameStr + "</b>").append(NEWLINE);
             sb.append(NEWLINE);
@@ -168,10 +184,7 @@ public class WikiModulesCreator {
             sb.append(testcasesBaseurl).append(testName);
             sb.append(" ").append(moduleName).append("]");
 
-            System.out.println(sb.toString());
-
             FileUtilities.writeFile(sb.toString(), new File(outputWikiFolder, moduleName + ".wiki"));
-
         }
     }
 
@@ -184,7 +197,7 @@ public class WikiModulesCreator {
         }
     }
 
-    public static void main( String[] args ) throws IOException {
+    public static void main( String[] args ) throws Exception {
         createModulesPages();
     }
 

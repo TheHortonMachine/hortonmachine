@@ -48,7 +48,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the draining area per length unit.")
-@Documentation("Ab.wiki")
+@Documentation("Ab.html")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
 @Label(JGTConstants.GEOMORPHOLOGY)
