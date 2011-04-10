@@ -47,7 +47,7 @@ public class AnnotationParser {
         CharBuffer cb = cd.decode(bb);
 
         // handle the content.
-        ah.start();
+        ah.start(cb.toString());
         handle(cb.toString(), ah);
         ah.done();
 
@@ -151,6 +151,18 @@ public class AnnotationParser {
         }
         return b.toString();
     }
+
+    //    CHARACTER(kind=C_CHAR, len=hyd2er_len)
+//    static Map<String, String> getDeclModifier(String decl) {
+//        String p = decl.substring(decl.indexOf('(') + 1, decl.lastIndexOf(')')).trim();
+//        String[] kvpl = p.split("\\s*,\\s*");
+//        Map<String, String> map = new HashMap<String, String>();
+//        for (String string : kvpl) {
+//            String[] kvp = string.split("\\s*=\\s*");
+//            map.put(kvp[0], kvp.length > 1 ? kvp[1] : null);
+//        }
+//        return map;
+//    }
     
 //    /**
 //     * Derives a new File name from an existing one in the same parent

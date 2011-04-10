@@ -21,9 +21,9 @@ public interface AnnotationHandler {
     /**
      * Called by the processor when starting processing annotations for a file.
      *
-     * @param file the file that is processed.
+     * @param file the file that is processed as String.
      */
-    void start();
+    void start(String src);
 
     /**
      * Handles a single line of annotated code.

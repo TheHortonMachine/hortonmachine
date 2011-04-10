@@ -29,8 +29,8 @@ public class UrlJavaFileObject extends SimpleJavaFileObject {
      * @throws URISyntaxException if an error occurs converting <code>name</code>
      * 			to a URI.
      */
-    public UrlJavaFileObject(String name, URL url,
-            Kind kind, String binaryName) throws URISyntaxException {
+    public UrlJavaFileObject(String name, URL url, Kind kind, String binaryName)
+            throws URISyntaxException {
         super(new URI(name), kind);
         this.url = url;
         this.binaryName = binaryName;

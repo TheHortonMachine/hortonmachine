@@ -25,7 +25,7 @@ public class MemoryOutputJavaFileObject extends SimpleJavaFileObject {
      * @param uri the URI of the output file.
      * @param kind the file type.
      */
-    public MemoryOutputJavaFileObject( URI uri, Kind kind) {
+    public MemoryOutputJavaFileObject(URI uri, Kind kind) {
         super(uri, kind);
     }
 

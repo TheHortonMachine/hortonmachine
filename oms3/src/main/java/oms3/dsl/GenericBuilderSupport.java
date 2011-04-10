@@ -32,6 +32,11 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
     }
 
     public GenericBuilderSupport() {
+         if (log.isLoggable(Level.CONFIG)) {
+            log.config("oms.version : " + System.getProperty("oms.version"));
+            log.config("oms.home : " + System.getProperty("oms.home"));
+            log.config("oms.prj : " + System.getProperty("oms.prj"));
+        }
     }
 
     public void setLogging(String level) {

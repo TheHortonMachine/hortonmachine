@@ -21,6 +21,8 @@ import java.util.logging.Logger;
  */
 public class CLI {
 
+    private static final Logger log = Logger.getLogger("oms3.sim");
+
     static {
         if (System.getProperty("java.version").compareTo("1.6") < 0) {
             throw new RuntimeException("Java 1.6+ required.");
@@ -106,6 +108,7 @@ public class CLI {
         b.setVariable("oms_version", System.getProperty("oms.version"));
         b.setVariable("oms_home", System.getProperty("oms.home"));
         b.setVariable("oms_prj", System.getProperty("oms.prj"));
+       
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), b);
         return shell.evaluate(prefix + script);
     }

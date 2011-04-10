@@ -7,6 +7,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 /**
  * Test Id2ValueReader.
  * 
@@ -43,9 +44,10 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.process();
         readCoverage = reader.geodata;
-
+        
         double[][] mapData = HMTestMaps.mapData;
         mapData[1][1] = -9999.0;
+        printImage(readCoverage.getRenderedImage());
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
     }

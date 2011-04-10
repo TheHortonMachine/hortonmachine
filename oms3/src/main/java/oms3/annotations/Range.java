@@ -37,14 +37,29 @@ import java.lang.annotation.Target;
 public @interface Range {
 
     /**
-     * The minimum range value
+     * The minimum value
      * @return the minimal value
      */
     double min() default Double.MIN_VALUE;
 
     /**
-     * The maximum range value
+     * The maximum value
      * @return the maximum value
      */
     double max() default Double.MAX_VALUE;
+
+
+    /**
+     * Exclude the minimum value
+     *
+     * @return true if the minimum should be excluded
+     */
+    boolean excl_min() default false;
+
+    /**
+     * Exclude the maximum value
+     *
+     * @return true if the minimum should be excluded
+     */
+    boolean excl_max() default false;
 }

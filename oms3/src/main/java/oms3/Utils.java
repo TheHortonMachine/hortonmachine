@@ -64,7 +64,7 @@ public class Utils {
 
     static MethodInvoker compiled(Object target, Method method) {
         try {
-            Compiler tc = Compiler.singleton();
+            Compiler tc = Compiler.singleton(null);
             Class jc = tc.getCompiledClass(maClassName(target));
             if (jc == null) {
                 String cl = methodInvoker(target, method);
@@ -80,7 +80,7 @@ public class Utils {
 
     static Access compiled(Object target, Field field) {
         try {
-            Compiler tc = Compiler.singleton();
+            Compiler tc = Compiler.singleton(null);
             Class jc = tc.getCompiledClass(faClassName(target, field));
             if (jc == null) {
                 String cl = fieldAccessor(target, field);

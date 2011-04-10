@@ -12,6 +12,7 @@ import org.jgrasstools.hortonmachine.models.hm.TestDrainDir;
 import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork;
 import org.jgrasstools.hortonmachine.models.hm.TestFlowDirections;
 import org.jgrasstools.hortonmachine.models.hm.TestGradient;
+import org.jgrasstools.hortonmachine.models.hm.TestHacklength;
 import org.jgrasstools.hortonmachine.models.hm.TestMarkoutlets;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 import org.jgrasstools.hortonmachine.models.hm.TestSlope;
@@ -34,7 +35,7 @@ public class HortonTestSuite extends TestCase {
         suite.addTestSuite(TestExtractNetwork.class);
         suite.addTestSuite(TestFlowDirections.class);
         suite.addTestSuite(TestGradient.class);
-        // suite.addTestSuite(TestHacklength.class);
+        suite.addTestSuite(TestHacklength.class);
         // suite.addTestSuite(TestHackstream.class);
         // suite.addTestSuite(TestHillshade.class);
         // suite.addTestSuite(TestInsolation.class);

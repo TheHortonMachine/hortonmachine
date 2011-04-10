@@ -22,7 +22,7 @@ public class Annotations {
      * @param r the roles that all have to be played
      * @return true or false.
      */
-    public static boolean playsAll(Role role, String ... r) {
+    public static boolean playsAll(Role role, String... r) {
         if (role == null) {
             return false;
         }
@@ -41,7 +41,7 @@ public class Annotations {
      * @return true or false.
      */
     public static boolean plays(Role role, String r) {
-        if (r==null) {
+        if (r == null) {
             throw new IllegalArgumentException("null role");
         }
         if (role == null) {
@@ -69,7 +69,6 @@ public class Annotations {
         return f.getAnnotation(Out.class) != null;
     }
 
-    
     /** Checks if a field is tagged as 'Out' and 'In'
      *
      * @param f the field to check.
@@ -86,7 +85,8 @@ public class Annotations {
      * @return true if it is in range, false otherwise.
      */
     public static boolean inRange(Range range, double val) {
-        return val>=range.min() && val <= range.max();
+        return val >= range.min() && val <= range.max();
     }
 
+    
 }

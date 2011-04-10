@@ -31,18 +31,16 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
     /**
      * Maps class names to file objects.
      */
-    Map<String, MemoryOutputJavaFileObject> outputMap;
-    List<URL> classPathUrls;
+    Map<String, MemoryOutputJavaFileObject> outputMap = new HashMap<String, MemoryOutputJavaFileObject>();
+    List<URL> classPathUrls = new ArrayList<URL>();
 
     /**
      * Constructs a <code>MemoryOutputJavaFileManager</code>.
      *
      * @param fileManager the underlying file manager to use.
      */
-    public MemoryOutputJavaFileManager(final JavaFileManager fileManager) {
+    public MemoryOutputJavaFileManager(JavaFileManager fileManager) {
         super(fileManager);
-        outputMap = new HashMap<String, MemoryOutputJavaFileObject>();
-        classPathUrls = new ArrayList<URL>();
     }
 
     /**
@@ -53,7 +51,7 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
      *
      * @throws NullPointerException if <code>url</code> is null.
      */
-    public void addClassPathUrl(final URL url) {
+    public void addClassPathUrl(URL url) {
         if (url == null) {
             throw new NullPointerException("url == null");
         }
@@ -85,33 +83,30 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
                     url = new URL(url, "..");
                 }
             } while (curPos >= 0);
-
-            return (url);
-        } catch (final MalformedURLException e) {
+            return url;
+        } catch (MalformedURLException e) {
             throw new IllegalArgumentException("Invalid URL for class " + clazz.getName(), e);
         }
     }
 
     @Override
-    public JavaFileObject getJavaFileForOutput(Location location,
-            String className, Kind kind, FileObject sibling)
+    public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling)
             throws IOException {
         if (kind != Kind.CLASS) {
             throw new IOException("Only class output supported, kind=" + kind);
         }
         try {
-            MemoryOutputJavaFileObject output =
-                    new MemoryOutputJavaFileObject(new URI(className), kind);
+            MemoryOutputJavaFileObject output = new MemoryOutputJavaFileObject(new URI(className), kind);
             outputMap.put(className, output);
-            return (output);
-        } catch (final URISyntaxException e) {
+            return output;
+        } catch (URISyntaxException e) {
             throw new IOException(e);
         }
     }
 
     @Override
-    public JavaFileObject getJavaFileForInput( Location location,
-             String className, Kind kind) throws IOException {
+    public JavaFileObject getJavaFileForInput(Location location,
+            String className, Kind kind) throws IOException {
         JavaFileObject result;
         if (StandardLocation.CLASS_OUTPUT == location && Kind.CLASS == kind) {
             result = outputMap.get(className);
@@ -121,17 +116,16 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
         } else {
             result = super.getJavaFileForInput(location, className, kind);
         }
-        return (result);
+        return result;
     }
 
     @Override
-    public String inferBinaryName(final Location location,
-            final JavaFileObject file) {
+    public String inferBinaryName(Location location, JavaFileObject file) {
         if (file instanceof UrlJavaFileObject) {
             UrlJavaFileObject urlFile = (UrlJavaFileObject) file;
-            return (urlFile.getBinaryName());
+            return urlFile.getBinaryName();
         } else {
-            return (super.inferBinaryName(location, file));
+            return super.inferBinaryName(location, file);
         }
     }
 
@@ -149,15 +143,14 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
             for (JavaFileObject superResult : superResults) {
                 results.add(superResult);
             }
-
             //Now process classpath URLs
-            for (final URL curClassPathUrl : classPathUrls) {
+            for (URL curClassPathUrl : classPathUrls) {
                 String directory = packageName.replace('.', '/') + '/';
                 URL loadUrl = new URL(curClassPathUrl, directory);
                 try {
                     List<JavaFileObject> additionalClasses = listClassesFromUrl(loadUrl, packageName);
                     results.addAll(additionalClasses);
-                } catch (final IOException e) {
+                } catch (IOException e) {
                     //This happens if the file does not exist
                     //Move onto next one
                 }
@@ -179,7 +172,7 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
      *
      * @throws IOException if an I/O error occurs.
      */
-    protected List<JavaFileObject> listClassesFromUrl(final URL base, final String packageName) throws IOException {
+    protected List<JavaFileObject> listClassesFromUrl(URL base, String packageName) throws IOException {
         //TODO this will only work with file:// not jar://
 
         if (base == null) {
@@ -199,30 +192,24 @@ public class MemoryOutputJavaFileManager extends ForwardingJavaFileManager<JavaF
             String curLine;
             do {
                 curLine = reader.readLine();
-                if (curLine != null) {
-                    //Only class files
-                    if (curLine.endsWith(".class")) {
-                        URL url = new URL(base, curLine);
-
-                        try {
-                            String curSimpleName = curLine.substring(0, curLine.length() - ".class".length());
-                            String binaryName;
-                            if (packageName == null) {
-                                binaryName = curSimpleName;
-                            } else {
-                                binaryName = packageName + "." + curSimpleName;
-                            }
-                            UrlJavaFileObject cur = new UrlJavaFileObject(curLine, url, Kind.CLASS, binaryName);
-                            list.add(cur);
-                        } catch (final URISyntaxException e) {
-                            throw new IOException("Error parsing URL " + curLine + ".", e);
+                if (curLine != null && curLine.endsWith(".class")) {
+                    try {
+                        String curSimpleName = curLine.substring(0, curLine.length() - ".class".length());
+                        String binaryName;
+                        if (packageName == null) {
+                            binaryName = curSimpleName;
+                        } else {
+                            binaryName = packageName + "." + curSimpleName;
                         }
+                        list.add(new UrlJavaFileObject(curLine, new URL(base, curLine), Kind.CLASS, binaryName));
+                    } catch (URISyntaxException e) {
+                        throw new IOException("Error parsing URL " + curLine + ".", e);
                     }
                 }
             } while (curLine != null);
         } finally {
             reader.close();
         }
-        return (list);
+        return list;
     }
 }

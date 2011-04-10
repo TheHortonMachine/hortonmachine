@@ -17,7 +17,6 @@ import oms3.io.DataIO;
 public class Model implements Buildable {
 
     protected static final Logger log = Logger.getLogger("oms3.sim");
-
     String classname;
     List<Params> params = new ArrayList<Params>();
     Resource res;
@@ -27,6 +26,8 @@ public class Model implements Buildable {
     KVPContainer out2in = new KVPContainer();
     KVPContainer feedback = new KVPContainer();
     String iter;
+    //
+    private URLClassLoader modelClassLoader;
 
     @Override
     public Buildable create(Object name, Object value) {
@@ -78,39 +79,41 @@ public class Model implements Buildable {
         StringBuilder b = new StringBuilder();
         for (int i = 0; i < f.size(); i++) {
             b.append(f.get(i));
-            if (i<f.size()-1) {
+            if (i < f.size() - 1) {
                 b.append(File.pathSeparatorChar);
             }
         }
         return b.toString();
     }
 
-    URLClassLoader getClassLoader() throws Exception {
-        List<File> jars = res.filterFiles("jar");
-        List<File> dirs = res.filterDirectories();
-        List<URL> urls = new ArrayList<URL>();
-
-        for (int i = 0; i < jars.size(); i++) {
-            urls.add(jars.get(i).toURI().toURL());
-        }
-        for (int i = 0; i < dirs.size(); i++) {
-            urls.add(dirs.get(i).toURI().toURL());
-        }
-
-        URL[] u = urls.toArray(new URL[0]);
-        if (log.isLoggable(Level.CONFIG)) {
-            for (URL url : u) {
-                log.info("Resource " + url.toString());
+    /** get the URL classloader for all the resources (just for jar files
+     * 
+     * @return
+     * @throws Exception
+     */
+    private synchronized URLClassLoader getClassLoader() throws Exception {
+        if (modelClassLoader == null) {
+            List<File> jars = res.filterFiles("jar");
+            List<URL> urls = new ArrayList<URL>();
+            for (int i = 0; i < jars.size(); i++) {
+                urls.add(jars.get(i).toURI().toURL());
             }
+            URL[] u = urls.toArray(new URL[0]);
+            if (log.isLoggable(Level.CONFIG)) {
+                for (URL url : u) {
+                    log.info("class path entry from simulation: " + url.toString());
+                }
+            }
+            modelClassLoader = new URLClassLoader(u, Thread.currentThread().getContextClassLoader());
         }
-        return new URLClassLoader(u, Thread.currentThread().getContextClassLoader());
+        return modelClassLoader;
     }
 
     public Object getComponent() throws Exception {
-        if (classname == null) {
-            return getGeneratedComponent();
-        }
         URLClassLoader loader = getClassLoader();
+        if (classname == null) {
+            return getGeneratedComponent(loader);
+        }
         try {
             Class c = loader.loadClass(classname);
             return c.newInstance();
@@ -149,13 +152,13 @@ public class Model implements Buildable {
         return val;
     }
 
-    Object getGeneratedComponent() {
+    Object getGeneratedComponent(URLClassLoader loader) {
         try {
-            oms3.compiler.Compiler tc = oms3.compiler.Compiler.singleton();
-            String name = "Comp_" + UUID.randomUUID().toString().replace('-','_');
-            String cl = invoker(name);
+            oms3.compiler.Compiler tc = oms3.compiler.Compiler.singleton(loader);
+            String name = "Comp_" + UUID.randomUUID().toString().replace('-', '_');
+            String cl = generateSource(name);
             if (log.isLoggable(Level.CONFIG)) {
-                log.config(cl);
+                log.config("Generated Source:\n" + cl);
             }
             Class jc = tc.compileSource(name, cl);
             return jc.newInstance();
@@ -163,14 +166,14 @@ public class Model implements Buildable {
             throw new RuntimeException(ex);
         }
     }
-    
-    private String invoker(String cname) throws Exception {
+
+    private String generateSource(String cname) throws Exception {
         String sc = "oms3.Compound";
         if (iter != null) {
             sc = "oms3.control.Iteration";
         }
 
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append("import java.util.*;\n");
         b.append("import oms3.*;\n");
         b.append("import oms3.annotations.*;\n");
@@ -179,10 +182,18 @@ public class Model implements Buildable {
 
         // Fields
         for (Param param : getParam()) {
-            String[] name = param.getName().split("\\.");
-            String type = getClassForParameter(param.getName());
+            String p = param.getName();
+            if (p.indexOf('.') == -1) {
+                throw new IllegalArgumentException("Not a valid parameter reference (object.field): '" + p + "'");
+            }
+            
+            String[] name = p.split("\\.");
+            if (name.length != 2) {
+                throw new IllegalArgumentException("Not a valid parameter reference (object.field): '" + p + "'");
+            }
 
-            b.append(" // " + param.getName() + "\n");
+            String type = getClassForParameter(name[0], name[1]);
+            b.append(" // " + p + "\n");
             b.append(" @Role(Role.PARAMETER)\n");
             b.append(" @In public " + type + " " + name[0] + "_" + name[1] + ";\n");
             b.append("\n");
@@ -193,8 +204,9 @@ public class Model implements Buildable {
             b.append(" public " + def.getValue() + " " + def.getKey() + " = new " + def.getValue() + "();\n");
         }
         b.append("\n");
-
         b.append("\n");
+
+        // init version.
         b.append(" @Initialize\n");
         b.append(" public void init() {\n");
         if (iter != null) {
@@ -228,17 +240,15 @@ public class Model implements Buildable {
         return b.toString();
     }
 
-    String getClassForParameter(String parameter) throws Exception {
-        String[] name = parameter.split("\\.");
+    String getClassForParameter(String object, String parameter) throws Exception {
         // find the parameter class.
         for (KVP def : comps.entries) {
-            if (name[0].equals(def.getKey())) {
+            if (object.equals(def.getKey())) {
                 URLClassLoader loader = getClassLoader();
                 Class c = loader.loadClass(def.getValue().toString());
-                return c.getDeclaredField(name[1]).getType().getSimpleName();
+                return c.getDeclaredField(parameter).getType().getSimpleName();
             }
         }
-        throw new IllegalArgumentException("Cannot find component for " + iter);
+        throw new IllegalArgumentException("Cannot find component '" + object + "'.");
     }
-
 }

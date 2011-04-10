@@ -22,19 +22,32 @@
  */
 package oms3.util;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarInputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import oms3.*;
 import oms3.annotations.Bound;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Out;
@@ -275,5 +288,146 @@ public class Components {
 
     static private String objName(ComponentAccess cp) {
         return cp.getComponent().getClass().getSimpleName().toLowerCase();
+    }
+
+
+
+    public static List<Class> getComponentClasses(File jar) throws IOException {
+        return getComponentClasses(jar.toURI().toURL());
+    }
+
+
+    /** Get all components from a jar file
+     *
+     * @param jar
+     * @return the list of components from the jar. (Implement 'Execute' annotation)
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public static List<Class> getComponentClasses(URL jar) throws IOException {
+        JarInputStream jarFile = new JarInputStream(jar.openStream());
+        URLClassLoader cl = new URLClassLoader(new URL[]{jar}, Thread.currentThread().getContextClassLoader());
+        List<Class> idx = new ArrayList<Class>();
+
+        JarEntry jarEntry = jarFile.getNextJarEntry();
+        while (jarEntry != null) {
+            String classname = jarEntry.getName();
+//            System.out.println(classname);
+            if (classname.endsWith(".class")) {
+                classname = classname.substring(0, classname.indexOf(".class")).replace('/', '.');
+                try {
+                    Class<?> c = Class.forName(classname, false, cl);
+                    for (Method method : c.getMethods()) {
+                        if ((method.getAnnotation(Execute.class)) != null) {
+                            idx.add(c);
+                            break;
+                        }
+                    }
+                } catch (ClassNotFoundException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            jarEntry = jarFile.getNextJarEntry();
+        }
+        jarFile.close();
+        return idx;
+    }
+
+    /** Get the documentation with the default locale
+     *
+     * @param comp The component to get the documentation from.
+     * @return the documentation URL or null if not available
+     */
+    public static URL getDocumentation(Class comp) {
+        return getDocumentation(comp, Locale.getDefault());
+    }
+
+    /** Get the documentation as URL reference;
+     *
+     * @param comp The class to get the 'Documentation' tag from
+     * @param loc  The locale
+     * @return the URL of the documentation file, null if no documentation is available.
+     */
+    public static URL getDocumentation(Class comp, Locale loc) {
+        Documentation doc = (Documentation) comp.getAnnotation(Documentation.class);
+        if (doc != null) {
+            String v = doc.value();
+            try {
+                // try full URL first (external reference)
+                URL url = new URL(v);
+                return url;
+            } catch (MalformedURLException E) {
+                // local resource bundled with the class
+                String name = v.substring(0, v.lastIndexOf('.'));
+                String ext = v.substring(v.lastIndexOf('.'));
+                String lang = loc.getLanguage();
+
+                URL f = comp.getResource(name + "_" + lang + ext);
+                if (f != null) {
+                    return f;
+                }
+
+                f = comp.getResource(v);
+                if (f != null) {
+                    return f;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static String getDescription(Class comp) {
+        return getDescription(comp, Locale.getDefault());
+    }
+
+    /** Get the Component Description
+     *
+     * @param comp the component class
+     * @param loc the locale
+     * @return the localized description
+     */
+    public static String getDescription(Class comp, Locale loc) {
+        Description descr = (Description) comp.getAnnotation(Description.class);
+        if (descr != null) {
+            String lang = loc.getLanguage();
+            Method[] m = descr.getClass().getMethods();
+            for (Method method : m) {
+//                System.out.println(method);
+                if (method.getName().equals(lang)) {
+                    try {
+                        String d = (String) method.invoke(descr, (Object[]) null);
+                        if (d != null && !d.isEmpty()) {
+                            return d;
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+            return descr.value();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) throws Exception {
+        double start = System.currentTimeMillis();
+        System.out.println(getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar")));
+        double end = System.currentTimeMillis();
+        System.out.println("time " + (end - start));
+
+        List<Class> comps = getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar"));
+
+        Class basin = null;
+        for (Class c : comps) {
+            if (c.getName().equals("prms2008.Basin")) {
+                basin = c;
+                break;
+            }
+        }
+
+        System.out.println(getDocumentation(basin, Locale.getDefault()));
+
+        System.out.println(getDescription(basin, Locale.getDefault()));
+
     }
 }

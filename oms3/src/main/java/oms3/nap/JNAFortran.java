@@ -16,7 +16,7 @@ import java.util.Map;
  *
  * @author od
  */
-public abstract class JNA implements AnnotationHandler {
+public abstract class JNAFortran implements AnnotationHandler {
 
     String libname;
     String modName;
@@ -135,16 +135,7 @@ public abstract class JNA implements AnnotationHandler {
 
     @Override
     public void handle(Map<String, Map<String, String>> ann, String line) {
-        if (ann.containsKey("DLL")) {
-            libname = AnnotationParser.trimQuotes(ann.get("DLL").get("value"));
-            String lc = line.toLowerCase();
-            if (lc.contains("module")) {
-                String[] mdecl = lc.trim().split("\\s+");
-                if (mdecl.length > 0) {
-                    modName = mdecl[1];
-                }
-            }
-        } else if (ann.containsKey("Execute")) {
+        if (ann.containsKey("Execute")) {
             javaExecFunction = ann.get("Execute").get("value");
             if (javaExecFunction == null) {
                 line = line.trim();
@@ -158,7 +149,16 @@ public abstract class JNA implements AnnotationHandler {
     }
 
     @Override
-    public void start() {
+    public void start(String src) {
+        src = src.toLowerCase();
+        if (src.contains("module")) {
+            String line = src.substring(src.indexOf("module"));
+            line = src.substring(0, src.indexOf("\n"));
+            String[] mdecl = line.trim().split("\\s+");
+            if (mdecl.length > 0) {
+                modName = mdecl[1];
+            }
+        }
     }
 
     @Override
@@ -171,7 +171,7 @@ public abstract class JNA implements AnnotationHandler {
         String className = genFile.getName().substring(0, genFile.getName().indexOf('.'));
         PrintStream w = new PrintStream(genFile);
 
-        w.println("// OMS3 JNA proxy from '" + srcFile.getPath() + "'");
+        w.println("// OMS3 Native proxy from '" + srcFile.getPath() + "'");
         w.println("// Generated at " + new Date());
         w.println("package " + packageName.replace('/', '.') + ";");
         w.println();
@@ -258,17 +258,6 @@ public abstract class JNA implements AnnotationHandler {
                 : javaExecFunction + "_";
     }
 
-//    CHARACTER(kind=C_CHAR, len=hyd2er_len)
-//    static Map<String, String> getDeclModifier(String decl) {
-//        String p = decl.substring(decl.indexOf('(') + 1, decl.lastIndexOf(')')).trim();
-//        String[] kvpl = p.split("\\s*,\\s*");
-//        Map<String, String> map = new HashMap<String, String>();
-//        for (String string : kvpl) {
-//            String[] kvp = string.split("\\s*=\\s*");
-//            map.put(kvp[0], kvp.length > 1 ? kvp[1] : null);
-//        }
-//        return map;
-//    }
     public static void main(String[] args) throws Exception {
 //        if (args.length != 1) {
 //            return;

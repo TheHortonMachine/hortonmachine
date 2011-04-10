@@ -53,7 +53,7 @@
 //                    if (needsRebuild(baseDir, destdir, incFile)) {
 //                        File genFile = new File(destdir, incFile.substring(0, incFile.lastIndexOf('.')) + ".java");
 //                        File srcFile = new File(baseDir, incFile);
-//                        JNA ah = new JNA() {
+//                        JNAFortran ah = new JNAFortran() {
 //                             @Override
 //                             public void log(String msg) {
 //                                 JNAComponentTask.this.log(msg, Project.MSG_VERBOSE);
