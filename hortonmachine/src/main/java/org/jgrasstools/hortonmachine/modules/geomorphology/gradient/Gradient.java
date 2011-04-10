@@ -65,13 +65,13 @@ public class Gradient extends JGTModel {
      * EXTERNAL VARIABLES
      */
     // input
-    @Description("The map of the digital elevation model (DEM).")
+    @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inDem = null;
 
     @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
     @In
-    public int defaultMode = 0;
+    public int pMode = 0;
 
     @Description("The output type, if false = tan of the angle (default), if true = degrees")
     @In
@@ -113,10 +113,10 @@ public class Gradient extends JGTModel {
         RenderedImage elevationRI = inDem.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         WritableRaster gradientWR = null;
-        if (defaultMode == 1) {
+        if (pMode == 1) {
             pm.message("Using Horn formula");
             gradientWR = gradientHorn(elevationIter);
-        } else if (defaultMode == 2) {
+        } else if (pMode == 2) {
             pm.message("Using Evans formula");
             gradientWR = gradientEvans(elevationIter);
         } else {

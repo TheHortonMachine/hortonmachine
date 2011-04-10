@@ -48,7 +48,7 @@ public class TestGradient extends HMTestCase {
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
         gradient.pm = pm;
-        gradient.defaultMode = 1;
+        gradient.pMode = 1;
 
         gradient.process();
 
@@ -67,7 +67,7 @@ public class TestGradient extends HMTestCase {
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
         gradient.pm = pm;
-        gradient.defaultMode = 2;
+        gradient.pMode = 2;
 
         gradient.process();
 
