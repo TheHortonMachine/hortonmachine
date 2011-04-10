@@ -19,14 +19,16 @@
 package org.jgrasstools.hortonmachine.utils;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
 import oms3.annotations.Name;
 
 import org.jgrasstools.gears.JGrassGears;
@@ -113,16 +115,41 @@ public class WikiModulesCreator {
             }
             sb.append("<h2>General Information</h2>").append(NEWLINE);
             sb.append(NEWLINE);
-            sb.append("Module status: " + parentClassStatus).append(NEWLINE);
+            // general info: status
+            sb.append(" Module status: " + parentClassStatus).append(NEWLINE);
             sb.append(NEWLINE);
-            sb.append(NEWLINE);
+
+            // general info: script name
             Name name = abClass.getAnnotation(Name.class);
-            if (name == null) {
-                System.out.println("Jumping " + moduleName);
-                continue;
+            if (name != null) {
+                String nameStr = name.value();
+                sb.append(" Name to use in a script: <b>" + nameStr + "</b>").append(NEWLINE);
+                sb.append(NEWLINE);
             }
-            String nameStr = name.value();
-            sb.append("Name to use in a script: <b>" + nameStr + "</b>").append(NEWLINE);
+            // general info: authors
+            Author author = abClass.getAnnotation(Author.class);
+            if (author != null) {
+                String authorNameStr = author.name();
+                String authorContactStr = author.contact();
+                sb.append(" Authors: " + authorNameStr).append(NEWLINE);
+                sb.append(NEWLINE);
+                sb.append(" Contacts: " + authorContactStr).append(NEWLINE);
+                sb.append(NEWLINE);
+            }
+            // general info: license
+            License license = abClass.getAnnotation(License.class);
+            if (license != null) {
+                String licenseStr = license.value();
+                sb.append(" License: " + licenseStr).append(NEWLINE);
+                sb.append(NEWLINE);
+            }
+            // general info: keywords
+            Keywords keywords = abClass.getAnnotation(Keywords.class);
+            if (keywords != null) {
+                String keywordsStr = keywords.value();
+                sb.append(" Keywords: " + keywordsStr).append(NEWLINE);
+                sb.append(NEWLINE);
+            }
             sb.append(NEWLINE);
 
             // parameters
@@ -131,6 +158,10 @@ public class WikiModulesCreator {
             // parameters: fields
             StringBuilder sbTmp = new StringBuilder();
             for( ClassField classField : fieldsList ) {
+                if (classField.fieldName.equals("pm")) {
+                    // ignore progress monitor
+                    continue;
+                }
                 if (classField.fieldName.startsWith("p") || classField.fieldName.startsWith("do")) {
                     sbTmp.append("<tr>").append(NEWLINE);
                     sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
