@@ -1,4 +1,4 @@
-It extracts the channel network from the drainage directions in five possible ways:
+It extracts the channel network from the drainage directions in five possible ways:
 <ol>
 <li>by using a threshold value on the contributing areas, then only
 the pixels with contributing area greater than the threshold are the
@@ -12,21 +12,21 @@ are considered as canalized.
 <br>
 <h3>Inputs</h3>
 <ul>      
-<li>the file containing the matrix of the drainage directions (obtained with DrainDir or Markoutlets)</li>
-<li>the file containing the matrix of contributing areas (calculated
+<li>the file containing the matrix of the drainage directions (obtained with DrainDir or Markoutlets)</li>
+<li>the file containing the matrix of contributing areas (calculated
 with DrainDir, Tca or Multitca)</li>
-<li>if we choose mode 1, the file containing the matrix of the slopes (calculated with Gradient or Slope)</li>
-<li>if we choose mode 2, the file containing the matrix with the classes aggregated by GC</li>
+<li>if we choose mode 1, the file containing the matrix of the slopes (calculated with Gradient or Slope)</li>
+<li>if we choose mode 2, the file containing the matrix with the classes aggregated by GC</li>
 </ul>
 <br>
 <br>
 <h3>Output</h3>
 <ul>      
-<li>the file containing the matrix which individuates the channel
+<li>the file containing the matrix which individuates the channel
 network</li>
-<li>the file containing the total contributing areas calculated with the new drainage directions</li>
-<li>if we choose to create the vector layer of the extracted network, the shape le with the channel network ("filePath" is the path
-plus the file name of the shapefile)</li>
+<li>the file containing the total contributing areas calculated with the new drainage directions</li>
+<li>if we choose to create the vector layer of the extracted network, the shapefile with the channel network ("filePath" is the path
+plus the file name of the shapefile)</li>
 </ul>
 <br>
 <br>
