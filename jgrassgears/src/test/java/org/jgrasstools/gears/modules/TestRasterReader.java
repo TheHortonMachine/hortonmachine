@@ -1,4 +1,4 @@
-package org.jgrasstools.gears.modules.io;
+package org.jgrasstools.gears.modules;
 
 import java.io.File;
 import java.net.URL;
@@ -17,14 +17,13 @@ public class TestRasterReader extends HMTestCase {
     public void testRasterReader() throws Exception {
         URL testUrl = this.getClass().getClassLoader().getResource("dtm_test.asc");
         String path = new File(testUrl.toURI()).getAbsolutePath();
-        GridCoverage2D readCoverage = RasterReader.readCoverage(path);
 
         RasterReader reader = new RasterReader();
         reader.file = path;
         reader.fileNovalue = -9999.0;
         reader.geodataNovalue = Double.NaN;
         reader.process();
-        readCoverage = reader.geodata;
+        GridCoverage2D readCoverage = reader.geodata;
 
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 

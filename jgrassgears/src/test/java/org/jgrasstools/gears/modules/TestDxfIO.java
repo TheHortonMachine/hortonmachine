@@ -1,4 +1,4 @@
-package org.jgrasstools.gears.modules.io;
+package org.jgrasstools.gears.modules;
 
 import java.io.File;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.jgrasstools.gears.modules.io;
+package org.jgrasstools.gears.modules;
 
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
