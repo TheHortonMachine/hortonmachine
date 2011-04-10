@@ -29,9 +29,17 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+
 import junit.framework.TestCase;
 @SuppressWarnings("nls")
 public class HMTestCase extends TestCase {
+    
+    /**
+     * The progress monitor to be usedd by testcases.
+     */
+    protected PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    
     public void testDummy() {
         // done to not make the maven test fail
     }
