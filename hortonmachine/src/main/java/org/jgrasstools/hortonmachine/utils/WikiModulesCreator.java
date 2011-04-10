@@ -99,8 +99,12 @@ public class WikiModulesCreator {
             if (documentationStr.endsWith(DOCSSUFFIX)) {
                 // have to get the file
                 URL resource = abClass.getResource(documentationStr);
-                File resourceFile = new File(resource.toURI());
-                documentationStr = FileUtilities.readFile(resourceFile);
+                try {
+                    File resourceFile = new File(resource.toURI());
+                    documentationStr = FileUtilities.readFile(resourceFile);
+                } catch (Exception e) {
+                    System.out.println("Error in: " + moduleName);
+                }
             }
             sb.append(documentationStr);
 
@@ -158,7 +162,7 @@ public class WikiModulesCreator {
             // parameters: input
             StringBuilder sbTmp = new StringBuilder();
             for( ClassField classField : fieldsList ) {
-                if (classField.fieldName.equals("pm")) {
+                if (classField.isOut || classField.fieldName.equals("pm")) {
                     // ignore progress monitor
                     continue;
                 }
@@ -173,6 +177,10 @@ public class WikiModulesCreator {
             // parameters: output data
             sbTmp = new StringBuilder();
             for( ClassField classField : fieldsList ) {
+                if (classField.isIn) {
+                    // ignore progress monitor
+                    continue;
+                }
                 sbTmp.append("<tr>").append(NEWLINE);
                 sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
                 sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
