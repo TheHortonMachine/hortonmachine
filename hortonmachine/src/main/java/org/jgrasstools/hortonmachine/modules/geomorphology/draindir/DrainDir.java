@@ -53,12 +53,12 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
 @Documentation("DrainDir.html")
-@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
-@Keywords("Geomorphology")
+@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, Pitfiller, FlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("drain")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class DrainDir extends JGTModel {
 
     /*

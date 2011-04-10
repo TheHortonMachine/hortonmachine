@@ -49,12 +49,12 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the draining area per length unit.")
 @Documentation("Ab.html")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com")
-@Keywords("Geomorphology")
+@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, Tca, Curvatures, DrainDir, FlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("ab")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class Ab extends JGTModel {
     @Description("The map of the total contributing area.")
     @In

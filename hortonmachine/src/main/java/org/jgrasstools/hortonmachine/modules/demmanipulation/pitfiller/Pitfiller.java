@@ -50,11 +50,11 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Straight port of the pitfiller correction model found in the TARDEM suite.")
 @Documentation("Pitfiller.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com")
-@Keywords("Dem manipulation, Geomorphology")
+@Keywords("Dem manipulation, Geomorphology, DrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("pit")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class Pitfiller extends JGTModel {
     @Description("The map of digital elevation model (DEM).")
     @In
