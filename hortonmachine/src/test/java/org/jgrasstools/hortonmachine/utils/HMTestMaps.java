@@ -114,17 +114,20 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
 
+    /**
+     * Output data for the {@link DrainDir} module run in LTD mode.
+     */
     public static double[][] drainData0 = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-            {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, //
+            {NaN, NaN, 6, 5, 6, 6, 6, 5, 6, NaN}, //
             {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, //
             {NaN, 10, 5, 7, 6, 6, 6, 6, 5, NaN}, //
             {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, //
             {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, //
-            {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
+            {NaN, 3, 4, 4, 3, 3, 5, 4, 4, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-
+    
     /**
      * Output data for the {@link DrainDir} module run in LAD mode.
      */
@@ -182,7 +185,24 @@ public class HMTestMaps {
             {NaN, 1, 1, 1, 1, 2, 1, 1, 1, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
+    
+    /**
+     * Output tca for {@link DrainDir} in LTD mode.
+     */
+    public static double[][] mtcaData0 = new double[][]{ //
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+        {NaN, NaN, 2, 1, 1, 1, 2, 1, 1, NaN}, //
+        {NaN, 3, 1, 2, 2, 3, 1, 2, 1, NaN}, //
+        {NaN, 47, 3, 3, 4, 2, 1, 5, 2, NaN}, //
+        {NaN, 1, 38, 32, 21, 15, 11, 5, 2, NaN}, //
+        {NaN, 3, 2, 1, 2, 3, 2, 2, 1, NaN}, //
+        {NaN, 1, 1, 1, 1, 2, 1, 1, 1, NaN}, //
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+    };
 
+    /**
+     * Output tca for {@link DrainDir} in LAD mode.
+     */
     public static double[][] mtcaData = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 1, 1, 1, 1, 1, 1, 1, NaN}, //
