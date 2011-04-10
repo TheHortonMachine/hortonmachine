@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.draindir;
 
@@ -30,12 +29,14 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -49,60 +50,13 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the draindir model. It calculates the
- * drainage directions minimizing the deviation from the real flow. The
- * deviation is calculated using a triangular construction and it could be given
- * in degrees (D8 LAD method) or as trasversal distance (D8 LTD method). The
- * deviation could be cumulated along the path using the &#955; parameter, and
- * when it assumes a limit value the flux is redirect to the real direction. In
- * certain cases, for example in the plains areas or where there are manmade
- * constructions, it can happen that the extracted channel network does not
- * coincide with the real channel network. The fixed network method allows you
- * to assign a known channel network and to then correct the drainage
- * directions.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the depitted map (-pit)</LI>
- * <LI>the old drainage direction map (-flow)</LI>
- * <LI>the &#955; parameter (a value in the range 0 - 1) (-lambda)</LI>
- * <LI>the method choosen: LAD (angular deviation) and LTD (trasversal
- * distance)(-mode)</LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map with the new drainage directions (-dir)</LI>
- * <LI>the map with the total contributing areas calculated with this drainage
- * directions (-tca)</LI>
- * </OL>
- * <P></DD> Usage method LAD: h.draindir --mode 1 --igrass-pit pit --igrass-flow
- * flow --lambda lambda --ograss-dir dir --ograss-tca tca
- * </p>
- * <p>
- * Usage method LTD: h.draindir --mode 2 --igrass-pit pit --igrass-flow flow
- * --lambda lambda --ograss-dir dir --ograss-tca tca
- * </p>
- * <p>
- * Usage method FLOW FIXED: h.draindir --mode 1-2 --flowfixed 1 --igrass-pit pit
- * --igrass-flow flow --igrass-flowfixed flowfixed --lambda lambda --ograss-dir
- * dir
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
- *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
- */
+
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
+@Documentation("DrainDir.html")
 @Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
 @Keywords("Geomorphology")
 @Label(JGTConstants.GEOMORPHOLOGY)
+@Name("drain")
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DrainDir extends JGTModel {
@@ -118,7 +72,7 @@ public class DrainDir extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The flow map on the network pixels.")
+    @Description("The map of flowdirections on the network pixels.")
     @In
     public GridCoverage2D inFlownet = null;
 

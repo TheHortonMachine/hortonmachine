@@ -64,7 +64,7 @@ public class Pitfiller extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The depitted digital elevation model.")
+    @Description("The depitted elevation map.")
     @Out
     public GridCoverage2D outPit = null;
 

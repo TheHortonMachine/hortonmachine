@@ -1,0 +1,34 @@
+It calculates the drainage directions minimizing the deviation from the real fow. The deviation is calculated using a triangular construction
+and it could be given in degrees (D8 LAD method) or as (trasversal distance (D8 LTD method). The deviation could be cumulated
+along the path using the <i>lambda</i> parameter, and when it assumes a
+limit value the fux is redirect toward the real gradient direction. If
+the drainage network is known and marked in a raster matrix with the corresponding drainage directions, its flow directions can be kept fixed.
+It is possible to run the model in two different ways, the standard and the one in which the drainage directions will be kept fixed on real data.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of elevations (obtained with pitller,
+pit )</li>
+<li>the file containing the old drainage direction matrix (obtained with
+fowdirections, fow)</li>
+<li>if we choose to fix the network, the map containing the drainage
+directions along the network (flowfixed)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the new drainage directions</li> 
+</ul>
+<ul>      
+<li>the file containing the total contributing areas calculated with the new drainage directions</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The parameter <i>lambda</i> changes in the range from 0 (do not consider the upstream cumulated deviation) to 1 (consider all the upstream cumulated deviation).
+<br>
+<br>
+<h3>See Also</h3>
+Pitfiller, FlowDirections
