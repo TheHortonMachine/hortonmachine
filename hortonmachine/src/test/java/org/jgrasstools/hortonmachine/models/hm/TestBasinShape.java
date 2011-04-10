@@ -30,6 +30,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 /**
  * Test {@link BasinShape}.
  * 
@@ -37,8 +38,8 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class TestBasinShape extends HMTestCase {
 
-    private static final String geom1Txt = "POLYGON ((1640680 5139960, 1640680 5139840, 1640710 5139840, 1640710 5139810, 1640800 5139810, 1640800 5139990, 1640710 5139990, 1640710 5139960, 1640680 5139960))";
-    private static final String geom2Txt = "POLYGON ((1640800 5139810, 1640920 5139810, 1640920 5139990, 1640800 5139990, 1640800 5139810))";
+    private static final String geom1Txt = "POLYGON ((1640710 5139990, 1640710 5139960, 1640680 5139960, 1640680 5139840, 1640710 5139840, 1640710 5139810, 1640800 5139810, 1640800 5139990, 1640710 5139990))";
+    private static final String geom2Txt = "POLYGON ((1640800 5139990, 1640800 5139810, 1640920 5139810, 1640920 5139990, 1640800 5139990))";
 
     @SuppressWarnings("nls")
     public void testBasinShape() throws Exception {
@@ -69,10 +70,12 @@ public class TestBasinShape extends HMTestCase {
                 Geometry geometryN = line.getGeometryN(i);
                 int length = geometryN.getCoordinates().length;
                 if (length == 9) {
-                    assertEquals(geom1Txt, geometryN.toText());
+                    Geometry g1 = new WKTReader().read(geom1Txt);
+                    assertTrue(geometryN.equals(g1));
                 }
                 if (length == 5) {
-                    assertEquals(geom2Txt, geometryN.toText());
+                    Geometry g2 = new WKTReader().read(geom2Txt);
+                    assertTrue(geometryN.equals(g2));
                 }
             }
         }

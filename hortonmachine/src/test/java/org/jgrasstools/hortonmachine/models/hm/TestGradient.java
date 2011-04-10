@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -24,8 +23,6 @@ public class TestGradient extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
         gradient.pm = pm;
@@ -43,8 +40,6 @@ public class TestGradient extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
         gradient.pm = pm;
@@ -55,14 +50,13 @@ public class TestGradient extends HMTestCase {
         GridCoverage2D gradientCoverage = gradient.outSlope;
         checkMatrixEqual(gradientCoverage.getRenderedImage(), HMTestMaps.gradientHornData, 0.01);
     }
+
     public void testGradientEvans() throws IOException {
 
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
-
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
         Gradient gradient = new Gradient();
         gradient.inDem = pitfillerCoverage;
