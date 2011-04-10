@@ -1,19 +1,19 @@
-Generates a watershed basin from a drainage direction map and a set of coordinates representing the outlet point of watershed.
+Marks all the outlets of the considered region on the drainage directions map with the conventional value 10. In fact some applications in JGrassTools request that the outlets are specified explicitly.
 <br>
 <br>
 <h3>Inputs</h3>
 <ul>      
-<li>the map containing the drainage directions (obtained with Markoutlets, DrainDir, FlowDirections)</li>
-<li>the coordinates of the water outlet (east and north)</li>
-<li>the map containing the channel network (obtained with ExtractNetwork)</li>
+<li>the file containing the matrix of the drainage directions to
+modify (obtained with FlowDirections or DrainDir)</li>
 </ul>
 <br>
 <br>
 <h3>Output</h3>
 <ul>      
-<li>the basin extracted mask (basin)</li> 
+<li>the file containing the matrix of the flow data assigned in input
+with the outlets set equal to 10 (mflow)</li> 
 </ul>
 <br>
 <br>
 <h3>Notes</h3>
-The most important thing in this module is to choose a good water outlet. If the coordinates are unknown click with the mouse on the network map ensuring to select a pixel on the extracted network (value 2 in the network map).
+The program works following the drainage directions until it finds a value that is not a drainage direction. Then it marks the point directly upriver as outlet.

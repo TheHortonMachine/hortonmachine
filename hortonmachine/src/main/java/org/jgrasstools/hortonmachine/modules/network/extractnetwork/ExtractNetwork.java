@@ -55,7 +55,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extracts the network from an elevation model.")
 @Documentation("ExtractNetwork.html")
-@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
 @Label(JGTConstants.NETWORK)
 @Name("pit")
