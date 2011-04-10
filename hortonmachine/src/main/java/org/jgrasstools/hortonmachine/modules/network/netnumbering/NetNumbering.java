@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.network.netnumbering;
 
@@ -29,12 +28,14 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -54,72 +55,15 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeType;
 
 import com.vividsolutions.jts.geom.Geometry;
-/**
- * <p>
- * The openmi compliant representation of the netnumbering model. It assign
- * numbers to the network's links and can be used by hillslope2channelattribute
- * to label the hillslope flowing into the link with the same number.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map containing the drainage directions (-flow);</LI>
- * <LI>the map containing the channel network (-net);
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map containing the net with the streams numerated (-netnumber);</LI>
- * <LI>the map containing the sub-basins (-basin).</LI>
- * </OL>
- * <P></DD>
- * <p>
- * Usage mode 0: h.netnumbering --mode 0 --igrass-flow flow --igrass-net net
- * --ograss-netnumber netnumber --ograss-basin basin
- * </p>
- * <p>
- * Usage mode 1: h.netnumbering --mode 1 --thtca value --igrass-flow flow
- * --igrass-net net --igrass-tca tca --ograss-netnumber netnumber--ograss-basin
- * basin
- * </p>
- * <p>
- * Usage mode 2: h.netnumbering --mode 2 --igrass-flow flow --igrass-net net
- * --ishapefile-pointshape "filepath" --ograss-netnumber netnumber--ograss-basin
- * basin
- * </p>
- * <p>
- * Usage mode 3: h.netnumbering --mode 3 --thtca value --igrass-flow flow
- * --igrass-net net --igrass-tca tca --ishapefile-pointshape "filepath"
- * --ograss-netnumber netnumber--ograss-basin basin
- * </p>
- * <p>
- * With color map: h.netnumbering --igrass-flow flow --igrass-net net
- * --ograss-netnumber netnumberx --ograss-basin basinx --ocolor-colornumbers
- * netnumber --ocolor-colorbasins basin
- * <p>
- * <DT><STRONG>Notes:</STRONG><BR>
- * </DT>
- * <DD>The algorithm start from the channel heads which are numbered first.
- * Then, starting again from each source, the drainage direction are followed
- * till a junction is found. If the link downhill the junction was already
- * numbered, a new source is chosen. Otherwise the network is scanned downstream
- * ad a new number is attributed to the link's pixels. Was extensively used for
- * the calculations in [11] (See also: Tca) <BR>
- * </OL></DD>
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Andrea Cozzini, Riccardo
- *         Rigon, (2004).
- */
-@Description("Assigns * numbers to the network's links and can be used by hillslope2channelattribute "
-        + "to label the hillslope flowing into the link with the same number")
-@Author(name = "Erica Ghesla, Riccardo Rigon, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Network")
+
+@Description("Assigns the numbers to the network's links.")
+@Documentation("NetNumbering.html")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Network, SplitSubbasins")
 @Label(JGTConstants.NETWORK)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Name("netnum")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class NetNumbering extends JGTModel {
     @Description("The map of flowdirections.")
     @In
@@ -133,7 +77,7 @@ public class NetNumbering extends JGTModel {
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The monitoringpoints features map.")
+    @Description("The monitoringpoints vector map.")
     @In
     public SimpleFeatureCollection inPoints = null;
 

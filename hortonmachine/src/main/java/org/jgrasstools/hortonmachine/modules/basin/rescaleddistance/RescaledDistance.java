@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.basin.rescaleddistance;
 
@@ -36,6 +35,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -49,57 +49,14 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the rescaleddistance model. It
- * calculates the rescaled distance of each pixel from the outlet. *
- * <p>
- * x' = x_c + r x_h
- * </p>
- * <p>
- * where: x_c is the distance along the channels,
- * </p>
- * <p>
- * r = c / c_h
- * </p>
- * <p>
- * the ratio between the speed in the channel state, and the speed in the
- * hillslopes, and x_h the distance along the hillslopes.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map of the drainage directions (-flow);</LI>
- * <LI>the file containing the net (-net);
- * <LI>the channel-overland ratio (-number);</LI>
- * </LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map of the rescaled distances (-rdist);</LI>
- * </OL>
- * <P></DD>
- * Usage: h.rescaleddistance --igrass-net net --igrass-flow flow --ograss-rdist
- * rdist --number number
- * </p>
- * <p>
- * Note: The program requests also the ratio between speed in the channel and
- * speed in hillslopes. The speed in channels is always greater than that in
- * hillslopes.
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini
- *         Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo
- */
-@Description("Calculates the rescaled distance of each pixel from the outlet")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Basin, Geomorphology")
+
+@Description("Calculates the rescaled distance of each pixel from the outlet.")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Basin, Geomorphology, D2O")
 @Label(JGTConstants.BASIN)
+@Name("rescdist")
 @Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class RescaledDistance extends JGTModel {
 
     @Description("The map of flowdirections.")
