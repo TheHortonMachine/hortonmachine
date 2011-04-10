@@ -1,0 +1,17 @@
+Calculates the Hack quantities, namely, assigned a point in a basin, the projection on the plane of the distance from the watershed measured along the network (until it exists) and then, proceeding again from valley upriver, along the maximal slope lines. 
+<br>
+For each network confluence, the direction of the tributary with maximal contributing area is chosen. If the tributaries have the same area, one of the two directions is chosen at random.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the drainage directions (obtained with Markoutlets, DrainDir, FlowDirections)</li>
+<li>the file containing the total contributing areas (obtained
+with DrainDir, Tca or Multitca)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the matrix of the Hack distances</li>
+</ul>
