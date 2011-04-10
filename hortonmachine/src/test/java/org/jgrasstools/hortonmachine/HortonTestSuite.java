@@ -5,9 +5,12 @@ import junit.framework.TestSuite;
 
 import org.jgrasstools.hortonmachine.models.hm.TestAb;
 import org.jgrasstools.hortonmachine.models.hm.TestAspect;
+import org.jgrasstools.hortonmachine.models.hm.TestBasinShape;
+import org.jgrasstools.hortonmachine.models.hm.TestCb;
 import org.jgrasstools.hortonmachine.models.hm.TestDrainDir;
 import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork;
 import org.jgrasstools.hortonmachine.models.hm.TestFlowDirections;
+import org.jgrasstools.hortonmachine.models.hm.TestGradient;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 
 public class HortonTestSuite extends TestCase {
@@ -18,15 +21,15 @@ public class HortonTestSuite extends TestCase {
         suite.addTestSuite(TestAb.class);
         // suite.addTestSuite(TestAdige.class);
         suite.addTestSuite(TestAspect.class);
-        // suite.addTestSuite(TestBasinShape.class);
-        // suite.addTestSuite(TestCb.class);
+        suite.addTestSuite(TestBasinShape.class);
+        suite.addTestSuite(TestCb.class);
         // suite.addTestSuite(TestCurvatures.class);
         suite.addTestSuite(TestDrainDir.class);
         // suite.addTestSuite(TestEnergyBalance.class);
         // suite.addTestSuite(TestEnergyIndexCalculator.class);
         suite.addTestSuite(TestExtractNetwork.class);
         suite.addTestSuite(TestFlowDirections.class);
-        // suite.addTestSuite(TestGradient.class);
+        suite.addTestSuite(TestGradient.class);
         // suite.addTestSuite(TestHacklength.class);
         // suite.addTestSuite(TestHackstream.class);
         // suite.addTestSuite(TestHillshade.class);
