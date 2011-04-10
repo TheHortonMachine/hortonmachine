@@ -19,6 +19,7 @@ import org.jgrasstools.hortonmachine.models.hm.TestNetnumbering;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
 import org.jgrasstools.hortonmachine.models.hm.TestRescaledDistance;
 import org.jgrasstools.hortonmachine.models.hm.TestSlope;
+import org.jgrasstools.hortonmachine.models.hm.TestSumDownstream;
 import org.jgrasstools.hortonmachine.models.hm.TestTca;
 import org.jgrasstools.hortonmachine.models.hm.TestTopindex;
 import org.jgrasstools.hortonmachine.models.hm.TestWateroutlet;
@@ -54,6 +55,7 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(TestShalstab.class);
         // suite.addTestSuite(TestSkyview.class);
         suite.addTestSuite(TestSlope.class);
+        suite.addTestSuite(TestSumDownstream.class);
         suite.addTestSuite(TestTca.class);
         // suite.addTestSuite(TestTca3d.class);
         suite.addTestSuite(TestTopindex.class);
