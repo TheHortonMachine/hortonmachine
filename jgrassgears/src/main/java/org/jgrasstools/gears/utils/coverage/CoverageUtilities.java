@@ -62,6 +62,7 @@ import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
@@ -213,8 +214,8 @@ public class CoverageUtilities {
      * @return the {@link HashMap map} of parameters. ( {@link #NORTH} and the 
      *          other static vars can be used to retrieve them.
      */
-    public static HashMap<String, Double> getRegionParamsFromGridCoverage( GridCoverage2D gridCoverage ) {
-        HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
+    public static RegionMap getRegionParamsFromGridCoverage( GridCoverage2D gridCoverage ) {
+        RegionMap envelopeParams = new RegionMap();
 
         Envelope envelope = gridCoverage.getEnvelope();
 
@@ -334,9 +335,9 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
-    public static HashMap<String, Double> makeRegionParamsMap( double north, double south, double west, double east, double xRes,
-            double yRes, int width, int height ) {
-        HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
+    public static RegionMap makeRegionParamsMap( double north, double south, double west, double east, double xRes, double yRes,
+            int width, int height ) {
+        RegionMap envelopeParams = new RegionMap();
         envelopeParams.put(NORTH, north);
         envelopeParams.put(SOUTH, south);
         envelopeParams.put(WEST, west);

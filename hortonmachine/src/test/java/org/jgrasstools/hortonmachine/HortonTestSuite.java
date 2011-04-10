@@ -48,7 +48,6 @@ public class HortonTestSuite extends TestCase {
         // suite.addTestSuite(TestKriging.class);
         suite.addTestSuite(TestMarkoutlets.class);
         suite.addTestSuite(TestNetnumbering.class);
-        // // suite.addTestSuite(TestPeakflow.class);
         // suite.addTestSuite(TestPfafstetter.class);
         suite.addTestSuite(TestPitfiller.class);
         suite.addTestSuite(TestRescaledDistance.class);
