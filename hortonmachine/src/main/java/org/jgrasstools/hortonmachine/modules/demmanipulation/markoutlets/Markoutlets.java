@@ -69,7 +69,7 @@ public class Markoutlets extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The map of the flowdirections with outlet marked")
+    @Description("The map of the flowdirections with outlet marked.")
     @Out
     public GridCoverage2D outFlow = null;
 

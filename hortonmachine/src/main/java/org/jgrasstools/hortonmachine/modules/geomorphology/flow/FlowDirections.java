@@ -48,7 +48,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Straight port of the flowdirections calculation model found in the TARDEM suite.")
 @Documentation("FlowDirections.html")
-@Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, Aspect")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("flow")

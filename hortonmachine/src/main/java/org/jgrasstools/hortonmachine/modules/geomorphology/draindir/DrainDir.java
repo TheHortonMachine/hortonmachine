@@ -53,7 +53,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
 @Documentation("DrainDir.html")
-@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, Pitfiller, FlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("drain")

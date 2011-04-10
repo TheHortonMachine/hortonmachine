@@ -51,7 +51,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extract the watershed for a defined outlet.")
 @Documentation("Wateroutlet.html")
-@Author(name = "Andrea Antonello, US Army Construction Engineering Research Laboratory", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello, US Army Construction Engineering Research Laboratory", contact = "http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, FlowDirections")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("wateroutlet")

@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.basin.basinshape;
 
@@ -33,11 +32,13 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -66,19 +67,21 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Creates a Feature collection of the subbasins create with the netnumbering module.")
-@Author(name = "Erica Ghesla, Andrea Antonello", contact = "www.hydrologis.com")
+@Description("Creates a Feature collection of the subbasins created with the netnumbering module.")
+@Documentation("BasinShape.html")
+@Author(name = "Erica Ghesla, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
 @Label(JGTConstants.BASIN)
+@Name("basinshape")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class BasinShape extends JGTModel {
 
     @Description("The depitted elevation map.")
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of basins.")
+    @Description("The map of the numbered basins.")
     @In
     public GridCoverage2D inBasins = null;
 
@@ -86,7 +89,7 @@ public class BasinShape extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The extracted basins map.")
+    @Description("The extracted basins vector map.")
     @Out
     public SimpleFeatureCollection outBasins = null;
 
