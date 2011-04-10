@@ -30,6 +30,7 @@ import oms3.annotations.Documentation;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.ClassField;
@@ -166,9 +167,15 @@ public class WikiModulesCreator {
                     // ignore progress monitor
                     continue;
                 }
+                Unit unitAnn = abClass.getField(classField.fieldName).getAnnotation(Unit.class);
+                String fieldDescription = classField.fieldDescription;
+                if (unitAnn != null) {
+                    fieldDescription = fieldDescription + " [" + unitAnn.value() + "]";
+                }
+
                 sbTmp.append("<tr>").append(NEWLINE);
-                sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
-                sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
+                sbTmp.append("<td width=\"50%\"> <b>").append(classField.fieldName).append("</b> </td><td width=\"50%\"> ");
+                sbTmp.append(fieldDescription).append(" </td>").append(NEWLINE);
                 sbTmp.append("</tr>").append(NEWLINE);
             }
             toTable(sb, sbTmp, "Input parameters");
@@ -181,9 +188,14 @@ public class WikiModulesCreator {
                     // ignore progress monitor
                     continue;
                 }
+                Unit unitAnn = abClass.getField(classField.fieldName).getAnnotation(Unit.class);
+                String fieldDescription = classField.fieldDescription;
+                if (unitAnn != null) {
+                    fieldDescription = fieldDescription + " [" + unitAnn.value() + "]";
+                }
                 sbTmp.append("<tr>").append(NEWLINE);
-                sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
-                sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
+                sbTmp.append("<td width=\"50%\"> <b>").append(classField.fieldName).append("</b> </td><td width=\"50%\"> ");
+                sbTmp.append(fieldDescription).append(" </td>").append(NEWLINE);
                 sbTmp.append("</tr>").append(NEWLINE);
             }
             toTable(sb, sbTmp, "Output parameters");
