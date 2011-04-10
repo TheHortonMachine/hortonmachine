@@ -59,12 +59,12 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
 @Documentation("Aspect.html")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
-@Keywords("Geomorphology")
+@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini", contact = "www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, DrainDir, FlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("aspect")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class Aspect extends JGTModel {
     @Description("The map of the digital elevation model (DEM).")
     @In
