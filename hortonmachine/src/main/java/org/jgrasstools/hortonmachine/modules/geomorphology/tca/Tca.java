@@ -22,6 +22,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.text.MessageFormat;
 import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
@@ -29,23 +30,24 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -58,9 +60,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Tca extends JGTModel {
-    /*
-    * EXTERNAL VARIABLES
-    */
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
@@ -73,21 +72,11 @@ public class Tca extends JGTModel {
     @Out
     public GridCoverage2D outTca = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    private static final double NaN = doubleNovalue;
 
     private int cols;
     private int rows;
 
-    /**
-     * Calculates total contributing areas
-     * 
-     * @throws Exception
-     */
     @Execute
     public void process() throws Exception {
         if (!concatOr(outTca == null, doReset)) {
@@ -111,7 +100,7 @@ public class Tca extends JGTModel {
 
     }
 
-    private void area( WritableRaster flowImage, WritableRaster tcaImage ) {
+    private void area( WritableRaster flowImage, WritableRaster tcaImage ) throws ModelsIOException {
 
         RandomIter flowIter = RandomIterFactory.create(flowImage, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaImage, null);
@@ -125,7 +114,7 @@ public class Tca extends JGTModel {
                 // get the directions of the current pixel.
                 double flowValue = flowIter.getSampleDouble(j, i, 0);
                 if (isNovalue(flowValue)) {
-                    tcaIter.setSample(j, i, 0, NaN);
+                    tcaIter.setSample(j, i, 0, doubleNovalue);
                 } else {
                     int rRow = i;
                     int rCol = j;
@@ -147,12 +136,11 @@ public class Tca extends JGTModel {
                         if (nextFlow < 9 && (!isNovalue(nextFlow) || nextFlow != 0)) {
                             int r = newRow + dirs[nextFlow][0];
                             int c = newCol + dirs[nextFlow][1];
-                            // if (r == rRow && c == rCol) {
-                            // throw new ModelsIOException(MessageFormat.format(
-                            // "Detected loop between rows/cols = {0}/{1} and {2}/{3}", rRow, rCol,
-                            // newRow, newCol),
-                            // this);
-                            // }
+                            if (r == rRow && c == rCol) {
+                                throw new ModelsIOException(MessageFormat.format(
+                                        "Detected loop between rows/cols = {0}/{1} and {2}/{3}", rRow, rCol, newRow, newCol),
+                                        this);
+                            }
                         }
                         // update the indexes.
                         rRow = newRow;
@@ -174,6 +162,5 @@ public class Tca extends JGTModel {
 
         flowIter.done();
         tcaIter.done();
-
     }
 }

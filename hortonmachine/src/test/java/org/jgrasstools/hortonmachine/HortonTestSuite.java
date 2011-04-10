@@ -12,10 +12,15 @@ import org.jgrasstools.hortonmachine.models.hm.TestDrainDir;
 import org.jgrasstools.hortonmachine.models.hm.TestExtractNetwork;
 import org.jgrasstools.hortonmachine.models.hm.TestFlowDirections;
 import org.jgrasstools.hortonmachine.models.hm.TestGradient;
+import org.jgrasstools.hortonmachine.models.hm.TestHackStream;
 import org.jgrasstools.hortonmachine.models.hm.TestHacklength;
 import org.jgrasstools.hortonmachine.models.hm.TestMarkoutlets;
+import org.jgrasstools.hortonmachine.models.hm.TestNetnumbering;
 import org.jgrasstools.hortonmachine.models.hm.TestPitfiller;
+import org.jgrasstools.hortonmachine.models.hm.TestRescaledDistance;
 import org.jgrasstools.hortonmachine.models.hm.TestSlope;
+import org.jgrasstools.hortonmachine.models.hm.TestTca;
+import org.jgrasstools.hortonmachine.models.hm.TestTopindex;
 import org.jgrasstools.hortonmachine.models.hm.TestWateroutlet;
 
 public class HortonTestSuite extends TestCase {
@@ -36,23 +41,23 @@ public class HortonTestSuite extends TestCase {
         suite.addTestSuite(TestFlowDirections.class);
         suite.addTestSuite(TestGradient.class);
         suite.addTestSuite(TestHacklength.class);
-        // suite.addTestSuite(TestHackstream.class);
+        suite.addTestSuite(TestHackStream.class);
         // suite.addTestSuite(TestHillshade.class);
         // suite.addTestSuite(TestInsolation.class);
         // suite.addTestSuite(TestJami.class);
         // suite.addTestSuite(TestKriging.class);
         suite.addTestSuite(TestMarkoutlets.class);
-        // suite.addTestSuite(TestNetnumbering.class);
+        suite.addTestSuite(TestNetnumbering.class);
         // // suite.addTestSuite(TestPeakflow.class);
         // suite.addTestSuite(TestPfafstetter.class);
         suite.addTestSuite(TestPitfiller.class);
-        // suite.addTestSuite(TestRescaledDistance.class);
+        suite.addTestSuite(TestRescaledDistance.class);
         // suite.addTestSuite(TestShalstab.class);
         // suite.addTestSuite(TestSkyview.class);
         suite.addTestSuite(TestSlope.class);
-        // suite.addTestSuite(TestTca.class);
+        suite.addTestSuite(TestTca.class);
         // suite.addTestSuite(TestTca3d.class);
-        // suite.addTestSuite(TestTopindex.class);
+        suite.addTestSuite(TestTopindex.class);
         // suite.addTestSuite(TestValidationDoubleStation.class);
         suite.addTestSuite(TestWateroutlet.class);
 

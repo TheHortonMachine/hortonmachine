@@ -118,7 +118,7 @@ public class NetNumbering extends JGTModel {
         RandomIter netIter = RandomIterFactory.create(netRI, null);
 
         RandomIter tcaIter = null;
-        if (pMode == 1 || pMode == 3) {
+        if (pMode == 1) {
             RenderedImage tcaRI = inTca.getRenderedImage();
             tcaIter = RandomIterFactory.create(tcaRI, null);
         }
@@ -154,7 +154,7 @@ public class NetNumbering extends JGTModel {
                 attributeVect.add(geomMap);
                 geomMap = null;
             }
-            inPoints.close(featureIterator);
+            featureIterator.close();
         }
 
         ArrayList<Integer> nstream = new ArrayList<Integer>();
@@ -174,12 +174,14 @@ public class NetNumbering extends JGTModel {
             netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
                     inFlow.getGridGeometry(), pm);
         } else {
-            if (attributeVect == null || geomVect == null || tcaIter == null) {
-                throw new ModelsIllegalargumentException(
-                        "This processing mode needs a point featurecollection and the map of tca.", this);
-            }
-            netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter, tcaIter, pThres, nRows, nCols,
-                    attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            // if (attributeVect == null || geomVect == null || tcaIter == null) {
+            // throw new ModelsIllegalargumentException(
+            // "This processing mode needs a point featurecollection and the map of tca.", this);
+            // }
+            // netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter,
+            // tcaIter, pThres, nRows, nCols,
+            // attributeVect, geomVect, inFlow.getGridGeometry(), pm);
+            throw new ModelsIllegalargumentException("Only pMode 0, 1 and 2 are supported.", this);
         }
 
         WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);
