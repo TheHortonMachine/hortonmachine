@@ -37,7 +37,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -81,12 +80,10 @@ public class NetNumbering extends JGTModel {
     @In
     public SimpleFeatureCollection inPoints = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The running mode.")
+    @Description("The running mode: 0: standard way (default); 1: with a threshold on TCA; 2: in a set of defined monitoring points")
     @In
     public int pMode = 0;
 
-    @Role(Role.PARAMETER)
     @Description("Threshold value on tca map.")
     @In
     public double pThres = 0;
