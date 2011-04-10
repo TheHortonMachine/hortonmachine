@@ -155,47 +155,30 @@ public class WikiModulesCreator {
             // parameters
             sb.append("<h2>Parameters</h2>").append(NEWLINE);
             sb.append(NEWLINE);
-            // parameters: fields
+            // parameters: input
             StringBuilder sbTmp = new StringBuilder();
             for( ClassField classField : fieldsList ) {
                 if (classField.fieldName.equals("pm")) {
                     // ignore progress monitor
                     continue;
                 }
-                if (classField.fieldName.startsWith("p") || classField.fieldName.startsWith("do")) {
-                    sbTmp.append("<tr>").append(NEWLINE);
-                    sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
-                    sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
-                    sbTmp.append("</tr>").append(NEWLINE);
-                }
+                sbTmp.append("<tr>").append(NEWLINE);
+                sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
+                sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
+                sbTmp.append("</tr>").append(NEWLINE);
             }
             toTable(sb, sbTmp, "Input parameters");
-
-            sb.append(NEWLINE);
-            // parameters: input data
-            sbTmp = new StringBuilder();
-            for( ClassField classField : fieldsList ) {
-                if (classField.isIn && !classField.fieldName.startsWith("p") && !classField.fieldName.startsWith("do")) {
-                    sbTmp.append("<tr>").append(NEWLINE);
-                    sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
-                    sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
-                    sbTmp.append("</tr>").append(NEWLINE);
-                }
-            }
-            toTable(sb, sbTmp, "Input data");
 
             sb.append(NEWLINE);
             // parameters: output data
             sbTmp = new StringBuilder();
             for( ClassField classField : fieldsList ) {
-                if (classField.isOut && !classField.fieldName.startsWith("p") && !classField.fieldName.startsWith("do")) {
-                    sbTmp.append("<tr>").append(NEWLINE);
-                    sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
-                    sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
-                    sbTmp.append("</tr>").append(NEWLINE);
-                }
+                sbTmp.append("<tr>").append(NEWLINE);
+                sbTmp.append("<td width=\"50%\"> *").append(classField.fieldName).append("* </td><td width=\"50%\"> ");
+                sbTmp.append(classField.fieldDescription).append(" </td>").append(NEWLINE);
+                sbTmp.append("</tr>").append(NEWLINE);
             }
-            toTable(sb, sbTmp, "Output data");
+            toTable(sb, sbTmp, "Output parameters");
             sb.append(NEWLINE);
 
             // example result
