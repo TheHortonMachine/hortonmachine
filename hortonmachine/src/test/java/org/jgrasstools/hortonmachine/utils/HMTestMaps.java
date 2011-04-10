@@ -27,6 +27,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
+import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -127,7 +128,7 @@ public class HMTestMaps {
             {NaN, 3, 4, 4, 3, 3, 5, 4, 4, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-    
+
     /**
      * Output data for the {@link DrainDir} module run in LAD mode.
      */
@@ -185,19 +186,19 @@ public class HMTestMaps {
             {NaN, 1, 1, 1, 1, 2, 1, 1, 1, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-    
+
     /**
      * Output tca for {@link DrainDir} in LTD mode.
      */
     public static double[][] mtcaData0 = new double[][]{ //
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-        {NaN, NaN, 2, 1, 1, 1, 2, 1, 1, NaN}, //
-        {NaN, 3, 1, 2, 2, 3, 1, 2, 1, NaN}, //
-        {NaN, 47, 3, 3, 4, 2, 1, 5, 2, NaN}, //
-        {NaN, 1, 38, 32, 21, 15, 11, 5, 2, NaN}, //
-        {NaN, 3, 2, 1, 2, 3, 2, 2, 1, NaN}, //
-        {NaN, 1, 1, 1, 1, 2, 1, 1, 1, NaN}, //
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+            {NaN, NaN, 2, 1, 1, 1, 2, 1, 1, NaN}, //
+            {NaN, 3, 1, 2, 2, 3, 1, 2, 1, NaN}, //
+            {NaN, 47, 3, 3, 4, 2, 1, 5, 2, NaN}, //
+            {NaN, 1, 38, 32, 21, 15, 11, 5, 2, NaN}, //
+            {NaN, 3, 2, 1, 2, 3, 2, 2, 1, NaN}, //
+            {NaN, 1, 1, 1, 1, 2, 1, 1, 1, NaN}, //
+            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
 
     /**
@@ -428,6 +429,9 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
 
+    /**
+     * {@link ExtractNetwork} output with mode 0.
+     */
     public static double[][] extractNet0Data = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
@@ -438,6 +442,9 @@ public class HMTestMaps {
             {NaN, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
 
+    /**
+     * {@link ExtractNetwork} output with mode 1.
+     */
     public static double[][] extractNet1Data = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //

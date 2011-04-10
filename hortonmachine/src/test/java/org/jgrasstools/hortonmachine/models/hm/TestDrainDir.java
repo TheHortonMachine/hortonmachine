@@ -79,7 +79,6 @@ public class TestDrainDir extends HMTestCase {
         GridCoverage2D draindirCoverage = drainDir.outFlow;
         GridCoverage2D tcaCoverage = drainDir.outTca;
 
-        printImage(tcaCoverage.getRenderedImage());
         checkMatrixEqual(draindirCoverage.getRenderedImage(), HMTestMaps.drainData0);
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.mtcaData0);
     }
