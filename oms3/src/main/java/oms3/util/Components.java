@@ -331,6 +331,51 @@ public class Components {
         return idx;
     }
 
+    /**
+     * Get all components from a set of jar files.
+     * 
+     * @param parent a parent {@link ClassLoader} to use. If <code>null</code>, the context 
+     *              classloader will be used.
+     * @param jars the {@link URL}s of the jar to browse for components.
+     * @return the list of component classes in the jars.
+     * @throws IOException
+     */
+    public static List<Class< ? >> getComponentClasses( ClassLoader parent, URL... jars ) throws IOException {
+        if (parent == null) {
+            parent = Thread.currentThread().getContextClassLoader();
+        }
+        
+        URLClassLoader cl = new URLClassLoader(jars, parent);
+        List<Class< ? >> idx = new ArrayList<Class< ? >>();
+
+        for( URL jar : jars ) {
+            JarInputStream jarFile = new JarInputStream(jar.openStream());
+            JarEntry jarEntry = jarFile.getNextJarEntry();
+            while( jarEntry != null ) {
+                String classname = jarEntry.getName();
+                // System.out.println(classname);
+                if (classname.endsWith(".class")) {
+                    classname = classname.substring(0, classname.indexOf(".class")).replace('/', '.');
+                    try {
+                        Class< ? > c = Class.forName(classname, false, cl);
+                        for( Method method : c.getMethods() ) {
+                            if ((method.getAnnotation(Execute.class)) != null) {
+                                idx.add(c);
+                                break;
+                            }
+                        }
+                    } catch (ClassNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                jarEntry = jarFile.getNextJarEntry();
+            }
+            jarFile.close();
+        }
+
+        return idx;
+    }
+    
     /** Get the documentation with the default locale
      *
      * @param comp The component to get the documentation from.

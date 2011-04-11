@@ -455,7 +455,7 @@ public class SCE {
                         for (int iter = 0; iter < 1000; iter++) {
                             lpos = (int) Math.floor(npg + 0.5 - Math.sqrt((npg + 0.5) *
                                     (npg + 0.5) - npg * (npg + 1) * custom_rand()));
-                            //wirklich n?¶tig??
+                            //wirklich noetig??
                             int idx = find(lcs, 0, k3, lpos);
                             if (idx == -1) {
                                 break;
