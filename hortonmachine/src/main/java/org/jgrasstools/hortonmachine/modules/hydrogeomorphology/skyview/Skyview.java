@@ -1,22 +1,20 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview;
 
 import static java.lang.Math.cos;
@@ -41,6 +39,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -53,15 +52,16 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("This is a class which calculate the skyview factor. ")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, radiation, skyview")
+@Description("Calculates the skyview factor.")
+@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Hydrology, Radiation, Insolation, Hillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23.")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.DRAFT)
-@License("GPL3")
+@Name("skyview")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Skyview extends JGTModel {
     @Description("The map of the elevation.")
     @Role(Role.INPUT)
