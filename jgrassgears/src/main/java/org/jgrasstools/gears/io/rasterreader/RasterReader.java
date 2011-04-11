@@ -243,6 +243,10 @@ public class RasterReader extends JGTModel {
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         JGrassRegion readRegion = mapEnvironment.getFileRegion();
+        double n = readRegion.getNorth();
+        double s = readRegion.getSouth();
+        double w = readRegion.getWest();
+        double e = readRegion.getEast();
 
         Envelope env = readRegion.getEnvelope();
         originalEnvelope = new GeneralEnvelope(new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(),
@@ -251,15 +255,16 @@ public class RasterReader extends JGTModel {
         // if bounds supplied, use them as region
         if (pBounds != null) {
             // n, s, w, e
-            double n = pBounds[0];
-            double s = pBounds[1];
-            double w = pBounds[2];
-            double e = pBounds[3];
-            if (pRes != null) {
-                readRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
-            } else if (pRowcol != null) {
-                readRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
-            }
+            n = pBounds[0];
+            s = pBounds[1];
+            w = pBounds[2];
+            e = pBounds[3];
+        }
+        if (pRes != null) {
+            readRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
+        }
+        if (pRowcol != null) {
+            readRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
         }
 
         if (!doEnvelope) {

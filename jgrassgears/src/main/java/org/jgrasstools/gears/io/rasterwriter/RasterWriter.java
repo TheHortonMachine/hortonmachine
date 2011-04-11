@@ -149,7 +149,6 @@ public class RasterWriter extends JGTModel {
 
     private void writeGrass( File mapFile ) throws Exception {
         File cellFile = mapFile;
-        pm.beginTask("Writing grass raster: " + cellFile.getName(), IJGTProgressMonitor.UNKNOWN);
         JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(cellFile);
         GeneralParameterValue[] readParams = null;
         JGrassRegion jGrassRegion = null;
