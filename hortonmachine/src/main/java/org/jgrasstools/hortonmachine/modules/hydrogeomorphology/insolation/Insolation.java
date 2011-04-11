@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.insolation;
 
@@ -35,12 +34,14 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -64,23 +65,25 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("This is a class which calculate the amount of pawer incident on a surface in a period of time.")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, radiation")
+@Description("Calculate the amount of power incident on a surface in a period of time.")
+@Documentation("Insolation.html")
+@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Hydrology, Radiation, SkyviewFactor, Hillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.DRAFT)
-@License("GPL3")
+@Name("insolation")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Insolation extends JGTModel {
     @Description("The map of the elevation.")
     @Role(Role.INPUT)
     @In
     public GridCoverage2D inElevation = null;
 
-    @Description("The output map")
+    @Description("The map of total insolation.")
     @Out
     public GridCoverage2D outMap;
 
@@ -101,7 +104,7 @@ public class Insolation extends JGTModel {
     @Description("The solar constant.")
     private static final double SOLARCTE = 1368.0;
 
-    @Description("Atmosphere pressure.")
+    @Description("The atmosphere pressure.")
     private static final double ATM = 1013.25;
 
     /*

@@ -1,8 +1,9 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
@@ -11,7 +12,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade;
@@ -33,14 +34,15 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -52,22 +54,23 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("This class evalutate the hillshade of a DEM.")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, radiation")
+@Documentation("Hillshade.html")
+@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Hydrology, Radiation, SkyviewFactor, Insolation")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Status(Status.DRAFT)
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@License("http://www.gnu.org/licenses/")
+@Name("hillshade")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Hillshade extends JGTModel {
     @Description("The map of the elevation.")
-    @Role(Role.INPUT)
     @In
     public GridCoverage2D inElevation = null;
 
-    @Description("The output map")
+    @Description("The map of hillshade.")
     @Out
     public GridCoverage2D outMap;
 
@@ -76,18 +79,15 @@ public class Hillshade extends JGTModel {
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
 
-    @Description(" minimum diffuse insolation 0 to 1")
-    @Role(Role.PARAMETER)
+    @Description("The minimum value of diffuse insolation 0 to 1.")
     @In
     public double defaultMinDiffuse = 0.0;
 
-    @Description("azimuth")
-    @Role(Role.PARAMETER)
+    @Description("The value of the azimuth.")
     @In
     public double defaultAzimuth = 360;
 
-    @Description("the sun elevation")
-    @Role(Role.PARAMETER)
+    @Description("The sun elevation.")
     @In
     public double defaultElevation = 90;
 

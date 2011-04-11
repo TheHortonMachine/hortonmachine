@@ -51,7 +51,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Contributing areas represent the areas (in number of pixels) afferent to each point.")
+@Description("Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.")
 @Documentation("Tca.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, DrainDir, Tca3D, Ab, Multitca")

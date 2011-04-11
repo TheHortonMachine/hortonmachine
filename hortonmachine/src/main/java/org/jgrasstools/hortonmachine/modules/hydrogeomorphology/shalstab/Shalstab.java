@@ -42,6 +42,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -70,42 +71,50 @@ public class Shalstab extends JGTModel {
     public GridCoverage2D inTca = null;
 
     @Description("The map of trasmissivity.")
+    @Unit("m^2/day")
     @In
     public GridCoverage2D inTrasmissivity = null;
 
     @Description("A constant of trasmissivity to use instead of the map.")
+    @Unit("m^2/day")
     @In
     public double pTrasmissivity = -1.0;
 
-    @Description("The map of the friction tangent angle.")
+    @Description("The map of the tangent of the friction tangent angle.")
     @In
     public GridCoverage2D inTgphi = null;
 
-    @Description("A constant of friction tangent angle to use instead of the map.")
+    @Description("A constant of tangent of the friction angle to use instead of the map.")
     @In
     public double pTgphi = -1.0;
 
     @Description("The map of cohesion.")
+    @Unit("Pa")
     @In
     public GridCoverage2D inCohesion = null;
 
     @Description("A constant of cohesion to use instead of the map.")
+    @Unit("Pa")
     @In
     public double pCohesion = -1.0;
 
     @Description("The map of soil depth.")
+    @Unit("m")
     @In
     public GridCoverage2D inSdepth = null;
 
     @Description("A constant of soil depth to use instead of the map.")
+    @Unit("m")
     @In
     public double pSdepth = -1.0;
 
     @Description("The map of effective precipitation.")
+    @Unit("mm/day")
     @In
     public GridCoverage2D inQ = null;
 
     @Description("A constant of effective precipitation to use instead of the map.")
+    @Unit("mm/day")
     @In
     public double pQ = -1.0;
 
