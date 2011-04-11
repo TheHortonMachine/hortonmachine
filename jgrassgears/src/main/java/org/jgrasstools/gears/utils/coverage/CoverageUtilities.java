@@ -30,6 +30,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -822,4 +823,19 @@ public class CoverageUtilities {
         return minMaxMeanSdevCount;
     }
 
+    /**
+     * Checks if the given path is a GRASS raster file.
+     * 
+     * <p>Note that there is no check on the existence of the file.
+     * 
+     * @param path the path to check.
+     * @return true if the file is a grass raster.
+     */
+    public static boolean isGrass( String path ) {
+        File file = new File(path);
+        File cellFolderFile = file.getParentFile();
+        File mapsetFile = cellFolderFile.getParentFile();
+        File windFile = new File(mapsetFile, "WIND");
+        return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
+    }
 }

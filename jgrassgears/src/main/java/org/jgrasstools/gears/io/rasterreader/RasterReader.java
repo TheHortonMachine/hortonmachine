@@ -22,7 +22,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASSRASTER;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -39,8 +39,6 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createGridG
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.makeRegionParamsMap;
-
-import groovy.swing.factory.MapFactory;
 
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
@@ -90,6 +88,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -156,7 +155,7 @@ public class RasterReader extends JGTModel {
     @In
     public Integer pCols = null;
 
-    @Description("The raster type to read (Supported are: asc, tiff, grassraster, adf).")
+    @Description("The raster type to read (Supported are: asc, tiff, grass, adf).")
     @In
     public String pType = null;
 
@@ -212,10 +211,10 @@ public class RasterReader extends JGTModel {
                 pType = AIG;
             } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
                 pType = GEOTIFF;
-            } else if (isGrass(file)) {
-                pType = GRASSRASTER;
+            } else if (CoverageUtilities.isGrass(file)) {
+                pType = GRASS;
             } else
-                throw new ModelsIllegalargumentException("A coverage type to read has to be supplied.", this.getClass()
+                throw new ModelsIllegalargumentException("Can't recognize the data type. Please supply a type.", this.getClass()
                         .getSimpleName());
         }
 
@@ -229,7 +228,7 @@ public class RasterReader extends JGTModel {
                 readGeotiff(mapFile);
             } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
                 readAig(mapFile);
-            } else if (pType.equals(GRASSRASTER)) {
+            } else if (pType.equals(GRASS)) {
                 readGrass(mapFile);
             } else {
                 throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
@@ -238,65 +237,6 @@ public class RasterReader extends JGTModel {
             pm.done();
         }
 
-    }
-    private boolean isGrass( String path ) {
-        File file = new File(path);
-        File cellFolderFile = file.getParentFile();
-        File mapsetFile = cellFolderFile.getParentFile();
-        File windFile = new File(mapsetFile, "WIND");
-
-        return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
-    }
-
-    private void resample() {
-        if (!hasBoundsRequest() && !hasResolutionRequest() && !hasRowColsRequest()) {
-            // no resample required
-            return;
-        }
-
-        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(geodata);
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
-        double xres = envelopeParams.get(XRES);
-        double yres = envelopeParams.get(YRES);
-
-        if (pBounds == null) {
-            pBounds = new double[]{north, south, west, east};
-        }
-        if (pRes == null) {
-            pRes = new double[]{xres, yres};
-        }
-
-        double n = pBounds[0];
-        double s = pBounds[1];
-        double w = pBounds[2];
-        double e = pBounds[3];
-        if (pRes != null || pRowcol != null) {
-            int newRows = 0;
-            int newCols = 0;
-            if (pRowcol != null) {
-                newRows = (int) pRowcol[0];
-                newCols = (int) pRowcol[1];
-                if (pRes == null) {
-                    pRes = new double[2];
-                }
-                pRes[0] = (e - w) / (double) newCols;
-                pRes[1] = (n - s) / (double) newRows;
-            } else if (pRes != null) {
-                pRowcol = new int[2];
-                newRows = (int) Math.round((n - s) / pRes[1]);
-                newCols = (int) Math.round((e - w) / pRes[0]);
-            }
-            pRowcol[0] = newRows;
-            pRowcol[1] = newCols;
-        }
-
-        HashMap<String, Double> newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
-        CoordinateReferenceSystem crs = geodata.getCoordinateReferenceSystem();
-        GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
-        geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
     }
 
     private void readGrass( File mapFile ) throws Exception {
@@ -389,6 +329,57 @@ public class RasterReader extends JGTModel {
         }
     }
 
+    private void resample() {
+        if (!hasBoundsRequest() && !hasResolutionRequest() && !hasRowColsRequest()) {
+            // no resample required
+            return;
+        }
+
+        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(geodata);
+        double west = envelopeParams.get(WEST);
+        double south = envelopeParams.get(SOUTH);
+        double east = envelopeParams.get(EAST);
+        double north = envelopeParams.get(NORTH);
+        double xres = envelopeParams.get(XRES);
+        double yres = envelopeParams.get(YRES);
+
+        if (pBounds == null) {
+            pBounds = new double[]{north, south, west, east};
+        }
+        if (pRes == null) {
+            pRes = new double[]{xres, yres};
+        }
+
+        double n = pBounds[0];
+        double s = pBounds[1];
+        double w = pBounds[2];
+        double e = pBounds[3];
+        if (pRes != null || pRowcol != null) {
+            int newRows = 0;
+            int newCols = 0;
+            if (pRowcol != null) {
+                newRows = (int) pRowcol[0];
+                newCols = (int) pRowcol[1];
+                if (pRes == null) {
+                    pRes = new double[2];
+                }
+                pRes[0] = (e - w) / (double) newCols;
+                pRes[1] = (n - s) / (double) newRows;
+            } else if (pRes != null) {
+                pRowcol = new int[2];
+                newRows = (int) Math.round((n - s) / pRes[1]);
+                newCols = (int) Math.round((e - w) / pRes[0]);
+            }
+            pRowcol[0] = newRows;
+            pRowcol[1] = newCols;
+        }
+
+        HashMap<String, Double> newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
+        CoordinateReferenceSystem crs = geodata.getCoordinateReferenceSystem();
+        GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
+        geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
+    }
+
     private void checkNovalues() {
         // TODO make this nice, this can't be the way
         if (fileNovalue == null || geodataNovalue == null) {
@@ -421,6 +412,18 @@ public class RasterReader extends JGTModel {
         }
     }
 
+    private boolean hasBoundsRequest() {
+        return pNorth != null && pSouth != null && pWest != null && pEast != null;
+    }
+
+    private boolean hasRowColsRequest() {
+        return pRows != null && pCols != null;
+    }
+
+    private boolean hasResolutionRequest() {
+        return pXres != null && pYres != null;
+    }
+
     /**
      * Utility method to quickly read a grid in default mode.
      * 
@@ -435,17 +438,4 @@ public class RasterReader extends JGTModel {
         GridCoverage2D geodata = reader.geodata;
         return geodata;
     }
-
-    private boolean hasBoundsRequest() {
-        return pNorth != null && pSouth != null && pWest != null && pEast != null;
-    }
-
-    private boolean hasRowColsRequest() {
-        return pRows != null && pCols != null;
-    }
-
-    private boolean hasResolutionRequest() {
-        return pXres != null && pYres != null;
-    }
-
 }

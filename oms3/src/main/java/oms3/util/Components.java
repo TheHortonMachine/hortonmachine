@@ -294,7 +294,6 @@ public class Components {
         return getComponentClasses(jar.toURI().toURL());
     }
 
-
     /** Get all components from a jar file
      *
      * @param jar

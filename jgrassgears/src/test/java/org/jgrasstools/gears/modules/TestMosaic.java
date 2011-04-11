@@ -19,17 +19,11 @@
 package org.jgrasstools.gears.modules;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.List;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageWriter;
 import org.jgrasstools.gears.io.grasslegacy.modules.GrassMosaicLegacy;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.modules.r.mosaic.Mosaic;
 import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
-import org.jgrasstools.gears.ui.CoverageViewer;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
  * Test for the mosaic modules.

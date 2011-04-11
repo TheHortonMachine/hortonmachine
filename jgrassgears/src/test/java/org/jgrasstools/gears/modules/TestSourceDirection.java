@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -80,11 +80,9 @@ public class TestSourceDirection extends HMTestCase {
         shpReader.file = shape;
         shpReader.readFeatureCollection();
         SimpleFeatureCollection pointFC = shpReader.geodata;
-        
-        GridCoverage2D coverage = ArcgridCoverageReader.readCoverage(coveragePath);
-        
-        
-        
+
+        GridCoverage2D coverage = RasterReader.readCoverage(coveragePath);
+
         SourcesDirectionCalculator sourceDirection = new SourcesDirectionCalculator();
         sourceDirection.pm = pm;
         sourceDirection.inCoverage = coverage;
