@@ -39,6 +39,7 @@ public class HMTestMaps {
     public static final HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
 
     public static CoordinateReferenceSystem crs = null;
+    public static CoordinateReferenceSystem crs3004 = null;
 
     static {
         envelopeParams.put(CoverageUtilities.NORTH, 5140020.0);
@@ -52,6 +53,7 @@ public class HMTestMaps {
 
         try {
             crs = CRS.decode("EPSG:32632");
+            crs3004 = CRS.decode("EPSG:3004");
         } catch (Exception e) {
             e.printStackTrace();
         }

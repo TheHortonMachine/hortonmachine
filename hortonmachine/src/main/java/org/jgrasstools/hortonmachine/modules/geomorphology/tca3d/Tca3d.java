@@ -62,9 +62,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Tca3d extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
     @Description("The depitted elevation model.")
     @In
     public GridCoverage2D inPit = null;
@@ -81,12 +78,7 @@ public class Tca3d extends JGTModel {
     @Out
     public GridCoverage2D outTca3d = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    private static final double NaN = doubleNovalue;
 
     private int cols;
     private int rows;
@@ -114,10 +106,8 @@ public class Tca3d extends JGTModel {
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
 
-        pm.message(msg.message("tca3d.initializematrix")); //$NON-NLS-1$
-
         // Initialize new RasterData and set value
-        WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
+        WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
         tca3dWR = area3d(pitWR, flowWR, tca3dWR);
         outTca3d = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
@@ -162,8 +152,7 @@ public class Tca3d extends JGTModel {
         RandomIter pitIter = RandomIterFactory.create(pitImage, null);
         WritableRandomIter tca3dIter = RandomIterFactory.createWritable(tca3dImage, null);
 
-        pm.message(msg.message("tca3d.woringon")); //$NON-NLS-1$
-
+        pm.beginTask(msg.message("tca3d.woringon"), rows - 2); //$NON-NLS-1$
         for( int j = 1; j < rows - 1; j++ ) {
             for( int i = 1; i < cols - 1; i++ ) {
                 double pitAtIJ = pitIter.getSampleDouble(i, j, 0);
@@ -222,10 +211,11 @@ public class Tca3d extends JGTModel {
                         tca3dIter.setSample(i, j, 0, areamed * 8);
                     }
                 } else
-                    tca3dIter.setSample(i, j, 0, NaN);
+                    tca3dIter.setSample(i, j, 0, doubleNovalue);
             }
+            pm.worked(1);
         }
-        pm.message(msg.message("tca3d.summ")); //$NON-NLS-1$
+        pm.done();
         RandomIter flowIter = RandomIterFactory.create(flowImage, null);
         return ModelsEngine.sumDownstream(flowIter, tca3dIter, cols, rows, null, null, pm);
     }

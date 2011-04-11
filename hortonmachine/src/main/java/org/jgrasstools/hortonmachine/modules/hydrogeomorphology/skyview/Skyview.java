@@ -172,8 +172,6 @@ public class Skyview extends JGTModel {
                 normalVectorWR.setSample(x, y, 2, 1.0);
 
             }
-            System.out.println();
-
         }
         for( int y = minY; y < maxY; y++ ) {
             for( int x = minX; x < maxX; x++ ) {
@@ -240,13 +238,12 @@ public class Skyview extends JGTModel {
 
         WritableRaster skyviewFactorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                 0.0);
-        pm.beginTask(msg.message("skyview.calculating"), (360 * (int) maxSlope));
+        pm.beginTask(msg.message("skyview.calculating"), 35);
         for( int i = 0; i < 360 - 10; i = i + 10 ) {
             azimuth = Math.toRadians(i * 1.0);
             WritableRaster skyViewWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                     Math.toRadians(maxSlope));
             for( int j = (int) maxSlope; j >= 0; j-- ) {
-                pm.worked(1);
 
                 elevation = Math.toRadians(j * 1.0);
                 double[] sunVector = calcSunVector();
@@ -268,6 +265,7 @@ public class Skyview extends JGTModel {
                     skyviewFactorWR.setSample(q, k, 0, tmp + skyViewWR.getSampleDouble(q, k, 0));
                 }
             }
+            pm.worked(1);
         }
         pm.done();
         return skyviewFactorWR;
