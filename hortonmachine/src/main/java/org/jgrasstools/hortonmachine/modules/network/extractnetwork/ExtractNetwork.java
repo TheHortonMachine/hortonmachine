@@ -58,7 +58,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
 @Label(JGTConstants.NETWORK)
-@Name("pit")
+@Name("extractnet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class ExtractNetwork extends JGTModel {

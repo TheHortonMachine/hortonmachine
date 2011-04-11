@@ -56,7 +56,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, Pitfiller, FlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
-@Name("drain")
+@Name("draindir")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class DrainDir extends JGTModel {

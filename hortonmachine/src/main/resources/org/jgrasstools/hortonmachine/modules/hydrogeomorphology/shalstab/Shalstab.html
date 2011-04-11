@@ -1,0 +1,37 @@
+Calculates the maximum peak discharge using the approach of the width function.
+The model can work in two different modes:
+<ul>
+<li>statistical mode: giving as input the IDF curves parameters for the estimation of the rainfall</li>
+<li>real event mode: providing a file with a measured rainfall event</li>
+</ul>
+In the first case the model will estimate the maximum discharge and also the maximum duration of the statistical rainfall that produces the maximum discharge. The statistical rainfall is calculated considering the IDF curves parameters and a constant rainfall for the whole duration.
+<br>
+In case of real rainfall event the input file with the measured rainfall should follow the format:
+<br>
+<br>
+<div align="center"> YYYY-MM-DD HH:MI rainvalue</div>
+<br>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the map of topindex (obtained with TopIndex)</li>
+<li>the file containing the map of the rescaled distance for the saturated sites (obtained with RescaledDistance)</li>
+<li>the file containing the map of the rescaled distance for the unsaturated sites (obtained with RescaledDistance)</li>
+<li>if we choose to run the model with a real event,the file containing the measured rainfall event</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the calculated discharge at basin outlet</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+To run the model other parameters are required:
+<ul>
+<li>the average (time and space) velocity of the flow in the channels</li>
+<li>the saturation percentage of the basin</li>
+<li>the hydraulic diffusion parameter</li>
+</ul>

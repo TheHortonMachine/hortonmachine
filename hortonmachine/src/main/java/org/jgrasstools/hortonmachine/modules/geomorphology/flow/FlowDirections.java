@@ -46,7 +46,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Straight port of the flowdirections calculation model found in the TARDEM suite.")
+@Description("it calculates the drainage directions with the D8 method.")
 @Documentation("FlowDirections.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, Aspect")

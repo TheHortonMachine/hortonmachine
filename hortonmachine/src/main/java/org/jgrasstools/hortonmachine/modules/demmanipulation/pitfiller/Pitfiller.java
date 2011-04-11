@@ -47,7 +47,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Straight port of the pitfiller correction model found in the TARDEM suite.")
+@Description("It fills the depression points present within a DEM.")
 @Documentation("Pitfiller.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, DrainDir")
