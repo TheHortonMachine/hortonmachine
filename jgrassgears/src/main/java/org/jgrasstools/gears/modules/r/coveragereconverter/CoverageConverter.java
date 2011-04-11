@@ -36,7 +36,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Convert")
 @Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageConverter extends JGTModel {
     @Description("The input coverage.")

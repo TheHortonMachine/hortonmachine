@@ -82,7 +82,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Kriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Kriging extends JGTModel {
 

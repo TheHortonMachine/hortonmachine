@@ -49,7 +49,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Threshold")
 @Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CutOut extends JGTModel {
 

@@ -70,7 +70,7 @@ import com.vividsolutions.jts.geom.MultiPoint;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Flowdirections")
 @Label(JGTConstants.NETWORK)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Netshape2Flow extends JGTModel {
 

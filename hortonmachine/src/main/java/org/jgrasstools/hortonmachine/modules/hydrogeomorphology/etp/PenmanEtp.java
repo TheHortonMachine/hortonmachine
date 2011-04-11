@@ -31,6 +31,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
@@ -46,8 +47,9 @@ import org.joda.time.format.DateTimeFormatter;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Evapotranspiration, Penman, Hydrologic")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
+@UI(JGTConstants.HIDE_UI_HINT)
 public class PenmanEtp extends JGTModel {
 
     // @Description("Baricenter elevation of the HillSlope for every basin on which to calculate.")

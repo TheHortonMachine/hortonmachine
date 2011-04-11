@@ -27,6 +27,7 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -46,6 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Utility class for reading dwg files to geotools featurecollections (based on jdwglib project).")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, DWG, Feature, Vector, Reading")
+@Label(JGTConstants.FEATUREREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DwgFeatureReader extends JGTModel {

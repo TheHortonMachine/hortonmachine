@@ -71,7 +71,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
 public class ScanLineRasterizer {

@@ -66,7 +66,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Adige extends JGTModel {
 

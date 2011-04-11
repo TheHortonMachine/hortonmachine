@@ -62,7 +62,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Mapcalc, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Mapcalc extends JGTModel {
 

@@ -47,7 +47,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Keywords("Evapotranspiration, Hydrologic")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @UI(JGTConstants.ITERATOR_UI_HINT)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FaoEtpDaily extends JGTModel {
 

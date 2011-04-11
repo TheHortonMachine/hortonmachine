@@ -51,7 +51,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Statistics, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class CoverageSummary extends JGTModel {
 

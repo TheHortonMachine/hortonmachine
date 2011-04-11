@@ -72,7 +72,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Meteo, Hydrology")
 @Label(JGTConstants.STATISTICS)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Jami extends JGTModel {
 

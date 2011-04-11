@@ -44,7 +44,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Feature, Vector, Merge")
 @Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FeatureMerger extends JGTModel {
     @Description("The input features.")

@@ -56,7 +56,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Erica Ghesla, Rigon Riccardo, Antonello Andrea, Franceschi Silvia, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Subbasins, Dem, Raster")
 @Label(JGTConstants.DEMMANIPULATION)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class SplitSubbasins extends JGTModel {
     @Description("The map of flow direction.")

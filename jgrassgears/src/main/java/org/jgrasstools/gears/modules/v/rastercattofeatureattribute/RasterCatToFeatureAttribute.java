@@ -61,7 +61,7 @@ import com.vividsolutions.jts.geom.Point;
 @Description("Module that extracts raster categories and adds them to a feature collection.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @Label(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")

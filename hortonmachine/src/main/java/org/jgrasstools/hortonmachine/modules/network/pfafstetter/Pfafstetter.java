@@ -90,7 +90,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Pfafstetter")
 @Label(JGTConstants.NETWORK)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pfafstetter extends JGTModel {
 

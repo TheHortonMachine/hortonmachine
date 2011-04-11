@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.Point;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Contourlines, Vector")
 @Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.TESTED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ContourLinesLabeler extends JGTModel {
 

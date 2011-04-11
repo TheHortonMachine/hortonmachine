@@ -43,7 +43,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Crs, Reprojection, Vector")
 @Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FeatureReprojector extends JGTModel {
 
