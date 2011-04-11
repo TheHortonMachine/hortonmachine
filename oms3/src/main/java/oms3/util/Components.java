@@ -23,11 +23,9 @@
 package oms3.util;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -42,9 +40,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import oms3.*;
+
+import oms3.Access;
+import oms3.ComponentAccess;
 import oms3.annotations.Bound;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -63,7 +61,7 @@ public class Components {
     private Components() {
     }
 
-    public static List<Field> parameter(Class comp) {
+    public static List<Field> parameter(Class<?> comp) {
         List<Field> f = new ArrayList<Field>();
         for (Field field : comp.getFields()) {
             Role r = field.getAnnotation(Role.class);
@@ -74,7 +72,7 @@ public class Components {
         return f;
     }
 
-    public static List<Field> inVars(Class comp) {
+    public static List<Field> inVars(Class<?> comp) {
         List<Field> f = new ArrayList<Field>();
         for (Field field : comp.getFields()) {
             In in = field.getAnnotation(In.class);
@@ -89,7 +87,7 @@ public class Components {
         return f;
     }
 
-    public static List<Field> outVars(Class comp) {
+    public static List<Field> outVars(Class<?> comp) {
         List<Field> f = new ArrayList<Field>();
         for (Field field : comp.getFields()) {
             Out out = field.getAnnotation(Out.class);
@@ -100,7 +98,7 @@ public class Components {
         return f;
     }
 
-    static boolean isComponentClass(Class c) {
+    static boolean isComponentClass(Class<?> c) {
         Method[] m = c.getMethods();
         for (Method method : m) {
             if (method.getAnnotation(Execute.class) != null) {
@@ -110,17 +108,17 @@ public class Components {
         return false;
     }
 
-    public static Collection<Class> internalComponents(Class model) {
-        Collection<Class> comps = new ArrayList<Class>();
+    public static Collection<Class<?>> internalComponents(Class<?> model) {
+        Collection<Class<?>> comps = new ArrayList<Class<?>>();
         comps.add(model);
         internalComponents0(comps, model);
         return comps;
     }
 
-    public static void internalComponents0(Collection<Class> comps, Class model) {
+    public static void internalComponents0(Collection<Class<?>> comps, Class<?> model) {
         for (Field f : model.getDeclaredFields()) {
             f.setAccessible(true);
-            Class fc = f.getType();
+            Class<?> fc = f.getType();
             if (!fc.isPrimitive() && !fc.getName().startsWith("java.") && isComponentClass(fc)) {
                 if (!comps.contains(fc)) {
                     comps.add(fc);
@@ -292,7 +290,7 @@ public class Components {
 
 
 
-    public static List<Class> getComponentClasses(File jar) throws IOException {
+    public static List<Class<?>> getComponentClasses(File jar) throws IOException {
         return getComponentClasses(jar.toURI().toURL());
     }
 
@@ -304,10 +302,10 @@ public class Components {
      * @throws IOException
      * @throws ClassNotFoundException
      */
-    public static List<Class> getComponentClasses(URL jar) throws IOException {
+    public static List<Class<?>> getComponentClasses(URL jar) throws IOException {
         JarInputStream jarFile = new JarInputStream(jar.openStream());
         URLClassLoader cl = new URLClassLoader(new URL[]{jar}, Thread.currentThread().getContextClassLoader());
-        List<Class> idx = new ArrayList<Class>();
+        List<Class<?>> idx = new ArrayList<Class<?>>();
 
         JarEntry jarEntry = jarFile.getNextJarEntry();
         while (jarEntry != null) {
@@ -338,7 +336,7 @@ public class Components {
      * @param comp The component to get the documentation from.
      * @return the documentation URL or null if not available
      */
-    public static URL getDocumentation(Class comp) {
+    public static URL getDocumentation(Class<?> comp) {
         return getDocumentation(comp, Locale.getDefault());
     }
 
@@ -348,7 +346,7 @@ public class Components {
      * @param loc  The locale
      * @return the URL of the documentation file, null if no documentation is available.
      */
-    public static URL getDocumentation(Class comp, Locale loc) {
+    public static URL getDocumentation(Class<?> comp, Locale loc) {
         Documentation doc = (Documentation) comp.getAnnotation(Documentation.class);
         if (doc != null) {
             String v = doc.value();
@@ -376,7 +374,7 @@ public class Components {
         return null;
     }
 
-    public static String getDescription(Class comp) {
+    public static String getDescription(Class<?> comp) {
         return getDescription(comp, Locale.getDefault());
     }
 
@@ -386,7 +384,7 @@ public class Components {
      * @param loc the locale
      * @return the localized description
      */
-    public static String getDescription(Class comp, Locale loc) {
+    public static String getDescription(Class<?> comp, Locale loc) {
         Description descr = (Description) comp.getAnnotation(Description.class);
         if (descr != null) {
             String lang = loc.getLanguage();
@@ -415,10 +413,10 @@ public class Components {
         double end = System.currentTimeMillis();
         System.out.println("time " + (end - start));
 
-        List<Class> comps = getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar"));
+        List<Class<?>> comps = getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar"));
 
-        Class basin = null;
-        for (Class c : comps) {
+        Class<?> basin = null;
+        for (Class<?> c : comps) {
             if (c.getName().equals("prms2008.Basin")) {
                 basin = c;
                 break;

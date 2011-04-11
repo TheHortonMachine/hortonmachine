@@ -328,13 +328,12 @@ public class Sim extends AbstractSimulation {
      * @return the digest record string
      * @throws Exception 
      */
-    @SuppressWarnings("unchecked")
     public String digest() throws Exception {
         StringBuffer b = new StringBuffer();
         b.append(digest(res) + '\n');
-        Collection<Class> c = Components.internalComponents(model.getComponent().getClass());
+        Collection<Class<?>> c = Components.internalComponents(model.getComponent().getClass());
         // model classes
-        for (Class cl : c) {
+        for (Class<?> cl : c) {
             b.append("    " + cl.getName() + " & ");
             SourceInfo si = (SourceInfo) cl.getAnnotation(SourceInfo.class);
             if (si != null) {

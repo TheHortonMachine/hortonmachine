@@ -83,7 +83,7 @@ public class Documents {
             f.println("<pubdate>" + df.format(new Date()) + "</pubdate>");
             f.println("</info>");
             if (comp != null) {
-                Collection<Class> c = Components.internalComponents(comp);
+                Collection<Class<?>> c = Components.internalComponents(comp);
                 f.println(getComponentsChapter(c));
             }
             if (params != null) {
@@ -259,7 +259,7 @@ public class Documents {
         }
 
         @SuppressWarnings("unchecked")
-        String getComponentsChapter(Collection<Class> comps) {
+        String getComponentsChapter(Collection<Class<?>> comps) {
 
             StringBuffer db = new StringBuffer();
 
@@ -271,7 +271,7 @@ public class Documents {
             db.append("</chapter>");
 
             comps.remove(mai);      // remove the main component
-            Map<Package, List<Class>> pmap = categorize(comps);
+            Map<Package, List<Class<?>>> pmap = categorize(comps);
             List<Package> pl = new ArrayList<Package>(pmap.keySet());
             Collections.sort(pl, new Comparator<Package>() {
 
@@ -287,8 +287,8 @@ public class Documents {
             for (Package p : pl) {
                 db.append("<section>");
                 db.append("<title>'" + p.getName() + "'</title>");
-                List<Class> co = pmap.get(p);
-                Collections.sort(co, new Comparator<Class>() {
+                List<Class<?>> co = pmap.get(p);
+                Collections.sort(co, new Comparator<Class<?>>() {
 
                     @Override
                     public int compare(Class o1, Class o2) {
@@ -373,13 +373,13 @@ public class Documents {
             return db.toString();
         }
 
-        static Map<Package, List<Class>> categorize(Collection<Class> comp) {
-            Map<Package, List<Class>> packages = new HashMap<Package, List<Class>>();
-            for (Class c : comp) {
+        static Map<Package, List<Class<?>>> categorize(Collection<Class<?>> comp) {
+            Map<Package, List<Class<?>>> packages = new HashMap<Package, List<Class<?>>>();
+            for (Class<?> c : comp) {
                 Package p = c.getPackage();
-                List<Class> tos = packages.get(p);
+                List<Class<?>> tos = packages.get(p);
                 if (tos == null) {
-                    tos = new ArrayList<Class>();
+                    tos = new ArrayList<Class<?>>();
                     packages.put(p, tos);
                 }
                 tos.add(c);
