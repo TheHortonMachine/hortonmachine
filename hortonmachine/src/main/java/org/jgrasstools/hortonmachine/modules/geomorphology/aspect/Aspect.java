@@ -38,12 +38,12 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -52,8 +52,8 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -68,7 +68,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 public class Aspect extends JGTModel {
     @Description("The map of the digital elevation model (DEM).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The progress monitor.")
     @In
@@ -99,13 +99,13 @@ public class Aspect extends JGTModel {
             radtodeg = 1.0;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
 
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
@@ -194,7 +194,7 @@ public class Aspect extends JGTModel {
         pm.done();
 
         CoverageUtilities.setNovalueBorder(aspectWR);
-        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
 }

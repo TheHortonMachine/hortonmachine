@@ -24,7 +24,7 @@ public class TestGradient extends HMTestCase {
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
         Gradient gradient = new Gradient();
-        gradient.inDem = pitfillerCoverage;
+        gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
 
         gradient.process();
@@ -41,7 +41,7 @@ public class TestGradient extends HMTestCase {
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
         Gradient gradient = new Gradient();
-        gradient.inDem = pitfillerCoverage;
+        gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
         gradient.pMode = 1;
 
@@ -59,7 +59,7 @@ public class TestGradient extends HMTestCase {
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
         Gradient gradient = new Gradient();
-        gradient.inDem = pitfillerCoverage;
+        gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
         gradient.pMode = 2;
 

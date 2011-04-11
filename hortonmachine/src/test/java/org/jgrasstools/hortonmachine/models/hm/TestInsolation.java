@@ -44,7 +44,7 @@ public class TestInsolation extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         Insolation insolation = new Insolation();
-        insolation.inElevation = elevationCoverage;
+        insolation.inElev = elevationCoverage;
         insolation.tStartDate = START_DATE;
         insolation.tEndDate = END_DATE;
         // insolation.defaultLapse=-.0065;
@@ -55,7 +55,7 @@ public class TestInsolation extends HMTestCase {
 
         insolation.process();
 
-        GridCoverage2D insolationCoverage = insolation.outMap;
+        GridCoverage2D insolationCoverage = insolation.outIns;
 
         checkMatrixEqual(insolationCoverage.getRenderedImage(), HMTestMaps.outInsolation, 0.1);
     }

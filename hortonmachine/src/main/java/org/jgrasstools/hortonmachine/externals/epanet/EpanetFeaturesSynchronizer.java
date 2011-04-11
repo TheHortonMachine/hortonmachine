@@ -94,7 +94,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
 
     @Description("The elevation model to extract the elevations.")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The tolerance in meters for putting a node on a coordinate.")
     @In
@@ -162,7 +162,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         /*
          * elevations for junctions and tanks on dem
          */
-        if (inDem != null) {
+        if (inElev != null) {
             inJunctions = FeatureCollections.newCollection();
             pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size() + reservoirsList.size());
 
@@ -171,7 +171,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
-                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    inElev.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
                     junction.setAttribute(junctionElevatioAttributeName, dest[0]);
                 } catch (Exception e) {
                     appendWarning("No elevation available for junction: ",
@@ -187,7 +187,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
-                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    inElev.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
                     tank.setAttribute(tanksElevationAttributeName, dest[0]);
                 } catch (Exception e) {
                     appendWarning("No elevation available for tank: ", (String) tank.getAttribute(tanksElevationAttributeName));
@@ -202,7 +202,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Coordinate coordinate = geometry.getCoordinate();
                 double[] dest = new double[]{-9999.0};
                 try {
-                    inDem.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
+                    inElev.evaluate(new Point2D.Double(coordinate.x, coordinate.y), dest);
                     reservoir.setAttribute(reservoirHeadAttributeName, dest[0]);
                 } catch (Exception e) {
                     appendWarning("No elevation available for reservoir: ",

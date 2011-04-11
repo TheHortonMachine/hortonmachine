@@ -65,7 +65,7 @@ public class Slope extends JGTModel {
     // input
     @Description("The depitted elevation map.")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The map of flowdirection.")
     @In
@@ -90,7 +90,7 @@ public class Slope extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
@@ -98,7 +98,7 @@ public class Slope extends JGTModel {
 
         int[][] DIR = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
@@ -137,7 +137,7 @@ public class Slope extends JGTModel {
         }
         pm.done();
 
-        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
 }

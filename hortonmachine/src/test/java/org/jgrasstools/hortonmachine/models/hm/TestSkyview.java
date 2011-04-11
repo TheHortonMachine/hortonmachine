@@ -40,11 +40,11 @@ public class TestSkyview extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         Skyview skyview = new Skyview();
-        skyview.inElevation = elevationCoverage;
+        skyview.inElev = elevationCoverage;
         skyview.pm = pm;
         skyview.process();
 
-        GridCoverage2D hillshadeCoverage = skyview.outMap;
+        GridCoverage2D hillshadeCoverage = skyview.outSky;
 
         checkMatrixEqual(hillshadeCoverage.getRenderedImage(), HMTestMaps.outSkyview, 0.03);
     }

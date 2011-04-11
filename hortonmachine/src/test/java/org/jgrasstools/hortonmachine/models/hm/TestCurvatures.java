@@ -41,7 +41,7 @@ public class TestCurvatures extends HMTestCase {
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller", pitfillerData, envelopeParams, crs, true);
 
         Curvatures curvatures = new Curvatures();
-        curvatures.inDem = pitfillerCoverage;
+        curvatures.inElev = pitfillerCoverage;
         curvatures.pm = pm;
 
         curvatures.process();

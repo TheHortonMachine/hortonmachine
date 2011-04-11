@@ -42,7 +42,7 @@ public class TestSlope extends HMTestCase {
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         Slope slope = new Slope();
-        slope.inDem = pitfillerCoverage;
+        slope.inElev = pitfillerCoverage;
         slope.inFlow = flowCoverage;
         slope.pm = pm;
 

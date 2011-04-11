@@ -62,7 +62,7 @@ public class Curvatures extends JGTModel {
     // input
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
     
     @Description("The progress monitor.")
     @In
@@ -91,13 +91,13 @@ public class Curvatures extends JGTModel {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
 
         WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
@@ -208,8 +208,8 @@ public class Curvatures extends JGTModel {
         if (isCanceled(pm)) {
             return;
         }
-        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inDem.getCoordinateReferenceSystem());
-        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inDem.getCoordinateReferenceSystem());
-        outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 }

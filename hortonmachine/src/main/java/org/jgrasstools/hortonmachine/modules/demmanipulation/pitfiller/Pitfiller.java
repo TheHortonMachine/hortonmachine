@@ -58,7 +58,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 public class Pitfiller extends JGTModel {
     @Description("The map of digital elevation model (DEM).")
     @In
-    public GridCoverage2D inDem;
+    public GridCoverage2D inElev;
 
     @Description("The progress monitor.")
     @In
@@ -143,13 +143,13 @@ public class Pitfiller extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
 
-        elevationIter = CoverageUtilities.getRandomIterator(inDem);
+        elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         // output raster
         WritableRaster pitRaster = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
@@ -190,7 +190,7 @@ public class Pitfiller extends JGTModel {
         }
         pitIter.done();
 
-        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inDem.getCoordinateReferenceSystem());
+        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
     /**

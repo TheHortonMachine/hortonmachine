@@ -40,10 +40,8 @@ public class TestPitfiller extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-
         Pitfiller pitfiller = new Pitfiller();
-        pitfiller.inDem = elevationCoverage;
+        pitfiller.inElev = elevationCoverage;
         pitfiller.pm = pm;
         pitfiller.process();
 

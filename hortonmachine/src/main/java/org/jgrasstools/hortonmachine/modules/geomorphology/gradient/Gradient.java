@@ -67,7 +67,7 @@ public class Gradient extends JGTModel {
     // input
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
     @In
@@ -104,13 +104,13 @@ public class Gradient extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         WritableRaster gradientWR = null;
         if (pMode == 1) {
@@ -123,7 +123,7 @@ public class Gradient extends JGTModel {
             pm.message("Using finite differences");
             gradientWR = gradientDiff(elevationIter);
         }
-        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
     /**

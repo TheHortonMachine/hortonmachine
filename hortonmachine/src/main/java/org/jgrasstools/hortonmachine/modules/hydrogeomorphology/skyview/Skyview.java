@@ -19,7 +19,7 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
@@ -33,22 +33,21 @@ import javax.media.jai.RasterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -64,21 +63,18 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @License("General Public License Version 3 (GPLv3)")
 public class Skyview extends JGTModel {
     @Description("The map of the elevation.")
-    @Role(Role.INPUT)
     @In
-    public GridCoverage2D inElevation = null;
+    public GridCoverage2D inElev = null;
 
-    @Description("The output map")
+    @Description("The map of skyview factor.")
     @Out
-    public GridCoverage2D outMap;
+    public GridCoverage2D outSky;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    protected final static double doubleNoValue = JGTConstants.doubleNovalue;
-
-    protected HortonMessageHandler msg = HortonMessageHandler.getInstance();
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private double maxSlope;
     private double azimuth;
@@ -92,11 +88,11 @@ public class Skyview extends JGTModel {
     @Execute
     public void process() throws Exception {
         // extract some attributes of the map
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);
-        CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         // extract the raster.
-        RenderedImage pitTmpRI = inElevation.getRenderedImage();
+        RenderedImage pitTmpRI = inElev.getRenderedImage();
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
         pitTmpRI = null;
         minX = pitWR.getMinX();
@@ -111,24 +107,24 @@ public class Skyview extends JGTModel {
         for( int y = minY + 2; y < maxY - 2; y++ ) {
             for( int x = minX + 2; x < maxX - 2; x++ ) {
                 if (pitWR.getSampleDouble(x, y, 0) == -9999.0) {
-                    skyWR.setSample(x, y, 0, doubleNoValue);
+                    skyWR.setSample(x, y, 0, doubleNovalue);
                 }
             }
         }
         for( int y = minY; y < maxY; y++ ) {
-            skyWR.setSample(0, y, 0, doubleNoValue);
-            skyWR.setSample(1, y, 0, doubleNoValue);
-            skyWR.setSample(cols - 2, y, 0, doubleNoValue);
-            skyWR.setSample(cols - 1, y, 0, doubleNoValue);
+            skyWR.setSample(0, y, 0, doubleNovalue);
+            skyWR.setSample(1, y, 0, doubleNovalue);
+            skyWR.setSample(cols - 2, y, 0, doubleNovalue);
+            skyWR.setSample(cols - 1, y, 0, doubleNovalue);
         }
 
         for( int x = minX + 2; x < maxX - 2; x++ ) {
-            skyWR.setSample(x, 0, 0, doubleNoValue);
-            skyWR.setSample(x, 1, 0, doubleNoValue);
-            skyWR.setSample(x, rows - 2, 0, doubleNoValue);
-            skyWR.setSample(x, rows - 1, 0, doubleNoValue);
+            skyWR.setSample(x, 0, 0, doubleNovalue);
+            skyWR.setSample(x, 1, 0, doubleNovalue);
+            skyWR.setSample(x, rows - 2, 0, doubleNovalue);
+            skyWR.setSample(x, rows - 1, 0, doubleNovalue);
         }
-        outMap = CoverageUtilities.buildCoverage("skyview factor", skyWR, attribute, inElevation.getCoordinateReferenceSystem());
+        outSky = CoverageUtilities.buildCoverage("skyview factor", skyWR, attribute, inElev.getCoordinateReferenceSystem());
 
     }
 

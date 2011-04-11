@@ -41,15 +41,15 @@ public class TestHillshade extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         Hillshade hillshade = new Hillshade();
-        hillshade.inElevation = elevationCoverage;
-        hillshade.defaultElevation = 45.0;
-        hillshade.defaultAzimuth = 315;
+        hillshade.inElev = elevationCoverage;
+        hillshade.pElev = 45.0;
+        hillshade.pAzimuth = 315;
 
         hillshade.pm = pm;
 
         hillshade.process();
 
-        GridCoverage2D hillshadeCoverage = hillshade.outMap;
+        GridCoverage2D hillshadeCoverage = hillshade.outHill;
 
         checkMatrixEqual(hillshadeCoverage.getRenderedImage(), HMTestMaps.outHillshade, 0.1);
     }

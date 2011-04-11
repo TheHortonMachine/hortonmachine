@@ -34,24 +34,23 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -79,21 +78,18 @@ import com.vividsolutions.jts.geom.Point;
 @License("General Public License Version 3 (GPLv3)")
 public class Insolation extends JGTModel {
     @Description("The map of the elevation.")
-    @Role(Role.INPUT)
     @In
-    public GridCoverage2D inElevation = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The map of total insolation.")
     @Out
-    public GridCoverage2D outMap;
+    public GridCoverage2D outIns;
 
     @Description("The first day of the simulation.")
-    @Role(Role.INPUT)
     @In
     public String tStartDate = null;
 
     @Description("The last day of the simulation.")
-    @Role(Role.INPUT)
     @In
     public String tEndDate = null;
 
@@ -101,32 +97,23 @@ public class Insolation extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The solar constant.")
+    private static final double pCmO3 = 0.3;
+
+    private static final double pRH = 0.4;
+
+    private static final double pLapse = -.0065;
+
+    private static final double pVisibility = 60;
+
+    /**
+     * The solar constant.
+     */
     private static final double SOLARCTE = 1368.0;
 
-    @Description("The atmosphere pressure.")
-    private static final double ATM = 1013.25;
-
-    /*
-     * This is some parameters that I Think it is possible to change, but I'm
-     * not sure.
+    /**
+     * The atmosphere pressure.
      */
-    @Description("")
-    @Role(Role.PARAMETER)
-    @In
-    public double defaultCmO3 = 0.3;
-    @Description("")
-    @Role(Role.PARAMETER)
-    @In
-    public double defaultRH = 0.4;
-    @Description("")
-    @Role(Role.PARAMETER)
-    @In
-    public double defaultLapse = -.0065;
-    @Description("")
-    @Role(Role.PARAMETER)
-    @In
-    public double defaultVisibility = 60;
+    private static final double ATM = 1013.25;
 
     private double lambda;
 
@@ -136,12 +123,11 @@ public class Insolation extends JGTModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-
     @Execute
     public void process() throws Exception { // transform the
 
         // extract some attributes of the map
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);
 
         /*
@@ -149,7 +135,7 @@ public class Insolation extends JGTModel {
          * set it to the center of the raster. Extract the CRS of the
          * GridCoverage and transform the value of a WGS84 latitude.
          */
-        CoordinateReferenceSystem sourceCRS = inElevation.getCoordinateReferenceSystem2D();
+        CoordinateReferenceSystem sourceCRS = inElev.getCoordinateReferenceSystem2D();
         CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
 
         double srcPts[] = new double[]{attribute.get(CoverageUtilities.EAST), attribute.get(CoverageUtilities.SOUTH)};
@@ -169,8 +155,8 @@ public class Insolation extends JGTModel {
         int startDay = currentDatetime.getDayOfYear();
         currentDatetime = formatter.parseDateTime(tEndDate);
         int endDay = currentDatetime.getDayOfYear();
-        CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
-        RenderedImage pitTmpRI = inElevation.getRenderedImage();
+        CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        RenderedImage pitTmpRI = inElev.getRenderedImage();
         int width = pitTmpRI.getWidth();
         int height = pitTmpRI.getHeight();
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
@@ -198,8 +184,7 @@ public class Insolation extends JGTModel {
             }
         }
 
-        outMap = CoverageUtilities.buildCoverage("insolation", insolationWR, attribute, inElevation
-                .getCoordinateReferenceSystem());
+        outIns = CoverageUtilities.buildCoverage("insolation", insolationWR, attribute, inElev.getCoordinateReferenceSystem());
     }
 
     /**
@@ -238,8 +223,7 @@ public class Insolation extends JGTModel {
 
             int height = demWR.getHeight();
             int width = demWR.getWidth();
-            WritableRaster sOmbraWR = calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR,
-                    dx);
+            WritableRaster sOmbraWR = calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR, dx);
             double mr = 1 / (sunVector[2] + 0.15 * Math.pow((93.885 - zenith), (-1.253)));
             for( int j = 0; j < height; j++ ) {
                 for( int i = 0; i < width; i++ ) {
@@ -269,16 +253,16 @@ public class Insolation extends JGTModel {
         double z = demWR.getSampleDouble(i, j, 0);
         double pressure = ATM * Math.exp(-0.0001184 * z);
         double ma = mr * pressure / ATM;
-        double temp = 273 + defaultLapse * (z - 4000);
+        double temp = 273 + pLapse * (z - 4000);
         double vap_psat = Math.exp(26.23 - 5416.0 / temp);
-        double wPrec = 0.493 * defaultRH * vap_psat / temp;
+        double wPrec = 0.493 * pRH * vap_psat / temp;
         double taur = Math.exp((-.09030 * Math.pow(ma, 0.84)) * (1.0 + ma - Math.pow(ma, 1.01)));
-        double d = defaultCmO3 * mr;
+        double d = pCmO3 * mr;
         double tauo = 1 - (0.1611 * d * Math.pow(1.0 + 139.48 * d, -0.3035) - 0.002715 * d)
                 / (1.0 + 0.044 * d + 0.0003 * Math.pow(d, 2));
         double taug = Math.exp(-0.0127 * Math.pow(ma, 0.26));
         double tauw = 1 - 2.4959 * (wPrec * mr) / (1.0 + 79.034 * (wPrec * mr) * 0.6828 + 6.385 * (wPrec * mr));
-        double taua = Math.pow((0.97 - 1.265 * Math.pow(defaultVisibility, (-0.66))), Math.pow(ma, 0.9));
+        double taua = Math.pow((0.97 - 1.265 * Math.pow(pVisibility, (-0.66))), Math.pow(ma, 0.9));
 
         double In = 0.9751 * SOLARCTE * taur * tauo * taug * tauw * taua;
 

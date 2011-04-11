@@ -39,7 +39,7 @@ public class TestAspect extends HMTestCase {
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
         Aspect aspect = new Aspect();
-        aspect.inDem = pitCoverage;
+        aspect.inElev = pitCoverage;
         aspect.doRound = true;
         aspect.pm = pm;
 
@@ -57,7 +57,7 @@ public class TestAspect extends HMTestCase {
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
         Aspect aspect = new Aspect();
-        aspect.inDem = pitCoverage;
+        aspect.inElev = pitCoverage;
         aspect.doRadiants = true;
         aspect.pm = pm;
 

@@ -68,28 +68,27 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 public class Hillshade extends JGTModel {
     @Description("The map of the elevation.")
     @In
-    public GridCoverage2D inElevation = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The map of hillshade.")
     @Out
-    public GridCoverage2D outMap;
+    public GridCoverage2D outHill;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-
-    @Description("The minimum value of diffuse insolation 0 to 1.")
+    @Description("The minimum value of diffuse insolation between 0 to 1 (default is 0).")
     @In
-    public double defaultMinDiffuse = 0.0;
+    public double pMinDiffuse = 0.0;
 
-    @Description("The value of the azimuth.")
+    @Description("The value of the azimuth (default is 360).")
     @In
-    public double defaultAzimuth = 360;
+    public double pAzimuth = 360;
 
-    @Description("The sun elevation.")
+    @Description("The sun elevation (default is 90).")
     @In
-    public double defaultElevation = 90;
+    public double pElev = 90;
 
     private final static double doubleNoValue = JGTConstants.doubleNovalue;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
@@ -97,16 +96,16 @@ public class Hillshade extends JGTModel {
     @Execute
     public void process() throws Exception {
         // Check on the input parameters
-        if (defaultAzimuth < 0.0 || defaultAzimuth > 360.0) {
+        if (pAzimuth < 0.0 || pAzimuth > 360.0) {
             System.err.println(msg.message("hillshade.errAzimuth"));
         }
-        if (defaultElevation < 0.0 || defaultElevation > 90.0) {
+        if (pElev < 0.0 || pElev > 90.0) {
             System.err.println(msg.message("hillshade.errElevation"));
         }
-        RenderedImage pitRI = inElevation.getRenderedImage();
+        RenderedImage pitRI = inElev.getRenderedImage();
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitRI, -9999.0);
         // extract some attributes of the dem
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);
         int width = pitRI.getWidth();
         int height = pitRI.getHeight();
@@ -121,8 +120,8 @@ public class Hillshade extends JGTModel {
         // re-set the value to NaN
         setNoValueBorder(pitWR, width, height, hillshadeWR);
 
-        outMap = CoverageUtilities
-                .buildCoverage("insolation", hillshadeWR, attribute, inElevation.getCoordinateReferenceSystem());
+        outHill = CoverageUtilities
+                .buildCoverage("insolation", hillshadeWR, attribute, inElev.getCoordinateReferenceSystem());
     }
 
     /*
@@ -168,8 +167,8 @@ public class Hillshade extends JGTModel {
      */
     private void calchillshade( WritableRaster pitWR, WritableRaster hillshadeWR, WritableRaster gradientWR, double dx ) {
 
-        defaultAzimuth = Math.toRadians(defaultAzimuth);
-        defaultElevation = Math.toRadians(defaultElevation);
+        pAzimuth = Math.toRadians(pAzimuth);
+        pElev = Math.toRadians(pElev);
 
         double[] sunVector = calcSunVector();
         double[] normalSunVector = calcNormalSunVector(sunVector);
@@ -186,7 +185,7 @@ public class Hillshade extends JGTModel {
                 if (cosinc < 0) {
                     sOmbraWR.setSample(i, j, 0, 0);
                 }
-                hillshadeWR.setSample(i, j, 0, (int) (212.5 * (cosinc * sOmbraWR.getSample(i, j, 0) + defaultMinDiffuse)));
+                hillshadeWR.setSample(i, j, 0, (int) (212.5 * (cosinc * sOmbraWR.getSample(i, j, 0) + pMinDiffuse)));
                 pm.worked(1);
             }
         }
@@ -196,9 +195,9 @@ public class Hillshade extends JGTModel {
 
     protected double[] calcSunVector() {
         double[] sunVector = new double[3];
-        sunVector[0] = Math.sin(defaultAzimuth) * Math.cos(defaultElevation);
-        sunVector[1] = -Math.cos(defaultAzimuth) * Math.cos(defaultElevation);
-        sunVector[2] = Math.sin(defaultElevation);
+        sunVector[0] = Math.sin(pAzimuth) * Math.cos(pElev);
+        sunVector[1] = -Math.cos(pAzimuth) * Math.cos(pElev);
+        sunVector[2] = Math.sin(pElev);
         return sunVector;
 
     }
