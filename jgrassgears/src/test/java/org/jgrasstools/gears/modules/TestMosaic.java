@@ -34,7 +34,6 @@ import org.jgrasstools.gears.utils.HMTestMaps;
  */
 public class TestMosaic extends HMTestCase {
     public void testMosaic() throws Exception {
-
         URL testUrl = this.getClass().getClassLoader().getResource("dtm_test_left.asc");
         File left = new File(testUrl.toURI());
         testUrl = this.getClass().getClassLoader().getResource("dtm_test_right.asc");
