@@ -169,6 +169,7 @@ public class TestKriging extends HMTestCase {
         String interpolatedRainPath = interpolatedRainFile.getAbsolutePath();
         interpolatedRainPath = interpolatedRainPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
         interpolatedRainPath = interpolatedRainPath.replaceFirst("test-classes", "resources");
+        
         TimeseriesByStepWriterId2Value writer = new TimeseriesByStepWriterId2Value();
         writer.file = interpolatedRainPath;
 
@@ -186,7 +187,9 @@ public class TestKriging extends HMTestCase {
             HashMap<Integer, double[]> result = kriging.outData;
             double[][] test = HMTestMaps.outKriging4;
             for( int i = 0; i < test.length; i++ ) {
-                assertEquals(test[i][1], result.get((int) test[i][0])[0], 0.01);
+                double actual = result.get((int) test[i][0])[0];
+                double expected = test[i][1];
+                assertEquals(expected, actual, 0.01);
             }
 
             writer.data = result;
