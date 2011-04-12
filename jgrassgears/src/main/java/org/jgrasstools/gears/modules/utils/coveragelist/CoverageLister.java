@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.modules.utils.coveragelist;
 
@@ -30,6 +29,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -39,15 +39,16 @@ import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("A module that reads coverages")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Description("A module that reads rasters.")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Iterator, Raster")
 @Label(JGTConstants.LIST_READER)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(Status.CERTIFIED)
+@Name("rasterlister")
+@License("General Public License Version 3 (GPLv3)")
 public class CoverageLister extends JGTModel {
 
-    @Description("The list of file from which to read coverages.")
+    @Description("The list of file from which to read rasters.")
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
@@ -56,7 +57,7 @@ public class CoverageLister extends JGTModel {
     @In
     public Double fileNovalue = -9999.0;
 
-    @Description("The novalue wanted in the coverage.")
+    @Description("The novalue wanted in the raster.")
     @In
     public Double geodataNovalue = doubleNovalue;
 
@@ -100,7 +101,7 @@ public class CoverageLister extends JGTModel {
     @In
     public Integer pCols = null;
 
-    @Description("All coverages matching read from the input files.")
+    @Description("All rasters matching read from the input files.")
     @Out
     public List<GridCoverage2D> outGC = null;
 

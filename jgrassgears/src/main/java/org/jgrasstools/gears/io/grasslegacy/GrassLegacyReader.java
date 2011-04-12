@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.io.grasslegacy;
 
@@ -47,12 +46,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 
 @Description("Legacy class for reading grass data the old way.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Grass, Raster, Reading")
 @Label(JGTConstants.RASTERREADER)
 @UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class GrassLegacyReader extends JGTModel {
     @Description("The file to the map to be read (the cell file).")
     @UI(JGTConstants.FILEIN_UI_HINT)
