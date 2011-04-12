@@ -183,8 +183,6 @@ public class Mosaic extends JGTModel {
             int startX = (int) (repEnv.getMinX() + offestX);
             int startY = (int) (repEnv.getMinY() + offestY);
 
-            System.out.println();
-
             double tmpW = tmpEnv.getWidth();
             pm.beginTask("Patch map " + index++, (int) tmpW); //$NON-NLS-1$
             for( int x = 0; x < tmpW; x++ ) {
