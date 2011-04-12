@@ -75,7 +75,7 @@ import org.opengis.filter.expression.Expression;
 @Keywords("Coverage, Raster, Viewer, UI")
 @Status(Status.CERTIFIED)
 @Name("mapsviewer")
-@License("General Public License Version 3 (GPLv3)s")
+@License("General Public License Version 3 (GPLv3)")
 public class MapsViewer {
     @Description("The rasters to visualize.")
     @In
