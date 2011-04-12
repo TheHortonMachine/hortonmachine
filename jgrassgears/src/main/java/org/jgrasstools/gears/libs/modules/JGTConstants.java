@@ -223,6 +223,7 @@ public class JGTConstants {
     public static final String GEOTIFF = "tiff";
     public static final String GEOTIF = "tif";
     public static final String GRASS = "grass";
+    public static final String SHP = "shp";
 
     /*
      * modules categories

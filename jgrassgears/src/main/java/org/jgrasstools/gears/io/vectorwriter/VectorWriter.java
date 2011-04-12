@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.vectorreader;
+package org.jgrasstools.gears.io.vectorwriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,25 +34,24 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading vector files to geotools featurecollections.")
+@Description("Utility class for writing geotools featurecollections to file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
+@Keywords("IO, Shapefile, Feature, Vector, Writing")
+@Label(JGTConstants.FEATUREWRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class VectorReader extends JGTModel {
-    @Description("The shapefile to read.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+public class VectorWriter extends JGTModel {
+    @Description("The read feature collection.")
     @In
-    public String file = null;
-    
-    @Description("The vector type to read (Supported is: shp).")
+    public SimpleFeatureCollection geodata = null;
+
+    @Description("The vector type to write (Supported is: shp).")
     @In
     // currently not used, for future compatibility
     public String pType = null;
@@ -61,41 +60,36 @@ public class VectorReader extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read feature collection.")
+    @Description("The vector file to write.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Out
-    public SimpleFeatureCollection geodata = null;
+    public String file = null;
 
     @Execute
     public void process() throws IOException {
-        if (!concatOr(geodata == null, doReset)) {
-            return;
-        }
-
         checkNull(file);
 
         File vectorFile = new File(file);
         String name = vectorFile.getName();
-        if (name.toLowerCase().endsWith("shp")) {
-            geodata = ShapefileFeatureReader.readShapefile(vectorFile.getAbsolutePath());
+        if (name.toLowerCase().endsWith("shp") || pType.equals(JGTConstants.SHP)) {
+            ShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), geodata);
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
     }
 
     /**
-     * Fast read access mode. 
+     * Fast write access mode. 
      * 
      * @param path the vector file path.
-     * @return the read {@link FeatureCollection}.
+     * @param featureCollection the {@link FeatureCollection} to write.
      * @throws IOException
      */
-    public static SimpleFeatureCollection readVector( String path ) throws IOException {
-
-        VectorReader reader = new VectorReader();
-        reader.file = path;
-        reader.process();
-
-        return reader.geodata;
+    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
+        VectorWriter writer = new VectorWriter();
+        writer.file = path;
+        writer.geodata = featureCollection;
+        writer.process();
     }
 
 }

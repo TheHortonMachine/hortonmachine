@@ -11,6 +11,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+import org.jgrasstools.gears.io.vectorreader.VectorReader;
+import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -20,13 +22,13 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 /**
- * Test Id2ValueReader.
+ * Test {@link VectorReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestShapefileReader extends HMTestCase {
+public class TestVectorReader extends HMTestCase {
 
-    public void testShapefileIO() throws Exception {
+    public void testVectorReader() throws Exception {
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("test");
@@ -34,8 +36,7 @@ public class TestShapefileReader extends HMTestCase {
         b.add("the_geom", Point.class);
         b.add("id", Integer.class);
 
-        SimpleFeatureCollection newCollection = FeatureCollections
-                .newCollection();
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         SimpleFeatureType type = b.buildFeatureType();
         for( int i = 0; i < 2; i++ ) {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
@@ -52,15 +53,15 @@ public class TestShapefileReader extends HMTestCase {
             if (!tmpShape.delete())
                 throw new IOException();
         }
-        ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
+        VectorWriter writer = new VectorWriter();
         writer.file = tmpShape.getAbsolutePath();
         writer.geodata = newCollection;
-        writer.writeFeatureCollection();
+        writer.process();
 
         // now read it again
-        ShapefileFeatureReader reader = new ShapefileFeatureReader();
+        VectorReader reader = new VectorReader();
         reader.file = tmpShape.getAbsolutePath();
-        reader.readFeatureCollection();
+        reader.process();
         SimpleFeatureCollection readFC = reader.geodata;
 
         FeatureIterator<SimpleFeature> featureIterator = readFC.features();
