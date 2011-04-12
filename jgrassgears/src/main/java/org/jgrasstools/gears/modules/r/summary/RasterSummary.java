@@ -56,7 +56,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @Name("rsummary")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class CoverageSummary extends JGTModel {
+public class RasterSummary extends JGTModel {
 
     @Description("The map to analize.")
     @In
@@ -108,19 +108,12 @@ public class CoverageSummary extends JGTModel {
         pb.setSource("dataImage", inRI);
         // pb.setSource("zoneImage", null);
 
-        Statistic[] stats = {
-                Statistic.MIN, 
-                Statistic.MAX, 
-                Statistic.MEAN, 
-                Statistic.SDEV,
-                Statistic.RANGE, 
-                Statistic.SUM};
+        Statistic[] stats = {Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SDEV, Statistic.RANGE, Statistic.SUM};
         pb.setParameter("stats", stats);
 
         RenderedOp op = JAI.create("ZonalStats", pb);
 
-        ZonalStats zonalStats = (ZonalStats) op
-                .getProperty(ZonalStatsDescriptor.ZONAL_STATS_PROPERTY);
+        ZonalStats zonalStats = (ZonalStats) op.getProperty(ZonalStatsDescriptor.ZONAL_STATS_PROPERTY);
         List<Result> results = zonalStats.results();
         for( Result result : results ) {
             Statistic statistic = result.getStatistic();

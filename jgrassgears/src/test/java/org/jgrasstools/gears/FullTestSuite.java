@@ -5,7 +5,7 @@ import junit.framework.TestSuite;
 
 import org.jgrasstools.gears.modules.TestAdigeBoundaryConditions;
 import org.jgrasstools.gears.modules.TestCountourLinesLabeler;
-import org.jgrasstools.gears.modules.TestCoverageSummary;
+import org.jgrasstools.gears.modules.TestRasterSummary;
 import org.jgrasstools.gears.modules.TestCutout;
 import org.jgrasstools.gears.modules.TestEiCalculatorInputOutput;
 import org.jgrasstools.gears.modules.TestFeatureFilter;
@@ -37,7 +37,7 @@ public class FullTestSuite extends TestCase {
 
         // modules
         suite.addTestSuite(TestCountourLinesLabeler.class);
-        suite.addTestSuite(TestCoverageSummary.class);
+        suite.addTestSuite(TestRasterSummary.class);
         suite.addTestSuite(TestCutout.class);
         suite.addTestSuite(TestFeatureFilter.class);
         suite.addTestSuite(TestFeatureReshaper.class);
