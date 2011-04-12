@@ -61,7 +61,7 @@ public class VectorReader extends JGTModel {
     public SimpleFeatureCollection geodata = null;
 
     @Execute
-    public void readFeatureCollection() throws IOException {
+    public void process() throws IOException {
         if (!concatOr(geodata == null, doReset)) {
             return;
         }
@@ -88,7 +88,7 @@ public class VectorReader extends JGTModel {
 
         VectorReader reader = new VectorReader();
         reader.file = path;
-        reader.readFeatureCollection();
+        reader.process();
 
         return reader.geodata;
     }

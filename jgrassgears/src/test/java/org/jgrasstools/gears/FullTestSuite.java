@@ -17,7 +17,7 @@ import org.jgrasstools.gears.modules.TestMarchingSquaresAndRasterizer;
 import org.jgrasstools.gears.modules.TestRasterCatToFeatureAttribute;
 import org.jgrasstools.gears.modules.TestRasterReader;
 import org.jgrasstools.gears.modules.TestReprojectors;
-import org.jgrasstools.gears.modules.TestShapefileIO;
+import org.jgrasstools.gears.modules.TestShapefileReader;
 import org.jgrasstools.gears.modules.TestSourceDirection;
 import org.jgrasstools.gears.modules.TestVegetationLibraryReader;
 
@@ -32,7 +32,7 @@ public class FullTestSuite extends TestCase {
         suite.addTestSuite(TestId2ValueConverters.class);
         suite.addTestSuite(TestId2ValueReader.class);
         suite.addTestSuite(TestRasterReader.class);
-        suite.addTestSuite(TestShapefileIO.class);
+        suite.addTestSuite(TestShapefileReader.class);
         suite.addTestSuite(TestVegetationLibraryReader.class);
 
         // modules

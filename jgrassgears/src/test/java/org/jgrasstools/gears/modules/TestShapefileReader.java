@@ -24,7 +24,7 @@ import com.vividsolutions.jts.geom.Point;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestShapefileIO extends HMTestCase {
+public class TestShapefileReader extends HMTestCase {
 
     public void testShapefileIO() throws Exception {
 
