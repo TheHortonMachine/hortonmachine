@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import oms3.CLI;
 import oms3.annotations.Name;
 import oms3.io.CSProperties;
 import oms3.io.DataIO;
@@ -97,25 +98,33 @@ public class Model implements Buildable {
     private synchronized URLClassLoader getClassLoader() throws Exception {
         if (modelClassLoader == null) {
             List<File> jars = res.filterFiles("jar");
-            URL[] u = new URL[jars.size()];
+            List<File> cli_jars = CLI.getSimClasspath();
+            URL[] u = new URL[jars.size() + cli_jars.size()];
+
             for (int i = 0; i < jars.size(); i++) {
                 u[i] = jars.get(i).toURI().toURL();
                 if (log.isLoggable(Level.CONFIG)) {
                     log.info("classpath entry from simulation: " + u[i].toString());
                 }
             }
+            for (int i = 0; i < cli_jars.size(); i++) {
+                u[i+jars.size()] = cli_jars.get(i).toURI().toURL();
+                if (log.isLoggable(Level.CONFIG)) {
+                    log.info("classpath entry from CLI: " + u[i].toString());
+                }
+            }
             modelClassLoader = new URLClassLoader(u, Thread.currentThread().getContextClassLoader());
         }
         return modelClassLoader;
     }
-
+    
     public Object getComponent() throws Exception {
         URLClassLoader loader = getClassLoader();
         if (classname == null) {
             return getGeneratedComponent(loader);
         }
         try {
-            Class c = loader.loadClass(classname);
+            Class c = loader.loadClass(getComponentClassName(classname));
             return c.newInstance();
         } catch (ClassNotFoundException E) {
             throw new IllegalArgumentException("Component/Model not found '" + classname + "'");
@@ -154,22 +163,40 @@ public class Model implements Buildable {
     
     Map<String, String> nameClassMap;
 
-    Map<String, String> getName_ClassMap() throws Exception {
+    private Map<String, String> getName_ClassMap() throws Exception {
         if (nameClassMap == null) {
             nameClassMap = new HashMap<String, String>();
             for (URL url : getClassLoader().getURLs()) {
                 List<Class<?>> l = Components.getComponentClasses(url);
                 for (Class<?> class1 : l) {
                     Name name =  class1.getAnnotation(Name.class);
-                    if (name != null) {
-                        String n = name.value();
-                        nameClassMap.put(n, class1.getName());
+                    if (name != null && !name.value().isEmpty()) {
+                        if (name.value().indexOf(".") > -1 ) {
+                            log.warning("@Name cannot contain '.' character : " + name.value() + " in  " + class1.getName());
+                            continue;
+                        }
+                        String prev = nameClassMap.put(name.value(), class1.getName());
+                        if(prev != null) {
+                            log.warning("duplicate @Name: " + name.value() + " for " + prev + " and " + class1.getName());
+                        }
                     }
                 }
             }
         }
         return nameClassMap;
     }
+
+    private String getComponentClassName(String id) throws Exception {
+        if (id.indexOf('.') == -1) {
+            String cn = getName_ClassMap().get(id);
+            if (cn == null) {
+                throw new IllegalArgumentException("Unknown component name: " + id);
+            }
+            return cn;
+        }
+        return id;
+    }
+
 
     Object getGeneratedComponent(URLClassLoader loader) {
         try {
@@ -222,9 +249,7 @@ public class Model implements Buildable {
         // Components
         for (KVP def : comps.entries) {
             String classname = def.getValue().toString();
-            if (classname.indexOf('.') == -1) {
-                classname = getName_ClassMap().get(classname); // name -> class
-            }
+            classname = getComponentClassName(classname); // name -> class
             b.append(" public " + classname + " " + def.getKey() + " = new " + classname + "();\n");
         }
         b.append("\n");
@@ -268,10 +293,7 @@ public class Model implements Buildable {
         for (KVP def : comps.entries) {
             if (object.equals(def.getKey())) {
                 String classname = def.getValue().toString();
-                if (classname.indexOf('.') == -1) {
-                    classname = getName_ClassMap().get(classname); // name -> class
-                }
-
+                classname = getComponentClassName(classname);
                 Class c = getClassLoader().loadClass(classname);
                 return c.getDeclaredField(parameter).getType().getSimpleName();
             }

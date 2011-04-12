@@ -11,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,8 +22,6 @@ import java.util.logging.Logger;
  * @author od
  */
 public class CLI {
-
-    private static final Logger log = Logger.getLogger("oms3.sim");
 
     static {
         if (System.getProperty("java.version").compareTo("1.6") < 0) {
@@ -108,7 +108,7 @@ public class CLI {
         b.setVariable("oms_version", System.getProperty("oms.version"));
         b.setVariable("oms_home", System.getProperty("oms.home"));
         b.setVariable("oms_prj", System.getProperty("oms.prj"));
-       
+
         GroovyShell shell = new GroovyShell(new GroovyClassLoader(parent), b);
         return shell.evaluate(prefix + script);
     }
@@ -142,6 +142,20 @@ public class CLI {
         System.err.println("           -l <loglevel> set the log level:");
         System.err.println("                OFF|ALL|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST");
     }
+    
+    // Simulation classpath
+    static String simcp = "";
+
+    public static List<File> getSimClasspath() {
+        List<File> sc = new ArrayList<File>();
+        if (!simcp.isEmpty()) {
+            String[] s = simcp.split("\\s*" + File.pathSeparator + "\\s*");
+            for (String string : s) {
+                sc.add(new File(string));
+            }
+        }
+        return sc;
+    }
 
     public static void main(String[] args) {
         String ll = "WARNING";
@@ -172,6 +186,8 @@ public class CLI {
                     invoke(target, "dig");
                 } else if (args[i].equals("-l")) {
                     ll = args[++i];
+                } else if (args[i].equals("-scp")) {
+                    simcp = args[++i];
                 } else if (args[i].endsWith("groovy")) {
                     createSim(readFile(args[i]), true, ll);
                 } else {

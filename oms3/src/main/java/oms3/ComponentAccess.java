@@ -273,7 +273,7 @@ public class ComponentAccess {
      * @param cmp
      * @return the class that contains the annotations.
      */
-    public static final Class infoClass(Class cmp) {
+    public static Class infoClass(Class cmp) {
         Class infoClass = null;
         try {
             infoClass = Class.forName(cmp.getName() + "CompInfo");
