@@ -22,18 +22,17 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -44,8 +43,9 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -86,11 +86,9 @@ public class Wateroutlet extends JGTModel {
 
     private int[] pt_seg = new int[1];
     private int[] ba_seg = new int[1];
-    private static  final int RAMSEGBITS = 4;
-    private static  final int DOUBLEBITS = 8; /* 2 * ramsegbits */
-    private static  final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
-
-    // /private double[][] flowData = null;
+    private static final int RAMSEGBITS = 4;
+    private static final int DOUBLEBITS = 8; /* 2 * ramsegbits */
+    private static final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
 
     private double[] drain_ptrs = null;
 
@@ -106,25 +104,28 @@ public class Wateroutlet extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inFlow);
-        ncols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nrows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
-        double north = regionMap.get(CoverageUtilities.NORTH);
-        double west = regionMap.get(CoverageUtilities.WEST);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        ncols = regionMap.getCols();
+        nrows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
+        double north = regionMap.getNorth();
+        double west = regionMap.getWest();
+        double south = regionMap.getSouth();
+        double east = regionMap.getEast();
 
         if (pNorth == -1 || pEast == -1) {
-            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this
-                    .getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this.getClass().getSimpleName());
+        }
+        if (pNorth > north || pNorth < south || pEast > east || pEast < west) {
+            throw new ModelsIllegalargumentException("The outlet point lies outside the map region.", this.getClass()
+                    .getSimpleName());
         }
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null,
-                null, null);
+        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, null);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         total = nrows * ncols;
@@ -135,25 +136,24 @@ public class Wateroutlet extends JGTModel {
 
         pm.beginTask(msg.message("wateroutlet.extracting"), 2 * nrows);
         for( int r = 0; r < nrows; r++ ) {
+            if (pm.isCanceled()) {
+                return;
+            }
             for( int c = 0; c < ncols; c++ ) {
                 // adapt to the grass drainagedirection format "grass
                 // flow=(fluidturtle flow-1)"
-                if (isNovalue(flowIter.getSampleDouble(c, r, 0))
-                        || flowIter.getSampleDouble(c, r, 0) == 0) {
+                double flowValue = flowIter.getSampleDouble(c, r, 0);
+                if (isNovalue(flowValue) || flowValue == 0) {
                     flowIter.setSample(c, r, 0, -1.0);
-                } else if (flowIter.getSampleDouble(c, r, 0) == 1.0) {
+                } else if (flowValue == 1.0) {
                     flowIter.setSample(c, r, 0, 8.0);
-                } else if (!isNovalue(flowIter.getSampleDouble(c, r, 0))) {
-                    flowIter.setSample(c, r, 0, flowIter.getSample(c, r, 0) - 1);
-
+                } else if (!isNovalue(flowValue)) {
+                    flowIter.setSample(c, r, 0, flowValue - 1);
                 }
-                if (flowIter.getSampleDouble(c, r, 0) == 0.0) {
+                if (flowValue == 0.0) {
                     total--;
                 }
                 drain_ptrs[seg_index(pt_seg, r, c)] = flowIter.getSample(c, r, 0);
-                // out.println("DRAIN_PTRS = " +
-                // drain_ptrs[seg_index(pt_seg, r, c)]);
-
             }
             pm.worked(1);
         }
@@ -167,8 +167,7 @@ public class Wateroutlet extends JGTModel {
         for( int r = 0; r < nrows; r++ ) {
             for( int c = 0; c < ncols; c++ ) {
                 basinIter.setSample(c, r, 0, bas_ptrs[seg_index(ba_seg, r, c)]);
-                if (isNovalue(flowIter.getSampleDouble(c, r, 0))
-                        || basinIter.getSampleDouble(c, r, 0) == 0.0) {
+                if (isNovalue(flowIter.getSampleDouble(c, r, 0)) || basinIter.getSampleDouble(c, r, 0) == 0.0) {
                     basinIter.setSample(c, r, 0, doubleNovalue);
                 }
             }
@@ -176,8 +175,7 @@ public class Wateroutlet extends JGTModel {
         }
         pm.done();
 
-        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
     private int size_array( int[] ram_seg, int nrows, int ncols ) {
@@ -185,16 +183,14 @@ public class Wateroutlet extends JGTModel {
 
         segs_in_col = ((nrows - 1) >> RAMSEGBITS) + 1;
         ram_seg[0] = ((ncols - 1) >> RAMSEGBITS) + 1;
-        size = ((((nrows - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS)
-                * ((((ncols - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS);
+        size = ((((nrows - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS) * ((((ncols - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS);
         size -= ((segs_in_col << RAMSEGBITS) - nrows) << RAMSEGBITS;
         size -= (ram_seg[0] << RAMSEGBITS) - ncols;
         return (size);
     }
 
     private int seg_index( int[] s, int r, int c ) {
-        int value = ((((r) >> RAMSEGBITS) * (s[0]) + (((c) >> RAMSEGBITS)) << DOUBLEBITS)
-                + (((r) & SEGLENLESS) << RAMSEGBITS) + ((c) & SEGLENLESS));
+        int value = ((((r) >> RAMSEGBITS) * (s[0]) + (((c) >> RAMSEGBITS)) << DOUBLEBITS) + (((r) & SEGLENLESS) << RAMSEGBITS) + ((c) & SEGLENLESS));
 
         return value;
     }
@@ -235,8 +231,7 @@ public class Wateroutlet extends JGTModel {
                          * bas_ptrs == 0.0 -> " + bas_ptrs[seg_index(ba_seg, r, c)] + " == 0.0");
                          */
 
-                        if ((value == draindir[rr][cc])
-                                && (bas_ptrs[seg_index(ba_seg, r, c)] == 0.0)) {
+                        if ((value == draindir[rr][cc]) && (bas_ptrs[seg_index(ba_seg, r, c)] == 0.0)) {
                             if (num_cells == size_more) {
                                 System.out.println("AAAAAAAAAAAARRRRRRRRRRRGGGGGGGGGGGHHHHHHHH");
                             }

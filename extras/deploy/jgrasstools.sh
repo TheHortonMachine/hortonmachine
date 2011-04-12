@@ -19,4 +19,4 @@
 
 MEM="-Xmx2g"
 
-java $MEM -cp "./modules/*:./libs/*" org.jgrasstools.hortonmachine.oms.ScriptLauncher $1
+java $MEM -cp "./modules/*:./libs/*" oms3.CLI -r $1
