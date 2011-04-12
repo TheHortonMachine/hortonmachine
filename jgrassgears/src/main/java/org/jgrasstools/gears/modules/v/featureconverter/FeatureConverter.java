@@ -27,6 +27,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -37,6 +38,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Keywords("IO, Feature, Vector, Convert")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.EXPERIMENTAL)
+@UI(JGTConstants.HIDE_UI_HINT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FeatureConverter extends JGTModel {
     @Description("The input features.")

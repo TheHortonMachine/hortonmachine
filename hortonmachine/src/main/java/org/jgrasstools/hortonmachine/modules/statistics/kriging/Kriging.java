@@ -35,7 +35,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -68,32 +67,33 @@ import com.vividsolutions.jts.geom.Geometry;
 @License("General Public License Version 3 (GPLv3)")
 public class Kriging extends JGTModel {
 
-    @Description("The collection of the measurement point, containing the position of the station.")
+    @Description("The vector of the measurement point, containing the position of the stations.")
     @In
     public SimpleFeatureCollection inStations = null;
 
-    @Description("The field of the stations collections, defining the id.")
+    @Description("The field of the vector of stations, defining the id.")
     @In
     public String fStationsid = null;
 
-    @Description("The field of the station elevation.")
+    @Description("The field of the vector of stations, defining the elevation.")
     @In
     public String fStationsZ = null;
 
-    @Description("The field of the point elevation.")
-    @In
-    public String fPointZ = null;
-    @Description("The measured data, to be interpolated.")
+    @Description("The file with the measured data, to be interpolated.")
     @In
     public HashMap<Integer, double[]> inData = null;
 
-    @Description("The collection of the points in which the data needs to be interpolated.")
+    @Description("The vector of the points in which the data have to be interpolated.")
     @In
     public SimpleFeatureCollection inInterpolate = null;
 
-    @Description("The field of the interpolated points collections, defining the id.")
+    @Description("The field of the interpolated vector points, defining the id.")
     @In
     public String fInterpolateid = null;
+
+    @Description("The field of the interpolated vector points, defining the elevation.")
+    @In
+    public String fPointZ = null;
 
     @Description("The interpolated data.")
     @Out
@@ -113,7 +113,6 @@ public class Kriging extends JGTModel {
      * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
      * so the grid have to contains a dem.
      */
-    @Role(Role.PARAMETER)
     @Description("The interpolation mode.")
     @In
     public int pMode = 0;
@@ -122,7 +121,6 @@ public class Kriging extends JGTModel {
      * The integral scale, this is necessary to calculate the variogram if the
      * program use {@link Kriging2.variogram(rx,ry,rz)}.
      */
-    @Role(Role.PARAMETER)
     @Description("The integral scale.")
     @In
     public double[] pIntegralscale = null;
@@ -130,7 +128,6 @@ public class Kriging extends JGTModel {
     /**
      * Variance of the measure field.
      */
-    @Role(Role.PARAMETER)
     @Description("The variance.")
     @In
     public double pVariance = 0;
@@ -139,7 +136,6 @@ public class Kriging extends JGTModel {
      * The logarithm selector, if it's true then the models runs with the log of
      * the data.
      */
-    @Role(Role.PARAMETER)
     @Description("Switch for logaritmic run selection.")
     @In
     public boolean doLogarithmic = false;
@@ -158,24 +154,20 @@ public class Kriging extends JGTModel {
     // @In
     // public GridCoverage2D gridToInterpolate = null;
 
-    @Role(Role.PARAMETER)
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     public int defaultVariogramMode = 0;
 
-    @Role(Role.PARAMETER)
     @Description("The range if the models runs with the gaussian variogram.")
     @In
     public double pA;
 
-    @Role(Role.PARAMETER)
     @Description("The sill if the models runs with the gaussian variogram.")
     @In
     public double pS;
 
-    @Role(Role.PARAMETER)
     @Description("Is the nugget if the models runs with the gaussian variogram.")
     @In
     public double pNug;
