@@ -1,0 +1,9 @@
+jgrasstools standalone mode
+===========================
+
+To run a jgrasstools script from commandline, simply
+run the command:
+
+./jgrasstools.sh path/to/your/script.oms
+
+
