@@ -96,7 +96,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-@Description("Generic geotools coverage reader.")
+@Description("Raster reader module.")
 @Documentation("RasterReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Reading")
@@ -106,7 +106,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @License("General Public License Version 3 (GPLv3)")
 public class RasterReader extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
-    @Description("The raster file path.")
+    @Description("The raster file to read.")
     @In
     public String file = null;
 
