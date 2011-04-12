@@ -13,6 +13,7 @@ syntax: regexp
 ^docsbundle.bin
 ~$
 .class$
+.jar$
 .orig$
 .swp$
 .directory
