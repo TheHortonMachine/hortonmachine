@@ -20,6 +20,16 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
+
+
+def javaHome = System.getProperty("java.home");
+def javaHomeFile = new File(javaHome);
+def toolsJar = new File(javaHomeFile.getParentFile(), "lib/tools.jar");
+if(!toolsJar.exists()){
+    println "The JAVA_HOME variable has to be set and point to a JDK";
+}
+
+
 // copy also source jars?
 def alsoSources = false;
 // copy also javadoc jars?
@@ -67,6 +77,10 @@ JGTMODULESCOPY: {
         def copyToFile = new File(modulesFolderFile.absolutePath, it.name).absolutePath;
        (new AntBuilder()).copy( file : it , tofile : copyToFile )
     }
+
+    // tools.jar
+    def newToolsJar = new File(copyPathFile, "tools.jar");
+    new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )
 }
 
 // launch maven deps tree
@@ -170,6 +184,7 @@ if(copyPath){
             new AntBuilder().copy ( file : path , tofile : newPath )
         }
     }
+
 
     // zip the thing
     def ant = new AntBuilder()  
