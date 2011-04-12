@@ -28,6 +28,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -45,10 +46,11 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Label(JGTConstants.FEATUREREADER)
+@Name("vectorreader")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class VectorReader extends JGTModel {
-    @Description("The shapefile to read.")
+    @Description("The vector file to read.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
