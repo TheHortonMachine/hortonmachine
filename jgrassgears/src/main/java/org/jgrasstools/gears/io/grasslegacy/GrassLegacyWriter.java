@@ -42,6 +42,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Grass, Raster, Writing")
 @Label(JGTConstants.RASTERWRITER)
+@UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GrassLegacyWriter extends JGTModel {

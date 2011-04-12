@@ -46,6 +46,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Label(JGTConstants.GENERICREADER)
 @Status(Status.DRAFT)
+@UI(JGTConstants.HIDE_UI_HINT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DbfTableReader extends JGTModel {
     @Description("The dbf file.")

@@ -1,22 +1,38 @@
-Sums the values of an assigned quantity from the point till the outlet. The final result is then a matrix of values containing the sum of the quantity in input on all upriver points: 
-<table>
-<tr>
-<td>
-   S=sum<sub>ij</sub> A<sub>j</sub>
-</td>
-</tr>
-</table>
-where <i>i</i> is the point examined and the index <i>j</i> varies on all points upriver with respect to the point examined.
+An implementation of the ordinary kriging algorithm.
+<br>
+The <i>Kriging</i> is a group of <b>geostatistical</b> techniques to interpolate the value of a random field (e.g., the elevation, z, of the landscape as a function of the geographic location) at an unobserved location from observations of its value at nearby locations. (for more details see <a href="http://en.wikipedia.org/wiki/Kriging">kriging</a>.
+<br>
+<br>
+The interpolation algorithm used for Kriging can be one of the following two:
+<ul>
+<li>integral scale</li>
+<li>gaussian variogram model</li>
+</ul>
+When selecting the interpolation function the user should provide the specific requested data.
+<br>
+<br>
+It is possible run the model in 4 modes: 
+<ul>
+<li>mode = 0: output values on a non-regular grid, it should be provided the vector of points where to interpolate <i>pointsToInterpolate</i>. This is a 2-D interpolation, so the z coordinates are not considered.</li>
+<li>mode = 1: output values on a non-regular grid, it should be provided the vector of points where to interpolate <i>pointsToInterpolate</i>. This is a 3-D interpolation.</li>
+<li>mode = 2: output values on a regular grid, it should be provided the raster <i>gridToInterpolate</i> where to interpolate. This is a 2-D interpolation so the z coordinates are not considered. <b>NOT YET IMPLEMENTED</b></li> 
+<li>mode = 3: output values on a regular grid, it should be provided the raster <i>gridToInterpolate</i> where to interpolate. This is a 3-D interpolation, so the provided raster data have to contain a elevations.<b>NOT YET IMPLEMENTED</b></li>
+</ul>
 <br>
 <br>
 <h3>Inputs</h3>
 <ul>      
-<li>the file containing the drainage directions (obtained with FlowDirections or DrainDir)</li>
-<li>the file containing the quantity to sum</li>
+<li>the vector of the measurement point, containing the position of the stations where data are measured</li>
+<li>the name of the attribute of the vector of the measurement points defining the <i>STATION ID</i></li>
+<li>the name of the attribute of the vector of the measurement points defining the <i>STATION ELEVATION</i></li>
+<li>the text file with the measured data in each station to be interpolated</li>
+<li>the vector of the points in which the data have to be interpolated</li>
+<li>the field of the interpolated vector points, defining the <i>POINT ID</i></li>
+<li>the field of the interpolated vector points, defining the <i>POINT ELEVATION</i></li>
 </ul>
 <br>
 <br>
 <h3>Output</h3>
 <ul>      
-<li>the file containing the summed quantities downstream</li>
+<li>the file containing the interpolated data</li>
 </ul>

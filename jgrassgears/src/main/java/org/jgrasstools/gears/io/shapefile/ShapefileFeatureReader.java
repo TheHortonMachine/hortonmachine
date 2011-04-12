@@ -46,6 +46,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Label(JGTConstants.FEATUREREADER)
 @Status(Status.CERTIFIED)
+@UI(JGTConstants.HIDE_UI_HINT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class ShapefileFeatureReader extends JGTModel {
     @Description("The shapefile.")
