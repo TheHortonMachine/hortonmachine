@@ -170,4 +170,9 @@ if(copyPath){
             new AntBuilder().copy ( file : path , tofile : newPath )
         }
     }
+
+    // zip the thing
+    def ant = new AntBuilder()  
+    def date = new java.text.SimpleDateFormat("yyyyMMddHHmm").format(new Date());
+    ant.zip(destfile: "./extras/deploy/jgrasstools-${date}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*deploylibs.groovy*,jgrasstools*.zip")  
 }

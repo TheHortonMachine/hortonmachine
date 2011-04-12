@@ -14,6 +14,7 @@ syntax: regexp
 ~$
 .class$
 .jar$
+.zip$
 .orig$
 .swp$
 .directory
