@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.dxfdwg.DxfFeatureReader;
+import org.jgrasstools.gears.io.dxfdwg.DxfConverter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -29,7 +29,7 @@ public class TestDxfIO {
 
             String name = FileUtilities.getNameWithoutExtention(dxfFile);
 
-            DxfFeatureReader reader = new DxfFeatureReader();
+            DxfConverter reader = new DxfConverter();
             reader.file = dxfFile.getAbsolutePath();
             reader.readFeatureCollection();
 

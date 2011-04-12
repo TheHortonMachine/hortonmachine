@@ -36,22 +36,21 @@ import oms3.annotations.UI;
 import org.geotools.data.PrjFileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.dxfdwg.libs.DwgHandler;
-import org.jgrasstools.gears.io.dxfdwg.libs.DwgReader;
+import org.jgrasstools.gears.io.dxfdwg.libs.dxf.DxfFile;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Utility class for reading dwg files to geotools featurecollections (based on jdwglib project).")
+@Description("Utility class for reading dxf files to geotools featurecollections (based on Michael Michauds work).")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, DWG, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
-@Status(Status.CERTIFIED)
+@Keywords("IO, DXF, Feature, Vector, Reading")
+@Label(JGTConstants.VECTORPROCESSING)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class DwgFeatureReader extends JGTModel {
-    @Description("The dwg file.")
+public class DxfConverter extends JGTModel {
+    @Description("The dxf file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
@@ -73,18 +72,6 @@ public class DwgFeatureReader extends JGTModel {
     @Out
     public SimpleFeatureCollection polygonFC = null;
 
-    @Description("The read text feature collection.")
-    @Out
-    public SimpleFeatureCollection textFC;
-
-    @Description("The read attributes feature collection.")
-    @Out
-    public SimpleFeatureCollection attributesFC;
-
-    @Description("The read contour feature collection.")
-    @Out
-    public SimpleFeatureCollection contourFC;
-
     private CoordinateReferenceSystem crs;
 
     @Execute
@@ -93,9 +80,9 @@ public class DwgFeatureReader extends JGTModel {
             return;
         }
 
-        File dwgFile = new File(file);
-        File parentFolder = dwgFile.getParentFile();
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dwgFile);
+        File dxfFile = new File(file);
+        File parentFolder = dxfFile.getParentFile();
+        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dxfFile);
         File prjFile = new File(parentFolder, nameWithoutExtention + ".prj");
         if (prjFile.exists()) {
             FileInputStream instream = new FileInputStream(prjFile);
@@ -111,16 +98,11 @@ public class DwgFeatureReader extends JGTModel {
             }
         }
 
-        DwgHandler dataHandler = new DwgHandler(dwgFile, crs);
-        dataHandler.getLayerTypes();
-        DwgReader dwgReader = dataHandler.getDwgReader();
+        DxfFile dxf = DxfFile.createFromFile(dxfFile, crs);
 
-        textFC = dwgReader.getTextFeatures();
-        attributesFC = dwgReader.getAttributesFeatures();
-        contourFC = dwgReader.getContourFeatures();
-        pointsFC = dwgReader.getMultiPointFeatures();
-        lineFC = dwgReader.getMultiLineFeatures();
-        polygonFC = dwgReader.getMultiPolygonFeatures();
+        pointsFC = dxf.getPoints();
+        lineFC = dxf.getLines();
+        polygonFC = dxf.getPolygons();
 
     }
 
