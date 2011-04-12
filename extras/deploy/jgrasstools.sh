@@ -19,4 +19,4 @@
 
 MEM="-Xmx2g"
 
-java $MEM -cp "./modules/*:./libs/*" oms3.CLI -r $1
+java $MEM -cp "./modules/*:./libs/*" oms3.CLI -scp "/home/moovida/development/jgrasstools-hg/extras/deploy/modules/jgrassgears-0.1-SNAPSHOT.jar:/home/moovida/development/jgrasstools-hg/extras/deploy/modules/hortonmachine-0.1-SNAPSHOT.jar" -r $1 
