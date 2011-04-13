@@ -30,7 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestTopindex extends HMTestCase {
+public class TestTopIndex extends HMTestCase {
 
     public void testAb() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;

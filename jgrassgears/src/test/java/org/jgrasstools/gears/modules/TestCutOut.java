@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestCutout extends HMTestCase {
+public class TestCutOut extends HMTestCase {
 
     private GridCoverage2D inCoverage;
     private GridCoverage2D inMask;

@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestHacklength extends HMTestCase {
+public class TestHackLength extends HMTestCase {
 
     public void testHacklength() throws IOException {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
