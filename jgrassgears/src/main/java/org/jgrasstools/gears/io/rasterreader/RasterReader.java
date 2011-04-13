@@ -409,7 +409,7 @@ public class RasterReader extends JGTModel {
             for( int r = 0; r < height; r++ ) {
                 for( int c = 0; c < width; c++ ) {
                     double value = readIter.getSampleDouble(c + minX, r + minY, 0);
-                    if (isNovalue(value) || value == fileNovalue) {
+                    if (isNovalue(value) || value == fileNovalue || value == -Float.MAX_VALUE || value == Float.MAX_VALUE) {
                         tmpIter.setSample(c, r, 0, geodataNovalue);
                     } else {
                         tmpIter.setSample(c, r, 0, value);
