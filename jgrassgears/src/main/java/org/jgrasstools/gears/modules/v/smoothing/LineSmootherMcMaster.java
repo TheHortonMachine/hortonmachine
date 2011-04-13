@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 @Description("The McMasters Sliding Averaging smoothing algorithm.")
-@Documentation("LineSmoother.html")
+@Documentation("LineSmootherMcMaster.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Smoothing, Vector, LineSmootherJaitools")
 @Status(Status.CERTIFIED)
