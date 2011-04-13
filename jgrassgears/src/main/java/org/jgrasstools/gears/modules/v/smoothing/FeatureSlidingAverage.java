@@ -182,11 +182,6 @@ public class FeatureSlidingAverage {
             coordinate.y = coordinates[i].y;
             coordinate.z = coordinates[i].z;
         }
-        for( Coordinate coordinate : res ) {
-            if (coordinate.x == 0) {
-                throw new RuntimeException();
-            }
-        }
         // for( i = half; i + half < n; i++ ) {
         // coordinates[i].x = res.get(i).x;
         // coordinates[i].y = res.get(i).y;
