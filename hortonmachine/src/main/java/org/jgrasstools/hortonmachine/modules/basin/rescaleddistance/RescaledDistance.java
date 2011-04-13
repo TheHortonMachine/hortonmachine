@@ -29,6 +29,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -51,6 +52,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the rescaled distance of each pixel from the outlet.")
+@Documentation("RescaledDistance.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Basin, Geomorphology, D2O")
 @Label(JGTConstants.BASIN)

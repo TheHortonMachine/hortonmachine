@@ -34,6 +34,7 @@ import javax.media.jai.RasterFactory;
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -52,6 +53,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the skyview factor.")
+@Documentation("Skyview.html")
 @Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hydrology, Radiation, Insolation, Hillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
