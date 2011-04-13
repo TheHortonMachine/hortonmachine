@@ -1,0 +1,21 @@
+Module for raster reprojection. It can reproject also GRASS raster maps into a new Location with a different projection.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the raster that has to be reprojected</li>
+<li>the code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328)</li>
+<li>the interpolation type to use: 
+<ul>
+<li> 0 : nearest neightbour</li> 
+<li> 1 : bilinear</li>
+<li> 2 : bicubic</li>
+</ul>
+</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the output raster reprojected into the new coordinate reference system</li> 
+</ul>
