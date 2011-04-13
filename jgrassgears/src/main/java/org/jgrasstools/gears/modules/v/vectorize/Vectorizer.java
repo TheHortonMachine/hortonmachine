@@ -154,6 +154,11 @@ public class Vectorizer extends JGTModel {
         outGeodata = FeatureCollections.newCollection();
         int index = 0;
         for( Polygon polygon : polygonsList ) {
+            double area = polygon.getArea();
+            if (area <= pThres) {
+                continue;
+            }
+
             Double tmpValue = -1.0;
             Object userData = polygon.getUserData();
             if (userData instanceof Double) {

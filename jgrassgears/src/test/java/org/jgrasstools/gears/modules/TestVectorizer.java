@@ -20,20 +20,20 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.modules.r.summary.RasterSummary;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RasterSummary}.
+ * Test for {@link Vectorizer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestRasterSummary extends HMTestCase {
+public class TestVectorizer extends HMTestCase {
     public void testCoverageSummary() throws Exception {
 
         double[][] inData = HMTestMaps.extractNet0Data;
@@ -41,40 +41,26 @@ public class TestRasterSummary extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        RasterSummary summary = new RasterSummary();
-        summary.pm = pm;
-        summary.inMap = inCoverage;
-        summary.pBins = 100;
-        summary.process();
+        Vectorizer vectorizer = new Vectorizer();
+        vectorizer.pm = pm;
+        vectorizer.inGeodata = inCoverage;
+        vectorizer.pValue = 2.0;
+        vectorizer.pThres = 1;
+        vectorizer.fDefault = "rast";
+        vectorizer.process();
 
-        double min = summary.outMin;
-        double max = summary.outMax;
-        double mean = summary.outMean;
-        double sdev = summary.outSdev;
-        double range = summary.outRange;
-        double sum = summary.outSum;
+        SimpleFeatureCollection outGeodata = vectorizer.outGeodata;
+        assertEquals(1, outGeodata.size());
 
-        assertEquals(2.0, min);
-        assertEquals(2.0, max);
-        assertEquals(2.0, mean);
-        assertEquals(0.0, sdev);
-        assertEquals(0.0, range);
-        assertEquals(18.0, sum);
+        SimpleFeatureIterator featureIterator = outGeodata.features();
+        assertTrue(featureIterator.hasNext());
 
-        double[][] cb = summary.outCb;
-        // for( int i = 0; i < cb.length; i++ ) {
-        // System.out.println(cb[i][0] + "\t" + cb[i][1] + "\t" + cb[i][2] + "%");
-        // }
-
-        assertEquals(cb[0][0], 2.0);
-        assertEquals(cb[0][1], 9.0);
-        assertEquals(cb[0][2], 11.25);
-        assertTrue(JGTConstants.isNovalue(cb[cb.length - 1][0]));
-        assertEquals(cb[cb.length - 1][1], 71.00);
-        assertEquals(cb[cb.length - 1][2], 88.75);
-
-        // System.out.println();
-
+        // SimpleFeature feature = featureIterator.next();
+        // double value = ((Number) feature.getAttribute("rast")).doubleValue();
+        // assertEquals(2.0, value, 0.0000001);
+        // Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        // double area = geometry.getArea();
+        // assertEquals(120.0, area, 0.0000001);
     }
 
 }
