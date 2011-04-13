@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
@@ -25,11 +24,13 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -50,20 +51,18 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 @Description("The line smoother from the jaitools project.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Documentation("LineSmootherJaitools.html")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Smoothing, Vector")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Name("linesmootherjai")
+@License("General Public License Version 3 (GPLv3)")
 public class LineSmootherJaitools extends JGTModel {
 
-    @Description("The features to be smoothed.")
+    @Description("The vector containing the lines to be smoothed.")
     @In
     public SimpleFeatureCollection inFC;
-
-    @Description("The point features that define intersections.")
-    @In
-    public SimpleFeatureCollection pointFeatures;
 
     @Description("A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).")
     @In
