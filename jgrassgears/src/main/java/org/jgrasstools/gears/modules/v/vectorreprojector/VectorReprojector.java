@@ -16,51 +16,62 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.r.coveragereprojector;
-
-import javax.media.jai.Interpolation;
+package org.jgrasstools.gears.modules.v.vectorreprojector;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.processing.Operations;
+import org.geotools.data.crs.ForceCoordinateSystemFeatureResults;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-@Description("Module for raster reprojection")
+
+@Description("Module for vector reprojection")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Crs, Reprojection, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
+@Keywords("Crs, Reprojection, Vector")
+@Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CoverageReprojector extends JGTModel {
+public class VectorReprojector extends JGTModel {
 
-    @Description("The coverage that has to be reprojected.")
+    @Description("The feature collection that has to be reprojected.")
     @In
-    public GridCoverage2D inGeodata;
+    public SimpleFeatureCollection inGeodata;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
+    @Description("A coordinate reference system on which to force the input, composed by authority and code number (ex. EPSG:4328).")
+    @UI(JGTConstants.CRS_UI_HINT)
     @In
-    public int pInterpolation = 0;
+    public String pForceCode;
 
-    @Description("The reprojected coverage.")
+    @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
+    @In
+    public boolean doLenient = true;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+
+    @Description("The reprojected feature collection.")
     @Out
-    public GridCoverage2D outGeodata = null;
+    public SimpleFeatureCollection outGeodata = null;
 
     @Execute
     public void process() throws Exception {
@@ -69,24 +80,16 @@ public class CoverageReprojector extends JGTModel {
         }
 
         CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
-
-        Interpolation interpolationType = null;
-        if (pInterpolation == 1) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        } else if (pInterpolation == 2) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-        } else if (pInterpolation == 3) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC_2);
-        }else{
-            // default to nearest neighbour
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+        if (pForceCode != null) {
+            pm.beginTask("Forcing input crs...", IJGTProgressMonitor.UNKNOWN);
+            CoordinateReferenceSystem forcedCrs = CRS.decode(pForceCode);
+            inGeodata = new ForceCoordinateSystemFeatureResults(inGeodata, forcedCrs);
+            pm.done();
         }
 
-        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, targetCrs, null,
-                interpolationType);
-
+        pm.beginTask("Reprojecting features...", IJGTProgressMonitor.UNKNOWN);
+        outGeodata = new ReprojectingFeatureCollection(inGeodata, targetCrs);
+        pm.done();
     }
 
 }
-
-

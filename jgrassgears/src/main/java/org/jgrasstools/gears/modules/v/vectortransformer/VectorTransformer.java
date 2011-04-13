@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.v.transformer;
+package org.jgrasstools.gears.modules.v.vectortransformer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,7 +50,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class FeatureTransformer extends JGTModel {
+public class VectorTransformer extends JGTModel {
 
     @Description("The feature collection that has to be transformed.")
     @In

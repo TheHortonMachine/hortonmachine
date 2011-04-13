@@ -24,8 +24,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.modules.r.coveragereprojector.CoverageReprojector;
-import org.jgrasstools.gears.modules.v.featurereprojector.FeatureReprojector;
+import org.jgrasstools.gears.modules.r.rasterreprojector.RasterReprojector;
+import org.jgrasstools.gears.modules.v.vectorreprojector.VectorReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -50,7 +50,7 @@ public class TestReprojectors extends HMTestCase {
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
                 elevationData, envelopeParams, crs, true);
 
-        CoverageReprojector reprojector = new CoverageReprojector();
+        RasterReprojector reprojector = new RasterReprojector();
         reprojector.inGeodata = elevationCoverage;
         reprojector.pCode = "EPSG:4326";
         reprojector.process();
@@ -83,7 +83,7 @@ public class TestReprojectors extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        FeatureReprojector reprojector = new FeatureReprojector();
+        VectorReprojector reprojector = new VectorReprojector();
         reprojector.inGeodata = testFC;
         reprojector.pCode = "EPSG:4326";
         reprojector.pm = pm;

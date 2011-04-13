@@ -24,9 +24,9 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.gears.modules.r.coveragereprojector.CoverageReprojector;
-import org.jgrasstools.gears.modules.r.transformer.CoverageResolutionResampler;
-import org.jgrasstools.gears.modules.v.featurereprojector.FeatureReprojector;
+import org.jgrasstools.gears.modules.r.rasterreprojector.RasterReprojector;
+import org.jgrasstools.gears.modules.r.transformer.RasterResolutionResampler;
+import org.jgrasstools.gears.modules.v.vectorreprojector.VectorReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -50,7 +50,7 @@ public class TestResolutionResampler extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        CoverageResolutionResampler reprojector = new CoverageResolutionResampler();
+        RasterResolutionResampler reprojector = new RasterResolutionResampler();
         reprojector.inGeodata = elevationCoverage;
         reprojector.pInterpolation = 1;
         reprojector.pXres = 60.0;

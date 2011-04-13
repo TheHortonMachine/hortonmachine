@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.reshape.FeatureReshaper;
+import org.jgrasstools.gears.modules.v.vectorreshaper.VectorReshaper;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -36,7 +36,7 @@ public class TestFeatureReshaper extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        FeatureReshaper reshaper = new FeatureReshaper();
+        VectorReshaper reshaper = new VectorReshaper();
         reshaper.inFeatures = testFC;
         reshaper.pCql = "newcat=cat*2";
         reshaper.process();

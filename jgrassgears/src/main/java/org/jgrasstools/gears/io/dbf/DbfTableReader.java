@@ -32,6 +32,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -46,8 +47,8 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Label(JGTConstants.GENERICREADER)
 @Status(Status.DRAFT)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Name("dbfreader")
+@License("General Public License Version 3 (GPLv3)")
 public class DbfTableReader extends JGTModel {
     @Description("The dbf file.")
     @UI(JGTConstants.FILEIN_UI_HINT)

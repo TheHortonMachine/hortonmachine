@@ -49,7 +49,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
 @Description("Calculate a summary of the map with base statistics.")
-@Documentation("CoverageSummary.html")
+@Documentation("RasterSummary.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Statistics, Raster, Mapcalc")
 @Label(JGTConstants.RASTERPROCESSING)

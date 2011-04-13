@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.dxfdwg.DxfConverter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.modules.utils.fileiterator.FileIterator;
+import org.jgrasstools.gears.modules.v.vectorconverter.DxfConverter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 /**
  * Test dxf reader.

@@ -16,10 +16,9 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.v.attributesjoiner;
+package org.jgrasstools.gears.modules.v.vectorfieldrounder;
 
-import java.util.HashMap;
-import java.util.List;
+import java.text.DecimalFormat;
 
 import oms3.annotations.Author;
 import oms3.annotations.Label;
@@ -38,7 +37,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
 
 @Description("Module that joins attributes from one featurecollection into another based on a common field.")
@@ -47,31 +45,29 @@ import org.opengis.feature.simple.SimpleFeature;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class AttributesJoiner extends JGTModel {
+public class VectorFieldRounder extends JGTModel {
 
-    @Description("The features to extend.")
+    @Description("The features of which to round a numeric value.")
     @In
     public SimpleFeatureCollection inFeatures;
 
-    @Description("The dbf tabledata to merge in.")
+    @Description("The double field of the number to round.")
     @In
-    public HashMap<String, List<Object>> tabledata = null;
+    public String fRound = null;
 
-    @Description("The common field (if different in the two sources, commaseparated, first shapefile, then dbf.")
+    @Description("The rounding pattern.")
     @In
-    public String fCommon = null;
-
-    @Description("The commaseparated list of fields to merge in.")
-    @In
-    public String pFields = null;
+    public String pPattern = null;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The joined features.")
+    @Description("The modified features.")
     @Out
     public SimpleFeatureCollection outFeatures;
+
+    private DecimalFormat formatter = null;
 
     @Execute
     public void process() throws Exception {
@@ -79,63 +75,33 @@ public class AttributesJoiner extends JGTModel {
             return;
         }
 
-        String[] fields = pFields.split(","); //$NON-NLS-1$
-        Class< ? >[] classes = new Class< ? >[fields.length];
-        for( int i = 0; i < fields.length; i++ ) {
-            List<Object> list = tabledata.get(fields[i].trim());
-            classes[i] = list.get(0).getClass();
-        }
+        checkNull(pPattern, fRound);
 
-        String shapeField = fCommon;
-        String tableField = fCommon;
-        int comma = fCommon.indexOf(","); //$NON-NLS-1$
-        if (comma != -1) {
-            String[] split = fCommon.split(","); //$NON-NLS-1$
-            shapeField = split[0].trim();
-            tableField = split[1].trim();
-        }
-
-        List<Object> commonAttributeList = tabledata.get(tableField);
-
-        FeatureExtender fExt = new FeatureExtender(inFeatures.getSchema(), fields, classes);
+        formatter = new DecimalFormat(pPattern);
 
         outFeatures = FeatureCollections.newCollection();
 
-        int id = 0;
         int size = inFeatures.size();
-        pm.beginTask("Merging data...", size);
+        pm.beginTask("Rounding data...", size);
         FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
 
-            Object attribute = feature.getAttribute(shapeField);
-            int index = commonAttributeList.indexOf(attribute);
-            if (index == -1) {
-                // try something if it is number
-                if (attribute instanceof Number) {
-                    Double doubleAttribute = ((Number) attribute).doubleValue();
-                    index = commonAttributeList.indexOf(doubleAttribute);
-                }
-                if (index == -1) {
-                    System.out.println("Jumped feature: " + feature.getID());
-                    continue;
-                }
-            }
-            Object[] newAttributes = new Object[fields.length];
-            for( int i = 0; i < fields.length; i++ ) {
-                List<Object> list = tabledata.get(fields[i]);
-                Object object = list.get(index);
-                newAttributes[i] = object;
+            Object attribute = feature.getAttribute(fRound);
+            if (attribute instanceof Number) {
+                double num = ((Number) attribute).doubleValue();
+                String numStr = formatter.format(num);
+                numStr = numStr.replaceFirst(",", ".");
+                num = Double.parseDouble(numStr);
+                feature.setAttribute(fRound, num);
             }
 
-            SimpleFeature newFeature = fExt.extendFeature(feature, newAttributes, id++);
-
-            outFeatures.add(newFeature);
+            outFeatures.add(feature);
             pm.worked(1);
         }
         pm.done();
 
-        inFeatures.close(inFeatureIterator);
+        inFeatureIterator.close();
 
     }
 

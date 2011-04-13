@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.featurefilter.FeatureFilter;
+import org.jgrasstools.gears.modules.v.vectorfilter.VectorFilter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -36,7 +36,7 @@ public class TestFeatureFilter extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        FeatureFilter filter = new FeatureFilter();
+        VectorFilter filter = new VectorFilter();
         filter.inFeatures = testFC;
         filter.pCql = "cat > 2";
         filter.process();

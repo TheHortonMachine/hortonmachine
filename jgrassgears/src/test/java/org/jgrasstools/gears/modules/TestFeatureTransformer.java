@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.transformer.FeatureTransformer;
+import org.jgrasstools.gears.modules.v.vectortransformer.VectorTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -40,7 +40,7 @@ public class TestFeatureTransformer extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        FeatureTransformer transformer = new FeatureTransformer();
+        VectorTransformer transformer = new VectorTransformer();
         transformer.inGeodata = testFC;
         transformer.pTransX = 10.0;
         transformer.pTransY = 10.0;

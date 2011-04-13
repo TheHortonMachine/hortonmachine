@@ -16,9 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.v.attributesrounder;
-
-import java.text.DecimalFormat;
+package org.jgrasstools.gears.modules.v.vectorfilter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Label;
@@ -37,72 +35,52 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.filter.Filter;
 
-@Description("Module that joins attributes from one featurecollection into another based on a common field.")
+@Description("Module that creates a filteres feature collection.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Join, Vector")
+@Keywords("Filter, Vector")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class AttributesRounder extends JGTModel {
+public class VectorFilter extends JGTModel {
 
-    @Description("The features of which to round a numeric value.")
+    @Description("The features to filter.")
     @In
     public SimpleFeatureCollection inFeatures;
 
-    @Description("The double field of the number to round.")
+    @Description("The CQL filter.")
     @In
-    public String fRound = null;
-
-    @Description("The rounding pattern.")
-    @In
-    public String pPattern = null;
+    public String pCql = null;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The modified features.")
+    @Description("The filtered features.")
     @Out
     public SimpleFeatureCollection outFeatures;
-
-    private DecimalFormat formatter = null;
 
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFeatures == null, doReset)) {
             return;
         }
+        checkNull(inFeatures, pCql);
 
-        checkNull(pPattern, fRound);
-
-        formatter = new DecimalFormat(pPattern);
-
+        Filter cqlFilter = FilterUtilities.getCQLFilter(pCql);
+        SimpleFeatureCollection subCollection = inFeatures
+                .subCollection(cqlFilter);
+        
         outFeatures = FeatureCollections.newCollection();
-
-        int size = inFeatures.size();
-        pm.beginTask("Rounding data...", size);
-        FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
-        while( inFeatureIterator.hasNext() ) {
-            SimpleFeature feature = inFeatureIterator.next();
-
-            Object attribute = feature.getAttribute(fRound);
-            if (attribute instanceof Number) {
-                double num = ((Number) attribute).doubleValue();
-                String numStr = formatter.format(num);
-                numStr = numStr.replaceFirst(",", ".");
-                num = Double.parseDouble(numStr);
-                feature.setAttribute(fRound, num);
-            }
-
+        FeatureIterator<SimpleFeature> iterator = subCollection.features();
+        while( iterator.hasNext() ) {
+            SimpleFeature feature = iterator.next();
             outFeatures.add(feature);
-            pm.worked(1);
         }
-        pm.done();
-
-        inFeatureIterator.close();
-
+        iterator.close();
     }
 
 }

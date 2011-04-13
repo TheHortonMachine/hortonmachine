@@ -16,7 +16,7 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.modules.r.coveragereconverter;
+package org.jgrasstools.gears.modules.r.rasterconverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,7 +38,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CoverageConverter extends JGTModel {
+public class RasterConverter extends JGTModel {
     @Description("The input coverage.")
     @In
     public GridCoverage2D inGeodata;
