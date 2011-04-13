@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
@@ -23,12 +22,14 @@ import java.util.Collections;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -54,34 +55,25 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
-@Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
-        + "Algorithm. The new position of each point "
-        + "is the average of the pLookahead  points around. Parameter pSlide is used for "
-        + "linear interpolation between old and new position.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Smoothing, Vector")
-@Status(Status.DRAFT)
+@Description("The McMasters Sliding Averaging smoothing algorithm.")
+@Documentation("LineSmoother.html")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Smoothing, Vector, LineSmootherJaitools")
+@Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LineSmoother extends JGTModel {
+@Name("linesmoother")
+@License("General Public License Version 3 (GPLv3)")
+public class LineSmootherMcMaster extends JGTModel {
 
-    @Description("The features to be smoothed.")
+    @Description("The vector containing the lines to be smoothed.")
     @In
     public SimpleFeatureCollection linesFeatures;
-
-    @Description("The point features that define intersections.")
-    @In
-    public SimpleFeatureCollection pointFeatures;
-
-    @Description("The smoothing type: McMasters smoothing average (0 = default).")
-    @In
-    public int pType = 0;
 
     @Description("The number of points to consider in every smoothing step (default = 7).")
     @In
     public int pLookahead = 7;
 
-    @Description("Minimum length accepted for a line. If it is shorter than that value, the line is not smoothed (if circle or alone, it is removed).")
+    @Description("Minimum length for a line to be smoothed.")
     @In
     public int pLimit = 0;
 
@@ -101,7 +93,7 @@ public class LineSmoother extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The smoothed features.")
+    @Description("The vector with smoothed features.")
     @Out
     public SimpleFeatureCollection outFeatures;
 
@@ -172,12 +164,8 @@ public class LineSmoother extends JGTModel {
                     geometryN = Densifier.densify(geometryN, pDensify);
                 }
                 List<Coordinate> smoothedCoords = Collections.emptyList();;
-                switch( pType ) {
-                case 0:
-                default:
-                    FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
-                    smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
-                }
+                FeatureSlidingAverage fSA = new FeatureSlidingAverage(geometryN);
+                smoothedCoords = fSA.smooth(pLookahead, false, pSlide);
 
                 if (smoothedCoords != null) {
                     smoothedArray = (Coordinate[]) smoothedCoords.toArray(new Coordinate[smoothedCoords.size()]);
@@ -250,7 +238,7 @@ public class LineSmoother extends JGTModel {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
         SimpleFeatureCollection initialFC = ShapefileFeatureReader.readShapefile(shapePath);
 
-        LineSmoother smoother = new LineSmoother();
+        LineSmootherMcMaster smoother = new LineSmootherMcMaster();
         smoother.pm = pm;
         smoother.pLimit = 10;
         smoother.linesFeatures = initialFC;
