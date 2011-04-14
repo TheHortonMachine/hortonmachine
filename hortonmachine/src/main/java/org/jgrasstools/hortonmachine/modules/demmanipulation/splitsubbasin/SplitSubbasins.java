@@ -73,7 +73,7 @@ public class SplitSubbasins extends JGTModel {
 
     @Description("The threshold.")
     @In
-    public Double pThres = null;
+    public double pThres = 0.0;
 
     @Description("The hack order.")
     @In
@@ -98,7 +98,7 @@ public class SplitSubbasins extends JGTModel {
         if (!concatOr(outSubbasins == null, doReset)) {
             return;
         }
-        checkNull(inFlow, inHack, inTca, pThres, pHackorder);
+        checkNull(inFlow, inHack, inTca, pHackorder);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
