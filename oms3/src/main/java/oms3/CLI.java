@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -139,61 +140,84 @@ public class CLI {
         System.err.println("           -d   document the <simfile>");
         System.err.println("           -a   run the <simfile> analysis");
         System.err.println("           -s   create SHA <simfile> digest");
+        System.err.println("           -mcp model classpath (jar files not specified in sim)");
         System.err.println("           -l <loglevel> set the log level:");
         System.err.println("                OFF|ALL|SEVERE|WARNING|INFO|CONFIG|FINE|FINER|FINEST");
     }
-    
-    // Simulation classpath
-    static String simcp = "";
 
-    public static List<File> getSimClasspath() {
-        List<File> sc = new ArrayList<File>();
-        if (!simcp.isEmpty()) {
-            String[] s = simcp.split("\\s*" + File.pathSeparator + "\\s*");
-            for (String string : s) {
-                sc.add(new File(string));
-            }
-        }
-        return sc;
+    static List<String> simExt = Arrays.asList(".sim", ".luca", ".esp", ".fast");
+    static List<String> flags = Arrays.asList("-r", "-e", "-d", "-o", "-a", "-s");
+
+    static boolean isSim(String file) {
+        return simExt.contains(file.substring(file.lastIndexOf('.')));
     }
 
     public static void main(String[] args) {
         String ll = "WARNING";
+        String cmd = null;
+        String file = null;
         try {
             for (int i = 0; i < args.length; i++) {
-                if (args[i].equals("-r")) {
-                    boolean isgroovy = args[++i].endsWith("groovy");
-                    Logger log = Logger.getLogger("oms3.sim");
-                    log.setLevel(Level.parse(ll));
-                    Object target = createSim(readFile(args[i]), isgroovy, ll);
-                    if (!isgroovy) {
-                        invoke(target, "run");
-                    }
-                } else if (args[i].equals("-e")) {
-                    Object target = createSim(readFile(args[++i]), false, ll);
-                    invoke(target, "edit");
-                } else if (args[i].equals("-d")) {
-                    Object target = createSim(readFile(args[++i]), false, ll);
-                    invoke(target, "doc");
-                } else if (args[i].equals("-o")) {
-                    Object target = createSim(readFile(args[++i]), false, ll);
-                    invoke(target, "output");
-                } else if (args[i].equals("-a")) {
-                    Object target = createSim(readFile(args[++i]), false, ll);
-                    invoke(target, "graph");
-                } else if (args[i].equals("-s")) {
-                    Object target = createSim(readFile(args[++i]), false, ll);
-                    invoke(target, "dig");
+                if (args[i].startsWith("-D")) {
+                    continue;
+                }
+                if (flags.contains(args[i])) {
+                    cmd = args[i];
+                    file = args[++i];
+//                }
+//                if (args[i].equals("-r")) {
+//                    boolean isgroovy = !isSim(args[++i]);
+//                    Logger log = Logger.getLogger("oms3.sim");
+//                    log.setLevel(Level.parse(ll));
+//                    Object target = createSim(readFile(args[i]), isgroovy, ll);
+//                    if (!isgroovy) {
+//                        invoke(target, "run");
+//                    }
+//                } else if (args[i].equals("-e")) {
+//                    Object target = createSim(readFile(args[++i]), false, ll);
+//                    invoke(target, "edit");
+//                } else if (args[i].equals("-d")) {
+//                    Object target = createSim(readFile(args[++i]), false, ll);
+//                    invoke(target, "doc");
+//                } else if (args[i].equals("-o")) {
+//                    Object target = createSim(readFile(args[++i]), false, ll);
+//                    invoke(target, "output");
+//                } else if (args[i].equals("-a")) {
+//                    Object target = createSim(readFile(args[++i]), false, ll);
+//                    invoke(target, "graph");
+//                } else if (args[i].equals("-s")) {
+//                    Object target = createSim(readFile(args[++i]), false, ll);
+//                    invoke(target, "dig");
                 } else if (args[i].equals("-l")) {
                     ll = args[++i];
-                } else if (args[i].equals("-scp")) {
-                    simcp = args[++i];
-                } else if (args[i].endsWith("groovy")) {
-                    createSim(readFile(args[i]), true, ll);
                 } else {
                     usage();
                     return;
                 }
+            }
+            if (file == null) {
+                usage();
+                return;
+            }
+            boolean isgroovy = !isSim(file);
+            Logger log = Logger.getLogger("oms3.sim");
+            log.setLevel(Level.parse(ll));
+            Object target = createSim(readFile(file), isgroovy, ll);
+
+            if (cmd.equals("-r")) {
+                if (!isgroovy) {
+                    invoke(target, "run");
+                }
+            } else if (cmd.equals("-e")) {
+                invoke(target, "edit");
+            } else if (cmd.equals("-d")) {
+                invoke(target, "doc");
+            } else if (cmd.equals("-o")) {
+                invoke(target, "output");
+            } else if (cmd.equals("-a")) {
+                invoke(target, "graph");
+            } else if (cmd.equals("-s")) {
+                invoke(target, "dig");
             }
         } catch (Exception E) {
             E.printStackTrace(System.out);

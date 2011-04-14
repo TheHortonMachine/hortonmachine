@@ -90,6 +90,18 @@ public class Model implements Buildable {
         return b.toString();
     }
 
+    private static List<File> getExtraResources() {
+        List<File> sc = new ArrayList<File>();
+        String simPath = System.getProperty("oms.sim.resources");
+        if (simPath != null && !simPath.isEmpty()) {
+            String[] s = simPath.split("\\s*" + File.pathSeparator + "\\s*");
+            for (String string : s) {
+                sc.add(new File(string));
+            }
+        }
+        return sc;
+    }
+
     /** get the URL classloader for all the resources (just for jar files
      * 
      * @return
@@ -98,9 +110,8 @@ public class Model implements Buildable {
     private synchronized URLClassLoader getClassLoader() throws Exception {
         if (modelClassLoader == null) {
             List<File> jars = res.filterFiles("jar");
-            List<File> cli_jars = CLI.getSimClasspath();
+            List<File> cli_jars = getExtraResources();
             URL[] u = new URL[jars.size() + cli_jars.size()];
-
             for (int i = 0; i < jars.size(); i++) {
                 u[i] = jars.get(i).toURI().toURL();
                 if (log.isLoggable(Level.CONFIG)) {
