@@ -53,7 +53,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hydrology")
 @Label(JGTConstants.BASIN)
-@Name("gradient")
+@Name("topindex")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class TopIndex extends JGTModel {
