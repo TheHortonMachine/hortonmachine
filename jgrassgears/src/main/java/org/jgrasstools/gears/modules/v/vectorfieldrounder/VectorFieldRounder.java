@@ -40,7 +40,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 
-@Description("Module that joins attributes from one featurecollection into another based on a common field.")
+@Description("Module that rounds a defined field attribute.")
 @Documentation("VectorFieldRounder.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Join, VectorTableJoiner")
@@ -50,7 +50,7 @@ import org.opengis.feature.simple.SimpleFeature;
 @License("General Public License Version 3 (GPLv3)")
 public class VectorFieldRounder extends JGTModel {
 
-    @Description("The features of which to round a numeric value.")
+    @Description("The vector of which to round a numeric value.")
     @In
     public SimpleFeatureCollection inFeatures;
 
@@ -66,7 +66,7 @@ public class VectorFieldRounder extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The modified features.")
+    @Description("The modified vector file.")
     @Out
     public SimpleFeatureCollection outFeatures;
 

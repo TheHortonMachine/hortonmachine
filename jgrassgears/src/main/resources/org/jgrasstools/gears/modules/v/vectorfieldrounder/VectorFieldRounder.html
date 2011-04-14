@@ -1,16 +1,18 @@
-The McMasters Sliding Averaging Algorithm smoothing algorithms. The new position of each point is the average of the pLookahead  points around. Parameter pSlide is used for linear interpolation between old and new position.
+Module that rounds a defined field attribute. The rounding pattern has to be provided with the standard Java convention. More information about how to use the patterns are available in the <a href="http://www.exampledepot.com/egs/java.text/FormatNum.html"> Java Almanac </a>.
+<br>
+For example if you want to round values in a double field to have only two decimals you can use the following pattern <i>#.##</i> or <i>#.00</i>
+if you decide that the numbers have to have always two decimals, in case of just one a zero will be added at the end.
 <br>
 <br>
 <h3>Inputs</h3>
 <ul>      
-<li>the vector containing the lines to be smoothed</li>
-<li>the number of points to consider in every smoothing step</li>
-<li>minimum length for a line to be smoothed</li>
-<li>other model parameters like: slide parameter, densifier interval, simplifier tollerance</li>
+<li>the vector of which to round values of a numeric field</li>
+<li>the double attribute field of the values to round</li>
+<li>the rounding pattern</li>
 </ul>
 <br>
 <br>
 <h3>Output</h3>
 <ul>      
-<li>the vector with smoothed features</li> 
+<li>the modified vector file</li> 
 </ul>
