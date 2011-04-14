@@ -50,15 +50,16 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class VectorReader extends JGTModel {
+    @Description("The vector type to read (Supported is: shp).")
+    @In
+    // currently not used, for future compatibility
+    public String pType = null;
+
     @Description("The vector file to read.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
     
-    @Description("The vector type to read (Supported is: shp).")
-    @In
-    // currently not used, for future compatibility
-    public String pType = null;
 
     @Description("The progress monitor.")
     @In

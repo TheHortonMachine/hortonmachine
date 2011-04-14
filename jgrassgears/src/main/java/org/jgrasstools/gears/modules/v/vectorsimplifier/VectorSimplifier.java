@@ -98,9 +98,6 @@ public class VectorSimplifier extends JGTModel {
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
 
-            if (fGS == null) {
-            }
-
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
 
             List<Geometry> geomList = new ArrayList<Geometry>();
