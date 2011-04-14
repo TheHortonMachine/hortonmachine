@@ -25,6 +25,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -44,12 +45,13 @@ import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Module for vector tranforms")
+@Description("Module for vector tranforms. Currently only translation is supported.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Transform, Vector")
 @Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(Status.CERTIFIED)
+@Name("vtrans")
+@License("General Public License Version 3 (GPLv3)")
 public class VectorTransformer extends JGTModel {
 
     @Description("The feature collection that has to be transformed.")
