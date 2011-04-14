@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com), Daniele Andreis
  */
-public class TestNetnumbering extends HMTestCase {
+public class TestNetNumbering extends HMTestCase {
 
     public void testNetnumberingMode0() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;

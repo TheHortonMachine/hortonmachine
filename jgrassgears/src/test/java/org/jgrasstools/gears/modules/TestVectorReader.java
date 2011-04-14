@@ -9,8 +9,6 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.io.vectorreader.VectorReader;
 import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;

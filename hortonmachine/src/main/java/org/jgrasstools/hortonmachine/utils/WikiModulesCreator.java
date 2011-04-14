@@ -50,9 +50,12 @@ public class WikiModulesCreator {
     private static final String NEWLINE = "\n";
     private static final String IMAGES_HM_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/hortonmachine/";
     private static final String TESTCASES_HM_BASEURL = "http://code.google.com/p/jgrasstools/source/browse/hortonmachine/src/test/java/org/jgrasstools/hortonmachine/models/hm/";
+    private static final String TESTCASES_HM_BASEPACKAGE = "org.jgrasstools.hortonmachine.models.hm.";
 
-    private static final String IMAGES_JG_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/jgrassgears/";
+    // private static final String IMAGES_JG_BASEURL =
+    // "http://wiki.jgrasstools.googlecode.com/hg/images/jgrassgears/";
     private static final String TESTCASES_JG_BASEURL = "http://code.google.com/p/jgrasstools/source/browse/jgrassgears/src/test/java/org/jgrasstools/gears/modules/";
+    private static final String TESTCASES_JG_BASEPACKAGE = "org.jgrasstools.gears.modules.";
 
     private static final String DOCSSUFFIX = ".html";
 
@@ -63,14 +66,15 @@ public class WikiModulesCreator {
         LinkedHashMap<String, Class< ? >> hmModulesClasses = HortonMachine.getInstance().moduleName2Class;
         LinkedHashMap<String, Class< ? >> jggModulesClasses = JGrassGears.getInstance().moduleName2Class;
 
-        dump(hmModules, hmModulesClasses, IMAGES_HM_BASEURL, TESTCASES_HM_BASEURL);
+        dump(hmModules, hmModulesClasses, IMAGES_HM_BASEURL, TESTCASES_HM_BASEURL, TESTCASES_HM_BASEPACKAGE);
 
-        dump(jggModules, jggModulesClasses, IMAGES_JG_BASEURL, TESTCASES_JG_BASEURL);
+        dump(jggModules, jggModulesClasses, null, TESTCASES_JG_BASEURL, TESTCASES_JG_BASEPACKAGE);
 
     }
 
     private static void dump( LinkedHashMap<String, List<ClassField>> modulesMap,
-            LinkedHashMap<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl ) throws Exception {
+            LinkedHashMap<String, Class< ? >> modulesClassesMap, String imagesBaseurl, String testcasesBaseurl,
+            String testcasesHmBasepackage ) throws Exception {
 
         Set<String> nameSet = modulesClassesMap.keySet();
         for( String moduleName : nameSet ) {
@@ -104,7 +108,7 @@ public class WikiModulesCreator {
                     File resourceFile = new File(resource.toURI());
                     documentationStr = FileUtilities.readFile(resourceFile);
                 } catch (Exception e) {
-                    System.out.println("Error in: " + moduleName);
+                    System.err.println("Error in: " + moduleName);
                 }
             }
             sb.append(documentationStr);
@@ -202,21 +206,35 @@ public class WikiModulesCreator {
             sb.append(NEWLINE);
 
             // example result
-            sb.append("<h2>Example result</h2>").append(NEWLINE);
-            sb.append(NEWLINE);
-            sb.append("<img src=\"" + imagesBaseurl + moduleName.toLowerCase() + ".png" + "\" alt=\"" + moduleName + "\"/>")
-                    .append(NEWLINE);
-            sb.append("<br>").append(NEWLINE);
+            if (imagesBaseurl != null) {
+                sb.append("<h2>Example result</h2>").append(NEWLINE);
+                sb.append(NEWLINE);
+                sb.append("<img src=\"" + imagesBaseurl + moduleName.toLowerCase() + ".png" + "\" alt=\"" + moduleName + "\"/>")
+                        .append(NEWLINE);
+                sb.append("<br>").append(NEWLINE);
+            }
 
             // developer example
-            sb.append("<h2>Developer example</h2>").append(NEWLINE);
-            sb.append(NEWLINE);
-            sb.append("An example usage of the algorithm can be found in the testcases suite: ").append(NEWLINE);
-
             String testName = "Test" + moduleName + ".java";
-            sb.append("[");
-            sb.append(testcasesBaseurl).append(testName);
-            sb.append(" ").append(moduleName).append("]");
+            String testClassName = testcasesHmBasepackage + "Test" + moduleName;
+
+            boolean doTest = false;
+            try {
+                Class.forName(testClassName);
+                doTest = true;
+            } catch (Exception e) {
+                // ignore if no testcase
+                System.err.println("TESTCASE missign for: " + testName);
+            }
+            if (doTest) {
+                sb.append("<h2>Developer example</h2>").append(NEWLINE);
+                sb.append(NEWLINE);
+                sb.append("An example usage of the algorithm can be found in the testcases suite: ").append(NEWLINE);
+
+                sb.append("[");
+                sb.append(testcasesBaseurl).append(testName);
+                sb.append(" ").append(moduleName).append("]");
+            }
 
             FileUtilities.writeFile(sb.toString(), new File(outputWikiFolder, moduleName + ".wiki"));
         }

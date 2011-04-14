@@ -26,11 +26,11 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * It test the {@link TestSumDownstream} module.
+ * It test the {@link TestSumDownStream} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestSumDownstream extends HMTestCase {
+public class TestSumDownStream extends HMTestCase {
     public void testSumDownstream() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
