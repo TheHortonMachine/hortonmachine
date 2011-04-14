@@ -158,9 +158,6 @@ public class CLI {
         String file = null;
         try {
             for (int i = 0; i < args.length; i++) {
-                if (args[i].startsWith("-D")) {
-                    continue;
-                }
                 if (flags.contains(args[i])) {
                     cmd = args[i];
                     file = args[++i];

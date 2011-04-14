@@ -93,6 +93,7 @@ public class Model implements Buildable {
     private static List<File> getExtraResources() {
         List<File> sc = new ArrayList<File>();
         String simPath = System.getProperty("oms.sim.resources");
+        simPath = simPath.replaceAll("\"", "");
         if (simPath != null && !simPath.isEmpty()) {
             String[] s = simPath.split("\\s*" + File.pathSeparator + "\\s*");
             for (String string : s) {
