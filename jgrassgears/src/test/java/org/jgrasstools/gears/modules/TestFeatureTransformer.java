@@ -18,11 +18,15 @@
  */
 package org.jgrasstools.gears.modules;
 
+import java.util.List;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.modules.v.vectortransformer.VectorTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -47,14 +51,28 @@ public class TestFeatureTransformer extends HMTestCase {
         transformer.process();
         SimpleFeatureCollection outFC = transformer.outGeodata;
 
-        FeatureIterator<SimpleFeature> inFeatureIterator = testFC.features();
-        FeatureIterator<SimpleFeature> outFeatureIterator = outFC.features();
-        SimpleFeature outFeature = outFeatureIterator.next();
-        assertNotNull(outFeature);
-        SimpleFeature inFeature = inFeatureIterator.next();
+        List<FeatureMate> inMates = FeatureUtilities.featureCollectionToMatesList(testFC);
+        List<FeatureMate> outMates = FeatureUtilities.featureCollectionToMatesList(outFC);
+        
+        
+        Geometry inG = null;
+        for( FeatureMate featureMate : inMates ) {
+            Integer cat = featureMate.getAttribute("cat", Integer.class);
+            if (cat == 1) {
+                inG = featureMate.getGeometry();
+            }
+        }
 
-        Coordinate inCoord = ((Geometry) inFeature.getDefaultGeometry()).getCoordinate();
-        Coordinate outCoord = ((Geometry) outFeature.getDefaultGeometry()).getCoordinate();
+        Geometry outG = null;
+        for( FeatureMate featureMate : outMates ) {
+            Integer cat = featureMate.getAttribute("cat", Integer.class);
+            if (cat == 1) {
+                outG = featureMate.getGeometry();
+            }
+        }
+        
+        Coordinate inCoord = inG.getCoordinate();
+        Coordinate outCoord = outG.getCoordinate();
 
         double distance = inCoord.distance(outCoord);
         double checkDistance = NumericsUtilities.pythagoras(10, 10);
