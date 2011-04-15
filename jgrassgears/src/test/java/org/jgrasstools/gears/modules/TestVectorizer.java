@@ -26,7 +26,10 @@ import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Test for {@link Vectorizer}.
@@ -55,12 +58,12 @@ public class TestVectorizer extends HMTestCase {
         SimpleFeatureIterator featureIterator = outGeodata.features();
         assertTrue(featureIterator.hasNext());
 
-        // SimpleFeature feature = featureIterator.next();
-        // double value = ((Number) feature.getAttribute("rast")).doubleValue();
-        // assertEquals(2.0, value, 0.0000001);
-        // Geometry geometry = (Geometry) feature.getDefaultGeometry();
-        // double area = geometry.getArea();
-        // assertEquals(120.0, area, 0.0000001);
+        SimpleFeature feature = featureIterator.next();
+        double value = ((Number) feature.getAttribute("rast")).doubleValue();
+        assertEquals(1.0, value, 0.0000001);
+        Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        double area = geometry.getArea();
+        assertEquals(6300.0, area, 0.0000001);
     }
 
 }
