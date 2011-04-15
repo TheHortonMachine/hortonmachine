@@ -104,7 +104,6 @@ public class VectorTableJoiner extends JGTModel {
 
         outFeatures = FeatureCollections.newCollection();
 
-        int id = 0;
         int size = inFeatures.size();
         pm.beginTask("Merging data...", size);
         FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
@@ -131,7 +130,7 @@ public class VectorTableJoiner extends JGTModel {
                 newAttributes[i] = object;
             }
 
-            SimpleFeature newFeature = fExt.extendFeature(feature, newAttributes, id++);
+            SimpleFeature newFeature = fExt.extendFeature(feature, newAttributes);
 
             outFeatures.add(newFeature);
             pm.worked(1);

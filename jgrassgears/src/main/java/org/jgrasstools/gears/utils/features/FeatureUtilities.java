@@ -429,23 +429,6 @@ public class FeatureUtilities {
     }
 
     /**
-     * Creates a {@link FeatureExtender}.
-     * 
-     * <p>Useful when cloning features while adding new attributes.</p>
-     * 
-     * @param oldFeatureType the {@link FeatureType} of the existing features.
-     * @param fieldArray the list of the names of new fields. 
-     * @param classesArray the list of classes of the new fields.
-     * @throws FactoryRegistryException 
-     * @throws SchemaException
-     */
-    public static FeatureExtender createFeatureExteder( SimpleFeatureType oldFeatureType, String[] fieldArray,
-            Class[] classesArray ) throws FactoryRegistryException, SchemaException {
-        FeatureExtender fExt = new FeatureExtender(oldFeatureType, fieldArray, classesArray);
-        return fExt;
-    }
-
-    /**
      * Extracts features from a {@link FeatureCollection} into an {@link ArrayList}.
      * 
      * @param collection the feature collection.

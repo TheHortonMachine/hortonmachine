@@ -114,7 +114,6 @@ public class SourcesDirectionCalculator extends JGTModel {
         Envelope2D env = inCoverage.getEnvelope2D();
         GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
         
-        int id = 0;
         int size = inSources.size();
         pm.beginTask("Extracting azimuth...", size);
         while( inFeatureIterator.hasNext() ) {
@@ -247,8 +246,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
             SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth,
                     pixelNum, getValue(v11), getValue(v12), getValue(v13), getValue(v21),
-                    getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)},
-                    id++);
+                    getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)});
             outSources.add(azimuthFeature);
 
         }

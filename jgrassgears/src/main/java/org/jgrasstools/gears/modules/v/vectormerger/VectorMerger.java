@@ -32,12 +32,15 @@ import oms3.annotations.Status;
 
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.features.FeatureExtender;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description("A simple module that merges same featurecollections into one single.")
@@ -65,12 +68,15 @@ public class VectorMerger extends JGTModel {
 
         SimpleFeatureType firstType = null;
 
+        FeatureExtender fEx = null;
+
         pm.beginTask("Merging features...", inGeodata.size());
         try {
             outGeodata = FeatureCollections.newCollection();
             for( SimpleFeatureCollection featureCollection : inGeodata ) {
                 if (firstType == null) {
                     firstType = featureCollection.getSchema();
+                    fEx = new FeatureExtender(firstType, new String[0], new Class< ? >[0]);
                 } else {
                     SimpleFeatureType schema = featureCollection.getSchema();
                     int compare = DataUtilities.compare(firstType, schema);
@@ -78,7 +84,14 @@ public class VectorMerger extends JGTModel {
                         throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this);
                     }
                 }
-                outGeodata.addAll(featureCollection);
+                SimpleFeatureIterator featureIterator = featureCollection.features();
+                while( featureIterator.hasNext() ) {
+                    SimpleFeature f = featureIterator.next();
+
+                    SimpleFeature extendFeature = fEx.extendFeature(f, new Object[0]);
+
+                    outGeodata.add(extendFeature);
+                }
                 pm.worked(1);
             }
         } finally {

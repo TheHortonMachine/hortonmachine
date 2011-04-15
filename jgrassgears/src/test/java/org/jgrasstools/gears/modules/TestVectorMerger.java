@@ -17,37 +17,30 @@
  */
 package org.jgrasstools.gears.modules;
 
+import java.util.Arrays;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.vectorfilter.VectorFilter;
+import org.jgrasstools.gears.modules.v.vectormerger.VectorMerger;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.opengis.feature.simple.SimpleFeature;
 /**
- * Test for the {@link VectorFilter}
+ * Test for the {@link VectorMerger}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestVectorFilter extends HMTestCase {
+public class TestVectorMerger extends HMTestCase {
 
     @SuppressWarnings("nls")
-    public void testVectorFilter() throws Exception {
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
-        VectorFilter filter = new VectorFilter();
-        filter.inFeatures = testFC;
-        filter.pCql = "cat > 2";
+    public void testVectorMerger() throws Exception {
+        SimpleFeatureCollection testFC1 = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC2 = HMTestMaps.testFC;
+
+        VectorMerger filter = new VectorMerger();
+        filter.pm = pm;
+        filter.inGeodata = Arrays.asList(testFC1, testFC2);
         filter.process();
-        SimpleFeatureCollection outFC = filter.outFeatures;
+        SimpleFeatureCollection outFC = filter.outGeodata;
 
-        assertTrue(outFC.size() == 1);
-
-        FeatureIterator<SimpleFeature> featureIterator = outFC.features();
-        SimpleFeature feature = featureIterator.next();
-        assertNotNull(feature);
-
-        Integer attribute = (Integer) feature.getAttribute("cat");
-        assertEquals(3, attribute.intValue());
-        featureIterator.close();
-
+        assertTrue(outFC.size() == 6);
     }
 }

@@ -126,7 +126,6 @@ public class RasterCatToFeatureAttribute extends JGTModel{
         outGeodata = FeatureCollections.newCollection();
         FeatureIterator<SimpleFeature> featureIterator = inFC.features();
         int all = inFC.size();
-        int id = 0;
         pm.beginTask("Extracting raster information...", all);
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
@@ -171,12 +170,12 @@ public class RasterCatToFeatureAttribute extends JGTModel{
                 value = -9999.0;
             }
 
-            SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value}, id++);
+            SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
 
             outGeodata.add(extendedFeature);
             pm.worked(1);
         }
-        inFC.close(featureIterator);
+        featureIterator.close();
         pm.done();
 
     }
