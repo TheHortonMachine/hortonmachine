@@ -1,0 +1,26 @@
+Module for vector reprojection.
+<ul>
+<li>add one or more new columns to the vector table attribute</li>
+<li>convert the geometry into a derived geometry (from polygons to points or to lines)</li>
+<li>delete  from the vector table attribute</li>
+</ul>
+<br>
+The model can run into two different modes:
+<ul>
+<li>using only the available parameters for the reprojection</li>
+<li>forcing the model to use the most precise parameters for Datum transformation (the so called Bursa Wolf parameters), in this case the choosen CRS has to contain those parameters</li>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the vector that has to be reprojected</li>
+<li>the code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328)</li>
+<li>a coordinate reference system on which to force the input, composed by authority and code number (ex. EPSG:4328)</li>
+<li>set to true this flag, the reprojection can have some error due to different datums, if set to false, it won't reproject without Bursa Wolf parameters</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the output reprojected vector</li> 
+</ul>
