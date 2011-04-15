@@ -45,6 +45,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -98,6 +99,11 @@ public class ContourExtractor extends JGTModel {
             return;
         }
         checkNull(inCoverage, pMin, pMax, pInterval);
+
+        if (pMin > pMax) {
+            throw new ModelsIllegalargumentException("Min has to be bigger than Max.", this);
+        }
+
         final AffineTransform mt2D = (AffineTransform) inCoverage.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
 
         List<Double> contourIntervals = new ArrayList<Double>();
