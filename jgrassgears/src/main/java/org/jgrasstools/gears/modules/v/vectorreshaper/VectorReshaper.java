@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.modules.v.vectorreshaper;
 
@@ -22,12 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -56,33 +57,30 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-/**
- * Reshaper module adapted from uDigs reshape operation by Jody Garnett.
- * 
- * @author Andrea Antonello (www.hydrologis.com)
- */
-@Description("Module that extends feature collections.")
-@Author(name = "Andrea Antonello, Jody Garnett", contact = "www.hydrologis.com")
+@Description("Module to reshape a vector.")
+@Documentation("VectorReshaper.html")
+@Author(name = "Andrea Antonello, Jody Garnett", contact = "http://www.hydrologis.com")
 @Keywords("Reshape, Vector")
-@Status(Status.DRAFT)
+@Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Name("reshape")
+@License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
 public class VectorReshaper extends JGTModel {
 
-    @Description("The features to reshape.")
+    @Description("The vector to reshape.")
     @In
     public SimpleFeatureCollection inFeatures;
 
-    @Description("The CQL reshape function.")
+    @Description("The ECQL reshape function.")
     @In
     public String pCql = null;
 
-    @Description("List of fields to remove, comma separated.")
+    @Description("The list of fields to remove, comma separated.")
     @In
     public String pRemove = null;
 
-    @Description("The filtered features.")
+    @Description("The new reshaped vector.")
     @Out
     public SimpleFeatureCollection outFeatures;
 
