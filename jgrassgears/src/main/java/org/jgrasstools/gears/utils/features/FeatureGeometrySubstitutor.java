@@ -58,10 +58,9 @@ public class FeatureGeometrySubstitutor {
     /**
      * @param oldFeature the feature from which to clone the existing attributes from.
      * @param newGeometry new geometry to insert.
-     * @param index the index for the feature id creation.
      * @return the new created feature, as merged from the old feature plus the new attributes.
      */
-    public SimpleFeature substituteGeometry( SimpleFeature oldFeature, Geometry newGeometry, int index ) {
+    public SimpleFeature substituteGeometry( SimpleFeature oldFeature, Geometry newGeometry ) {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
@@ -69,7 +68,7 @@ public class FeatureGeometrySubstitutor {
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
         builder.addAll(newAttributes);
-        SimpleFeature f = builder.buildFeature(newFeatureType.getTypeName() + "." + index);
+        SimpleFeature f = builder.buildFeature(null);
         return f;
     }
 

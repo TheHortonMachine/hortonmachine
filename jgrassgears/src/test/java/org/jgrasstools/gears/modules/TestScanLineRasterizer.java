@@ -20,12 +20,10 @@ package org.jgrasstools.gears.modules;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
-import org.jgrasstools.gears.modules.v.vectorfilter.VectorFilter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -58,25 +56,26 @@ public class TestScanLineRasterizer extends HMTestCase {
         raster.west = ep.getWest();
         raster.pValue = 2.0;
         raster.process();
-        
+
         GridCoverage2D outGeodata = raster.outGeodata;
-        
-        checkMatrixEqual(outGeodata.getRenderedImage(), matrix);
-        
-        
-        assertTrue(outFC.size() == 1);
+        checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all2Data);
 
-        FeatureIterator<SimpleFeature> featureIterator = outFC.features();
-        SimpleFeature feature = featureIterator.next();
-        assertNotNull(feature);
+        raster = new ScanLineRasterizer();
+        raster.inGeodata = newCollection;
+        raster.cols = ep.getCols();
+        raster.rows = ep.getRows();
+        raster.north = ep.getNorth();
+        raster.south = ep.getSouth();
+        raster.east = ep.getEast();
+        raster.west = ep.getWest();
+        raster.fCat = "cat";
+        raster.process();
 
-        Integer attribute = (Integer) feature.getAttribute("cat");
-        assertEquals(3, attribute.intValue());
-        featureIterator.close();
-
+        outGeodata = raster.outGeodata;
+        checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all1Data);
     }
 
-    private SimpleFeatureCollection doCollection(RegionMap envelopeParams) {
+    private SimpleFeatureCollection doCollection( RegionMap envelopeParams ) {
         double[][] elevationData = HMTestMaps.mapData;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
@@ -86,7 +85,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         b.setName("typename");
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
-        b.add("attributename", Double.class);
+        b.add("cat", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Object[] values = new Object[]{polygon, 1.0};

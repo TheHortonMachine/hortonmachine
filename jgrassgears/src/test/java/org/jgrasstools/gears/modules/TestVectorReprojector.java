@@ -38,7 +38,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestVectorReprojector extends HMTestCase {
-    private double delta = 0.000001;
+    private double delta = 0.0000001;
 
     public void testVectorReprojector() throws Exception {
 

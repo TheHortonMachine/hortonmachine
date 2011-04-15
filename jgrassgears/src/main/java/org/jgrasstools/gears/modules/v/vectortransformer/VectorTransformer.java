@@ -103,7 +103,7 @@ public class VectorTransformer extends JGTModel {
             MathTransform transform = new AffineTransform2D(1.0, 0.0, 0.0, 1.0, pTransX, pTransY);
             Geometry transformedGeometry = JTS.transform(geometry, transform);
 
-            SimpleFeature newFeature = substitutor.substituteGeometry(feature, transformedGeometry, id++);
+            SimpleFeature newFeature = substitutor.substituteGeometry(feature, transformedGeometry);
             outGeodata.add(newFeature);
             pm.worked(1);
         }

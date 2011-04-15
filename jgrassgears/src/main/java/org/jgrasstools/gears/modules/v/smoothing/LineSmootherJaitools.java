@@ -107,7 +107,7 @@ public class LineSmootherJaitools extends JGTModel {
             if (smoothedList.size() != 0) {
                 LineString[] lsArray = (LineString[]) smoothedList.toArray(new LineString[smoothedList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
-                SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString, id);
+                SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
                 outFC.add(newFeature);
                 id++;
             }

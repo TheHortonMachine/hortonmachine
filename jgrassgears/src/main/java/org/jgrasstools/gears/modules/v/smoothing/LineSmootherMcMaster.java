@@ -132,7 +132,7 @@ public class LineSmootherMcMaster extends JGTModel {
             if (lsList.size() != 0) {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
-                SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString, id);
+                SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
                 outFeatures.add(newFeature);
                 id++;
             }

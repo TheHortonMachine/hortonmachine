@@ -132,7 +132,7 @@ public class VectorSimplifier extends JGTModel {
                 newGeometry = new GeometryCollection(geomArray, gF);
             }
 
-            SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry, id);
+            SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry);
             id++;
 
             outFeatures.add(newFeature);

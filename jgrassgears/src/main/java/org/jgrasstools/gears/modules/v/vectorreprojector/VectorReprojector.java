@@ -59,6 +59,10 @@ public class VectorReprojector extends JGTModel {
     @In
     public String pCode;
 
+    @Description("A flag to modify the axes order.")
+    @In
+    public Boolean doLongitudeFirst = null;
+
     @Description("A coordinate reference system on which to force the input, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
@@ -82,7 +86,12 @@ public class VectorReprojector extends JGTModel {
             return;
         }
 
-        CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
+        CoordinateReferenceSystem targetCrs = null;
+        if (doLongitudeFirst != null) {
+            targetCrs = CRS.decode(pCode, doLongitudeFirst);
+        }else{
+            targetCrs = CRS.decode(pCode);
+        }
         if (pForceCode != null) {
             pm.beginTask("Forcing input crs...", IJGTProgressMonitor.UNKNOWN);
             CoordinateReferenceSystem forcedCrs = CRS.decode(pForceCode);
@@ -91,8 +100,13 @@ public class VectorReprojector extends JGTModel {
         }
 
         pm.beginTask("Reprojecting features...", IJGTProgressMonitor.UNKNOWN);
-        outGeodata = new ReprojectingFeatureCollection(inGeodata, targetCrs);
-        pm.done();
+        try {
+            outGeodata = new ReprojectingFeatureCollection(inGeodata, targetCrs);
+        } finally {
+
+            pm.done();
+        }
+
     }
 
 }
