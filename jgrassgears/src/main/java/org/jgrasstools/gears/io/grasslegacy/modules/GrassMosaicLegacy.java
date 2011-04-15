@@ -56,7 +56,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Mosaic, Raster")
 @Name("grassmosaic")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class GrassMosaicLegacy extends JGTModel {
 
