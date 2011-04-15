@@ -21,4 +21,4 @@ MEM="-Xmx2g"
 java $MEM \
 -Doms.sim.resources="/home/moovida/development/jgrasstools-hg/extras/deploy/modules/jgrassgears-0.1-SNAPSHOT.jar:/home/moovida/development/jgrasstools-hg/extras/deploy/modules/hortonmachine-0.1-SNAPSHOT.jar" \
 -cp "./modules/*:./libs/*" \
-oms3.CLI -r $1 
+oms3.CLI $1 $2 $3 $4
