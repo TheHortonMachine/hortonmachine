@@ -61,7 +61,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 @Documentation("ContourExtractor.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Vector")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("contourextract")
 @License("General Public License Version 3 (GPLv3)")

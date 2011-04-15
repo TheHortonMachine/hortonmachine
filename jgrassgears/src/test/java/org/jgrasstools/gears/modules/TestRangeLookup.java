@@ -20,50 +20,33 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
+import org.jgrasstools.gears.modules.r.rangelookup.RangeLookup;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Geometry;
-
 /**
- * Test for {@link Vectorizer}.
+ * Test for {@link RangeLookup}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestVectorizer extends HMTestCase {
-    public void testCoverageSummary() throws Exception {
+public class TestRangeLookup extends HMTestCase {
 
-        double[][] inData = HMTestMaps.extractNet0Data;
+    public void testRangeLookup() throws Exception {
+        double[][] inData = HMTestMaps.rangeLookupInData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        Vectorizer vectorizer = new Vectorizer();
-        vectorizer.pm = pm;
-        vectorizer.inGeodata = inCoverage;
-        vectorizer.pValue = 2.0;
-        vectorizer.pThres = 1;
-        vectorizer.fDefault = "rast";
-        vectorizer.process();
-
-        SimpleFeatureCollection outGeodata = vectorizer.outGeodata;
-        assertEquals(1, outGeodata.size());
-
-        SimpleFeatureIterator featureIterator = outGeodata.features();
-        assertTrue(featureIterator.hasNext());
-
-        SimpleFeature feature = featureIterator.next();
-        double value = ((Number) feature.getAttribute("rast")).doubleValue();
-        assertEquals(1.0, value, 0.0000001);
-        Geometry geometry = (Geometry) feature.getDefaultGeometry();
-        double area = geometry.getArea();
-        assertEquals(6300.0, area, 0.0000001);
+        RangeLookup range = new RangeLookup();
+        range.pm = pm;
+        range.inGeodata = inCoverage;
+        range.pRanges = "[0 90),[90 180),[180 270),[270 360)";
+        range.pClasses = "1,2,3,4";
+        range.process();
+        GridCoverage2D out = range.outGeodata;
+        checkMatrixEqual(out.getRenderedImage(), HMTestMaps.rangeLookupOutData, 0);
     }
 
 }
