@@ -60,7 +60,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Module to reshape a vector.")
 @Documentation("VectorReshaper.html")
 @Author(name = "Andrea Antonello, Jody Garnett", contact = "http://www.hydrologis.com")
-@Keywords("Reshape, Vector")
+@Keywords("Reshape, Vector, VectorFilter")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("reshape")

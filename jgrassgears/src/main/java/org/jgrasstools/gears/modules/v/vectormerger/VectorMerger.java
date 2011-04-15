@@ -45,7 +45,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description("Module for merging vecotrs into one single.")
-@Documentation("VectorReprojector.html")
+@Documentation("VectorMerger.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Feature, Vector, Merge")
 @Label(JGTConstants.VECTORPROCESSING)
