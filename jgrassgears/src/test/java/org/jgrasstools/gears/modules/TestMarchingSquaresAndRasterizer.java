@@ -313,7 +313,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         rasterizer.pm = pm;
         setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = null;
-        rasterizer.fValueToRasterize = squares.defaultFeatureField;
+        rasterizer.fCat = squares.defaultFeatureField;
         rasterizer.process();
 
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;
@@ -354,7 +354,7 @@ public class TestMarchingSquaresAndRasterizer extends HMTestCase {
         rasterizer.pm = pm;
         setBounds(rasterizer, geodata.getGridGeometry());
         rasterizer.pValue = null;
-        rasterizer.fValueToRasterize = squares.defaultFeatureField;
+        rasterizer.fCat = squares.defaultFeatureField;
         rasterizer.process();
 
         GridCoverage2D outGeodata2 = rasterizer.outGeodata;

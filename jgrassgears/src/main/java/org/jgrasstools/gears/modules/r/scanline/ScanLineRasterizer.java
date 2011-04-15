@@ -18,23 +18,19 @@
 package org.jgrasstools.gears.modules.r.scanline;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -51,8 +47,10 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
@@ -77,7 +75,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Name("rscanline")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class ScanLineRasterizer {
+public class ScanLineRasterizer extends JGTModel {
 
     @Description("The vector to rasterize.")
     @In
@@ -85,15 +83,11 @@ public class ScanLineRasterizer {
 
     @Description("The value to use as raster value if no field is given.")
     @In
-    public Double pValue = doubleNovalue;
+    public Double pValue = null;
 
     @Description("The field to use to retrieve the category value for the raster.")
     @In
     public String fCat = null;
-
-    @Description("The field contains to retrieve the category value to use for the rasterizzations.")
-    @In
-    public String fValueToRasterize = null;
 
     @Description("The north bound of the region to consider")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -141,20 +135,25 @@ public class ScanLineRasterizer {
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
-    private HashMap<String, Double> paramsMap;
+    private RegionMap paramsMap;
 
     private double xRes;
 
     @Execute
     public void process() throws Exception {
+        checkNull(inGeodata);
+        if (pValue == null && fCat == null) {
+            throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
+        }
+
         SimpleFeatureType schema = inGeodata.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         GridGeometry2D pGrid = gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
         if (outWR == null) {
             paramsMap = gridGeometry2RegionParamsMap(pGrid);
-            height = paramsMap.get(ROWS).intValue();
-            width = paramsMap.get(COLS).intValue();
-            xRes = paramsMap.get(XRES);
+            height = paramsMap.getRows();
+            width = paramsMap.getCols();
+            xRes = paramsMap.getXres();
 
             outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
         }
@@ -165,7 +164,7 @@ public class ScanLineRasterizer {
         } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
-            rasterizepolygon(inGeodata, outWR, pGrid, fValueToRasterize, pValue);
+            rasterizepolygon(inGeodata, outWR, pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
                     .getSimpleName());
@@ -175,9 +174,8 @@ public class ScanLineRasterizer {
                 .getCoordinateReferenceSystem());
 
     }
-
-    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized, GridGeometry2D gridGeometry,
-            String field, Double cat ) throws InvalidGridGeometryException, TransformException {
+    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized, GridGeometry2D gridGeometry )
+            throws InvalidGridGeometryException, TransformException {
 
         int w = rasterized.getWidth();
         int h = rasterized.getHeight();
@@ -185,20 +183,16 @@ public class ScanLineRasterizer {
         int size = inGeodata.size();
         pm.beginTask("Rasterizing features...", size);
         FeatureIterator<SimpleFeature> featureIterator = inGeodata.features();
-        boolean severalValue = false;
-        /*
-         * if cat is null then there is several polygons with several value to
-         * rasterize.
-         */
-        if (cat == null) {
-            severalValue = true;
-        }
+
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Polygon polygon = (Polygon) feature.getDefaultGeometry();
             // extract the value to put into the raster.
-            if (severalValue) {
-                cat = (Double) feature.getAttribute(field);
+            double value = -1.0;
+            if (pValue == null) {
+                value = (Double) feature.getAttribute(fCat);
+            } else {
+                value = pValue;
             }
             double delta = xRes / 4.0;
 
@@ -223,15 +217,6 @@ public class ScanLineRasterizer {
                          * the part in between has to be filled
                          */
                         for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                            double value = cat;
-                            /*
-                             * if there is only one value (cat is a number) then
-                             * you can write into the raster another field of
-                             * the feature.
-                             */
-                            if (fCat != null) {
-                                value = ((Number) feature.getAttribute(fCat)).doubleValue();
-                            }
                             rasterized.setSample(k, r, 0, value);
                         }
                     }

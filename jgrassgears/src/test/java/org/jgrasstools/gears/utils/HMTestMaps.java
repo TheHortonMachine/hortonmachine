@@ -20,8 +20,6 @@ package org.jgrasstools.gears.utils;
 
 import static java.lang.Double.NaN;
 
-import java.util.HashMap;
-
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -42,7 +40,7 @@ import com.vividsolutions.jts.geom.Point;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    public static final HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
+    public static final RegionMap envelopeParams = new RegionMap();
 
     public static CoordinateReferenceSystem crs = null;
 

@@ -307,8 +307,8 @@ public class CoverageUtilities {
         return regionParams;
     }
 
-    public static HashMap<String, Double> gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
-        HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
+    public static RegionMap gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
+        RegionMap envelopeParams = new RegionMap();
 
         Envelope envelope = gridGeometry.getEnvelope2D();
         DirectPosition lowerCorner = envelope.getLowerCorner();

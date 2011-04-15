@@ -40,25 +40,27 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.FeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class FeatureUtilities {
 
@@ -535,6 +537,31 @@ public class FeatureUtilities {
             }
         }
         return null;
+    }
+
+    /**
+     * Create a {@link Polygon} from an {@link Envelope}.
+     * 
+     * @param envelope the envelope to convert.
+     * @return the created polygon.
+     */
+    public static Polygon envelopeToPolygon( Envelope2D envelope ) {
+        double w = envelope.getMinX();
+        double e = envelope.getMaxX();
+        double s = envelope.getMinY();
+        double n = envelope.getMaxY();
+
+        Coordinate[] coords = new Coordinate[5];
+        coords[0] = new Coordinate(w, n);
+        coords[1] = new Coordinate(e, n);
+        coords[2] = new Coordinate(e, s);
+        coords[3] = new Coordinate(w, s);
+        coords[4] = new Coordinate(w, n);
+
+        GeometryFactory gf = GeometryUtilities.gf();
+        LinearRing linearRing = gf.createLinearRing(coords);
+        Polygon polygon = gf.createPolygon(linearRing, null);
+        return polygon;
     }
 
 }
