@@ -62,7 +62,7 @@ public class LineSmootherJaitools extends JGTModel {
 
     @Description("The vector containing the lines to be smoothed.")
     @In
-    public SimpleFeatureCollection inFC;
+    public SimpleFeatureCollection inVector;
 
     @Description("A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).")
     @In
@@ -74,22 +74,22 @@ public class LineSmootherJaitools extends JGTModel {
 
     @Description("The smoothed features.")
     @Out
-    public SimpleFeatureCollection outFC;
+    public SimpleFeatureCollection outVector;
 
     private GeometryFactory gF = GeometryUtilities.gf();
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFC == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        outFC = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
         int id = 0;
         pm.message("Collecting geometries...");
-        List<SimpleFeature> linesList = FeatureUtilities.featureCollectionToList(inFC);
-        int size = inFC.size();
-        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFC.getSchema());
+        List<SimpleFeature> linesList = FeatureUtilities.featureCollectionToList(inVector);
+        int size = inVector.size();
+        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
         pm.beginTask("Smoothing features...", size);
         LineSmoother smoother = new LineSmoother(gF);
         for( SimpleFeature line : linesList ) {
@@ -108,7 +108,7 @@ public class LineSmootherJaitools extends JGTModel {
                 LineString[] lsArray = (LineString[]) smoothedList.toArray(new LineString[smoothedList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
-                outFC.add(newFeature);
+                outVector.add(newFeature);
                 id++;
             }
             pm.worked(1);

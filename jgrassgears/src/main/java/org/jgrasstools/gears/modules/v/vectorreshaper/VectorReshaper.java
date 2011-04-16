@@ -70,7 +70,7 @@ public class VectorReshaper extends JGTModel {
 
     @Description("The vector to reshape.")
     @In
-    public SimpleFeatureCollection inFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The ECQL reshape function.")
     @In
@@ -82,16 +82,16 @@ public class VectorReshaper extends JGTModel {
 
     @Description("The new reshaped vector.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     private SimpleFeature sample = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        checkNull(inFeatures);
+        checkNull(inVector);
 
         List<String> removeNames = new ArrayList<String>();
         if (pRemove != null) {
@@ -101,7 +101,7 @@ public class VectorReshaper extends JGTModel {
             }
         }
 
-        final SimpleFeatureType originalFeatureType = inFeatures.getSchema();
+        final SimpleFeatureType originalFeatureType = inVector.getSchema();
         List<AttributeDescriptor> attributeDescriptors = originalFeatureType
                 .getAttributeDescriptors();
         StringBuilder sB = new StringBuilder();
@@ -128,24 +128,24 @@ public class VectorReshaper extends JGTModel {
         SimpleFeatureType newFeatureType = createFeatureType(expressionString, originalFeatureType,
                 names, expressions);
 
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
         final SimpleFeatureBuilder build = new SimpleFeatureBuilder(newFeatureType);
-        inFeatures.accepts(new FeatureVisitor(){
+        inVector.accepts(new FeatureVisitor(){
             public void visit( Feature rawFeature ) {
                 SimpleFeature feature = (SimpleFeature) rawFeature;
                 for( int i = 0; i < expressions.size(); i++ ) {
                     build.add(expressions.get(i).evaluate(feature));
                 }
                 SimpleFeature created = build.buildFeature(feature.getID());
-                outFeatures.add(created);
+                outVector.add(created);
             }
         }, null);
 
     }
 
     private SimpleFeature getSample() {
-        FeatureIterator<SimpleFeature> iterator = inFeatures.features();
+        FeatureIterator<SimpleFeature> iterator = inVector.features();
         try {
             if (!iterator.hasNext()) {
                 throw new ModelsRuntimeException("Input featurecollection is empty.", this

@@ -40,16 +40,16 @@ public class TestRasterReprojector extends HMTestCase {
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         RasterReprojector reprojector = new RasterReprojector();
-        reprojector.inGeodata = inCoverage;
+        reprojector.inRaster = inCoverage;
         reprojector.pCode = "EPSG:4326";
         reprojector.process();
-        GridCoverage2D outGeodata = reprojector.outGeodata;
+        GridCoverage2D outGeodata = reprojector.outRaster;
 
         reprojector = new RasterReprojector();
-        reprojector.inGeodata = outGeodata;
+        reprojector.inRaster = outGeodata;
         reprojector.pCode = "EPSG:32632";
         reprojector.process();
-        outGeodata = reprojector.outGeodata;
+        outGeodata = reprojector.outRaster;
 
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.mapData);
     }

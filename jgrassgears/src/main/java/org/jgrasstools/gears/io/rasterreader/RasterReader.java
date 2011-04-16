@@ -168,7 +168,7 @@ public class RasterReader extends JGTModel {
 
     @Description("The read output raster map.")
     @Out
-    public GridCoverage2D geodata = null;
+    public GridCoverage2D outRaster = null;
 
     /**
      * Flag to read only envelope (if true, the output geodata is null).
@@ -189,7 +189,7 @@ public class RasterReader extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(geodata == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
 
@@ -280,14 +280,14 @@ public class RasterReader extends JGTModel {
                 }
                 GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
                 GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
-                geodata = (GridCoverage2D) reader.read(generalParameter);
+                outRaster = (GridCoverage2D) reader.read(generalParameter);
             } else {
                 GrassLegacyReader reader = new GrassLegacyReader();
                 reader.file = file;
                 reader.pm = pm;
                 reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(readRegion);
                 reader.readCoverage();
-                geodata = reader.outGC;
+                outRaster = reader.outGC;
             }
             checkNovalues();
         }
@@ -306,7 +306,7 @@ public class RasterReader extends JGTModel {
         originalEnvelope = reader.getOriginalEnvelope();
         if (!doEnvelope) {
             GridCoverage2D coverage = (GridCoverage2D) reader.read(generalParameter);
-            geodata = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = coverage.view(ViewType.GEOPHYSICS);
 
             resample();
             checkNovalues();
@@ -318,7 +318,7 @@ public class RasterReader extends JGTModel {
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
         if (!doEnvelope) {
             GridCoverage2D coverage = geoTiffReader.read(generalParameter);
-            geodata = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = coverage.view(ViewType.GEOPHYSICS);
 
             resample();
             checkNovalues();
@@ -330,7 +330,7 @@ public class RasterReader extends JGTModel {
         originalEnvelope = arcGridReader.getOriginalEnvelope();
         if (!doEnvelope) {
             GridCoverage2D coverage = arcGridReader.read(generalParameter);
-            geodata = coverage.view(ViewType.GEOPHYSICS);
+            outRaster = coverage.view(ViewType.GEOPHYSICS);
 
             resample();
             checkNovalues();
@@ -343,7 +343,7 @@ public class RasterReader extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(geodata);
+        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(outRaster);
         double west = envelopeParams.get(WEST);
         double south = envelopeParams.get(SOUTH);
         double east = envelopeParams.get(EAST);
@@ -383,9 +383,9 @@ public class RasterReader extends JGTModel {
         }
 
         HashMap<String, Double> newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
-        CoordinateReferenceSystem crs = geodata.getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = outRaster.getCoordinateReferenceSystem();
         GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
-        geodata = (GridCoverage2D) Operations.DEFAULT.resample(geodata, crs, gg, null);
+        outRaster = (GridCoverage2D) Operations.DEFAULT.resample(outRaster, crs, gg, null);
     }
 
     private void checkNovalues() {
@@ -397,12 +397,12 @@ public class RasterReader extends JGTModel {
             return;
         }
         if (!NumericsUtilities.dEq(fileNovalue, geodataNovalue)) {
-            HashMap<String, Double> params = getRegionParamsFromGridCoverage(geodata);
+            HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
             int height = params.get(ROWS).intValue();
             int width = params.get(COLS).intValue();
             WritableRaster tmpWR = createDoubleWritableRaster(width, height, null, null, null);
             WritableRandomIter tmpIter = RandomIterFactory.createWritable(tmpWR, null);
-            RenderedImage readRI = geodata.getRenderedImage();
+            RenderedImage readRI = outRaster.getRenderedImage();
             RandomIter readIter = RandomIterFactory.create(readRI, null);
             int minX = readRI.getMinX();
             int minY = readRI.getMinY();
@@ -416,7 +416,7 @@ public class RasterReader extends JGTModel {
                     }
                 }
             }
-            geodata = buildCoverage(new File(file).getName(), tmpWR, params, geodata.getCoordinateReferenceSystem());
+            outRaster = buildCoverage(new File(file).getName(), tmpWR, params, outRaster.getCoordinateReferenceSystem());
         }
     }
 
@@ -443,7 +443,7 @@ public class RasterReader extends JGTModel {
         RasterReader reader = new RasterReader();
         reader.file = path;
         reader.process();
-        GridCoverage2D geodata = reader.geodata;
+        GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
 }

@@ -36,10 +36,10 @@ public class TestVectorReshaper extends HMTestCase {
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         VectorReshaper reshaper = new VectorReshaper();
-        reshaper.inFeatures = testFC;
+        reshaper.inVector = testFC;
         reshaper.pCql = "newcat=cat*2";
         reshaper.process();
-        SimpleFeatureCollection outFC = reshaper.outFeatures;
+        SimpleFeatureCollection outFC = reshaper.outVector;
 
         FeatureIterator<SimpleFeature> featureIterator = outFC.features();
         SimpleFeature feature = featureIterator.next();

@@ -52,7 +52,7 @@ public class VectorFilter extends JGTModel {
 
     @Description("The vector to filter.")
     @In
-    public SimpleFeatureCollection inFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The ECQL filter function.")
     @In
@@ -64,24 +64,24 @@ public class VectorFilter extends JGTModel {
 
     @Description("The filtered vector.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        checkNull(inFeatures, pCql);
+        checkNull(inVector, pCql);
 
         Filter cqlFilter = FilterUtilities.getCQLFilter(pCql);
-        SimpleFeatureCollection subCollection = inFeatures
+        SimpleFeatureCollection subCollection = inVector
                 .subCollection(cqlFilter);
         
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
         FeatureIterator<SimpleFeature> iterator = subCollection.features();
         while( iterator.hasNext() ) {
             SimpleFeature feature = iterator.next();
-            outFeatures.add(feature);
+            outVector.add(feature);
         }
         iterator.close();
     }

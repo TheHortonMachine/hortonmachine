@@ -89,7 +89,7 @@ public class TestExtractNetwork extends HMTestCase {
         GridCoverage2D networkCoverage = extractNetwork.outNet;
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
 
-        SimpleFeatureCollection networkFC = extractNetwork.outNetfc;
+        SimpleFeatureCollection networkFC = extractNetwork.outVNet;
 
         FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
         while( featureIterator.hasNext() ) {

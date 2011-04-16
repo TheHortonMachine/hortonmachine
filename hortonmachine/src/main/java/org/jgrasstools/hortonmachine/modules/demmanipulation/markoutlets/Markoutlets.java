@@ -58,9 +58,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.TESTED)
 @License("General Public License Version 3 (GPLv3)")
 public class Markoutlets extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
@@ -73,9 +70,6 @@ public class Markoutlets extends JGTModel {
     @Out
     public GridCoverage2D outFlow = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute

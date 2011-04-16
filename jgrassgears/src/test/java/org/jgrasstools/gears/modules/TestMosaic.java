@@ -42,10 +42,10 @@ public class TestMosaic extends HMTestCase {
         List<File> filesList = Arrays.asList(left, right);
 
         Mosaic mosaic = new Mosaic();
-        mosaic.inGeodataFiles = filesList;
+        mosaic.inFiles = filesList;
         mosaic.pm = pm;
         mosaic.process();
-        GridCoverage2D readCoverage = mosaic.outGeodata;
+        GridCoverage2D readCoverage = mosaic.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
     }
 

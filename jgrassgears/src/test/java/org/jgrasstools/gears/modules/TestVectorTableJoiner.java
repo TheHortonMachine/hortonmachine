@@ -69,12 +69,12 @@ public class TestVectorTableJoiner extends HMTestCase {
         tabledata.put("area2", area2);
 
         VectorTableJoiner joiner = new VectorTableJoiner();
-        joiner.inFeatures = newCollection;
+        joiner.inVector = newCollection;
         joiner.tabledata = tabledata;
         joiner.fCommon = "id";
         joiner.pFields = "area";
         joiner.process();
-        SimpleFeatureCollection outFeatures = joiner.outFeatures;
+        SimpleFeatureCollection outFeatures = joiner.outVector;
 
         SimpleFeature f = FeatureUtilities.featureCollectionToList(outFeatures).get(0);
         String areaStr = f.getAttribute("area").toString();

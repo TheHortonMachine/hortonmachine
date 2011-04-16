@@ -41,20 +41,20 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @Description("Calculates the histogram of a set of data contained in a matrix "
         + "with respect to the set of data contained in another matrix.")
 @Documentation("Cb.html")
-        @Author(name = "Andrea Antonello, Silvia Franceschi, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Andrea Antonello, Silvia Franceschi, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Histogram, Geomorphology, Statistic")
 @Label(JGTConstants.STATISTICS)
 @Name("cb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Cb extends JGTModel {
-    @Description("The first coverage to analyse.")
+    @Description("The first raster to analyse.")
     @In
-    public GridCoverage2D inMap1 = null;
+    public GridCoverage2D inRaster1 = null;
 
-    @Description("The second coverage to analyse.")
+    @Description("The second raster to analyse.")
     @In
-    public GridCoverage2D inMap2 = null;
+    public GridCoverage2D inRaster2 = null;
 
     @Description("The progress monitor.")
     @In
@@ -73,8 +73,7 @@ public class Cb extends JGTModel {
     public int pLast = 2;
 
     @Description("A matrix containing " + "1) the mean value of the data in abscissa; "
-            + "2) the number of elements in each interval; "
-            + "3) the mean value of the data in ordinate; "
+            + "2) the number of elements in each interval; " + "3) the mean value of the data in ordinate; "
             + "n+2) the n-esimal moment of the data in ordinate.")
     @Out
     public double[][] outCb;
@@ -90,16 +89,15 @@ public class Cb extends JGTModel {
             return;
         }
 
-        RenderedImage map1RI = inMap1.getRenderedImage();
+        RenderedImage map1RI = inRaster1.getRenderedImage();
         RenderedImage map2RI = null;
-        if (inMap2 == null) {
+        if (inRaster2 == null) {
             map2RI = map1RI;
         } else {
-            map2RI = inMap2.getRenderedImage();
+            map2RI = inRaster2.getRenderedImage();
         }
 
-        outCb = new CoupledFieldsMoments().process(map1RI, map2RI, pBins, pFirst, pLast, pm,
-                binmode);
+        outCb = new CoupledFieldsMoments().process(map1RI, map2RI, pBins, pFirst, pLast, pm, binmode);
 
     }
 

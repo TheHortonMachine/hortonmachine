@@ -59,12 +59,12 @@ public class TestLineSmootherMcMaster extends HMTestCase {
         newCollection.add(feature);
 
         LineSmootherMcMaster smoother = new LineSmootherMcMaster();
-        smoother.linesFeatures = newCollection;
+        smoother.inVector = newCollection;
         smoother.pLookahead = 3;
         smoother.pSlide = 0.9;
         smoother.pDensify = 0.9;
         smoother.process();
-        SimpleFeatureCollection outFeatures = smoother.outFeatures;
+        SimpleFeatureCollection outFeatures = smoother.outVector;
 
         List<Geometry> geomList = FeatureUtilities.featureCollectionToGeometriesList(outFeatures);
         Geometry geometry = geomList.get(0);

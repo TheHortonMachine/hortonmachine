@@ -76,7 +76,7 @@ public class Tca3d extends JGTModel {
 
     @Description("The map of total contributing areas 3d.")
     @Out
-    public GridCoverage2D outTca3d = null;
+    public GridCoverage2D outTca = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -91,7 +91,7 @@ public class Tca3d extends JGTModel {
      */
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outTca3d == null, doReset)) {
+        if (!concatOr(outTca == null, doReset)) {
             return;
         }
 
@@ -110,7 +110,7 @@ public class Tca3d extends JGTModel {
         WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
         tca3dWR = area3d(pitWR, flowWR, tca3dWR);
-        outTca3d = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
+        outTca = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
                 inPit.getCoordinateReferenceSystem());
 
     }

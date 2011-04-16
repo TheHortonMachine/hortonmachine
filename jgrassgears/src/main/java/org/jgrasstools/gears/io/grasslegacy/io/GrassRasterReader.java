@@ -1055,7 +1055,7 @@ public class GrassRasterReader extends MapReader {
      * 
      * @param rn
      * @param adrows
-     * @param file
+     * @param outFile
      * @param typeBytes
      * @return the ByteBuffer containing the data
      * @throws IOException
@@ -1095,7 +1095,7 @@ public class GrassRasterReader extends MapReader {
      * read a row of data from an uncompressed floating point map
      * 
      * @param rn
-     * @param file
+     * @param outFile
      * @param typeBytes
      * @return the ByteBuffer containing the data
      * @throws IOException
@@ -1114,7 +1114,7 @@ public class GrassRasterReader extends MapReader {
      * 
      * @param rn
      * @param adrows
-     * @param file
+     * @param outFile
      * @return the ByteBuffer containing the data
      * @throws IOException
      */

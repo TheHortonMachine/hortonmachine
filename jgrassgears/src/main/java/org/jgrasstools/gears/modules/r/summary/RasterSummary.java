@@ -60,7 +60,7 @@ public class RasterSummary extends JGTModel {
 
     @Description("The map to analize.")
     @In
-    public GridCoverage2D inMap;
+    public GridCoverage2D inRaster;
 
     @Description("The number of bins for the histogram (default = 100).")
     @In
@@ -103,7 +103,7 @@ public class RasterSummary extends JGTModel {
         if (!concatOr(outMin == null, doReset)) {
             return;
         }
-        RenderedImage inRI = inMap.getRenderedImage();
+        RenderedImage inRI = inRaster.getRenderedImage();
         ParameterBlockJAI pb = new ParameterBlockJAI("ZonalStats");
         pb.setSource("dataImage", inRI);
         // pb.setSource("zoneImage", null);

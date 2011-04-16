@@ -41,11 +41,11 @@ public class TestRangeLookup extends HMTestCase {
 
         RangeLookup range = new RangeLookup();
         range.pm = pm;
-        range.inGeodata = inCoverage;
+        range.inRaster = inCoverage;
         range.pRanges = "[0 90),[90 180),[180 270),[270 360)";
         range.pClasses = "1,2,3,4";
         range.process();
-        GridCoverage2D out = range.outGeodata;
+        GridCoverage2D out = range.outRaster;
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.rangeLookupOutData, 0);
     }
 

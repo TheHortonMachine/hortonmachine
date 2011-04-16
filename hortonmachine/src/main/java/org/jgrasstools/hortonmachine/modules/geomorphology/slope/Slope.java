@@ -59,13 +59,9 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.TESTED)
 @License("General Public License Version 3 (GPLv3)")
 public class Slope extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
-    // input
     @Description("The depitted elevation map.")
     @In
-    public GridCoverage2D inElev = null;
+    public GridCoverage2D inPit = null;
 
     @Description("The map of flowdirection.")
     @In
@@ -79,9 +75,6 @@ public class Slope extends JGTModel {
     @Out
     public GridCoverage2D outSlope = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
@@ -90,7 +83,7 @@ public class Slope extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
@@ -98,7 +91,7 @@ public class Slope extends JGTModel {
 
         int[][] DIR = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
-        RenderedImage elevationRI = inElev.getRenderedImage();
+        RenderedImage elevationRI = inPit.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         RenderedImage flowRI = inFlow.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
@@ -137,7 +130,7 @@ public class Slope extends JGTModel {
         }
         pm.done();
 
-        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inPit.getCoordinateReferenceSystem());
     }
 
 }

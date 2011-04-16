@@ -37,9 +37,9 @@ public class TestVectorMerger extends HMTestCase {
 
         VectorMerger filter = new VectorMerger();
         filter.pm = pm;
-        filter.inGeodata = Arrays.asList(testFC1, testFC2);
+        filter.inVectors = Arrays.asList(testFC1, testFC2);
         filter.process();
-        SimpleFeatureCollection outFC = filter.outGeodata;
+        SimpleFeatureCollection outFC = filter.outVector;
 
         assertTrue(outFC.size() == 6);
     }

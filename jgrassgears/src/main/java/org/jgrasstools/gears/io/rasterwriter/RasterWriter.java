@@ -73,7 +73,7 @@ import org.opengis.parameter.ParameterValueGroup;
 public class RasterWriter extends JGTModel {
     @Description("The raster map to write.")
     @In
-    public GridCoverage2D geodata = null;
+    public GridCoverage2D inRaster = null;
 
     @Description("The progress monitor.")
     @In
@@ -135,7 +135,7 @@ public class RasterWriter extends JGTModel {
         final ParameterValueGroup paramWrite = format.getWriteParameters();
         paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
         ArcGridWriter gtw = (ArcGridWriter) format.getWriter(new File(file));
-        gtw.write(geodata, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
+        gtw.write(inRaster, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
         gtw.dispose();
     }
 
@@ -147,7 +147,7 @@ public class RasterWriter extends JGTModel {
         final ParameterValueGroup paramWrite = format.getWriteParameters();
         paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
         GeoTiffWriter gtw = (GeoTiffWriter) format.getWriter(mapFile);
-        gtw.write(geodata, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
+        gtw.write(inRaster, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
     }
 
     private void writeGrass( File mapFile ) throws Exception {
@@ -156,7 +156,7 @@ public class RasterWriter extends JGTModel {
         GeneralParameterValue[] readParams = null;
         JGrassRegion jGrassRegion = null;
         boolean doLarge = false;
-        if (geodata instanceof GrassLegacyGridCoverage2D) {
+        if (inRaster instanceof GrassLegacyGridCoverage2D) {
             doLarge = true;
         }
         // if (doActive) {
@@ -173,10 +173,10 @@ public class RasterWriter extends JGTModel {
         if (!doLarge) {
             GrassCoverageFormat format = new GrassCoverageFormatFactory().createFormat();
             GrassCoverageWriter writer = format.getWriter(mapEnvironment.getCELL(), null);
-            writer.write(geodata, readParams);
+            writer.write(inRaster, readParams);
             writer.dispose();
         } else {
-            GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) geodata;
+            GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) inRaster;
             GrassLegacyWriter writer = new GrassLegacyWriter();
             writer.geodata = gd2.getData();
             writer.file = file;
@@ -188,7 +188,7 @@ public class RasterWriter extends JGTModel {
 
     public static void writeRaster( String path, GridCoverage2D coverage ) throws Exception {
         RasterWriter writer = new RasterWriter();
-        writer.geodata = coverage;
+        writer.inRaster = coverage;
         writer.file = path;
         writer.process();
     }

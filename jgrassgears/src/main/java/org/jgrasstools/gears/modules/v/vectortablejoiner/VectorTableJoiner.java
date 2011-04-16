@@ -54,7 +54,7 @@ public class VectorTableJoiner extends JGTModel {
 
     @Description("The vector to extend.")
     @In
-    public SimpleFeatureCollection inFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The dbf tabledata to merge in.")
     @In
@@ -74,11 +74,11 @@ public class VectorTableJoiner extends JGTModel {
 
     @Description("The joined vector.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
@@ -100,13 +100,13 @@ public class VectorTableJoiner extends JGTModel {
 
         List<Object> commonAttributeList = tabledata.get(tableField);
 
-        FeatureExtender fExt = new FeatureExtender(inFeatures.getSchema(), fields, classes);
+        FeatureExtender fExt = new FeatureExtender(inVector.getSchema(), fields, classes);
 
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
-        int size = inFeatures.size();
+        int size = inVector.size();
         pm.beginTask("Merging data...", size);
-        FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
+        FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
 
@@ -132,7 +132,7 @@ public class VectorTableJoiner extends JGTModel {
 
             SimpleFeature newFeature = fExt.extendFeature(feature, newAttributes);
 
-            outFeatures.add(newFeature);
+            outVector.add(newFeature);
             pm.worked(1);
         }
         pm.done();

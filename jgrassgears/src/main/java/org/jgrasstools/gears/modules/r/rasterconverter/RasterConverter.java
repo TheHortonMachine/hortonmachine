@@ -44,16 +44,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 public class RasterConverter extends JGTModel {
     @Description("The input raster.")
     @In
-    public GridCoverage2D inGeodata;
+    public GridCoverage2D inRaster;
 
     @Description("The output raster.")
     @Out
-    public GridCoverage2D outGeodata;
+    public GridCoverage2D outRaster;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inGeodata);
-        outGeodata = inGeodata;
+        checkNull(inRaster);
+        outRaster = inRaster;
     }
 
 }

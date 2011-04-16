@@ -81,10 +81,6 @@ public class Insolation extends JGTModel {
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of total insolation.")
-    @Out
-    public GridCoverage2D outIns;
-
     @Description("The first day of the simulation.")
     @In
     public String tStartDate = null;
@@ -96,6 +92,10 @@ public class Insolation extends JGTModel {
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
+
+    @Description("The map of total insolation.")
+    @Out
+    public GridCoverage2D outIns;
 
     private static final double pCmO3 = 0.3;
 

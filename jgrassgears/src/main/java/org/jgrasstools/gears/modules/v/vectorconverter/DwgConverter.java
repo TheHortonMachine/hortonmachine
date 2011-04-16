@@ -66,33 +66,33 @@ public class DwgConverter extends JGTModel {
 
     @Description("The output point vector.")
     @Out
-    public SimpleFeatureCollection pointsFC = null;
+    public SimpleFeatureCollection pointsVector = null;
 
     @Description("The output line vector.")
     @Out
-    public SimpleFeatureCollection lineFC = null;
+    public SimpleFeatureCollection lineVector = null;
 
     @Description("The output polygon vector.")
     @Out
-    public SimpleFeatureCollection polygonFC = null;
+    public SimpleFeatureCollection polygonVector = null;
 
     @Description("The output text vector.")
     @Out
-    public SimpleFeatureCollection textFC;
+    public SimpleFeatureCollection textVector;
 
     @Description("The output attributes vector.")
     @Out
-    public SimpleFeatureCollection attributesFC;
+    public SimpleFeatureCollection attributesVector;
 
     @Description("The output contour vector.")
     @Out
-    public SimpleFeatureCollection contourFC;
+    public SimpleFeatureCollection contourVector;
 
     private CoordinateReferenceSystem crs;
 
     @Execute
     public void readFeatureCollection() throws Exception {
-        if (!concatOr(pointsFC == null, lineFC == null, polygonFC == null, doReset)) {
+        if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
             return;
         }
 
@@ -118,12 +118,12 @@ public class DwgConverter extends JGTModel {
         dataHandler.getLayerTypes();
         DwgReader dwgReader = dataHandler.getDwgReader();
 
-        textFC = dwgReader.getTextFeatures();
-        attributesFC = dwgReader.getAttributesFeatures();
-        contourFC = dwgReader.getContourFeatures();
-        pointsFC = dwgReader.getMultiPointFeatures();
-        lineFC = dwgReader.getMultiLineFeatures();
-        polygonFC = dwgReader.getMultiPolygonFeatures();
+        textVector = dwgReader.getTextFeatures();
+        attributesVector = dwgReader.getAttributesFeatures();
+        contourVector = dwgReader.getContourFeatures();
+        pointsVector = dwgReader.getMultiPointFeatures();
+        lineVector = dwgReader.getMultiLineFeatures();
+        polygonVector = dwgReader.getMultiPolygonFeatures();
 
     }
 

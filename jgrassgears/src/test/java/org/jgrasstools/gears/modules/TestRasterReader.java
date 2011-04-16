@@ -50,7 +50,7 @@ public class TestRasterReader extends HMTestCase {
         reader.fileNovalue = -9999.0;
         reader.geodataNovalue = Double.NaN;
         reader.process();
-        GridCoverage2D readCoverage = reader.geodata;
+        GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
         reader = new RasterReader();
@@ -58,7 +58,7 @@ public class TestRasterReader extends HMTestCase {
         reader.fileNovalue = -9999.0;
         reader.geodataNovalue = Double.NaN;
         reader.process();
-        readCoverage = reader.geodata;
+        readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
     }
 
@@ -87,7 +87,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pXres = xres;
         reader.pYres = yres;
         reader.process();
-        GridCoverage2D readCoverage = reader.geodata;
+        GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
         reader = new RasterReader();
@@ -99,7 +99,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pXres = xres;
         reader.pYres = yres;
         reader.process();
-        readCoverage = reader.geodata;
+        readCoverage = reader.outRaster;
 
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
@@ -125,7 +125,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.file = arcPath;
         reader.process();
-        GridCoverage2D readCoverage = reader.geodata;
+        GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
 
         reader = new RasterReader();
@@ -133,7 +133,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.file = grassPath;
         reader.process();
-        readCoverage = reader.geodata;
+        readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData2);
     }
 
@@ -168,7 +168,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pXres = xres;
         reader.pYres = yres;
         reader.process();
-        GridCoverage2D readCoverage = reader.geodata;
+        GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
 
         reader = new RasterReader();
@@ -180,7 +180,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pXres = xres;
         reader.pYres = yres;
         reader.process();
-        readCoverage = reader.geodata;
+        readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData2);
     }
 }

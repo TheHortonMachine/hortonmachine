@@ -67,7 +67,7 @@ public class LineSmootherMcMaster extends JGTModel {
 
     @Description("The vector containing the lines to be smoothed.")
     @In
-    public SimpleFeatureCollection linesFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The number of points to consider in every smoothing step (default = 7).")
     @In
@@ -95,7 +95,7 @@ public class LineSmootherMcMaster extends JGTModel {
 
     @Description("The vector with smoothed features.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     private static final double SAMEPOINTTHRESHOLD = 0.1;
     private GeometryFactory gF = GeometryUtilities.gf();
@@ -107,7 +107,7 @@ public class LineSmootherMcMaster extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
@@ -118,13 +118,13 @@ public class LineSmootherMcMaster extends JGTModel {
             simplify = pSimplify;
         }
 
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
         int id = 0;
         pm.message("Collecting geometries...");
-        linesList = FeatureUtilities.featureCollectionToList(linesFeatures);
-        int size = linesFeatures.size();
-        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(linesFeatures.getSchema());
+        linesList = FeatureUtilities.featureCollectionToList(inVector);
+        int size = inVector.size();
+        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
         pm.beginTask("Smoothing features...", size);
         for( SimpleFeature line : linesList ) {
             Geometry geometry = (Geometry) line.getDefaultGeometry();
@@ -133,7 +133,7 @@ public class LineSmootherMcMaster extends JGTModel {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
-                outFeatures.add(newFeature);
+                outVector.add(newFeature);
                 id++;
             }
             pm.worked(1);
@@ -241,14 +241,14 @@ public class LineSmootherMcMaster extends JGTModel {
         LineSmootherMcMaster smoother = new LineSmootherMcMaster();
         smoother.pm = pm;
         smoother.pLimit = 10;
-        smoother.linesFeatures = initialFC;
+        smoother.inVector = initialFC;
         smoother.pLookahead = 13;
         // smoother.pSlide = 1;
         smoother.pDensify = 0.2;
         smoother.pSimplify = 0.01;
         smoother.process();
 
-        SimpleFeatureCollection smoothedFeatures = smoother.outFeatures;
+        SimpleFeatureCollection smoothedFeatures = smoother.outVector;
 
         ShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures);
     }

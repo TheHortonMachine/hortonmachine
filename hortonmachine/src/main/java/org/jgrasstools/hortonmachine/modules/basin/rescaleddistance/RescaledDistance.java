@@ -73,7 +73,6 @@ public class RescaledDistance extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Role(Role.PARAMETER)
     @Description("Ratio between the velocity in the channel and in the hillslope.")
     @In
     public double pRatio = 0;

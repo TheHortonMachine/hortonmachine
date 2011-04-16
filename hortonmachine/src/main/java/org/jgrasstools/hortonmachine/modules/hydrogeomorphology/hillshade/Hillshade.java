@@ -70,10 +70,6 @@ public class Hillshade extends JGTModel {
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of hillshade.")
-    @Out
-    public GridCoverage2D outHill;
-
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -89,6 +85,10 @@ public class Hillshade extends JGTModel {
     @Description("The sun elevation (default is 90).")
     @In
     public double pElev = 90;
+
+    @Description("The map of hillshade.")
+    @Out
+    public GridCoverage2D outHill;
 
     private final static double doubleNoValue = JGTConstants.doubleNovalue;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();

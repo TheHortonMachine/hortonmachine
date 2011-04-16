@@ -56,11 +56,11 @@ public class TestVectorFieldRounder extends HMTestCase {
         newCollection.add(feature);
 
         VectorFieldRounder rounder = new VectorFieldRounder();
-        rounder.inFeatures = newCollection;
+        rounder.inVector = newCollection;
         rounder.fRound = "area";
         rounder.pPattern = ".##";
         rounder.process();
-        SimpleFeatureCollection outFeatures = rounder.outFeatures;
+        SimpleFeatureCollection outFeatures = rounder.outVector;
 
         SimpleFeature f = FeatureUtilities.featureCollectionToList(outFeatures).get(0);
         String areaStr = f.getAttribute("area").toString();

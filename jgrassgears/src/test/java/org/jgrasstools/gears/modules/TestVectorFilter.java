@@ -34,10 +34,10 @@ public class TestVectorFilter extends HMTestCase {
     public void testVectorFilter() throws Exception {
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
         VectorFilter filter = new VectorFilter();
-        filter.inFeatures = testFC;
+        filter.inVector = testFC;
         filter.pCql = "cat > 2";
         filter.process();
-        SimpleFeatureCollection outFC = filter.outFeatures;
+        SimpleFeatureCollection outFC = filter.outVector;
 
         assertTrue(outFC.size() == 1);
 

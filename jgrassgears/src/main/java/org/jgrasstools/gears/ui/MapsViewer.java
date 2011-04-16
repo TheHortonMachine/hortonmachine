@@ -79,19 +79,19 @@ import org.opengis.filter.expression.Expression;
 public class MapsViewer {
     @Description("The rasters to visualize.")
     @In
-    public GridCoverage2D[] coverages = new GridCoverage2D[0];
+    public GridCoverage2D[] inRasters = new GridCoverage2D[0];
 
     @Description("The raster to visualize.")
     @In
-    public GridCoverage2D coverage = null;
+    public GridCoverage2D inRaster = null;
 
     @Description("The feature collections to visualize.")
     @In
-    public SimpleFeatureCollection[] featureCollections = new SimpleFeatureCollection[0];
+    public SimpleFeatureCollection[] inVectors = new SimpleFeatureCollection[0];
 
     @Description("The feature collection to visualize.")
     @In
-    public SimpleFeatureCollection featureCollection = null;
+    public SimpleFeatureCollection inVector = null;
 
     @Description("The feature collections style layer.")
     @In
@@ -110,13 +110,13 @@ public class MapsViewer {
 
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
 
-        if (coverage != null) {
-            coverages = new GridCoverage2D[]{coverage};
+        if (inRaster != null) {
+            inRasters = new GridCoverage2D[]{inRaster};
         }
         addCoverages(map, sb, rasterSym);
 
-        if (featureCollection != null) {
-            featureCollections = new SimpleFeatureCollection[]{featureCollection};
+        if (inVector != null) {
+            inVectors = new SimpleFeatureCollection[]{inVector};
             // does it have style
             if (inSld != null) {
                 File sldFile = new File(inSld);
@@ -155,7 +155,7 @@ public class MapsViewer {
     }
 
     private void addFeatureCollections( MapContext map ) {
-        for( SimpleFeatureCollection fc : featureCollections ) {
+        for( SimpleFeatureCollection fc : inVectors ) {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GEOMETRYTYPE type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
@@ -222,7 +222,7 @@ public class MapsViewer {
     private void addCoverages( final MapContext map, StyleBuilder sB, RasterSymbolizer rasterSym ) {
         ColorMap colorMap = sf.createColorMap();
 
-        for( GridCoverage2D coverage : coverages ) {
+        for( GridCoverage2D coverage : inRasters ) {
             RenderedImage renderedImage = coverage.getRenderedImage();
             double max = Double.NEGATIVE_INFINITY;
             double min = Double.POSITIVE_INFINITY;
@@ -285,10 +285,10 @@ public class MapsViewer {
             public void run() {
                 MapsViewer viewer = new MapsViewer();
                 if (raster != null) {
-                    viewer.coverages = new GridCoverage2D[]{raster};
+                    viewer.inRasters = new GridCoverage2D[]{raster};
                 }
                 if (vectors != null) {
-                    viewer.featureCollections = vectors;
+                    viewer.inVectors = vectors;
                 }
                 try {
                     viewer.displayMaps();

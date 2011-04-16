@@ -47,12 +47,12 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
 
         RasterCatToFeatureAttribute rc2fa = new RasterCatToFeatureAttribute();
         rc2fa.pm = pm;
-        rc2fa.inCoverage = elevationCoverage;
-        rc2fa.inFC = inFC;
+        rc2fa.inRaster = elevationCoverage;
+        rc2fa.inVector = inFC;
         rc2fa.fNew = "elev";
         rc2fa.process();
 
-        SimpleFeatureCollection outMap = rc2fa.outGeodata;
+        SimpleFeatureCollection outMap = rc2fa.outVector;
 
         FeatureIterator<SimpleFeature> features = outMap.features();
         while( features.hasNext() ) {

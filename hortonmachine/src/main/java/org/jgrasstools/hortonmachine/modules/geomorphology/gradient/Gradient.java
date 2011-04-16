@@ -61,10 +61,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Gradient extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
-    // input
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inElev = null;
@@ -85,9 +81,6 @@ public class Gradient extends JGTModel {
     @Out
     public GridCoverage2D outSlope = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private int nCols;

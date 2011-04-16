@@ -74,7 +74,7 @@ public class Vectorizer extends JGTModel {
 
     @Description("The raster that has to be converted.")
     @In
-    public GridCoverage2D inGeodata;
+    public GridCoverage2D inRaster;
 
     @Description("The value to use to trace the polygons. If it is null then all the value of the raster are used.")
     @In
@@ -94,17 +94,17 @@ public class Vectorizer extends JGTModel {
 
     @Description("The extracted vector.")
     @Out
-    public SimpleFeatureCollection outGeodata = null;
+    public SimpleFeatureCollection outVector = null;
 
     private CoordinateReferenceSystem crs;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        checkNull(inGeodata);
-        crs = inGeodata.getCoordinateReferenceSystem();
+        checkNull(inRaster);
+        crs = inRaster.getCoordinateReferenceSystem();
 
         String classes = null;
         StringBuilder sb = new StringBuilder();
@@ -127,22 +127,22 @@ public class Vectorizer extends JGTModel {
 
         // values are first classified, since the vectorializer works on same values
         RangeLookup cont = new RangeLookup();
-        cont.inGeodata = inGeodata;
+        cont.inRaster = inRaster;
         cont.pRanges = ranges;
         cont.pClasses = classes;
         cont.pm = pm;
         cont.process();
-        GridCoverage2D outCov = cont.outGeodata;
+        GridCoverage2D outCov = cont.outRaster;
 
         Map<String, Object> args = new HashMap<String, Object>();
         // args.put("outsideValues", Collections.singleton(0));
         Collection<Polygon> polygonsList = doVectorize(outCov.getRenderedImage(), args);
 
-        HashMap<String, Double> regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
+        HashMap<String, Double> regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         double xRes = regionParams.get(CoverageUtilities.XRES);
         double yRes = regionParams.get(CoverageUtilities.YRES);
 
-        final AffineTransform mt2D = (AffineTransform) inGeodata.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
+        final AffineTransform mt2D = (AffineTransform) inRaster.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
         final AffineTransformation jtsTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
                 mt2D.getTranslateX() - xRes / 2.0, mt2D.getShearY(), mt2D.getScaleY(), mt2D.getTranslateY() + yRes / 2.0);
 
@@ -154,7 +154,7 @@ public class Vectorizer extends JGTModel {
         b.add(fDefault, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
 
-        outGeodata = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
         int index = 0;
         for( Polygon polygon : polygonsList ) {
             double area = polygon.getArea();
@@ -173,7 +173,7 @@ public class Vectorizer extends JGTModel {
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
             index++;
-            outGeodata.add(feature);
+            outVector.add(feature);
         }
     }
 

@@ -52,7 +52,7 @@ public class TestBasinShape extends HMTestCase {
         GridCoverage2D basinsCoverage = CoverageUtilities.buildCoverage("basins", basinsData, envelopeParams, crs, true);
 
         BasinShape basin = new BasinShape();
-        basin.inPit = pitCoverage;
+        basin.inElev = pitCoverage;
         basin.inBasins = basinsCoverage;
         basin.pm = pm;
 

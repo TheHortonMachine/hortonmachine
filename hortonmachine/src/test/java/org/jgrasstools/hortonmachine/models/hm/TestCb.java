@@ -78,8 +78,8 @@ public class TestCb extends HMTestCase {
         cb.pBins = 100;
         cb.pFirst = 1;
         cb.pLast = 1;
-        cb.inMap1 = map1;
-        cb.inMap2 = map2;
+        cb.inRaster1 = map1;
+        cb.inRaster2 = map2;
         cb.pm = pm;
 
         cb.process();

@@ -65,21 +65,21 @@ public class DxfConverter extends JGTModel {
 
     @Description("The output point vector.")
     @Out
-    public SimpleFeatureCollection pointsFC = null;
+    public SimpleFeatureCollection pointsVector = null;
 
     @Description("The output lines vector.")
     @Out
-    public SimpleFeatureCollection lineFC = null;
+    public SimpleFeatureCollection lineVector = null;
 
     @Description("The output polygons vector.")
     @Out
-    public SimpleFeatureCollection polygonFC = null;
+    public SimpleFeatureCollection polygonVector = null;
 
     private CoordinateReferenceSystem crs;
 
     @Execute
     public void readFeatureCollection() throws Exception {
-        if (!concatOr(pointsFC == null, lineFC == null, polygonFC == null, doReset)) {
+        if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
             return;
         }
 
@@ -103,9 +103,9 @@ public class DxfConverter extends JGTModel {
 
         DxfFile dxf = DxfFile.createFromFile(dxfFile, crs);
 
-        pointsFC = dxf.getPoints();
-        lineFC = dxf.getLines();
-        polygonFC = dxf.getPolygons();
+        pointsVector = dxf.getPoints();
+        lineVector = dxf.getLines();
+        polygonVector = dxf.getPolygons();
 
     }
 

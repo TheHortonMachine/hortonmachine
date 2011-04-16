@@ -125,7 +125,7 @@ public class CoverageLister extends JGTModel {
             reader.pCols = pCols;
             reader.process();
 
-            outGC.add(reader.geodata);
+            outGC.add(reader.outRaster);
         }
 
     }

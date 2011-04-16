@@ -67,11 +67,11 @@ public class VectorReader extends JGTModel {
 
     @Description("The read feature collection.")
     @Out
-    public SimpleFeatureCollection geodata = null;
+    public SimpleFeatureCollection outVector = null;
 
     @Execute
     public void process() throws IOException {
-        if (!concatOr(geodata == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
@@ -80,7 +80,7 @@ public class VectorReader extends JGTModel {
         File vectorFile = new File(file);
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp")) {
-            geodata = ShapefileFeatureReader.readShapefile(vectorFile.getAbsolutePath());
+            outVector = ShapefileFeatureReader.readShapefile(vectorFile.getAbsolutePath());
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
@@ -99,7 +99,7 @@ public class VectorReader extends JGTModel {
         reader.file = path;
         reader.process();
 
-        return reader.geodata;
+        return reader.outVector;
     }
 
 }

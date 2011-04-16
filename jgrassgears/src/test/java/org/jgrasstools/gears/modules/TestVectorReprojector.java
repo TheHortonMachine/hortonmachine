@@ -45,7 +45,7 @@ public class TestVectorReprojector extends HMTestCase {
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         VectorReprojector reprojector = new VectorReprojector();
-        reprojector.inGeodata = testFC;
+        reprojector.inVector = testFC;
         reprojector.pCode = "EPSG:4326";
         reprojector.pm = pm;
         reprojector.process();
@@ -55,7 +55,7 @@ public class TestVectorReprojector extends HMTestCase {
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
 
-        SimpleFeatureCollection outFC = reprojector.outGeodata;
+        SimpleFeatureCollection outFC = reprojector.outVector;
         FeatureIterator<SimpleFeature> featureIterator = outFC.features();
         SimpleFeatureIterator originalFeatureIterator = testFC.features();
         while( featureIterator.hasNext() ) {

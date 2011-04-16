@@ -70,7 +70,7 @@ public class Mosaic extends JGTModel {
 
     @Description("The list of maps that have to be patched (used if inGeodata is null).")
     @In
-    public List<File> inGeodataFiles;
+    public List<File> inFiles;
 
     @Description("The interpolation type to use: nearest neightbour (0-default), bilinear (1), bicubic (2)")
     @In
@@ -82,21 +82,21 @@ public class Mosaic extends JGTModel {
 
     @Description("The patched map.")
     @Out
-    public GridCoverage2D outGeodata = null;
+    public GridCoverage2D outRaster = null;
 
     private CoordinateReferenceSystem crs;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
 
-        if (inGeodataFiles == null) {
+        if (inFiles == null) {
             throw new ModelsIllegalargumentException("No input data have been provided.", this);
         }
 
-        if (inGeodataFiles != null && inGeodataFiles.size() < 2) {
+        if (inFiles != null && inFiles.size() < 2) {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
         }
 
@@ -111,8 +111,8 @@ public class Mosaic extends JGTModel {
         int ep = Integer.MIN_VALUE;
         int wp = Integer.MAX_VALUE;
 
-        pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
-        for( File coverageFile : inGeodataFiles ) {
+        pm.beginTask("Calculating final bounds...", inFiles.size());
+        for( File coverageFile : inFiles ) {
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
             // pm.message(MessageFormat.format("Reading map: {0} with crs: {1}",
             // coverageFile.getAbsolutePath(),
@@ -167,7 +167,7 @@ public class Mosaic extends JGTModel {
         int offestX = Math.abs(wp);
         int offestY = Math.abs(sp);
         int index = 1;
-        for( File coverageFile : inGeodataFiles ) {
+        for( File coverageFile : inFiles ) {
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
 
             RenderedImage renderedImage = coverage.getRenderedImage();
@@ -202,7 +202,7 @@ public class Mosaic extends JGTModel {
         envelopeParams.put(WEST, w);
         envelopeParams.put(EAST, e);
 
-        outGeodata = CoverageUtilities.buildCoverage("patch", outputWR, envelopeParams, crs); //$NON-NLS-1$
+        outRaster = CoverageUtilities.buildCoverage("patch", outputWR, envelopeParams, crs); //$NON-NLS-1$
 
     }
 

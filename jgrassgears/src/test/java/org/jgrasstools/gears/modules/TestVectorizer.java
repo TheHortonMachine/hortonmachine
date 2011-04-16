@@ -46,13 +46,13 @@ public class TestVectorizer extends HMTestCase {
 
         Vectorizer vectorizer = new Vectorizer();
         vectorizer.pm = pm;
-        vectorizer.inGeodata = inCoverage;
+        vectorizer.inRaster = inCoverage;
         vectorizer.pValue = 2.0;
         vectorizer.pThres = 1;
         vectorizer.fDefault = "rast";
         vectorizer.process();
 
-        SimpleFeatureCollection outGeodata = vectorizer.outGeodata;
+        SimpleFeatureCollection outGeodata = vectorizer.outVector;
         assertEquals(1, outGeodata.size());
 
         SimpleFeatureIterator featureIterator = outGeodata.features();

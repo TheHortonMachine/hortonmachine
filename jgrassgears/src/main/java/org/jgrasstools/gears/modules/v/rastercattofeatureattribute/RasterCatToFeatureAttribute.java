@@ -72,11 +72,11 @@ public class RasterCatToFeatureAttribute extends JGTModel{
 
     @Description("The raster on which to map the vector features.")
     @In
-    public GridCoverage2D inCoverage;
+    public GridCoverage2D inRaster;
 
     @Description("The vector to use for the geometric mapping.")
     @In
-    public SimpleFeatureCollection inFC = null;
+    public SimpleFeatureCollection inVector = null;
 
     @Description("The name for the new field to create.")
     @In
@@ -92,7 +92,7 @@ public class RasterCatToFeatureAttribute extends JGTModel{
 
     @Description("The extended vector.")
     @Out
-    public SimpleFeatureCollection outGeodata = null;
+    public SimpleFeatureCollection outVector = null;
 
     private static final String MIDDLE = "middle";
     private static final String START = "start";
@@ -105,7 +105,7 @@ public class RasterCatToFeatureAttribute extends JGTModel{
     @Execute
     public void process() throws Exception {
         if (inIter == null) {
-            RenderedImage inputRI = inCoverage.getRenderedImage();
+            RenderedImage inputRI = inRaster.getRenderedImage();
             inIter = RandomIterFactory.create(inputRI, null);
 
             // HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inCoverage);
@@ -114,21 +114,21 @@ public class RasterCatToFeatureAttribute extends JGTModel{
             // xRes = regionMap.get(XRES);
             // yRes = regionMap.get(YRES);
 
-            gridGeometry = inCoverage.getGridGeometry();
+            gridGeometry = inRaster.getGridGeometry();
             // GridSampleDimension[] sampleDimensions = inCoverage.getSampleDimensions();
             // double[] noDataValues = sampleDimensions[0].getNoDataValues();
             // System.out.println(noDataValues);
         }
 
-        SimpleFeatureType featureType = inFC.getSchema();
+        SimpleFeatureType featureType = inVector.getSchema();
 
         FeatureExtender fExt = new FeatureExtender(featureType, new String[]{fNew},
                 new Class< ? >[]{Double.class});
 
-        Envelope2D inCoverageEnvelope = inCoverage.getEnvelope2D();
-        outGeodata = FeatureCollections.newCollection();
-        FeatureIterator<SimpleFeature> featureIterator = inFC.features();
-        int all = inFC.size();
+        Envelope2D inCoverageEnvelope = inRaster.getEnvelope2D();
+        outVector = FeatureCollections.newCollection();
+        FeatureIterator<SimpleFeature> featureIterator = inVector.features();
+        int all = inVector.size();
         pm.beginTask("Extracting raster information...", all);
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
@@ -175,7 +175,7 @@ public class RasterCatToFeatureAttribute extends JGTModel{
 
             SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
 
-            outGeodata.add(extendedFeature);
+            outVector.add(extendedFeature);
             pm.worked(1);
         }
         featureIterator.close();

@@ -36,8 +36,8 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -56,7 +56,7 @@ public class VectorTransformer extends JGTModel {
 
     @Description("The feature collection that has to be transformed.")
     @In
-    public SimpleFeatureCollection inGeodata;
+    public SimpleFeatureCollection inVector;
 
     @Description("The translation along the X axis.")
     @In
@@ -72,22 +72,22 @@ public class VectorTransformer extends JGTModel {
 
     @Description("The reprojected feature collection.")
     @Out
-    public SimpleFeatureCollection outGeodata = null;
+    public SimpleFeatureCollection outVector = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
-        outGeodata = FeatureCollections.newCollection();
-        SimpleFeatureType featureType = inGeodata.getSchema();
+        outVector = FeatureCollections.newCollection();
+        SimpleFeatureType featureType = inVector.getSchema();
 
         FeatureGeometrySubstitutor substitutor = new FeatureGeometrySubstitutor(featureType);
 
-        FeatureIterator<SimpleFeature> inFeatureIterator = inGeodata.features();
+        FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
         int id = 0;
-        pm.beginTask("Transforming geometries...", inGeodata.size());
+        pm.beginTask("Transforming geometries...", inVector.size());
         while( inFeatureIterator.hasNext() ) {
             // copy the contents of each feature and transform the geometry
             SimpleFeature feature = inFeatureIterator.next();
@@ -104,7 +104,7 @@ public class VectorTransformer extends JGTModel {
             Geometry transformedGeometry = JTS.transform(geometry, transform);
 
             SimpleFeature newFeature = substitutor.substituteGeometry(feature, transformedGeometry);
-            outGeodata.add(newFeature);
+            outVector.add(newFeature);
             pm.worked(1);
         }
         inFeatureIterator.close();

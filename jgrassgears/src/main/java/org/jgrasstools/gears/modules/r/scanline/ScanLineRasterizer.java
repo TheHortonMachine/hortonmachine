@@ -79,7 +79,7 @@ public class ScanLineRasterizer extends JGTModel {
 
     @Description("The vector to rasterize.")
     @In
-    public SimpleFeatureCollection inGeodata = null;
+    public SimpleFeatureCollection inVector = null;
 
     @Description("The value to use as raster value if no field is given.")
     @In
@@ -125,7 +125,7 @@ public class ScanLineRasterizer extends JGTModel {
 
     @Description("The output raster.")
     @Out
-    public GridCoverage2D outGeodata;
+    public GridCoverage2D outRaster;
 
     private WritableRaster outWR;
 
@@ -141,12 +141,12 @@ public class ScanLineRasterizer extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inGeodata);
+        checkNull(inVector);
         if (pValue == null && fCat == null) {
             throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
         }
 
-        SimpleFeatureType schema = inGeodata.getSchema();
+        SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         GridGeometry2D pGrid = gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
         if (outWR == null) {
@@ -164,13 +164,13 @@ public class ScanLineRasterizer extends JGTModel {
         } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
-            rasterizepolygon(inGeodata, outWR, pGrid);
+            rasterizepolygon(inVector, outWR, pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
                     .getSimpleName());
         }
 
-        outGeodata = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inGeodata.getSchema()
+        outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inVector.getSchema()
                 .getCoordinateReferenceSystem());
 
     }
@@ -180,9 +180,9 @@ public class ScanLineRasterizer extends JGTModel {
         int w = rasterized.getWidth();
         int h = rasterized.getHeight();
 
-        int size = inGeodata.size();
+        int size = inVector.size();
         pm.beginTask("Rasterizing features...", size);
-        FeatureIterator<SimpleFeature> featureIterator = inGeodata.features();
+        FeatureIterator<SimpleFeature> featureIterator = inVector.features();
 
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();

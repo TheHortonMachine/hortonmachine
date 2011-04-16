@@ -61,7 +61,7 @@ public class VectorSimplifier extends JGTModel {
 
     @Description("The vector to be simplified.")
     @In
-    public SimpleFeatureCollection inFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The simplification type: TopologyPreservingSimplifier = 0, Douglas Peucker = 1 (default = 0).")
     @In
@@ -77,23 +77,23 @@ public class VectorSimplifier extends JGTModel {
 
     @Description("The simplified vector.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     private GeometryFactory gF = GeometryUtilities.gf();
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
+        FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
 
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
-        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inFeatures.getSchema());
+        FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
 
         int id = 0;
-        int size = inFeatures.size();
+        int size = inVector.size();
         pm.beginTask("Simplifing features...", size);
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
@@ -135,7 +135,7 @@ public class VectorSimplifier extends JGTModel {
             SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry);
             id++;
 
-            outFeatures.add(newFeature);
+            outVector.add(newFeature);
             pm.worked(1);
         }
         pm.done();

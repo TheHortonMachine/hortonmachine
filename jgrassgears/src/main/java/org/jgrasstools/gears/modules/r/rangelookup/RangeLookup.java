@@ -58,7 +58,7 @@ public class RangeLookup extends JGTModel {
 
     @Description("The raster that has to be processed.")
     @In
-    public GridCoverage2D inGeodata;
+    public GridCoverage2D inRaster;
 
     @Description("The ranges in the form [r1l r1h),[r2l r2h]")
     @In
@@ -74,18 +74,18 @@ public class RangeLookup extends JGTModel {
 
     @Description("The processed raster.")
     @Out
-    public GridCoverage2D outGeodata = null;
+    public GridCoverage2D outRaster = null;
 
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
 
-        checkNull(inGeodata, pRanges, pClasses);
+        checkNull(inRaster, pRanges, pClasses);
 
-        RenderedImage inRI = inGeodata.getRenderedImage();
+        RenderedImage inRI = inRaster.getRenderedImage();
 
         RangeLookupTable<Double, Double> table = new RangeLookupTable<Double, Double>(JGTConstants.doubleNovalue);
 
@@ -132,8 +132,8 @@ public class RangeLookup extends JGTModel {
         pb.setParameter("table", table);
         RenderedImage lookupImg = JAI.create("RangeLookup", pb);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
-        outGeodata = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap,
-                inGeodata.getCoordinateReferenceSystem());
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap,
+                inRaster.getCoordinateReferenceSystem());
     }
 }

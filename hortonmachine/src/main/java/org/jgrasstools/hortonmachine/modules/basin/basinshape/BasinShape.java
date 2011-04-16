@@ -77,9 +77,9 @@ import com.vividsolutions.jts.geom.Polygon;
 @License("General Public License Version 3 (GPLv3)")
 public class BasinShape extends JGTModel {
 
-    @Description("The depitted elevation map.")
+    @Description("The elevation map.")
     @In
-    public GridCoverage2D inPit = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The map of the numbered basins.")
     @In
@@ -113,8 +113,8 @@ public class BasinShape extends JGTModel {
 
         RenderedImage basinsRI = inBasins.getRenderedImage();
         RenderedImage pitRI = null;
-        if (inPit != null)
-            pitRI = inPit.getRenderedImage();
+        if (inElev != null)
+            pitRI = inElev.getRenderedImage();
 
         int[] nstream = new int[1];
         // nstream[0] = 1508;
@@ -243,7 +243,7 @@ public class BasinShape extends JGTModel {
                 // extract the feature polygon of that basin number
                 Vectorizer vectorizer = new Vectorizer();
                 try {
-                    vectorizer.inGeodata = inBasins;
+                    vectorizer.inRaster = inBasins;
                     vectorizer.pm = pm;
                     vectorizer.doReset = true;
                     vectorizer.pValue = (double) num;
@@ -253,7 +253,7 @@ public class BasinShape extends JGTModel {
                     continue;
                 }
 
-                SimpleFeatureCollection outGeodata = vectorizer.outGeodata;
+                SimpleFeatureCollection outGeodata = vectorizer.outVector;
                 FeatureIterator<SimpleFeature> outGeodataIterator = outGeodata.features();
                 List<Polygon> polygons = new ArrayList<Polygon>();
                 while( outGeodataIterator.hasNext() ) {

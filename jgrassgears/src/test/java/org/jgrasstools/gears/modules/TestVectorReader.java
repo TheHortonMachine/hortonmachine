@@ -53,14 +53,14 @@ public class TestVectorReader extends HMTestCase {
         }
         VectorWriter writer = new VectorWriter();
         writer.file = tmpShape.getAbsolutePath();
-        writer.geodata = newCollection;
+        writer.inVector = newCollection;
         writer.process();
 
         // now read it again
         VectorReader reader = new VectorReader();
         reader.file = tmpShape.getAbsolutePath();
         reader.process();
-        SimpleFeatureCollection readFC = reader.geodata;
+        SimpleFeatureCollection readFC = reader.outVector;
 
         FeatureIterator<SimpleFeature> featureIterator = readFC.features();
         while( featureIterator.hasNext() ) {

@@ -52,7 +52,7 @@ public class VectorReprojector extends JGTModel {
 
     @Description("The vector that has to be reprojected.")
     @In
-    public SimpleFeatureCollection inGeodata;
+    public SimpleFeatureCollection inVector;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
@@ -78,11 +78,11 @@ public class VectorReprojector extends JGTModel {
 
     @Description("The output reprojected vector.")
     @Out
-    public SimpleFeatureCollection outGeodata = null;
+    public SimpleFeatureCollection outVector = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
@@ -95,13 +95,13 @@ public class VectorReprojector extends JGTModel {
         if (pForceCode != null) {
             pm.beginTask("Forcing input crs...", IJGTProgressMonitor.UNKNOWN);
             CoordinateReferenceSystem forcedCrs = CRS.decode(pForceCode);
-            inGeodata = new ForceCoordinateSystemFeatureResults(inGeodata, forcedCrs);
+            inVector = new ForceCoordinateSystemFeatureResults(inVector, forcedCrs);
             pm.done();
         }
 
         pm.beginTask("Reprojecting features...", IJGTProgressMonitor.UNKNOWN);
         try {
-            outGeodata = new ReprojectingFeatureCollection(inGeodata, targetCrs);
+            outVector = new ReprojectingFeatureCollection(inVector, targetCrs);
         } finally {
 
             pm.done();

@@ -58,7 +58,7 @@ public class CutOut extends JGTModel {
 
     @Description("The map that has to be processed.")
     @In
-    public GridCoverage2D inGeodata;
+    public GridCoverage2D inRaster;
 
     @Description("The map to use as mask.")
     @In
@@ -82,7 +82,7 @@ public class CutOut extends JGTModel {
 
     @Description("The processed map.")
     @Out
-    public GridCoverage2D outGeodata = null;
+    public GridCoverage2D outRaster = null;
 
     private RandomIter maskIter;
     private boolean doMax = false;
@@ -90,7 +90,7 @@ public class CutOut extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
 
@@ -106,11 +106,11 @@ public class CutOut extends JGTModel {
             doMin = true;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
-        RenderedImage geodataRI = inGeodata.getRenderedImage();
+        RenderedImage geodataRI = inRaster.getRenderedImage();
         RandomIter geodataIter = RandomIterFactory.create(geodataRI, null);
 
         if (inMask != null) {
@@ -155,7 +155,7 @@ public class CutOut extends JGTModel {
         }
         pm.done();
 
-        outGeodata = CoverageUtilities.buildCoverage("pitfiller", outWR, regionMap, inGeodata.getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverage("pitfiller", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
 
     }
 }

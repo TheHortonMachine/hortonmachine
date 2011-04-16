@@ -61,9 +61,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @License("General Public License Version 3 (GPLv3)")
 public class DrainDir extends JGTModel {
 
-    /*
-     * EXTERNAL VARIABLES
-     */
     @Description("The depitted elevation model.")
     @In
     public GridCoverage2D inPit = null;
@@ -98,9 +95,6 @@ public class DrainDir extends JGTModel {
     @Out
     public GridCoverage2D outTca = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private static final double PI = Math.PI;

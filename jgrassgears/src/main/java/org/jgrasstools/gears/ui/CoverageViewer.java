@@ -58,7 +58,7 @@ import org.opengis.filter.expression.Expression;
 public class CoverageViewer {
     @Description("The coverage to visualize.")
     @In
-    public GridCoverage2D coverage = null;
+    public GridCoverage2D raster = null;
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
@@ -72,7 +72,7 @@ public class CoverageViewer {
 
         ColorMap colorMap = sf.createColorMap();
 
-        RenderedImage renderedImage = coverage.getRenderedImage();
+        RenderedImage renderedImage = raster.getRenderedImage();
         double max = Double.NEGATIVE_INFINITY;
         double min = Double.POSITIVE_INFINITY;
         RectIter iter = RectIterFactory.create(renderedImage, null);
@@ -92,10 +92,10 @@ public class CoverageViewer {
         // red to blue
         Color fromColor = Color.blue;
         Color toColor = Color.red;
-        Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(),
-                fromColor.getGreen(), fromColor.getBlue(), 255));
-        Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor
-                .getGreen(), toColor.getBlue(), 255));
+        Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
+                .getBlue(), 255));
+        Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(),
+                255));
         Expression fromExpr = sB.literalExpression(min);
         Expression toExpr = sB.literalExpression(max);
 
@@ -116,7 +116,7 @@ public class CoverageViewer {
         // Set up a MapContext with the two layers
         final MapContext map = new DefaultMapContext();
         map.setTitle("Coverage Viewer");
-        map.addLayer(coverage, rasterStyle);
+        map.addLayer(raster, rasterStyle);
 
         // Create a JMapFrame with a menu to choose the display style for the
         final JMapFrame frame = new JMapFrame(map);

@@ -55,7 +55,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 public class VectorMerger extends JGTModel {
     @Description("The input vectors to be merged.")
     @In
-    public List<SimpleFeatureCollection> inGeodata;
+    public List<SimpleFeatureCollection> inVectors;
 
     @Description("The progress monitor.")
     @In
@@ -63,20 +63,20 @@ public class VectorMerger extends JGTModel {
 
     @Description("The output vector.")
     @Out
-    public SimpleFeatureCollection outGeodata;
+    public SimpleFeatureCollection outVector;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inGeodata);
+        checkNull(inVectors);
 
         SimpleFeatureType firstType = null;
 
         FeatureExtender fEx = null;
 
-        pm.beginTask("Merging features...", inGeodata.size());
+        pm.beginTask("Merging features...", inVectors.size());
         try {
-            outGeodata = FeatureCollections.newCollection();
-            for( SimpleFeatureCollection featureCollection : inGeodata ) {
+            outVector = FeatureCollections.newCollection();
+            for( SimpleFeatureCollection featureCollection : inVectors ) {
                 if (firstType == null) {
                     firstType = featureCollection.getSchema();
                     fEx = new FeatureExtender(firstType, new String[0], new Class< ? >[0]);
@@ -93,7 +93,7 @@ public class VectorMerger extends JGTModel {
 
                     SimpleFeature extendFeature = fEx.extendFeature(f, new Object[0]);
 
-                    outGeodata.add(extendFeature);
+                    outVector.add(extendFeature);
                 }
                 pm.worked(1);
             }

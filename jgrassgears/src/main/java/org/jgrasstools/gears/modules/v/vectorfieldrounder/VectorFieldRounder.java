@@ -52,7 +52,7 @@ public class VectorFieldRounder extends JGTModel {
 
     @Description("The vector of which to round a numeric value.")
     @In
-    public SimpleFeatureCollection inFeatures;
+    public SimpleFeatureCollection inVector;
 
     @Description("The double field of the number to round.")
     @In
@@ -66,15 +66,15 @@ public class VectorFieldRounder extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The modified vector file.")
+    @Description("The modified vector.")
     @Out
-    public SimpleFeatureCollection outFeatures;
+    public SimpleFeatureCollection outVector;
 
     private DecimalFormat formatter = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outFeatures == null, doReset)) {
+        if (!concatOr(outVector == null, doReset)) {
             return;
         }
 
@@ -82,11 +82,11 @@ public class VectorFieldRounder extends JGTModel {
 
         formatter = new DecimalFormat(pPattern);
 
-        outFeatures = FeatureCollections.newCollection();
+        outVector = FeatureCollections.newCollection();
 
-        int size = inFeatures.size();
+        int size = inVector.size();
         pm.beginTask("Rounding data...", size);
-        FeatureIterator<SimpleFeature> inFeatureIterator = inFeatures.features();
+        FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
         while( inFeatureIterator.hasNext() ) {
             SimpleFeature feature = inFeatureIterator.next();
 
@@ -99,7 +99,7 @@ public class VectorFieldRounder extends JGTModel {
                 feature.setAttribute(fRound, num);
             }
 
-            outFeatures.add(feature);
+            outVector.add(feature);
             pm.worked(1);
         }
         pm.done();

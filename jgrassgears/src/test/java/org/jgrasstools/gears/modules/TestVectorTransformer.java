@@ -56,11 +56,11 @@ public class TestVectorTransformer extends HMTestCase {
         newCollection.add(feature);
 
         VectorTransformer transformer = new VectorTransformer();
-        transformer.inGeodata = newCollection;
+        transformer.inVector = newCollection;
         transformer.pTransX = 1.0;
         transformer.pTransY = -1.0;
         transformer.process();
-        SimpleFeatureCollection outFeatures = transformer.outGeodata;
+        SimpleFeatureCollection outFeatures = transformer.outVector;
 
         Geometry g = FeatureUtilities.featureCollectionToGeometriesList(outFeatures).get(0);
         Coordinate coord = g.getCoordinate();

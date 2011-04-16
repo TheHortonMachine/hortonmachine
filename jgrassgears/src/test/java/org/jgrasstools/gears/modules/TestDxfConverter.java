@@ -43,8 +43,8 @@ public class TestDxfConverter extends HMTestCase {
         reader.file = dxfFile;
         reader.readFeatureCollection();
 
-        SimpleFeatureCollection pointsFC = reader.pointsFC;
-        SimpleFeatureCollection linesFC = reader.lineFC;
+        SimpleFeatureCollection pointsFC = reader.pointsVector;
+        SimpleFeatureCollection linesFC = reader.lineVector;
 
         assertTrue(pointsFC.size() == 0);
         assertTrue(linesFC.size() == 1);

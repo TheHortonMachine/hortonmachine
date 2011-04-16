@@ -50,7 +50,7 @@ public class RasterReprojector extends JGTModel {
 
     @Description("The raster that has to be reprojected.")
     @In
-    public GridCoverage2D inGeodata;
+    public GridCoverage2D inRaster;
 
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
@@ -63,11 +63,11 @@ public class RasterReprojector extends JGTModel {
 
     @Description("The reprojected output raster.")
     @Out
-    public GridCoverage2D outGeodata = null;
+    public GridCoverage2D outRaster = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outGeodata == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
 
@@ -85,7 +85,7 @@ public class RasterReprojector extends JGTModel {
             interpolationType = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         }
 
-        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, targetCrs, null,
+        outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null,
                 interpolationType);
 
     }

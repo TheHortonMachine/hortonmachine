@@ -46,11 +46,11 @@ public class TestMapcalc extends HMTestCase {
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
         Mapcalc mapcalc = new Mapcalc();
-        mapcalc.inMaps = maps;
+        mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{ele=read; dest=write;} dest=ele*2-ele + sqrt(ele)^2-exp(log(ele));";
         mapcalc.process();
 
-        GridCoverage2D outMap = mapcalc.outMap;
+        GridCoverage2D outMap = mapcalc.outRaster;
 
         RenderedImage renderedImage = outMap.getRenderedImage();
         // printImage(renderedImage);
@@ -67,12 +67,12 @@ public class TestMapcalc extends HMTestCase {
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
         Mapcalc mapcalc = new Mapcalc();
-        mapcalc.inMaps = maps;
+        mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{flow=read; dest=write;} dest = (flow+flow)/2;";
 
         mapcalc.process();
 
-        GridCoverage2D outMap = mapcalc.outMap;
+        GridCoverage2D outMap = mapcalc.outRaster;
         RenderedImage renderedImage = outMap.getRenderedImage();
         // printImage(renderedImage);
         checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
@@ -87,11 +87,11 @@ public class TestMapcalc extends HMTestCase {
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
         Mapcalc mapcalc = new Mapcalc();
-        mapcalc.inMaps = maps;
+        mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{ele=read; dest=write;} dest = xres()*yres();";
         mapcalc.process();
 
-        GridCoverage2D outMap = mapcalc.outMap;
+        GridCoverage2D outMap = mapcalc.outRaster;
 
         RenderedImage renderedImage = outMap.getRenderedImage();
         // printImage(renderedImage);

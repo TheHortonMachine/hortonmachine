@@ -56,10 +56,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Curvatures extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
-    // input
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inElev = null;
@@ -81,9 +77,6 @@ public class Curvatures extends JGTModel {
     @Out
     public GridCoverage2D outTang = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute

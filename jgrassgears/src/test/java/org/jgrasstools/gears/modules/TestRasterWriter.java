@@ -56,7 +56,7 @@ public class TestRasterWriter extends HMTestCase {
 
         try {
             RasterWriter writer = new RasterWriter();
-            writer.geodata = coverage;
+            writer.inRaster = coverage;
             writer.file = arcPath;
             writer.process();
 
@@ -65,11 +65,11 @@ public class TestRasterWriter extends HMTestCase {
             reader.fileNovalue = -9999.0;
             reader.geodataNovalue = Double.NaN;
             reader.process();
-            GridCoverage2D readCoverage = reader.geodata;
+            GridCoverage2D readCoverage = reader.outRaster;
             checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
             writer = new RasterWriter();
-            writer.geodata = coverage;
+            writer.inRaster = coverage;
             writer.file = grassPath;
             writer.process();
 
@@ -78,7 +78,7 @@ public class TestRasterWriter extends HMTestCase {
             reader.fileNovalue = -9999.0;
             reader.geodataNovalue = Double.NaN;
             reader.process();
-            readCoverage = reader.geodata;
+            readCoverage = reader.outRaster;
             checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
         } catch (Exception e) {
             e.printStackTrace();

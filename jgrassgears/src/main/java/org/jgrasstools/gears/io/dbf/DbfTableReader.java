@@ -56,11 +56,11 @@ public class DbfTableReader extends JGTModel {
 
     @Description("The read dbf table.")
     @Out
-    public HashMap<String, List<Object>> tabledata = null;
+    public HashMap<String, List<Object>> outTabledata = null;
 
     @Execute
     public void readTable() throws IOException {
-        if (!concatOr(tabledata == null, doReset)) {
+        if (!concatOr(outTabledata == null, doReset)) {
             return;
         }
 
@@ -72,10 +72,10 @@ public class DbfTableReader extends JGTModel {
             dbfReader = new DbaseFileReader(fis.getChannel(), false, Charset.defaultCharset());
             final DbaseFileHeader header = dbfReader.getHeader();
             int numFields = header.getNumFields();
-            tabledata = new HashMap<String, List<Object>>();
+            outTabledata = new HashMap<String, List<Object>>();
             for( int i = 0; i < numFields; i++ ) {
                 String fieldName = header.getFieldName(i);
-                tabledata.put(fieldName, new ArrayList<Object>());
+                outTabledata.put(fieldName, new ArrayList<Object>());
             }
 
             while( dbfReader.hasNext() ) {
@@ -83,7 +83,7 @@ public class DbfTableReader extends JGTModel {
                 for( int i = 0; i < numFields; i++ ) {
                     Object field = dbfReader.readField(i);
                     String fieldName = header.getFieldName(i);
-                    List<Object> list = tabledata.get(fieldName);
+                    List<Object> list = outTabledata.get(fieldName);
                     list.add(field);
                 }
             }
@@ -106,7 +106,7 @@ public class DbfTableReader extends JGTModel {
         reader.file = path;
         reader.readTable();
 
-        return reader.tabledata;
+        return reader.outTabledata;
     }
 
 }

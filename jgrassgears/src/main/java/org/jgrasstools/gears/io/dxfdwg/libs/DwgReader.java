@@ -72,7 +72,7 @@ public class DwgReader {
      * 
      * @param layerName
      *            Should match a layerName in the Dwg file
-     * @param file
+     * @param outFile
      * @param firstRound
      */
     public DwgReader( DwgFile pFile, GeometryTranslator gTranslator ) throws SchemaException {

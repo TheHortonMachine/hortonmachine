@@ -55,11 +55,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class FlowDirections extends JGTModel {
-
-    /*
-     * EXTERNAL VARIABLES
-     */
-    // input
     @Description("The depitted elevation map.")
     @In
     public GridCoverage2D inPit = null;
@@ -72,9 +67,6 @@ public class FlowDirections extends JGTModel {
     @Out
     public GridCoverage2D outFlow = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     /**

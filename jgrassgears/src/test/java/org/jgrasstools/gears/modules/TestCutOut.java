@@ -49,34 +49,34 @@ public class TestCutOut extends HMTestCase {
     public void testCutout() throws Exception {
         CutOut cutout = new CutOut();
         cutout.pm = pm;
-        cutout.inGeodata = inCoverage;
+        cutout.inRaster = inCoverage;
         cutout.inMask = inMask;
         cutout.process();
-        GridCoverage2D out = cutout.outGeodata;
+        GridCoverage2D out = cutout.outRaster;
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.cutoutData, 0);
     }
 
     public void testCutoutInverse() throws Exception {
         CutOut cutout = new CutOut();
         cutout.pm = pm;
-        cutout.inGeodata = inCoverage;
+        cutout.inRaster = inCoverage;
         cutout.inMask = inMask;
         cutout.doInverse = true;
         cutout.process();
-        GridCoverage2D out = cutout.outGeodata;
+        GridCoverage2D out = cutout.outRaster;
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.cutoutDataInverse, 0);
     }
 
     public void testCutoutInverseWithThresholds() throws Exception {
         CutOut cutout = new CutOut();
         cutout.pm = pm;
-        cutout.inGeodata = inCoverage;
+        cutout.inRaster = inCoverage;
         cutout.inMask = inMask;
         cutout.doInverse = true;
         cutout.pMax = 1400.0;
         cutout.pMin = 800.0;
         cutout.process();
-        GridCoverage2D out = cutout.outGeodata;
+        GridCoverage2D out = cutout.outRaster;
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.cutoutDataMaxMinInverse800_1400, 0);
     }
 

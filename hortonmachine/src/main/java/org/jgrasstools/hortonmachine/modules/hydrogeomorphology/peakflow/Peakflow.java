@@ -436,7 +436,7 @@ public class Peakflow extends JGTModel {
 
     private double[][] doCb( GridCoverage2D coverage ) throws Exception {
         Cb topindexCb = new Cb();
-        topindexCb.inMap1 = coverage;
+        topindexCb.inRaster1 = coverage;
         topindexCb.pFirst = 1;
         topindexCb.pLast = 2;
         topindexCb.pBins = 100;

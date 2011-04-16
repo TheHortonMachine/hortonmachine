@@ -60,10 +60,10 @@ public class TestLineSmootherJaitools extends HMTestCase {
         newCollection.add(feature);
 
         LineSmootherJaitools smoother = new LineSmootherJaitools();
-        smoother.inFC = newCollection;
+        smoother.inVector = newCollection;
         smoother.pAlpha = 1;
         smoother.process();
-        SimpleFeatureCollection outFeatures = smoother.outFC;
+        SimpleFeatureCollection outFeatures = smoother.outVector;
 
         List<Geometry> geomList = FeatureUtilities.featureCollectionToGeometriesList(outFeatures);
         Geometry geometry = geomList.get(0);

@@ -71,7 +71,7 @@ public class Mapcalc extends JGTModel {
 
     @Description("The maps that are used in the calculation.")
     @In
-    public List<GridCoverage2D> inMaps;
+    public List<GridCoverage2D> inRasters;
 
     @Description("The function to process.")
     @UI(JGTConstants.MULTILINE_UI_HINT + "5," + JGTConstants.MAPCALC_UI_HINT)
@@ -84,7 +84,7 @@ public class Mapcalc extends JGTModel {
 
     @Description("The resulting map picked from the inserted function.")
     @Out
-    public GridCoverage2D outMap = null;
+    public GridCoverage2D outRaster = null;
 
     private HashMap<String, Double> regionParameters = null;
 
@@ -98,7 +98,7 @@ public class Mapcalc extends JGTModel {
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outMap == null, doReset)) {
+        if (!concatOr(outRaster == null, doReset)) {
             return;
         }
         
@@ -113,7 +113,7 @@ public class Mapcalc extends JGTModel {
         CoordinateTransform jiffleCRS = null;
 
         // gather maps
-        for( GridCoverage2D mapGC : inMaps ) {
+        for( GridCoverage2D mapGC : inRasters ) {
             if (regionParameters == null) {
                 regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
                 crs = mapGC.getCoordinateReferenceSystem();
@@ -195,7 +195,7 @@ public class Mapcalc extends JGTModel {
         Set<Entry<String, RenderedImage>> entrySet = imgMap.entrySet();
         for( Entry<String, RenderedImage> entry : entrySet ) {
             RenderedImage resultImage = entry.getValue();
-            outMap = CoverageUtilities.buildCoverage(entry.getKey(), resultImage, regionParameters, crs);
+            outRaster = CoverageUtilities.buildCoverage(entry.getKey(), resultImage, regionParameters, crs);
             break;
         }
         executor.shutdown();

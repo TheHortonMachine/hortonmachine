@@ -62,7 +62,7 @@ public class GrassMosaicLegacy extends JGTModel {
 
     @Description("The list of files that have to be patched (used if inGeodata is null).")
     @In
-    public List<File> inGeodataFiles;
+    public List<File> inFiles;
 
     @Description("The output file resolution in meters.")
     @In
@@ -79,14 +79,14 @@ public class GrassMosaicLegacy extends JGTModel {
     @Description("The GRASS file path to which to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public String outFile = null;
+    public String outGrassFile = null;
 
     private Envelope2D requestedEnvelope;
 
     @Execute
     public void process() throws Exception {
 
-        if (inGeodataFiles == null) {
+        if (inFiles == null) {
             throw new ModelsIllegalargumentException("No input data have been provided.", this);
         }
 
@@ -94,7 +94,7 @@ public class GrassMosaicLegacy extends JGTModel {
             throw new ModelsIllegalargumentException("The definition of the output resolution is mandatory.", this);
         }
 
-        if (inGeodataFiles != null && inGeodataFiles.size() < 2) {
+        if (inFiles != null && inFiles.size() < 2) {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
         }
 
@@ -110,8 +110,8 @@ public class GrassMosaicLegacy extends JGTModel {
         double w = Double.MAX_VALUE;
 
         CoordinateReferenceSystem crs = null;
-        pm.beginTask("Calculating final bounds...", inGeodataFiles.size());
-        for( File coverageFile : inGeodataFiles ) {
+        pm.beginTask("Calculating final bounds...", inFiles.size());
+        for( File coverageFile : inFiles ) {
             RasterReader reader = new RasterReader();
             reader.file = coverageFile.getAbsolutePath();
             reader.doEnvelope = true;
@@ -166,7 +166,7 @@ public class GrassMosaicLegacy extends JGTModel {
         pm.message("Memory allocated.");
 
         int index = 1;
-        for( File coverageFile : inGeodataFiles ) {
+        for( File coverageFile : inFiles ) {
             GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
             Envelope2D env = coverage.getEnvelope2D();
             GridGeometry2D gridGeometry = coverage.getGridGeometry();
@@ -207,7 +207,7 @@ public class GrassMosaicLegacy extends JGTModel {
         pm.message("Writing mosaic map.");
         GrassLegacyWriter writer = new GrassLegacyWriter();
         writer.geodata = outputData;
-        writer.file = outFile;
+        writer.file = outGrassFile;
         writer.inWindow = writeWindow;
         writer.pm = pm;
         writer.writeRaster();

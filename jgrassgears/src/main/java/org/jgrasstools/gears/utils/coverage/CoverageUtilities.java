@@ -125,7 +125,7 @@ public class CoverageUtilities {
      * <p>If the size would throw an integer overflow, a {@link GrassLegacyRandomIter}
      * will be proposed to try to save the saveable.
      * 
-     * @param coverage the coverage on which to wrap a {@link WritableRandomIter}.
+     * @param raster the coverage on which to wrap a {@link WritableRandomIter}.
      * @return the iterator.
      */
     public static WritableRandomIter getWritableRandomIterator( int width, int height ) {
@@ -147,7 +147,7 @@ public class CoverageUtilities {
      * <p>If the size would throw an integer overflow, a {@link GrassLegacyRandomIter}
      * will be proposed to try to save the saveable.
      * 
-     * @param coverage the coverage on which to wrap a {@link WritableRandomIter}.
+     * @param raster the coverage on which to wrap a {@link WritableRandomIter}.
      * @return the iterator.
      */
     public static WritableRandomIter getWritableRandomIterator( WritableRaster raster ) {

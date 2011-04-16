@@ -45,11 +45,11 @@ public class TestFeatureTransformer extends HMTestCase {
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
         VectorTransformer transformer = new VectorTransformer();
-        transformer.inGeodata = testFC;
+        transformer.inVector = testFC;
         transformer.pTransX = 10.0;
         transformer.pTransY = 10.0;
         transformer.process();
-        SimpleFeatureCollection outFC = transformer.outGeodata;
+        SimpleFeatureCollection outFC = transformer.outVector;
 
         List<FeatureMate> inMates = FeatureUtilities.featureCollectionToMatesList(testFC);
         List<FeatureMate> outMates = FeatureUtilities.featureCollectionToMatesList(outFC);

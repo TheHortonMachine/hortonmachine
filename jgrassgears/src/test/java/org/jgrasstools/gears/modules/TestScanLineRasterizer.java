@@ -47,7 +47,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         SimpleFeatureCollection newCollection = doCollection(ep);
 
         ScanLineRasterizer raster = new ScanLineRasterizer();
-        raster.inGeodata = newCollection;
+        raster.inVector = newCollection;
         raster.cols = ep.getCols();
         raster.rows = ep.getRows();
         raster.north = ep.getNorth();
@@ -57,11 +57,11 @@ public class TestScanLineRasterizer extends HMTestCase {
         raster.pValue = 2.0;
         raster.process();
 
-        GridCoverage2D outGeodata = raster.outGeodata;
+        GridCoverage2D outGeodata = raster.outRaster;
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all2Data);
 
         raster = new ScanLineRasterizer();
-        raster.inGeodata = newCollection;
+        raster.inVector = newCollection;
         raster.cols = ep.getCols();
         raster.rows = ep.getRows();
         raster.north = ep.getNorth();
@@ -71,7 +71,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         raster.fCat = "cat";
         raster.process();
 
-        outGeodata = raster.outGeodata;
+        outGeodata = raster.outRaster;
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all1Data);
     }
 

@@ -62,10 +62,6 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class ExtractNetwork extends JGTModel {
-
-    /*
-     * EXTERNAL VARIABLES
-     */
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
@@ -98,17 +94,17 @@ public class ExtractNetwork extends JGTModel {
     @In
     public double pExp = 0.5;
 
-    @Description("Switch to create a featurecollection of the network (default = false).")
+    @Description("Switch to create a vector of the network (default = false).")
     @In
     public boolean doNetfc = false;
 
-    @Description("The extracted network map.")
+    @Description("The extracted network raster.")
     @Out
     public GridCoverage2D outNet = null;
 
-    @Description("The feature collection of the network.")
+    @Description("The vector of the network.")
     @Out
-    public SimpleFeatureCollection outNetfc = null;
+    public SimpleFeatureCollection outVNet = null;
 
     /*
      * INTERNAL VARIABLES
@@ -161,7 +157,7 @@ public class ExtractNetwork extends JGTModel {
             WritableRaster netNumWR = ModelsEngine.netNumbering(nstream, flowIter, networkIter, cols, rows, pm);
             CoverageUtilities.setNovalueBorder(netNumWR);
             // calculates the shape...
-            outNetfc = ModelsEngine.net2ShapeOnly(flowRI, netNumWR, inFlow.getGridGeometry(), nstream, pm);
+            outVNet = ModelsEngine.net2ShapeOnly(flowRI, netNumWR, inFlow.getGridGeometry(), nstream, pm);
         }
     }
     /**
