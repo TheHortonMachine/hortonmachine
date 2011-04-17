@@ -16,16 +16,14 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.id2valuearray;
+package org.jgrasstools.gears.io.generic;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,6 +33,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -42,18 +41,23 @@ import oms3.annotations.UI;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-
-@Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
+@Description("Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@Status(Status.CERTIFIED)
+@Keywords("IO, Reading")
+@Label(JGTConstants.HASHMAP_READER)
+@UI(JGTConstants.HIDE_UI_HINT)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Id2ValueArrayWriter {
-    @Description("The csv file to write to.")
+public class Id2ValueArrayReader {
+    @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
+
+    @Role(Role.PARAMETER)
+    @Description("The number of columns of the array.")
+    @In
+    public int pCols = -1;
 
     @Role(Role.PARAMETER)
     @Description("The csv separator.")
@@ -69,46 +73,46 @@ public class Id2ValueArrayWriter {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The map of ids and values arrays to write.")
-    @In
+    @Description("The read map of ids and values arrays.")
+    @Out
     public HashMap<Integer, double[]> data;
 
-    private BufferedWriter csvWriter;
+    private BufferedReader csvReader;
 
     private void ensureOpen() throws IOException {
-        if (csvWriter == null)
-            csvWriter = new BufferedWriter(new FileWriter(file));
+        if (csvReader == null)
+            csvReader = new BufferedReader(new FileReader(file));
     }
-
-    private double novalue = -9999.0;
-
+    
     @Execute
-    public void writeNextLine() throws IOException {
+    public void readNextLine() throws IOException {
         ensureOpen();
-
-        novalue = Double.parseDouble(fileNovalue);
-
-        Set<Entry<Integer, double[]>> entrySet = data.entrySet();
-        for( Entry<Integer, double[]> entry : entrySet ) {
-            Integer id = entry.getKey();
-            double[] values = entry.getValue();
-
-            csvWriter.write(id.toString());
-            csvWriter.write(pSeparator);
-            for( int i = 0; i < values.length; i++ ) {
-                double value = values[i];
-                if (isNovalue(value)) {
-                    value = novalue;
+        data = new HashMap<Integer, double[]>();
+        String line = null;
+        if ((line = csvReader.readLine()) != null) {
+            String[] lineSplit = line.trim().split(pSeparator);
+            for( int i = 0; i < lineSplit.length; i++ ) {
+                int id = (int) Double.parseDouble(lineSplit[i].trim());
+                
+                double[] values = new double[pCols];
+                for( int j = i + 1, k = 0; j < i + pCols + 1; j++,k++ ) {
+                    double value = Double.parseDouble(lineSplit[j].trim());
+                    if (fileNovalue != null) {
+                        if (lineSplit[j].trim().equals(fileNovalue)) {
+                            // set to internal novalue
+                            value = doubleNovalue;
+                        }
+                    }
+                    values[k] = value;
                 }
-                csvWriter.write(String.valueOf(value));
-                csvWriter.write(pSeparator);
+                data.put(id, values);
+                i = i + pCols;
             }
         }
-        csvWriter.write("\n");
     }
 
     @Finalize
     public void close() throws IOException {
-        csvWriter.close();
+        csvReader.close();
     }
 }
