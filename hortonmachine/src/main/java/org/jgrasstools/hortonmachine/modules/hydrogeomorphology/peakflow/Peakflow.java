@@ -37,6 +37,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
@@ -64,6 +65,7 @@ import org.joda.time.DateTime;
 @Author(name = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Peakflow, Discharge, Hydrologic, Cb, RescaledDistance")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Name("peakflow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Peakflow extends JGTModel {
