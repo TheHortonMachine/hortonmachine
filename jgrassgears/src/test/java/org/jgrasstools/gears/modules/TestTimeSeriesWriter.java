@@ -25,19 +25,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
+import org.jgrasstools.gears.io.timeseries.TimeSeriesWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 /**
- * Test {@link TimeSeriesReader}.
+ * Test {@link TimeSeriesWriter}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestTimeSeriesReader extends HMTestCase {
+public class TestTimeSeriesWriter extends HMTestCase {
 
-    public void testTimeSeriesReader() throws Exception {
+    public void testTimeSeriesWriter() throws Exception {
+
         DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+
         URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesreader_test.csv");
         String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
@@ -45,6 +48,25 @@ public class TestTimeSeriesReader extends HMTestCase {
         reader.file = dataPath;
         reader.read();
         LinkedHashMap<DateTime, double[]> outData = reader.outData;
+        reader.close();
+
+        File tempFile = File.createTempFile("test", "jgt");
+        TimeSeriesWriter writer = new TimeSeriesWriter();
+        writer.columns = "datetime, rain";
+        writer.file = tempFile.getAbsolutePath();
+        writer.doDates = true;
+        writer.inData = outData;
+        writer.tablename = "testrain";
+        writer.write();
+        writer.close();
+
+        reader = new TimeSeriesReader();
+        reader.file = dataPath;
+        reader.read();
+        outData = reader.outData;
+        reader.close();
+
+        assertTrue(tempFile.delete());
 
         Set<Entry<DateTime, double[]>> entrySet = outData.entrySet();
 
@@ -64,7 +86,6 @@ public class TestTimeSeriesReader extends HMTestCase {
         assertEquals(2.0, next.getValue()[0]);
         assertEquals("2000-01-01 04:00", next.getKey().toString(formatter));
 
-        reader.close();
     }
 
 }

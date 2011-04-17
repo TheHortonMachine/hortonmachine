@@ -22,7 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
@@ -38,6 +40,7 @@ import oms3.annotations.UI;
 import oms3.io.DataIO;
 import oms3.io.MemoryTable;
 
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -49,7 +52,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Label(JGTConstants.GENERICWRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TimeseriesWriterArray {
+public class TimeSeriesWriter {
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
@@ -59,13 +62,9 @@ public class TimeseriesWriterArray {
     @In
     public String tablename = "table";
 
-    @Description("The list of timestamps to write.")
+    @Description("The hashmap of data to write.")
     @In
-    public List<DateTime> timestamps;
-
-    @Description("The list of arrays of values to write.")
-    @In
-    public List<double[]> data;
+    public LinkedHashMap<DateTime, double[]> inData;
 
     @Description("A switch that defines whether to write the timestamps as dates or as intervals of seconds if a date doesn't make sense.")
     @In
@@ -89,15 +88,21 @@ public class TimeseriesWriterArray {
             memoryTable = new MemoryTable();
             memoryTable.setName(tablename);
             memoryTable.getInfo().put("Created", new DateTime().toString(formatter));
-            memoryTable.getInfo().put("Author", "HortonMachine library");
+            memoryTable.getInfo().put("Author", "JGrasstools");
         }
     }
 
     @Execute
     public void write() throws IOException {
         ensureOpen();
-        
-        int cols = data.get(0).length + 1;
+
+        Set<Entry<DateTime, double[]>> entrySet = inData.entrySet();
+        if (entrySet.isEmpty()) {
+            throw new ModelsIllegalargumentException("The data to write are empty.", this);
+        }
+        Entry<DateTime, double[]> firstItem = entrySet.iterator().next();
+
+        int cols = firstItem.getValue().length + 1;
         if (columns != null) {
             String[] colNames = columns.split(",");
             for( int i = 0; i < colNames.length; i++ ) {
@@ -148,20 +153,19 @@ public class TimeseriesWriterArray {
             }
         }
 
-        DateTime firstDate = timestamps.get(0);
-        for( int i = 0; i < timestamps.size(); i++ ) {
+        for( Entry<DateTime, double[]> entry : entrySet ) {
             Object[] valuesRow = new Object[cols];
 
-            DateTime dateTime = timestamps.get(i);
+            DateTime dateTime = entry.getKey();
             if (doDates) {
                 valuesRow[0] = dateTime.toString(formatter);
             } else {
-                Interval interval = new Interval(firstDate, dateTime);
+                Interval interval = new Interval(firstItem.getKey(), dateTime);
                 long dt = interval.toDuration().getStandardSeconds();
                 valuesRow[0] = dt;
             }
 
-            double[] valuesArray = data.get(i);
+            double[] valuesArray = entry.getValue();
             for( int j = 0; j < valuesArray.length; j++ ) {
                 valuesRow[j + 1] = valuesArray[j];
             }

@@ -65,7 +65,7 @@ public class TimeSeriesReader extends JGTModel {
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description("The list of timestamps read.")
+    @Description("The hashmap of read data.")
     @Out
     public LinkedHashMap<DateTime, double[]> outData;
 
