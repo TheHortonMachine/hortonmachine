@@ -20,8 +20,7 @@ package org.jgrasstools.gears.io.timeseries;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,7 +31,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.io.CSTable;
@@ -50,29 +48,23 @@ import org.joda.time.format.DateTimeFormatter;
 @Label(JGTConstants.GENERICREADER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TimeseriesReaderArray extends JGTModel {
+public class TimeSeriesReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The file novalue to be translated into the internal novalue. Can be a string also")
+    @Description("The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.")
     @In
     public String fileNovalue = "-9999.0";
 
-    @Role(Role.PARAMETER)
-    @Description("The internal novalue to use (usually not changed).")
+    @Description("The internal novalue to use (defaults to NaN).")
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
     @Description("The list of timestamps read.")
     @Out
-    public List<DateTime> timestamps;
-
-    @Description("The list of arrays representing the values in the rows.")
-    @Out
-    public List<double[]> data;
+    public LinkedHashMap<DateTime, double[]> outData;
 
     private TableIterator<String[]> rowsIterator;
 
@@ -84,20 +76,15 @@ public class TimeseriesReaderArray extends JGTModel {
         if (table == null) {
             table = DataIO.table(new File(file), null);
             rowsIterator = (TableIterator<String[]>) table.rows().iterator();
-            timestamps = new ArrayList<DateTime>();
+            outData = new LinkedHashMap<DateTime, double[]>();
         }
     }
 
     @Execute
     public void read() throws IOException {
-        if (!concatOr(data == null, doReset)) {
-            return;
-        }
         ensureOpen();
-        data = new ArrayList<double[]>();
         while( rowsIterator.hasNext() ) {
             String[] row = rowsIterator.next();
-            timestamps.add(formatter.parseDateTime(row[1]));
             double[] record = new double[row.length - 2];
             for( int i = 2; i < row.length; i++ ) {
                 double value = -1;
@@ -113,7 +100,8 @@ public class TimeseriesReaderArray extends JGTModel {
                 }
                 record[i - 2] = value;
             }
-            data.add(record);
+                
+            outData.put(formatter.parseDateTime(row[1]), record);
         }
     }
 
