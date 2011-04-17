@@ -47,7 +47,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Documentation("TimeSeriesReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Reading")
-@Label(JGTConstants.GENERICREADER)
+@Label(JGTConstants.HASHMAP_READER)
 @Name("timeseriesreader")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
