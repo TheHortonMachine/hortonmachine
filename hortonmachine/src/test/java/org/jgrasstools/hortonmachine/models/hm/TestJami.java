@@ -12,7 +12,7 @@ import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
-import org.jgrasstools.gears.io.id2valuearray.Id2ValueArrayWriter;
+import org.jgrasstools.gears.io.generic.Id2ValueArrayWriter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;

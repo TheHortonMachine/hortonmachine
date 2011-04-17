@@ -47,7 +47,8 @@ import org.joda.time.DateTime;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
 @Label(JGTConstants.HASHMAP_WRITER)
-@Status(Status.CERTIFIED)
+@UI(JGTConstants.HIDE_UI_HINT)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DateTime2ValueMapWriter {
     @Description("The csv file to write to.")
