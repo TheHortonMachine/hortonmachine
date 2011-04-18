@@ -22,23 +22,59 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
- * Test {@link TimeSeriesIteratorReader}.
+ * Test {@link TimeSeriesIteratorWriter}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestTimeSeriesIteratorReader extends HMTestCase {
+public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
-    public void testId2ValueReader() throws Exception {
+    public void testTimeSeriesIteratorWriter() throws Exception {
+
+        String startDate = "2000-01-01 00:00";
+        String endDate = "2000-12-31 00:00";
+        String id = "ID";
+        int timeStep = 1440;
+
         URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesiteratorreader_test.csv");
+        String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
+        // setup reader
         TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
-        reader.file = new File(dataUrl.toURI()).getAbsolutePath();
-        reader.idfield = "ID";
-        reader.tStart = "2000-01-01 00:00";
-        reader.tEnd = "2000-12-31 00:00";
-        reader.tTimestep = 1440;
+        reader.file = dataPath;
+        reader.idfield = id;
+        reader.tStart = startDate;
+        reader.tEnd = endDate;
+        reader.tTimestep = timeStep;
+        reader.initProcess();
+
+        // setup writer
+        File tempFile = File.createTempFile("test", "jgt");
+        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+        writer.file = tempFile.getAbsolutePath();
+        writer.tablename = "testrain";
+        writer.fileNovalue = "-9999.0";
+        writer.tStart = startDate;
+        writer.tTimestep = timeStep;
+        while( reader.doProcess ) {
+            reader.nextRecord();
+            HashMap<Integer, double[]> id2ValueMap = reader.data;
+            // feed to writer
+            writer.data = id2ValueMap;
+            writer.writeNextLine();
+        }
+        writer.close();
+        reader.close();
+
+        // check written stuff
+        reader = new TimeSeriesIteratorReader();
+        reader.file = tempFile.getAbsolutePath();
+        reader.idfield = id;
+        reader.tStart = startDate;
+        reader.tEnd = endDate;
+        reader.tTimestep = timeStep;
 
         reader.nextRecord();
         // record 1: ,2000-01-01 00:00,-2.5,-2,-1.3,-1.1
@@ -57,43 +93,9 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
         assertEquals(3.4, id2ValueMap.get(4)[0]);
 
         reader.close();
-    }
 
-    public void testId2ValueReader2() throws Exception {
-        URL dataUrl = this.getClass().getClassLoader().getResource("csvtest2.csv");
-
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
-        reader.file = new File(dataUrl.toURI()).getAbsolutePath();
-        reader.pAggregation = 0;
-        reader.idfield = "ID";
-        reader.tStart = "1997-01-01 00:00";
-        reader.tEnd = "2006-12-31 00:00";
-        reader.tTimestep = 1440;
-        try {
-            reader.initProcess();
-            int count = 0;
-            while( reader.doProcess ) {
-                reader.nextRecord();
-                HashMap<Integer, double[]> id2ValueMap = reader.data;
-                if (count == 0) {
-                    assertEquals(14.9, id2ValueMap.get(1)[0]);
-                    assertEquals(15.2, id2ValueMap.get(2)[0]);
-                } else if (count == 1) {
-                    assertEquals(17.2, id2ValueMap.get(1)[0]);
-                    assertEquals(17.4, id2ValueMap.get(2)[0]);
-                } else if (count == 2) {
-                    assertEquals(19.8, id2ValueMap.get(1)[0]);
-                    assertEquals(20.0, id2ValueMap.get(2)[0]);
-                    break;
-                }
-                count++;
-            }
-        } finally {
-            reader.close();
-        }
+        assertTrue(tempFile.delete());
 
     }
-    public static void main( String[] args ) throws Exception {
-        new TestTimeSeriesIteratorReader().testId2ValueReader2();
-    }
+
 }
