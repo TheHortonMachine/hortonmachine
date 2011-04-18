@@ -17,4 +17,5 @@ syntax: regexp
 .zip$
 .orig$
 .swp$
+.csv$
 .directory
