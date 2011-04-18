@@ -24,12 +24,14 @@ import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.io.DataIO;
@@ -40,11 +42,13 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
 @Description("Utility class for writing a id2value map to a OMS formatted csv file.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Documentation("TimeSeriesIteratorWriter.html")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Writing")
 @Label(JGTConstants.HASHMAP_WRITER)
+@Name("tsitwriter")
 @Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class TimeSeriesIteratorWriter {
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -59,11 +63,11 @@ public class TimeSeriesIteratorWriter {
     @In
     public HashMap<Integer, double[]> data;
 
-    @Description("The start date. If available time is added as first column")
+    @Description("The start date. If available time is added as first column.")
     @In
     public String tStart;
 
-    @Description("The timestep. If available time is added as first column")
+    @Description("The timestep. If available time is added as first column.")
     @In
     public int tTimestep = -1;
 
