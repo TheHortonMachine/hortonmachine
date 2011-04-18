@@ -14,8 +14,8 @@ import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
 import org.jgrasstools.gears.io.generic.Id2ValueArrayWriter;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
@@ -75,7 +75,7 @@ public class TestJami extends HMTestCase {
         basinsReader.readFeatureCollection();
         SimpleFeatureCollection basinsFC = basinsReader.geodata;
 
-        TimeseriesByStepReaderId2Value dataReader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader dataReader = new TimeSeriesIteratorReader();
         dataReader.file = stationDataFile.getAbsolutePath();
         dataReader.fileNovalue = "-9999";
         dataReader.idfield = "ID";
@@ -103,7 +103,7 @@ public class TestJami extends HMTestCase {
         writer.pSeparator = " ";
         writer.fileNovalue = "-9999.0";
 
-        TimeseriesByStepWriterId2Value tsWriter = new TimeseriesByStepWriterId2Value();
+        TimeSeriesIteratorWriter tsWriter = new TimeSeriesIteratorWriter();
         tsWriter.file = outputFileForEtp.getAbsolutePath();
         tsWriter.tStart = dataReader.tStart;
         tsWriter.tTimestep = dataReader.tTimestep;

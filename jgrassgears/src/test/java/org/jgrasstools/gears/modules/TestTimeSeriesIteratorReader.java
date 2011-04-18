@@ -1,22 +1,39 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.gears.modules;
 
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
- * Test Id2ValueReader.
+ * Test {@link TimeSeriesIteratorReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TestTimeSeriesByStepReader extends HMTestCase {
+public class TestTimeSeriesIteratorReader extends HMTestCase {
 
     public void testId2ValueReader() throws Exception {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("csvtest1.csv");
 
-        TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
         reader.file = new File(krigingRainUrl.toURI()).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";
@@ -45,7 +62,7 @@ public class TestTimeSeriesByStepReader extends HMTestCase {
     public void testId2ValueReader2() throws Exception {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("csvtest2.csv");
 
-        TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
         reader.file = new File(krigingRainUrl.toURI()).getAbsolutePath();
         reader.pAggregation = 0;
         reader.idfield = "ID";
@@ -77,6 +94,6 @@ public class TestTimeSeriesByStepReader extends HMTestCase {
 
     }
     public static void main( String[] args ) throws Exception {
-        new TestTimeSeriesByStepReader().testId2ValueReader2();
+        new TestTimeSeriesIteratorReader().testId2ValueReader2();
     }
 }

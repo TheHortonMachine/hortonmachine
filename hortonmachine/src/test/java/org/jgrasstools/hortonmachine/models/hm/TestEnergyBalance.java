@@ -12,8 +12,8 @@ import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.io.eicalculator.EIEnergyReader;
 import org.jgrasstools.gears.io.generic.Id2ValueArrayReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -64,7 +64,7 @@ public class TestEnergyBalance extends HMTestCase {
         basinsReader.readFeatureCollection();
         SimpleFeatureCollection basinsFC = basinsReader.geodata;
 
-        TimeseriesByStepReaderId2Value rainReader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader rainReader = new TimeSeriesIteratorReader();
         rainReader.file = new File(rainUrl.toURI()).getAbsolutePath();
         rainReader.idfield = "ID";
         rainReader.tStart = "2000-01-01 00:00";
@@ -123,7 +123,7 @@ public class TestEnergyBalance extends HMTestCase {
 
         File pnetFile = new File(areaFile.getParentFile(), "energybalance_out_pnet.csv");
         pnetFile = classesTestFile2srcTestResourcesFile(pnetFile);
-        TimeseriesByStepWriterId2Value pnetWriter = new TimeseriesByStepWriterId2Value();
+        TimeSeriesIteratorWriter pnetWriter = new TimeSeriesIteratorWriter();
         pnetWriter.file = pnetFile.getAbsolutePath();
         pnetWriter.tStart = rainReader.tStart;
         pnetWriter.tTimestep = rainReader.tTimestep;

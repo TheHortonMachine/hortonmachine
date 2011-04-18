@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.kriging.ValidateDoubleStation;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -35,7 +35,7 @@ public class TestValidationDoubleStation extends HMTestCase {
         stationsReader.readFeatureCollection();
         SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
-        TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
         reader.file = krigingRainFile.getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";

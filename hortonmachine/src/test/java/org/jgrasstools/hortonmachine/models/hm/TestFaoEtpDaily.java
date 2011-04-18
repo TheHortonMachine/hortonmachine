@@ -6,8 +6,8 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.geotools.data.DataUtilities;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
-import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.FaoEtpDaily;
@@ -39,11 +39,11 @@ public class TestFaoEtpDaily extends HMTestCase {
         URL humidityUrl = this.getClass().getClassLoader().getResource("faoetpday_in_rh.csv");
         URL netradiationUrl = this.getClass().getClassLoader().getResource("faoetpday_in_rad.csv");
 
-        TimeseriesByStepReaderId2Value maxtempReader = getTimeseriesReader(maxTempUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value mintempReader = getTimeseriesReader(minTempUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value windReader = getTimeseriesReader(windUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value humReader = getTimeseriesReader(humidityUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeseriesByStepReaderId2Value netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate,
+        TimeSeriesIteratorReader maxtempReader = getTimeseriesReader(maxTempUrl, fId, startDate, endDate, timeStepMinutes);
+        TimeSeriesIteratorReader mintempReader = getTimeseriesReader(minTempUrl, fId, startDate, endDate, timeStepMinutes);
+        TimeSeriesIteratorReader windReader = getTimeseriesReader(windUrl, fId, startDate, endDate, timeStepMinutes);
+        TimeSeriesIteratorReader humReader = getTimeseriesReader(humidityUrl, fId, startDate, endDate, timeStepMinutes);
+        TimeSeriesIteratorReader netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate,
                 timeStepMinutes);
 
         FaoEtpDaily faoEtpDaily = new FaoEtpDaily();
@@ -90,9 +90,9 @@ public class TestFaoEtpDaily extends HMTestCase {
 
     }
 
-    private TimeseriesByStepReaderId2Value getTimeseriesReader( URL url, String id, String startDate, String endDate,
+    private TimeSeriesIteratorReader getTimeseriesReader( URL url, String id, String startDate, String endDate,
             int timeStepMinutes ) throws URISyntaxException {
-        TimeseriesByStepReaderId2Value reader = new TimeseriesByStepReaderId2Value();
+        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
         reader.file = DataUtilities.urlToFile(url).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2005-05-01 00:00";
