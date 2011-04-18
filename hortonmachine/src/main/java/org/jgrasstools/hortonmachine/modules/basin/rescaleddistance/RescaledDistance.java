@@ -38,7 +38,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -57,7 +56,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Keywords("Basin, Geomorphology, D2O")
 @Label(JGTConstants.BASIN)
 @Name("rescdist")
-@Status(Status.TESTED)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class RescaledDistance extends JGTModel {
 
