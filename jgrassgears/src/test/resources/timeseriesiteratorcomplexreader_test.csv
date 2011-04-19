@@ -1,0 +1,10 @@
+@T,jami_out_temp
+Created,09/23/10 11:45 AM
+Author,HortonMachine library
+@H,timestamp,value_1221A,value_1221B,value_1221C,value_1221D,value_1221E,value_1097A,value_1097B,value_1097C,value_1097D,value_1097E
+ID,,1221,1221,1221,1221,1221,1097,1097,1097,1097,1097
+Type,Date,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double
+Format,yyyy-MM-dd HH:mm,,,,,,,,,,
+,2005-05-01 00:00,8.64,7.34,7.16,6.01,3.03,6.88,6.39,5.89,4.27,2.61
+,2005-05-01 01:00,7.52,6.27,6.47,5.73,2.8,5.95,5.77,5.59,4.01,2.39
+,2005-05-01 02:00,6.87,5.64,6.05,5.37,2.4,5.44,5.5,5.55,4.07,2.54
