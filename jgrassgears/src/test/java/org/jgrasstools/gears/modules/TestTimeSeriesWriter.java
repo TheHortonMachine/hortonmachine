@@ -19,8 +19,8 @@ package org.jgrasstools.gears.modules;
 
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -47,7 +47,7 @@ public class TestTimeSeriesWriter extends HMTestCase {
         TimeSeriesReader reader = new TimeSeriesReader();
         reader.file = dataPath;
         reader.read();
-        LinkedHashMap<DateTime, double[]> outData = reader.outData;
+        HashMap<DateTime, double[]> outData = reader.outData;
         reader.close();
 
         File tempFile = File.createTempFile("test", "jgt");

@@ -20,7 +20,7 @@ package org.jgrasstools.gears.io.timeseries;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -64,9 +64,9 @@ public class TimeSeriesWriter {
     @In
     public String tablename = "table";
 
-    @Description("The hashmap of data to write.")
+    @Description("The hashmap of data to write. IMPORTANT: The hashmap is assumed to be sorted.")
     @In
-    public LinkedHashMap<DateTime, double[]> inData;
+    public HashMap<DateTime, double[]> inData;
 
     @Description("A switch that defines whether to write the timestamps as dates or as intervals of seconds if a date doesn't make sense.")
     @In

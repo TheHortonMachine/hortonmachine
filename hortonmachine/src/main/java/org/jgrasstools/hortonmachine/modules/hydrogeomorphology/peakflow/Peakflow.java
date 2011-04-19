@@ -110,13 +110,13 @@ public class Peakflow extends JGTModel {
     @In
     public GridCoverage2D inRescaledsub = null;
 
-    @Description("The file with the rainfall input per timestep.")
+    @Description("The sorted hasmap of rainfall data per timestep.")
     @In
-    public LinkedHashMap<DateTime, double[]> inRainfall;
+    public HashMap<DateTime, double[]> inRainfall;
 
-    @Description("The peakflow output per timestep.")
+    @Description("The sorted hashmap of peakflow output per timestep.")
     @Out
-    public LinkedHashMap<DateTime, double[]> outDischarge;
+    public HashMap<DateTime, double[]> outDischarge;
 
     public double oututstepArg = 100;
 

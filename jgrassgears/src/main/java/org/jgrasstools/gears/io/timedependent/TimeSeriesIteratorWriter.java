@@ -59,7 +59,7 @@ public class TimeSeriesIteratorWriter {
     @In
     public String inTablename = "table";
 
-    @Description("The map of ids and values to write.")
+    @Description("The hashmap of ids and values to write.")
     @In
     public HashMap<Integer, double[]> inData;
 

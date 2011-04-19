@@ -19,6 +19,7 @@ package org.jgrasstools.gears.io.timeseries;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import oms3.annotations.Author;
@@ -65,9 +66,9 @@ public class TimeSeriesReader extends JGTModel {
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description("The hashmap of read data.")
+    @Description("The sorted hashmap of read data.")
     @Out
-    public LinkedHashMap<DateTime, double[]> outData;
+    public HashMap<DateTime, double[]> outData;
 
     private TableIterator<String[]> rowsIterator;
 

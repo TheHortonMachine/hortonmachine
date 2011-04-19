@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,12 +33,15 @@ import org.joda.time.Interval;
 public class RealJeff {
 
     private double rain_timestep = 0f;
-    private final LinkedHashMap<DateTime, double[]> rainfallMap;
+    private final HashMap<DateTime, double[]> rainfallMap;
 
     private DateTime first;
     private DateTime second;
 
-    public RealJeff( LinkedHashMap<DateTime, double[]> rainfallMap ) {
+    /**
+     * @param rainfallMap the sorted map of rainfall values in time. <b>This has to be a sorted map.</b>
+     */
+    public RealJeff( HashMap<DateTime, double[]> rainfallMap ) {
         this.rainfallMap = rainfallMap;
 
         Set<Entry<DateTime, double[]>> entrySet = rainfallMap.entrySet();
