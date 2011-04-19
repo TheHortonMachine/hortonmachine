@@ -365,7 +365,7 @@ public class EnergyBalance extends JGTModel {
                 }
 
             }
-            inBasins.close(featureIterator);
+            featureIterator.close();
             pm.done();
         }
 
