@@ -142,15 +142,15 @@ public class Adige extends JGTModel {
     @In
     public SimpleFeatureCollection inNetwork;
 
-    @Description("The a field name of the pfafstetter enumeration attribute in the network data.")
+    @Description("The field name of the pfafstetter enumeration attribute in the network data.")
     @In
     public String fPfaff = null;
 
-    @Description("The a field name of the elevation of the starting point of a link in the network data.")
+    @Description("The field name of the elevation of the starting point of a link in the network data.")
     @In
     public String fNetelevstart = null;
 
-    @Description("The a field name of the elevation of the end point of a link in the network data.")
+    @Description("The field name of the elevation of the end point of a link in the network data.")
     @In
     public String fNetelevend = null;
 
