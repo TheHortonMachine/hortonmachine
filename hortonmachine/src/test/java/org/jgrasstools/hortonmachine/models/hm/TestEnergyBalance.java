@@ -164,7 +164,7 @@ public class TestEnergyBalance extends HMTestCase {
             HashMap<Integer, double[]> prain = energyBalance.outPrain;
             HashMap<Integer, double[]> psnow = energyBalance.outPsnow;
 
-            pnetWriter.data = prain;
+            pnetWriter.inData = prain;
             pnetWriter.writeNextLine();
 
         }

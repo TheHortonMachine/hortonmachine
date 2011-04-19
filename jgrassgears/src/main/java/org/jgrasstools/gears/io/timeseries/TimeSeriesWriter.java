@@ -20,7 +20,6 @@ package org.jgrasstools.gears.io.timeseries;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -77,9 +76,9 @@ public class TimeSeriesWriter {
     @In
     public String columns = null;
 
-    @Description("A map of lists of metadata that can be attached to the column of the csv file.")
+    @Description("A list of lists of metadata that can be attached to the column of the csv file.")
     @In
-    public HashMap<String, List<String>> metadata = null;
+    public List<List<String>> inMetadata = null;
 
     private MemoryTable memoryTable;
 
@@ -121,12 +120,11 @@ public class TimeSeriesWriter {
             memoryTable.setColumns(colNames);
         }
 
-        if (metadata != null && metadata.size() > 0) {
-            Set<String> metadataNames = metadata.keySet();
-            for( String metadataName : metadataNames ) {
-                List<String> metadataList = metadata.get(metadataName);
-                for( int i = 0; i < metadataList.size(); i++ ) {
-                    memoryTable.getColumnInfo(i + 1).put(metadataName, metadataList.get(i));
+        if (inMetadata != null && inMetadata.size() > 0) {
+            for( List<String> metadataRecord : inMetadata ) {
+                String metadataName = metadataRecord.get(0);
+                for( int i = 1; i < metadataRecord.size(); i++ ) {
+                    memoryTable.getColumnInfo(i).put(metadataName, metadataRecord.get(i - 1));
                 }
             }
         }
@@ -134,13 +132,21 @@ public class TimeSeriesWriter {
             // add date metadata if they are not already provided
             boolean hasFormat = false;
             boolean hasType = false;
-            if (metadata != null && metadata.size() > 0) {
-                List<String> list = metadata.get("Format");
-                if (list != null)
-                    hasFormat = true;
-                list = metadata.get("Type");
-                if (list != null)
-                    hasType = true;
+            if (inMetadata != null && inMetadata.size() > 0) {
+                hasFormat = false;
+                for( List<String> metadataRecord : inMetadata ) {
+                    if (metadataRecord.contains("Format")) {
+                        hasFormat = true;
+                        break;
+                    }
+                }
+                hasType = false;
+                for( List<String> metadataRecord : inMetadata ) {
+                    if (metadataRecord.contains("Type")) {
+                        hasType = true;
+                        break;
+                    }
+                }
             }
             if (!hasFormat) {
                 memoryTable.getColumnInfo(1).put("Format", formatterPattern);

@@ -142,7 +142,7 @@ public class TestJami extends HMTestCase {
             writer.data = interpolationPointId2MeteoDataMapBands;
             writer.writeNextLine();
 
-            tsWriter.data = interpolationPointId2MeteoDataMap;
+            tsWriter.inData = interpolationPointId2MeteoDataMap;
             tsWriter.writeNextLine();
 
             runningDate = runningDate.plusMinutes(30);

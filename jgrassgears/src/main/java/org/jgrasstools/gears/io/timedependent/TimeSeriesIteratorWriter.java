@@ -41,7 +41,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for writing a id2value map to a OMS formatted csv file.")
+@Description("Utility class for writing a id2values map to a OMS formatted csv file.")
 @Documentation("TimeSeriesIteratorWriter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Writing")
@@ -57,11 +57,11 @@ public class TimeSeriesIteratorWriter {
 
     @Description("The table name.")
     @In
-    public String tablename = "table";
+    public String inTablename = "table";
 
     @Description("The map of ids and values to write.")
     @In
-    public HashMap<Integer, double[]> data;
+    public HashMap<Integer, double[]> inData;
 
     @Description("The start date. If available time is added as first column.")
     @In
@@ -89,7 +89,7 @@ public class TimeSeriesIteratorWriter {
     private void ensureOpen() throws IOException {
         if (memoryTable == null) {
             memoryTable = new MemoryTable();
-            memoryTable.setName(tablename);
+            memoryTable.setName(inTablename);
             memoryTable.getInfo().put("Created", new DateTime().toString(formatter));
             memoryTable.getInfo().put("Author", "HortonMachine library");
 
@@ -104,7 +104,7 @@ public class TimeSeriesIteratorWriter {
     public void writeNextLine() throws IOException {
         ensureOpen();
         if (!columnNamesAreSet) {
-            idsSet = data.keySet();
+            idsSet = inData.keySet();
 
             // column names
             String[] columnNames = null;
@@ -166,7 +166,7 @@ public class TimeSeriesIteratorWriter {
             valuesRow = new Object[idsSet.size()];
         }
         for( Integer id : idsSet ) {
-            double[] dataArray = data.get(id);
+            double[] dataArray = inData.get(id);
             double value = dataArray[0];
             if(JGTConstants.isNovalue(value)){
                 valuesRow[index++] = fileNovalue;

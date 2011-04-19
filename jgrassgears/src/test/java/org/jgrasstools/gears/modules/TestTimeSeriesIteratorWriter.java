@@ -54,7 +54,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         File tempFile = File.createTempFile("test", "jgt");
         TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
         writer.file = tempFile.getAbsolutePath();
-        writer.tablename = "testrain";
+        writer.inTablename = "testrain";
         writer.fileNovalue = "-9999.0";
         writer.tStart = startDate;
         writer.tTimestep = timeStep;
@@ -62,7 +62,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
             reader.nextRecord();
             HashMap<Integer, double[]> id2ValueMap = reader.data;
             // feed to writer
-            writer.data = id2ValueMap;
+            writer.inData = id2ValueMap;
             writer.writeNextLine();
         }
         writer.close();
