@@ -108,7 +108,7 @@ public class TimeSeriesIteratorReader extends JGTModel {
 
     @Description("The read map of ids and values.")
     @Out
-    public HashMap<Integer, double[]> data;
+    public HashMap<Integer, double[]> outData;
 
     private TableIterator<String[]> rowsIterator;
 
@@ -143,15 +143,32 @@ public class TimeSeriesIteratorReader extends JGTModel {
             expectedTimestamp = expectedTimestamp.plusMinutes(tTimestep);
             tCurrent = expectedTimestamp.toString(formatter);
         }
-        data = new HashMap<Integer, double[]>();
+        outData = new HashMap<Integer, double[]>();
 
         int columnCount = table.getColumnCount();
         List<Integer> idList = new ArrayList<Integer>();
+        List<Integer> idCountList = new ArrayList<Integer>();
+        int count = 0;
+        Integer previousIdInteger = null;
         for( int i = 2; i <= columnCount; i++ ) {
             String id = table.getColumnInfo(i).get(idfield);
             try {
-                Integer idInteger = new Integer(id);
+                Integer idInteger = Integer.valueOf(id);
                 idList.add(idInteger);
+                if (previousIdInteger == null) {
+                    count++;
+                } else {
+                    if (idInteger.intValue() == previousIdInteger.intValue()) {
+                        count++;
+                    } else {
+                        idCountList.add(count);
+                        count = 1;
+                    }
+                }
+                if (i==columnCount) {
+                    idCountList.add(count);
+                }
+                previousIdInteger = idInteger;
             } catch (Exception e) {
                 throw new ModelsIllegalargumentException("The id value doesn't seem to be an integer.", this.getClass()
                         .getSimpleName());
@@ -161,23 +178,32 @@ public class TimeSeriesIteratorReader extends JGTModel {
         if (rowsIterator.hasNext()) {
             String[] row = getExpectedRow(rowsIterator, expectedTimestamp);
 
+            int idCountIndex = 0;
             for( int i = 2; i < row.length; i++ ) {
                 Integer id = idList.get(i - 2);
-                double[] value = new double[1];
-                if (row[i] == null || row[i].length() == 0) {
-                    value[0] = novalue;
-                } else {
-                    String valueStr = row[i].trim();
-                    if (valueStr.equals(fileNovalue)) {
-                        value[0] = novalue;
+                Integer idCount = idCountList.get(idCountIndex);
+                double[] values = outData.get(id);
+                if (values == null) {
+                    values = new double[idCount];
+                    outData.put(id, values);
+                }
+                for( int j = 0; j < idCount; j++, i++ ) {
+                    if (row[i] == null || row[i].length() == 0) {
+                        values[j] = novalue;
                     } else {
-                        value[0] = Double.parseDouble(valueStr);
+                        String valueStr = row[i].trim();
+                        if (valueStr.equals(fileNovalue)) {
+                            values[j] = novalue;
+                        } else {
+                            values[j] = Double.parseDouble(valueStr);
+                        }
                     }
                 }
-                data.put(id, value);
+                idCountIndex++;
+                i--;
             }
         } else {
-            data = null;
+            outData = null;
         }
 
         // time ran out

@@ -52,25 +52,25 @@ public class TestFaoEtpDaily extends HMTestCase {
             maxtempReader.nextRecord();
 
             maxtempReader.nextRecord();
-            HashMap<Integer, double[]> id2ValueMap = maxtempReader.data;
+            HashMap<Integer, double[]> id2ValueMap = maxtempReader.outData;
             faoEtpDaily.inMaxTemp = id2ValueMap;
 
             mintempReader.nextRecord();
-            id2ValueMap = mintempReader.data;
+            id2ValueMap = mintempReader.outData;
             faoEtpDaily.inMinTemp = id2ValueMap;
 
             windReader.nextRecord();
-            id2ValueMap = windReader.data;
+            id2ValueMap = windReader.outData;
             faoEtpDaily.inWind = id2ValueMap;
 
             faoEtpDaily.defaultPressure = 101.3;
 
             humReader.nextRecord();
-            id2ValueMap = humReader.data;
+            id2ValueMap = humReader.outData;
             faoEtpDaily.inRh = id2ValueMap;
 
             netradReader.nextRecord();
-            id2ValueMap = netradReader.data;
+            id2ValueMap = netradReader.outData;
             faoEtpDaily.inNetradiation = id2ValueMap;
 
             faoEtpDaily.pm = pm;

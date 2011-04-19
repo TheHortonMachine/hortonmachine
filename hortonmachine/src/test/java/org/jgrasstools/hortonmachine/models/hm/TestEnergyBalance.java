@@ -130,7 +130,7 @@ public class TestEnergyBalance extends HMTestCase {
 
         while( rainReader.doProcess ) {
             rainReader.nextRecord();
-            HashMap<Integer, double[]> id2ValueMap = rainReader.data;
+            HashMap<Integer, double[]> id2ValueMap = rainReader.outData;
             energyBalance.inRain = id2ValueMap;
 
             tempReader.readNextLine();

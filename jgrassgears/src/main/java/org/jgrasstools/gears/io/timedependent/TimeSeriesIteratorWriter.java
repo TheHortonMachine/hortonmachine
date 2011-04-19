@@ -19,7 +19,10 @@ package org.jgrasstools.gears.io.timedependent;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
@@ -84,8 +87,6 @@ public class TimeSeriesIteratorWriter {
 
     private boolean columnNamesAreSet = false;
 
-    private Set<Integer> idsSet;
-
     private void ensureOpen() throws IOException {
         if (memoryTable == null) {
             memoryTable = new MemoryTable();
@@ -103,23 +104,48 @@ public class TimeSeriesIteratorWriter {
     @Execute
     public void writeNextLine() throws IOException {
         ensureOpen();
+        List<Integer> idsList = new ArrayList<Integer>();
+        List<String> columnNamesList = new ArrayList<String>();
+        List<Integer> uniqueIdsList = new ArrayList<Integer>();
         if (!columnNamesAreSet) {
-            idsSet = inData.keySet();
+            Set<Entry<Integer, double[]>> inDataSet = inData.entrySet();
+            for( Entry<Integer, double[]> inDataEntry : inDataSet ) {
+                Integer id = inDataEntry.getKey();
+                double[] values = inDataEntry.getValue();
+
+                if (values.length == 1) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("value_");
+                    sb.append(id);
+                    columnNamesList.add(sb.toString());
+                    idsList.add(id);
+                } else {
+                    for( int i = 0; i < values.length; i++ ) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("value_");
+                        sb.append(id);
+                        sb.append("_");
+                        sb.append(i);
+                        columnNamesList.add(sb.toString());
+                        idsList.add(id);
+                    }
+                }
+            }
+
+            for( Integer tmpId : idsList ) {
+                if (!uniqueIdsList.contains(tmpId)) {
+                    uniqueIdsList.add(tmpId);
+                }
+            }
 
             // column names
-            String[] columnNames = null;
             int index = 0;
-            if (runningDateTime == null) {
-                columnNames = new String[idsSet.size()];
-            } else {
-                columnNames = new String[idsSet.size() + 1];
-                columnNames[0] = "timestamp";
+            if (runningDateTime != null) {
+                columnNamesList.add(0, "timestamp");
                 index = 1;
             }
 
-            for( Integer id : idsSet ) {
-                columnNames[index++] = "value_" + id;
-            }
+            String[] columnNames = columnNamesList.toArray(new String[0]);
             memoryTable.setColumns(columnNames);
 
             // ids
@@ -129,7 +155,7 @@ public class TimeSeriesIteratorWriter {
                 index = 1;
             }
             int k = 0;
-            for( Integer id : idsSet ) {
+            for( Integer id : idsList ) {
                 memoryTable.getColumnInfo(k + 1 + index).put("ID", String.valueOf(id));
                 k++;
             }
@@ -140,7 +166,7 @@ public class TimeSeriesIteratorWriter {
                 memoryTable.getColumnInfo(1).put("Type", "Date");
                 index = 1;
             }
-            for( int j = 0; j < idsSet.size(); j++ ) {
+            for( int j = 0; j < idsList.size(); j++ ) {
                 memoryTable.getColumnInfo(j + 1 + index).put("Type", "Double");
             }
 
@@ -150,7 +176,7 @@ public class TimeSeriesIteratorWriter {
                 memoryTable.getColumnInfo(1).put("Format", formatterPattern);
                 index = 1;
             }
-            for( int j = 0; j < idsSet.size(); j++ ) {
+            for( int j = 0; j < idsList.size(); j++ ) {
                 memoryTable.getColumnInfo(j + 1 + index).put("Format", "");
             }
 
@@ -159,23 +185,24 @@ public class TimeSeriesIteratorWriter {
         Object[] valuesRow = null;
         int index = 0;
         if (runningDateTime != null) {
-            valuesRow = new Object[idsSet.size() + 1];
+            valuesRow = new Object[columnNamesList.size()];
             valuesRow[0] = runningDateTime.toString(formatter);
             index = 1;
         } else {
-            valuesRow = new Object[idsSet.size()];
+            valuesRow = new Object[columnNamesList.size() - 1];
         }
-        for( Integer id : idsSet ) {
+        for( Integer id : uniqueIdsList ) {
             double[] dataArray = inData.get(id);
-            double value = dataArray[0];
-            if(JGTConstants.isNovalue(value)){
-                valuesRow[index++] = fileNovalue;
-            }else{
-                valuesRow[index++] = String.valueOf(value);
+            for( double value : dataArray ) {
+                if (JGTConstants.isNovalue(value)) {
+                    valuesRow[index++] = fileNovalue;
+                } else {
+                    valuesRow[index++] = String.valueOf(value);
+                }
             }
         }
         memoryTable.addRow(valuesRow);
-        
+
         if (runningDateTime != null) {
             runningDateTime = runningDateTime.plusMinutes(tTimestep);
         }

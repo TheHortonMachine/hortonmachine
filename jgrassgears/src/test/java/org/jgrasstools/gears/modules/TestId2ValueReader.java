@@ -24,7 +24,7 @@ public class TestId2ValueReader extends HMTestCase {
         reader.tTimestep = 15;
 
         reader.nextRecord();
-        HashMap<Integer, double[]> id2ValueMap = reader.data;
+        HashMap<Integer, double[]> id2ValueMap = reader.outData;
         assertEquals(1.74, id2ValueMap.get(1)[0]);
         assertEquals(1.34, id2ValueMap.get(2)[0]);
         assertEquals(1.61, id2ValueMap.get(3)[0]);
@@ -33,7 +33,7 @@ public class TestId2ValueReader extends HMTestCase {
         assertEquals(1.15, id2ValueMap.get(6)[0]);
 
         reader.nextRecord();
-        id2ValueMap = reader.data;
+        id2ValueMap = reader.outData;
         assertEquals(1.71, id2ValueMap.get(1)[0]);
         assertEquals(1.37, id2ValueMap.get(2)[0]);
         assertEquals(1.62, id2ValueMap.get(3)[0]);
@@ -57,17 +57,17 @@ public class TestId2ValueReader extends HMTestCase {
         reader.tTimestep = 30;
 
         reader.nextRecord();
-        HashMap<Integer, double[]> id2ValueMap = reader.data;
+        HashMap<Integer, double[]> id2ValueMap = reader.outData;
         assertEquals(3.45, id2ValueMap.get(1)[0]);
         assertEquals(2.71, id2ValueMap.get(2)[0]);
 
         reader.nextRecord();
-        id2ValueMap = reader.data;
+        id2ValueMap = reader.outData;
         assertEquals(3.33, id2ValueMap.get(1)[0]);
         assertEquals(2.87, id2ValueMap.get(2)[0]);
 
         reader.nextRecord();
-        id2ValueMap = reader.data;
+        id2ValueMap = reader.outData;
         assertEquals(1.6, id2ValueMap.get(1)[0]);
         assertEquals(1.51, id2ValueMap.get(2)[0]);
 

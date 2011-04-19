@@ -54,7 +54,7 @@ public class TestValidationDoubleStation extends HMTestCase {
 
         while( reader.doProcess ) {
             reader.nextRecord();
-            HashMap<Integer, double[]> id2ValueMap = reader.data;
+            HashMap<Integer, double[]> id2ValueMap = reader.outData;
             validatStation.inData = id2ValueMap;
             validatStation.verifyDoubleStation();
             /*

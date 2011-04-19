@@ -60,7 +60,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         writer.tTimestep = timeStep;
         while( reader.doProcess ) {
             reader.nextRecord();
-            HashMap<Integer, double[]> id2ValueMap = reader.data;
+            HashMap<Integer, double[]> id2ValueMap = reader.outData;
             // feed to writer
             writer.inData = id2ValueMap;
             writer.writeNextLine();
@@ -78,7 +78,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         reader.nextRecord();
         // record 1: ,2000-01-01 00:00,-2.5,-2,-1.3,-1.1
-        HashMap<Integer, double[]> id2ValueMap = reader.data;
+        HashMap<Integer, double[]> id2ValueMap = reader.outData;
         assertEquals(-2.5, id2ValueMap.get(1)[0]);
         assertEquals(-2.0, id2ValueMap.get(2)[0]);
         assertEquals(-1.3, id2ValueMap.get(3)[0]);
@@ -86,11 +86,80 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         reader.nextRecord();
         // record 2: ,2000-01-02 00:00,-2,2.6,3.9,3.4
-        id2ValueMap = reader.data;
+        id2ValueMap = reader.outData;
         assertEquals(-2.0, id2ValueMap.get(1)[0]);
         assertEquals(2.6, id2ValueMap.get(2)[0]);
         assertEquals(3.9, id2ValueMap.get(3)[0]);
         assertEquals(3.4, id2ValueMap.get(4)[0]);
+
+        reader.close();
+
+        assertTrue(tempFile.delete());
+
+    }
+
+    public void testTimeSeriesIteratorWriterComplex() throws Exception {
+
+        String startDate = "2005-05-01 00:00";
+        String endDate = "2005-05-01 03:00";
+        String id = "ID";
+        int timeStep = 60;
+
+        URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesiteratorcomplexreader_test.csv");
+        String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
+
+        // setup reader
+        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        reader.file = dataPath;
+        reader.idfield = id;
+        reader.tStart = startDate;
+        reader.tEnd = endDate;
+        reader.tTimestep = timeStep;
+        reader.initProcess();
+
+        // setup writer
+        File tempFile = File.createTempFile("test", "jgt");
+        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+        writer.file = tempFile.getAbsolutePath();
+        writer.inTablename = "testrain";
+        writer.fileNovalue = "-9999.0";
+        writer.tStart = startDate;
+        writer.tTimestep = timeStep;
+        while( reader.doProcess ) {
+            reader.nextRecord();
+            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+            // feed to writer
+            writer.inData = id2ValueMap;
+            writer.writeNextLine();
+        }
+        writer.close();
+        reader.close();
+
+        // check written stuff
+        reader = new TimeSeriesIteratorReader();
+        reader.file = tempFile.getAbsolutePath();
+        reader.idfield = id;
+        reader.tStart = startDate;
+        reader.tEnd = endDate;
+        reader.tTimestep = timeStep;
+
+        reader.nextRecord();
+        // record 1: ,2000-01-01 00:00,-2.5,-2,-1.3,-1.1
+        HashMap<Integer, double[]> id2ValueMap = reader.outData;
+        assertEquals(8.64, id2ValueMap.get(1221)[0]);
+        assertEquals(7.34, id2ValueMap.get(1221)[1]);
+        assertEquals(7.16, id2ValueMap.get(1221)[2]);
+        assertEquals(6.01, id2ValueMap.get(1221)[3]);
+        assertEquals(3.03, id2ValueMap.get(1221)[4]);
+
+        reader.nextRecord();
+        // record 2: ,2000-01-02 00:00,-2,2.6,3.9,3.4
+        id2ValueMap = reader.outData;
+        assertEquals(5.95, id2ValueMap.get(1097)[0]);
+        assertEquals(5.77, id2ValueMap.get(1097)[1]);
+        assertEquals(5.59, id2ValueMap.get(1097)[2]);
+        assertEquals(4.01, id2ValueMap.get(1097)[3]);
+        assertEquals(2.39, id2ValueMap.get(1097)[4]);
 
         reader.close();
 

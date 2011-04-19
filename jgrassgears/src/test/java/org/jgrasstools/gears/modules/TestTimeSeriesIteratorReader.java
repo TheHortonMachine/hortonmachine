@@ -42,7 +42,7 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
 
         reader.nextRecord();
         // record 1: ,2000-01-01 00:00,-2.5,-2,-1.3,-1.1
-        HashMap<Integer, double[]> id2ValueMap = reader.data;
+        HashMap<Integer, double[]> id2ValueMap = reader.outData;
         assertEquals(-2.5, id2ValueMap.get(1)[0]);
         assertEquals(-2.0, id2ValueMap.get(2)[0]);
         assertEquals(-1.3, id2ValueMap.get(3)[0]);
@@ -50,7 +50,7 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
 
         reader.nextRecord();
         // record 2: ,2000-01-02 00:00,-2,2.6,3.9,3.4
-        id2ValueMap = reader.data;
+        id2ValueMap = reader.outData;
         assertEquals(-2.0, id2ValueMap.get(1)[0]);
         assertEquals(2.6, id2ValueMap.get(2)[0]);
         assertEquals(3.9, id2ValueMap.get(3)[0]);
@@ -74,7 +74,7 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
             int count = 0;
             while( reader.doProcess ) {
                 reader.nextRecord();
-                HashMap<Integer, double[]> id2ValueMap = reader.data;
+                HashMap<Integer, double[]> id2ValueMap = reader.outData;
                 if (count == 0) {
                     assertEquals(14.9, id2ValueMap.get(1)[0]);
                     assertEquals(15.2, id2ValueMap.get(2)[0]);

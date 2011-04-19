@@ -114,7 +114,7 @@ public class TestJami extends HMTestCase {
         while( dataReader.doProcess ) {
             dataReader.nextRecord();
             DateTime runningDate = dF.parseDateTime(dataReader.tCurrent);
-            HashMap<Integer, double[]> id2ValueMap = dataReader.data;
+            HashMap<Integer, double[]> id2ValueMap = dataReader.outData;
             jami.inMeteo = id2ValueMap;
             jami.tCurrent = runningDate.toString(dF);
 
