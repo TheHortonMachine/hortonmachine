@@ -18,6 +18,7 @@ import ngmf.ui.PEditor;
 import oms3.doc.Documents;
 import ngmf.util.OutputStragegy;
 import ngmf.util.Validation;
+import oms3.ComponentException;
 import oms3.util.Components;
 
 /** Core Simulation DSL
@@ -35,15 +36,6 @@ public class Sim extends AbstractSimulation {
     // Simulation resources.
     boolean digest = false;
     boolean sanitychecks = true;
-    boolean timing = false;
-
-    /**
-     * Print out timing information at the end. default false
-     * @param timing
-     */
-    public void setTiming(boolean timing) {
-        this.timing = timing;
-    }
 
     /**
      * perform sanity checks for the model, default is true.
@@ -74,7 +66,11 @@ public class Sim extends AbstractSimulation {
     }
 
     @Override
-    public Object run() {
+    public Object run() throws Exception {
+        if (getModel() == null) {
+            throw new ComponentException("missing 'model' element.");
+        }
+
         if (!sanitychecks) {
             System.setProperty("oms.skipCheck", "true");
         }
@@ -82,6 +78,7 @@ public class Sim extends AbstractSimulation {
         if (log.isLoggable(Level.CONFIG)) {
             log.config("Run configuration ...");
         }
+
         if (digest) {
             String d = digest(res);
             System.setProperty("oms3.digest", d);
@@ -90,142 +87,145 @@ public class Sim extends AbstractSimulation {
             }
         }
 
-        try {
-            // setup component logging
-            Logging l = model.getComponentLogging();
-            Logger.getLogger("oms3.model").setLevel(Level.parse(l.getAll()));
-            Map<String, String> cl = l.getCompLevels();
-            for (String comp : cl.keySet()) {
-                String cll = cl.get(comp);
-                Level level = Level.parse(cll);
-                Logger.getLogger("oms3.model." + comp).setLevel(level);
+        // setup component logging
+        Logging l = model.getComponentLogging();
+        Logger.getLogger("oms3.model").setLevel(Level.parse(l.getAll()));
+        Map<String, String> cl = l.getCompLevels();
+        for (String comp : cl.keySet()) {
+            String cll = cl.get(comp);
+            Level level = Level.parse(cll);
+            Logger.getLogger("oms3.model." + comp).setLevel(level);
+        }
+
+        // call the prerun scripts
+        doPreRuns();
+
+        // Path
+        String libPath = model.getLibpath();
+        if (libPath != null) {
+            System.setProperty("jna.library.path", libPath);
+            if (log.isLoggable(Level.CONFIG)) {
+                log.config("Setting jna.library.path to " + libPath);
             }
+        }
 
-            // call the prerun scripts
-            doPreRuns();
+        Object comp = model.getComponent();
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config("TL component " + comp);
+        }
+        if (log.isLoggable(Level.INFO)) {
+            log.info("Init ...");
+        }
 
-            // Path
-            String libPath = model.getLibpath();
-            if (libPath != null) {
-                System.setProperty("jna.library.path", libPath);
-                if (log.isLoggable(Level.CONFIG)) {
-                    log.config("Setting jna.library.path to " + libPath);
+        ComponentAccess.callAnnotated(comp, Initialize.class, true);
+
+        // setting the input data;
+        Map<String, Object> parameter = model.getParameter();
+        boolean success = ComponentAccess.setInputData(parameter, comp, log);
+        if (!success) {
+            throw new ComponentException("There are Parameter problems. Simulation exits.");
+        }
+
+        OutputStragegy st = output.getOutputStrategy(getName());
+        lastFolder = st.nextOutputFolder();
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config("Simulation output folder: " + lastFolder);
+        }
+
+        boolean adjusted = ComponentAccess.adjustOutputPath(lastFolder, comp, log);
+        // only create this folder if there is a need.
+        if (adjusted) {
+            lastFolder.mkdirs();
+        }
+
+        if (comp instanceof Compound && log.isLoggable(Level.FINEST)) {
+            Compound c = (Compound) comp;
+            c.addListener(new Listener() {
+
+                @Override
+                public void notice(Type arg0, EventObject arg1) {
+                    log.finest(arg0 + " -> " + arg1);
                 }
-            }
+            });
+        }
 
-            Object comp = model.getComponent();
-            if (log.isLoggable(Level.CONFIG)) {
-                log.config("TL component " + comp);
-            }
-            log.config("Init ...");
-            ComponentAccess.callAnnotated(comp, Initialize.class, true);
-
-            // setting the input data;
-            Map<String, Object> parameter = model.getParameter();
-            boolean success = ComponentAccess.setInputData(parameter, comp, log);
-            if (!success) {
-                System.out.println("There are Parameter problems. Simulation exits.");
-                return null;
-            }
-
-            OutputStragegy st = output.getOutputStrategy(getName());
-            lastFolder = st.nextOutputFolder();
-            if (log.isLoggable(Level.CONFIG)) {
-                log.config("Simulation output folder: " + lastFolder);
-            }
-
-            boolean adjusted = ComponentAccess.adjustOutputPath(lastFolder, comp, log);
-            // only create this folder if there is a need.
-            if (adjusted) {
-                lastFolder.mkdirs();
-            }
-
-            if (comp instanceof Compound && log.isLoggable(Level.FINEST)) {
+        if (sanitychecks) {
+            if (comp instanceof Compound) {
                 Compound c = (Compound) comp;
                 c.addListener(new Listener() {
 
                     @Override
                     public void notice(Type arg0, EventObject arg1) {
-                        log.finest(arg0 + " -> " + arg1);
+                        if (arg0 == Type.EXCEPTION) {
+                            ExceptionEvent ee = (ExceptionEvent) arg1;
+                            if (ee.getException() != null) {
+                                log.severe(arg0 + " -> " + ee);
+                            }
+                        }
+                    }
+                });
+
+                c.addListener(new Listener() {
+
+                    @Override
+                    public void notice(Type arg0, EventObject arg1) {
+                        if (arg0 == Type.OUT) {
+                            DataflowEvent e = (DataflowEvent) arg1;
+                            Object v = e.getValue();
+                            if (v == null) {
+                                log.severe("Null out -> " + e.getAccess().toString());
+                            }
+                        }
                     }
                 });
             }
-
-            if (sanitychecks) {
-                if (comp instanceof Compound) {
-                    Compound c = (Compound) comp;
-                    c.addListener(new Listener() {
-
-                        @Override
-                        public void notice(Type arg0, EventObject arg1) {
-                            if (arg0 == Type.EXCEPTION) {
-                                ExceptionEvent ee = (ExceptionEvent) arg1;
-                                if (ee.getException() != null) {
-                                    log.severe(arg0 + " -> " + ee);
-                                }
-                            }
-                        }
-                    });
-
-                    c.addListener(new Listener() {
-
-                        @Override
-                        public void notice(Type arg0, EventObject arg1) {
-                            if (arg0 == Type.OUT) {
-                                DataflowEvent e = (DataflowEvent) arg1;
-                                Object v = e.getValue();
-                                if (v == null) {
-                                    log.severe("Null out -> " + e.getAccess().toString());
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            for (Efficiency e : eff) {
-                e.setup(comp);
-            }
-            for (Summary e : sum) {
-                e.setup(comp);
-            }
-            for (Output e : out) {
-                e.setup(comp, lastFolder, getName());
-            }
-
-            // execute phases and be done.
-            log.config("Exec ...");
-            long t2 = System.currentTimeMillis();
-            ComponentAccess.callAnnotated(comp, Execute.class, false);
-            long t3 = System.currentTimeMillis();
-            log.config("Finalize ...");
-            ComponentAccess.callAnnotated(comp, Finalize.class, true);
-
-            if (comp instanceof Compound) {
-                Compound c = (Compound) comp;
-                c.shutdown();
-            }
-            for (Efficiency e : eff) {
-                e.printEff(lastFolder);
-            }
-            for (Summary e : sum) {
-                e.printSum(lastFolder);
-            }
-            for (Output e : out) {
-                e.done();
-            }
-
-
-            if (timing) {
-                System.out.println(" E: " + (t3 - t2) + "[ms]");
-            }
-
-            doPostRuns();
-            return comp;
-        } catch (Throwable E) {
-            handleException(E);
         }
-        return null;
+
+        for (Efficiency e : eff) {
+            e.setup(comp);
+        }
+        for (Summary e : sum) {
+            e.setup(comp);
+        }
+        for (Output e : out) {
+            e.setup(comp, lastFolder, getName());
+        }
+
+        // execute phases and be done.
+        if (log.isLoggable(Level.INFO)) {
+            log.info("Exec ...");
+        }
+        long t2 = System.currentTimeMillis();
+        ComponentAccess.callAnnotated(comp, Execute.class, false);
+        long t3 = System.currentTimeMillis();
+
+
+        if (log.isLoggable(Level.INFO)) {
+            log.info("Finalize ...");
+        }
+        ComponentAccess.callAnnotated(comp, Finalize.class, true);
+
+        if (comp instanceof Compound) {
+            Compound c = (Compound) comp;
+            c.shutdown();
+        }
+        for (Efficiency e : eff) {
+            e.printEff(lastFolder);
+        }
+        for (Summary e : sum) {
+            e.printSum(lastFolder);
+        }
+        for (Output e : out) {
+            e.done();
+        }
+
+
+        if (log.isLoggable(Level.INFO)) {
+            log.info(" Execution time: " + (t3 - t2) + " [ms]");
+        }
+
+        doPostRuns();
+        return comp;
     }
 
     /** Edit parameter file content. Edit only the 
@@ -240,9 +240,8 @@ public class Sim extends AbstractSimulation {
                 l.add(new File(p.getFile()));
             }
         }
-        if (l.size() == 0) {
-            System.out.println("No parameter files to edit.");
-            return;
+        if (l.isEmpty()) {
+            throw new ComponentException("No parameter files to edit.");
         }
 
         // initial Parameter set generation
@@ -279,13 +278,9 @@ public class Sim extends AbstractSimulation {
      */
     @Override
     public void doc() throws Exception {
-        try {
-            OutputStragegy st = output.getOutputStrategy(getName());
-            st.lastOutputFolder().mkdirs();
-            document(new File(st.lastOutputFolder(), getName() + ".xml").toString());
-        } catch (Exception E) {
-            handleException(E);
-        }
+        OutputStragegy st = output.getOutputStrategy(getName());
+        st.lastOutputFolder().mkdirs();
+        document(new File(st.lastOutputFolder(), getName() + ".xml"));
     }
 
     /**
@@ -294,16 +289,12 @@ public class Sim extends AbstractSimulation {
      * @param file
      * @throws Exception
      */
-    public void document(CharSequence file) throws Exception {
-        if (file == null) {
-            throw new IllegalArgumentException();
-        }
-
+    void document(File file) throws Exception {
         Locale locale = Locale.getDefault();
         if (System.getProperty("oms3.locale.lang") != null) {
             locale = new Locale(System.getProperty("oms3.locale.lang"));
         }
-        Documents.db5Sim(new File(file.toString()), // output file
+        Documents.db5Sim(file, // output file
                 model.getComponent().getClass(), // the model class
                 model.getParameter(), // all merged parameter
                 getName(),
@@ -361,7 +352,7 @@ public class Sim extends AbstractSimulation {
      * @return the digest as 
      */
     private String digest(Resource r) {
-        if (r.getRecources().size() == 0) {
+        if (r.getRecources().isEmpty()) {
             return null;
         }
         List<File> f = new ArrayList<File>();

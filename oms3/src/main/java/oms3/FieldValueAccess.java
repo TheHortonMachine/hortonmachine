@@ -36,7 +36,7 @@ class FieldValueAccess implements Access {
     Access fa;
 
 //    Access access;
-    
+   
     FieldValueAccess(Access fa, Object data) {
         this.fa = fa;
         this.data = data;
@@ -59,7 +59,7 @@ class FieldValueAccess implements Access {
     @Override
     public void in() throws Exception {
         if (data == null) {
-            throw new RuntimeException("Not connected: " + toString());
+            throw new ComponentException("Not connected: " + toString());
         }
         Object val = data;
         // fire only if there is a listener

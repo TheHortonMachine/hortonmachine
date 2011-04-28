@@ -3,6 +3,7 @@ package oms3.dsl;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import oms3.CLI;
+import oms3.ComponentException;
 import oms3.annotations.Name;
 import oms3.io.CSProperties;
 import oms3.io.DataIO;
@@ -51,7 +52,7 @@ public class Model implements Buildable {
         } else if (name.equals("feedback")) {
             return feedback;
         }
-        throw new IllegalArgumentException(name.toString());
+        throw new ComponentException("Unknown element: '" + name.toString() + "'");
     }
 
     public Logging getComponentLogging() {
@@ -93,43 +94,58 @@ public class Model implements Buildable {
     private static List<File> getExtraResources() {
         List<File> sc = new ArrayList<File>();
         String simPath = System.getProperty("oms.sim.resources");
-        simPath = simPath.replaceAll("\"", "");
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config("oms.sim.resources '" + simPath + "'");
+        }
         if (simPath != null && !simPath.isEmpty()) {
-            String[] s = simPath.split("\\s*" + File.pathSeparator + "\\s*");
-            for (String string : s) {
-                sc.add(new File(string));
+            simPath = simPath.replaceAll("\"", "");
+            for (String s : simPath.split("\\s*" + File.pathSeparator + "\\s*")) {
+                sc.add(new File(s));
             }
         }
         return sc;
     }
 
-    /** get the URL classloader for all the resources (just for jar files
+    /** get the URL class loader for all the resources (just for jar files
      * 
      * @return
      * @throws Exception
      */
-    private synchronized URLClassLoader getClassLoader() throws Exception {
+    private synchronized URLClassLoader getClassLoader() {
         if (modelClassLoader == null) {
-            List<File> jars = res.filterFiles("jar");
-            List<File> cli_jars = getExtraResources();
-            URL[] u = new URL[jars.size() + cli_jars.size()];
-            for (int i = 0; i < jars.size(); i++) {
-                u[i] = jars.get(i).toURI().toURL();
-                if (log.isLoggable(Level.CONFIG)) {
-                    log.info("classpath entry from simulation: " + u[i].toString());
+            List<File> jars = res.filterFiles("jar");     // jars as defined in
+            List<File> cli_jars = getExtraResources();    // cli extra jars
+            List<File> dirs = res.filterDirectories();        // testing
+            List<URL> urls = new ArrayList<URL>();
+
+            try {
+                for (int i = 0; i < jars.size(); i++) {
+                    urls.add(jars.get(i).toURI().toURL());
+                    if (log.isLoggable(Level.CONFIG)) {
+                        log.config("classpath entry from simulation: " + jars.get(i));
+                    }
                 }
-            }
-            for (int i = 0; i < cli_jars.size(); i++) {
-                u[i+jars.size()] = cli_jars.get(i).toURI().toURL();
-                if (log.isLoggable(Level.CONFIG)) {
-                    log.info("classpath entry from CLI: " + u[i].toString());
+                for (int i = 0; i < dirs.size(); i++) {
+                    urls.add(dirs.get(i).toURI().toURL());
+                    if (log.isLoggable(Level.CONFIG)) {
+                        log.config("dir entry: " + dirs.get(i));
+                    }
                 }
+                for (int i = 0; i < cli_jars.size(); i++) {
+                    urls.add(cli_jars.get(i).toURI().toURL());
+                    if (log.isLoggable(Level.CONFIG)) {
+                        log.config("classpath entry from CLI: " + cli_jars.get(i));
+                    }
+                }
+            } catch (MalformedURLException ex) {
+                throw new ComponentException("Illegal resource:" + ex.getMessage());
             }
-            modelClassLoader = new URLClassLoader(u, Thread.currentThread().getContextClassLoader());
+            modelClassLoader = new URLClassLoader(urls.toArray(new URL[0]),
+                    Thread.currentThread().getContextClassLoader());
         }
         return modelClassLoader;
     }
-    
+
     public Object getComponent() throws Exception {
         URLClassLoader loader = getClassLoader();
         if (classname == null) {
@@ -172,51 +188,53 @@ public class Model implements Buildable {
         }
         return val;
     }
-    
     Map<String, String> nameClassMap;
 
-    private Map<String, String> getName_ClassMap() throws Exception {
+    private Map<String, String> getName_ClassMap() {
         if (nameClassMap == null) {
             nameClassMap = new HashMap<String, String>();
             for (URL url : getClassLoader().getURLs()) {
-                List<Class<?>> l = Components.getComponentClasses(url);
-                for (Class<?> class1 : l) {
-                    Name name =  class1.getAnnotation(Name.class);
-                    if (name != null && !name.value().isEmpty()) {
-                        if (name.value().indexOf(".") > -1 ) {
-                            log.warning("@Name cannot contain '.' character : " + name.value() + " in  " + class1.getName());
-                            continue;
-                        }
-                        String prev = nameClassMap.put(name.value(), class1.getName());
-                        if(prev != null) {
-                            log.warning("duplicate @Name: " + name.value() + " for " + prev + " and " + class1.getName());
+                try {
+                    List<Class<?>> l = Components.getComponentClasses(url);
+                    for (Class<?> class1 : l) {
+                        Name name = class1.getAnnotation(Name.class);
+                        if (name != null && !name.value().isEmpty()) {
+                            if (name.value().indexOf(".") > -1) {
+                                log.warning("@Name cannot contain '.' character : " + name.value() + " in  " + class1.getName());
+                                continue;
+                            }
+                            String prev = nameClassMap.put(name.value(), class1.getName());
+                            if (prev != null) {
+                                log.warning("duplicate @Name: " + name.value() + " for " + prev + " and " + class1.getName());
+                            }
                         }
                     }
+                } catch (IOException E) {
+                    throw new ComponentException("Cannot access: " + url);
                 }
             }
         }
         return nameClassMap;
     }
 
-    private String getComponentClassName(String id) throws Exception {
+    private String getComponentClassName(String id) {
         if (id.indexOf('.') == -1) {
             String cn = getName_ClassMap().get(id);
             if (cn == null) {
-                throw new IllegalArgumentException("Unknown component name: " + id);
+                throw new ComponentException("Unknown component name: " + id);
             }
             return cn;
         }
         return id;
     }
 
-
     Object getGeneratedComponent(URLClassLoader loader) {
         try {
             oms3.compiler.Compiler tc = oms3.compiler.Compiler.singleton(loader);
             String name = "Comp_" + UUID.randomUUID().toString().replace('-', '_');
             String cl = generateSource(name, loader);
-            if (log.isLoggable(Level.CONFIG)) {
-                log.config("Generated Source:\n" + cl);
+            if (log.isLoggable(Level.FINE)) {
+                log.fine("Generated Source:\n" + cl);
             }
             Class jc = tc.compileSource(name, cl);
             return jc.newInstance();
@@ -301,15 +319,27 @@ public class Model implements Buildable {
         return b.toString();
     }
 
-    String getClassForParameter(String object, String parameter) throws Exception {
+    String getClassForParameter(String object, String parameter) {
         for (KVP def : comps.entries) {
             if (object.equals(def.getKey())) {
-                String classname = def.getValue().toString();
-                classname = getComponentClassName(classname);
-                Class c = getClassLoader().loadClass(classname);
-                return c.getDeclaredField(parameter).getType().getSimpleName();
+                String clname = def.getValue().toString();
+                clname = getComponentClassName(clname);
+                Class c;
+                try {
+                    c = getClassLoader().loadClass(clname);
+                } catch (ClassNotFoundException ex) {
+                    throw new ComponentException("Class not found: " + clname);
+                }
+                try {
+                    return c.getDeclaredField(parameter).getType().getSimpleName();
+                } catch (NoSuchFieldException ex) {
+                    throw new ComponentException("No such field: " + parameter);
+
+                } catch (SecurityException ex) {
+                    throw new ComponentException("Cannot access : " + parameter);
+                }
             }
         }
-        throw new IllegalArgumentException("Cannot find component '" + object + "'.");
+        throw new ComponentException("Cannot find component '" + object + "'. in '" + object + "." + parameter + "'");
     }
 }

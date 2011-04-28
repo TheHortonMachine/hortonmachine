@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package oms3.dsl;
 
+import oms3.ComponentException;
 import java.io.File;
 import ngmf.util.DateDirectoryOutput;
 import ngmf.util.NumDirectoryOutput;
@@ -21,13 +21,13 @@ public class OutputDescriptor implements Buildable {
 
     int scheme = SIMPLE;
     String dir = System.getProperty("user.dir");
-    
+
     public void setDir(String dir) {
         if (!new File(dir).exists()) {
-            throw new IllegalArgumentException("does not exists " + dir);
+            throw new ComponentException("File does not exists " + dir);
         }
         if (!new File(dir).isDirectory()) {
-            throw new IllegalArgumentException("not a directory " + dir);
+            throw new ComponentException("Not a directory " + dir);
         }
         this.dir = dir;
     }
@@ -37,7 +37,11 @@ public class OutputDescriptor implements Buildable {
     }
 
     public void setScheme(int scheme) {
-        this.scheme = scheme;
+        if ((scheme == SIMPLE) || (scheme == NUMBERED) || (scheme == TIME)) {
+            this.scheme = scheme;
+        } else {
+            throw new ComponentException("Invalid output strategy scheme.");
+        }
     }
 
     public OutputStragegy getOutputStrategy(String simName) {
@@ -56,5 +60,4 @@ public class OutputDescriptor implements Buildable {
     public Buildable create(Object name, Object value) {
         return LEAF;
     }
-
 }

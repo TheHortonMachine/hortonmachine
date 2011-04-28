@@ -23,7 +23,6 @@
 package oms3;
 
 import java.lang.reflect.Field;
-import oms3.Notification.DataflowEvent;
 //import oms3.gen.Access;
 
 /** Field Access.
@@ -60,7 +59,7 @@ class AsyncFieldAccess implements Access {
     @Override
     public void in() throws Exception {
         if (fa.getData() == null) {
-            throw new RuntimeException("Not connected: " + toString());
+            throw new ComponentException("Not connected: " + toString());
         }
         // async call
 //        Object val = fa.getData().getValue0();

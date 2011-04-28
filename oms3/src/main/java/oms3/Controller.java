@@ -37,7 +37,8 @@ import oms3.util.Threads;
  */
 class Controller {
 
-//    static boolean skipCheck = Boolean.getBoolean("oms.skipCheck");
+    static boolean checkCircular = Boolean.getBoolean("oms.check.circular");
+    //
     private static final Logger log = Logger.getLogger("oms3.sim");
     /** Execution event Notification */
     Notification ens = new Notification(this);
@@ -48,22 +49,21 @@ class Controller {
     /* The compount where this controller belongs to */
     ComponentAccess ca;
     // optional skipping the integrity checking.
-    Validator val;
+    Validator validator;
 
     Controller(Object compound) {
-        if (log.isLoggable(Level.WARNING)) {
-//        if (!skipCheck) {
-            val = new Validator();
+        if (checkCircular) {
+            validator = new Validator();
         }
         ca = new ComponentAccess(compound, ens);
     }
 
     ComponentAccess lookup(Object cmd) {
         if (cmd == null) {
-            throw new IllegalArgumentException("null component.");
+            throw new ComponentException("null component.");
         }
         if (cmd == ca.getComponent()) {
-            throw new IllegalArgumentException("Cannot add the compound to itself. Create and add an inner class instead.");
+            throw new ComponentException("Cannot add the compound to itself " + cmd.toString());
         }
         ComponentAccess w = oMap.get(cmd);
         if (w == null) {
@@ -76,9 +76,15 @@ class Controller {
         return ens;
     }
 
+    /** Map two output fields.
+     * 
+     * @param out the output field name of this component
+     * @param comp  the component 
+     * @param comp_out  the component output name;
+     */
     void mapOut(String out, Object comp, String comp_out) {
         if (comp == ca.getComponent()) {
-            throw new IllegalArgumentException("cicular ref on " + out);
+            throw new ComponentException("cannot connect 'Out' with itself for " + out);
         }
         ComponentAccess ac_dest = lookup(comp);
         FieldAccess destAccess = (FieldAccess) ac_dest.output(comp_out);
@@ -92,12 +98,22 @@ class Controller {
 
         destAccess.setData(data);
         dataSet.add(data);
-        ens.fireMapOut(srcAccess, destAccess);
+
+        if (log.isLoggable(Level.CONFIG)) {
+            log.log(Level.CONFIG, String.format("@Out(%s) -> @Out(%s)", srcAccess, destAccess));
+        }
+//        ens.fireMapOut(srcAccess, destAccess);
     }
 
+    /** Map two input fields.
+     * 
+     * @param in
+     * @param comp
+     * @param comp_in 
+     */
     void mapIn(String in, Object comp, String comp_in) {
         if (comp == ca.getComponent()) {
-            throw new IllegalArgumentException("cicular ref on " + in);
+            throw new ComponentException("cannot connect 'In' with itself for " + in);
         }
         ComponentAccess ac_dest = lookup(comp);
         FieldAccess destAccess = (FieldAccess) ac_dest.input(comp_in);
@@ -111,46 +127,70 @@ class Controller {
 
         destAccess.setData(data);
         dataSet.add(data);
-        ens.fireMapIn(srcAccess, destAccess);
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config(String.format("@In(%s) -> @In(%s)", srcAccess, destAccess));
+        }
+//        ens.fireMapIn(srcAccess, destAccess);
     }
 
-    // map an input field
+    /** Directly map a value to a input field.
+     * 
+     * @param val
+     * @param to
+     * @param to_in 
+     */
     void mapInVal(Object val, Object to, String to_in) {
         if (val == null) {
-            throw new IllegalArgumentException("Null value for " + name(to, to_in));
+            throw new ComponentException("Null value for " + name(to, to_in));
         }
         if (to == ca.getComponent()) {
-            throw new IllegalArgumentException("wrong connect:" + to_in);
+            throw new ComponentException("field and component ar ethe same for mapping :" + to_in);
         }
         ComponentAccess ca_to = lookup(to);
         Access to_access = ca_to.input(to_in);
         checkFA(to_access, to, to_in);
         ca_to.setInput(to_in, new FieldValueAccess(to_access, val));
-//            ens.fireMapIn(from_access, to_access);
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config(String.format("Value(%s) -> @In(%s)", val.toString(), to_access.toString()));
+        }
     }
 
-    // map an input field
+    /** Map an input field.
+     * 
+     * @param from
+     * @param from_field
+     * @param to
+     * @param to_in 
+     */
     void mapInField(Object from, String from_field, Object to, String to_in) {
         if (to == ca.getComponent()) {
-            throw new IllegalArgumentException("wrong connect:" + from_field);
+            throw new ComponentException("wrong connect:" + from_field);
         }
         ComponentAccess ca_to = lookup(to);
         Access to_access = ca_to.input(to_in);
         checkFA(to_access, to, to_in);
         try {
             FieldContent.FA f = new FieldContent.FA(from, from_field);
-            ca_to.setInput(to_in, new FieldObjectAccess(to_access, f));
+            ca_to.setInput(to_in, new FieldObjectAccess(to_access, f, ens));
+            if (log.isLoggable(Level.CONFIG)) {
+                log.config(String.format("Field(%s) -> @In(%s)", f.toString(), to_access.toString()));
+            }
 
-//            ens.fireMapIn(from_access, to_access);
         } catch (Exception E) {
-            throw new IllegalArgumentException("No such field '" + from.getClass().getCanonicalName() + "." + from_field + "'");
+            throw new ComponentException("No such field '" + from.getClass().getCanonicalName() + "." + from_field + "'");
         }
     }
 
-    //
+    /** Map a object to an output field.
+     * 
+     * @param from
+     * @param from_out
+     * @param to
+     * @param to_field 
+     */
     void mapOutField(Object from, String from_out, Object to, String to_field) {
         if (from == ca.getComponent()) {
-            throw new IllegalArgumentException("wrong connect:" + to_field);
+            throw new ComponentException("wrong connect:" + to_field);
         }
         ComponentAccess ca_from = lookup(from);
         Access from_access = ca_from.output(from_out);
@@ -158,20 +198,30 @@ class Controller {
 
         try {
             FieldContent.FA f = new FieldContent.FA(to, to_field);
-            ca_from.setOutput(from_out, new FieldObjectAccess(from_access, f));
-//            ens.fireMapOut(from_access, from_access);
+            ca_from.setOutput(from_out, new FieldObjectAccess(from_access, f, ens));
+
+            if (log.isLoggable(Level.CONFIG)) {
+                log.config(String.format("@Out(%s) -> field(%s)", from_access, f.toString()));
+            }
         } catch (Exception E) {
-            throw new IllegalArgumentException("No such field '" + to.getClass().getCanonicalName() + "." + to_field + "'");
+            throw new ComponentException("No such field '" + to.getClass().getCanonicalName() + "." + to_field + "'");
         }
     }
 
+    /** Connect out to in
+     * 
+     * @param from
+     * @param from_out
+     * @param to
+     * @param to_in 
+     */
     void connect(Object from, String from_out, Object to, String to_in) {
         // add them to the set of commands
         if (from == to) {
-            throw new IllegalArgumentException("src == dest.");
+            throw new ComponentException("src == dest.");
         }
         if (to_in == null || from_out == null) {
-            throw new IllegalArgumentException("Some field arguments are null");
+            throw new ComponentException("Some field arguments are null");
         }
 
         ComponentAccess ca_from = lookup(from);
@@ -183,8 +233,7 @@ class Controller {
         checkFA(to_access, to, to_in);
 
         if (!canConnect(from_access, to_access)) {
-            throw new IllegalArgumentException(
-                    "Type/Access mismatch, Cannot connect: " + from + '.' + to_in + " -> " + to + '.' + from_out);
+            throw new ComponentException("Type/Access mismatch, Cannot connect: " + from + '.' + to_in + " -> " + to + '.' + from_out);
         }
 
         // src data object
@@ -195,22 +244,32 @@ class Controller {
         dataSet.add(data);
         to_access.setData(data);                       // connect the two
 
-//        if (!skipCheck) {
-        if (log.isLoggable(Level.WARNING)) {
-            val.addConnection(from, to);
-            val.checkCircular();
+        if (checkCircular) {
+            validator.addConnection(from, to);
+            validator.checkCircular();
         }
 
-        ens.fireConnect(from_access, to_access);
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config(String.format("@Out(%s) -> @In(%s)", from_access.toString() , to_access.toString()));
+        }
+
+//        ens.fireConnect(from_access, to_access);
     }
 
+    /** Feedback connect out to in
+     * 
+     * @param from
+     * @param from_out
+     * @param to
+     * @param to_in 
+     */
     void feedback(Object from, String from_out, Object to, String to_in) {
         // add them to the set of commands
         if (from == to) {
-            throw new IllegalArgumentException("src == dest.");
+            throw new ComponentException("src == dest.");
         }
         if (to_in == null || from_out == null) {
-            throw new IllegalArgumentException("Some field arguments are null");
+            throw new ComponentException("Some field arguments are null");
         }
 
         ComponentAccess ca_from = lookup(from);
@@ -222,8 +281,7 @@ class Controller {
         checkFA(to_access, to, to_in);
 
         if (!canConnect(from_access, to_access)) {
-            throw new IllegalArgumentException(
-                    "Type/Access mismatch, Cannot connect: " + from + '.' + to_in + " -> " + to + '.' + from_out);
+            throw new ComponentException("Type/Access mismatch, Cannot connect: " + from + '.' + to_in + " -> " + to + '.' + from_out);
         }
 
         // src data object
@@ -231,40 +289,41 @@ class Controller {
         data.tagIn();
         data.tagOut();
 
-  //      dataSet.add(data);
+        //      dataSet.add(data);
         to_access.setData(data);                       // connect the two
 
         ca_from.setOutput(from_out, new AsyncFieldAccess(from_access));
         ca_to.setInput(to_in, new AsyncFieldAccess(to_access));
 
-//        if (!skipCheck) {
-        if (log.isLoggable(Level.WARNING)) {
- //           val.addConnection(from, to);
+        if (checkCircular) {
+            //   val.addConnection(from, to);
 //            val.checkCircular();
         }
-        
-        ens.fireConnect(from_access, to_access);
+
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config(String.format("feedback @Out(%s) -> @In(%s)", from_access.toString() , to_access.toString()));
+        }
+//        ens.fireConnect(from_access, to_access);
     }
 
-    static String name(Object o, String field) {
+    private static String name(Object o, String field) {
         return o.toString() + "@" + field;
     }
 
-    static boolean canConnect(Access me, Access other) {
+    private static boolean canConnect(Access me, Access other) {
         return other.getField().getType().isAssignableFrom(me.getField().getType());
     }
 
-    static void checkFA(Object fa, Object o, String field) {
+    private static void checkFA(Object fa, Object o, String field) {
         if (fa == null) {
-            throw new IllegalArgumentException("No such field '" + o.getClass().getCanonicalName() + "." + field + "'");
+            throw new ComponentException("No such field '" + o.getClass().getCanonicalName() + "." + field + "'");
         }
     }
 
     void sanityCheck() {
-//        if (!skipCheck) {
-        if (log.isLoggable(Level.WARNING)) {
+        if (checkCircular) {
 //            val.checkInFieldAccess();
-            val.checkOutFieldAccess();
+            validator.checkOutFieldAccess();
         }
     }
     // something internal.
@@ -313,14 +372,13 @@ class Controller {
             }
         }
     }
-    
     Latch latch = new Latch();
     Runnable[] rc;
     final Object l = new Object();
 
     protected void internalExec() throws ComponentException {
         Collection<ComponentAccess> comps = oMap.values();
-        if (comps.size() == 0) {
+        if (comps.isEmpty()) {
             return;        // compound inputs to internals
         }
         try {
@@ -413,8 +471,6 @@ class Controller {
         }
     }
 
-  
-
     /**
      * Call an annotated method.
      *
@@ -429,7 +485,7 @@ class Controller {
     /////////////////////////
     /**
      * Validator.
-     * The Validator checks for unresolved Fielsaccess connections,
+     * The Validator checks for unresolved field access connections,
      * circular references, etc.
      */
     private class Validator {
@@ -453,7 +509,7 @@ class Controller {
             }
             for (Object o : nl) {
                 if (o == probe) {
-                    throw new RuntimeException("Circular reference to: " + probe);
+                    throw new ComponentException("Circular reference to: " + probe);
                 } else {
                     check(probe, o);
                 }
@@ -465,7 +521,7 @@ class Controller {
          * a deadlock.
          */
         void checkCircular() {
-            if (graph.size() == 0) {
+            if (graph.isEmpty()) {
                 return;
             }
             for (Object probe : graph.keySet()) {
@@ -476,26 +532,28 @@ class Controller {
         void checkInFieldAccess() {
             for (Access in : ca.inputs()) {
                 if (!in.getData().isValid()) {
-                    throw new IllegalStateException("Invalid Access " + in + " -> " + in.getData().access());
+                    throw new ComponentException("Invalid Access " + in + " -> " + in.getData().access());
                 }
             }
             for (ComponentAccess w : oMap.values()) {
                 for (Access in : w.inputs()) {
                     if (!in.isValid()) {
-                        throw new IllegalStateException("Missing Connect for: " + in);
+                        throw new ComponentException("Missing Connect for: " + in);
                     }
                     if (!in.getData().isValid()) {
-                        throw new IllegalStateException("Invalid Access " + in + " -> " + in.getData().access());
+                        throw new ComponentException("Invalid Access " + in + " -> " + in.getData().access());
                     }
                 }
             }
         }
 
         void checkOutFieldAccess() {
-            for (ComponentAccess w : oMap.values()) {
-                for (Access out : w.outputs()) {
-                    if (!out.isValid()) {
-                        log.warning("Empty @Out connect for: " + out);
+            if (log.isLoggable(Level.WARNING)) {
+                for (ComponentAccess w : oMap.values()) {
+                    for (Access out : w.outputs()) {
+                        if (!out.isValid()) {
+                            log.warning("Empty @Out connect for: " + out);
+                        }
                     }
                 }
             }

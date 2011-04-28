@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /** ProcessExcecution. Helper class to execute external programs.
  *
@@ -28,6 +29,7 @@ import java.util.List;
  */
 public class Processes {
 
+    static final Logger log = Logger.getLogger("oms3.sim");
     public static final int INVALID_EXIT = Integer.MAX_VALUE;
     private ProcessBuilder pb = new ProcessBuilder();
     private int exitValue = INVALID_EXIT;
@@ -47,7 +49,7 @@ public class Processes {
     public Processes(File executable) {
         this.executable = executable;
     }
-  
+
     /** Set the execution arguments.
      *
      * @param args the command line arguments
@@ -141,19 +143,20 @@ public class Processes {
             // return 0;
         }
 
-        final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err, inp);
+//        final PumpStreamHandler streamHandler = new PumpStreamHandler(out, err, inp);
+        long t1 = System.currentTimeMillis();
         process = pb.start();
-        
-        try {
-           // streamHandler.setProcessInputStream(process.getOutputStream());
-            streamHandler.setProcessOutputStream(process.getInputStream());
-            streamHandler.setProcessErrorStream(process.getErrorStream());
-        } catch (Exception e) {
-            process.destroy();
-            throw e;
-        }
 
-        streamHandler.start();
+//        try {
+//           // streamHandler.setProcessInputStream(process.getOutputStream());
+//            streamHandler.setProcessOutputStream(process.getInputStream());
+//            streamHandler.setProcessErrorStream(process.getErrorStream());
+//        } catch (Exception e) {
+//            process.destroy();
+//            throw e;
+//        }
+
+//        streamHandler.start();
 
         try {
             // add the process to the list of those to destroy if the VM exits
@@ -163,12 +166,31 @@ public class Processes {
 //            }
 
             waitFor(process);
+            long t2 = System.currentTimeMillis();
+            log.info("process exec time=" + (t2 - t1));
 
 //            if (watchdog != null) {
 //                watchdog.stop();
 //            }
-            streamHandler.stop();
+
+//            streamHandler.stop();
+//            closeStreams(process);
+
+            InputStream is = process.getInputStream();
+            err.close();
+
+            final byte[] buf = new byte[128];
+
+            int length;
+            try {
+                while ((length = is.read(buf)) > 0) {
+                    out.write(buf, 0, length);
+                }
+                out.flush();
+            } catch (Exception e) {
+            }
             closeStreams(process);
+            process.destroy();
 
 //            if (watchdog != null) {
 //                watchdog.checkException();
@@ -208,364 +230,369 @@ public class Processes {
         process.destroy();
     }
 
-    /**
-     * Copies standard output and error of subprocesses to standard output and
-     * error of the parent process.
-     *
-     * @since Ant 1.2
-     */
-    private static class PumpStreamHandler {
-
-        private Thread outputThread;
-        private Thread errorThread;
-        private StreamPumper inputPump;
-        private OutputStream out;
-        private OutputStream err;
-        private InputStream input;
-
-        /**
-         * Construct a new <code>PumpStreamHandler</code>.
-         * @param out the output <code>OutputStream</code>.
-         * @param err the error <code>OutputStream</code>.
-         * @param input the input <code>InputStream</code>.
-         */
-        PumpStreamHandler(OutputStream out, OutputStream err,
-                InputStream input) {
-            this.out = out;
-            this.err = err;
-            this.input = input;
-        }
-
-        /**
-         * Construct a new <code>PumpStreamHandler</code>.
-         * @param out the output <code>OutputStream</code>.
-         * @param err the error <code>OutputStream</code>.
-         */
-        PumpStreamHandler(OutputStream out, OutputStream err) {
-            this(out, err, null);
-        }
-
-        /**
-         * Construct a new <code>PumpStreamHandler</code>.
-         * @param outAndErr the output/error <code>OutputStream</code>.
-         */
-        PumpStreamHandler(OutputStream outAndErr) {
-            this(outAndErr, outAndErr);
-        }
-
-        /**
-         * Construct a new <code>PumpStreamHandler</code>.
-         */
-        PumpStreamHandler() {
-            this(System.out, System.err);
-        }
-
-        /**
-         * Set the <code>InputStream</code> from which to read the
-         * standard output of the process.
-         * @param is the <code>InputStream</code>.
-         */
-        void setProcessOutputStream(InputStream is) {
-            createProcessOutputPump(is, out);
-        }
-
-        /**
-         * Set the <code>InputStream</code> from which to read the
-         * standard error of the process.
-         * @param is the <code>InputStream</code>.
-         */
-        void setProcessErrorStream(InputStream is) {
-            if (err != null) {
-                createProcessErrorPump(is, err);
-            }
-        }
-
-        /**
-         * Set the <code>OutputStream</code> by means of which
-         * input can be sent to the process.
-         * @param os the <code>OutputStream</code>.
-         */
-        void setProcessInputStream(OutputStream os) {
-            if (input != null) {
-                inputPump = createInputPump(input, os, true);
-            } else {
-                try {
-                    os.close();
-                } catch (IOException e) {
-                    //ignore
-                }
-            }
-        }
-
-        /**
-         * Start the <code>Thread</code>s.
-         */
-        void start() {
-            outputThread.start();
-            errorThread.start();
-            if (inputPump != null) {
-                Thread inputThread = new Thread(inputPump);
-                inputThread.setDaemon(true);
-                inputThread.start();
-            }
-        }
-
-        /**
-         * Stop pumping the streams.
-         */
-        void stop() {
-            try {
-                outputThread.join();
-            } catch (InterruptedException e) {
-                // ignore
-            }
-            try {
-                errorThread.join();
-            } catch (InterruptedException e) {
-                // ignore
-            }
-
-            if (inputPump != null) {
-                inputPump.stop();
-            }
-
-            try {
-                err.flush();
-            } catch (IOException e) {
-                // ignore
-            }
-            try {
-                out.flush();
-            } catch (IOException e) {
-                // ignore
-            }
-        }
-
-        /**
-         * Get the error stream.
-         * @return <code>OutputStream</code>.
-         */
-        OutputStream getErr() {
-            return err;
-        }
-
-        /**
-         * Get the output stream.
-         * @return <code>OutputStream</code>.
-         */
-        OutputStream getOut() {
-            return out;
-        }
-
-        /**
-         * Create the pump to handle process output.
-         * @param is the <code>InputStream</code>.
-         * @param os the <code>OutputStream</code>.
-         */
-        void createProcessOutputPump(InputStream is, OutputStream os) {
-            outputThread = createPump(is, os);
-        }
-
-        /**
-         * Create the pump to handle error output.
-         * @param is the input stream to copy from.
-         * @param os the output stream to copy to.
-         */
-        void createProcessErrorPump(InputStream is, OutputStream os) {
-            errorThread = createPump(is, os);
-        }
-
-        /**
-         * Creates a stream pumper to copy the given input stream to the
-         * given output stream.
-         * @param is the input stream to copy from.
-         * @param os the output stream to copy to.
-         * @return a thread object that does the pumping.
-         */
-        Thread createPump(InputStream is, OutputStream os) {
-            return createPump(is, os, false);
-        }
-
-        /**
-         * Creates a stream pumper to copy the given input stream to the
-         * given output stream.
-         * @param is the input stream to copy from.
-         * @param os the output stream to copy to.
-         * @param closeWhenExhausted if true close the inputstream.
-         * @return a thread object that does the pumping.
-         */
-        Thread createPump(InputStream is, OutputStream os,
-                boolean closeWhenExhausted) {
-            final Thread result = new Thread(new StreamPumper(is, os, closeWhenExhausted));
-            result.setDaemon(true);
-            return result;
-        }
-
-        /**
-         * Creates a stream pumper to copy the given input stream to the
-         * given output stream. Used for standard input.
-         * @since Ant 1.6.3
-         */
-        StreamPumper createInputPump(InputStream is, OutputStream os,
-                boolean closeWhenExhausted) {
-            StreamPumper pumper = new StreamPumper(is, os, closeWhenExhausted);
-            pumper.setAutoflush(true);
-            return pumper;
-        }
-    }
-
-    /**
-     * Copies all data from an input stream to an output stream.
-     *
-     * @since Ant 1.2
-     */
-    private static class StreamPumper implements Runnable {
-
-        private InputStream is;
-        private OutputStream os;
-        private volatile boolean finish;
-        private volatile boolean finished;
-        private boolean closeWhenExhausted;
-        private boolean autoflush = false;
-        private Exception exception = null;
-        private int bufferSize = 128;
-        private boolean started = false;
-
-        /**
-         * Create a new stream pumper.
-         *
-         * @param is input stream to read data from
-         * @param os output stream to write data to.
-         * @param closeWhenExhausted if true, the output stream will be closed when
-         *        the input is exhausted.
-         */
-        StreamPumper(InputStream is, OutputStream os, boolean closeWhenExhausted) {
-            this.is = is;
-            this.os = os;
-            this.closeWhenExhausted = closeWhenExhausted;
-        }
-
-        /**
-         * Create a new stream pumper.
-         *
-         * @param is input stream to read data from
-         * @param os output stream to write data to.
-         */
-        StreamPumper(InputStream is, OutputStream os) {
-            this(is, os, false);
-        }
-
-        /**
-         * Set whether data should be flushed through to the output stream.
-         * @param autoflush if true, push through data; if false, let it be buffered
-         * @since Ant 1.6.3
-         */
-        void setAutoflush(boolean autoflush) {
-            this.autoflush = autoflush;
-        }
-
-        /**
-         * Copies data from the input stream to the output stream.
-         *
-         * Terminates as soon as the input stream is closed or an error occurs.
-         */
-        public void run() {
-            synchronized (this) {
-                started = true;
-            }
-            finished = false;
-            finish = false;
-
-            final byte[] buf = new byte[bufferSize];
-
-            int length;
-            try {
-                while ((length = is.read(buf)) > 0 && !finish) {
-                    os.write(buf, 0, length);
-                    if (autoflush) {
-                        os.flush();
-                    }
-                }
-                os.flush();
-            } catch (Exception e) {
-                synchronized (this) {
-                    exception = e;
-                }
-            } finally {
-                if (closeWhenExhausted) {
-                    try {
-                        os.close();
-                    } catch (IOException e) {
-                        // ignore
-                    }
-                }
-                finished = true;
-                synchronized (this) {
-                    notifyAll();
-                }
-            }
-        }
-
-        /**
-         * Tells whether the end of the stream has been reached.
-         * @return true is the stream has been exhausted.
-         */
-        boolean isFinished() {
-            return finished;
-        }
-
-        /**
-         * This method blocks until the stream pumper finishes.
-         * @throws InterruptedException if interrupted.
-         * @see #isFinished()
-         */
-        synchronized void waitFor() throws InterruptedException {
-            while (!isFinished()) {
-                wait();
-            }
-        }
-
-        /**
-         * Set the size in bytes of the read buffer.
-         * @param bufferSize the buffer size to use.
-         * @throws IllegalStateException if the StreamPumper is already running.
-         */
-        synchronized void setBufferSize(int bufferSize) {
-            if (started) {
-                throw new IllegalStateException("Cannot set buffer size on a running StreamPumper");
-            }
-            this.bufferSize = bufferSize;
-        }
-
-        /**
-         * Get the size in bytes of the read buffer.
-         * @return the int size of the read buffer.
-         */
-        synchronized int getBufferSize() {
-            return bufferSize;
-        }
-
-        /**
-         * Get the exception encountered, if any.
-         * @return the Exception encountered.
-         */
-        synchronized Exception getException() {
-            return exception;
-        }
-
-        /**
-         * Stop the pumper as soon as possible.
-         * Note that it may continue to block on the input stream
-         * but it will really stop the thread as soon as it gets EOF
-         * or any byte, and it will be marked as finished.
-         * @since Ant 1.6.3
-         */
-        synchronized void stop() {
-            finish = true;
-            notifyAll();
-        }
-    }
-
+//    /**
+//     * Copies standard output and error of subprocesses to standard output and
+//     * error of the parent process.
+//     *
+//     * @since Ant 1.2
+//     */
+//    private static class PumpStreamHandler {
+//
+//        private Thread outputThread;
+//        private Thread errorThread;
+//        private StreamPumper inputPump;
+//        private OutputStream out;
+//        private OutputStream err;
+//        private InputStream input;
+//
+//        /**
+//         * Construct a new <code>PumpStreamHandler</code>.
+//         * @param out the output <code>OutputStream</code>.
+//         * @param err the error <code>OutputStream</code>.
+//         * @param input the input <code>InputStream</code>.
+//         */
+//        PumpStreamHandler(OutputStream out, OutputStream err,
+//                InputStream input) {
+//            this.out = out;
+//            this.err = err;
+//            this.input = input;
+//        }
+//
+//        /**
+//         * Construct a new <code>PumpStreamHandler</code>.
+//         * @param out the output <code>OutputStream</code>.
+//         * @param err the error <code>OutputStream</code>.
+//         */
+//        PumpStreamHandler(OutputStream out, OutputStream err) {
+//            this(out, err, null);
+//        }
+//
+//        /**
+//         * Construct a new <code>PumpStreamHandler</code>.
+//         * @param outAndErr the output/error <code>OutputStream</code>.
+//         */
+//        PumpStreamHandler(OutputStream outAndErr) {
+//            this(outAndErr, outAndErr);
+//        }
+//
+//        /**
+//         * Construct a new <code>PumpStreamHandler</code>.
+//         */
+//        PumpStreamHandler() {
+//            this(System.out, System.err);
+//        }
+//
+//        /**
+//         * Set the <code>InputStream</code> from which to read the
+//         * standard output of the process.
+//         * @param is the <code>InputStream</code>.
+//         */
+//        void setProcessOutputStream(InputStream is) {
+//            createProcessOutputPump(is, out);
+//        }
+//
+//        /**
+//         * Set the <code>InputStream</code> from which to read the
+//         * standard error of the process.
+//         * @param is the <code>InputStream</code>.
+//         */
+//        void setProcessErrorStream(InputStream is) {
+//            if (err != null) {
+//                createProcessErrorPump(is, err);
+//            }
+//        }
+//
+//        /**
+//         * Set the <code>OutputStream</code> by means of which
+//         * input can be sent to the process.
+//         * @param os the <code>OutputStream</code>.
+//         */
+//        void setProcessInputStream(OutputStream os) {
+//            if (input != null) {
+//                inputPump = createInputPump(input, os, true);
+//            } else {
+//                try {
+//                    os.close();
+//                } catch (IOException e) {
+//                    //ignore
+//                }
+//            }
+//        }
+//
+//        /**
+//         * Start the <code>Thread</code>s.
+//         */
+//        void start() {
+//            outputThread.start();
+//            errorThread.start();
+//            if (inputPump != null) {
+//                long t1 = System.currentTimeMillis();
+//                Thread inputThread = new Thread(inputPump);
+//                long t2 = System.currentTimeMillis();
+//                log.info ("main thread creation time=" + (t2-t1));
+//                inputThread.setDaemon(true);
+//                inputThread.start();
+//            }
+//        }
+//
+//        /**
+//         * Stop pumping the streams.
+//         */
+//        void stop() {
+//            try {
+//                outputThread.join();
+//            } catch (InterruptedException e) {
+//                // ignore
+//            }
+//            try {
+//                errorThread.join();
+//            } catch (InterruptedException e) {
+//                // ignore
+//            }
+//
+//            if (inputPump != null) {
+//                inputPump.stop();
+//            }
+//
+//            try {
+//                err.flush();
+//            } catch (IOException e) {
+//                // ignore
+//            }
+//            try {
+//                out.flush();
+//            } catch (IOException e) {
+//                // ignore
+//            }
+//        }
+//
+//        /**
+//         * Get the error stream.
+//         * @return <code>OutputStream</code>.
+//         */
+//        OutputStream getErr() {
+//            return err;
+//        }
+//
+//        /**
+//         * Get the output stream.
+//         * @return <code>OutputStream</code>.
+//         */
+//        OutputStream getOut() {
+//            return out;
+//        }
+//
+//        /**
+//         * Create the pump to handle process output.
+//         * @param is the <code>InputStream</code>.
+//         * @param os the <code>OutputStream</code>.
+//         */
+//        void createProcessOutputPump(InputStream is, OutputStream os) {
+//            outputThread = createPump(is, os);
+//        }
+//
+//        /**
+//         * Create the pump to handle error output.
+//         * @param is the input stream to copy from.
+//         * @param os the output stream to copy to.
+//         */
+//        void createProcessErrorPump(InputStream is, OutputStream os) {
+//            errorThread = createPump(is, os);
+//        }
+//
+//        /**
+//         * Creates a stream pumper to copy the given input stream to the
+//         * given output stream.
+//         * @param is the input stream to copy from.
+//         * @param os the output stream to copy to.
+//         * @return a thread object that does the pumping.
+//         */
+//        Thread createPump(InputStream is, OutputStream os) {
+//            return createPump(is, os, false);
+//        }
+//
+//        /**
+//         * Creates a stream pumper to copy the given input stream to the
+//         * given output stream.
+//         * @param is the input stream to copy from.
+//         * @param os the output stream to copy to.
+//         * @param closeWhenExhausted if true close the inputstream.
+//         * @return a thread object that does the pumping.
+//         */
+//        Thread createPump(InputStream is, OutputStream os,
+//                boolean closeWhenExhausted) {
+//            long t1 = System.currentTimeMillis();
+//            final Thread result = new Thread(new StreamPumper(is, os, closeWhenExhausted));
+//            long t2 = System.currentTimeMillis();
+//            log.info("create pump thread init time=" + (t2-t1));
+//            result.setDaemon(true);
+//            return result;
+//        }
+//
+//        /**
+//         * Creates a stream pumper to copy the given input stream to the
+//         * given output stream. Used for standard input.
+//         * @since Ant 1.6.3
+//         */
+//        StreamPumper createInputPump(InputStream is, OutputStream os,
+//                boolean closeWhenExhausted) {
+//            StreamPumper pumper = new StreamPumper(is, os, closeWhenExhausted);
+//            pumper.setAutoflush(true);
+//            return pumper;
+//        }
+//    }
+//
+//    /**
+//     * Copies all data from an input stream to an output stream.
+//     *
+//     * @since Ant 1.2
+//     */
+//    private static class StreamPumper implements Runnable {
+//
+//        private InputStream is;
+//        private OutputStream os;
+//        private volatile boolean finish;
+//        private volatile boolean finished;
+//        private boolean closeWhenExhausted;
+//        private boolean autoflush = false;
+//        private Exception exception = null;
+//        private int bufferSize = 128;
+//        private boolean started = false;
+//
+//        /**
+//         * Create a new stream pumper.
+//         *
+//         * @param is input stream to read data from
+//         * @param os output stream to write data to.
+//         * @param closeWhenExhausted if true, the output stream will be closed when
+//         *        the input is exhausted.
+//         */
+//        StreamPumper(InputStream is, OutputStream os, boolean closeWhenExhausted) {
+//            this.is = is;
+//            this.os = os;
+//            this.closeWhenExhausted = closeWhenExhausted;
+//        }
+//
+//        /**
+//         * Create a new stream pumper.
+//         *
+//         * @param is input stream to read data from
+//         * @param os output stream to write data to.
+//         */
+//        StreamPumper(InputStream is, OutputStream os) {
+//            this(is, os, false);
+//        }
+//
+//        /**
+//         * Set whether data should be flushed through to the output stream.
+//         * @param autoflush if true, push through data; if false, let it be buffered
+//         * @since Ant 1.6.3
+//         */
+//        void setAutoflush(boolean autoflush) {
+//            this.autoflush = autoflush;
+//        }
+//
+//        /**
+//         * Copies data from the input stream to the output stream.
+//         *
+//         * Terminates as soon as the input stream is closed or an error occurs.
+//         */
+//        public void run() {
+//            synchronized (this) {
+//                started = true;
+//            }
+//            finished = false;
+//            finish = false;
+//
+//            final byte[] buf = new byte[bufferSize];
+//
+//            int length;
+//            try {
+//                while ((length = is.read(buf)) > 0 && !finish) {
+//                    os.write(buf, 0, length);
+//                    if (autoflush) {
+//                        os.flush();
+//                    }
+//                }
+//                os.flush();
+//            } catch (Exception e) {
+//                synchronized (this) {
+//                    exception = e;
+//                }
+//            } finally {
+//                if (closeWhenExhausted) {
+//                    try {
+//                        os.close();
+//                    } catch (IOException e) {
+//                        // ignore
+//                    }
+//                }
+//                finished = true;
+//                synchronized (this) {
+//                    notifyAll();
+//                }
+//            }
+//        }
+//
+//        /**
+//         * Tells whether the end of the stream has been reached.
+//         * @return true is the stream has been exhausted.
+//         */
+//        boolean isFinished() {
+//            return finished;
+//        }
+//
+//        /**
+//         * This method blocks until the stream pumper finishes.
+//         * @throws InterruptedException if interrupted.
+//         * @see #isFinished()
+//         */
+//        synchronized void waitFor() throws InterruptedException {
+//            while (!isFinished()) {
+//                wait();
+//            }
+//        }
+//
+//        /**
+//         * Set the size in bytes of the read buffer.
+//         * @param bufferSize the buffer size to use.
+//         * @throws IllegalStateException if the StreamPumper is already running.
+//         */
+//        synchronized void setBufferSize(int bufferSize) {
+//            if (started) {
+//                throw new IllegalStateException("Cannot set buffer size on a running StreamPumper");
+//            }
+//            this.bufferSize = bufferSize;
+//        }
+//
+//        /**
+//         * Get the size in bytes of the read buffer.
+//         * @return the int size of the read buffer.
+//         */
+//        synchronized int getBufferSize() {
+//            return bufferSize;
+//        }
+//
+//        /**
+//         * Get the exception encountered, if any.
+//         * @return the Exception encountered.
+//         */
+//        synchronized Exception getException() {
+//            return exception;
+//        }
+//
+//        /**
+//         * Stop the pumper as soon as possible.
+//         * Note that it may continue to block on the input stream
+//         * but it will really stop the thread as soon as it gets EOF
+//         * or any byte, and it will be marked as finished.
+//         * @since Ant 1.6.3
+//         */
+//        synchronized void stop() {
+//            finish = true;
+//            notifyAll();
+//        }
+//    }
     public static void main(String[] args) throws Exception {
 //        File javaExe = new File(System.getProperty("java.home") + "/bin/java");
 //        System.out.println(javaExe);
@@ -584,12 +611,14 @@ public class Processes {
 
         final StringBuffer a = new StringBuffer();
         p.redirectOutput(new OutputStream() {
+
             @Override
             public void write(int b) throws IOException {
-                a.append((char)b);
+                a.append((char) b);
             }
         });
         p.redirectError(new OutputStream() {
+
             @Override
             public void write(int b) throws IOException {
 //                a.append((char)b);
@@ -597,7 +626,7 @@ public class Processes {
         });
 
 
-       
+
 //        SwingUtilities.invokeLater(new Runnable() {
 //
 //            @Override

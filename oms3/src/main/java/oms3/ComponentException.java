@@ -32,11 +32,15 @@ public class ComponentException extends RuntimeException {
     private static final long serialVersionUID = -8177666866536291028L;
     Object comp;
 
-    ComponentException(Throwable cause, Object comp) {
+    public ComponentException(Throwable cause, Object comp) {
         super(cause);
         this.comp = comp;
     }
 
+    public ComponentException(String msg) {
+        super(msg);
+    }
+    
     /**
      * Get the component that caused the exception
      * 
@@ -45,4 +49,5 @@ public class ComponentException extends RuntimeException {
     public Object getSource() {
         return comp;
     }
+
 }

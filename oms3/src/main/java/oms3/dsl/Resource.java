@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import ngmf.util.WildcardFileFilter;
+import oms3.ComponentException;
 
 /**
  *
@@ -21,7 +22,7 @@ public class Resource {
     @SuppressWarnings("unchecked")
     public void addResource(Object arg) {
         if (arg == null) {
-            throw new IllegalArgumentException("No resource provided.");
+            throw new ComponentException("No resource string  provided.");
         }
         if (arg.getClass() == String.class) {
             l.add((String) arg);

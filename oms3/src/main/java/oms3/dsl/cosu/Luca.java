@@ -16,6 +16,7 @@ import ngmf.util.cosu.luca.ExecutionHandle;
 import ngmf.util.cosu.luca.ParameterData;
 import ngmf.util.cosu.luca.SCE;
 import oms3.ComponentAccess;
+import oms3.ComponentException;
 import oms3.Compound;
 import oms3.Conversions;
 import oms3.annotations.Execute;
@@ -27,7 +28,7 @@ import oms3.io.DataIO;
 // initial parameter settings (reading)
 // calibration date/time settings.
 // 
-public class Luca extends AbstractSimulation  {
+public class Luca extends AbstractSimulation {
 
     List<Step> steps = new ArrayList<Step>();
     //
@@ -43,7 +44,7 @@ public class Luca extends AbstractSimulation  {
         } else if (name.equals("rounds")) {
             rounds = (Integer) value;
             if (rounds < 1) {
-                throw new IllegalArgumentException("rounds: " + rounds);
+                throw new ComponentException("Illegal 'rounds': " + rounds);
             }
         } else if (name.equals("calibration_start")) {
             calib_start = Conversions.convert(value, Date.class);
@@ -54,44 +55,40 @@ public class Luca extends AbstractSimulation  {
     }
 
     @Override
-    public Object run() {
-        try {
-            if (getModel() == null) {
-                throw new IllegalArgumentException("missing 'model'.");
-            }
-            if (calib_start == null) {
-                throw new IllegalArgumentException("missing 'calibration_start'");
-            }
-            if (steps.size() == 0) {
-                throw new IllegalArgumentException("missing 'step' definition(s)");
-            }
-
-            ModelExecution exec = new ModelExecution();
-            Object end = exec.getParameter().get("endTime");
-            Date endTime = Conversions.convert(end, Date.class);
-            if (calib_start.after(endTime)) {
-                throw new IllegalArgumentException("calibration_start: " + calib_start);
-            }
-            for (Step step : steps) {
-                step.init(exec, calib_start, endTime, rounds);
-            }
-
-            for (int r = 0; r < rounds; r++) {
-                for (int s = 0; s < steps.size(); s++) {
-                    Step step = steps.get(s);
-                    Data stepData = step.round()[r];
-                    System.out.println("\n\n>>>>>>>>>>>>>>  Round [" + (r+1) + "]  Step [" + step.getName() + "] <<<<<<<<<<<<<<");
-                    SCE sce = new SCE(exec, step, stepData);
-                    sce.run();
-                    exec.writeParameterCopy(step, r);
-                    step.post(r, stepData);
-                    Runtime.getRuntime().gc();
-                }
-            }
-            Compound.shutdown();
-        } catch (Throwable E) {
-            handleException(E);
+    public Object run() throws Exception {
+        if (getModel() == null) {
+            throw new ComponentException("missing 'model'.");
         }
+        if (calib_start == null) {
+            throw new ComponentException("missing 'calibration_start'");
+        }
+        if (steps.isEmpty()) {
+            throw new ComponentException("missing 'step' definition(s)");
+        }
+
+        ModelExecution exec = new ModelExecution();
+        Object end = exec.getParameter().get("endTime");
+        Date endTime = Conversions.convert(end, Date.class);
+        if (calib_start.after(endTime)) {
+            throw new ComponentException("illegal calibration_start: " + calib_start);
+        }
+        for (Step step : steps) {
+            step.init(exec, calib_start, endTime, rounds);
+        }
+
+        for (int r = 0; r < rounds; r++) {
+            for (int s = 0; s < steps.size(); s++) {
+                Step step = steps.get(s);
+                Data stepData = step.round()[r];
+                System.out.println("\n\n>>>>>>>>>>>>>>  Round [" + (r + 1) + "]  Step [" + step.getName() + "] <<<<<<<<<<<<<<");
+                SCE sce = new SCE(exec, step, stepData);
+                sce.run();
+                exec.writeParameterCopy(step, r);
+                step.post(r, stepData);
+                Runtime.getRuntime().gc();
+            }
+        }
+        Compound.shutdown();
         return null;
     }
 
@@ -107,7 +104,7 @@ public class Luca extends AbstractSimulation  {
                 log.config("Simulation output folder: " + lastFolder);
             }
             lastFolder.mkdirs();
-            
+
             parameter = getModel().getParameter();
             Logger.getLogger("oms3.model").setLevel(Level.WARNING);
         }
@@ -118,40 +115,36 @@ public class Luca extends AbstractSimulation  {
 
         @Override
         public void execute(Step.Data step) throws Exception {
-            try {
-                Object comp = getModel().getComponent();
+            Object comp = getModel().getComponent();
 
-                writeParameterFile(step);
-                log.config("Init ...");
-                ComponentAccess.callAnnotated(comp, Initialize.class, true);
+            writeParameterFile(step);
+            log.config("Init ...");
+            ComponentAccess.callAnnotated(comp, Initialize.class, true);
 
-                // setting the input data;
-                boolean success = ComponentAccess.setInputData(parameter, comp, log);
-                if (!success) {
-                    throw new RuntimeException("There are Parameter problems. Simulation exits.");
-                }
+            // setting the input data;
+            boolean success = ComponentAccess.setInputData(parameter, comp, log);
+            if (!success) {
+                throw new RuntimeException("There are Parameter problems. Simulation exits.");
+            }
 
-                boolean adjusted = ComponentAccess.adjustOutputPath(lastFolder, comp, log);
+            boolean adjusted = ComponentAccess.adjustOutputPath(lastFolder, comp, log);
 
-                for (Output e : getOut()) {
-                    e.setup(comp, lastFolder, getName());
-                }
-                // execute phases and be done.
-                log.config("Exec ...");
-                ComponentAccess.callAnnotated(comp, Execute.class, false);
-                log.config("Finalize ...");
-                ComponentAccess.callAnnotated(comp, Finalize.class, true);
+            for (Output e : getOut()) {
+                e.setup(comp, lastFolder, getName());
+            }
+            // execute phases and be done.
+            log.config("Exec ...");
+            ComponentAccess.callAnnotated(comp, Execute.class, false);
+            log.config("Finalize ...");
+            ComponentAccess.callAnnotated(comp, Finalize.class, true);
 
-                for (Output e : getOut()) {
-                    e.done();
-                }
-            } catch (Throwable E) {
-                handleException(E);
+            for (Output e : getOut()) {
+                e.done();
             }
         }
 
         @Override
-        public void writeParameterFile(Step.Data step) throws Exception {
+        public void writeParameterFile(Step.Data step)  {
             ParameterData[] paramData = step.paramData;
             for (int i = 0; i < paramData.length; i++) {
                 String name = paramData[i].getName();
@@ -161,7 +154,7 @@ public class Luca extends AbstractSimulation  {
         }
 
         public void writeParameterCopy(Step step, int round) throws FileNotFoundException {
-            File params = new File(lastFolder, "round-"+ (round+1) + "_step-" + step.getName() + ".csv");
+            File params = new File(lastFolder, "round-" + (round + 1) + "_step-" + step.getName() + ".csv");
             System.out.println(" Final parameter file: '" + params + "'");
             PrintWriter pw = new PrintWriter(params);
             DataIO.print(parameter, "Parameter", pw);
@@ -178,5 +171,4 @@ public class Luca extends AbstractSimulation  {
             }
         }
     }
-
 }

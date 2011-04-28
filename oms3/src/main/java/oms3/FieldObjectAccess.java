@@ -32,14 +32,16 @@ import oms3.Notification.DataflowEvent;
  * @version $Id: FieldAccess.java 20 2008-07-25 22:31:07Z od $ 
  */
 class FieldObjectAccess implements Access {
-
+    
+    Notification ens;
     FieldContent.FA data;
     Access fa;
 
 //    Access access;
-    FieldObjectAccess(Access fa, FieldContent.FA data) {
+    FieldObjectAccess(Access fa, FieldContent.FA data, Notification ens) {
         this.fa = fa;
         this.data = data;
+        this.ens = ens;
     }
 
     /**
@@ -54,6 +56,7 @@ class FieldObjectAccess implements Access {
 //    boolean canConnect(FieldObjectAccess other) {
 //        return other.field.getType().isAssignableFrom(field.getType());
 //    }
+    
     /** 
      * a field is receiving a new value (in)
      * 
@@ -62,17 +65,17 @@ class FieldObjectAccess implements Access {
     @Override
     public void in() throws Exception {
         if (data == null) {
-            throw new RuntimeException("Not connected: " + toString());
+            throw new ComponentException("Not connected: " + toString());
         }
         Object val = data.getFieldValue();
         // fire only if there is a listener
-//        if (ens.shouldFire()) {
-//            DataflowEvent e = new DataflowEvent(ens.getController(), this, val);
+        if (ens.shouldFire()) {
+            DataflowEvent e = new DataflowEvent(ens.getController(), this, val);
 ////            DataflowEvent e = new DataflowEvent(ens.getController(), this, access.toObject());
-//            ens.fireIn(e);
+            ens.fireIn(e);
 //            // the value might be altered
-//            val = e.getValue();
-//        }
+            val = e.getValue();
+        }
 
 //        access.pass((Access) val);
         fa.setFieldValue(val);
@@ -88,13 +91,13 @@ class FieldObjectAccess implements Access {
         Object val = fa.getFieldValue();
 //        Object val = access;
 
-//        if (ens.shouldFire()) {
-//            DataflowEvent e = new DataflowEvent(ens.getController(), this, val);
+        if (ens.shouldFire()) {
+            DataflowEvent e = new DataflowEvent(ens.getController(), this, val);
 ////            DataflowEvent e = new DataflowEvent(ens.getController(), this, access.toObject());
-//            ens.fireOut(e);
+            ens.fireOut(e);
 //            // the value might be altered
-//            val = e.getValue();
-//        }
+            val = e.getValue();
+        }
         // if data==null this unconsumed @Out, its OK but we do not want to set it.
         if (data != null) {
             data.setFieldValue(val);

@@ -102,23 +102,23 @@ public class Notification {
         }
     }
 
-    void fireConnect(Access srcAccess, Access destAccess) {
-        if (shouldFire) {
-            fire(Type.CONNECT, new ConnectEvent(c, srcAccess, destAccess));
-        }
-    }
+//    void fireConnect(Access srcAccess, Access destAccess) {
+//        if (shouldFire) {
+//            fire(Type.CONNECT, new ConnectEvent(c, srcAccess, destAccess));
+//        }
+//    }
 
-    void fireMapIn(Access srcAccess, Access destAccess) {
-        if (shouldFire) {
-            fire(Type.MAPIN, new ConnectEvent(c, srcAccess, destAccess));
-        }
-    }
+//    void fireMapIn(Access srcAccess, Access destAccess) {
+//        if (shouldFire) {
+//            fire(Type.MAPIN, new ConnectEvent(c, srcAccess, destAccess));
+//        }
+//    }
 
-    void fireMapOut(Access srcAccess, Access destAccess) {
-        if (shouldFire) {
-            fire(Type.MAPOUT, new ConnectEvent(c, srcAccess, destAccess));
-        }
-    }
+//    void fireMapOut(Access srcAccess, Access destAccess) {
+//        if (shouldFire) {
+//            fire(Type.MAPOUT, new ConnectEvent(c, srcAccess, destAccess));
+//        }
+//    }
 
     void fireIn(DataflowEvent e) {
         fire(Type.IN, e);
@@ -166,23 +166,23 @@ public class Notification {
          * An @In field is connected to an out field of a component.
          * @see DataflowEvent
          */
-        CONNECT,
-        /** 
-         * A Component field is mapped to an @In field of
-         * a containing component.
-         * @see DataflowEvent
-         */
-        MAPIN,
-        /** 
-         * A Component field is mapped to an @Out field of
-         * a containing component.
-         * 
-         * @see DataflowEvent
-         */
-        MAPOUT,
-        FIELDIN,
-        FIELDOUT,
-        VALIN
+//        CONNECT,
+//        /** 
+//         * A Component field is mapped to an @In field of
+//         * a containing component.
+//         * @see DataflowEvent
+//         */
+//        MAPIN,
+//        /** 
+//         * A Component field is mapped to an @Out field of
+//         * a containing component.
+//         * 
+//         * @see DataflowEvent
+//         */
+//        MAPOUT,
+//        FIELDIN,
+//        FIELDOUT,
+//        VALIN
         
     }
 

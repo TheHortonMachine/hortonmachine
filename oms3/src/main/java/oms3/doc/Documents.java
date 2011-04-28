@@ -144,7 +144,7 @@ public class Documents {
             return db.toString();
         }
 
-        String classSection(Class c) {
+        String classSection(Class<?> c) {
             StringBuffer db = new StringBuffer();
             db.append("<section>");
             db.append("<title>" + b.getString("component") + " '" + c.getSimpleName() + "'</title>");

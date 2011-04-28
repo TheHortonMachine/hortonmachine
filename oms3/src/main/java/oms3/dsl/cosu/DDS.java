@@ -64,24 +64,19 @@ public class DDS extends AbstractSimulation {
     }
 
     @Override
-    public Object run() {
-        try {
-            OutputStragegy st = getOutput().getOutputStrategy(getName());
-            File lastFolder = st.nextOutputFolder();
-            if (log.isLoggable(Level.CONFIG)) {
-                log.config("Simulation output folder: " + lastFolder);
-            }
-            lastFolder.mkdirs();
-            Logger.getLogger("oms3.model").setLevel(Level.WARNING);
-
-            opt.adjustWeights();
-
-            run(getModel(), getOut(), lastFolder, getName());
-
-            // setting the input data;
-        } catch (Throwable E) {
-            handleException(E);
+    public Object run() throws Exception {
+        OutputStragegy st = getOutput().getOutputStrategy(getName());
+        File lastFolder = st.nextOutputFolder();
+        if (log.isLoggable(Level.CONFIG)) {
+            log.config("Simulation output folder: " + lastFolder);
         }
+        lastFolder.mkdirs();
+        Logger.getLogger("oms3.model").setLevel(Level.WARNING);
+
+        opt.adjustWeights();
+
+        run(getModel(), getOut(), lastFolder, getName());
+
         return null;
     }
 

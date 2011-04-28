@@ -6,7 +6,6 @@ package oms3;
 
 import oms3.dsl.Buildable;
 import oms3.dsl.GenericBuilderSupport;
-import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * SimBuilder class for all oms simulation DSLs
@@ -15,45 +14,34 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  */
 public class SimBuilder extends GenericBuilderSupport {
 
-    public static void checkInstall() {
-        String jv = System.getProperty("java.version");
-        String gv = InvokerHelper.getVersion();
-        String ov = oms3.Utils.getVersion();
-
-        System.out.print("  Java:" + jv + " Groovy:" + gv + " OMS:" + ov);
-        if (jv.compareTo("1.6") > 0 && gv.compareTo("1.5.6") >= 0 && ov.compareTo("3.0") >= 0) {
-            System.out.println("  ...Correct Installation.");
-        } else {
-            System.out.println("  ...Incorrect Installation!, check versions.");
-        }
-    }
-
     @Override
-    public  Class<? extends Buildable> lookupTopLevel(Object name) {
+    public  Class<? extends Buildable> lookupTopLevel(Object n1) {
         String cl = null;
-        if (name.toString().equals("sim")) {
+        String name = n1.toString();
+        if (name.equals("sim")) {
             cl = "oms3.dsl.Sim";
-        } else if (name.toString().equals("esp")) {
+        } else if (name.equals("esp")) {
             cl = "oms3.dsl.esp.Esp";
-        } else if (name.toString().equals("luca")) {
+        } else if (name.equals("luca")) {
             cl = "oms3.dsl.cosu.Luca";
-        } else if (name.toString().equals("fast")) {
+        } else if (name.equals("fast")) {
             cl = "oms3.dsl.cosu.Fast";
-        } else if (name.toString().equals("dds")) {
+        } else if (name.equals("dds")) {
             cl = "oms3.dsl.cosu.DDS";
-        } else if (name.toString().equals("glue")) {
+        } else if (name.equals("glue")) {
             cl = "oms3.dsl.cosu.Glue";
-        } else if (name.toString().equals("test")) {
+        } else if (name.equals("test")) {
             cl = "oms3.dsl.Test";
-        } else if (name.toString().equals("chart")) {
+        } else if (name.equals("chart")) {
             cl = "oms3.dsl.analysis.Chart";
         } else {
-            throw new IllegalArgumentException(name.toString());
+            throw new ComponentException("unknown element '" + name + "'");
         }
+        
         try {
             return (Class<? extends Buildable>) Class.forName(cl);
         } catch (ClassNotFoundException ex) {
-            throw new IllegalArgumentException(ex);
+            throw new Error("DSL Not found '" + ex.getMessage() + "'");
         }
     }
 }

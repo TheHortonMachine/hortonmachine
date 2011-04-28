@@ -68,6 +68,7 @@ public class JavaFileManagerClassLoader extends ClassLoader {
             bos.write(buf, 0, n);
             n = classStream.read(buf);
         }
+        classStream.close();
         return bos.toByteArray();
     }
 }

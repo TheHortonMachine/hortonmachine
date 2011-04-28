@@ -5,11 +5,14 @@
 package oms3.dsl;
 
 import groovy.util.BuilderSupport;
+import java.util.Date;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import ngmf.util.ConsoleLoggingHandler;
+import oms3.ComponentException;
 
 /**
  * Generic Builder class. Simplifies the use of Groovy's
@@ -23,16 +26,30 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
     private static final Logger log = Logger.getLogger("oms3.sim");
     private static final Logger model_log = Logger.getLogger("oms3.model");
     //
-    static final ConsoleHandler conHandler = new ConsoleLoggingHandler();
+    static final ConsoleHandler conHandler = new ConsoleHandler();
+
+    static class LR extends Formatter {
+        
+        @Override
+        public String format(LogRecord r) {
+            return String.format("%1$tm/%1$td %1$tT %2$-7s %3$s\n",
+                    new Date(r.getMillis()), r.getLevel(), r.getMessage());
+        }
+    }
 
     static {
+        log.setUseParentHandlers(false);
+        model_log.setUseParentHandlers(false);
+
         log.addHandler(conHandler);
         model_log.addHandler(conHandler);
+        
         conHandler.setLevel(Level.ALL);
+        conHandler.setFormatter(new LR());
     }
 
     public GenericBuilderSupport() {
-         if (log.isLoggable(Level.CONFIG)) {
+        if (log.isLoggable(Level.CONFIG)) {
             log.config("oms.version : " + System.getProperty("oms.version"));
             log.config("oms.home : " + System.getProperty("oms.home"));
             log.config("oms.prj : " + System.getProperty("oms.prj"));
@@ -70,16 +87,6 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
      */
     protected abstract Class<? extends Buildable> lookupTopLevel(Object name);
 
-    /** Handle the exception
-     *
-     * @param ex
-     * @throws RuntimeException
-     */
-    private void handleException(Throwable ex) throws RuntimeException {
-        ex.printStackTrace(System.out);     // there is no stack trace within NB.
-        throw new RuntimeException(ex);
-    }
-
     /**
      * Create the nodes.
      * 
@@ -91,28 +98,33 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
     @Override
     protected Object createNode(Object name, Map props, Object value) {
         if (log.isLoggable(Level.CONFIG)) {
-            log.config("name=" + name + ", " + "map=" + props + ", " + "value=" + value +  ", " + "value type="
+            log.config("name=" + name + ", " + "map=" + props + ", " + "value=" + value + ", " + "value type="
                     + (value != null ? value.getClass().toString() : "-"));
         }
-        try {
-            if (name == null) {
-                throw new NullPointerException("name");
+        if (name == null) {
+            throw new Error("name == null");
+        }
+        if (current == null) {
+            Class<? extends Buildable> current_class = lookupTopLevel(name);
+            try {
+                current = current_class.newInstance();
+            } catch (Exception ex) {
+                throw new Error(ex.getMessage());
             }
-            if (current == null) {
-                current = lookupTopLevel(name).newInstance();
-            } else {
-                current = current.create(name, value);
-            }
-            if (current == null) {
-                throw new NullPointerException("current");
-            }
-            // Set properties if provided.
-            if (props != null && current != Buildable.LEAF) {
+        } else {
+            current = current.create(name, value);
+        }
+        if (current == null) {
+            throw new Error("current==null");
+        }
+        // Set properties if provided.
+        if (props != null && current != Buildable.LEAF) {
+            try {
                 BeanBuilder b = new BeanBuilder(current.getClass());
                 b.setProperties(current, props);
+            } catch (Exception ex) {
+                throw new ComponentException(ex.getMessage());
             }
-        } catch (Exception ex) {
-            handleException(ex);
         }
         return current;
     }
@@ -121,7 +133,7 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
     protected void nodeCompleted(Object parent, Object node) {
         current = (Buildable) parent;
         if (log.isLoggable(Level.CONFIG)) {
-            log.log(Level.CONFIG, "Completed: {0} - {1}", new Object[]{parent, node});
+            log.config("Completed: " + parent + " " + node);
         }
     }
 }

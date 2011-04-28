@@ -23,6 +23,7 @@
 package oms3;
 
 import java.lang.reflect.Field;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import oms3.Notification.DataflowEvent;
 //import oms3.gen.Access;
@@ -32,19 +33,15 @@ import oms3.Notification.DataflowEvent;
  * @author Olaf David (olaf.david@ars.usda.gov)
  * @version $Id: FieldAccess.java 20 2008-07-25 22:31:07Z od $ 
  */
-
-
 class FieldAccess implements Access {
 
     Notification ens;
     Field field;
     Object comp;
     FieldContent data;
-
     private static final Logger log = Logger.getLogger("oms3.sim");
 
 //    Access access;
-
     FieldAccess(Object target, Field field, Notification ens) {
         this.field = field;
         this.comp = target;
@@ -68,7 +65,7 @@ class FieldAccess implements Access {
         // allow setting in field once only.
         // cannot have multiple sources for one @In !
         if (this.data != null) {
-            throw new RuntimeException("Attempt to set @In field twice: " + comp + "." + field.getName());
+            throw new ComponentException("Attempt to set @In field twice: " + comp + "." + field.getName());
         }
         this.data = data;
     }
@@ -88,10 +85,13 @@ class FieldAccess implements Access {
      * @throws java.lang.Exception
      */
     @Override
-     public void in() throws Exception {
+    public void in() throws Exception {
         if (data == null) {
-            log.warning("In not connected : " + toString() + ", using default.");
-            return;
+             throw new ComponentException("Not connected: " + toString());
+//            if (log.isLoggable(Level.WARNING)) {
+//                log.warning("In not connected : " + toString() + ", using default.");
+//            }
+//            return;
         }
         Object val = data.getValue();
         // fire only if there is a listener
@@ -106,7 +106,7 @@ class FieldAccess implements Access {
 //        access.pass((Access) val);
         setFieldValue(val);
     }
-    
+
     /** 
      * a field is sending a new value (out)
      * 
@@ -117,7 +117,7 @@ class FieldAccess implements Access {
     public void out() throws Exception {
         Object val = getFieldValue();
 //        Object val = access;
-        
+
         if (ens.shouldFire()) {
             DataflowEvent e = new DataflowEvent(ens.getController(), this, val);
 //            DataflowEvent e = new DataflowEvent(ens.getController(), this, access.toObject());
@@ -127,7 +127,7 @@ class FieldAccess implements Access {
         }
         // if data==null this unconsumed @Out, its OK but we do not want to set it.
         if (data != null) {
-           data.setValue(val);
+            data.setValue(val);
         }
     }
 
@@ -168,10 +168,6 @@ class FieldAccess implements Access {
      */
     @Override
     final public void setFieldValue(Object o) throws Exception {
-//        System.out.println("Set field " + o + " at " + comp + " " + field);
-//        if (field.getName().equals("basin_soil_moist") && o == null) {
-//            o = new Double(0.0);
-//        }
         field.set(comp, o);
     }
 

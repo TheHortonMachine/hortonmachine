@@ -143,6 +143,7 @@ public abstract class JNAFortran implements AnnotationHandler {
             } else {
                 javaExecFunction = AnnotationParser.trimQuotes(javaExecFunction);
             }
+            javaExecFunction = javaExecFunction.trim().toLowerCase();
         } else if (ann.containsKey("In") || ann.containsKey("Out")) {
             decl.addAll(Decl.parse(line.trim(), ann));
         }

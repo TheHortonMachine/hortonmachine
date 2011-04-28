@@ -24,10 +24,11 @@ package oms3;
 
 import oms3.annotations.*;
 
+
 /**
  * Abstract Compound Command.
  * 
- * @author Olaf David (olaf.david@ars.usda.gov)
+ * @author od
  * @version $Id: Compound.java 20 2008-07-25 22:31:07Z od $ 
  */
 public  class Compound {
@@ -54,7 +55,7 @@ public  class Compound {
 
 
     @Execute
-    /** Executes the the Compund.
+    /** Executes the the Compound.
      * @throws ComponentException
      */
     public void execute() throws ComponentException {
@@ -74,20 +75,20 @@ public  class Compound {
     }
 
 
-    /** Connencts two internal components with respect to their fields.
+    /** Connects two internal components with respect to their fields.
      *
      * from/@Out -> to/@In
      *
      * @param from command object 1
      * @param from_out output field of cmd1
-     * @param to command opbject 2
+     * @param to command object 2
      * @param to_in input field of cmd2
      */
     public void out2infb(Object from, String from_out, Object to, String to_in) {
         controller.connect(from, from_out, to, to_in);
     }
 
-    /** Connencts two internal components with respect to their fields.
+    /** Connects two internal components with respect to their fields.
      *
      * from/@Out -> to/@In
      *

@@ -4,6 +4,7 @@
  */
 package oms3.dsl;
 
+import oms3.ComponentException;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -67,7 +68,7 @@ public class Efficiency implements Buildable {
 
     public void setup(Object comp) {
         if (obs == null || sim == null) {
-            throw new RuntimeException("obs/sim variable not set.");
+            throw new ComponentException("obs/sim variable not set.");
         }
         if (comp instanceof Compound) {
             Compound c = (Compound) comp;
@@ -99,7 +100,7 @@ public class Efficiency implements Buildable {
 
     String result() {
         if (sim_l.size() != obs_l.size()) {
-            throw new IllegalArgumentException("obs/sim mismatch: " + obs_l.size() + "/" + sim_l.size());
+            throw new ComponentException("obs/sim mismatch: " + obs_l.size() + "/" + sim_l.size());
         }
         if (methods.isEmpty()) {
             return "No efficiency specified.";
@@ -160,12 +161,12 @@ public class Efficiency implements Buildable {
                 eff = Efficiencies.transformedRmse(obsarr, simarr);
             } else if (ROCE.startsWith(m)) {
                 if (precip_l.size() == 0) {
-                    throw new RuntimeException("missing precip for computing ROCE");
+                    throw new ComponentException("missing precip for computing ROCE");
                 }
                 double[] precarr = Util.convert(precip_l);
                 eff = Efficiencies.runoffCoefficientError(obsarr, simarr, precarr);
             } else {
-                throw new IllegalArgumentException(m);
+                throw new ComponentException("Unknown Efficiency'"+ m + '"');
             }
             b.append(String.format(Locale.US, "%10.5f ", eff));
         }

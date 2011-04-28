@@ -13,6 +13,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import oms3.CLI;
+import oms3.ComponentException;
 import oms3.util.Processes;
 
 /** 
@@ -53,7 +54,7 @@ public class Exec implements Buildable {
     public void run() throws Exception {
         File runFile = new File(file);
         if (!runFile.exists()) {
-            throw new IllegalArgumentException("Not found : " + file);
+            throw new ComponentException("Not found : " + file);
         }
         if (log.isLoggable(Level.INFO)) {
             log.info("Executing: " + file);
@@ -94,14 +95,14 @@ public class Exec implements Buildable {
                 try {
                     int exitValue = p.exec();
                     if (exitValue != 0) {
-                        throw new RuntimeException("ant failed, simulation stopped.");
+                        throw new ComponentException("ant failed, simulation stopped.");
                     }
                 } catch (IOException E) {
-                    System.out.println("Cannot run 'ant', check installation and paths: " + E.getMessage());
+                    throw new ComponentException("Cannot run 'ant', check installation and paths: " + E.getMessage());
                 }
                 break;
             default:
-                throw new RuntimeException("Unknown Execution type. " + type);
+                throw new ComponentException("Unknown Execution type. " + type);
         }
     }
 

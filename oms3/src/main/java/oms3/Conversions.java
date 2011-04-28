@@ -77,11 +77,11 @@ public class Conversions {
         }
     }
 
-    public static Params createDefault() {
-        Params p = new Params();
-        p.add(double.class, String.class, "10.5");
-        return p;
-    }
+//    public static Params createDefault() {
+//        Params p = new Params();
+//        p.add(double.class, String.class, "10.5");
+//        return p;
+//    }
 
     /** Convert a String value into an object of a certain type
      *
@@ -106,7 +106,7 @@ public class Conversions {
             // service provider lookup
             c = lookupConversionService(from.getClass(), to);
             if (c == null) {
-                throw new IllegalArgumentException("No Converter: " + from + " (" + from.getClass() + ") -> " + to);
+                throw new ComponentException("No Converter: " + from + " (" + from.getClass() + ") -> " + to);
             }
             co.put(key(from.getClass(), to), c);
         }
@@ -208,7 +208,7 @@ public class Conversions {
         }
 
         private String changed(String inp, int len) {
-            StringBuffer c = new StringBuffer();
+            StringBuilder c = new StringBuilder();
             int count = 0;
             int b = 0;
             boolean first = true;

@@ -41,6 +41,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 import oms3.annotations.Bound;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -54,13 +55,14 @@ import oms3.util.Annotations;
  * Component Access.
  * 
  * This class manages reflective access to components internals for the
- * purpose of teir integration into a model.
+ * purpose of their integration into a model.
  * 
  * @author od (odavid@colostate.edu)
  * @version $Id: ComponentProxy.java 20 2008-07-25 22:31:07Z od $ 
  */
 public class ComponentAccess {
 
+    private static final Logger log = Logger.getLogger("oms3.sim");
     /** target component */
     Object comp;
     // in and out fields
@@ -120,7 +122,7 @@ public class ComponentAccess {
 
     /**
      * Get the all the outputs.
-     * @return list of output fleld assess objects
+     * @return list of output field assess objects
      */
     public Collection<Access> outputs() {
         return outs.values();
@@ -171,14 +173,12 @@ public class ComponentAccess {
                     a.out();
                 }
             }
-
             // synchronized out
             for (Access a : outs.values()) {    // notify for output.
                 if (a.getClass() == FieldAccess.class) {
                     a.out();
                 }
             }
-
         } catch (InvocationTargetException ex) {
             throw new ComponentException(ex.getCause(), comp);
         } catch (Exception ex) {
@@ -219,7 +219,7 @@ public class ComponentAccess {
                 try {
                     return cmpClass.getMethod(m.getName(), m.getParameterTypes());
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    throw new ComponentException("Cannot find/access method: " + m);
                 }
             }
         }
@@ -240,7 +240,7 @@ public class ComponentAccess {
 //                    outs.put(f.getName(), new FieldAccess(cmp, f, ens));
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                throw new ComponentException("Cannot find/access field: " + f);
             }
         }
     }
@@ -248,7 +248,7 @@ public class ComponentAccess {
 /// static helper methods
     /** Call an method by Annotation.
      *
-     * @param o the oject to call.
+     * @param o the object to call.
      * @param ann the annotation
      * @param lazy if true, the a missing annotation is OK. if false
      *        the annotation has to be present or a Runtime exception is thrown.
@@ -259,7 +259,6 @@ public class ComponentAccess {
         } catch (IllegalAccessException ex) {
             throw new RuntimeException(ex);
         } catch (InvocationTargetException ex) {
-            ex.printStackTrace();
             throw new RuntimeException(ex.getCause());
         } catch (IllegalArgumentException ex) {
             if (!lazy) {
@@ -306,12 +305,12 @@ public class ComponentAccess {
                             f = new File(outputDir, f.getName());
                             in.setFieldValue(f);
                             adjusted = true;
-                            if (log != null && log.isLoggable(Level.CONFIG)) {
-                                log.log(Level.CONFIG, "Adjusting output for ''{0}'' to {1}", new Object[]{fieldName, f});
+                            if (log.isLoggable(Level.CONFIG)) {
+                                log.config("Adjusting output for '" + fieldName + "' to " + f);
                             }
                         }
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        throw new ComponentException("Failed adjusting output path for '" + fieldName);
                     }
                 }
             }
@@ -337,7 +336,7 @@ public class ComponentAccess {
                     p.put(name, value);
                 }
             } catch (Exception ex) {
-                ex.printStackTrace();
+                throw new ComponentException("Failed access to field: " + in.getField().getName());
             }
         }
         return p;
@@ -345,7 +344,6 @@ public class ComponentAccess {
 
     static Map<String, Object> convert(Map<String, Object> m) {
         LinkedHashMap<String, Object> hm = new LinkedHashMap<String, Object>();
-
         Set<Entry<String, Object>> entrySet = m.entrySet();
         for (Entry<String, Object> entry : entrySet) {
             String key = entry.getKey();
@@ -375,7 +373,7 @@ public class ComponentAccess {
      * @param log
      */
     @SuppressWarnings("unchecked")
-    public static boolean setInputData(Map<String, Object> inp, Object comp, Logger log) throws IOException {
+    public static boolean setInputData(Map<String, Object> inp, Object comp, Logger log) {
         PrintWriter w = null;
         File file = null;
         boolean success = true;
@@ -396,27 +394,28 @@ public class ComponentAccess {
                         if (range != null) {
                             double v = ((Number) inpValue).doubleValue();
                             if (!Annotations.inRange(range, v)) {
-                                log.warning("Value '" + v + "' not in Range: " + range);
+                                if (log.isLoggable(Level.WARNING)) {
+                                    log.warning("Value '" + v + "' not in Range: " + range);
+                                }
                             }
                         }
                     }
                     in.setFieldValue(inpValue);
-                    if (log != null && log.isLoggable(Level.CONFIG)) {
+                    if (log.isLoggable(Level.CONFIG)) {
                         log.config("@In " + comp.getClass().getName() + "@" + fieldName + " <- '" + inpValue + "'");
                     }
                 } catch (Exception ex) {
-                    System.out.println("Failed @In " + comp.getClass().getName() + "@" + fieldName + " <- '" + ex.getMessage());
-                    success = false;
+                    throw new ComponentException("Failed setting '" + fieldName + "' type " + in.getField().getType() + " <- " + ex.getMessage());
                 }
                 continue;
             } else {
                 if (System.getProperty("oms3.check_params") != null) {
-                    if (w == null) {
-                        file = new File(System.getProperty("oms3.work", System.getProperty("user.dir")), "missing_params.csv");
-                        w = new PrintWriter(new FileWriter(file));
-                        w.println("# Missing parameter, copy those entries into one of your parameter files.");
-                    }
                     try {
+                        if (w == null) {
+                            file = new File(System.getProperty("oms3.work", System.getProperty("user.dir")), "missing_params.csv");
+                            w = new PrintWriter(new FileWriter(file));
+                            w.println("# Missing parameter, copy those entries into one of your parameter files.");
+                        }
                         String val = null;
                         Bound b = null;
                         Object o = in.getFieldValue();
@@ -448,7 +447,7 @@ public class ComponentAccess {
                         throw new RuntimeException(E);
                     }
                 }
-                if (log != null && log.isLoggable(Level.WARNING)) {
+                if (log.isLoggable(Level.WARNING)) {
                     log.warning("No Input for '" + fieldName + "'");
                 }
             }
@@ -461,7 +460,6 @@ public class ComponentAccess {
         return success;
     }
 
-
     public static String dump(Object comp) throws Exception {
         StringBuilder b = new StringBuilder();
         b.append("// In\n");
@@ -469,13 +467,13 @@ public class ComponentAccess {
         for (Access in : cp.inputs()) {
             String name = in.getField().getName();
             Object val = in.getFieldValue();
-            b.append(name + ": " + Conversions.convert(val, String.class) + "\n");
+            b.append("  " + name + ": " + Conversions.convert(val, String.class) + "\n");
         }
         b.append("// Out\n");
         for (Access in : cp.outputs()) {
             String name = in.getField().getName();
             Object val = in.getFieldValue();
-            b.append(name + ": " + Conversions.convert(val, String.class) + "\n");
+            b.append("  " + name + ": " + Conversions.convert(val, String.class) + "\n");
         }
         b.append("\n");
         return b.toString();

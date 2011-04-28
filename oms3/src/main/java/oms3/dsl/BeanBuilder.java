@@ -83,7 +83,7 @@ class BeanBuilder {
             throws IllegalAccessException, InvocationTargetException {
         IndexedPropertyDescriptor desc = (IndexedPropertyDescriptor) propertyMap.get(property);
         if (desc == null) {
-            throw new IllegalArgumentException("Invalid property: " + property);
+            throw new IllegalArgumentException("Invalid property '" + property + "'");
         }
         Method meth = desc.getIndexedWriteMethod();
         Class propertyType = desc.getIndexedPropertyType();
@@ -96,7 +96,7 @@ class BeanBuilder {
 
         PropertyDescriptor desc = propertyMap.get(property);
         if (desc == null) {
-            throw new IllegalArgumentException("Invalid property: " + property);
+            throw new IllegalArgumentException("Invalid property '" + property + "'");
         }
         Method meth = desc.getWriteMethod();
         Class propertyType = desc.getPropertyType();

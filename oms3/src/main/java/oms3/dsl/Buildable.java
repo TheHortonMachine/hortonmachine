@@ -23,7 +23,7 @@ public interface Buildable {
 
         @Override
         public Buildable create(Object name, Object value) {
-            throw new UnsupportedOperationException("Cannot add to a leaf node.");
+            throw new Error("Cannot add to a leaf node.");
         }
     };
 }

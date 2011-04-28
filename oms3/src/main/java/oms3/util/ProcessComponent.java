@@ -10,12 +10,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import oms3.annotations.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /** Generic Process component.
  *
  * @author od
  */
 public class ProcessComponent {
+    static final Logger log = Logger.getLogger(ProcessComponent.class.getName());
 
     // the executable file
     @In public String exe;

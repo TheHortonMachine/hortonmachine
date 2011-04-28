@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -95,12 +94,8 @@ public class JGTModel implements Process {
         // the geotools monitor is wrapped into the internal progress monitor
         GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
         input.put("pm", pm); //$NON-NLS-1$
-        try {
-            // set the inputs to the model
-            ComponentAccess.setInputData(input, this, null);
-        } catch (IOException e) {
-            throw new ProcessException(e.getLocalizedMessage());
-        }
+        // set the inputs to the model
+        ComponentAccess.setInputData(input, this, null);
 
         // trigger execution of the module
         ComponentAccess.callAnnotated(this, Initialize.class, true);

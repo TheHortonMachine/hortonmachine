@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
 import ngmf.util.OutputStragegy;
+import oms3.ComponentException;
 import oms3.dsl.analysis.Chart;
 
 /**
@@ -64,16 +65,11 @@ abstract public class AbstractSimulation implements Buildable {
         return out;
     }
 
-    protected void handleException(Throwable ex) throws RuntimeException {
-        log.severe(ex.getClass().getName() + " " + ex.getMessage());
-        ex.printStackTrace(System.out);     // there is no stack trace within NB.
-    }
-
     @Override
     public Buildable create(Object name, Object value) {
         if (name.equals("model")) {
             if (model != null) {
-                throw new IllegalArgumentException("Only one 'model' allowed.");
+                throw new ComponentException("Only one 'model' element allowed.");
             }
             model = new Model();
             model.setRes(res);
@@ -94,16 +90,16 @@ abstract public class AbstractSimulation implements Buildable {
         } else if (name.equals("post")) {
             return lazyPost();
         } else if (name.equals("build")) {
-            File buildFile = new File(System.getProperty("oms.prj") + "/.oms/build.xml");
+            File buildFile = new File(System.getProperty("oms.prj") + File.separatorChar + "build.xml");
             if (!buildFile.exists()) {
-                throw new IllegalArgumentException("No build file: " + buildFile);
+                throw new ComponentException("No build file found: " + buildFile);
             }
             Exec e = new Exec(Exec.Type.ANT);
             e.setFile(buildFile.getAbsolutePath());
             lazyPre().l.add(e);
             return e;
         }
-        throw new IllegalArgumentException(name.toString());
+        throw new ComponentException("Unknown element '" + name.toString() + "'");
     }
 
     static void nativeLF() {
@@ -128,7 +124,7 @@ abstract public class AbstractSimulation implements Buildable {
             nativeLF();
             analysis.run(st, getName());
         } else {
-            System.out.println("No analysis defined.");
+            throw new ComponentException("No analysis element defined.");
         }
     }
 
