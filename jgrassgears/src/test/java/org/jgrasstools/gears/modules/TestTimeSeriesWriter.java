@@ -66,7 +66,9 @@ public class TestTimeSeriesWriter extends HMTestCase {
         outData = reader.outData;
         reader.close();
 
-        assertTrue(tempFile.delete());
+        if(!tempFile.delete()){
+            tempFile.deleteOnExit();
+        }
 
         Set<Entry<DateTime, double[]>> entrySet = outData.entrySet();
 

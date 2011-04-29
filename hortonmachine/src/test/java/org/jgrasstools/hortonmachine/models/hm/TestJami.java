@@ -160,6 +160,8 @@ public class TestJami extends HMTestCase {
         // for( int i = 0; i < result1221.length; i++ ) {
         // assertEquals(result1221[i], values1221[i], 0.0001);
         // }
-
+        if (!outputFileForEtp.delete()) {
+            outputFileForEtp.deleteOnExit();
+        }
     }
 }
