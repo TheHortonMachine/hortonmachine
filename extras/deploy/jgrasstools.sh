@@ -21,6 +21,6 @@ MEM="-Xmx2g"
 CURRENT=`pwd`
 
 java $MEM \
--Doms.sim.resources="$CURRENT/modules/jgrassgears-0.1-SNAPSHOT.jar:$CURRENT/modules/hortonmachine-0.1-SNAPSHOT.jar" \
+-Doms.sim.resources="$CURRENT/modules/jgrassgears-0.7.0.jar:$CURRENT/modules/hortonmachine-0.7.0.jar" \
 -cp "./modules/*:./libs/*" \
 org.jgrasstools.hortonmachine.utils.oms.CLI $1 $2 $3 $4

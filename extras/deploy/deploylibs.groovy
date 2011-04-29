@@ -57,26 +57,27 @@ JGTMODULESCOPY: {
     if(!modulesFolderFile.exists()){
         modulesFolderFile.mkdir();
     }
-    // jgrassgears
+    // take latest jgrassgears jar
     def jarFiles = new File("./jgrassgears/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
             return filename.startsWith("jgrassgears-") && filename.endsWith(".jar")  
         }  
     });
-    jarFiles.each{ 
-        def copyToFile = new File(modulesFolderFile.absolutePath, it.name).absolutePath;
-       (new AntBuilder()).copy( file : it , tofile : copyToFile )
-    }
-    // hortonmachine
+	Arrays.sort(jarFiles, Collections.reverseOrder());
+	def jgtJar = jarFiles[0];
+	def jgtCopyToFile = new File(modulesFolderFile.absolutePath, jgtJar.name).absolutePath;
+    (new AntBuilder()).copy( file : jgtJar , tofile : jgtCopyToFile )
+
+    // take latest hortonmachine jar
     jarFiles = new File("./hortonmachine/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
             return filename.startsWith("hortonmachine-") && filename.endsWith(".jar")  
         }  
     });
-    jarFiles.each{ 
-        def copyToFile = new File(modulesFolderFile.absolutePath, it.name).absolutePath;
-       (new AntBuilder()).copy( file : it , tofile : copyToFile )
-    }
+	Arrays.sort(jarFiles, Collections.reverseOrder());
+	def hmJar = jarFiles[0];
+    def hmCopyToFile = new File(modulesFolderFile.absolutePath, hmJar.name).absolutePath;
+    (new AntBuilder()).copy( file : hmJar , tofile : hmCopyToFile )
 
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");
