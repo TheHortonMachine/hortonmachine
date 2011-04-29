@@ -1,20 +1,18 @@
-rem JGrass - Free Open Source Java GIS http://www.jgrass.org 
-rem (C) HydroloGIS - www.hydrologis.com 
-rem 
-rem This library is free software; you can redistribute it and/or modify it under
-rem the terms of the GNU Library General Public License as published by the Free
-rem Software Foundation; either version 2 of the License, or (at your option) any
-rem later version.
-rem 
-rem This library is distributed in the hope that it will be useful, but WITHOUT
-rem ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-rem FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
-rem details.
-rem 
-rem You should have received a copy of the GNU Library General Public License
-rem along with this library; if not, write to the Free Foundation, Inc., 59
-rem Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
-set MEM="-Xmx2g"
-
-java %MEM% -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.oms.ScriptLauncher %1
+:: This file is part of JGrasstools (http://www.jgrasstools.org)
+:: (C) HydroloGIS - www.hydrologis.com 
+:: 
+:: JGrasstools is free software: you can redistribute it and/or modify
+:: it under the terms of the GNU General Public License as published by
+:: the Free Software Foundation, either version 3 of the License, or
+:: (at your option) any later version.
+::
+:: This program is distributed in the hope that it will be useful,
+:: but WITHOUT ANY WARRANTY; without even the implied warranty of
+:: MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+:: GNU General Public License for more details.
+::
+:: You should have received a copy of the GNU General Public License
+:: along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ 
+set MEM="-Xmx1g"
+java %MEM% -Doms.sim.resources="%CD%/jgrassgears-0.1-SNAPSHOT.jar:%CD%/modules/hortonmachine-0.1-SNAPSHOT.jar" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %1 %2 %3 %4

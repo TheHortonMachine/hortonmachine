@@ -83,12 +83,27 @@ JGTMODULESCOPY: {
     new AntBuilder().copy ( file : toolsJar.absolutePath , tofile : newToolsJar.absolutePath )
 }
 
-// launch maven deps tree
-def mvnCommand = "mvn dependency:tree";
-def proc = mvnCommand.execute();
+def outputCatcher = new StringBuffer();
+def errorCatcher = new StringBuffer();
+def proc;
+try{
+	def mvnCommand = "mvn dependency:tree";
+	proc = mvnCommand.execute();
+	println "...launching maven deps tree: " + mvnCommand;
+} catch(Exception e) {
+	// dirty test for windows
+	def mvnCommand = "cmd /c mvn dependency:tree";
+	println "...launching maven deps tree: " + mvnCommand;
+	proc = mvnCommand.execute();
+}
+proc.consumeProcessOutput(outputCatcher, errorCatcher);
 proc.waitFor();
+	
+def output = outputCatcher.toString();
+//println output;
+println "...launching maven deps tree (done)";
 
-def output = proc.in.text;
+println "...parsing maven outputs";
 // clean out what we need
 def lista=[];
 def lines = output.split("\n");
@@ -97,12 +112,15 @@ def startIndex = -1;
 def endIndex = -1;
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
-    if(line.startsWith("[INFO] [dependency:tree]")){
+	
+    if(line.startsWith("[INFO] [dependency:tree")){
+		println "...found start line: " + line;
         startIndex = i + 1;
         continue;
     }
     if(startIndex != -1 && line.startsWith("[INFO] ----------")){
-        endIndex = i - 1
+		println "...found end line: " + line;
+		endIndex = i - 1
         break;
     }
     if(startIndex == -1){
@@ -111,6 +129,7 @@ for (int i = 0; i < lines.size(); i++){
 
     lista << line;
 }
+println "...parsing maven outputs (done)";
 
 println "Search for:"
 lista.each{
