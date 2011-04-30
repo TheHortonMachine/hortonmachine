@@ -11,6 +11,7 @@
 		<gt.version.exp>2.7.0</gt.version.exp>
 		<jaitools.version>1.1.1</jaitools.version>
 		<jiffle.version>0.1.0</jiffle.version>
+		<oms.version>3.1.0RC1</oms.version>
 		<performRelease>false</performRelease>
 	</properties>
 
