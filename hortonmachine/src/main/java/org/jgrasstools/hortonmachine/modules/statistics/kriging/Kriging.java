@@ -49,10 +49,10 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.matrixes.LinearSystem;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
 
-import Jama.Matrix;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -375,6 +375,7 @@ public class Kriging extends JGTModel {
                     /*
                      * solve the linear system, where the result is the weight.
                      */
+                    LinearSystem linearSystem = new LinearSystem(covarianceMatrix);
                     Matrix a = new Matrix(covarianceMatrix);
                     Matrix b = new Matrix(knowsTerm, knowsTerm.length);
                     Matrix x = a.solve(b);
