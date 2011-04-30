@@ -82,7 +82,6 @@ public class Conversions {
 //        p.add(double.class, String.class, "10.5");
 //        return p;
 //    }
-
     /** Convert a String value into an object of a certain type
      *
      * @param to the type to convert to
@@ -101,6 +100,7 @@ public class Conversions {
             return new ArrayConverter((String) from).getArrayForType(to);
         }
         // get it from the internal cache.
+        @SuppressWarnings("unchecked")
         Converter<Object, T> c = co.get(key(from.getClass(), to));
         if (c == null) {
             // service provider lookup
@@ -129,6 +129,7 @@ public class Conversions {
      * @param to
      * @return
      */
+    @SuppressWarnings("unchecked")
     private static <T> Converter<Object, T> lookupConversionService(Class from, Class to) {
         for (ConversionProvider converter : convServices) {
             Converter c = converter.getConverter(from, to);

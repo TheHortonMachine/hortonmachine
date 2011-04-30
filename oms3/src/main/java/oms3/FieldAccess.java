@@ -87,11 +87,11 @@ class FieldAccess implements Access {
     @Override
     public void in() throws Exception {
         if (data == null) {
-             throw new ComponentException("Not connected: " + toString());
-//            if (log.isLoggable(Level.WARNING)) {
-//                log.warning("In not connected : " + toString() + ", using default.");
-//            }
-//            return;
+//             throw new ComponentException("Not connected: " + toString());
+            if (log.isLoggable(Level.WARNING)) {
+                log.warning("In not connected : " + toString() + ", using default.");
+            }
+            return;
         }
         Object val = data.getValue();
         // fire only if there is a listener
