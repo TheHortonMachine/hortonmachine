@@ -30,7 +30,7 @@ public class SquareMatrix extends Matrix
      * Constructor.
      * @param values the array of values
      */
-    public SquareMatrix(float values[][]) { set(values); }
+    public SquareMatrix(double values[][]) { set(values); }
 
     //---------//
     // Setters //
@@ -53,7 +53,7 @@ public class SquareMatrix extends Matrix
      * values are not square, only the upper left square is used.
      * @param values the 2-d array of values
      */
-    protected void set(float values[][])
+    protected void set(double values[][])
     {
         super.set(values);
         nRows = nCols = Math.min(nRows, nCols);

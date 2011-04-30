@@ -49,10 +49,10 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.matrixes.ColumnVector;
 import org.jgrasstools.gears.utils.math.matrixes.LinearSystem;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
-
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -239,7 +239,7 @@ public class Kriging extends JGTModel {
                     continue;
                 }
                 if (defaultVariogramMode == 0) {
-                    if (Math.abs(h[0]) >= 0.0) { //TOLL
+                    if (Math.abs(h[0]) >= 0.0) { // TOLL
                         xStationList.add(coordinate.x);
                         yStationList.add(coordinate.y);
                         zStationList.add(z);
@@ -277,7 +277,7 @@ public class Kriging extends JGTModel {
             zStation[0] = zStationList.get(0);
             hStation[0] = hStationList.get(0);
             double previousValue = hStation[0];
-            
+
             for( int i = 1; i < nStaz; i++ ) {
 
                 double xTmp = xStationList.get(i);
@@ -370,16 +370,19 @@ public class Kriging extends JGTModel {
                     /*
                      * calculating the right hand side of the kriging linear system.
                      */
-                    double[] knowsTerm = knowsTermsCalculating(xStation, yStation, zStation, n1);
+                    double[] knownTerm = knownTermsCalculation(xStation, yStation, zStation, n1);
 
                     /*
                      * solve the linear system, where the result is the weight.
                      */
+                    ColumnVector knownTermColumn = new ColumnVector(knownTerm);
                     LinearSystem linearSystem = new LinearSystem(covarianceMatrix);
-                    Matrix a = new Matrix(covarianceMatrix);
-                    Matrix b = new Matrix(knowsTerm, knowsTerm.length);
-                    Matrix x = a.solve(b);
-                    double[] moltiplicativeFactor = x.getColumnPackedCopy();
+                    ColumnVector solution = linearSystem.solve(knownTermColumn, true);
+                    // Matrix a = new Matrix(covarianceMatrix);
+                    // Matrix b = new Matrix(knownTerm, knownTerm.length);
+                    // Matrix x = a.solve(b);
+                    double[] moltiplicativeFactor = solution.copyValues1D();
+
                     double h0 = 0.0;
                     for( int k = 0; k < n1; k++ ) {
                         h0 = h0 + moltiplicativeFactor[k] * hStation[k];
@@ -591,8 +594,8 @@ public class Kriging extends JGTModel {
      * @param collection
      * @throws Exception if a fiel of elevation isn't the same of the collection
      */
-    private HashMap<Integer, Coordinate> getCoordinate( int nStaz,
-            SimpleFeatureCollection collection, String idField ) throws Exception {
+    private HashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
+            throws Exception {
         HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
         FeatureIterator<SimpleFeature> iterator = collection.features();
         Coordinate coordinate = null;
@@ -758,7 +761,7 @@ public class Kriging extends JGTModel {
      *            the number of the stations points.
      * @return
      */
-    private double[] knowsTermsCalculating( double[] x, double[] y, double[] z, int n ) {
+    private double[] knownTermsCalculation( double[] x, double[] y, double[] z, int n ) {
 
         double[] gamma = new double[n + 1];
         if (defaultVariogramMode == 0) {

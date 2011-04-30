@@ -23,7 +23,7 @@ public class ColumnVector extends Matrix
      * Constructor.
      * @param values the array of values
      */
-    public ColumnVector(float values[]) { set(values); }
+    public ColumnVector(double values[]) { set(values); }
 
     /**
      * Constructor.
@@ -45,15 +45,15 @@ public class ColumnVector extends Matrix
      * @param i the index
      * @return the value
      */
-    public float at(int i) { return values[i][0]; }
+    public double at(int i) { return values[i][0]; }
 
     /**
      * Copy the values of this matrix.
      * @return the copied values
      */
-    public float[] copyValues1D()
+    public double[] copyValues1D()
     {
-        float v[] = new float[nRows];
+        double v[] = new double[nRows];
 
         for (int r = 0; r < nRows; ++r) {
             v[r] = values[r][0];
@@ -82,11 +82,11 @@ public class ColumnVector extends Matrix
      * Set this column vector from an array of values.
      * @param values the array of values
      */
-    protected void set(float values[])
+    protected void set(double values[])
     {
         this.nRows  = values.length;
         this.nCols  = 1;
-        this.values = new float[nRows][1];
+        this.values = new double[nRows][1];
 
         for (int r = 0; r < nRows; ++r) {
             this.values[r][0] = values[r];
@@ -98,7 +98,7 @@ public class ColumnVector extends Matrix
      * @param i the index
      * @param value the value
      */
-    public void set(int i, float value) { values[i][0] = value; }
+    public void set(int i, double value) { values[i][0] = value; }
 
     //-------------------//
     // Vector operations //
@@ -131,16 +131,16 @@ public class ColumnVector extends Matrix
      * Compute the Euclidean norm.
      * @return the norm
      */
-    public float norm()
+    public double norm()
     {
         double t = 0;
 
         for (int r = 0; r < nRows; ++r) {
-            float v = values[r][0];
+            double v = values[r][0];
             t += v*v;
         }
 
-        return (float) Math.sqrt(t);
+        return (double) Math.sqrt(t);
     }
 
     /**

@@ -10,13 +10,13 @@ package org.jgrasstools.gears.utils.math.matrixes;
  */
 public class LinearSystem extends SquareMatrix
 {
-    private static final float TOLERANCE = Epsilon.floatValue();
+    private static final double TOLERANCE = Epsilon.doubleValue();
 
     /** max iters for improvement = twice # of significant digits */
     private static final int MAX_ITER;
     static {
         int   i = 0;
-        float t = TOLERANCE;
+        double t = TOLERANCE;
         while (t < 1) { ++i; t *= 10; }
         MAX_ITER = 2*i;
     }
@@ -39,17 +39,13 @@ public class LinearSystem extends SquareMatrix
      * Constructor.
      * @param values the array of values
      */
-    public LinearSystem(float values[][]) { super(values); }
-
-    public LinearSystem( double[][] covarianceMatrix ) {
-        // TODO Auto-generated constructor stub
-    }
+    public LinearSystem(double values[][]) { super(values); }
 
     /**
      * Set the values of the matrix.
      * @param values the 2-d array of values
      */
-    protected void set(float values[][])
+    protected void set(double values[][])
     {
         super.set(values);
         reset();
@@ -62,7 +58,7 @@ public class LinearSystem extends SquareMatrix
      * @param value the value
      * @throws matrix.MatrixException for invalid index
      */
-    public void set(int r, int c, float value) throws MatrixException
+    public void set(int r, int c, double value) throws MatrixException
     {
         super.set(r, c, value);
         reset();
@@ -151,16 +147,16 @@ public class LinearSystem extends SquareMatrix
         LU = new SquareMatrix(this.copyValues2D());
         permutation = new int[nRows];
 
-        float scales[] = new float[nRows];
+        double scales[] = new double[nRows];
 
         // Loop to initialize the permutation vector and scales.
         for (int r = 0; r < nRows; ++r) {
             permutation[r] = r;     // initially no row exchanges
 
             // Find the largest row element.
-            float largestRowElmt = 0;
+            double largestRowElmt = 0;
             for (int c = 0; c < nRows; ++c) {
-                float elmt = Math.abs(LU.at(r, c));
+                double elmt = Math.abs(LU.at(r, c));
                 if (largestRowElmt < elmt) largestRowElmt = elmt;
             }
 
@@ -187,12 +183,12 @@ public class LinearSystem extends SquareMatrix
      * @parm scales the scaling vector
      * @throws matrix.MatrixException for a singular matrix
      */
-    private void forwardElimination(float scales[])
+    private void forwardElimination(double scales[])
         throws MatrixException
     {
         // Loop once per pivot row 0..nRows-1.
         for (int rPivot = 0; rPivot < nRows - 1; ++rPivot) {
-            float largestScaledElmt = 0;
+            double largestScaledElmt = 0;
             int   rLargest          = 0;
 
             // Starting from the pivot row rPivot, look down
@@ -201,8 +197,8 @@ public class LinearSystem extends SquareMatrix
 
                 // Use the permuted row index.
                 int   pr         = permutation[r];
-                float absElmt    = Math.abs(LU.at(pr, rPivot));
-                float scaledElmt = absElmt*scales[pr];
+                double absElmt    = Math.abs(LU.at(pr, rPivot));
+                double scaledElmt = absElmt*scales[pr];
 
                 if (largestScaledElmt < scaledElmt) {
 
@@ -230,14 +226,14 @@ public class LinearSystem extends SquareMatrix
 
             // Use the permuted pivot row index.
             int   prPivot   = permutation[rPivot];
-            float pivotElmt = LU.at(prPivot, rPivot);
+            double pivotElmt = LU.at(prPivot, rPivot);
 
             // Do the elimination below the pivot row.
             for (int r = rPivot + 1; r < nRows; ++r) {
 
                 // Use the permuted row index.
                 int   pr       = permutation[r];
-                float multiple = LU.at(pr, rPivot)/pivotElmt;
+                double multiple = LU.at(pr, rPivot)/pivotElmt;
 
                 // Set the multiple into matrix L.
                 LU.set(pr, rPivot, multiple);
@@ -245,7 +241,7 @@ public class LinearSystem extends SquareMatrix
                 // Eliminate an unknown from matrix U.
                 if (multiple != 0) {
                     for (int c = rPivot + 1; c < nCols; ++c) {
-                        float elmt = LU.at(pr, c);
+                        double elmt = LU.at(pr, c);
 
                         // Subtract the multiple of the pivot row.
                         elmt -= multiple*LU.at(prPivot, c);
@@ -270,7 +266,7 @@ public class LinearSystem extends SquareMatrix
         // Do forward substitution.
         for (int r = 0; r < nRows; ++r) {
             int   pr  = permutation[r];     // permuted row index
-            float dot = 0;
+            double dot = 0;
             for (int c = 0; c < r; ++c) {
                 dot += LU.at(pr, c)*y.at(c);
             }
@@ -294,7 +290,7 @@ public class LinearSystem extends SquareMatrix
         // Do back substitution.
         for (int r = nRows - 1; r >= 0; --r) {
             int   pr  = permutation[r];     // permuted row index
-            float dot = 0;
+            double dot = 0;
             for (int c = r+1; c < nRows; ++c) {
                 dot += LU.at(pr, c)*x.at(c);
             }
@@ -314,9 +310,9 @@ public class LinearSystem extends SquareMatrix
         throws MatrixException
     {
         // Find the largest x element.
-        float largestX = 0;
+        double largestX = 0;
         for (int r = 0; r < nRows; ++r) {
-            float absX = Math.abs(x.values[r][0]);
+            double absX = Math.abs(x.values[r][0]);
             if (largestX < absX) largestX = absX;
         }
 
@@ -332,13 +328,13 @@ public class LinearSystem extends SquareMatrix
             // Must use double precision!
             for (int r = 0; r < nRows; ++r) {
                 double dot   = 0;
-                float  row[] = values[r];
+                double  row[] = values[r];
                 for (int c = 0; c < nRows; ++c) {
                     double elmt = at(r, c);
                     dot += elmt*x.at(c);        // dbl.prec. *
                 }
                 double value = b.at(r) - dot;   // dbl.prec. -
-                residuals.set(r, (float) value);
+                residuals.set(r, (double) value);
             }
 
             // Solve Az = residuals for z.
@@ -346,12 +342,12 @@ public class LinearSystem extends SquareMatrix
 
             // Set x = x + z.
             // Find largest the largest difference.
-            float largestDiff = 0;
+            double largestDiff = 0;
             for (int r = 0; r < nRows; ++r) {
-                float oldX = x.at(r);
+                double oldX = x.at(r);
                 x.set(r, oldX + z.at(r));
 
-                float diff = Math.abs(x.at(r) - oldX);
+                double diff = Math.abs(x.at(r) - oldX);
                 if (largestDiff < diff) largestDiff = diff;
             }
 

@@ -12,7 +12,7 @@ public class Matrix
 {
     /** number of rows */         protected int   nRows;
     /** number of columns */      protected int   nCols;
-    /** 2-d array of  values */   protected float values[][];
+    /** 2-d array of  values */   protected double values[][];
 
     //--------------//
     // Constructors //
@@ -32,14 +32,14 @@ public class Matrix
     {
         nRows  = (rowCount > 0) ? rowCount : 1;
         nCols  = (colCount > 0) ? colCount : 1;
-        values = new float[nRows][nCols];
+        values = new double[nRows][nCols];
     }
 
     /**
      * Constructor.
      * @param values the 2-d array of values
      */
-    public Matrix(float values[][]) { set(values); }
+    public Matrix(double values[][]) { set(values); }
 
     //---------//
     // Getters //
@@ -64,7 +64,7 @@ public class Matrix
      * @return the value
      * @throws numbercruncher.MatrixException for an invalid index
      */
-    public float at(int r, int c) throws MatrixException
+    public double at(int r, int c) throws MatrixException
     {
         if ((r < 0) || (r >= nRows) || (c < 0) || (c >= nCols)) {
             throw new MatrixException(MatrixException.INVALID_INDEX);
@@ -117,15 +117,15 @@ public class Matrix
      * Copy the values of this matrix.
      * @return the values
      */
-    public float[][] values() { return values; }
+    public double[][] values() { return values; }
 
     /**
      * Copy the values of this matrix.
      * @return the copied values
      */
-    public float[][] copyValues2D()
+    public double[][] copyValues2D()
     {
-        float v[][] = new float[nRows][nCols];
+        double v[][] = new double[nRows][nCols];
 
         for (int r = 0; r < nRows; ++r) {
             for (int c = 0; c < nCols; ++c) {
@@ -147,7 +147,7 @@ public class Matrix
      * @param value the value
      * @throws numbercruncher.MatrixException for an invalid index
      */
-    public void set(int r, int c, float value) throws MatrixException
+    public void set(int r, int c, double value) throws MatrixException
     {
         if ((r < 0) || (r >= nRows) || (c < 0) || (c >= nCols)) {
             throw new MatrixException(MatrixException.INVALID_INDEX);
@@ -162,7 +162,7 @@ public class Matrix
      * column count is the length of the shortest row.
      * @param values the 2-d array of values
      */
-    protected void set(float values[][])
+    protected void set(double values[][])
     {
         this.nRows  = values.length;
         this.nCols  = values[0].length;
@@ -228,7 +228,7 @@ public class Matrix
      */
     public Matrix transpose()
     {
-        float tv[][] = new float[nCols][nRows];  // transposed values
+        double tv[][] = new double[nCols][nRows];  // transposed values
 
         // Set the values of the transpose.
         for (int r = 0; r < nRows; ++r) {
@@ -254,7 +254,7 @@ public class Matrix
                                 MatrixException.INVALID_DIMENSIONS);
         }
 
-        float sv[][] = new float[nRows][nCols]; // sum values
+        double sv[][] = new double[nRows][nCols]; // sum values
 
         // Compute values of the sum.
         for (int r = 0; r < nRows; ++r) {
@@ -280,7 +280,7 @@ public class Matrix
                                 MatrixException.INVALID_DIMENSIONS);
         }
 
-        float dv[][] = new float[nRows][nCols]; // difference values
+        double dv[][] = new double[nRows][nCols]; // difference values
 
         // Compute values of the difference.
         for (int r = 0; r < nRows; ++r) {
@@ -297,9 +297,9 @@ public class Matrix
      * @param k the constant
      * @return the product matrix
      */
-    public Matrix multiply(float k)
+    public Matrix multiply(double k)
     {
-        float pv[][] = new float[nRows][nCols]; // product values
+        double pv[][] = new double[nRows][nCols]; // product values
 
         // Compute values of the product.
         for (int r = 0; r < nRows; ++r) {
@@ -325,12 +325,12 @@ public class Matrix
                                 MatrixException.INVALID_DIMENSIONS);
         }
 
-        float pv[][] = new float[nRows][m.nCols];  // product values
+        double pv[][] = new double[nRows][m.nCols];  // product values
 
         // Compute values of the product.
         for (int r = 0; r < nRows; ++r) {
             for (int c = 0; c < m.nCols; ++c) {
-                float dot = 0;
+                double dot = 0;
                 for (int k = 0; k < nCols; ++k) {
                     dot += values[r][k] * m.values[k][c];
                 }
@@ -356,11 +356,11 @@ public class Matrix
                                 MatrixException.INVALID_DIMENSIONS);
         }
 
-        float pv[] = new float[nRows];   // product values
+        double pv[] = new double[nRows];   // product values
 
         // Compute the values of the product.
         for (int r = 0; r < nRows; ++r) {
-            float dot = 0;
+            double dot = 0;
             for (int c = 0; c < nCols; ++c) {
                 dot += values[r][c] * cv.values[c][0];
             }
@@ -384,11 +384,11 @@ public class Matrix
                                 MatrixException.INVALID_DIMENSIONS);
         }
 
-        float pv[] = new float[nRows];  // product values
+        double pv[] = new double[nRows];  // product values
 
         // Compute the values of the product.
         for (int c = 0; c < nCols; ++c) {
-            float dot = 0;
+            double dot = 0;
             for (int r = 0; r < nRows; ++r) {
                 dot += rv.values[0][r] * values[r][c];
             }

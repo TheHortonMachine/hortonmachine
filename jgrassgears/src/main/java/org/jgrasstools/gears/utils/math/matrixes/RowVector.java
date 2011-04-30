@@ -21,7 +21,7 @@ public class RowVector extends Matrix
      * Constructor.
      * @param values the array of values
      */
-    public RowVector(float values[]) { set(values); }
+    public RowVector(double values[]) { set(values); }
 
     /**
      * Constructor.
@@ -42,9 +42,9 @@ public class RowVector extends Matrix
      * Copy the values of this matrix.
      * @return the copied values
      */
-    public float[] copyValues1D()
+    public double[] copyValues1D()
     {
-        float v[] = new float[nCols];
+        double v[] = new double[nCols];
 
         for (int c = 0; c < nCols; ++c) {
             v[c] = values[0][c];
@@ -58,7 +58,7 @@ public class RowVector extends Matrix
      * @param i the index
      * @return the value
      */
-    public float at(int i) { return values[0][i]; }
+    public double at(int i) { return values[0][i]; }
 
     //---------//
     // Setters //
@@ -79,11 +79,11 @@ public class RowVector extends Matrix
      * Set this row vector from an array of values.
      * @param values the array of values
      */
-    protected void set(float values[])
+    protected void set(double values[])
     {
         this.nRows  = 1;
         this.nCols  = values.length;
-        this.values = new float[1][];
+        this.values = new double[1][];
 
         this.values[0] = values;
     }
@@ -93,7 +93,7 @@ public class RowVector extends Matrix
      * @param i the index
      * @param value the value
      */
-    public void set(int i, float value) { values[0][i] = value; }
+    public void set(int i, double value) { values[0][i] = value; }
 
     //-------------------//
     // Vector operations //
@@ -125,15 +125,15 @@ public class RowVector extends Matrix
      * Compute the Euclidean norm.
      * @return the norm
      */
-    public float norm()
+    public double norm()
     {
         double t = 0;
         for (int c = 0; c < nCols; ++c) {
-            float v = values[0][c];
+            double v = values[0][c];
             t += v*v;
         }
 
-        return (float) Math.sqrt(t);
+        return (double) Math.sqrt(t);
     }
 
     /**

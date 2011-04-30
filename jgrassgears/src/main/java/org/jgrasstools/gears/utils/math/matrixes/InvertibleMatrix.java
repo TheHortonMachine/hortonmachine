@@ -21,7 +21,7 @@ public class InvertibleMatrix extends LinearSystem
      * Constructor.
      * @param values the array of values
      */
-    public InvertibleMatrix(float values[][]) { super(values); }
+    public InvertibleMatrix(double values[][]) { super(values); }
 
     /**
      * Compute the inverse of this matrix.
@@ -48,13 +48,13 @@ public class InvertibleMatrix extends LinearSystem
      * @return the determinant
      * @throws matrix.MatrixException if an error occurred
      */
-    public float determinant() throws MatrixException
+    public double determinant() throws MatrixException
     {
         decompose();
 
         // Each row exchange during forward elimination flips the sign
         // of the determinant, so check for an odd number of exchanges.
-        float determinant = ((exchangeCount & 1) == 0) ? 1 : -1;
+        double determinant = ((exchangeCount & 1) == 0) ? 1 : -1;
 
         // Form the product of the diagonal elements of matrix U.
         for (int i = 0; i < nRows; ++i) {
@@ -69,25 +69,25 @@ public class InvertibleMatrix extends LinearSystem
      * Compute the Euclidean norm of this matrix.
      * @return the norm
      */
-    public float norm()
+    public double norm()
     {
-        float sum = 0;
+        double sum = 0;
 
         for (int r = 0; r < nRows; ++r) {
             for (int c = 0; c < nCols; ++c) {
-                float v = values[r][c];
+                double v = values[r][c];
                 sum += v*v;
             }
         }
 
-        return (float) Math.sqrt(sum);
+        return (double) Math.sqrt(sum);
     }
 
     /**
      * Compute the condition number based on the Euclidean norm.
      * @return the condition number
      */
-    public float condition() throws MatrixException
+    public double condition() throws MatrixException
     {
         return norm() * inverse().norm();
     }
