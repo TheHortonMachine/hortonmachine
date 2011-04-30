@@ -17,10 +17,14 @@
  #
 
 MEM="-Xmx2g"
-
 CURRENT=`pwd`
+CMDARGS=$1 $2 $3 $4
+if [ $# -eq 1 ]
+then
+	CMDARGS="-r $1"
+fi
 
 java $MEM \
 -Doms.sim.resources="$CURRENT/modules/jgrassgears-0.7.0.jar:$CURRENT/modules/hortonmachine-0.7.0.jar" \
 -cp "./modules/*:./libs/*" \
-org.jgrasstools.hortonmachine.utils.oms.CLI $1 $2 $3 $4
+org.jgrasstools.hortonmachine.utils.oms.CLI $CMDARGS

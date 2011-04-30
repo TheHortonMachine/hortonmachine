@@ -15,4 +15,9 @@
 :: along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
 set MEM="-Xmx1g"
-java %MEM% -Doms.sim.resources="%CD%/modules/jgrassgears-0.7.0.jar;%CD%/modules/hortonmachine-0.7.0.jar" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %1 %2 %3 %4
+set cmdArgs=%1 %2 %3 %4
+if [%2]==[] (
+    set cmdArgs=-r %1
+)
+
+java %MEM% -Doms.sim.resources="%CD%/modules/jgrassgears-0.7.0.jar;%CD%/modules/hortonmachine-0.7.0.jar" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %cmdArgs%

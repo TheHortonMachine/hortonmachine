@@ -20,7 +20,7 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
-
+def VERSION = "0.7.0";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
@@ -209,5 +209,7 @@ if(copyPath){
     // zip the thing
     def ant = new AntBuilder()  
     def date = new java.text.SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-    ant.zip(destfile: "./extras/deploy/jgrasstools-${date}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*deploylibs.groovy*,jgrasstools*.zip")  
+    def versionStr = date;
+    if(VERSION) versionStr = VERSION;
+    ant.zip(destfile: "./extras/deploy/jgrasstools-${versionStr}.zip",  basedir: "./extras/deploy/",  includes: "**",  excludes: "*deploylibs.groovy*,jgrasstools*.zip")  
 }
