@@ -145,13 +145,13 @@ public class TestRasterReader extends HMTestCase {
                 {430.0, 600.0, 700.0, 800.0, 450.0}, //
                 {700.0, 760.0, 770.0, 850.0, 1150.0} //
         };
-        // double[][] mapData2 = new double[][]{//
-        // {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
-        // {750.0, 860.0, 900.0, 1000.0, 1250.0}, //
-        // {700.0, 800.0, 850.0, 900.0, 1100.0}, //
-        // {430.0, 600.0, 700.0, 800.0, 450.0}, //
-        // {700.0, 760.0, 770.0, 850.0, 1150.0} //
-        // };
+        double[][] mapData2 = new double[][]{//
+        {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
+        {750.0, 860.0, 900.0, 1000.0, 1250.0}, //
+        {700.0, 800.0, 850.0, 900.0, 1100.0}, //
+        {430.0, 600.0, 700.0, 800.0, 450.0}, //
+        {700.0, 760.0, 770.0, 850.0, 1150.0} //
+        };
 
         double n = 5140020.0;
         double s = 5139840.0;
@@ -181,6 +181,6 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.process();
         readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData2);
     }
 }
