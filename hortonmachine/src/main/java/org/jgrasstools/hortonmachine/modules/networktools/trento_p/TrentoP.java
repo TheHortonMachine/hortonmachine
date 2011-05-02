@@ -565,8 +565,7 @@ public class TrentoP {
                 double[] values = rainRecord.getValue();
                 if (first == null) {
                     first = dt;
-                }
-                if (second == null) {
+                } else if (second == null) {
                     second = dt;
                 }
 
