@@ -1,0 +1,87 @@
+A java implementation of the <b>trento_p</b> program (written by <i>Riccardo
+Rigon and David Tamanini</i> in c).
+
+<p>
+The aim of this class is to project and verify sewer pipes (not under
+pressure). This class is designed to work in two modality:
+<ol>
+<li><b>Project</b>, which calculate the pipes diameter, and depth, of a point
+network.
+<li><b>Verify</b>, which calculate the discharge of a pipes network.
+</ol>
+
+</p>
+<p>
+The output is:
+<ol>
+<li><b>Project</b>: A fetureCollection ({@link #outPipesFC}) with the net (as
+in the {@link #inPipesFC}) and with the result as a field of features.
+<li><b>Verify</b>: A matrix which contains the discharg at each time for each
+pipe.
+</ol>
+</p>
+<p>
+For more details about the computational method see <a href="http
+://www.ing.unitn.it/dica/hp/?user=rigon"> trento_p manual</a>
+</p>
+<h3>Parameters</h3>
+<p>
+The model needs several parameter, the <b>necessary</b> parameters are:
+<ol>
+<li>{@link #pAccuracy}
+<li>{@link #pTest}
+</ol>
+And also, for the project mode:
+<ol>
+<li>{@link #pA}
+<li>{@link #pN}
+<li>{@link #pTau}
+<li>{@link #pAlign}
+</ol>
+</p>
+
+
+<h3>Inputs</h3>
+<p>
+And as input a <b><i>FeatureCollection</i></b> {@link #inPipesFC} with
+<i>LineString</i> as geometry, and with several fields that characterize the
+pipe.
+<p>
+Usually The input networkis obtained from a <i>shp file</i>. It's necessary that the
+geometries of the shape are {@link LineString} and each line (which is a
+pipe) must have the following fields:
+<ol>
+<li>ID, is the identifier name of the pipe (field of the property @see
+{@link TrentoP#fId}).
+<li>Drain Area, which is the amount of area which drain in this pipe and
+is in ha = 10^{-2} km^2 ({@link TrentoP#fDrainArea}).
+<li>initial Elevation of the terrain (at the first extreme), is in meter
+over the see level ({@link TrentoP#fInitialElevation}).
+<li>Final Elevation of the terrain(at the second extreme), is in meter
+over the see level ({@link TrentoP#fFinalElevation}).
+<li>The Runoff coefficient ({@link TrentoP#fRunoffCoefficient}).
+<li>The average residence time,per unit area (
+{@link TrentoP#fAverageResidenceTime}).
+<li>Ks, Gauckler-Strickler coefficient({@link TrentoP#fKs}).
+<li>Minimum pipe slope (%),({@link TrentoP#fMinimumPipeSlope}).
+<li>Pipe section type: 1=circular, 2=rectangular, 3=trapezoidal,(
+{@link TrentoP#fPipeSectionType} ).
+<li>Average state slope computed as the weighted mean of the state
+elevation; the weights are the areas at the same height within the state(
+{@link TrentoP#fAverageSlope} ).
+<li>Diameter to verify (in verify mode), field of the property @see
+{@link TrentoP#fDiameterToVerify}.
+<li>Slope to verify (in verify mode),{@link #fVerifyPipeSlope} .
+</ol>
+</p>
+<p>
+All of this value are caractherized a pipe so are stored in a
+Pipe object.
+
+</p>
+
+ 
+
+
+
+<p>
