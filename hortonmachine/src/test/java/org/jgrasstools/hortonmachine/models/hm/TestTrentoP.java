@@ -26,7 +26,8 @@ public class TestTrentoP extends HMTestCase {
             0.001, 1, 0.2, 0.4};
 
     /**
-     * This is a block of parameter that usually are used in the simulation of {@link TrentoP}.
+     * This is a block of parameter that usually are used in the simulation of
+     * {@link TrentoP}.
      */
     private static double a = 60.4;
     private static double n = 0.61;
@@ -192,6 +193,7 @@ public class TestTrentoP extends HMTestCase {
         checkMatrixEqual(result, HMTestMaps.project1Trapezio, TOLL);
 
     }
+
     /**
      * Test project 1 with align set to 1.
      * 

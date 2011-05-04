@@ -420,7 +420,7 @@ public class NetworkCalibration implements Network {
 				tmp2 = networkPipes[k - 2].getLenght();
 			}
 
-			// Average velocity in pipe [ m / s ]
+            // Average velocity in pipe [ m / s ]
 
 			u = Qmax * 80 / (Math.pow(tmp1, 2) * (theta - Math.sin(theta)));
 			localdelay = tmp2 / (celerityfactor1 * u * MINUTE2SEC);
