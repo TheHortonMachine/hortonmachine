@@ -69,7 +69,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.diameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = HMTestMaps.PIPE;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -122,7 +122,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.diameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = HMTestMaps.PIPE;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Rect.shp");
         File netFile = new File(net.toURI());
@@ -175,7 +175,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.diameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = HMTestMaps.PIPE;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Trap.shp");
         File netFile = new File(net.toURI());
@@ -227,7 +227,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.diameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = HMTestMaps.PIPE;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -298,7 +298,7 @@ public class TestTrentoP extends HMTestCase {
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
         trento_P.inPipesFC = netFC;
         trento_P.process();
-        result = trento_P.qOut;
+        result = trento_P.outDischarge;
         checkMatrixEqual(result, HMTestMaps.verify1, TOLL);
 
     }

@@ -68,7 +68,6 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkCa
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -237,7 +236,7 @@ public class TrentoP {
 
 	@Description("Matrix which contains the commercial diameters of the pipes.")
 	@In
-	public double[][] diameters;
+	public double[][] inDiameters;
 	
 	@Description("The outlet, the last pipe of the network,.")
 	@Unit("-")
@@ -320,8 +319,10 @@ public class TrentoP {
 	@Description(" The output if pTest=1, contains the discharge for each pipes at several time.")
 	@Role(Role.OUTPUT)
 	@Out
-	public double[][] qOut;
+	public double[][] outDischarge;
 
+	
+	
 	/**
 	 * Is an array with all the pipe of the net.
 	 */
@@ -342,6 +343,7 @@ public class TrentoP {
 	private String warnings = "warnings";
 	private StringBuilder strBuilder = new StringBuilder(warnings);
 
+	
 	/**
 	 * 
 	 * Elaboration on the net.
@@ -370,14 +372,7 @@ public class TrentoP {
 		 * work well, can be deleted).
 		 */
 		verifyParameter();
-		/*
-		 * Set some value to the pipe. This is parameters that are property of a
-		 * pipe or related to the evalutation of other properties.
-		 */
-		Pipe.setAccuracy(pAccuracy);
-		Pipe.setMinimumDepth(pMinimumDepth);
-		Pipe.setMinG(pMinG);
-		Pipe.setJMax(pJMax);
+
 		Pipe.pm = pm;
 		// begin the process.
 		pm.message(msg.message("trentoP.firstMessage"));
@@ -390,8 +385,7 @@ public class TrentoP {
 		Network network = null;
 		if (pTest == 1) {
 			// set other common parameters for the verify.
-			Pipe.setMaxTheta(pMaxTheta);
-			Pipe.setTolerance(pTolerance);
+
 			// create the rains array from the input.
 
 			Set<Entry<DateTime, double[]>> rainSet = inRain.entrySet();
@@ -429,49 +423,68 @@ public class TrentoP {
 
 			if (inPipesFC != null) {
 				for (int t = 0; t < networkPipes.length; t++) {
+					networkPipes[t].setAccuracy(pAccuracy);
+					networkPipes[t].setMinimumDepth(pMinimumDepth);
+					networkPipes[t].setMinG(pMinG);
+					networkPipes[t].setJMax(pJMax);
+					networkPipes[t].setMaxTheta(pMaxTheta);
+					networkPipes[t].setTolerance(pTolerance);
 					networkPipes[t].setK(pEspInflux, pExponent, pGamma);
 
 				}
 
 			}
 			// initialize the output.
-			qOut = new double[(int) (tmax / dt)][networkPipes.length + 1];
+			outDischarge = new double[(int) (tmax / dt)][networkPipes.length + 1];
 
 			time = tmin;
-			for (int i = 0; i < qOut.length; ++i) {
-				qOut[i][0] = time;
+			for (int i = 0; i < outDischarge.length; ++i) {
+				outDischarge[i][0] = time;
 				time += dt;
 			}
 			// initialize the NetworkCalibration.
 			network = new NetworkCalibration.Builder(pm, networkPipes, dt,
-					rainData, qOut, strBuilder).celerityFactor(pCelerityFactor)
+					rainData, outDischarge, strBuilder).celerityFactor(pCelerityFactor)
 					.tMax(tMax).build();
 
 		} else {
 			// set other common parameters for the project.
-			Pipe.setMaxJunction(pMaxJunction);
-			Pipe.setAlign(pAlign);
-			Pipe.setJMax(pJMax);
-			Pipe.setC(pC);
-			Pipe.setG(pG);
-			Pipe.setTau(pTau);
-			Pipe.setMinDischarge(pMinDischarge);
+			
+
+			if (inPipesFC != null) {
+				for (int t = 0; t < networkPipes.length; t++) {
+					networkPipes[t].setAccuracy(pAccuracy);
+					networkPipes[t].setMinimumDepth(pMinimumDepth);
+					networkPipes[t].setMinG(pMinG);
+					networkPipes[t].setJMax(pJMax);
+					networkPipes[t].setMaxJunction(pMaxJunction);
+					networkPipes[t].setAlign(pAlign);
+					networkPipes[t].setJMax(pJMax);
+					networkPipes[t].setC(pC);
+					networkPipes[t].setG(pG);
+					networkPipes[t].setTau(pTau);
+					networkPipes[t].setMinDischarge(pMinDischarge);
+
+				}
+
+			}
+
 			pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
 			// initialize the NetworkCalibration.
 
 			NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm,
-					networkPipes, pN, pA, diameters, inPipesFC, outPipesFC,
+					networkPipes, pN, pA, inDiameters, inPipesFC, outPipesFC,
 					strBuilder);
 			network = builder.celerityFactor(pCelerityFactor)
 					.pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
 					.pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin)
 					.build();
-			outPipesFC = Utility.createFeatureCollections(inPipesFC,
-					networkPipes);
 		}
 
 		// elaborate.
 		network.geoSewer();
+		
+
 
 		String w = strBuilder.toString();
 		if (!w.equals(warnings)) {
@@ -636,7 +649,7 @@ public class TrentoP {
 				pm.errorMessage(msg.message("trentoP.error.c"));
 				throw new IllegalArgumentException();
 			}
-			if (diameters == null) {
+			if (inDiameters == null) {
 
 				throw new IllegalArgumentException();
 			}
