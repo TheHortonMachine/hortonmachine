@@ -357,10 +357,9 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         TreeSet<Object> checkTree = new TreeSet<Object>();
         for( SimpleFeature sF : featureList ) {
             Object id = sF.getAttribute(attributesName);
-            checkTree.add(id);
-        }
-        if (featureList.size() != checkTree.size()) {
-            throw new ModelsIllegalargumentException(msg, this);
+            if (!checkTree.add(id)) {
+                throw new ModelsIllegalargumentException(msg + "(" + id + ")", this);
+            }
         }
     }
 
