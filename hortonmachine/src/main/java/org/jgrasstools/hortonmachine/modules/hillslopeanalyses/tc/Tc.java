@@ -28,6 +28,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,12 +48,12 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ")
-// @Documentation("DrainDir.html")
-@Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Documentation("Tc.html")
+@Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hillslope, Curvatures")
 @Label(JGTConstants.HILLSLOPE)
 @Name("tc")
-@Status(Status.EXPERIMENTAL)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Tc extends JGTModel {
 

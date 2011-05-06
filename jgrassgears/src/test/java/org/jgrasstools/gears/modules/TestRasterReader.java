@@ -181,6 +181,6 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.process();
         readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData2);
     }
 }
