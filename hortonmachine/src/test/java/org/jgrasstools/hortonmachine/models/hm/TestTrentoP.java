@@ -3,6 +3,9 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
@@ -11,6 +14,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
+import org.joda.time.DateTime;
 
 /**
  * A test case for the trentoP-java model.
@@ -81,7 +85,7 @@ public class TestTrentoP extends HMTestCase {
         // set global parameters
         // verify
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-        trento_P.inPipesFC = netFC;
+        trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
         checkMatrixEqual(result, HMTestMaps.project1, TOLL);
@@ -134,7 +138,7 @@ public class TestTrentoP extends HMTestCase {
         // set global parameters
         // verify
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-        trento_P.inPipesFC = netFC;
+        trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
         checkMatrixEqual(result, HMTestMaps.project1Rectangular, TOLL);
@@ -187,7 +191,7 @@ public class TestTrentoP extends HMTestCase {
         // set global parameters
         // verify
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-        trento_P.inPipesFC = netFC;
+        trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
         checkMatrixEqual(result, HMTestMaps.project1Trapezio, TOLL);
@@ -240,7 +244,7 @@ public class TestTrentoP extends HMTestCase {
         // set global parameters
         // verify
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-        trento_P.inPipesFC = netFC;
+        trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
         checkMatrixEqual(result, HMTestMaps.project1align1, TOLL);
@@ -298,10 +302,49 @@ public class TestTrentoP extends HMTestCase {
         // set global parameters
         // verify
         // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-        trento_P.inPipesFC = netFC;
+        trento_P.inPipes = netFC;
         trento_P.process();
-        result = trento_P.outDischarge;
+        result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
         checkMatrixEqual(result, HMTestMaps.verify1, TOLL);
 
+    }
+
+    private double[][] hashToMatrix( HashMap<DateTime, double[]> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
+        // create the rains array from the input.
+        Set<Entry<DateTime, double[]>> dischargeSet = outDischarge.entrySet();
+        DateTime first = null;
+        DateTime second = null;
+        int l = outDischarge.size();
+
+        double[][] rainData = new double[l][nStation + 1];
+        int index = 0;
+        int dt = 0;
+        for( Entry<DateTime, double[]> dischargeRecord : dischargeSet ) {
+            DateTime dateTime = dischargeRecord.getKey();
+            double[] values = dischargeRecord.getValue();
+            if (first == null) {
+                first = dateTime;
+                rainData[index][0] = 1;
+
+                for( int i = 0; i < values.length; i++ ) {
+                    rainData[index][i + 1] = values[i];
+                }
+
+            } else if (second == null) {
+                second = dateTime;
+                dt = Math.abs(second.getMinuteOfDay() - first.getMinuteOfDay());
+                rainData[index][0] = rainData[index-1][0] + dt;
+                for( int i = 0; i < values.length; i++ ) {
+                    rainData[index][i + 1] = values[i];
+                }
+            } else {
+                rainData[index][0] = rainData[index-1][0] + dt;
+                for( int i = 0; i < values.length; i++ ) {
+                    rainData[index][i + 1] = values[i];
+                }
+            }
+            index++;
+        }
+        return rainData;
     }
 }

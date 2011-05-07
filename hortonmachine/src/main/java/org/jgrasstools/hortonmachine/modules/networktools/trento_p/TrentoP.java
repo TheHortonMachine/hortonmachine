@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
@@ -38,8 +37,7 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
 
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.LinkedHashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
@@ -57,7 +55,6 @@ import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -72,7 +69,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
 
 @Description("Calculates the diameters of a sewer net or verify the discharge for each pipe.")
 @Author(name = "Daniele Andreis,Rigon Riccardo,David tamanini", contact = "")
@@ -252,11 +248,11 @@ public class TrentoP {
 
     @Description("The read feature collection.")
     @In
-    public SimpleFeatureCollection inPipesFC = null;
+    public SimpleFeatureCollection inPipes = null;
 
     @Description("The output feature collection which contains the net with all hydraulics value.")
     @Out
-    public SimpleFeatureCollection outPipesFC = null;
+    public SimpleFeatureCollection outPipes = null;
     /**
      * The output if pTest=1, contains the discharge for each pipes at several
      * time.
@@ -264,21 +260,16 @@ public class TrentoP {
     @Description(" The output if pTest=1, contains the discharge for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
-    public double[][] outDischarge;
-
+    public HashMap<DateTime, double[]> outDischarge;
     /**
      * Is an array with all the pipe of the net.
      */
     private Pipe[] networkPipes;
 
     /**
-     * Is a matrix with the rain data.
-     */
-    private double[][] rainData = null;
-    /**
      * Time step, if pMode=1, in minutes.
      */
-    private double dt = 0;
+    public Integer dt;
     /*
      * string which collected all the warnings. the warnings are printed at the
      * end of the processes.
@@ -328,41 +319,7 @@ public class TrentoP {
         if (pTest == 1) {
             // set other common parameters for the verify.
 
-            // create the rains array from the input.
-
-            Set<Entry<DateTime, double[]>> rainSet = inRain.entrySet();
-            DateTime first = null;
-            DateTime second = null;
-            int l = rainSet.size();
-            rainData = new double[l][2];
-            int index = 0;
-            for( Entry<DateTime, double[]> rainRecord : rainSet ) {
-                DateTime dt = rainRecord.getKey();
-                double[] values = rainRecord.getValue();
-                if (first == null) {
-                    first = dt;
-                } else if (second == null) {
-                    second = dt;
-                }
-
-                rainData[index][0] = index + 1;
-                rainData[index][1] = values[0];
-                index++;
-            }
-
-            // Evaluate the time step as a difference between two time.
-            dt = abs(second.getMinuteOfDay() - first.getMinuteOfDay());
-            // if the input has the date in a wrong order.
-            if (dt <= 0) {
-                pm.errorMessage(msg.message("trentoP.error.t"));
-                throw new IllegalArgumentException(msg.message("trentoP.error.t"));
-            }
-
-            double time = 0, tmin = 0, tmax = 0;
-            tmin = rainData[0][0];
-            tmax = ModelsEngine.approximate2Multiple(tMax, dt);
-
-            if (inPipesFC != null) {
+            if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setMinimumDepth(pMinimumDepth);
@@ -375,22 +332,16 @@ public class TrentoP {
                 }
 
             }
-            // initialize the output.
-            outDischarge = new double[(int) (tmax / dt)][networkPipes.length + 1];
 
-            time = tmin;
-            for( int i = 0; i < outDischarge.length; ++i ) {
-                outDischarge[i][0] = time;
-                time += dt;
-            }
+            outDischarge = new LinkedHashMap<DateTime, double[]>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, rainData, outDischarge, strBuilder)
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
 
         } else {
             // set other common parameters for the project.
 
-            if (inPipesFC != null) {
+            if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setMinimumDepth(pMinimumDepth);
@@ -411,8 +362,8 @@ public class TrentoP {
             pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
             // initialize the NetworkCalibration.
 
-            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipesFC,
-                    outPipesFC, strBuilder);
+            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes, outPipes,
+                    strBuilder);
             network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
                     .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
         }
@@ -438,7 +389,7 @@ public class TrentoP {
      */
     private void verifyParameter() {
 
-        if (inPipesFC == null) {
+        if (inPipes == null) {
             pm.errorMessage(msg.message("trentoP.error.inputMatrix") + " geometry file");
             throw new IllegalArgumentException(msg.message("trentoP.error.inputMatrix" + " geometry file"));
         }
@@ -506,7 +457,7 @@ public class TrentoP {
         }
 
         // verificy if the field exist.
-        SimpleFeatureType schema = inPipesFC.getSchema();
+        SimpleFeatureType schema = inPipes.getSchema();
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.ID.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DRAIN_AREA.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()));
@@ -639,9 +590,9 @@ public class TrentoP {
      */
     private void setNetworkPipes() throws Exception {
 
-        int length = inPipesFC.size();
+        int length = inPipes.size();
         networkPipes = new Pipe[length];
-        SimpleFeatureIterator stationsIter = inPipesFC.features();
+        SimpleFeatureIterator stationsIter = inPipes.features();
         try {
             int t;
             while( stationsIter.hasNext() ) {

@@ -17,6 +17,17 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FeatureStore;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -137,8 +148,10 @@ public class Utility {
      * @result outPipesFC where store the data.
      * @param inPipesFC where are stored the network input data.
      * @param networkPipes where are stored the output value.
+     * @throws IOException 
      */
-    public static SimpleFeatureCollection createFeatureCollections( SimpleFeatureCollection inPipesFC, Pipe[] networkPipes ) {
+    public static SimpleFeatureCollection createFeatureCollections( SimpleFeatureCollection inPipesFC, Pipe[] networkPipes )
+            throws IOException {
 
         /*
          * Create a Type
