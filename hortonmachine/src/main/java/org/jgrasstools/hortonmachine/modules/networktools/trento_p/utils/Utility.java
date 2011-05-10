@@ -17,17 +17,8 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureStore;
-import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -210,6 +201,11 @@ public class Utility {
                     builderFeature.add(networkPipes[t].depthFinalPipe);
                     builderFeature.add(networkPipes[t].initialFreesurface);
                     builderFeature.add(networkPipes[t].finalFreesurface);
+                    builderFeature.add(networkPipes[t].totalSubNetArea);
+                    builderFeature.add(networkPipes[t].totalSubNetLength);
+                    builderFeature.add(networkPipes[t].meanLengthSubNet);
+                    builderFeature.add(networkPipes[t].varianceLengthSubNet);
+
                     SimpleFeature featureOut = builderFeature.buildFeature(null);
                     outPipesFC.add(featureOut);
 

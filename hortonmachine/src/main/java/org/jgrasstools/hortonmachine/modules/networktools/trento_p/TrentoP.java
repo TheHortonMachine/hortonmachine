@@ -111,24 +111,6 @@ public class TrentoP {
     @In
     public Double pAccuracy;
 
-    @Description("Time step to calculate the discharge.")
-    @Unit("-")
-    @Range(min = 0.015)
-    @In
-    public double tDTp = DEFAULT_TDTP;
-
-    @Description("Minimum Rain Time step to calculate the discharge.")
-    @Unit("-")
-    @Range(min = 5)
-    @In
-    public double tpMin = DEFAULT_TPMIN;
-
-    @Description("Maximum Rain Time step to calculate the discharge.")
-    @Unit("-")
-    @Range(min = 30)
-    @In
-    public double tpMax = DEFAULT_TMAX;
-
     @Description("Accuracy to use to calculate the discharge.")
     @Unit("-")
     @Range(max = 1, min = 0)
@@ -170,11 +152,6 @@ public class TrentoP {
     @Range(min = 0)
     @In
     public double pTolerance = DEFAULT_TOLERANCE;
-
-    @Description("Max number of time step.")
-    @Unit("-")
-    @In
-    public double tMax = DEFAULT_TMAX;
 
     @Description("Division base to height in the rectangular or trapezium section.")
     @Unit("-")
@@ -241,6 +218,34 @@ public class TrentoP {
     @In
     public short pTest;
 
+    @Description("Time step to calculate the discharge.")
+    @Unit("-")
+    @Range(min = 0.015)
+    @In
+    public double tDTp = DEFAULT_TDTP;
+
+    @Description("Minimum Rain Time step to calculate the discharge.")
+    @Unit("-")
+    @Range(min = 5)
+    @In
+    public double tpMin = DEFAULT_TPMIN;
+
+    @Description("Maximum Rain Time step to calculate the discharge.")
+    @Unit("-")
+    @Range(min = 30)
+    @In
+    public double tpMax = DEFAULT_TMAX;
+
+    @Description("Max number of time step.")
+    @Unit("-")
+    @In
+    public double tMax = DEFAULT_TMAX;
+
+    @Description("Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.")
+    @Unit("minutes")
+    @In
+    public Integer dt;
+
     @Description("rain data.")
     @Role(Role.INPUT)
     @In
@@ -261,15 +266,12 @@ public class TrentoP {
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, double[]> outDischarge;
+
     /**
      * Is an array with all the pipe of the net.
      */
     private Pipe[] networkPipes;
 
-    /**
-     * Time step, if pMode=1, in minutes.
-     */
-    public Integer dt;
     /*
      * string which collected all the warnings. the warnings are printed at the
      * end of the processes.
@@ -522,8 +524,8 @@ public class TrentoP {
         } else {
 
             if (inRain == null) {
-                pm.errorMessage(msg.message("trentoP.error.inputMatrix") + " rain file");
-                throw new IllegalArgumentException(msg.message("trentoP.error.inputMatrix" + " rain file"));
+                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
+                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
             }
 
             /*
@@ -797,7 +799,7 @@ public class TrentoP {
      * @return
      */
     public double[][] getResults() {
-        double[][] results = new double[networkPipes.length][25];
+        double[][] results = new double[networkPipes.length][28];
 
         for( int i = 0; i < networkPipes.length; i++ ) {
             results[i][0] = networkPipes[i].getId();
@@ -825,6 +827,10 @@ public class TrentoP {
             results[i][22] = networkPipes[i].depthFinalPipe;
             results[i][23] = networkPipes[i].initialFreesurface;
             results[i][24] = networkPipes[i].finalFreesurface;
+            results[i][25] = networkPipes[i].totalSubNetArea;
+            results[i][26] = networkPipes[i].meanLengthSubNet;
+            results[i][27] = networkPipes[i].varianceLengthSubNet;
+
         }
 
         return results;

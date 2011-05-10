@@ -560,9 +560,6 @@ public class NetworkBuilder implements Network {
         double sup;
         /* Portata di tentativo. */
         double oldQ;
-
-        int length = networkPipes.length;
-
         /*
          * matrice che per ciascun area non di testa, contiene i dati geometrici
          * degli stati a monte, che direttamente o indirettamente, drenano in
@@ -609,8 +606,6 @@ public class NetworkBuilder implements Network {
          */
         QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
         t.sort(magnitude, one);
-
-        double[][] geometry = new double[length][4];
         /* ----- INIZIO DIMENSIONAMENTO DELLE AREE DI TESTA ----- */
         /*
          * qup Indice del tratto a cui corrisponde il diametro massimo, quando
@@ -744,16 +739,16 @@ public class NetworkBuilder implements Network {
              * L / u [ min ] ritardo locale dell 'onda di piena
              */
             localdelay[l - 1] = (networkPipes[l - 1].getLenght()) / (celerityfactor * MINUTE2SEC * networkPipes[l - 1].meanSpeed);
-            // Indice dello stato.
-            geometry[l - 1][0] = l;
 
             // Ac [ha] superfice servita
 
-            geometry[l - 1][1] = networkPipes[l - 1].getDrainArea();
+            networkPipes[l - 1].totalSubNetArea = networkPipes[l - 1].getDrainArea();
 
             // Mean length of upstream net [m] (=length of pipe)
 
-            geometry[l - 1][2] = networkPipes[l - 1].getLenght();
+            networkPipes[l - 1].totalSubNetLength = networkPipes[l - 1].getLenght();
+
+            networkPipes[l - 1].meanLengthSubNet = networkPipes[l - 1].getLenght();
 
             // Passo allo stato successivo
             k++;
@@ -876,16 +871,16 @@ public class NetworkBuilder implements Network {
              * Coefficiente udometrico u [l/(s*ha )]
              */
             networkPipes[l - 1].coeffUdometrico = (networkPipes[l - 1].discharge / totalarea);
-            /* ID del tratto */
-            geometry[l - 1][0] = l;
+
             /* Ac [ha] */
-            geometry[l - 1][1] = totalarea;
+            networkPipes[l - 1].totalSubNetArea = totalarea;
             // Mean length of upstream net [ m ]
-            geometry[l - 1][2] = ModelsEngine.meanDoublematrixColumn(net, 1);
+            networkPipes[l - 1].meanLengthSubNet = ModelsEngine.meanDoublematrixColumn(net, 1);
             /*
              * Variance of lengths of upstream net [ m ^ 2 ]
              */
-            geometry[l - 1][3] = ModelsEngine.varianceDoublematrixColumn(net, 1, geometry[l - 1][2]);
+            networkPipes[l - 1].varianceLengthSubNet = ModelsEngine.varianceDoublematrixColumn(net, 1,
+                    networkPipes[l - 1].meanLengthSubNet);
 
             /* Passo allo stato successivo */
             k++;

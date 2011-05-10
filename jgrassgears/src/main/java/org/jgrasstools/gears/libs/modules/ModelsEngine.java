@@ -1695,7 +1695,7 @@ public class ModelsEngine {
             variance += (matrix[i][column] - mean) * (matrix[i][column] - mean);
         }
 
-        return variance / matrix[0].length;
+        return variance / matrix.length;
 
     }
 

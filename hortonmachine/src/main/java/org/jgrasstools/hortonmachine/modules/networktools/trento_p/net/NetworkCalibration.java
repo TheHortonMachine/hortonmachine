@@ -32,7 +32,7 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -41,7 +41,6 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
-import java.util.Map.Entry;
 
 /**
  * 
@@ -230,7 +229,9 @@ public class NetworkCalibration implements Network {
                 index++;
             }
 
-            // Evaluate the time step as a difference between two time.
+            // Evaluate the time step, if it isn't passed as a parameter,as a difference between two
+            // time.
+
             if (dt == null) {
                 dt = abs(second.getMinuteOfDay() - first.getMinuteOfDay());
             }
