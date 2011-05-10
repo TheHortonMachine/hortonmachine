@@ -25,6 +25,7 @@ import static java.lang.Math.sqrt;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,6 +39,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -141,10 +143,15 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
          */
         junctionElevatioAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
                 Junctions.ELEVATION.getAttributeName());
+        String junctionIDAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
+                Junctions.ID.getAttributeName());
         tanksElevationAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(),
                 Tanks.BOTTOM_ELEVATION.getAttributeName());
+        String tanksIDAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(), Tanks.ID.getAttributeName());
         reservoirHeadAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
                 Reservoirs.HEAD.getAttributeName());
+        String reservoirIDAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
+                Reservoirs.ID.getAttributeName());
         pipesStartNodeAttributeName = FeatureUtilities
                 .findAttributeName(inPipes.getSchema(), Pipes.START_NODE.getAttributeName());
         pipesEndNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.END_NODE.getAttributeName());
@@ -158,6 +165,16 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Valves.START_NODE.getAttributeName());
         valvesEndNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.END_NODE.getAttributeName());
         valvesIdAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.ID.getAttributeName());
+
+        /*
+         * check that no ids are double
+         */
+        checkIds(junctionsList, junctionIDAttributeName, "Found two junctions with the same ID. Check your data.");
+        checkIds(pipesList, pipesIdAttributeName, "Found two pipes with the same ID. Check your data.");
+        checkIds(pumpsList, pumpsIdAttributeName, "Found two pumpes with the same ID. Check your data.");
+        checkIds(tanksList, tanksIDAttributeName, "Found two tanks with the same ID. Check your data.");
+        checkIds(valvesList, valvesIdAttributeName, "Found two valves with the same ID. Check your data.");
+        checkIds(reservoirsList, reservoirIDAttributeName, "Found two reservoirs with the same ID. Check your data.");
 
         /*
          * elevations for junctions and tanks on dem
@@ -335,6 +352,17 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
 
         outWarning = warningBuilder.toString();
     }
+
+    private void checkIds( List<SimpleFeature> featureList, String attributesName, String msg ) {
+        TreeSet<Object> checkTree = new TreeSet<Object>();
+        for( SimpleFeature sF : featureList ) {
+            Object id = sF.getAttribute(attributesName);
+            if (!checkTree.add(id)) {
+                throw new ModelsIllegalargumentException(msg + "(" + id + ")", this);
+            }
+        }
+    }
+
     private Object getElevation( SimpleFeature nearestFirst ) {
         Object elevObj = nearestFirst.getAttribute(junctionElevatioAttributeName);
         if (elevObj == null) {
