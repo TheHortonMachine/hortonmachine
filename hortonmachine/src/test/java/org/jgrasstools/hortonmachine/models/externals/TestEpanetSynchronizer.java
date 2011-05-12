@@ -5,7 +5,7 @@ import java.net.URL;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.hortonmachine.externals.epanet.EpanetFeaturesSynchronizer;
+import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetFeaturesSynchronizer;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
  * Test {@link EpanetFeaturesSynchronizer}.

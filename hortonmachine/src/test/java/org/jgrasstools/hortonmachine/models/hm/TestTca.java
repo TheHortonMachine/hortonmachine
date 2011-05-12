@@ -45,7 +45,7 @@ public class TestTca extends HMTestCase {
         tca.pm = pm;
         tca.process();
         GridCoverage2D tcaCoverage = tca.outTca;
-
+        
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
     }
 

@@ -138,18 +138,10 @@ public class TestRasterReader extends HMTestCase {
     }
 
     public void testRasterReaderBoundsAndRes() throws Exception {
-        double[][] mapData1 = new double[][]{//
+        double[][] mapData = new double[][]{//
         {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
-                {750.0, 860.0, 900.0, 1000.0, 1250.0}, //
-                {650.0, 750.0, 800.0, 850.0, 450.0}, //
-                {430.0, 600.0, 700.0, 800.0, 450.0}, //
-                {700.0, 760.0, 770.0, 850.0, 1150.0} //
-        };
-        double[][] mapData2 = new double[][]{//
-        {1000.0, 1200.0, 1250.0, 1300.0, 1450.0}, //
-                {750.0, 860.0, 900.0, 1000.0, 1250.0}, //
                 {700.0, 800.0, 850.0, 900.0, 1100.0}, //
-                {430.0, 600.0, 700.0, 800.0, 450.0}, //
+                {650.0, 750.0, 800.0, 850.0, 450.0}, //
                 {700.0, 760.0, 770.0, 850.0, 1150.0} //
         };
 
@@ -157,8 +149,8 @@ public class TestRasterReader extends HMTestCase {
         double s = 5139840.0;
         double w = 1640710.0;
         double e = 1640920.0;
-        double xres = 40.0;
-        double yres = 40.0;
+        double xres = 45.0;
+        double yres = 45.0;
         RasterReader reader = new RasterReader();
         reader.file = arcPath;
         reader.pNorth = n;
@@ -169,7 +161,7 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.process();
         GridCoverage2D readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
         reader = new RasterReader();
         reader.file = grassPath;
@@ -181,6 +173,6 @@ public class TestRasterReader extends HMTestCase {
         reader.pYres = yres;
         reader.process();
         readCoverage = reader.outRaster;
-        checkMatrixEqual(readCoverage.getRenderedImage(), mapData2);
+        checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
     }
 }

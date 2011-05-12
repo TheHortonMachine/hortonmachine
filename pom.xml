@@ -6,12 +6,12 @@
     <properties>
         <jgt.groupId>org.jgrasstools</jgt.groupId>
         <jgt.artifactId>jgrasstools</jgt.artifactId>
-		<jgt.version>0.7.0</jgt.version>
+		<jgt.version>0.7.0-SNAPSHOT</jgt.version>
 		<gt.version>2.7.0</gt.version>
-		<gt.version.exp>2.7.0</gt.version.exp>
+		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.1.1</jaitools.version>
 		<jiffle.version>0.1.0</jiffle.version>
-		<oms.version>3.1.0RC1</oms.version>
+		<oms.version>3.1.0RC1-SNAPSHOT</oms.version>
 		<performRelease>false</performRelease>
 	</properties>
 
@@ -202,7 +202,7 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-imageio-ext-gdal</artifactId>
-			<version>${gt.version.exp}</version>
+			<version>${gt.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>

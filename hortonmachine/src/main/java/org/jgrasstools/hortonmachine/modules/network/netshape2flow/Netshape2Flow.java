@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.network.netshape2flow;
 
@@ -30,12 +29,14 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
@@ -67,11 +68,13 @@ import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
 @Description("Transforms the network shape to a flow map.")
+@Documentation("Netshape2Flow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Flowdirections")
 @Label(JGTConstants.NETWORK)
+@Name("net2flow")
 @Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@License("General Public License Version 3 (GPLv3)")
 public class Netshape2Flow extends JGTModel {
 
     @Description("The network features.")
@@ -91,11 +94,6 @@ public class Netshape2Flow extends JGTModel {
     @Description("The field of the attributes table of the network defining the id of the feature.")
     @In
     public String fId;
-
-    @Role(Role.PARAMETER)
-    @Description("Switch to create a shapefile with the problems points.")
-    @In
-    public boolean doProblemsfc = false;
 
     @Description("The output flow map on the network pixels.")
     @Out
@@ -160,11 +158,12 @@ public class Netshape2Flow extends JGTModel {
             }
             // find the id of the reach
             int id = -1;
-            try {
-                id = Integer.parseInt(String.valueOf(feature.getAttribute(idFieldPosition)));
-            } catch (Exception e) {
+            if (idFieldPosition != -1) {
                 String[] idSplit = feature.getID().split("\\."); //$NON-NLS-1$
                 id = Integer.parseInt(idSplit[idSplit.length - 1]);
+            } else {
+                Object attribute = feature.getAttribute(idFieldPosition);
+                id = Integer.parseInt(String.valueOf(attribute));
             }
             // if the feature is active, start working on it
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
@@ -209,7 +208,8 @@ public class Netshape2Flow extends JGTModel {
                      * a temporary resource that contains all the problem points. The user will for
                      * now have to change the shapefile to proceed.
                      */
-                    if (!isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) && flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0) != 10.0) {
+                    if (!isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            && flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0) != 10.0) {
 
                         if (i > coordinates.length - 2) {
                             runningLength = runningLength + res;
@@ -230,14 +230,16 @@ public class Netshape2Flow extends JGTModel {
                     int colDiff = secondOnRaster[1] - firstOnRaster[1];
                     int flowDirection = ModelsEngine.getFlowDirection(rowDiff, colDiff);
 
-                    if (isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
+                    if (isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
                         flowIter.setSample(firstOnRaster[1], firstOnRaster[0], 0, flowDirection);
                     }
 
                     /* I have add this if statment in order to preserve the continuity of the main
                     * river.(first problem in the report)
                     */
-                    if (isNovalue(netIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
+                    if (isNovalue(netIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
                         netIter.setSample(firstOnRaster[1], firstOnRaster[0], 0, id);
                     }
                     // increment the distance
@@ -273,7 +275,7 @@ public class Netshape2Flow extends JGTModel {
         outFlownet = CoverageUtilities.buildCoverage("flow", flowWR, regionMap, crs);
         outNet = CoverageUtilities.buildCoverage("networkd", netWR, regionMap, crs);
 
-        if (doProblemsfc && problemPointsList.size() > 0) {
+        if (problemPointsList.size() > 0) {
 
             // create the feature type
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();

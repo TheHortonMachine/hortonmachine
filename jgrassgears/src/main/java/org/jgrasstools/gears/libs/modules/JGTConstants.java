@@ -236,6 +236,7 @@ public class JGTConstants {
     public static final String LIST_READER = "List Data Reader";
     public static final String LIST_WRITER = "List Data Writer";
     public static final String RASTERREADER = "Raster Reader";
+    public static final String GRIDGEOMETRYREADER = "Grid Geometry Reader";
     public static final String RASTERWRITER = "Raster Writer";
     public static final String FEATUREREADER = "Vector Reader";
     public static final String FEATUREWRITER = "Vector Writer";

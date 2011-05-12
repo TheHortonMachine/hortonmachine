@@ -1384,7 +1384,7 @@ public class ModelsEngine {
      */
     public static WritableRaster sumDownstream( RandomIter flowIter, RandomIter mapToSumIter, int width, int height,
             Double upperThreshold, Double lowerThreshold, IJGTProgressMonitor pm ) {
-        int[] point = new int[2];
+        final int[] point = new int[2];
         WritableRaster summedMapWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
         WritableRandomIter summedMapIter = RandomIterFactory.createWritable(summedMapWR, null);
 
