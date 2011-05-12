@@ -45,6 +45,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -107,8 +108,7 @@ public class Tca extends JGTModel {
 
         pm.beginTask(msg.message("tca.workingon"), rows);
 
-        int[][] dirs = ModelsSupporter.DIR;
-
+        final int[] point = new int[2];
         for( int i = 0; i < rows; i++ ) {
             for( int j = 0; j < cols; j++ ) {
                 // get the directions of the current pixel.
@@ -119,40 +119,23 @@ public class Tca extends JGTModel {
                     int rRow = i;
                     int rCol = j;
                     double tcaValue = tcaIter.getSampleDouble(rCol, rRow, 0);
+
+                    point[0] = j;
+                    point[1] = i;
                     while( flowValue < 9 && !isNovalue(flowValue) && flowValue != 0 ) {
-                        // it update the value of tca in the next pixel.
-                        tcaIter.setSample(rCol, rRow, 0, tcaValue + 1);
+                        tcaIter.setSample(point[0], point[1], 0, tcaValue + 1);
 
-                        // it move to the next pixel.
-                        int newRow = rRow + dirs[(int) flowValue][0];
-                        int newCol = rCol + dirs[(int) flowValue][1];
-                        // get the new value of drainage direction.
-                        int nextFlow = (int) flowIter.getSampleDouble(newCol, newRow, 0);
-                        /*  
-                         * 
-                         * verify that the next pixel doesn't drain in the previous, otherwise there
-                         * is an infinite loop.
-                         */
-                        if (nextFlow < 9 && (!isNovalue(nextFlow) || nextFlow != 0)) {
-                            int r = newRow + dirs[nextFlow][0];
-                            int c = newCol + dirs[nextFlow][1];
-                            if (r == rRow && c == rCol) {
-                                throw new ModelsIOException(MessageFormat.format(
-                                        "Detected loop between rows/cols = {0}/{1} and {2}/{3}", rRow, rCol, newRow, newCol),
-                                        this);
-                            }
+                        if (!ModelsEngine.go_downstream(point, flowValue)) {
+                            throw new RuntimeException();
                         }
-                        // update the indexes.
-                        rRow = newRow;
-                        rCol = newCol;
-                        // memorize the value of the pixel in order to add it to the new pixel.
-                        tcaValue = tcaIter.getSampleDouble(rCol, rRow, 0);
 
-                        // extract the new value of drainage direction.
-                        flowValue = (int) flowIter.getSampleDouble(rCol, rRow, 0);
+                        // update the tca and flow values to those of the new position downstream
+                        tcaValue = tcaIter.getSampleDouble(point[0], point[1], 0);
+                        flowValue = flowIter.getSampleDouble(point[0], point[1], 0);
                     }
+
                     if (flowValue == 10) {
-                        tcaIter.setSample(rCol, rRow, 0, tcaValue + 1);
+                        tcaIter.setSample(point[0], point[1], 0, tcaValue + 1);
                     }
                 }
             }
