@@ -160,11 +160,12 @@ public class Netshape2Flow extends JGTModel {
             }
             // find the id of the reach
             int id = -1;
-            try {
-                id = Integer.parseInt(String.valueOf(feature.getAttribute(idFieldPosition)));
-            } catch (Exception e) {
+            if (idFieldPosition != -1) {
                 String[] idSplit = feature.getID().split("\\."); //$NON-NLS-1$
                 id = Integer.parseInt(idSplit[idSplit.length - 1]);
+            } else {
+                Object attribute = feature.getAttribute(idFieldPosition);
+                id = Integer.parseInt(String.valueOf(attribute));
             }
             // if the feature is active, start working on it
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
@@ -209,7 +210,8 @@ public class Netshape2Flow extends JGTModel {
                      * a temporary resource that contains all the problem points. The user will for
                      * now have to change the shapefile to proceed.
                      */
-                    if (!isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) && flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0) != 10.0) {
+                    if (!isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            && flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0) != 10.0) {
 
                         if (i > coordinates.length - 2) {
                             runningLength = runningLength + res;
@@ -230,14 +232,16 @@ public class Netshape2Flow extends JGTModel {
                     int colDiff = secondOnRaster[1] - firstOnRaster[1];
                     int flowDirection = ModelsEngine.getFlowDirection(rowDiff, colDiff);
 
-                    if (isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
+                    if (isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
                         flowIter.setSample(firstOnRaster[1], firstOnRaster[0], 0, flowDirection);
                     }
 
                     /* I have add this if statment in order to preserve the continuity of the main
                     * river.(first problem in the report)
                     */
-                    if (isNovalue(netIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0)) || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
+                    if (isNovalue(netIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
+                            || (lastPoint[0] != secondOnRaster[0] && lastPoint[1] != secondOnRaster[1])) {
                         netIter.setSample(firstOnRaster[1], firstOnRaster[0], 0, id);
                     }
                     // increment the distance
