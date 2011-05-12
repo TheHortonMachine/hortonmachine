@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
 @Description("Transforms the network shape to a flow map.")
-//@Documentation("Netshape2Flow.html")
+// @Documentation("Netshape2Flow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Flowdirections")
 @Label(JGTConstants.NETWORK)
@@ -94,11 +94,6 @@ public class Netshape2Flow extends JGTModel {
     @Description("The field of the attributes table of the network defining the id of the feature.")
     @In
     public String fId;
-
-    @Role(Role.PARAMETER)
-    @Description("Switch to create a shapefile with the problems points.")
-    @In
-    public boolean doProblemsfc = false;
 
     @Description("The output flow map on the network pixels.")
     @Out
@@ -280,7 +275,7 @@ public class Netshape2Flow extends JGTModel {
         outFlownet = CoverageUtilities.buildCoverage("flow", flowWR, regionMap, crs);
         outNet = CoverageUtilities.buildCoverage("networkd", netWR, regionMap, crs);
 
-        if (doProblemsfc && problemPointsList.size() > 0) {
+        if (problemPointsList.size() > 0) {
 
             // create the feature type
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
