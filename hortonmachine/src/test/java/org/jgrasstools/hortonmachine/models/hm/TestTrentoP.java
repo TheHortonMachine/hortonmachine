@@ -13,7 +13,7 @@ import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.jgrasstools.hortonmachine.utils.HMTestMaps;
+import org.jgrasstools.hortonmachine.utils.HMTestMapstrentoP;
 import org.joda.time.DateTime;
 
 /**
@@ -23,12 +23,19 @@ import org.joda.time.DateTime;
  * 
  */
 public class TestTrentoP extends HMTestCase {
+    /**
+     * The commercial diameters.
+     */
+    public double[][] pipe = new double[][]{{30, 2}, {40, 2}, {50, 2}, {60, 2}, {70, 2}, {80, 2}, {90, 2}, {100, 2}, {110, 2},
+            {120, 2}, {140, 4}, {160, 4}, {180, 4}, {200, 4}, {240, 6}, {280, 6}};
 
     private final static double TOLL = 0.009;
 
     private final static double[] INTERNAL_PARAMETERS = {1.2, 4, 40, 0.005, 0.15, 1, 30, 0.001, 0.01, 1.0, 4.43, 1.5, 0.38,
             0.001, 1, 0.2, 0.4};
 
+    private final static double[] INTERNAL_PARAMETERS2 = {1.3, 4, 50, 0.001, 0.20, 1, 40, 0.001, 0.01, 1.0, 4.43, 1.5, 0.38,
+            0.001, 1, 0.2, 0.4};
     /**
      * This is a block of parameter that usually are used in the simulation of
      * {@link TrentoP}.
@@ -74,7 +81,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = this.pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -88,7 +95,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
-        checkMatrixEqual(result, HMTestMaps.project1, TOLL);
+        checkMatrixEqual(result, HMTestMapstrentoP.project1, TOLL);
 
     }
 
@@ -127,7 +134,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = this.pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Rect.shp");
         File netFile = new File(net.toURI());
@@ -141,7 +148,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
-        checkMatrixEqual(result, HMTestMaps.project1Rectangular, TOLL);
+        checkMatrixEqual(result, HMTestMapstrentoP.project1Rectangular, TOLL);
 
     }
 
@@ -180,7 +187,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = this.pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Trap.shp");
         File netFile = new File(net.toURI());
@@ -194,7 +201,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
-        checkMatrixEqual(result, HMTestMaps.project1Trapezio, TOLL);
+        checkMatrixEqual(result, HMTestMapstrentoP.project1Trapezio, TOLL);
 
     }
 
@@ -233,7 +240,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = HMTestMaps.PIPE;
+        trento_P.inDiameters = this.pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -247,7 +254,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.inPipes = netFC;
         trento_P.process();
         result = trento_P.getResults();
-        checkMatrixEqual(result, HMTestMaps.project1align1, TOLL);
+        checkMatrixEqual(result, HMTestMapstrentoP.project1align1, TOLL);
 
     }
 
@@ -305,10 +312,61 @@ public class TestTrentoP extends HMTestCase {
         trento_P.inPipes = netFC;
         trento_P.process();
         result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
-        checkMatrixEqual(result, HMTestMaps.verify1, TOLL);
+        checkMatrixEqual(result, HMTestMapstrentoP.verify1, TOLL);
 
     }
+    /**
+     * Test project 2.
+     * 
+     * Check the result in the project mode, for the file Mulinu.geo.
+     * 
+     * @throws Exception
+     */
+    public void testProject2() throws Exception {
+        double[][] result = null;
+        double[] globalparameters2 = INTERNAL_PARAMETERS2;
+        TrentoP trento_P = new TrentoP();
+        // set parameters;
+        trento_P.pTest = 0; // project
+        trento_P.pA = 60.5;
+        trento_P.pN = 0.64;
+        trento_P.pTau = 2.6;
+        trento_P.pG = g;
+        trento_P.pAlign = 1;
+        trento_P.pMinimumDepth = globalparameters2[0];
+        trento_P.pMaxJunction = (int) globalparameters2[1];
+        trento_P.pJMax = (int) globalparameters2[2];
+        trento_P.pAccuracy = globalparameters2[3];
+        trento_P.tDTp = globalparameters2[4];
+        trento_P.tpMin = globalparameters2[5];
+        trento_P.tpMax = globalparameters2[6];
+        trento_P.pEpsilon = globalparameters2[7];
+        trento_P.pMinG = globalparameters2[8];
+        trento_P.pMinDischarge = globalparameters2[9];
+        trento_P.pMaxTheta = globalparameters2[10];
+        trento_P.pCelerityFactor = globalparameters2[11];
+        trento_P.pExponent = globalparameters2[12];
+        trento_P.pTolerance = globalparameters2[13];
+        trento_P.pC = globalparameters2[14];
+        trento_P.pGamma = globalparameters2[15];
+        trento_P.pEspInflux = globalparameters2[16];
+        trento_P.inDiameters = this.pipe;
+        trento_P.pOutPipe = 38;
+        URL net = this.getClass().getClassLoader().getResource("TestTrentoP2Verifica.shp");
+        File netFile = new File(net.toURI());
+        ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+        netReader.file = netFile.getAbsolutePath();
+        netReader.readFeatureCollection();
+        SimpleFeatureCollection netFC = netReader.geodata;
+        // set global parameters
+        // verify
+        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
+        trento_P.inPipes = netFC;
+        trento_P.process();
+        result = trento_P.getResults();
+        checkMatrixEqual(result, HMTestMapstrentoP.projectTrentoP2, TOLL);
 
+    }
     private double[][] hashToMatrix( HashMap<DateTime, double[]> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
         // create the rains array from the input.
         Set<Entry<DateTime, double[]>> dischargeSet = outDischarge.entrySet();
@@ -333,12 +391,12 @@ public class TestTrentoP extends HMTestCase {
             } else if (second == null) {
                 second = dateTime;
                 dt = Math.abs(second.getMinuteOfDay() - first.getMinuteOfDay());
-                rainData[index][0] = rainData[index-1][0] + dt;
+                rainData[index][0] = rainData[index - 1][0] + dt;
                 for( int i = 0; i < values.length; i++ ) {
                     rainData[index][i + 1] = values[i];
                 }
             } else {
-                rainData[index][0] = rainData[index-1][0] + dt;
+                rainData[index][0] = rainData[index - 1][0] + dt;
                 for( int i = 0; i < values.length; i++ ) {
                     rainData[index][i + 1] = values[i];
                 }

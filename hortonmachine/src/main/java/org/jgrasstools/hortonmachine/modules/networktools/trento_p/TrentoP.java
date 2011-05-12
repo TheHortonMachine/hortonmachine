@@ -36,8 +36,10 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TOLERANCE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
@@ -218,7 +220,7 @@ public class TrentoP {
     @In
     public short pTest;
 
-    @Description("Time step to calculate the discharge.")
+    @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
     @Range(min = 0.015)
     @In
@@ -258,14 +260,16 @@ public class TrentoP {
     @Description("The output feature collection which contains the net with all hydraulics value.")
     @Out
     public SimpleFeatureCollection outPipes = null;
-    /**
-     * The output if pTest=1, contains the discharge for each pipes at several
-     * time.
-     */
-    @Description(" The output if pTest=1, contains the discharge for each pipes at several time.")
+
+    @Description("The output if pTest=1, contains the discharge for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, double[]> outDischarge;
+
+    @Description("The id of the pipes. It can be used to print the outDischarge")
+    @Role(Role.OUTPUT)
+    @Out
+    public List<List<String>> outDischargeIDPipes;
 
     /**
      * Is an array with all the pipe of the net.
@@ -320,9 +324,13 @@ public class TrentoP {
         Network network = null;
         if (pTest == 1) {
             // set other common parameters for the verify.
-
+            outDischargeIDPipes = new ArrayList<List<String>>();
             if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
+                    String tmpID = Integer.toString(networkPipes[t].getId());
+                    ArrayList<String> tmpList = new ArrayList<String>();
+                    tmpList.add(tmpID);
+                    outDischargeIDPipes.add(tmpList);
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setMinimumDepth(pMinimumDepth);
                     networkPipes[t].setMinG(pMinG);
@@ -643,6 +651,7 @@ public class TrentoP {
      */
     private void findIdWhereDrain( int id, Coordinate cord ) {
         int t = 0;
+        double toll = 0.1;
         for( int i = 0; i < networkPipes.length; i++ ) {
             // if it is this pipe then go haead.
             if (id - 1 == i) {
@@ -660,11 +669,11 @@ public class TrentoP {
             Coordinate[] coords = networkPipes[i].point;
             // if one of the coordinates are near of coord then the 2 pipe are
             // linked.
-            if (cord.distance(coords[0]) < 0.5) {
+            if (cord.distance(coords[0]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);
                 findIdWhereDrain(networkPipes[i].getId(), coords[1]);
                 t++;
-            } else if (cord.distance(coords[1]) < 0.5) {
+            } else if (cord.distance(coords[1]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);
                 findIdWhereDrain(networkPipes[i].getId(), coords[0]);
                 t++;
