@@ -74,7 +74,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Author(name = "Daniele Andreis,Rigon Riccardo,David tamanini", contact = "")
 @Keywords("Sewer network")
 @Bibliography("http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Label(" ")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TrentoP {

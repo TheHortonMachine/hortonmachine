@@ -6,7 +6,7 @@
     <properties>
         <jgt.groupId>org.jgrasstools</jgt.groupId>
         <jgt.artifactId>jgrasstools</jgt.artifactId>
-		<jgt.version>0.7.0SNAPSHOT</jgt.version>
+		<jgt.version>0.7.0-SNAPSHOT</jgt.version>
 		<gt.version>2.7.0</gt.version>
 		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.1.1</jaitools.version>
