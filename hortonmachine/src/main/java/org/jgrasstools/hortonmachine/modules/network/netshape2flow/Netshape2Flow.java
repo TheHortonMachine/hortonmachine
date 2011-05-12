@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
 @Description("Transforms the network shape to a flow map.")
-// @Documentation("Netshape2Flow.html")
+@Documentation("Netshape2Flow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Flowdirections")
 @Label(JGTConstants.NETWORK)

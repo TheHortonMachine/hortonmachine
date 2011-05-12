@@ -1,0 +1,30 @@
+Transforms the network shape to a raster net map and an additional raster flow map along the network.
+<br>
+The input network vector should follow these guidelines:
+<ul>
+<li>links have to be drawn from upstream to downstream</li>
+<li>confluence should be of maximum 2 elements</li>
+<li>links between a junction and the next have to be a single geometry</li>
+</ul>
+<br>
+It can be used as an input for the drain map to force drainage directions, there is the possibility to create a shapefile of problem points to be used for 
+a revision of the original vector network.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the network vector map</li>
+<li>the field of the attribute table of the network vector that defines the ACTIVE links, non active links will be not considered for rasterization; 
+the attribute field has to have the type of a String with Yes or No as active or non active</li>
+<li>the field of the attribute table of the network vector that defines the progressive ID for the features</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the flow map on the net</li>
+<li>the file containing the raster network map</li>
+<li>if requested, the problem point vector file</li>
+</ul>
+<br>
+<br>
