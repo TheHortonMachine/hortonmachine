@@ -72,6 +72,10 @@ public class VectorWriter extends JGTModel {
         checkNull(file);
 
         File vectorFile = new File(file);
+        if (inVector.size() == 0) {
+            pm.message("Warning, not writing an empty vector to file: " + vectorFile.getName());
+            return;
+        }
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp") || pType.equals(JGTConstants.SHP)) {
             ShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);

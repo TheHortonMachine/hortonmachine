@@ -275,36 +275,23 @@ public class Netshape2Flow extends JGTModel {
         outFlownet = CoverageUtilities.buildCoverage("flow", flowWR, regionMap, crs);
         outNet = CoverageUtilities.buildCoverage("networkd", netWR, regionMap, crs);
 
-        if (problemPointsList.size() > 0) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        String typeName = "problemslayer";
+        b.setName(typeName);
+        b.setCRS(inNet.getSchema().getCoordinateReferenceSystem());
+        b.add("the_geom", MultiPoint.class);
+        b.add("cat", Integer.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-            // create the feature type
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            // set the name
-            String typeName = "problemslayer";
-            b.setName(typeName);
-            // add a geometry property
-            b.setCRS(inNet.getSchema().getCoordinateReferenceSystem());
-            b.add("the_geom", MultiPoint.class);
-            // add some properties
-            b.add("cat", Integer.class);
-            // build the type
-            SimpleFeatureType type = b.buildFeatureType();
-            // create the feature
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-
-            GeometryFactory gf = GeometryUtilities.gf();
-            SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
-            for( int i = 0; i < problemPointsList.size(); i++ ) {
-                MultiPoint mPoint = gf.createMultiPoint(new Coordinate[]{problemPointsList.get(i)});
-                Object[] values = new Object[]{mPoint, i};
-                // add the values
-                builder.addAll(values);
-                // build the feature with provided ID
-                SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + i); //$NON-NLS-1$
-                featureCollection.add(feature);
-            }
-
-            outProblems = featureCollection;
+        GeometryFactory gf = GeometryUtilities.gf();
+        outProblems = FeatureCollections.newCollection();
+        for( int i = 0; i < problemPointsList.size(); i++ ) {
+            MultiPoint mPoint = gf.createMultiPoint(new Coordinate[]{problemPointsList.get(i)});
+            Object[] values = new Object[]{mPoint, i};
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            outProblems.add(feature);
         }
 
     }

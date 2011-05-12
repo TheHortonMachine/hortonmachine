@@ -616,11 +616,11 @@ public class DrainDir extends JGTModel {
         WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modflowImage, null);
 
         pm.beginTask("new directions...", rows);
-        for( int j = 0; j <= rows; j++ ) {
+        for( int j = 0; j < rows; j++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int i = 0; i <= cols; i++ ) {
+            for( int i = 0; i < cols; i++ ) {
                 if (!isNovalue(flowFixedIter.getSampleDouble(i, j, 0))) {
                     flow[0] = i;
                     flow[1] = j;
@@ -631,8 +631,8 @@ public class DrainDir extends JGTModel {
                                 && isNovalue(flowFixedIter.getSampleDouble(nflow[0], nflow[1], 0))) {
                             elev = pitRandomIter.getSampleDouble(nflow[0] + odir[1][1], nflow[1] + odir[1][0], 0);
                             for( int n = 2; n <= 8; n++ ) {
-                                if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] <= rows && nflow[1] + odir[n][0] >= 0
-                                        && nflow[1] + odir[n][0] <= cols) {
+                                if (nflow[0] + odir[n][0] >= 0 && nflow[0] + odir[n][1] < rows && nflow[1] + odir[n][0] >= 0
+                                        && nflow[1] + odir[n][0] < cols) {
                                     if (pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0) >= elev) {
                                         elev = pitRandomIter.getSampleDouble(nflow[0] + odir[n][1], nflow[1] + odir[n][0], 0);
                                         dirRandomIter.setSample(nflow[0], nflow[1], 0, odir[n][2]);
@@ -640,8 +640,8 @@ public class DrainDir extends JGTModel {
                                 }
                             }
                             for( int s = 1; s <= 8; s++ ) {
-                                if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] <= rows && nflow[1] + odir[s][1] >= 0
-                                        && nflow[1] + odir[s][1] <= cols) {
+                                if (nflow[0] + odir[s][0] >= 0 && nflow[0] + odir[s][0] < rows && nflow[1] + odir[s][1] >= 0
+                                        && nflow[1] + odir[s][1] < cols) {
                                     if (!isNovalue(flowFixedIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0))) {
 
                                         if (pitRandomIter.getSampleDouble(nflow[0] + odir[s][1], nflow[1] + odir[s][0], 0) <= elev) {
