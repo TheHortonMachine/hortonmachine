@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>oms3</artifactId>
-			<version>${oms.version}</version>
+			<version>${jgt.version}</version>
 		</dependency>
 	</dependencies>
 
