@@ -89,61 +89,15 @@ public class Tca extends JGTModel {
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
 
         pm.message(msg.message("tca.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
-
-        area(flowWR, tcaWR);
+        WritableRaster oneValuesWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 1.0);
+        RandomIter flowIter = RandomIterFactory.create(flowRI, null);
+        WritableRandomIter oneValuesIter = RandomIterFactory.createWritable(oneValuesWR, null);
+        WritableRaster tcaWR = ModelsEngine.sumDownstream(flowIter, oneValuesIter, cols, rows, null, null, pm);
         outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
-
     }
 
-    private void area( WritableRaster flowImage, WritableRaster tcaImage ) throws ModelsIOException {
-
-        RandomIter flowIter = RandomIterFactory.create(flowImage, null);
-        WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaImage, null);
-
-        pm.beginTask(msg.message("tca.workingon"), rows);
-
-        final int[] point = new int[2];
-        for( int i = 0; i < rows; i++ ) {
-            for( int j = 0; j < cols; j++ ) {
-                // get the directions of the current pixel.
-                double flowValue = flowIter.getSampleDouble(j, i, 0);
-                if (isNovalue(flowValue)) {
-                    tcaIter.setSample(j, i, 0, doubleNovalue);
-                } else {
-                    int rRow = i;
-                    int rCol = j;
-                    double tcaValue = tcaIter.getSampleDouble(rCol, rRow, 0);
-
-                    point[0] = j;
-                    point[1] = i;
-                    while( flowValue < 9 && !isNovalue(flowValue) && flowValue != 0 ) {
-                        tcaIter.setSample(point[0], point[1], 0, tcaValue + 1);
-
-                        if (!ModelsEngine.go_downstream(point, flowValue)) {
-                            throw new RuntimeException();
-                        }
-
-                        // update the tca and flow values to those of the new position downstream
-                        tcaValue = tcaIter.getSampleDouble(point[0], point[1], 0);
-                        flowValue = flowIter.getSampleDouble(point[0], point[1], 0);
-                    }
-
-                    if (flowValue == 10) {
-                        tcaIter.setSample(point[0], point[1], 0, tcaValue + 1);
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        flowIter.done();
-        tcaIter.done();
-    }
 }

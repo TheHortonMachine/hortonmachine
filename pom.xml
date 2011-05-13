@@ -7,7 +7,7 @@
         <jgt.groupId>org.jgrasstools</jgt.groupId>
         <jgt.artifactId>jgrasstools</jgt.artifactId>
 		<jgt.version>0.7.0-SNAPSHOT</jgt.version>
-		<gt.version>2.7.0</gt.version>
+		<gt.version>2.7.1</gt.version>
 		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.1.1</jaitools.version>
 		<jiffle.version>0.1.0</jiffle.version>
@@ -207,7 +207,7 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-grassraster</artifactId>
-			<version>${gt.version.exp}</version>
+			<version>${gt.version}</version>
 		</dependency>
 
 		<dependency>
