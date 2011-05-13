@@ -263,6 +263,7 @@ public class JGTConstants {
     public static final String FILESPATHLIST_UI_HINT = "filespathlist";
     public static final String CRS_UI_HINT = "crs";
     public static final String ITERATOR_UI_HINT = "iterator";
+    public static final String EASTINGNORTHING_UI_HINT = "eastnorth";
     public static final String NORTHING_UI_HINT = "northing";
     public static final String EASTING_UI_HINT = "easting";
     public static final String MULTILINE_UI_HINT = "multiline";
