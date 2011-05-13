@@ -18,24 +18,24 @@
 package org.jgrasstools.gears.modules.v.vectorfilter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
@@ -74,16 +74,18 @@ public class VectorFilter extends JGTModel {
         checkNull(inVector, pCql);
 
         Filter cqlFilter = FilterUtilities.getCQLFilter(pCql);
-        SimpleFeatureCollection subCollection = inVector
-                .subCollection(cqlFilter);
-        
+        SimpleFeatureCollection subCollection = inVector.subCollection(cqlFilter);
+
         outVector = FeatureCollections.newCollection();
-        FeatureIterator<SimpleFeature> iterator = subCollection.features();
-        while( iterator.hasNext() ) {
-            SimpleFeature feature = iterator.next();
-            outVector.add(feature);
+        SimpleFeatureIterator iterator = subCollection.features();
+        try {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                outVector.add(feature);
+            }
+        } finally {
+            iterator.close();
         }
-        iterator.close();
     }
 
 }

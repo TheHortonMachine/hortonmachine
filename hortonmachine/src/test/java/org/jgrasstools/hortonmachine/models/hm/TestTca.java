@@ -48,5 +48,22 @@ public class TestTca extends HMTestCase {
         
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
     }
+    
+//    GridCoverage2D flowCoverage = RasterReader
+//    .readCoverage("/home/moovida/bm_valsole/utm_valsole/cnr_pit/cell/netflow_drain");
+//
+//GridCoverage2D tcaCoverage = null;
+//try {
+//Tca tca = new Tca();
+//tca.inFlow = flowCoverage;
+//tca.pm = pm;
+//tca.process();
+//tcaCoverage = tca.outTca;
+// SimpleFeatureCollection outLoop = tca.outLoop;
+// RasterWriter.writeRaster("/home/moovida/bm_valsole/utm_valsole/cnr_pit/cell/netflow_tca2", tcaCoverage);
+// VectorWriter.writeVector("/home/moovida/bm_valsole/loop.shp", outLoop);
+//} catch (Exception e) {
+//e.printStackTrace();
+//}
 
 }

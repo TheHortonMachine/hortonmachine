@@ -697,8 +697,6 @@ public class ModelsEngine {
         WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
         WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
 
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         /* numerating every stream */
         GearsMessageHandler msg = GearsMessageHandler.getInstance();
         pm.beginTask(msg.message("utils.numbering_stream"), height);
@@ -710,8 +708,8 @@ public class ModelsEngine {
                         && netnumIter.getSampleDouble(i, j, 0) == 0.0) {
                     f = 0;
                     for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]
-                                && !isNovalue(networkIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))) {
+                        if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+                                && !isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
                             break;
                         } else
                             f++;
@@ -727,8 +725,8 @@ public class ModelsEngine {
                                 && netnumIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(networkIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))
-                                        && flowIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
+                                if (!isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+                                        && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                                     gg++;
                                 }
                             }
@@ -763,8 +761,6 @@ public class ModelsEngine {
         WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter oMatrixRandomIter = RandomIterFactory.createWritable(outImage, null);
 
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         double tcaValue = 0;
 
         pm.beginTask(msg.message("utils.numbering_stream"), rows);
@@ -778,8 +774,8 @@ public class ModelsEngine {
                         && oMatrixRandomIter.getSampleDouble(i, j, 0) == 0.0) {
                     f = 0;
                     for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))) {
+                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
                             break;
                         } else
                             f++;
@@ -796,8 +792,8 @@ public class ModelsEngine {
                                 && oMatrixRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
+                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                                     gg++;
                                 }
                             }
@@ -844,8 +840,6 @@ public class ModelsEngine {
 
         Rectangle2D regionBox = gridGeometry.getEnvelope2D().getBounds2D();
 
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         List<Point4d> points = new ArrayList<Point4d>();
         // new rectangle for active region
         Number nodoId;
@@ -873,8 +867,8 @@ public class ModelsEngine {
         for( Point4d point4d : points ) {
             if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
                 for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dir[i][1];
-                    int indexJ = (int) point4d.y + dir[i][0];
+                    int indexI = (int) point4d.x + dirIn[i][1];
+                    int indexJ = (int) point4d.y + dirIn[i][0];
                     if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
                         point4d.x = indexI;
                         point4d.y = indexJ;
@@ -900,8 +894,8 @@ public class ModelsEngine {
                     f = 0;
                     // look for the source...
                     for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))) {
+                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
                             break;
                         } else
                             f++;
@@ -931,8 +925,8 @@ public class ModelsEngine {
                                 && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
+                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                                     gg++;
                                 }
                             }
@@ -975,8 +969,6 @@ public class ModelsEngine {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
 
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         double tcaValue = 0;
 
         List<Point4d> points = new ArrayList<Point4d>();
@@ -1011,8 +1003,8 @@ public class ModelsEngine {
         for( Point4d point4d : points ) {
             if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
                 for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dir[i][1];
-                    int indexJ = (int) point4d.y + dir[i][0];
+                    int indexI = (int) point4d.x + dirIn[i][1];
+                    int indexJ = (int) point4d.y + dirIn[i][0];
                     if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
                         point4d.x = indexI;
                         point4d.y = indexJ;
@@ -1038,8 +1030,8 @@ public class ModelsEngine {
                     f = 0;
                     // look for the source...
                     for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))) {
+                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
                             break;
                         } else
                             f++;
@@ -1069,8 +1061,8 @@ public class ModelsEngine {
                                 && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
+                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                                     gg++;
                                 }
                             }
@@ -1209,22 +1201,21 @@ public class ModelsEngine {
     /**
      * Verifies if the point is a source pixel in the supplied flow raster.
      * 
-     * @param flowRaster 
-     * @param colRow the col and row of the point to check.
-     * @return
+     * @param flowIter the {@link RandomIter iterator} of the flowdirections.
+     * @param col the col of the point to check.
+     * @param row the row of the point to check.
+     * @return true if the point identified by col and row is a source pixel.
      */
-    public static boolean isSourcePixel( RandomIter flowRaster, int col, int row ) {
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-        if (flowRaster.getSampleDouble(col, row, 0) < 9.0 && flowRaster.getSampleDouble(col, row, 0) > 0.0) {
-
+    public static boolean isSourcePixel( RandomIter flowIter, int col, int row ) {
+        double flowDirection = flowIter.getSampleDouble(col, row, 0);
+        if (flowDirection < 9.0 && flowDirection > 0.0) {
             for( int k = 1; k <= 8; k++ ) {
-                if (flowRaster.getSampleDouble(col + dir[k][1], row + dir[k][0], 0) == dir[k][2]) {
+                if (flowIter.getSampleDouble(col + dirIn[k][1], row + dirIn[k][0], 0) == dirIn[k][2]) {
                     return false;
                 }
             }
             return true;
         } else {
-
             return false;
         }
     }
@@ -1444,13 +1435,11 @@ public class ModelsEngine {
 
     public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz,
             double diss ) {
-        int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         for( int k = 1; k <= 8; k++ ) {
-            if (flowIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
-                if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) >= maz) {
-                    if (tcaIterator.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == maz) {
-                        if (dist.getSample(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) > diss)
+            if (flowIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
+                if (tcaIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) >= maz) {
+                    if (tcaIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == maz) {
+                        if (dist.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) > diss)
                             return false;
                     } else
                         return false;

@@ -95,6 +95,12 @@ public class RasterWriter extends JGTModel {
         if (!concatOr(!hasWritten, doReset)) {
             return;
         }
+        checkNull(inRaster);
+
+        if (inRaster.getName().toString().equals("dummy")) {
+            pm.message("WARNING: Not writing dummy raster to file.");
+            return;
+        }
 
         if (pType == null) {
             // try to guess from the extension
