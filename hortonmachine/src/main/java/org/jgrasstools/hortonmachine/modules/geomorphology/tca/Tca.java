@@ -129,7 +129,7 @@ public class Tca extends JGTModel {
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaWR, null);
 
-        pm.beginTask(msg.message("tca.workingon"), rows);
+        pm.beginTask(msg.message("tca.workingon"), cols);
 
         boolean loopError = false;
 
