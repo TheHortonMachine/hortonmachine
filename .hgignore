@@ -3,6 +3,7 @@ syntax: regexp
 \.classpath
 \.project
 \.settings
+^target
 ^hortonmachine.target
 ^hortonmachine.bin
 ^jgrassgears.target

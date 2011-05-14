@@ -60,7 +60,7 @@ JGTMODULESCOPY: {
     // take latest jgrassgears jar
     def jarFiles = new File("./jgrassgears/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("jgrassgears-") && filename.endsWith(".jar")  
+            return filename.startsWith("jgt-jgrassgears-") && filename.endsWith(".jar")  
         }  
     });
 	Arrays.sort(jarFiles, Collections.reverseOrder());
@@ -71,7 +71,7 @@ JGTMODULESCOPY: {
     // take latest hortonmachine jar
     jarFiles = new File("./hortonmachine/target").listFiles(new FilenameFilter() {  
         public boolean accept(File f, String filename) {  
-            return filename.startsWith("hortonmachine-") && filename.endsWith(".jar")  
+            return filename.startsWith("jgt-hortonmachine-") && filename.endsWith(".jar")  
         }  
     });
 	Arrays.sort(jarFiles, Collections.reverseOrder());
