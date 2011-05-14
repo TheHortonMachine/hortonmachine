@@ -35,6 +35,7 @@
 
     <scm>
         <connection>scm:hg:http://jgrasstools.googlecode.com/hg/</connection>
+        <developerConnection>scm:hg:https://andrea.antonello@jgrasstools.googlecode.com/hg/</developerConnection>
         <url>http://code.google.com/p/jgrasstools/source/browse/</url>
     </scm>
 
