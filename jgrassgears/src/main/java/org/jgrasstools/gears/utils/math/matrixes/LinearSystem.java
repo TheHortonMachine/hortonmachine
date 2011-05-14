@@ -10,7 +10,7 @@ package org.jgrasstools.gears.utils.math.matrixes;
  */
 public class LinearSystem extends SquareMatrix
 {
-    private static final double TOLERANCE = Epsilon.doubleValue();
+    private static final double TOLERANCE = 10E-6;
 
     /** max iters for improvement = twice # of significant digits */
     private static final int MAX_ITER;
