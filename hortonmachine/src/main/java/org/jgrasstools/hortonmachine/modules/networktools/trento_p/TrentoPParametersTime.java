@@ -104,6 +104,17 @@ public class TrentoPParametersTime extends JGTModel {
      */
     public static final String TIMESECTION = "[TIMES]"; //$NON-NLS-1$
 
+    
+    /**
+     * Set the value of time parameters.
+     * 
+     * 
+     * 
+     * 
+     * 
+     * @throws Exception
+     */
+    
     @Execute
     public void process() throws Exception {
         if (inFile != null) {

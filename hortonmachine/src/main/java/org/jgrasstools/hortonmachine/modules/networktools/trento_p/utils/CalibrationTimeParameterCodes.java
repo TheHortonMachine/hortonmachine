@@ -1,8 +1,8 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
 public enum CalibrationTimeParameterCodes {
-    STEP(0, "Time step", "Simulation duration [min]", "15"), //
-    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", "120"); //
+    STEP(0, "Time step", "Simulation duration [min]",  Double.toString(Constants.DEFAULT_DT)), //
+    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX)); //
 
     private int code;
     private String key;

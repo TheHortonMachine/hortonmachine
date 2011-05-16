@@ -1,9 +1,9 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
 public enum ProjectTimeParameterCodes {
-    STEP(0, "Time step", "Simulation duration [min]","0.015"),//
-    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", "5"), //
-    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", "30"); //
+    STEP(0, "Time step", "Simulation duration [min]",  Double.toString(Constants.DEFAULT_TDTP)),//
+    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]",Double.toString(Constants.DEFAULT_TPMIN) ), //
+    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX) ); //
 
     private int code;
     private String key;
