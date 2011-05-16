@@ -231,7 +231,7 @@ public class TrentoP {
     public double tpMin = DEFAULT_TPMIN;
 
     @Description("Maximum Rain Time step to calculate the discharge.")
-    @Unit("-")
+    @Unit("minutes")
     @Range(min = 30)
     @In
     public double tpMax = DEFAULT_TMAX;
@@ -239,7 +239,7 @@ public class TrentoP {
     @Description("Max number of time step.")
     @Unit("-")
     @In
-    public double tMax = DEFAULT_TMAX;
+    public int tMax = (int) DEFAULT_TMAX;
 
     @Description("Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.")
     @Unit("minutes")

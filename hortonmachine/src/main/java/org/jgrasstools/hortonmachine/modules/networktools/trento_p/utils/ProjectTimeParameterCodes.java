@@ -1,23 +1,15 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
 public enum ProjectTimeParameterCodes {
-    DURATION(0, "DURATION", "Simulation duration [min]", "0"), //
-    HYDSTEP(1, "HYDRAULIC TIMESTEP", "Hydraulic time step [min]", "60"), //
-    QUALSTEP(2, "QUALITY TIMESTEP", "Water quality time step [min]", "6"), //
-    PATTERNSTEP(3, "PATTERN TIMESTEP", "Time pattern time step [min]", "60"), //
-    PATTERNSTART(4, "PATTERN START", "Time pattern start time [min]", "0"), //
-    REPORTSTEP(5, "REPORT TIMESTEP", "Reporting time step [min]", "60"), //
-    REPORTSTART(6, "REPORT START", "Report starting time [min]", "0"), //
-    RULESTEP(7, "RULE TIMESTEP", "Time step for evaluating rule-based controls [min]", "6"), //
-    STATISTIC(8, "STATISTIC", "Type of time series post-processing to use (can be AVERAGED, MINIMUM, MAXIMUM, NONE)", "NONE"), //
-    STARTCLOCKTIME(-1, "START CLOCKTIME", "The time of the day at which the simulation begins (format HH:MM AM/PM)", "12:00 AM");
-    // PERIODS(9, "", "Number of reporting periods saved to binary output file");
+    STEP(0, "Time step", "Simulation duration [min]","0.015"),//
+    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", "5"), //
+    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", "30"); //
 
     private int code;
     private String key;
     private String description;
     private final String defaultValue;
-    ProjectTimeParameterCodes( int code, String key, String description, String defaultValue ) {
+ ProjectTimeParameterCodes( int code, String key, String description, String defaultValue ) {
         this.code = code;
         this.key = key;
         this.description = description;
@@ -41,8 +33,8 @@ public enum ProjectTimeParameterCodes {
     }
 
     public static ProjectTimeParameterCodes forCode( int i ) {
-        ProjectTimeParameterCodes[] values = values();
-        for(ProjectTimeParameterCodes type : values ) {
+       ProjectTimeParameterCodes[] values = values();
+        for( ProjectTimeParameterCodes type : values ) {
             if (type.code == i) {
                 return type;
             }
@@ -51,7 +43,7 @@ public enum ProjectTimeParameterCodes {
     }
 
     public static ProjectTimeParameterCodes forKey( String key ) {
-        ProjectTimeParameterCodes[] values = values();
+        ProjectTimeParameterCodes   [] values = values();
         for( ProjectTimeParameterCodes type : values ) {
             if (type.key.equals(key)) {
                 return type;

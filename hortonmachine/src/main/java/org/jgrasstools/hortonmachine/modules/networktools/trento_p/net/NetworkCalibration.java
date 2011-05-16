@@ -92,7 +92,7 @@ public class NetworkCalibration implements Network {
     /*
      * The
      */
-    private final double tMax;
+    private final int tMax;
     /*
      * A string where to put the warning messages.
      */
@@ -111,7 +111,7 @@ public class NetworkCalibration implements Network {
         // intervallo temporale.
         private final Integer dt;
         // max number of time step.
-        private double tMax = DEFAULT_TMAX;
+        private int tMax = (int) DEFAULT_TMAX;
 
         private final StringBuilder strBuilder;
         /*
@@ -176,7 +176,7 @@ public class NetworkCalibration implements Network {
          * @param tMax
          *            .
          */
-        public Builder tMax( double tMax ) {
+        public Builder tMax( int tMax ) {
             this.tMax = tMax;
             return this;
         }

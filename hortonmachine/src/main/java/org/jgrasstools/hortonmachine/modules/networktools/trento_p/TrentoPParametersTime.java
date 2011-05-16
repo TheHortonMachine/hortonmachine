@@ -17,19 +17,34 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TDTP;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TMAX;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
+
+import java.io.File;
+import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Properties;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
+import oms3.annotations.Range;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetParametersTime;
+import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.TimeParameterCodes;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.CalibrationTimeParameterCodes;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.ProjectTimeParameterCodes;
 
 @Description("The time related parameters for a TrentoP simulation")
 @Author(name = "Daniele Andreis")
@@ -37,6 +52,11 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TrentoPParametersTime extends JGTModel {
+
+    @Description(" Use mode, 0=project, 1=verify.")
+    @In
+    public short pTest;
+
     @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
     @Range(min = 0.015)
@@ -65,7 +85,6 @@ public class TrentoPParametersTime extends JGTModel {
     @In
     public Integer dt;
 
-
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -84,69 +103,56 @@ public class TrentoPParametersTime extends JGTModel {
      * The title of the time section in the inp file.
      */
     public static final String TIMESECTION = "[TIMES]"; //$NON-NLS-1$
-    
-    
+
     @Execute
     public void process() throws Exception {
         if (inFile != null) {
             File file = new File(inFile);
             outProperties.load(new FileReader(file));
         } else {
-            if (duration != null) {
-                outProperties.put(TrentoPTimeParameterCodes.DURATION.getKey(), duration + MIN);
-            } else {
-                outProperties.put(TrentoPTimeParameterCodes.DURATION.getKey(), 0 + MIN);
+            if (pTest == 1) {
+                if (dt != null) {
+                    outProperties.put(CalibrationTimeParameterCodes.STEP.getKey(), dt + MIN);
+                }
+                outProperties.put(CalibrationTimeParameterCodes.MAXIMUM_TIME.getKey(), tMax);
+            } else if (pTest == 0) {
+                outProperties.put(ProjectTimeParameterCodes.STEP.getKey(), tDTp);
+                outProperties.put(ProjectTimeParameterCodes.MINIMUM_TIME, tpMin);
+                outProperties.put(CalibrationTimeParameterCodes.MAXIMUM_TIME.getKey(), tpMax);
             }
-            if (hydraulicTimestep != null) {
-                outProperties.put(TrentoPTimeParameterCodes.HYDSTEP.getKey(), hydraulicTimestep + MIN);
-            }
-            if (patternTimestep != null) {
-                outProperties.put(TrentoPTimeParameterCodes.PATTERNSTEP.getKey(), patternTimestep + MIN);
-            }
-            if (patternStart != null) {
-                outProperties.put(TrentoPTimeParameterCodes.PATTERNSTART.getKey(), patternStart + MIN);
-            }
-            if (reportTimestep != null) {
-                outProperties.put(TrentoPTimeParameterCodes.REPORTSTEP.getKey(), reportTimestep + MIN);
-            }
-            if (reportStart != null) {
-                outProperties.put(TrentoPTimeParameterCodes.REPORTSTART.getKey(), reportStart + MIN);
-            }
-            if (startClockTime != null) {
-                outProperties.put(TrentoPTimeParameterCodes.STARTCLOCKTIME.getKey(), startClockTime);
-            }
-            if (statistic != null) {
-                outProperties.put(TrentoPTimeParameterCodes.STATISTIC.getKey(), statistic);
-            }
+
         }
     }
 
     /**
-     * Create a {@link EpanetParametersTime} from a {@link HashMap} of values.
+     * Create a {@link TrentoPParametersTime} from a {@link HashMap} of values.
      * 
-     * @param options the {@link HashMap} of values. The keys have to be from {@link TimeParameterCodes}.
+     * @param options the {@link HashMap} of values. The keys have to be from {@link ProjectTimeParameterCodes} or {@link CalibrationTimeParameterCodes} .
      * @return the created {@link EpanetParametersTime}.
      * @throws Exception 
      */
-    public static TrentoPParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) throws Exception {
-        TrentoPParametersTime epTime = new TrentoPParametersTime();
-        String duration = options.get(TimeParameterCodes.DURATION);
-        epTime.duration = NumericsUtilities.isNumber(duration, Double.class);
-        String hydrTiStep = options.get(TimeParameterCodes.HYDSTEP);
-        epTime.hydraulicTimestep = NumericsUtilities.isNumber(hydrTiStep, Double.class);
-        String pattTimeStep = options.get(TimeParameterCodes.PATTERNSTEP);
-        epTime.patternTimestep = NumericsUtilities.isNumber(pattTimeStep, Double.class);
-        String patternStart = options.get(TimeParameterCodes.PATTERNSTART);
-        epTime.patternStart = NumericsUtilities.isNumber(patternStart, Double.class);
-        String reportTimeStep = options.get(TimeParameterCodes.REPORTSTEP);
-        epTime.reportTimestep = NumericsUtilities.isNumber(reportTimeStep, Double.class);
-        String reportStart = options.get(TimeParameterCodes.REPORTSTART);
-        epTime.reportStart = NumericsUtilities.isNumber(reportStart, Double.class);
-        String startClockTime = options.get(TimeParameterCodes.STARTCLOCKTIME);
-        epTime.startClockTime = startClockTime;
-        String statistic = options.get(TimeParameterCodes.STATISTIC);
-        epTime.statistic = statistic;
-        epTime.process();
-        return epTime;
+    public static TrentoPParametersTime createFromMap( HashMap<TimeParameterCodes, String> options, int test ) throws Exception {
+        TrentoPParametersTime trentoPTime = new TrentoPParametersTime();
+
+        if (test == 1) {
+
+            String step = options.get(CalibrationTimeParameterCodes.STEP);
+            trentoPTime.dt = NumericsUtilities.isNumber(step, Integer.class);
+            String maxT = options.get(CalibrationTimeParameterCodes.MAXIMUM_TIME);
+            trentoPTime.tMax = NumericsUtilities.isNumber(maxT, Integer.class);
+
+        } else if (test == 0) {
+
+            String step = options.get(ProjectTimeParameterCodes.STEP);
+            trentoPTime.tDTp = NumericsUtilities.isNumber(step, Double.class);
+            String maxT = options.get(ProjectTimeParameterCodes.MAXIMUM_TIME);
+            trentoPTime.tpMax = NumericsUtilities.isNumber(maxT, Double.class);
+            String minT = options.get(ProjectTimeParameterCodes.MINIMUM_TIME);
+            trentoPTime.tpMin = NumericsUtilities.isNumber(minT, Double.class);
+
+        }
+
+        trentoPTime.process();
+        return trentoPTime;
     }
 }
