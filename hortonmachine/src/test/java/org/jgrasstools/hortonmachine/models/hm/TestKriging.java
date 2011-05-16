@@ -342,7 +342,7 @@ public class TestKriging extends HMTestCase {
      */
      kriging.pMode = 0;
     
-     kriging.includezero=1;
+     kriging.doIncludezero=false;
      TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
      writer.file = interpolatedRainPath;
     
