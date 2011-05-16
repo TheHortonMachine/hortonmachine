@@ -115,7 +115,7 @@ public class TestKriging extends HMTestCase {
 		 * interpolated. In this case only 2D.
 		 */
 		kriging.pMode = 0;
-		kriging.semivariogramType=1;
+		kriging.pSemivariogramType=1;
 
 		TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
 		writer.file = interpolatedRainPath;

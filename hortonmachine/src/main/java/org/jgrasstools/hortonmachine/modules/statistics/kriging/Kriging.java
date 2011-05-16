@@ -18,11 +18,15 @@ package org.jgrasstools.hortonmachine.modules.statistics.kriging;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Documentation;
@@ -48,6 +52,8 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.matrixes.ColumnVector;
 import org.jgrasstools.gears.utils.math.matrixes.LinearSystem;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -66,149 +72,133 @@ import com.vividsolutions.jts.geom.Geometry;
 @License("General Public License Version 3 (GPLv3)")
 public class Kriging extends JGTModel {
 
-	@Description("The vector of the measurement point, containing the position of the stations.")
-	@In
-	public SimpleFeatureCollection inStations = null;
+    @Description("The vector of the measurement point, containing the position of the stations.")
+    @In
+    public SimpleFeatureCollection inStations = null;
 
-	@Description("The field of the vector of stations, defining the id.")
-	@In
-	public String fStationsid = null;
+    @Description("The field of the vector of stations, defining the id.")
+    @In
+    public String fStationsid = null;
 
-	@Description("The field of the vector of stations, defining the elevation.")
-	@In
-	public String fStationsZ = null;
+    @Description("The field of the vector of stations, defining the elevation.")
+    @In
+    public String fStationsZ = null;
 
-	@Description("The file with the measured data, to be interpolated.")
-	@In
-	public HashMap<Integer, double[]> inData = null;
+    @Description("The file with the measured data, to be interpolated.")
+    @In
+    public HashMap<Integer, double[]> inData = null;
 
-	@Description("The vector of the points in which the data have to be interpolated.")
-	@In
-	public SimpleFeatureCollection inInterpolate = null;
+    @Description("The vector of the points in which the data have to be interpolated.")
+    @In
+    public SimpleFeatureCollection inInterpolate = null;
 
-	@Description("The field of the interpolated vector points, defining the id.")
-	@In
-	public String fInterpolateid = null;
+    @Description("The field of the interpolated vector points, defining the id.")
+    @In
+    public String fInterpolateid = null;
 
-	@Description("The field of the interpolated vector points, defining the elevation.")
-	@In
-	public String fPointZ = null;
+    @Description("The field of the interpolated vector points, defining the elevation.")
+    @In
+    public String fPointZ = null;
 
-	@Description("The interpolated data.")
-	@Out
-	public HashMap<Integer, double[]> outData = null;
+    /**
+     * Define the mode. It is possible 4 alternatives: <li>mode ==0, the value
+     * to calculate are in a non-regular grid (the coordinates are stored in a
+     * {@link FeatureCollection}, pointsToInterpolate. This is a 2-D
+     * interpolation, so the z coordinates are null. <li>mode ==1, the value to
+     * calculate are in a non-regular grid (the coordinates are stored in a
+     * {@link FeatureCollection}, pointsToInterpolate. This is a 3-D
+     * interpolation.. <li>mode ==2, the value to calculate are in a regular
+     * grid (the coordinates are stored in a {@link GridCoverage2D},
+     * gridToInterpolate. This is a 2-D interpolation. <li>mode ==3, the value
+     * to calculate are in a regular grid (the coordinates are stored in a
+     * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
+     * so the grid have to contains a dem.
+     */
+    @Description("The interpolation mode.")
+    @In
+    public int pMode = 0;
 
-	/**
-	 * Define the mode. It is possible 4 alternatives: <li>mode ==0, the value
-	 * to calculate are in a non-regular grid (the coordinates are stored in a
-	 * {@link FeatureCollection}, pointsToInterpolate. This is a 2-D
-	 * interpolation, so the z coordinates are null. <li>mode ==1, the value to
-	 * calculate are in a non-regular grid (the coordinates are stored in a
-	 * {@link FeatureCollection}, pointsToInterpolate. This is a 3-D
-	 * interpolation.. <li>mode ==2, the value to calculate are in a regular
-	 * grid (the coordinates are stored in a {@link GridCoverage2D},
-	 * gridToInterpolate. This is a 2-D interpolation. <li>mode ==3, the value
-	 * to calculate are in a regular grid (the coordinates are stored in a
-	 * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
-	 * so the grid have to contains a dem.
-	 */
-	@Description("The interpolation mode.")
-	@In
-	public int pMode = 0;
+    /**
+     * The integral scale, this is necessary to calculate the variogram if the
+     * program use {@link Kriging2.variogram(rx,ry,rz)}.
+     */
+    @Description("The integral scale.")
+    @In
+    public double[] pIntegralscale = null;
 
-	/**
-	 * The integral scale, this is necessary to calculate the variogram if the
-	 * program use {@link Kriging2.variogram(rx,ry,rz)}.
-	 */
-	@Description("The integral scale.")
-	@In
-	public double[] pIntegralscale = null;
+    /**
+     * Variance of the measure field.
+     */
+    @Description("The variance.")
+    @In
+    public double pVariance = 0;
 
-	/**
-	 * Variance of the measure field.
-	 */
-	@Description("The variance.")
-	@In
-	public double pVariance = 0;
+    /**
+     * The logarithm selector, if it's true then the models runs with the log of
+     * the data.
+     */
+    @Description("Switch for logaritmic run selection.")
+    @In
+    public boolean doLogarithmic = false;
 
-	/**
-	 * The logarithm selector, if it's true then the models runs with the log of
-	 * the data.
-	 */
-	@Description("Switch for logaritmic run selection.")
-	@In
-	public boolean doLogarithmic = false;
+    @Description("The collection of the points in which the data needs to be interpolated.")
+    @In
+    public GridCoverage2D inInterpolationGrid = null;
 
-	/**
-	 * The output: the calculated value in mode 2 or 3.
-	 */
-	// @Description("The interpolated data.")
-	// @Out
-	// public GridCoverage2D gridResult = null;
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-	/**
-	 * The input: the points where the variable is calculated in mode 2 or 3.
-	 */
-	// @Description("The collection of the points in which the data needs to be interpolated.")
-	// @In
-	// public GridCoverage2D gridToInterpolate = null;
+    public int defaultVariogramMode = 0;
 
-	@Description("The progress monitor.")
-	@In
-	public IJGTProgressMonitor pm = new LogProgressMonitor();
+    @Description("The type of theoretical semivariogram: 0 = Gaussian; 1 = Exponential.")
+    @In
+    public double pSemivariogramType = 0;
 
-	public int defaultVariogramMode = 0;
+    @Description("Include zeros in computations (default is true).")
+    @In
+    public boolean doIncludezero = true;
 
-	@Description("The type of theoretical semivariogram: 0 = Gaussian; 1 = Exponential.")
-	@In
-	public double semivariogramType = 0;
+    @Description("The range if the models runs with the gaussian variogram.")
+    @In
+    public double pA;
 
-	@Description("Include zeros in computations: MODE 0=true MODE 1=false.")
-	@In
-	public double includezero = 0;
+    @Description("The sill if the models runs with the gaussian variogram.")
+    @In
+    public double pS;
 
-	@Description("The range if the models runs with the gaussian variogram.")
-	@In
-	public double pA;
+    @Description("Is the nugget if the models runs with the gaussian variogram.")
+    @In
+    public double pNug;
 
-	@Description("The sill if the models runs with the gaussian variogram.")
-	@In
-	public double pS;
+    @Description("The interpolated gridded data (for mode 2 and 3.")
+    @Out
+    public GridCoverage2D outGrid = null;
 
-	@Description("Is the nugget if the models runs with the gaussian variogram.")
-	@In
-	public double pNug;
+    @Description("The interpolated data (for mode 0 and 1).")
+    @Out
+    public HashMap<Integer, double[]> outData = null;
 
-	/**
-	 * the number of rows if the mode is 2 or 3.
-	 */
-	// private int nRows = 0;
+    /**
+     *A tolerance.
+     */
+    private static final double TOLL = 1.0d * 10E-8;
 
-	/**
-	 * the number of columns if the mode is 2 or 3.
-	 */
-	// private int nCols = 0;
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-	/**
-	 *A tolerance.
-	 */
-	private static final double TOLL = 1.0d * 10E-8;
+    /**
+     * Executing ordinary kriging.
+     * <p>
+     * <li>Verify if the parameters are correct.
+     * <li>Calculating the matrix of the covariance (a).
+     * <li>For each point to interpolated, evalutate the know term vector (b)
+     * and solve the system (a x)=b where x is the weight.
+     * </p>
+     * 
+     * @throws SchemaException
+     */
 
-	private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-	/**
-	 * Executing ordinary kriging.
-	 * <p>
-	 * <li>Verify if the parameters are correct.
-	 * <li>Calculating the matrix of the covariance (a).
-	 * <li>For each point to interpolated, evalutate the know term vector (b)
-	 * and solve the system (a x)=b where x is the weight.
-	 * </p>
-	 * 
-	 * @throws SchemaException
-	 */
-
-	@Execute
+    @Execute
     public void executeKriging() throws Exception {
         verifyInput();
 
@@ -249,16 +239,15 @@ public class Kriging extends JGTModel {
                     continue;
                 }
                 if (defaultVariogramMode == 0) {
-                	if(includezero==0){
-                		if (Math.abs(h[0]) >= 0.0) { // TOLL
-                			xStationList.add(coordinate.x);
-                			yStationList.add(coordinate.y);
-                			zStationList.add(z);
-                			hStationList.add(h[0]);
-                			n1 = n1 + 1;
-                		}
-                	}
-                	if(includezero==1){
+                    if (doIncludezero) {
+                        if (Math.abs(h[0]) >= 0.0) { // TOLL
+                            xStationList.add(coordinate.x);
+                            yStationList.add(coordinate.y);
+                            zStationList.add(z);
+                            hStationList.add(h[0]);
+                            n1 = n1 + 1;
+                        }
+                    } else {
                         if (Math.abs(h[0]) > 0.0) { // TOLL
                             xStationList.add(coordinate.x);
                             yStationList.add(coordinate.y);
@@ -266,18 +255,17 @@ public class Kriging extends JGTModel {
                             hStationList.add(h[0]);
                             n1 = n1 + 1;
                         }
-                	}
+                    }
                 } else if (defaultVariogramMode == 1) {
-                	if(includezero==0){
-                		if (Math.abs(h[0]) >= 0.0) { // TOLL
-                			xStationList.add(coordinate.x);
-                			yStationList.add(coordinate.y);
-                			zStationList.add(z);
-                			hStationList.add(h[0]);
-                			n1 = n1 + 1;
-                		}
-                	}
-                	if(includezero==1){
+                    if (doIncludezero) {
+                        if (Math.abs(h[0]) >= 0.0) { // TOLL
+                            xStationList.add(coordinate.x);
+                            yStationList.add(coordinate.y);
+                            zStationList.add(z);
+                            hStationList.add(h[0]);
+                            n1 = n1 + 1;
+                        }
+                    } else {
                         if (Math.abs(h[0]) > 0.0) { // TOLL
                             xStationList.add(coordinate.x);
                             yStationList.add(coordinate.y);
@@ -285,7 +273,7 @@ public class Kriging extends JGTModel {
                             hStationList.add(h[0]);
                             n1 = n1 + 1;
                         }
-                	}
+                    }
 
                 }
             }
@@ -341,17 +329,43 @@ public class Kriging extends JGTModel {
         if (pMode == 0 || pMode == 1) {
             pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
         } else if (pMode == 2) {
-            throw new RuntimeException(msg.message("notImplemented"));
-//             Raster grid = (Raster) 
-//             gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
-//             nRows = grid.getHeight();
-//             nCols = grid.getWidth();
-//             Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
-//             double xMin = envelope2d.getMinX();
-//             double yMin = envelope2d.getMinY();
-//             numPointToInterpolate = nRows * nCols;
-//             coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin);
 
+            /*
+             * TODO the following is a blueprint to get data for the 
+             * grid interpolation, it needs to be filled with the actual 
+             * interpolation.
+             */
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inInterpolationGrid);
+            int cols = regionMap.getCols();
+            int rows = regionMap.getRows();
+            double south = regionMap.getSouth();
+            double west = regionMap.getWest();
+            double xres = regionMap.getXres();
+            double yres = regionMap.getYres();
+
+            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+            WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+
+            double northing = south;
+            double easting = west;
+            for( int i = 0; i < cols; i++ ) {
+                easting = easting + xres;
+                for( int j = 0; j < rows; j++ ) {
+                    northing = northing + yres;
+
+                    // do something with the northing and easting
+                    // representing your cell coordinate
+                    double interpolated = 0;
+                    outIter.setSample(i, j, 0, interpolated);
+                }
+            }
+            outIter.done();
+
+            // at the end create the output gricoverage
+            outGrid = CoverageUtilities.buildCoverage("kriging", outWR, regionMap,
+                    inInterpolationGrid.getCoordinateReferenceSystem());
+
+            throw new RuntimeException(msg.message("notImplemented"));
         } else if (pMode == 3) {
             throw new RuntimeException(msg.message("notImplemented"));
             // Raster grid = (Raster)
@@ -471,381 +485,366 @@ public class Kriging extends JGTModel {
         }
     }
 
-	/**
-	 * Verify the input of the model.
-	 */
-	private void verifyInput() {
-		if (inData == null || inStations == null) {
-			throw new NullPointerException(msg
-					.message("kriging.stationproblem"));
-		}
-		if (pMode < 0 || pMode > 3) {
-			throw new IllegalArgumentException(msg
-					.message("kriging.defaultMode"));
-		}
-		if (pMode == 1 && (fStationsZ == null || fPointZ == null)) {
-			pm.errorMessage(msg.message("kriging.noElevation"));
-			throw new IllegalArgumentException(msg
-					.message("kriging.noElevation"));
-		}
+    /**
+     * Verify the input of the model.
+     */
+    private void verifyInput() {
+        if (inData == null || inStations == null) {
+            throw new NullPointerException(msg.message("kriging.stationproblem"));
+        }
+        if (pMode < 0 || pMode > 3) {
+            throw new IllegalArgumentException(msg.message("kriging.defaultMode"));
+        }
+        if (pMode == 1 && (fStationsZ == null || fPointZ == null)) {
+            pm.errorMessage(msg.message("kriging.noElevation"));
+            throw new IllegalArgumentException(msg.message("kriging.noElevation"));
+        }
 
-		if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
-			throw new IllegalArgumentException(msg
-					.message("kriging.variogramMode"));
-		}
-		if (defaultVariogramMode == 0) {
-			if (pVariance == 0 || pIntegralscale[0] == 0
-					|| pIntegralscale[1] == 0 || pIntegralscale[2] == 0) {
+        if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
+            throw new IllegalArgumentException(msg.message("kriging.variogramMode"));
+        }
+        if (defaultVariogramMode == 0) {
+            if (pVariance == 0 || pIntegralscale[0] == 0 || pIntegralscale[1] == 0 || pIntegralscale[2] == 0) {
 
-				pm.errorMessage(msg.message("kriging.noParam"));
-				pm.errorMessage("varianza " + pVariance);
-				pm.errorMessage("Integral scale x " + pIntegralscale[0]);
-				pm.errorMessage("Integral scale y " + pIntegralscale[1]);
-				pm.errorMessage("Integral scale z " + pIntegralscale[2]);
-			}
-		}
-		if (defaultVariogramMode == 1) {
-			if (pNug == 0 || pS == 0 || pA == 0) {
-				pm.errorMessage(msg.message("kriging.noParam"));
-				pm.errorMessage("Nugget " + pNug);
-				pm.errorMessage("Sill " + pS);
-				pm.errorMessage("Range " + pA);
-			}
-		}
+                pm.errorMessage(msg.message("kriging.noParam"));
+                pm.errorMessage("varianza " + pVariance);
+                pm.errorMessage("Integral scale x " + pIntegralscale[0]);
+                pm.errorMessage("Integral scale y " + pIntegralscale[1]);
+                pm.errorMessage("Integral scale z " + pIntegralscale[2]);
+            }
+        }
+        if (defaultVariogramMode == 1) {
+            if (pNug == 0 || pS == 0 || pA == 0) {
+                pm.errorMessage(msg.message("kriging.noParam"));
+                pm.errorMessage("Nugget " + pNug);
+                pm.errorMessage("Sill " + pS);
+                pm.errorMessage("Range " + pA);
+            }
+        }
 
-		if ((pMode == 1 || pMode == 0) && inInterpolate == null) {
-			throw new NullPointerException(msg.message("kriging.noPoint"));
-		}
-		// if ((mode == 2 || mode == 3) && gridToInterpolate == null) {
-		// throw new NullPointerException("problema nei punti da interpolare");
-		// }
+        if ((pMode == 1 || pMode == 0) && inInterpolate == null) {
+            throw new NullPointerException(msg.message("kriging.noPoint"));
+        }
+        // if ((mode == 2 || mode == 3) && gridToInterpolate == null) {
+        // throw new NullPointerException("problema nei punti da interpolare");
+        // }
 
-	}
+    }
 
-	/**
-	 * Store the result in a HashMap (if the mode is 0 or 1)
-	 * 
-	 * @param result2
-	 *            the result of the model
-	 * @param id
-	 *            the associated id of the calculating points.
-	 * @throws SchemaException
-	 * @throws SchemaException
-	 */
-	private void storeResult(double[] result2, int[] id) throws SchemaException {
-		if (pMode == 0 || pMode == 1) {
-			outData = new HashMap<Integer, double[]>();
-			for (int i = 0; i < result2.length; i++) {
-				outData.put(id[i], new double[] { result2[i] });
-			}
-		}
-	}
+    /**
+     * Store the result in a HashMap (if the mode is 0 or 1)
+     * 
+     * @param result2
+     *            the result of the model
+     * @param id
+     *            the associated id of the calculating points.
+     * @throws SchemaException
+     * @throws SchemaException
+     */
+    private void storeResult( double[] result2, int[] id ) throws SchemaException {
+        if (pMode == 0 || pMode == 1) {
+            outData = new HashMap<Integer, double[]>();
+            for( int i = 0; i < result2.length; i++ ) {
+                outData.put(id[i], new double[]{result2[i]});
+            }
+        }
+    }
 
-	// /**
-	// * Store the result in a GridCoverage(if the mode is 2 or 3).
-	// *
-	// * @param result2
-	// * the result of the model
-	// * @throws SchemaException
-	// * @throws SchemaException
-	// */
-	// private void storeResult( double[] result2 ) {
-	//
-	// if (mode == 2 || mode == 3) {
-	// WritableRaster raster =
-	// CoverageUtilities.createDoubleWritableRaster(nCols, nRows,
-	// null, null, null);
-	// WritableRectIter rectIter = RectIterFactory.createWritable(raster, null);
-	// int i = 0;
-	// rectIter.startLines();
-	// do {
-	// rectIter.startPixels();
-	// i = 0;
-	// do {
-	// rectIter.setSample(result2[i]);
-	// i++;
-	// } while( !rectIter.nextPixelDone() );
-	//
-	// } while( !rectIter.nextLineDone() );
-	//
-	// HashMap<String, Double> regionMap = CoverageUtilities
-	// .getRegionParamsFromGridCoverage(gridToInterpolate);
-	// gridResult = CoverageUtilities.buildCoverage("interpolated", raster,
-	// regionMap,
-	// gridToInterpolate.getCoordinateReferenceSystem());
-	// }
-	//
-	// }
+    // /**
+    // * Store the result in a GridCoverage(if the mode is 2 or 3).
+    // *
+    // * @param result2
+    // * the result of the model
+    // * @throws SchemaException
+    // * @throws SchemaException
+    // */
+    // private void storeResult( double[] result2 ) {
+    //
+    // if (mode == 2 || mode == 3) {
+    // WritableRaster raster =
+    // CoverageUtilities.createDoubleWritableRaster(nCols, nRows,
+    // null, null, null);
+    // WritableRectIter rectIter = RectIterFactory.createWritable(raster, null);
+    // int i = 0;
+    // rectIter.startLines();
+    // do {
+    // rectIter.startPixels();
+    // i = 0;
+    // do {
+    // rectIter.setSample(result2[i]);
+    // i++;
+    // } while( !rectIter.nextPixelDone() );
+    //
+    // } while( !rectIter.nextLineDone() );
+    //
+    // HashMap<String, Double> regionMap = CoverageUtilities
+    // .getRegionParamsFromGridCoverage(gridToInterpolate);
+    // gridResult = CoverageUtilities.buildCoverage("interpolated", raster,
+    // regionMap,
+    // gridToInterpolate.getCoordinateReferenceSystem());
+    // }
+    //
+    // }
 
-	// /**
-	// * Extract the coordinates to interpolate from a regular grid in 3D.
-	// *
-	// * @param numPointToInterpolate the amount of the points to interpolate
-	// * @return an {@link HashMap} which contains, for each points, the
-	// coordinate and its ID
-	// */
-	// private HashMap<Integer, Coordinate> getCoordinate( int
-	// numPointToInterpolate, double minX,
-	// double minY, Raster grid ) {
-	// Coordinate coordinate = new Coordinate();
-	// HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
-	//
-	// // gridToInterpolate.
-	// int count = 0;
-	//
-	// for( int j = 0; j < nRows; j++ ) {
-	// for( int i = 0; i < nCols; i++ ) {
-	// coordinate.x = minX + i * xRes;
-	// coordinate.y = minY + j * yRes;
-	// coordinate.z = grid.getSampleDouble(i, j, 0);
-	// count++;
-	// coord.put(count, coordinate);
-	// }
-	// }
-	// return coord;
-	// }
+    // /**
+    // * Extract the coordinates to interpolate from a regular grid in 3D.
+    // *
+    // * @param numPointToInterpolate the amount of the points to interpolate
+    // * @return an {@link HashMap} which contains, for each points, the
+    // coordinate and its ID
+    // */
+    // private HashMap<Integer, Coordinate> getCoordinate( int
+    // numPointToInterpolate, double minX,
+    // double minY, Raster grid ) {
+    // Coordinate coordinate = new Coordinate();
+    // HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
+    //
+    // // gridToInterpolate.
+    // int count = 0;
+    //
+    // for( int j = 0; j < nRows; j++ ) {
+    // for( int i = 0; i < nCols; i++ ) {
+    // coordinate.x = minX + i * xRes;
+    // coordinate.y = minY + j * yRes;
+    // coordinate.z = grid.getSampleDouble(i, j, 0);
+    // count++;
+    // coord.put(count, coordinate);
+    // }
+    // }
+    // return coord;
+    // }
 
-	// /**
-	// * * Extract the coordinates to interpolate from a regular grid in 2D.
-	// *
-	// * @param numPointToInterpolate
-	// * @return an {@link HashMap} which contains, for each points, the
-	// coordinate and its ID
-	// */
-	// private HashMap<Integer, Coordinate> getCoordinate( int
-	// numPointToInterpolate, double minX,
-	// double minY ) {
-	// Coordinate coordinate = new Coordinate();
-	// HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
-	// int count = 0;
-	// for( int j = 0; j < nRows; j++ ) {
-	// for( int i = 0; i < nCols; i++ ) {
-	// coordinate.x = minX + i * xRes;
-	// coordinate.y = minY + j * yRes;
-	// count++;
-	// coord.put(count, coordinate);
-	//
-	// }
-	// }
-	// return coord;
-	// }
+    // /**
+    // * * Extract the coordinates to interpolate from a regular grid in 2D.
+    // *
+    // * @param numPointToInterpolate
+    // * @return an {@link HashMap} which contains, for each points, the
+    // coordinate and its ID
+    // */
+    // private HashMap<Integer, Coordinate> getCoordinate( int
+    // numPointToInterpolate, double minX,
+    // double minY ) {
+    // Coordinate coordinate = new Coordinate();
+    // HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
+    // int count = 0;
+    // for( int j = 0; j < nRows; j++ ) {
+    // for( int i = 0; i < nCols; i++ ) {
+    // coordinate.x = minX + i * xRes;
+    // coordinate.y = minY + j * yRes;
+    // count++;
+    // coord.put(count, coordinate);
+    //
+    // }
+    // }
+    // return coord;
+    // }
 
-	/**
-	 * Extract the coordinate of a FeatureCollection in a HashMap with an ID as
-	 * a key.
-	 * 
-	 * @param nStaz
-	 * @param collection
-	 * @throws Exception
-	 *             if a fiel of elevation isn't the same of the collection
-	 */
-	private HashMap<Integer, Coordinate> getCoordinate(int nStaz,
-			SimpleFeatureCollection collection, String idField)
-			throws Exception {
-		HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
-		FeatureIterator<SimpleFeature> iterator = collection.features();
-		Coordinate coordinate = null;
-		try {
-			while (iterator.hasNext()) {
-				SimpleFeature feature = iterator.next();
-				int name = ((Number) feature.getAttribute(idField)).intValue();
-				coordinate = ((Geometry) feature.getDefaultGeometry())
-						.getCentroid().getCoordinate();
-				double z = 0;
-				if (fPointZ != null) {
-					try {
-						z = ((Number) feature.getAttribute(fPointZ))
-								.doubleValue();
-					} catch (NullPointerException e) {
-						pm.errorMessage(msg.message("kriging.noPointZ"));
-						throw new Exception(msg.message("kriging.noPointZ"));
-					}
-				}
-				coordinate.z = z;
-				id2CoordinatesMap.put(name, coordinate);
-			}
-		} finally {
-			iterator.close();
-		}
+    /**
+     * Extract the coordinate of a FeatureCollection in a HashMap with an ID as
+     * a key.
+     * 
+     * @param nStaz
+     * @param collection
+     * @throws Exception
+     *             if a fiel of elevation isn't the same of the collection
+     */
+    private HashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
+            throws Exception {
+        HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
+        FeatureIterator<SimpleFeature> iterator = collection.features();
+        Coordinate coordinate = null;
+        try {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                int name = ((Number) feature.getAttribute(idField)).intValue();
+                coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
+                double z = 0;
+                if (fPointZ != null) {
+                    try {
+                        z = ((Number) feature.getAttribute(fPointZ)).doubleValue();
+                    } catch (NullPointerException e) {
+                        pm.errorMessage(msg.message("kriging.noPointZ"));
+                        throw new Exception(msg.message("kriging.noPointZ"));
+                    }
+                }
+                coordinate.z = z;
+                id2CoordinatesMap.put(name, coordinate);
+            }
+        } finally {
+            iterator.close();
+        }
 
-		return id2CoordinatesMap;
-	}
+        return id2CoordinatesMap;
+    }
 
-	/**
-	 * Return the number of features.
-	 * 
-	 * @param collection
-	 * @return
-	 * @throws ModelsIOException
-	 */
-	private int getNumPoint(SimpleFeatureCollection collection)
-			throws ModelsIOException {
-		int nStaz = 0;
-		if (collection != null) {
-			nStaz = collection.size();
-		}
-		if (nStaz == 0) {
-			throw new ModelsIOException(
-					"Didn't find any point in the FeatureCollection", this
-							.getClass().getSimpleName());
-		}
-		return nStaz;
-	}
+    /**
+     * Return the number of features.
+     * 
+     * @param collection
+     * @return
+     * @throws ModelsIOException
+     */
+    private int getNumPoint( SimpleFeatureCollection collection ) throws ModelsIOException {
+        int nStaz = 0;
+        if (collection != null) {
+            nStaz = collection.size();
+        }
+        if (nStaz == 0) {
+            throw new ModelsIOException("Didn't find any point in the FeatureCollection", this.getClass().getSimpleName());
+        }
+        return nStaz;
+    }
 
-	/**
-	 * The gaussian variogram
-	 * 
-	 * @param c0
-	 *            nugget.
-	 * @param a
-	 *            range.
-	 * @param sill
-	 *            sill.
-	 * @param rx
-	 *            x distance.
-	 * @param ry
-	 *            y distance.
-	 * @param rz
-	 *            z distance.
-	 * @return the variogram value
-	 */
-	private double variogram(double c0, double a, double sill, double rx,
-			double ry, double rz) {
-		if (isNovalue(rz)) {
-			rz = 0;
-		}
-		double value = 0;
-		double h2 = Math.sqrt(rx * rx + rz * rz + ry * ry);
-		if (semivariogramType == 0) {
-			value = c0 + sill * (1 - Math.exp(-(h2 * h2) / (a * a)));
-		}
-		if (semivariogramType == 1) {
-			// primotest semivariogram
-			value = c0 + sill * (1 - Math.exp(-(h2) / (a)));
-		}
-		return value;
-	}
+    /**
+     * The gaussian variogram
+     * 
+     * @param c0
+     *            nugget.
+     * @param a
+     *            range.
+     * @param sill
+     *            sill.
+     * @param rx
+     *            x distance.
+     * @param ry
+     *            y distance.
+     * @param rz
+     *            z distance.
+     * @return the variogram value
+     */
+    private double variogram( double c0, double a, double sill, double rx, double ry, double rz ) {
+        if (isNovalue(rz)) {
+            rz = 0;
+        }
+        double value = 0;
+        double h2 = Math.sqrt(rx * rx + rz * rz + ry * ry);
+        if (pSemivariogramType == 0) {
+            value = c0 + sill * (1 - Math.exp(-(h2 * h2) / (a * a)));
+        }
+        if (pSemivariogramType == 1) {
+            // primotest semivariogram
+            value = c0 + sill * (1 - Math.exp(-(h2) / (a)));
+        }
+        return value;
+    }
 
-	/**
-	 * 
-	 * @param rx
-	 *            x distance.
-	 * @param ry
-	 *            y distance.
-	 * @param rz
-	 *            z distance.
-	 * @return
-	 */
-	private double variogram(double rx, double ry, double rz) {
-		if (isNovalue(rz)) {
-			rz = 0;
-		}
-		double h2 = (rx / pIntegralscale[0]) * (rx / pIntegralscale[0])
-				+ (ry / pIntegralscale[1]) * (ry / pIntegralscale[1])
-				+ (rz / pIntegralscale[2]) * (rz / pIntegralscale[2]);
-		if (h2 < TOLL) {
-			return pVariance;
-		} else {
-			return pVariance * Math.exp(-Math.sqrt(h2));
-		}
+    /**
+     * 
+     * @param rx
+     *            x distance.
+     * @param ry
+     *            y distance.
+     * @param rz
+     *            z distance.
+     * @return
+     */
+    private double variogram( double rx, double ry, double rz ) {
+        if (isNovalue(rz)) {
+            rz = 0;
+        }
+        double h2 = (rx / pIntegralscale[0]) * (rx / pIntegralscale[0]) + (ry / pIntegralscale[1]) * (ry / pIntegralscale[1])
+                + (rz / pIntegralscale[2]) * (rz / pIntegralscale[2]);
+        if (h2 < TOLL) {
+            return pVariance;
+        } else {
+            return pVariance * Math.exp(-Math.sqrt(h2));
+        }
 
-	}
+    }
 
-	/**
-	 * 
-	 * 
-	 * @param x
-	 *            the x coordinates.
-	 * @param y
-	 *            the y coordinates.
-	 * @param z
-	 *            the z coordinates.
-	 * @param n
-	 *            the number of the stations points.
-	 * @return
-	 */
-	private double[][] covMatrixCalculating(double[] x, double[] y, double[] z,
-			int n) {
-		double[][] ap = new double[n + 1][n + 1];
-		if (defaultVariogramMode == 0) {
-			for (int j = 0; j < n; j++) {
-				for (int i = 0; i <= j; i++) {
-					double rx = x[i] - x[j];
-					double ry = y[i] - y[j];
-					double rz = 0;
-					if (pMode == 1) {
-						rz = z[i] - z[j];
-					}
-					double tmp = variogram(rx, ry, rz);
+    /**
+     * 
+     * 
+     * @param x
+     *            the x coordinates.
+     * @param y
+     *            the y coordinates.
+     * @param z
+     *            the z coordinates.
+     * @param n
+     *            the number of the stations points.
+     * @return
+     */
+    private double[][] covMatrixCalculating( double[] x, double[] y, double[] z, int n ) {
+        double[][] ap = new double[n + 1][n + 1];
+        if (defaultVariogramMode == 0) {
+            for( int j = 0; j < n; j++ ) {
+                for( int i = 0; i <= j; i++ ) {
+                    double rx = x[i] - x[j];
+                    double ry = y[i] - y[j];
+                    double rz = 0;
+                    if (pMode == 1) {
+                        rz = z[i] - z[j];
+                    }
+                    double tmp = variogram(rx, ry, rz);
 
-					ap[j][i] = tmp;
-					ap[i][j] = tmp;
+                    ap[j][i] = tmp;
+                    ap[i][j] = tmp;
 
-				}
-			}
-		} else if (defaultVariogramMode == 1) {
-			for (int j = 0; j < n; j++) {
-				for (int i = 0; i < n; i++) {
-					double rx = x[i] - x[j];
-					double ry = y[i] - y[j];
-					double rz = 0;
-					if (pMode == 1) {
-						rz = z[i] - z[j];
-					}
-					double tmp = variogram(pNug, pA, pS, rx, ry, rz);
+                }
+            }
+        } else if (defaultVariogramMode == 1) {
+            for( int j = 0; j < n; j++ ) {
+                for( int i = 0; i < n; i++ ) {
+                    double rx = x[i] - x[j];
+                    double ry = y[i] - y[j];
+                    double rz = 0;
+                    if (pMode == 1) {
+                        rz = z[i] - z[j];
+                    }
+                    double tmp = variogram(pNug, pA, pS, rx, ry, rz);
 
-					ap[j][i] = tmp;
-					ap[i][j] = tmp;
+                    ap[j][i] = tmp;
+                    ap[i][j] = tmp;
 
-				}
-			}
+                }
+            }
 
-		}
-		for (int i = 0; i < n; i++) {
-			ap[i][n] = 1.0;
-			ap[n][i] = 1.0;
+        }
+        for( int i = 0; i < n; i++ ) {
+            ap[i][n] = 1.0;
+            ap[n][i] = 1.0;
 
-		}
-		ap[n][n] = 0;
-		return ap;
+        }
+        ap[n][n] = 0;
+        return ap;
 
-	}
+    }
 
-	/**
-	 * 
-	 * @param x
-	 *            the x coordinates.
-	 * @param y
-	 *            the y coordinates.
-	 * @param z
-	 *            the z coordinates.
-	 * @param n
-	 *            the number of the stations points.
-	 * @return
-	 */
-	private double[] knownTermsCalculation(double[] x, double[] y, double[] z,
-			int n) {
+    /**
+     * 
+     * @param x
+     *            the x coordinates.
+     * @param y
+     *            the y coordinates.
+     * @param z
+     *            the z coordinates.
+     * @param n
+     *            the number of the stations points.
+     * @return
+     */
+    private double[] knownTermsCalculation( double[] x, double[] y, double[] z, int n ) {
 
-		double[] gamma = new double[n + 1];
-		if (defaultVariogramMode == 0) {
-			for (int i = 0; i < n; i++) {
-				double rx = x[i] - x[n];
-				double ry = y[i] - y[n];
-				double rz = z[i] - z[n];
-				gamma[i] = variogram(rx, ry, rz);
-			}
-		} else if (defaultVariogramMode == 1) {
-			for (int i = 0; i < n; i++) {
-				double rx = x[i] - x[n];
-				double ry = y[i] - y[n];
-				double rz = z[i] - z[n];
-				gamma[i] = variogram(pNug, pA, pS, rx, ry, rz);
-			}
+        double[] gamma = new double[n + 1];
+        if (defaultVariogramMode == 0) {
+            for( int i = 0; i < n; i++ ) {
+                double rx = x[i] - x[n];
+                double ry = y[i] - y[n];
+                double rz = z[i] - z[n];
+                gamma[i] = variogram(rx, ry, rz);
+            }
+        } else if (defaultVariogramMode == 1) {
+            for( int i = 0; i < n; i++ ) {
+                double rx = x[i] - x[n];
+                double ry = y[i] - y[n];
+                double rz = z[i] - z[n];
+                gamma[i] = variogram(pNug, pA, pS, rx, ry, rz);
+            }
 
-		}
-		gamma[n] = 1.0;
-		return gamma;
+        }
+        gamma[n] = 1.0;
+        return gamma;
 
-	}
+    }
 
 }
