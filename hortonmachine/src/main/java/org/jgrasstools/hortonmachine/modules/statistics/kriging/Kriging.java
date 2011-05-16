@@ -41,6 +41,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
@@ -143,7 +144,7 @@ public class Kriging extends JGTModel {
 
     @Description("The collection of the points in which the data needs to be interpolated.")
     @In
-    public GridCoverage2D inInterpolationGrid = null;
+    public GridGeometry2D inInterpolationGrid = null;
 
     @Description("The progress monitor.")
     @In
@@ -335,7 +336,7 @@ public class Kriging extends JGTModel {
              * grid interpolation, it needs to be filled with the actual 
              * interpolation.
              */
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inInterpolationGrid);
+            RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inInterpolationGrid);
             int cols = regionMap.getCols();
             int rows = regionMap.getRows();
             double south = regionMap.getSouth();
