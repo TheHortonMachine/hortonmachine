@@ -357,7 +357,6 @@ public class TrentoP {
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxJunction(pMaxJunction);
                     networkPipes[t].setAlign(pAlign);
-                    networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setC(pC);
                     networkPipes[t].setG(pG);
                     networkPipes[t].setTau(pTau);

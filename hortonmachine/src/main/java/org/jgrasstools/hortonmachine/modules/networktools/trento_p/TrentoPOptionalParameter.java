@@ -14,6 +14,8 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_MIN_DISCHARGE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TOLERANCE;
 
+import java.io.File;
+import java.io.FileReader;
 import java.util.Properties;
 
 import oms3.annotations.Author;
@@ -26,6 +28,8 @@ import oms3.annotations.Out;
 import oms3.annotations.Range;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
+
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.OptionalParameterCodes;
 
 @Description("The optional parameters to run the TrentoP model")
 @Author(name = "Daniele Andreis")
@@ -120,13 +124,42 @@ public class TrentoPOptionalParameter {
     @Description(" Use mode, 0=project, 1=verify.")
     @In
     public short pTest;
-    
+
+    @Description("Properties file containing the optional parameters.")
+    @In
+    public String inFile = null;
+
     @Description("The Properties needed for trentop.")
     @Out
     public Properties outProperties = new Properties();
 
     @Execute
     public void process() throws Exception {
+        if (inFile != null) {
+            File file = new File(inFile);
+            outProperties.load(new FileReader(file));
+        } else {
+            outProperties.put(OptionalParameterCodes.MIN_DEPTH.getKey(), pMinimumDepth);
+            outProperties.put(OptionalParameterCodes.MIN_FILL_DEGREE.getKey(), pMinG);
+            outProperties.put(OptionalParameterCodes.JMAX.getKey(), pJMax);
+            outProperties.put(OptionalParameterCodes.CELERITY_FACTOR.getKey(), pCelerityFactor);
+            outProperties.put(OptionalParameterCodes.INFLUX_EXP.getKey(), pEspInflux);
+            outProperties.put(OptionalParameterCodes.EXPONENT.getKey(), pExponent);
+            outProperties.put(OptionalParameterCodes.GAMMA.getKey(), pGamma);
+
+            if (pTest == 1) {
+                outProperties.put(OptionalParameterCodes.MAX_FILL_DEGREE.getKey(), pMaxTheta);
+                outProperties.put(OptionalParameterCodes.TOLERANCE.getKey(), pTolerance);
+                outProperties.put(OptionalParameterCodes.C.getKey(), pC);
+                outProperties.put(OptionalParameterCodes.MIN_DISCHARGE.getKey(), pMinDischarge);
+                outProperties.put(OptionalParameterCodes.EPS.getKey(), pEpsilon);
+
+            } else if (pTest == 0) {
+                outProperties.put(OptionalParameterCodes.MAX_JUNCTION.getKey(), pMaxJunction);
+
+            }
+
+        }
     }
 
 }
