@@ -19,6 +19,13 @@
     <name>JGrasstools - the engine that backs up JGrass</name>
     <url>http://www.jgrasstools.org</url>
 
+    <modules>
+		<module>oms3</module>
+        <module>jgrassgears</module>
+        <module>hortonmachine</module>
+        <module>grass</module>
+    </modules>
+
 	<issueManagement>
         <url>http://code.google.com/p/jgrasstools/issues/list</url>
     </issueManagement>
@@ -69,11 +76,6 @@
         </developer>
     </developers>
 
-    <modules>
-		<module>oms3</module>
-        <module>jgrassgears</module>
-        <module>hortonmachine</module>
-  </modules>
 
 
   <!-- =========================================================== -->

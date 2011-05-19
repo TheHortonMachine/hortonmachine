@@ -10,6 +10,8 @@ syntax: regexp
 ^jgrassgears.bin
 ^oms3.target
 ^oms3.bin
+^grass.target
+^grass.bin
 ^docsbundle.target
 ^docsbundle.bin
 ~$
