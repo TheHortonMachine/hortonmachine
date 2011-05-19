@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Set;
 
 import oms3.annotations.Author;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -63,6 +64,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -71,7 +73,7 @@ import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -82,7 +84,8 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("The module for calculating the energybalance")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Snow, Energybalance")
-@Status(Status.TESTED)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyBalance extends JGTModel {
 
@@ -184,16 +187,18 @@ public class EnergyBalance extends JGTModel {
     public List<EIAreas> inAreas = null;
 
     @Description("The path to the safepoint to use as initial conditions.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String pInitsafepoint;
 
     @Description("The path to which to write the safepoint.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String pEndsafepoint;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Net precipitation.")
     @Out
@@ -210,6 +215,14 @@ public class EnergyBalance extends JGTModel {
     @Description("SWE for each basin.")
     @Out
     public HashMap<Integer, double[]> outSwe;
+
+    @Description("Net radiation for each basin.")
+    @Out
+    public HashMap<Integer, double[]> outNetradiation;
+    
+    @Description("Net shortwave radiation for each basin.")
+    @Out
+    public HashMap<Integer, double[]> outNetshortradiation;
 
     /*
      * Model's variables definition
@@ -279,6 +292,8 @@ public class EnergyBalance extends JGTModel {
         outPrain = new HashMap<Integer, double[]>();
         outPsnow = new HashMap<Integer, double[]>();
         outSwe = new HashMap<Integer, double[]>();
+        outNetradiation = new HashMap<Integer, double[]>();
+        outNetshortradiation = new HashMap<Integer, double[]>();
 
         if (safePoint == null)
             safePoint = new SafePoint();
@@ -350,7 +365,7 @@ public class EnergyBalance extends JGTModel {
                 }
 
             }
-            inBasins.close(featureIterator);
+            featureIterator.close();
             pm.done();
         }
 
@@ -795,6 +810,8 @@ public class EnergyBalance extends JGTModel {
         double tmpPrain = 0.0;
         double tmpPsnow = 0.0;
         double tmpSwe = 0.0;
+        double tmpNetradiation = 0.0;
+        double tmpNetShortRadiation = 0.0;
         for( int j = 0; j < num_ES; j++ ) { // per tutte le BANDE
             // ALTIMETRICHE
 
@@ -1051,6 +1068,8 @@ public class EnergyBalance extends JGTModel {
                 tmpPnet = tmpPnet + Pnet * (A[j][k][i] / Abasin[i]);
                 tmpPrain = tmpPrain + Prain * (A[j][k][i] / Abasin[i]);
                 tmpPsnow = tmpPsnow + Psnow * (A[j][k][i] / Abasin[i]);
+                tmpNetradiation = tmpNetradiation + netRadiation[0] * (A[j][k][i] / Abasin[i]);
+                tmpNetShortRadiation = tmpNetShortRadiation + netShortRadiation[0] * (A[j][k][i] / Abasin[i]);
                 // System.out.println("swe = " + fullAdigeData[8 * i + 8]);
             }
             averageTemperature[2 * i + 1] += T[j];
@@ -1060,6 +1079,8 @@ public class EnergyBalance extends JGTModel {
         outPnet.put(basinId, new double[]{tmpPnet});
         outPrain.put(basinId, new double[]{tmpPrain});
         outPsnow.put(basinId, new double[]{tmpPsnow});
+        outNetradiation.put(basinId, new double[]{tmpNetradiation});
+        outNetshortradiation.put(basinId, new double[]{tmpNetShortRadiation});
 
         // System.out.println("rad media= " + fullAdigeData[8 * i + 2]);
         // System.out.println("short media= " + fullAdigeData[8 * i + 3]);

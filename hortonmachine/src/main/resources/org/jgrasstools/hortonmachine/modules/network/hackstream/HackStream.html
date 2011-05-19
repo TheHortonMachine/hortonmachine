@@ -1,0 +1,30 @@
+Arranges a channel network enumeration starting from the identification of the branch according to Hack. The main stream is of order 1 and its tributaries of order 2 and so on, the sub-tributaries are of order 3 and so on.
+<br>
+The model can run in two different modes:
+<ul>
+<li> 0 : standard mode</li>
+<li> 1 : Hack enumeration based on Netnumbering</li>
+</ul>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the drainage directions (obtained with Markoutlets, DrainDir, FlowDirections)</li>
+<li>the file containing the total contributing areas (obtained
+with DrainDir, Tca or Multitca)</li>
+<li>the file containing the Hack lengths (obtained with HackLength)</li>
+<li>the file containing the channel network (obtained with ExtractNetwork)</li>
+<li>only for mode 1: the file containing the channel enumeration (obtained with NetNumbering)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file with the net order according the Hack lengths</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The Hack order corresponds (one to one) to the old Horton's network enumeration. 
+<br>
+To run the model it is necessary that the outlet pixel presents a drainage direction value equal to 10. If there is not such identification, the program will not work correctly.

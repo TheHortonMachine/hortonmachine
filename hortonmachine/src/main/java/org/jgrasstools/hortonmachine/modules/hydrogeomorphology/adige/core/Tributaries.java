@@ -1,5 +1,6 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -9,7 +10,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Tributaries implements DischargeContributor {
+public class Tributaries implements IDischargeContributor {
 
     private final HashMap<String, Integer> tributary_pfaff2idMap;
     private HashMap<Integer, double[]> tributary_id2valuesQMap;
@@ -25,20 +26,21 @@ public class Tributaries implements DischargeContributor {
         this.tributary_pfaff2idMap = tributary_pfaff2idMap;
     }
 
-    public Double getDischarge( String pNum, double inputDischarge ) {
+    public Double getDischarge( String pNum ) {
         Integer damId = tributary_pfaff2idMap.get(pNum);
         if (damId != null) {
-            double[] discharge = tributary_id2valuesQMap.get(damId);
-            if (discharge != null) {
-                // sum restituzione discharge to the input discharge
-                return discharge[0] + inputDischarge;
-            }
+            double[] discharges = tributary_id2valuesQMap.get(damId);
+            return discharges[0];
         }
         return JGTConstants.doubleNovalue;
     }
 
     public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         tributary_id2valuesQMap = currentDataMap;
+    }
+
+    public double mergeWithDischarge( double contributorDischarge, double inputDischarge ) {
+        return inputDischarge + contributorDischarge;
     }
 
 }

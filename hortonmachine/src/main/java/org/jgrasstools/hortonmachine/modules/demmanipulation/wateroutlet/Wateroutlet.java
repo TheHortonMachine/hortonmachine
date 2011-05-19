@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
@@ -23,72 +22,49 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the wateroutlet model. Generates a watershed basin from a
- * drainage direction map and a set of coordinates representing the outlet point of watershed.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map of the drainage directions (-flow)</LI>
- * <LI>the coordinates of the water outlet (-north, -east)</LI>
- * </OL>
- * </DD>
- * <DT><STRONG>Returns:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the basin extracted mask (-basin)</LI>
- * <LI>a choosen map cutten on the basin mask (the name assigned is input.mask) (-trim)</LI>
- * </OL>
- * <P>
- * </DD>
- * Usage: h.wateroutlet --igrass-map map --igrass-flow flow --ograss-basin basin --ograss-trim trim
- * --north north --east east
- * </p>
- * <p>
- * Note: The most important thing in this module is to choose a good water outlet.
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi
- *         Silvia, Pisoni Silvano, Rigon Riccardo; Originally by Charles Ehlschlaeger, U.S. Army
- *         Construction Engineering Research Laboratory.
- */
-@Description("Generates a watershed basin from a drainage direction map and a set of coordinates representing the outlet point of watershed")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Dem manipulation, Geomorphology")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description("Extract the watershed for a defined outlet.")
+@Documentation("Wateroutlet.html")
+@Author(name = "Andrea Antonello, US Army Construction Engineering Research Laboratory", contact = "http://www.hydrologis.com")
+@Keywords("Dem manipulation, Geomorphology, FlowDirections")
+@Label(JGTConstants.DEMMANIPULATION)
+@Name("wateroutlet")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Wateroutlet extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
+    @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public double pNorth = -1.0;
 
     @Description("The eastern coordinate of the watershed outlet.")
+    @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
 
@@ -98,7 +74,7 @@ public class Wateroutlet extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The extracted basin mask.")
     @Out
@@ -110,11 +86,9 @@ public class Wateroutlet extends JGTModel {
 
     private int[] pt_seg = new int[1];
     private int[] ba_seg = new int[1];
-    private static  final int RAMSEGBITS = 4;
-    private static  final int DOUBLEBITS = 8; /* 2 * ramsegbits */
-    private static  final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
-
-    // /private double[][] flowData = null;
+    private static final int RAMSEGBITS = 4;
+    private static final int DOUBLEBITS = 8; /* 2 * ramsegbits */
+    private static final int SEGLENLESS = 15; /* 2 ^ ramsegbits - 1 */
 
     private double[] drain_ptrs = null;
 
@@ -130,25 +104,28 @@ public class Wateroutlet extends JGTModel {
             return;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inFlow);
-        ncols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nrows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
-        double north = regionMap.get(CoverageUtilities.NORTH);
-        double west = regionMap.get(CoverageUtilities.WEST);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        ncols = regionMap.getCols();
+        nrows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
+        double north = regionMap.getNorth();
+        double west = regionMap.getWest();
+        double south = regionMap.getSouth();
+        double east = regionMap.getEast();
 
         if (pNorth == -1 || pEast == -1) {
-            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this
-                    .getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this.getClass().getSimpleName());
+        }
+        if (pNorth > north || pNorth < south || pEast > east || pEast < west) {
+            throw new ModelsIllegalargumentException("The outlet point lies outside the map region.", this.getClass()
+                    .getSimpleName());
         }
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null,
-                null, null);
+        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, null);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         total = nrows * ncols;
@@ -159,25 +136,24 @@ public class Wateroutlet extends JGTModel {
 
         pm.beginTask(msg.message("wateroutlet.extracting"), 2 * nrows);
         for( int r = 0; r < nrows; r++ ) {
+            if (pm.isCanceled()) {
+                return;
+            }
             for( int c = 0; c < ncols; c++ ) {
                 // adapt to the grass drainagedirection format "grass
                 // flow=(fluidturtle flow-1)"
-                if (isNovalue(flowIter.getSampleDouble(c, r, 0))
-                        || flowIter.getSampleDouble(c, r, 0) == 0) {
+                double flowValue = flowIter.getSampleDouble(c, r, 0);
+                if (isNovalue(flowValue) || flowValue == 0) {
                     flowIter.setSample(c, r, 0, -1.0);
-                } else if (flowIter.getSampleDouble(c, r, 0) == 1.0) {
+                } else if (flowValue == 1.0) {
                     flowIter.setSample(c, r, 0, 8.0);
-                } else if (!isNovalue(flowIter.getSampleDouble(c, r, 0))) {
-                    flowIter.setSample(c, r, 0, flowIter.getSample(c, r, 0) - 1);
-
+                } else if (!isNovalue(flowValue)) {
+                    flowIter.setSample(c, r, 0, flowValue - 1);
                 }
-                if (flowIter.getSampleDouble(c, r, 0) == 0.0) {
+                if (flowValue == 0.0) {
                     total--;
                 }
                 drain_ptrs[seg_index(pt_seg, r, c)] = flowIter.getSample(c, r, 0);
-                // out.println("DRAIN_PTRS = " +
-                // drain_ptrs[seg_index(pt_seg, r, c)]);
-
             }
             pm.worked(1);
         }
@@ -191,8 +167,7 @@ public class Wateroutlet extends JGTModel {
         for( int r = 0; r < nrows; r++ ) {
             for( int c = 0; c < ncols; c++ ) {
                 basinIter.setSample(c, r, 0, bas_ptrs[seg_index(ba_seg, r, c)]);
-                if (isNovalue(flowIter.getSampleDouble(c, r, 0))
-                        || basinIter.getSampleDouble(c, r, 0) == 0.0) {
+                if (isNovalue(flowIter.getSampleDouble(c, r, 0)) || basinIter.getSampleDouble(c, r, 0) == 0.0) {
                     basinIter.setSample(c, r, 0, doubleNovalue);
                 }
             }
@@ -200,8 +175,7 @@ public class Wateroutlet extends JGTModel {
         }
         pm.done();
 
-        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
     private int size_array( int[] ram_seg, int nrows, int ncols ) {
@@ -209,16 +183,14 @@ public class Wateroutlet extends JGTModel {
 
         segs_in_col = ((nrows - 1) >> RAMSEGBITS) + 1;
         ram_seg[0] = ((ncols - 1) >> RAMSEGBITS) + 1;
-        size = ((((nrows - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS)
-                * ((((ncols - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS);
+        size = ((((nrows - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS) * ((((ncols - 1) >> RAMSEGBITS) + 1) << RAMSEGBITS);
         size -= ((segs_in_col << RAMSEGBITS) - nrows) << RAMSEGBITS;
         size -= (ram_seg[0] << RAMSEGBITS) - ncols;
         return (size);
     }
 
     private int seg_index( int[] s, int r, int c ) {
-        int value = ((((r) >> RAMSEGBITS) * (s[0]) + (((c) >> RAMSEGBITS)) << DOUBLEBITS)
-                + (((r) & SEGLENLESS) << RAMSEGBITS) + ((c) & SEGLENLESS));
+        int value = ((((r) >> RAMSEGBITS) * (s[0]) + (((c) >> RAMSEGBITS)) << DOUBLEBITS) + (((r) & SEGLENLESS) << RAMSEGBITS) + ((c) & SEGLENLESS));
 
         return value;
     }
@@ -259,8 +231,7 @@ public class Wateroutlet extends JGTModel {
                          * bas_ptrs == 0.0 -> " + bas_ptrs[seg_index(ba_seg, r, c)] + " == 0.0");
                          */
 
-                        if ((value == draindir[rr][cc])
-                                && (bas_ptrs[seg_index(ba_seg, r, c)] == 0.0)) {
+                        if ((value == draindir[rr][cc]) && (bas_ptrs[seg_index(ba_seg, r, c)] == 0.0)) {
                             if (num_cells == size_more) {
                                 System.out.println("AAAAAAAAAAAARRRRRRRRRRRGGGGGGGGGGGHHHHHHHH");
                             }

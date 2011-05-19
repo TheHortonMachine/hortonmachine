@@ -43,8 +43,6 @@ public class IUHKinematic implements IUHCalculator {
 
     private double error = 100f;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
      * @param effectsBox
      * @param fixedParams
@@ -80,8 +78,8 @@ public class IUHKinematic implements IUHCalculator {
             ampisubsurface = iuhSubSurface.calculateIUH();
         }
 
-        totalampikinematic = calculateTotalKinematic(ampikinematic, ampisubsurface, delta_sup,
-                delta_sub, vc, tcorr, area_sub, area);
+        totalampikinematic = calculateTotalKinematic(ampikinematic, ampisubsurface, delta_sup, delta_sub, vc, tcorr, area_sub,
+                area);
 
         /*
          * solve the equation of henderson W(dt)=W(dt+tp). Calculate tpmax e tstar max for the
@@ -115,16 +113,14 @@ public class IUHKinematic implements IUHCalculator {
             } else {
                 index++;
             }
-            dt = modelsEngine.henderson(totalampikinematic, tp);
+            dt = ModelsEngine.henderson(totalampikinematic, tp);
             tstar = tp + dt;
             if (tstar < tcorr) {
                 prov = n_idf
                         - 1
-                        + (tp
-                                * (double) modelsEngine.width_interpolate(totalampikinematic,
-                                        tstar, 0, 1) / (area * ((double) modelsEngine
-                                .width_interpolate(totalampikinematic, tstar, 0, 2) - (double) modelsEngine
-                                .width_interpolate(totalampikinematic, dt, 0, 2))));
+                        + (tp * (double) ModelsEngine.width_interpolate(totalampikinematic, tstar, 0, 1) / (area * ((double) ModelsEngine
+                                .width_interpolate(totalampikinematic, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
+                                totalampikinematic, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
                     tpmax = tp;
@@ -150,9 +146,8 @@ public class IUHKinematic implements IUHCalculator {
      * @param area
      * @return
      */
-    private double[][] calculateTotalKinematic( double[][] ampikinesurface,
-            double[][] ampisubsurface, double delta_sup, double delta_sub, double vc, double tcorr,
-            double area_sub, double area_super ) {
+    private double[][] calculateTotalKinematic( double[][] ampikinesurface, double[][] ampisubsurface, double delta_sup,
+            double delta_sub, double vc, double tcorr, double area_sub, double area_super ) {
 
         double[][] totalKinematic = null;
 
@@ -172,8 +167,7 @@ public class IUHKinematic implements IUHCalculator {
                 }
             }
 
-            int totallength = ampikinesurface.length + ampisubsurface.length
-                    - rowinampisubwhereampisupfinishes;
+            int totallength = ampikinesurface.length + ampisubsurface.length - rowinampisubwhereampisupfinishes;
 
             totalKinematic = new double[totallength][3];
 
@@ -181,8 +175,7 @@ public class IUHKinematic implements IUHCalculator {
             double intsup = 0f;
             for( int i = 0; i < ampikinesurface.length; i++ ) {
                 totalKinematic[i][0] = ampikinesurface[i][0];
-                intsub = (double) modelsEngine.width_interpolate(ampisubsurface,
-                        ampikinesurface[i][0], 0, 1);
+                intsub = (double) ModelsEngine.width_interpolate(ampisubsurface, ampikinesurface[i][0], 0, 1);
                 intsup = ampikinesurface[i][1];
 
                 totalKinematic[i][1] = intsup + intsub;

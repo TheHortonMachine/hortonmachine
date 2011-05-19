@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.ui;
 
@@ -33,6 +32,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.factory.CommonFactoryFinder;
@@ -46,17 +46,19 @@ import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.opengis.filter.expression.Expression;
 
 @Description("Utility class for viewing coverages.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Coverage, Raster, Viewer, UI")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(Status.CERTIFIED)
+@UI(JGTConstants.HIDE_UI_HINT)
+@License("General Public License Version 3 (GPLv3)")
 public class CoverageViewer {
     @Description("The coverage to visualize.")
     @In
-    public GridCoverage2D coverage = null;
+    public GridCoverage2D raster = null;
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
@@ -70,7 +72,7 @@ public class CoverageViewer {
 
         ColorMap colorMap = sf.createColorMap();
 
-        RenderedImage renderedImage = coverage.getRenderedImage();
+        RenderedImage renderedImage = raster.getRenderedImage();
         double max = Double.NEGATIVE_INFINITY;
         double min = Double.POSITIVE_INFINITY;
         RectIter iter = RectIterFactory.create(renderedImage, null);
@@ -90,10 +92,10 @@ public class CoverageViewer {
         // red to blue
         Color fromColor = Color.blue;
         Color toColor = Color.red;
-        Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(),
-                fromColor.getGreen(), fromColor.getBlue(), 255));
-        Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor
-                .getGreen(), toColor.getBlue(), 255));
+        Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
+                .getBlue(), 255));
+        Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor.getBlue(),
+                255));
         Expression fromExpr = sB.literalExpression(min);
         Expression toExpr = sB.literalExpression(max);
 
@@ -114,7 +116,7 @@ public class CoverageViewer {
         // Set up a MapContext with the two layers
         final MapContext map = new DefaultMapContext();
         map.setTitle("Coverage Viewer");
-        map.addLayer(coverage, rasterStyle);
+        map.addLayer(raster, rasterStyle);
 
         // Create a JMapFrame with a menu to choose the display style for the
         final JMapFrame frame = new JMapFrame(map);

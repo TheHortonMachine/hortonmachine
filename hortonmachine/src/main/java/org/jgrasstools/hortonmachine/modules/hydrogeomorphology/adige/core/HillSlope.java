@@ -20,13 +20,9 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -39,19 +35,17 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * 
  * @author Andrea Antonello - www.hydrologis.com
  */
-public class HillSlope implements Comparator<HillSlope> {
-    private static Evapotranspiration evapTransCalculator = new Evapotranspiration();
-
+public class HillSlope implements IHillSlope {
     private int hillslopeId = -1;
 
     private SimpleFeature hillslopeFeature = null;
     private SimpleFeature linkFeature = null;
     private PfafstetterNumber pfafstetterNumber = null;
 
-    private final List<HillSlope> upstreamElements = new ArrayList<HillSlope>();
-    private HillSlope downstreamElement = null;
+    private final List<IHillSlope> upstreamElements = new ArrayList<IHillSlope>();
+    private IHillSlope downstreamElement = null;
 
-    private HillSlope firstOfMaiorBasin = null;
+    private IHillSlope firstOfMaiorBasin = null;
     private Geometry totalGeometryUpstream;
     private Random rn;
     private double hillslopeArea = -1;
@@ -65,15 +59,8 @@ public class HillSlope implements Comparator<HillSlope> {
     private int linkStartElevationAttributeIndex = -1;
     private int linkEndElevationAttributeIndex = -1;
 
-    public final Parameters parameters;
-
-    private boolean hasVegetation = false;
-    private final int vegetationIdFieldIndex;
-
     public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature, PfafstetterNumber pfafNumber, int hillslopeId,
-            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex,
-            int vegetationIdFieldIndex, double pKs, double pMstexp, double pSpecyield, double pPorosity, Double pEtrate,
-            double pSatconst, double pDepthmnsat ) {
+            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex ) {
 
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
@@ -82,7 +69,6 @@ public class HillSlope implements Comparator<HillSlope> {
         this.baricenterElevationAttributeIndex = baricenterElevationFieldIndex;
         this.linkStartElevationAttributeIndex = linkStartElevationFieldIndex;
         this.linkEndElevationAttributeIndex = linkEndElevationFieldIndex;
-        this.vegetationIdFieldIndex = vegetationIdFieldIndex;
 
         if (baricenterElevationAttributeIndex == -1) {
             throw new IllegalArgumentException("The baricenter field index can't be -1.");
@@ -91,21 +77,26 @@ public class HillSlope implements Comparator<HillSlope> {
         // HashMap<Integer, Double> displacementMap,
         // HashMap<Integer, Double> roughnessMap,
         // double RGL, double ra, double rs, double rarc
-        parameters = new Parameters(pKs, pMstexp, pSpecyield, pPorosity, pEtrate, pSatconst, pDepthmnsat);
 
         rn = new Random();
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getHillslopeId()
+     */
     public int getHillslopeId() {
         return hillslopeId;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getLinkFeature()
+     */
     public SimpleFeature getLinkFeature() {
         return linkFeature;
     }
 
-    /**
-     * @return the length of the current hillslope's link. Dimension is meters.
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getLinkLength()
      */
     public double getLinkLength() {
         if (linkLength == -1) {
@@ -114,8 +105,8 @@ public class HillSlope implements Comparator<HillSlope> {
         return linkLength;
     }
 
-    /**
-     * @return the slope of the current hillslope's link. The result is the tangent.
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getLinkSlope()
      */
     public double getLinkSlope() {
         if ((int) linkSlope == -1) {
@@ -135,14 +126,8 @@ public class HillSlope implements Comparator<HillSlope> {
         return linkSlope;
     }
 
-    /**
-     * Assigns the channel widths of the links using a power law.
-     * Width=coefficient*UpstreamArea[km2]^exponent+NORM(sdResiduals) where NORM() is a normally
-     * distributed random variable.
-     * 
-     * @param coefficient The coefficient in the power law
-     * @param exponent The exponent in the power law
-     * @param sdResiduals The standard deviation of the residuals of the power law
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getLinkWidth(double, double, double)
      */
     public double getLinkWidth( double coefficient, double exponent, double sdResiduals ) {
         // Returns a random value that follows a gaussian distribution
@@ -153,25 +138,23 @@ public class HillSlope implements Comparator<HillSlope> {
         return width;
     }
 
-    /**
-     * Assigns the Chezy coefficient of the links using a power law.
-     * Chezi=coefficient*LinkSlope^exponent+NORM(sdResiduals) where NORM() is a normally distributed
-     * random variable.
-     * 
-     * @param coefficient The coefficient in the power law
-     * @param exponent The exponent in the power law
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getLinkChezi(double, double)
      */
     public double getLinkChezi( double coefficient, double exponent ) {
         double chezi = coefficient * Math.pow(getLinkSlope(), exponent);
         return chezi;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getHillslopeFeature()
+     */
     public SimpleFeature getHillslopeFeature() {
         return hillslopeFeature;
     }
 
-    /**
-     * @return the area of the current hillslope. Dimension is meter^2
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getHillslopeArea()
      */
     public double getHillslopeArea() {
         if (hillslopeArea == -1) {
@@ -180,6 +163,9 @@ public class HillSlope implements Comparator<HillSlope> {
         return hillslopeArea;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getBaricenterElevation()
+     */
     public double getBaricenterElevation() {
         if (baricenterElevation == -1) {
             baricenterElevation = (Double) hillslopeFeature.getAttribute(baricenterElevationAttributeIndex);
@@ -187,21 +173,16 @@ public class HillSlope implements Comparator<HillSlope> {
         return baricenterElevation;
     }
 
-    /**
-     * @return the closure coordinate of the basin, i.e. the last coordinate of the river
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getHillslopeClosure()
      */
     public Coordinate getHillslopeClosure() {
         Coordinate[] coords = ((Geometry) linkFeature.getDefaultGeometry()).getCoordinates();
         return coords[coords.length - 1];
     }
 
-    /**
-     * Get the geometry from the actual point to the passed numbers of pfafstetter
-     * 
-     * @param limit
-     * @param pm
-     * @param doMonitor
-     * @return
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getGeometry(java.util.List, org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor, boolean)
      */
     public Geometry getGeometry( List<PfafstetterNumber> limit, IJGTProgressMonitor pm, boolean doMonitor ) {
 
@@ -244,33 +225,34 @@ public class HillSlope implements Comparator<HillSlope> {
         // return gCollection.buffer(0.0);
     }
 
-    /**
-     * Calculate the upstream area of the current hillslope.
-     * 
-     * @param limit a list of Pfafstetter numbers that define a list of hillslopes that block the
-     *        recursion for area calculation. Through that for example we can define areas between
-     *        two hillslopes.
-     * @return the upstream area
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getUpstreamArea(java.util.List)
      */
     public double getUpstreamArea( List<PfafstetterNumber> limit ) {
         if (hillslopeUpstreamArea == -1) {
 
-            List<HillSlope> basins = new ArrayList<HillSlope>();
+            List<IHillSlope> basins = new ArrayList<IHillSlope>();
             getAllUpstreamElements(basins, limit);
 
             hillslopeUpstreamArea = 0;
-            for( HillSlope elementarBasin : basins ) {
+            for( IHillSlope elementarBasin : basins ) {
                 hillslopeUpstreamArea = hillslopeUpstreamArea + elementarBasin.getHillslopeArea();
             }
         }
         return hillslopeUpstreamArea;
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getPfafstetterNumber()
+     */
     public PfafstetterNumber getPfafstetterNumber() {
         return pfafstetterNumber;
     }
 
-    public HillSlope getFirstOfMaiorBasinElement() {
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getFirstOfMaiorBasinElement()
+     */
+    public IHillSlope getFirstOfMaiorBasinElement() {
         return firstOfMaiorBasin;
     }
 
@@ -287,38 +269,24 @@ public class HillSlope implements Comparator<HillSlope> {
     // return ue;
     // }
 
-    /**
-     * Tries to add an element upstream to the actual one. A check is done on Pfafstetter to
-     * understand if the passed element really is connected to the actual one. If it isn't the
-     * element isn't added.
-     * <p>
-     * <b>Don't use this, this should usually be called only by:
-     * {@link HillSlope#addConnectedDownstreamElementWithChech(HillSlope)}</b>
-     * </p>
-     * 
-     * @param element the element that is tried to be added
-     * @return
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#addConnectedUpstreamElementWithCheck(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope)
      */
-    public boolean addConnectedUpstreamElementWithCheck( HillSlope element ) {
+    public boolean addConnectedUpstreamElementWithCheck( IHillSlope element ) {
         if (PfafstetterNumber.areConnectedUpstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             if (!upstreamElements.contains(element)) {
                 upstreamElements.add(element);
-                element.addConnectedDownstreamElementWithChech(this);
+                element.addConnectedDownstreamElementWithCheck(this);
             }
             return true;
         }
         return false;
     }
 
-    /**
-     * Tries to add an element downstream to the actual one. A check is done on Pfafstetter to
-     * understand if the passed element really is connected to the actual one. If it isn't the
-     * element isn't added.
-     * 
-     * @param element the element that is tried to be added
-     * @return
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#addConnectedDownstreamElementWithChech(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope)
      */
-    public boolean addConnectedDownstreamElementWithChech( HillSlope element ) {
+    public boolean addConnectedDownstreamElementWithCheck( IHillSlope element ) {
         if (PfafstetterNumber.areConnectedDownstream(this.getPfafstetterNumber(), element.getPfafstetterNumber())) {
             downstreamElement = element;
             element.addConnectedUpstreamElementWithCheck(this);
@@ -327,11 +295,10 @@ public class HillSlope implements Comparator<HillSlope> {
         return false;
     }
 
-    /**
-     * @param pNum pfafstetter number object
-     * @return the elementar basin that corrisponds to the supplied pfafstetter number
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getUpstreamElementAtPfafstetter(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber)
      */
-    public HillSlope getUpstreamElementAtPfafstetter( PfafstetterNumber pNum ) {
+    public IHillSlope getUpstreamElementAtPfafstetter( PfafstetterNumber pNum ) {
         // am I the one
         if (pfafstetterNumber.compare(pfafstetterNumber, pNum) == 0) {
             return this;
@@ -344,8 +311,8 @@ public class HillSlope implements Comparator<HillSlope> {
         // }
         // }
         // digg further
-        HillSlope theChosen = null;
-        for( HillSlope upstreamElement : upstreamElements ) {
+        IHillSlope theChosen = null;
+        for( IHillSlope upstreamElement : upstreamElements ) {
             theChosen = upstreamElement.getUpstreamElementAtPfafstetter(pNum);
             if (theChosen != null) {
                 break;
@@ -354,29 +321,30 @@ public class HillSlope implements Comparator<HillSlope> {
         return theChosen;
     }
 
-    public HillSlope getConnectedDownstreamElement() {
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getConnectedDownstreamElement()
+     */
+    public IHillSlope getConnectedDownstreamElement() {
         if (downstreamElement == null) {
             return null;
         }
         return downstreamElement;
     }
 
-    /**
-     * @return those upstream elements that are directly connected to the basin
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getConnectedUpstreamElements()
      */
-    public List<HillSlope> getConnectedUpstreamElements() {
+    public List<IHillSlope> getConnectedUpstreamElements() {
         if (upstreamElements.size() > 0) {
             return upstreamElements;
         }
         return null;
     }
 
-    /**
-     * add all the upstream elements to a supplied list
-     * 
-     * @param elems
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getAllUpstreamElements(java.util.List, java.util.List)
      */
-    public void getAllUpstreamElements( List<HillSlope> elems, List<PfafstetterNumber> limit ) {
+    public void getAllUpstreamElements( List<IHillSlope> elems, List<PfafstetterNumber> limit ) {
         // if the limit is the number of the actual element, return
         if (limit != null && limit.size() > 0) {
             for( PfafstetterNumber pfafs : limit ) {
@@ -386,18 +354,16 @@ public class HillSlope implements Comparator<HillSlope> {
             }
         }
         elems.add(this);
-        for( HillSlope upstreamElement : upstreamElements ) {
+        for( IHillSlope upstreamElement : upstreamElements ) {
             upstreamElement.getAllUpstreamElements(elems, limit);
         }
     }
 
-    /**
-     * add all the upstream element's geometries to a supplied list
-     * 
-     * @param elems
-     * @param firstOfMaiorBasin
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getAllUpstreamElementsGeometries(java.util.List, java.util.List, org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope)
      */
-    public void getAllUpstreamElementsGeometries( List<Geometry> elems, List<PfafstetterNumber> limit, HillSlope firstOfMaiorBasin ) {
+    public void getAllUpstreamElementsGeometries( List<Geometry> elems, List<PfafstetterNumber> limit,
+            IHillSlope firstOfMaiorBasin ) {
         // if the limit is the number of the actual element, return
         if (limit != null && limit.size() > 0) {
             for( PfafstetterNumber pfafs : limit ) {
@@ -408,16 +374,10 @@ public class HillSlope implements Comparator<HillSlope> {
         }
         this.firstOfMaiorBasin = firstOfMaiorBasin;
         elems.add((Geometry) hillslopeFeature.getDefaultGeometry());
-        for( HillSlope upstreamElement : upstreamElements ) {
+        for( IHillSlope upstreamElement : upstreamElements ) {
             upstreamElement.getAllUpstreamElementsGeometries(elems, limit, firstOfMaiorBasin);
         }
 
-    }
-
-    public int compare( HillSlope ue1, HillSlope ue2 ) {
-        PfafstetterNumber p1 = ue1.getPfafstetterNumber();
-        PfafstetterNumber p2 = ue2.getPfafstetterNumber();
-        return p1.compare(p1, p2);
     }
 
     /**
@@ -425,214 +385,65 @@ public class HillSlope implements Comparator<HillSlope> {
      * 
      * @param elements
      */
-    public static void connectElements( List<HillSlope> elements ) {
+    public static void connectElements( List<IHillSlope> elements ) {
         Collections.sort(elements, elements.get(0));
 
         for( int i = 0; i < elements.size(); i++ ) {
-            HillSlope elem = elements.get(i);
+            IHillSlope elem = elements.get(i);
             for( int j = i + 1; j < elements.size(); j++ ) {
-                HillSlope tmp = elements.get(j);
-                elem.addConnectedDownstreamElementWithChech(tmp);
+                IHillSlope tmp = elements.get(j);
+                elem.addConnectedDownstreamElementWithCheck(tmp);
             }
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#toString()
+     */
     @SuppressWarnings("nls")
     public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("=====================\n= PF: " + pfafstetterNumber).append("\n= ").append("DownElem: \n= ");
         if (downstreamElement != null) {
-            b.append(downstreamElement.pfafstetterNumber).append("\n= ");
+            b.append(downstreamElement.getPfafstetterNumber()).append("\n= ");
         }
         b.append("UpElem:\n= ");
         for( int i = 0; i < upstreamElements.size(); i++ ) {
             if (upstreamElements.get(i) != null)
-                b.append("\t" + upstreamElements.get(i).pfafstetterNumber).append("\n= ");
+                b.append("\t" + upstreamElements.get(i).getPfafstetterNumber()).append("\n= ");
         }
         b.append("\n=====================\n");
 
         return b.toString();
     }
 
-    public boolean hasVegetation() {
-        return hasVegetation;
+    /* (non-Javadoc)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#compare(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope, org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlope)
+     */
+    public int compare( IHillSlope ue1, IHillSlope ue2 ) {
+        PfafstetterNumber p1 = ue1.getPfafstetterNumber();
+        PfafstetterNumber p2 = ue2.getPfafstetterNumber();
+        return p1.compare(p1, p2);
     }
 
-    public final class Parameters {
-        private final double recParam;
-        private final double s2Param;
-        private final double s2max;
-        private final double s1residual;
-        private final double s2residual;
-
-        private VegetationLibraryRecord vegetation;
-
-        private double qsupmin;
-        private double qsubmin;
-        private final double pDepthmnsat;
-        private final double pKs;
-        private final double pMstexp;
-        private Double pEtrate;
-
-        /**
-         * Constructor for the {@link HillSlope}'s {@link Parameters}.
-         * 
-         * @param pSatconst 
-         * @param pEtrate 
-         * @param pPorosity 
-         * @param pSpecyield 
-         * @param pMstexp 
-         * @param pKs 
-         * @param pDepthmnsat 
-         */
-        public Parameters( double pKs, double pMstexp, double pSpecyield, double pPorosity, Double pEtrate, double pSatconst,
-                double pDepthmnsat ) {
-
-            this.pKs = pKs;
-            this.pMstexp = pMstexp;
-            this.pDepthmnsat = pDepthmnsat;
-            if (pEtrate != null) {
-                this.pEtrate = pEtrate * (1. / 24.);
-            }
-
-            double area_m2 = getHillslopeArea(); // [m^2]
-            recParam = (pSatconst * pKs * pDepthmnsat) / (pSpecyield * area_m2); // [1/hr]
-
-            // double d4_pm3 = 0.905 * (1. / (porosity * depthMnSat(hillSlope) * area_m2));
-            s2max = pPorosity * pDepthmnsat * area_m2;
-            s2Param = 0.905 * (1 / s2max); // [1/L^3]
-
-            s1residual = 0.02 * pPorosity * area_m2;
-
-            s2residual = 0.007 * pPorosity * area_m2;
-
-            qsupmin = 0.30 * 0.001;
-            qsubmin = 0.70 * 0.001;
-        }
-
-        /**
-         * Set the vegetation library parameters.
-         * 
-         * @param vegetationLibrary the map of vegetation index versus 
-         *          vegetation parameters.
-         */
-        public void setVegetationLibrary( HashMap<Integer, VegetationLibraryRecord> vegetationLibrary ) {
-            if (vegetationIdFieldIndex != -1) {
-                int vegetationId = ((Number) hillslopeFeature.getAttribute(vegetationIdFieldIndex)).intValue();
-                if (vegetationId != -1) {
-                    hasVegetation = true;
-                    vegetation = vegetationLibrary.get(vegetationId);
-                }
-            }
-        }
-
-        /**
-         * Calculates the evapotraspiration.
-         * 
-         * @param month the current month index.
-         * @param radiation net radiation from energy balance (W/m2).
-         * @param pressure air pressure.
-         * @param temperature air temperature.
-         * @param shortRadiaton shortwave net radiation.
-         * @param relativeHumidity air humidity.
-         * @param windSpeed wind speed.
-         * @param soilMoisture soil moisture.
-         * @param snow water equivalent
-         * @return evapotraspiration.
-         */
-        public double calculateEvapoTranspiration( int month, double radiation, double pressure, double temperature,
-                double shortRadiaton, double relativeHumidity, double windSpeed, double soilMoisture, double snowWaterEquivalent ) {
-            if (!hasVegetation()) {
-                throw new ModelsIllegalargumentException(
-                        "Evapotranspiration can be calculated only if the vegetation library has been defined. check your syntax...",
-                        this);
-            }
-            double evap = evapTransCalculator.penman(getBaricenterElevation(), radiation, vegetation.getMinStomatalResistance(),
-                    vegetation.getArchitecturalResistance(), vegetation.getLai(month), vegetation.getRgl(),
-                    vegetation.getDisplacement(month), vegetation.getRoughness(month), s2max, pressure, temperature,
-                    shortRadiaton, relativeHumidity, windSpeed, soilMoisture, snowWaterEquivalent);
-            return evap;
-        }
-
-        public double getDepthMnSat() {
-            return pDepthmnsat;
-        }
-
-        public double getKs() {
-            return pKs;
-        }
-
-        public double getMstExp() {
-            return pMstexp;
-        }
-
-        public double getRecParam() {
-            return recParam;
-        }
-
-        public double getS2Param() {
-            return s2Param;
-        }
-
-        public double getS2max() {
-            return s2max;
-        }
-
-        public Double getETrate() {
-            return pEtrate;
-        }
-
-        public double getS1residual() {
-            return s1residual;
-        }
-
-        public double getS2residual() {
-            return s2residual;
-        }
-
-        public double getqqsupmin() {
-            return qsupmin;
-        }
-
-        public double getqqsubmin() {
-            return qsubmin;
-        }
-
-        public double getLai( int month ) {
-            return vegetation.getLai(month);
-        }
-
-        public double getDisplacement( int month ) {
-            return vegetation.getDisplacement(month);
-        }
-
-        public double getRoughness( int month ) {
-            return vegetation.getRoughness(month);
-        }
-
-        public double getRGL() {
-            return vegetation.getRgl();
-        }
-
-        public double getRs() {
-            return vegetation.getMinStomatalResistance();
-        }
-
-        public double getRarc() {
-            return vegetation.getArchitecturalResistance();
-        }
-
-        // public double So() {
-        // return 1.0; // So is max storage in the hillslope and i is the i-th link
-        // }
-        //
-        // public double Ts() {
-        // return 10.0;
-        // }
-        //
-        // public double Te() {
-        // return 1e20;
-        // }
-
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + hillslopeId;
+        result = prime * result + ((pfafstetterNumber == null) ? 0 : pfafstetterNumber.hashCode());
+        return result;
     }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if (obj instanceof IHillSlope) {
+            IHillSlope other = (IHillSlope) obj;
+            PfafstetterNumber p1 = getPfafstetterNumber();
+            PfafstetterNumber p2 = other.getPfafstetterNumber();
+            return p1.compare(p1, p2) == 0;
+        }
+        return false;
+    }
+
 }

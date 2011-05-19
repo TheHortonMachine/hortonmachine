@@ -1,0 +1,56 @@
+This is a version of the Shalstab stability model for the evaluation of the proneness to instability of each pixel based on an infinite slope model with steady hydrological conditions. 
+<br>
+The output is composed of two maps: the map of the potentially unstable pixels and the map of the minimum steady state rainfall to cause instability. 
+<br>
+The parameters used for the evaluation of the stability conditions are:
+<ul>
+<li>the contributing area draining across</li>
+<li>the contour length of the lower bound</li>
+<li>the soil transmissivity when saturated</li>
+<li>the local slope</li>
+<li>the ratio between soil bulk density and water density</li>
+<li>the net rainfall rate</li>
+<li>the gravitational acceleration</li>
+<li>the soil thickness</li>
+<li>the effective soil cohesion</li>
+</ul>
+For some of these parameters it is possible to insert as input either a map with the spatial distribution or a single constant value that will be used over all the basin (trasmissivity, tgphi, cohesion, hs, q, rho). There is the possibility to run a simulation where some parameters are maps and others are constant values.
+
+The output is a map of values with the following meaning:
+<ul>
+<li>1 : unconditionally unstable</li>
+<li>2 : unconditionally stable</li>
+<li>3 : stable</li>
+<li>4 : unstable</li>
+<li>8888 : pixel characterized by rock (if soil thickness < 0.01)</li>
+</ul>
+
+It will be evaluated also the minimum rainfall to instability, and the output is a map of values with the following meaning:
+<ul>
+<li>0 : unconditionally stable</li>
+<li>1 : 0 <= qcrit < 50</li>
+<li>2 : 50 <= qcrit < 100</li>
+<li>3 : 100 <= qcrit < 200</li>
+<li>4 : qcrit >= 200</li>
+<li>5 : unconditionally unstable</li>
+</ul>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the map of slope</li>
+<li>the map of a/b</li>
+<li>a constant value or the map of trasmissivity</li>
+<li>a constant value or the map of the tangent of the friction angle</li>
+<li>a constant value or the map of cohesion</li>
+<li>a constant value or the map of soil thickness</li>
+<li>a constant value or the map of effective precipitations (net rainfall)</li>
+<li>a constant value or the map of the ratio between soil bulk density and water density</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the map of the minimum rainfall to instability</li>
+<li>the map of stability classes</li>
+</ul>

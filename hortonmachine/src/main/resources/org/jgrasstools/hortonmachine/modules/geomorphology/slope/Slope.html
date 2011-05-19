@@ -1,0 +1,21 @@
+Estimates the slope in every site by employing the drainage directions. Differently from the gradients, slope calculates the drop between each pixel and the adjacent points placed underneath and it divides the result by the pixel length or by the length of the pixel diagonal, according to the cases. The greatest value is the one chosen as slope.
+Output values are in tangent of the angle.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of elevations (the map obtained with pitfiller)</li>
+<li>the files containing the matrix of the drainage directions (obtained with Markoutlets or DrainDir}</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>file containing the matrix of the slopes</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+To estimate slopes, this program considers the drainage directions, estimating the slope of every pixel in the direction of the less high, near pixel (steepestdescent). For many purposes, this slope is used as an extimation of the gradient. The patterns are in fact very similar. However, it is apparent that the two definition do not coincide at al.
+<br>
+As a rule, the program places on the catchment boundary the slope equal to zero.

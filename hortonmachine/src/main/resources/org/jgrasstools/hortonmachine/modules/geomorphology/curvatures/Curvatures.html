@@ -1,0 +1,32 @@
+Estimates the longitudinal (or profile), normal and planar curvatures for each site through a finite difference schema.
+<br>
+The curvatures represent the deviations of the gradient vector for unit length (in radiants) along particular curves plotted on the surface under consideration. In particular, the presence of non-zero curvatures has relevant effects on the representation of the properties of the surfaces discretized. For example, if the surface has a negative normal curvature, then the gradients have diverging directions at the extremes of the pixel, <i>P</i>, and the contributing area in <i>P</i> is spread over several adjacent pixels: in this case topography is called locally divergent. Vice versa, the surface is locally converging (negative curvature) and the contributing area in <i>P</i> tends to be spread over a limited set of adjacent pixels and almost certainly on a single pixel.
+<br>
+Roughly speaking, the convex zones are hillslope zones, the concave zones are valleys. As it is known, the latter contain the channel network. Then, the curvature tends to discriminate the points across the basin with greater humidity content (the concave ones). This fact has relevant consequences on the overall hydrologic behavior of basins and, in particular, on the production of runoff and on the evapotranspiration distribution.
+<br>
+The <i>longitudinal curvature</i> represent the deviation of the gradient along
+the the flow (it is negative if the gradient increase), the <i>normal</i>
+and <i>planar curvatures</i> are locally proportional and measure the
+convergence/divergence of the flow (the curvature is positive for
+convergent flow).
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of elevations (the DEM or the map obtained with pitfiller)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the matrix of longitudinal curvatures</li>
+<li>the file containing the matrix of normal (or tangent)
+curvatures</li>
+<li>the file containing the matrix of planar curvatures</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The planar and normal (or tangent) curvatures are proportional to each other. 
+<br>
+As a rule the model places the curve equal to zero on the catchment boundary.

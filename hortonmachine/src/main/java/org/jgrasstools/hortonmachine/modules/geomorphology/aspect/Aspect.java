@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.aspect;
 
@@ -40,68 +39,40 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the aspect model. Generates raster map layers of aspect
- * from a raster map layer of true elevation values. The value of aspect is calculated
- * counterclockwise from north.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG><BR>
- * </DT>
- * <OL>
- * <LI>the depitted map (-pit)</LI>
- * </OL>
- * <P>
- * </DD>
- * <DT><STRONG>Returns:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map with the aspect (-aspect)</LI>
- * </OL>
- * <P></DD>
- * </p>
- * <p>
- * Usage: h.aspect --igrass-pit pit --ograss-aspect aspect
- * </p>
- * <p>
- * With color table: h.aspect --igrass-pit pit --ograss-aspect aspect --ocolor-color aspect
- * </p>
- * <p>
- * Note: Due to the difficult existing calculating the aspect on the borders of the region, in this
- * cases the direction of the gradient is assumed to be the maximum slope gradient.
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi
- *         Silvia, Pisoni Silvano, Rigon Riccardo
- */
-@Description("Generates raster map layers of aspect from a raster map layer of true elevation values. The value of aspect is calculated counterclockwise from north.")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
-@Keywords("Geomorphology")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
+@Documentation("Aspect.html")
+@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, DrainDir, FlowDirections")
+@Label(JGTConstants.GEOMORPHOLOGY)
+@Name("aspect")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Aspect extends JGTModel {
-    @Description("The digital elevation model (DEM).")
+    @Description("The map of the digital elevation model (DEM).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Switch to define whether create the output map in degrees (default) or radiants.")
     @In
@@ -128,13 +99,13 @@ public class Aspect extends JGTModel {
             radtodeg = 1.0;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
 
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
@@ -223,7 +194,7 @@ public class Aspect extends JGTModel {
         pm.done();
 
         CoverageUtilities.setNovalueBorder(aspectWR);
-        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 
 }

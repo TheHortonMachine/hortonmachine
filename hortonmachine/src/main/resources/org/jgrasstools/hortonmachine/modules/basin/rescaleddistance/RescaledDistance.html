@@ -1,0 +1,31 @@
+Calculates the rescaled distance of each pixel from the outlet. Such distance is so defined:
+<table>
+<tr>
+<td>
+   x' = x<sub>c</sub> + rx<sub>h</sub>
+</td>
+</tr>
+</table>
+where: 
+<ul>
+<li>x<sub>c</sub> is the distance along the channels</li>
+<li>r=c/c<sub>h</sub> the ratio between the speed in the channel state
+<i>c</i> and the speed in the hillslopes <i>c<sub>h</sub></i> </li>
+<li><i>x<sub>h</sub></i> the distance along the hillslopes</li>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of the drainage directions (obtained with DrainDir)</li>
+<li>the file containing the net (obtained with ExtractNetwork)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the matrix of the rescaled distances</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The program requests also the ratio <i>r</i> between speed in the channel and speed in hillslopes. The speed in channels is always greater than that in hillslopes.

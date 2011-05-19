@@ -1,41 +1,41 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.modules.r.scanline;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -46,13 +46,18 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -61,41 +66,66 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Module for vector to raster conversion")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description("Module for polygon vector to raster conversion.")
+@Documentation("ScanLineRasterizer.html")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("Raster, Vector, ContourExtractor")
+@Label(JGTConstants.RASTERPROCESSING)
+@Status(Status.CERTIFIED)
+@Name("rscanline")
+@License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class ScanLineRasterizer {
+public class ScanLineRasterizer extends JGTModel {
 
-    @Description("The features to rasterize.")
+    @Description("The vector to rasterize.")
     @In
-    public SimpleFeatureCollection inGeodata = null;
+    public SimpleFeatureCollection inVector = null;
 
     @Description("The value to use as raster value if no field is given.")
     @In
-    public Double pValue = doubleNovalue;
+    public Double pValue = null;
 
     @Description("The field to use to retrieve the category value for the raster.")
     @In
     public String fCat = null;
 
-    @Description("The field contains to retrieve the category value to use for the rasterizzations.")
+    @Description("The north bound of the region to consider")
+    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
-    public String fValueToRasterize = null;
+    public Double north = null;
 
-    @Description("The gridgeometry on which to perform rasterization.")
+    @Description("The south bound of the region to consider")
+    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
-    public GridGeometry2D pGrid = null;
+    public Double south = null;
+
+    @Description("The west bound of the region to consider")
+    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
+    @In
+    public Double west = null;
+
+    @Description("The east bound of the region to consider")
+    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
+    @In
+    public Double east = null;
+
+    @Description("The rows of the region to consider")
+    @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
+    @In
+    public Integer rows = null;
+
+    @Description("The cols of the region to consider")
+    @UI(JGTConstants.PROCESS_COLS_UI_HINT)
+    @In
+    public Integer cols = null;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The coverage that has to be converted.")
+    @Description("The output raster.")
     @Out
-    public GridCoverage2D outGeodata;
+    public GridCoverage2D outRaster;
 
     private WritableRaster outWR;
 
@@ -105,61 +135,64 @@ public class ScanLineRasterizer {
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
-    private HashMap<String, Double> paramsMap;
+    private RegionMap paramsMap;
 
     private double xRes;
 
     @Execute
     public void process() throws Exception {
+        checkNull(inVector);
+        if (pValue == null && fCat == null) {
+            throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
+        }
+
+        SimpleFeatureType schema = inVector.getSchema();
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        GridGeometry2D pGrid = gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
         if (outWR == null) {
             paramsMap = gridGeometry2RegionParamsMap(pGrid);
-            height = paramsMap.get(ROWS).intValue();
-            width = paramsMap.get(COLS).intValue();
-            xRes = paramsMap.get(XRES);
+            height = paramsMap.getRows();
+            width = paramsMap.getCols();
+            xRes = paramsMap.getXres();
 
             outWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, doubleNovalue);
         }
 
-        GeometryType type = inGeodata.getSchema().getGeometryDescriptor().getType();
+        GeometryType type = schema.getGeometryDescriptor().getType();
         if (getGeometryType(type) == GEOMETRYTYPE.POINT || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
             throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
-            rasterizepolygon(inGeodata, outWR, pGrid, fValueToRasterize, pValue);
+            rasterizepolygon(inVector, outWR, pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
                     .getSimpleName());
         }
 
-        outGeodata = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inGeodata.getSchema()
+        outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inVector.getSchema()
                 .getCoordinateReferenceSystem());
 
     }
-
-    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized,
-            GridGeometry2D gridGeometry, String field, Double cat ) throws InvalidGridGeometryException, TransformException {
+    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized, GridGeometry2D gridGeometry )
+            throws InvalidGridGeometryException, TransformException {
 
         int w = rasterized.getWidth();
         int h = rasterized.getHeight();
 
-        int size = inGeodata.size();
+        int size = inVector.size();
         pm.beginTask("Rasterizing features...", size);
-        FeatureIterator<SimpleFeature> featureIterator = inGeodata.features();
-        boolean severalValue = false;
-        /*
-         * if cat is null then there is several polygons with several value to
-         * rasterize.
-         */
-        if (cat == null) {
-            severalValue = true;
-        }
+        FeatureIterator<SimpleFeature> featureIterator = inVector.features();
+
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Polygon polygon = (Polygon) feature.getDefaultGeometry();
             // extract the value to put into the raster.
-            if (severalValue) {
-                cat = (Double) feature.getAttribute(field);
+            double value = -1.0;
+            if (pValue == null) {
+                value = (Double) feature.getAttribute(fCat);
+            } else {
+                value = pValue;
             }
             double delta = xRes / 4.0;
 
@@ -184,15 +217,6 @@ public class ScanLineRasterizer {
                          * the part in between has to be filled
                          */
                         for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                            double value = cat;
-                            /*
-                             * if there is only one value (cat is a number) then
-                             * you can write into the raster another field of
-                             * the feature.
-                             */
-                            if (fCat != null) {
-                                value = ((Number) feature.getAttribute(fCat)).doubleValue();
-                            }
                             rasterized.setSample(k, r, 0, value);
                         }
                     }
@@ -203,6 +227,6 @@ public class ScanLineRasterizer {
             pm.worked(1);
         }
         pm.done();
-        inGeodata.close(featureIterator);
+        featureIterator.close();
     }
 }

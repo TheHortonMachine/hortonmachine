@@ -1,0 +1,29 @@
+Calculates the histogram of a set of data contained in a matrix with respect to the set of data contained in another matrix. In substance, a map of R<sup>2</sup> to R<sup>2</sup>, in which each point of a bidimensional system (identified by the values contained in a matrix) is mapped in a second bidimensional system, is produced. The data of the first set are then grouped in a prefixed number of intervals and the mean value of the independent variable for each interval is calculated.
+<br>
+To every interval corresponds a certain set of values of the second set, of which the mean value is calculated, and a designate number of moments which can be either centred, if the functioning mode is <i>histogram</i>, or non-centred, if the mode is 'moments'. 
+<br>
+If the number of intervals assigned is lesser than one, the data are subdivided in classes of data having the same abscissa. 
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>file containing the data of the independent variable (map1)</li>
+<li>file containing the data which will be used as dependent variable (map2)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the name of the output file with the elaborations</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The output file is not a map and contains:
+<ul> 
+<li>the number of elements in each interval</li>
+<li>the mean value of the data in abscissa</li>
+<li>the mean value of the data in ordinate</li>
+<li>the n-esimal moment of the data in ordinate</li>
+</ul>
+The program uses the memory intensely. Therefore if we decide to have so many intervals as the data in abscissa, the program could not function correctly.

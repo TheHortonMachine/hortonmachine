@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ import oms3.ComponentAccess;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.Initialize;
-import oms3.annotations.Out;
+import oms3.annotations.UI;
 
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
@@ -38,7 +37,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.util.ProgressListener;
 
 /**
- * Superclass for horton machine modules.
+ * Superclass for modules.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -58,7 +57,8 @@ public class JGTModel implements Process {
      * </ul>
      * </p>
      */
-    @Out
+    // TODO check this out???? @Out
+    @UI(JGTConstants.ITERATOR_UI_HINT)
     public boolean doProcess = false;
 
     /**
@@ -90,17 +90,12 @@ public class JGTModel implements Process {
         return false;
     }
 
-    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor )
-            throws ProcessException {
+    public Map<String, Object> execute( Map<String, Object> input, ProgressListener monitor ) throws ProcessException {
         // the geotools monitor is wrapped into the internal progress monitor
         GeotoolsProgressMonitorAdapter pm = new GeotoolsProgressMonitorAdapter(monitor);
-        input.put("pm", pm);
-        try {
-            // set the inputs to the model
-            ComponentAccess.setInputData(input, this, null);
-        } catch (IOException e) {
-            throw new ProcessException(e.getLocalizedMessage());
-        }
+        input.put("pm", pm); //$NON-NLS-1$
+        // set the inputs to the model
+        ComponentAccess.setInputData(input, this, null);
 
         // trigger execution of the module
         ComponentAccess.callAnnotated(this, Initialize.class, true);
@@ -151,9 +146,8 @@ public class JGTModel implements Process {
     protected void checkNull( Object... objects ) {
         for( Object object : objects ) {
             if (object == null) {
-                throw new ModelsIllegalargumentException(
-                        "Mandatory input argument is missing. Check your syntax...", this
-                                .getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...", this
+                        .getClass().getSimpleName());
             }
         }
     }

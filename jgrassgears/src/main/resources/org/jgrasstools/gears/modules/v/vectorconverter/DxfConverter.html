@@ -1,0 +1,18 @@
+Module to convert dxf files to geotools vecotors (based on Michael Michauds work).
+<br>
+Since geospatial vector layers can not contain all kind of features as in a dxf file, the output will be a set of vector containing the different geometry types present in the original dxf.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the dxf input file</li>
+<li>the code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328), applied in the case the <i>prj</i> file is missing</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the output point vector</li> 
+<li>the output line vector</li>
+<li>the output polygon vector</li>
+</ul>

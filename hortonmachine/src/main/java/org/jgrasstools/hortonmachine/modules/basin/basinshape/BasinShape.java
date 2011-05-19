@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.basin.basinshape;
 
@@ -33,59 +32,64 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Creates a Feature collection of the subbasins create with the netnumbering module.")
-@Author(name = "Erica Ghesla, Andrea Antonello", contact = "www.hydrologis.com")
+@Description("Creates a Feature collection of the subbasins created with the netnumbering module.")
+@Documentation("BasinShape.html")
+@Author(name = "Erica Ghesla, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Label(JGTConstants.BASIN)
+@Name("basinshape")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class BasinShape extends JGTModel {
 
-    @Description("The depitted elevation map.")
+    @Description("The elevation map.")
     @In
-    public GridCoverage2D inPit = null;
+    public GridCoverage2D inElev = null;
 
-    @Description("The map of basins.")
+    @Description("The map of the numbered basins.")
     @In
     public GridCoverage2D inBasins = null;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The extracted basins map.")
+    @Description("The extracted basins vector map.")
     @Out
     public SimpleFeatureCollection outBasins = null;
 
@@ -99,6 +103,7 @@ public class BasinShape extends JGTModel {
         if (!concatOr(outBasins == null, doReset)) {
             return;
         }
+        checkNull(inBasins);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
@@ -107,13 +112,9 @@ public class BasinShape extends JGTModel {
         // double yRes = regionMap.get(CoverageUtilities.YRES);
 
         RenderedImage basinsRI = inBasins.getRenderedImage();
-        RenderedImage pitRI = inPit.getRenderedImage();
-
-        outBasins = basinShape(basinsRI, pitRI);
-    }
-
-    private SimpleFeatureCollection basinShape( RenderedImage basinsRI, RenderedImage pitRI )
-            throws InvalidGridGeometryException, TransformException {
+        RenderedImage pitRI = null;
+        if (inElev != null)
+            pitRI = inElev.getRenderedImage();
 
         int[] nstream = new int[1];
         // nstream[0] = 1508;
@@ -139,7 +140,7 @@ public class BasinShape extends JGTModel {
         b.setName("basinshape"); //$NON-NLS-1$
         // add a geometry property
         String defaultGeometryName = "the_geom";//$NON-NLS-1$
-        b.setCRS(inPit.getCoordinateReferenceSystem());
+        b.setCRS(inBasins.getCoordinateReferenceSystem());
         b.add(defaultGeometryName, MultiPolygon.class);
         // add some properties
         b.add("area", Float.class); //$NON-NLS-1$
@@ -152,10 +153,10 @@ public class BasinShape extends JGTModel {
 
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
-
-        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
+        outBasins = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
+        pm.beginTask("Extracting basins...", nstream[0]);
         for( int num = 1; num <= nstream[0]; num++ ) {
             Object[] values = new Object[8];
 
@@ -240,20 +241,19 @@ public class BasinShape extends JGTModel {
                 }
 
                 // extract the feature polygon of that basin number
-
-                MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+                Vectorizer vectorizer = new Vectorizer();
                 try {
-                    squares.inGeodata = inBasins;
-                    squares.pm = pm;
-                    squares.doReset = true;
-                    squares.pValue = (double) num;
-                    squares.process();
+                    vectorizer.inRaster = inBasins;
+                    vectorizer.pm = pm;
+                    vectorizer.doReset = true;
+                    vectorizer.pValue = (double) num;
+                    vectorizer.process();
                 } catch (Exception e) {
                     pm.errorMessage(e.getLocalizedMessage());
                     continue;
                 }
 
-                SimpleFeatureCollection outGeodata = squares.outGeodata;
+                SimpleFeatureCollection outGeodata = vectorizer.outVector;
                 FeatureIterator<SimpleFeature> outGeodataIterator = outGeodata.features();
                 List<Polygon> polygons = new ArrayList<Polygon>();
                 while( outGeodataIterator.hasNext() ) {
@@ -297,13 +297,14 @@ public class BasinShape extends JGTModel {
                 builder.addAll(values);
                 // build the feature with provided ID
                 SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + num);
-                featureCollection.add(feature);
+                outBasins.add(feature);
             }
+            pm.worked(1);
         }
+        pm.done();
 
         basinsRandomIter.done();
         basinsWR = null;
-        return featureCollection;
     }
 
 }

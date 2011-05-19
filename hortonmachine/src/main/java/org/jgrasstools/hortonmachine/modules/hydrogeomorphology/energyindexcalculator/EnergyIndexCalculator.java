@@ -43,9 +43,9 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -56,9 +56,10 @@ import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.referencing.operation.MathTransform;
@@ -72,13 +73,14 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Description("The Adige model.")
 @Author(name = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology, Energy")
-@Status(Status.DRAFT)
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EnergyIndexCalculator extends JGTModel {
 
     @Description("The digital elevation model (DEM).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The map of basins with the id as category.")
     @In
@@ -98,19 +100,16 @@ public class EnergyIndexCalculator extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Role(Role.PARAMETER)
     @Description("Number of altimetric bands.")
     @In
     public int pEs = -1;
 
-    @Role(Role.PARAMETER)
     @Description("Number of energetic bands.")
     @In
     public int pEi = -1;
 
-    @Role(Role.PARAMETER)
     @Description("Aggregation interval of the data.")
     @In
     public double pDt = -1;
@@ -185,7 +184,7 @@ public class EnergyIndexCalculator extends JGTModel {
         RenderedImage idbasinImage = inBasins.getRenderedImage();
         idbasinImageIterator = RandomIterFactory.create(idbasinImage, null);
 
-        RenderedImage elevImage = inDem.getRenderedImage();
+        RenderedImage elevImage = inElev.getRenderedImage();
         elevImageIterator = RandomIterFactory.create(elevImage, null);
 
         RenderedImage tmpImage = inCurvatures.getRenderedImage();

@@ -34,6 +34,7 @@ import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
+import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
@@ -143,6 +144,27 @@ public class HortonMachine {
             for( Entry<String, Class< ? >> moduleName2ClassEntry : moduleName2ClassEntries ) {
                 String moduleName = moduleName2ClassEntry.getKey();
                 Class< ? > moduleClass = moduleName2ClassEntry.getValue();
+                Status annotation = moduleClass.getAnnotation(Status.class);
+                if (annotation == null) {
+                    System.out.println("Missing status: " + moduleClass.getCanonicalName());
+                    continue;
+                }
+                String statusString = null;
+                int status = annotation.value();
+                switch( status ) {
+                case Status.CERTIFIED:
+                    statusString = "CERTIFIED";
+                    break;
+                case Status.DRAFT:
+                    statusString = "DRAFT";
+                    break;
+                case Status.TESTED:
+                    statusString = "TESTED";
+                    break;
+                default:
+                    statusString = "UNKNOWN";
+                    break;
+                }
 
                 classNames.add(moduleName);
 
@@ -168,6 +190,7 @@ public class HortonMachine {
                     cf.fieldDescription = description;
                     cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
+                    cf.parentClassStatus = statusString;
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
                     }
@@ -193,6 +216,7 @@ public class HortonMachine {
                     cf.fieldDescription = description;
                     cf.fieldClass = fieldClass;
                     cf.parentClass = moduleClass;
+                    cf.parentClassStatus = statusString;
                     if (!fieldNamesList.contains(name)) {
                         fieldNamesList.add(name);
                     }

@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.ab;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
@@ -29,55 +28,33 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the Ab model. It calculates the draining area per length
- * unit (A/b), where A is the total area and b is the length of the contour line which is assumed as
- * drained by the A area.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map of planar curvatures (-plan);</LI>
- * <LI>the map with the total contributing areas (obtained with multitca or tca) (-tca);</LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map of the areas per length unit (-ab);</LI>
- * <LI>the map of the contour line (-b).</LI>
- * </OL>
- * <P></DD>
- * </p>
- * <p>
- * Usage: h.ab --igrass-plan plan --igrass-tca tca --ograss-ab ab --ograss-b b 0/1
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Rigon Riccardo
- */
-@Description("It calculates the draining area per length unit (A/b), where A is the total area and b is the length of the contour line which is assumed as drained by the A area")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo", contact = "www.hydrologis.com")
-@Keywords("Geomorphology")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description("Calculates the draining area per length unit.")
+@Documentation("Ab.html")
+@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, Tca, Curvatures, DrainDir, FlowDirections")
+@Label(JGTConstants.GEOMORPHOLOGY)
+@Name("ab")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Ab extends JGTModel {
     @Description("The map of the total contributing area.")
     @In
@@ -89,13 +66,13 @@ public class Ab extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The map of alung.")
+    @Description("The map of area per length.")
     @Out
     public GridCoverage2D outAb = null;
     
-    @Description("The map of b.")
+    @Description("The map of contour line.")
     @Out
     public GridCoverage2D outB = null;
 

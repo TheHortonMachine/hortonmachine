@@ -1,0 +1,30 @@
+Assigns numbers to the network's links. 
+<br>
+It can be used by Hillslope2ChannelAttribute to label the hillslope flowing into the link with the same number.
+This module can run in three different modes:
+<ul>
+<li>mode 0: normal way</li>
+<li>mode 1: inserting a threshold on TCA to split the network</li>
+<li>mode 2: splitting the network in a set of defined points</li>
+</ul>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the drainage directions (obtained with Markoutlets, DrainDir, FlowDirections)</li>
+<li>the file containing the channel network (obtained with ExtractNetwork)</li>
+<li>if we choose to define the maximum value of TCA of each subbasin,the file containing the total contributing areas (obtained
+with DrainDir, Tca or Multitca)</li>
+<li>if we choose to split the network in a set of defined positions, the vector point map containing the monitoring points</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the net with the streams numerated</li>
+<li>the file containing the sub-basins</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The algorithm start from the channel heads which are numbered first. Then, starting again from each source, the drainage direction are followed till a junction is found. If the link downhill the junction was already numbered, a new source is chosen. Otherwise the network is scanned downstream ad a new number is attributed to the link's pixels.

@@ -1,0 +1,17 @@
+Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file. This writer writes a time series data file all in one, so it is not time dependent, for this you should look into TimeSeriesIteratorWriter.
+<br>
+<br>
+<h3>Parameters</h3>
+<ul>      
+<li>the csv file to write to</li>
+<li>the table name</li>
+<li>the hashmap of data to write</li>
+<li>a switch that defines whether to write the timestamps as dates or as intervals of seconds if a date doesn't make sense</li>
+<li>the comma separated list of column names</li>
+<li>a map of lists of metadata that can be attached to the column of the csv file</li>
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+<ul>
+This model can be use for example to write output data from Peakflow.

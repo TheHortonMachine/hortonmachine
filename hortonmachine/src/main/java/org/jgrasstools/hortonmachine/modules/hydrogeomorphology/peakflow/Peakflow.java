@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow;
 
@@ -24,25 +23,30 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
@@ -57,10 +61,13 @@ import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
 import org.joda.time.DateTime;
 
 @Description("The Peakflow semidistributed hydrologic model.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Peakflow, Discharge, Hydrologic")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Documentation("Peakflow.html")
+@Author(name = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Peakflow, Discharge, Hydrologic, Cb, RescaledDistance")
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Name("peakflow")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Peakflow extends JGTModel {
 
     @Description("The a parameter for statistic rain calculations.")
@@ -89,7 +96,7 @@ public class Peakflow extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of Topindex.")
     @In
@@ -103,22 +110,13 @@ public class Peakflow extends JGTModel {
     @In
     public GridCoverage2D inRescaledsub = null;
 
-    @Description("The rainfall input timesteps.")
+    @Description("The sorted hasmap of rainfall data per timestep.")
     @In
-    public List<DateTime> inTimestamps;
+    public HashMap<DateTime, double[]> inRainfall;
 
-    @Description("The rainfall input per timestep.")
-    @In
-    public List<double[]> inRainfall;
-
-    @Description("The peakflow timesteps.")
+    @Description("The sorted hashmap of peakflow output per timestep.")
     @Out
-    public List<DateTime> outTimestamps;
-
-    @Description("The peakflow output per timestep.")
-    @Out
-    public List<double[]> outDischarge;
-
+    public HashMap<DateTime, double[]> outDischarge;
 
     public double oututstepArg = 100;
 
@@ -156,8 +154,7 @@ public class Peakflow extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inTopindex);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTopindex);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
@@ -191,8 +188,7 @@ public class Peakflow extends JGTModel {
         RandomIter topindexIter = RandomIterFactory.create(topindexRI, null);
 
         RenderedImage supRescaledRI = inRescaledsup.getRenderedImage();
-        WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(
-                supRescaledRI, false);
+        WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(supRescaledRI, false);
 
         WritableRaster subRescaledWR = null;
         if (inRescaledsub != null) {
@@ -212,14 +208,14 @@ public class Peakflow extends JGTModel {
             }
         }
 
-        GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup",
-                supRescaledWR, regionMap, inTopindex.getCoordinateReferenceSystem());
+        GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup", supRescaledWR, regionMap,
+                inTopindex.getCoordinateReferenceSystem());
         double[][] widthfunctionSupCb = doCb(widthfunctionSupCoverage);
 
         double[][] widthfunctionSubCb = null;
         if (inRescaledsub != null) {
-            GridCoverage2D widthfunctionSubCoverage = CoverageUtilities.buildCoverage("sub",
-                    subRescaledWR, regionMap, inTopindex.getCoordinateReferenceSystem());
+            GridCoverage2D widthfunctionSubCoverage = CoverageUtilities.buildCoverage("sub", subRescaledWR, regionMap,
+                    inTopindex.getCoordinateReferenceSystem());
             widthfunctionSubCb = doCb(widthfunctionSubCoverage);
         }
 
@@ -229,20 +225,17 @@ public class Peakflow extends JGTModel {
         }
 
         // check the case
-        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1
-                && pDiffusion != -1) {
-            pm.message("h.peakflow launched in statistic mode...");
+        if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1) {
+            pm.message("Peakflow launched in statistic mode...");
             isStatistics = true;
             isReal = false;
-        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1
-                && inRainfall != null) {
-            pm.message("h.peakflow launched with real rain...");
+        } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1 && inRainfall != null) {
+            pm.message("Peakflow launched with real rain...");
             isStatistics = false;
             isReal = true;
         } else {
             throw new ModelsIllegalargumentException(
-                    "Problems occurred in parsing the command arguments. Please check your arguments.",
-                    this);
+                    "Problems occurred in parsing the command arguments. Please check your arguments.", this);
         }
 
         // the internal timestep is always 1 second
@@ -303,8 +296,7 @@ public class Peakflow extends JGTModel {
         // }
 
         effectsBox.setRainDataExists(inRainfall != null ? true : false);
-        outTimestamps = new ArrayList<DateTime>();
-        outDischarge = new ArrayList<double[]>();
+        outDischarge = new LinkedHashMap<DateTime, double[]>();
         if (isStatistics) {
             DateTime dummyDate = new DateTime();
             IUHCalculator iuhC = null;
@@ -329,10 +321,9 @@ public class Peakflow extends JGTModel {
                 if (i % oututstepArg != 0)
                     continue;
                 DateTime tmpDate = dummyDate.plusSeconds((int) calculateQ[i][0]);
-                outTimestamps.add(tmpDate);
                 double[] value = new double[1];
                 value[0] = calculateQ[i][1];
-                outDischarge.add(value);
+                outDischarge.put(tmpDate, value);
             }
         } else if (isReal) {
             IUHCalculator iuhC = null;
@@ -347,7 +338,7 @@ public class Peakflow extends JGTModel {
             pm.message("Read rain data...");
 
             pm.message("Real Jeff...");
-            RealJeff jeffC = new RealJeff(inTimestamps, inRainfall);
+            RealJeff jeffC = new RealJeff(inRainfall);
             pm.message("Q calculation...");
             QReal qtotal = new QReal(parameterBox, iuhC, jeffC, pm);
             double[][] calculateQ = qtotal.calculateQ();
@@ -359,15 +350,13 @@ public class Peakflow extends JGTModel {
                 if (i % oututstepArg != 0)
                     continue;
                 DateTime tmpDate = firstDate.plusSeconds((int) calculateQ[i][0]);
-                outTimestamps.add(tmpDate);
                 double[] value = new double[1];
                 value[0] = calculateQ[i][1];
-                outDischarge.add(value);
+                outDischarge.put(tmpDate, value);
             }
         } else {
-            throw new ModelsIllegalargumentException(
-                    "Statistic and real rain are implemented only.", this.getClass()
-                            .getSimpleName());
+            throw new ModelsIllegalargumentException("Statistic and real rain are implemented only.", this.getClass()
+                    .getSimpleName());
         }
 
         /*
@@ -401,15 +390,13 @@ public class Peakflow extends JGTModel {
         }
 
         areaSup = pixelTotalSup * xRes * yRes;
-        deltaSup = (timeSupArray[widthFunctionLength - 1] - timeSupArray[0])
-                / (widthFunctionLength - 1);
+        deltaSup = (timeSupArray[widthFunctionLength - 1] - timeSupArray[0]) / (widthFunctionLength - 1);
         // double avgTime = timeTotalNum / amplitudeFunctionLength;
         widthFunctionSuperficial = new double[widthFunctionLength][3];
         double cum = 0.0;
         for( int i = 0; i < widthFunctionLength; i++ ) {
             widthFunctionSuperficial[i][0] = timeSupArray[i] / pCelerity;
-            widthFunctionSuperficial[i][1] = pixelSupArray[i] * xRes * yRes / deltaSup
-                    * pCelerity;
+            widthFunctionSuperficial[i][1] = pixelSupArray[i] * xRes * yRes / deltaSup * pCelerity;
             double tmpSum = pixelSupArray[i] / pixelTotalSup;
             cum = cum + tmpSum;
             widthFunctionSuperficial[i][2] = cum;
@@ -433,8 +420,7 @@ public class Peakflow extends JGTModel {
         }
 
         areaSub = pixelTotalSub * xRes * yRes;
-        deltaSub = (timeSubArray[widthFunctionLength - 1] - timeSubArray[0])
-                / (widthFunctionLength - 1);
+        deltaSub = (timeSubArray[widthFunctionLength - 1] - timeSubArray[0]) / (widthFunctionLength - 1);
         double avgTime = timeTotalNum / widthFunctionLength;
 
         residentTime = avgTime / pCelerity;
@@ -444,8 +430,7 @@ public class Peakflow extends JGTModel {
         double cum = 0f;
         for( int i = 0; i < widthFunctionLength; i++ ) {
             widthFunctionSubSuperficialHelper[i][0] = timeSubArray[i] / pCelerity;
-            widthFunctionSubSuperficialHelper[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub
-                    * pCelerity;
+            widthFunctionSubSuperficialHelper[i][1] = pixelSubArray[i] * xRes * yRes / deltaSub * pCelerity;
             cum = cum + pixelSubArray[i] / pixelTotalSub;
             widthFunctionSubSuperficialHelper[i][2] = cum;
         }
@@ -453,7 +438,7 @@ public class Peakflow extends JGTModel {
 
     private double[][] doCb( GridCoverage2D coverage ) throws Exception {
         Cb topindexCb = new Cb();
-        topindexCb.inMap1 = coverage;
+        topindexCb.inRaster1 = coverage;
         topindexCb.pFirst = 1;
         topindexCb.pLast = 2;
         topindexCb.pBins = 100;

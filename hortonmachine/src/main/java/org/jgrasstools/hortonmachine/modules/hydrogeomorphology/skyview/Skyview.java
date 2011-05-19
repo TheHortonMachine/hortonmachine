@@ -1,27 +1,28 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -33,48 +34,49 @@ import javax.media.jai.RasterFactory;
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("This is a class which calculate the skyview factor. ")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, radiation, skyview")
+@Description("Calculates the skyview factor.")
+@Documentation("Skyview.html")
+@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Hydrology, Radiation, Insolation, Hillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23.")
-@Status(Status.DRAFT)
-@License("GPL3")
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Name("skyview")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Skyview extends JGTModel {
     @Description("The map of the elevation.")
-    @Role(Role.INPUT)
     @In
-    public GridCoverage2D inElevation = null;
+    public GridCoverage2D inElev = null;
 
-    @Description("The output map")
+    @Description("The map of skyview factor.")
     @Out
-    public GridCoverage2D outMap;
+    public GridCoverage2D outSky;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    protected final static double doubleNoValue = JGTConstants.doubleNovalue;
-
-    protected HortonMessageHandler msg = HortonMessageHandler.getInstance();
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private double maxSlope;
     private double azimuth;
@@ -84,16 +86,15 @@ public class Skyview extends JGTModel {
     private int rows = 0;
     private int cols = 0;
     private WritableRaster normalVectorWR;
-    private ModelsEngine engine = new ModelsEngine();
 
     @Execute
     public void process() throws Exception {
         // extract some attributes of the map
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);
-        CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         // extract the raster.
-        RenderedImage pitTmpRI = inElevation.getRenderedImage();
+        RenderedImage pitTmpRI = inElev.getRenderedImage();
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitTmpRI, -9999.0);
         pitTmpRI = null;
         minX = pitWR.getMinX();
@@ -108,24 +109,24 @@ public class Skyview extends JGTModel {
         for( int y = minY + 2; y < maxY - 2; y++ ) {
             for( int x = minX + 2; x < maxX - 2; x++ ) {
                 if (pitWR.getSampleDouble(x, y, 0) == -9999.0) {
-                    skyWR.setSample(x, y, 0, doubleNoValue);
+                    skyWR.setSample(x, y, 0, doubleNovalue);
                 }
             }
         }
         for( int y = minY; y < maxY; y++ ) {
-            skyWR.setSample(0, y, 0, doubleNoValue);
-            skyWR.setSample(1, y, 0, doubleNoValue);
-            skyWR.setSample(cols - 2, y, 0, doubleNoValue);
-            skyWR.setSample(cols - 1, y, 0, doubleNoValue);
+            skyWR.setSample(0, y, 0, doubleNovalue);
+            skyWR.setSample(1, y, 0, doubleNovalue);
+            skyWR.setSample(cols - 2, y, 0, doubleNovalue);
+            skyWR.setSample(cols - 1, y, 0, doubleNovalue);
         }
 
         for( int x = minX + 2; x < maxX - 2; x++ ) {
-            skyWR.setSample(x, 0, 0, doubleNoValue);
-            skyWR.setSample(x, 1, 0, doubleNoValue);
-            skyWR.setSample(x, rows - 2, 0, doubleNoValue);
-            skyWR.setSample(x, rows - 1, 0, doubleNoValue);
+            skyWR.setSample(x, 0, 0, doubleNovalue);
+            skyWR.setSample(x, 1, 0, doubleNovalue);
+            skyWR.setSample(x, rows - 2, 0, doubleNovalue);
+            skyWR.setSample(x, rows - 1, 0, doubleNovalue);
         }
-        outMap = CoverageUtilities.buildCoverage("skyview factor", skyWR, attribute, inElevation.getCoordinateReferenceSystem());
+        outSky = CoverageUtilities.buildCoverage("skyview factor", skyWR, attribute, inElev.getCoordinateReferenceSystem());
 
     }
 
@@ -169,8 +170,6 @@ public class Skyview extends JGTModel {
                 normalVectorWR.setSample(x, y, 2, 1.0);
 
             }
-            System.out.println();
-
         }
         for( int y = minY; y < maxY; y++ ) {
             for( int x = minX; x < maxX; x++ ) {
@@ -237,18 +236,17 @@ public class Skyview extends JGTModel {
 
         WritableRaster skyviewFactorWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                 0.0);
-        pm.beginTask(msg.message("skyview.calculating"), (360 * (int) maxSlope));
+        pm.beginTask(msg.message("skyview.calculating"), 35);
         for( int i = 0; i < 360 - 10; i = i + 10 ) {
             azimuth = Math.toRadians(i * 1.0);
             WritableRaster skyViewWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                     Math.toRadians(maxSlope));
             for( int j = (int) maxSlope; j >= 0; j-- ) {
-                pm.worked(1);
 
                 elevation = Math.toRadians(j * 1.0);
                 double[] sunVector = calcSunVector();
-                double[] inverseSunVector = engine.calcInverseSunVector(sunVector);
-                double[] normalSunVector = engine.calcNormalSunVector(sunVector);
+                double[] inverseSunVector = calcInverseSunVector(sunVector);
+                double[] normalSunVector = calcNormalSunVector(sunVector);
                 calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, skyViewWR, res);
 
             }
@@ -265,6 +263,7 @@ public class Skyview extends JGTModel {
                     skyviewFactorWR.setSample(q, k, 0, tmp + skyViewWR.getSampleDouble(q, k, 0));
                 }
             }
+            pm.worked(1);
         }
         pm.done();
         return skyviewFactorWR;
@@ -297,9 +296,9 @@ public class Skyview extends JGTModel {
             vectorToOrigin[0] = dx * res;
             vectorToOrigin[1] = dy * res;
             vectorToOrigin[2] = pitWR.getSampleDouble(idx, jdy, 0);
-            double zprojection = engine.scalarProduct(vectorToOrigin, normalSunVector);
+            double zprojection = scalarProduct(vectorToOrigin, normalSunVector);
             double nGrad[] = normalVectorWR.getPixel(idx, jdy, new double[3]);
-            double cosinc = engine.scalarProduct(sunVector, nGrad);
+            double cosinc = scalarProduct(sunVector, nGrad);
             double elevRad = elevation;
             if ((cosinc >= 0) && (zprojection > zcompare)) {
                 tmpWR.setSample(idx, jdy, 0, elevRad);

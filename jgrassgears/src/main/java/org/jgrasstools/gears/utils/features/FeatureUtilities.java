@@ -40,24 +40,27 @@ import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 public class FeatureUtilities {
 
@@ -428,30 +431,16 @@ public class FeatureUtilities {
     }
 
     /**
-     * Creates a {@link FeatureExtender}.
-     * 
-     * <p>Useful when cloning features while adding new attributes.</p>
-     * 
-     * @param oldFeatureType the {@link FeatureType} of the existing features.
-     * @param fieldArray the list of the names of new fields. 
-     * @param classesArray the list of classes of the new fields.
-     * @throws FactoryRegistryException 
-     * @throws SchemaException
-     */
-    public static FeatureExtender createFeatureExteder( SimpleFeatureType oldFeatureType, String[] fieldArray,
-            Class[] classesArray ) throws FactoryRegistryException, SchemaException {
-        FeatureExtender fExt = new FeatureExtender(oldFeatureType, fieldArray, classesArray);
-        return fExt;
-    }
-
-    /**
      * Extracts features from a {@link FeatureCollection} into an {@link ArrayList}.
      * 
      * @param collection the feature collection.
-     * @return the list with the features.
+     * @return the list with the features or an empty list if no features present.
      */
     public static List<SimpleFeature> featureCollectionToList( SimpleFeatureCollection collection ) {
         List<SimpleFeature> featuresList = new ArrayList<SimpleFeature>();
+        if (collection == null) {
+            return featuresList;
+        }
         SimpleFeatureIterator featureIterator = collection.features();
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
@@ -459,6 +448,120 @@ public class FeatureUtilities {
         }
         featureIterator.close();
         return featuresList;
+    }
+
+    /**
+     * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of {@link FeatureMate}s.
+     * 
+     * @param collection the feature collection.
+     * @return the list with the features or an empty list if no features present.
+     */
+    public static List<FeatureMate> featureCollectionToMatesList( SimpleFeatureCollection collection ) {
+        List<FeatureMate> featuresList = new ArrayList<FeatureMate>();
+        if (collection == null) {
+            return featuresList;
+        }
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            featuresList.add(new FeatureMate(feature));
+        }
+        featureIterator.close();
+        return featuresList;
+    }
+
+    /**
+     * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of its geometries.
+     * 
+     * @param collection the feature collection.
+     * @return the list with the geometries or an empty list if no features present.
+     */
+    public static List<Geometry> featureCollectionToGeometriesList( SimpleFeatureCollection collection ) {
+        List<Geometry> geometriesList = new ArrayList<Geometry>();
+        if (collection == null) {
+            return geometriesList;
+        }
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            geometriesList.add(geometry);
+        }
+        featureIterator.close();
+        return geometriesList;
+    }
+
+    /**
+     * Getter for attributes of a feature.
+     * 
+     * <p>If the attribute is not found, checks are done in non
+     * case sensitive mode.
+     * 
+     * @param feature the feature from which to get the attribute.
+     * @param field the name of the field.
+     * @return the attribute or null if none found.
+     */
+    public static Object getAttributeCaseChecked( SimpleFeature feature, String field ) {
+        Object attribute = feature.getAttribute(field);
+        if (attribute == null) {
+            attribute = feature.getAttribute(field.toLowerCase());
+            if (attribute != null)
+                return attribute;
+            attribute = feature.getAttribute(field.toUpperCase());
+            if (attribute != null)
+                return attribute;
+
+            // alright, last try, search for it
+            SimpleFeatureType featureType = feature.getFeatureType();
+            field = findAttributeName(featureType, field);
+            if (field != null) {
+                return feature.getAttribute(field);
+            }
+        }
+        return attribute;
+    }
+
+    /**
+     * Find the name of an attribute, case insensitive.
+     * 
+     * @param featureType te feature type to check.
+     * @param field the case insensitive field name.
+     * @return the real name of the field, or <code>null</code>, if none found.
+     */
+    public static String findAttributeName( SimpleFeatureType featureType, String field ) {
+        List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String name = attributeDescriptor.getLocalName();
+            if (name.toLowerCase().equals(field.toLowerCase())) {
+                return name;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Create a {@link Polygon} from an {@link Envelope}.
+     * 
+     * @param envelope the envelope to convert.
+     * @return the created polygon.
+     */
+    public static Polygon envelopeToPolygon( Envelope2D envelope ) {
+        double w = envelope.getMinX();
+        double e = envelope.getMaxX();
+        double s = envelope.getMinY();
+        double n = envelope.getMaxY();
+
+        Coordinate[] coords = new Coordinate[5];
+        coords[0] = new Coordinate(w, n);
+        coords[1] = new Coordinate(e, n);
+        coords[2] = new Coordinate(e, s);
+        coords[3] = new Coordinate(w, s);
+        coords[4] = new Coordinate(w, n);
+
+        GeometryFactory gf = GeometryUtilities.gf();
+        LinearRing linearRing = gf.createLinearRing(coords);
+        Polygon polygon = gf.createPolygon(linearRing, null);
+        return polygon;
     }
 
 }

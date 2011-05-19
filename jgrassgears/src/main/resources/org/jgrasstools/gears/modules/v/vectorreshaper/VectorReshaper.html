@@ -1,0 +1,23 @@
+Module to reshape vectors. The reshape operation includes the possibility to:
+<ul>
+<li>add one or more new columns to the vector table attribute</li>
+<li>convert the geometry into a derived geometry (from polygons to points or to lines)</li>
+<li>delete  from the vector table attribute</li>
+</ul>
+<br>
+The reshape uses the <i>ECQL</i> language, please refer to the <a href="http://udig.refractions.net/confluence/display/EN/Common+Query+Language"> uDig user manual </a> or the <a href="http://docs.codehaus.org/display/GEOTDOC/03+ECQL+Examples#03ECQLExamples-Expression"> GeoTools documentation </a> for more informations about the syntax and usability of the language.
+<br>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the vector to reshape</li>
+<li>the ECQL reshape function</li>
+<li>the list of fields to remove, comma separated</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the new derived vector</li> 
+</ul>

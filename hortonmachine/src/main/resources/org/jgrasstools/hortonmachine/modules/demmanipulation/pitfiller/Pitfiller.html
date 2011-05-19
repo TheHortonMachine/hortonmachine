@@ -1,0 +1,22 @@
+It fills the depression points present within a DEM so that
+the drainage directions are defined in each point.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the elevations</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the corrected elevations</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The flooding algorithm (pitfiller) fills all pits present in the DEM.
+Obviously these could be real and not a product of gridding the landscape.
+In this case we should find a representation of the drainage
+directions considering also the possible lakes and ponds, which is not
+yet implemented.

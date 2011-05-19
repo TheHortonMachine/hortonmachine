@@ -1,0 +1,24 @@
+jgrasstools standalone mode
+===========================
+
+To run a jgrasstools script (oms3) from commandline, simply
+run the script for your operating system passing it the
+jgrasstools script (oms3) as argument.
+
+Syntax
+======
+LINUX: ./jgrasstools.sh path/to/your/script.oms
+MACOSX: same as linux
+WINDOWS: jgrasstools.bat path\to\your\script.oms
+
+
+DEDICATED MEMORY
+================
+The memeory dedicated to the process is defined in the jgrasstools 
+script (.sh for linux and macosx, .bat for windows). By default
+it is set to 2 gigabytes.
+To change the value simply change the -Xmx2g part.
+Examples:
+500 mega: -Xmx500m
+4 giga: -Xmx4g
+

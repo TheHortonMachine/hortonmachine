@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -42,8 +43,9 @@ import org.geotools.graph.structure.Edge;
 import org.geotools.graph.structure.Graph;
 import org.geotools.graph.structure.Node;
 import org.geotools.graph.traverse.standard.DijkstraIterator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -68,11 +70,12 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
         + "linear interpolation between old and new position.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Smoothing, Vector")
+@Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class LineIntersectionCorrector extends JGTModel {
 
-    @Description("The features to be smoothed.")
+    @Description("The features to be corrected.")
     @In
     public SimpleFeatureCollection linesFeatures;
 
@@ -88,9 +91,13 @@ public class LineIntersectionCorrector extends JGTModel {
     @In
     public String fSort = null;
 
+    @Description("Sorting order (default is true).")
+    @In
+    public boolean doReverse = true;
+
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The untouched features.")
     @Out
@@ -143,7 +150,7 @@ public class LineIntersectionCorrector extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        pointFeatures.close(pointsIterator);
+        pointsIterator.close();
 
         FeatureIterator<SimpleFeature> inFeatureIterator = linesFeatures.features();
         int size = linesFeatures.size();
@@ -170,10 +177,12 @@ public class LineIntersectionCorrector extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        linesFeatures.close(inFeatureIterator);
+        inFeatureIterator.close();
 
         Collections.sort(badFeatures);
-        Collections.reverse(badFeatures);
+        if (doReverse) {
+            Collections.reverse(badFeatures);
+        }
 
         int id = 0;
         size = badFeatures.size();
@@ -219,7 +228,7 @@ public class LineIntersectionCorrector extends JGTModel {
                             geomList.add(gF.createLineString(tmpArray));
                         } else {
                             // TODO improve this part
-                            throw new RuntimeException("Not implemented yet.");
+                            throw new RuntimeException("Not implemented yet."); //$NON-NLS-1$
                             // int length = coordinates.length;
                             // int half = length / 2;
                             // Coordinate[] first = new Coordinate[half];

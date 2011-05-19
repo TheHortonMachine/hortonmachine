@@ -33,6 +33,9 @@ public class JGTConstants {
      */
     /**
      * The default double novalue. 
+     * 
+     * <p>Note: if this changes, also the checker methods like 
+     * {@link #isNovalue(double)} have to be changed.
      */
     public static final double doubleNovalue = Double.NaN;
 
@@ -49,6 +52,22 @@ public class JGTConstants {
      */
     public static boolean isNovalue( double value ) {
         return Double.isNaN(value);
+    }
+
+    /**
+     * Checker for a list of default double novalues.
+     * 
+     * @param values the list of values to check.
+     * @return true if one of the passes values is a novalue.
+     * 
+     * @see #isNovalue(double)
+     */
+    public static boolean isOneNovalue( double... values ) {
+        for( double value : values ) {
+            if (Double.isNaN(value))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -92,6 +111,21 @@ public class JGTConstants {
     }
 
     /**
+     * Check if the width and height of a raster would lead to a numeric overflow.
+     * 
+     * @param width width of the matrix or raster.
+     * @param height height of the matrix or raster.
+     * @return true if there is overfow.
+     */
+    public static boolean doesOverFlow( int width, int height ) {
+        if ((long) width * (long) height < Integer.MAX_VALUE) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
      * Global formatter for joda datetime (yyyy-MM-dd HH:mm:ss).
      */
     public static String dateTimeFormatterYYYYMMDDHHMMSS_string = "yyyy-MM-dd HH:mm:ss";
@@ -109,8 +143,8 @@ public class JGTConstants {
     public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMMSS = DateTimeFormat.forPattern(
             utcDateFormatterYYYYMMDDHHMMSS_string).withZone(DateTimeZone.UTC);
     public static String utcDateFormatterYYYYMMDDHHMM_string = "yyyy-MM-dd HH:mm";
-    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(
-            utcDateFormatterYYYYMMDDHHMM_string).withZone(DateTimeZone.UTC);
+    public static DateTimeFormatter utcDateFormatterYYYYMMDDHHMM = DateTimeFormat.forPattern(utcDateFormatterYYYYMMDDHHMM_string)
+            .withZone(DateTimeZone.UTC);
 
     /**
      * Enumeration defining meteo types.
@@ -188,6 +222,59 @@ public class JGTConstants {
     public static final String ESRIGRID = "asc";
     public static final String GEOTIFF = "tiff";
     public static final String GEOTIF = "tif";
-    public static final String GRASSRASTER = "grassraster";
+    public static final String GRASS = "grass";
+    public static final String SHP = "shp";
+
+    /*
+     * modules categories
+     */
+    // IO
+    public static final String GENERICREADER = "Generic Reader";
+    public static final String GENERICWRITER = "Generic Writer";
+    public static final String HASHMAP_READER = "HashMap Data Reader";
+    public static final String HASHMAP_WRITER = "HashMap Data Writer";
+    public static final String LIST_READER = "List Data Reader";
+    public static final String LIST_WRITER = "List Data Writer";
+    public static final String RASTERREADER = "Raster Reader";
+    public static final String GRIDGEOMETRYREADER = "Grid Geometry Reader";
+    public static final String RASTERWRITER = "Raster Writer";
+    public static final String FEATUREREADER = "Vector Reader";
+    public static final String FEATUREWRITER = "Vector Writer";
+    // processing
+    public static final String RASTERPROCESSING = "Raster Processing";
+    public static final String VECTORPROCESSING = "Vector Processing";
+    // horton
+    public static final String BASIN = "Basin";
+    public static final String DEMMANIPULATION = "Dem Manipulation";
+    public static final String GEOMORPHOLOGY = "Geomorphology";
+    public static final String HYDROGEOMORPHOLOGY = "Hydro-Geomorphology";
+    public static final String HILLSLOPE = "Hillslope";
+    public static final String NETWORK = "Network";
+    public static final String STATISTICS = "Statistics";
+
+    /*
+     * vars ui hints
+     */
+    public static final String HIDE_UI_HINT = "hide";
+    public static final String FILEIN_UI_HINT = "infile";
+    public static final String FOLDERIN_UI_HINT = "infolder";
+    public static final String FILEOUT_UI_HINT = "outfile";
+    public static final String FOLDEROUT_UI_HINT = "outfolder";
+    public static final String FILESPATHLIST_UI_HINT = "filespathlist";
+    public static final String CRS_UI_HINT = "crs";
+    public static final String ITERATOR_UI_HINT = "iterator";
+    public static final String EASTINGNORTHING_UI_HINT = "eastnorth";
+    public static final String NORTHING_UI_HINT = "northing";
+    public static final String EASTING_UI_HINT = "easting";
+    public static final String MULTILINE_UI_HINT = "multiline";
+    public static final String MAPCALC_UI_HINT = "mapcalc";
+    public static final String PROCESS_NORTH_UI_HINT = "process_north";
+    public static final String PROCESS_SOUTH_UI_HINT = "process_south";
+    public static final String PROCESS_EAST_UI_HINT = "process_east";
+    public static final String PROCESS_WEST_UI_HINT = "process_west";
+    public static final String PROCESS_COLS_UI_HINT = "process_cols";
+    public static final String PROCESS_ROWS_UI_HINT = "process_rows";
+    public static final String PROCESS_XRES_UI_HINT = "process_xres";
+    public static final String PROCESS_YRES_UI_HINT = "process_yres";
 
 }

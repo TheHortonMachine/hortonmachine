@@ -1,0 +1,19 @@
+Marks all the outlets of the considered region on the drainage directions map with the conventional value 10. In fact some applications in JGrassTools request that the outlets are specified explicitly.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of the drainage directions to
+modify (obtained with FlowDirections or DrainDir)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the matrix of the flow data assigned in input
+with the outlets set equal to 10</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+The program works following the drainage directions until it finds a value that is not a drainage direction. Then it marks the point directly upriver as outlet.

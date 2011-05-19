@@ -1,4 +1,3 @@
-package org.jgrasstools.hortonmachine.models.hm;
 //package org.jgrasstools.hortonmachine.models.hm;
 //
 //import java.io.File;
@@ -6,14 +5,13 @@ package org.jgrasstools.hortonmachine.models.hm;
 //import java.util.List;
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
+//import org.jgrasstools.gears.io.arcgrid.ArcgridCoverageReader;
+//import org.jgrasstools.gears.io.timeseries.TimeseriesReaderArray;
+//import org.jgrasstools.gears.io.timeseries.TimeseriesWriterArray;
+//import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow;
+//import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //import org.joda.time.DateTime;
-//
-//import eu.hydrologis.jgrass.hortonmachine.io.arcgrid.ArcgridCoverageReader;
-//import eu.hydrologis.jgrass.hortonmachine.io.timeseries.TimeseriesReaderArray;
-//import eu.hydrologis.jgrass.hortonmachine.io.timeseries.TimeseriesWriterArray;
-//import eu.hydrologis.jgrass.hortonmachine.libs.monitor.PrintStreamProgressMonitor;
-//import eu.hydrologis.jgrass.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow;
-//import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
 //
 ///**
 // * Test the {@link Peakflow} module.
@@ -38,12 +36,12 @@ package org.jgrasstools.hortonmachine.models.hm;
 //
 //        Peakflow peakflow = new Peakflow();
 //        peakflow.pm = pm;
-//        peakflow.topindexCoverage = topindexCoverage;
-//        peakflow.supRescaledCoverage = supRescaledCoverage;
-//        peakflow.subRescaledCoverage = subRescaledCoverage;
-//        peakflow.a = 43.91;
-//        peakflow.n = 0.48;
-//        peakflow.rainfallList = null;
+//        peakflow.inTopindex = topindexCoverage;
+//        peakflow.inRescaledsup = supRescaledCoverage;
+//        peakflow.inRescaledsub = subRescaledCoverage;
+//        peakflow.pA = 43.91;
+//        peakflow.pN = 0.48;
+//        peakflow.inRainfall = null;
 //        peakflow.rainfallTimestampList = null;
 //        peakflow.saturationThreshold = 30;
 //        peakflow.diffusion = 1000;

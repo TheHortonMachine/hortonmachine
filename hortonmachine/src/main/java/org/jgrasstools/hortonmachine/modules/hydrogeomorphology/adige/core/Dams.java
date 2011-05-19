@@ -27,7 +27,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Dams implements DischargeContributor {
+public class Dams implements IDischargeContributor {
 
     private final HashMap<String, Integer> dams_pfaff2idMap;
     private HashMap<Integer, double[]> dams_id2valuesQMap;
@@ -42,7 +42,7 @@ public class Dams implements DischargeContributor {
         this.dams_pfaff2idMap = dams_pfaff2idMap;
     }
 
-    public Double getDischarge( String pNum, double inputDischarge ) {
+    public Double getDischarge( String pNum ) {
         Integer damId = dams_pfaff2idMap.get(pNum);
         if (damId != null) {
             double[] discharge = dams_id2valuesQMap.get(damId);
@@ -55,6 +55,10 @@ public class Dams implements DischargeContributor {
 
     public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         dams_id2valuesQMap = currentDataMap;
+    }
+
+    public double mergeWithDischarge( double contributorDischarge, double inputDischarge ) {
+        return contributorDischarge;
     }
 
 }

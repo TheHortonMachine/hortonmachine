@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.models.hm;
 
 import java.util.HashMap;
@@ -5,7 +22,6 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.basin.basinshape.BasinShape;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -14,12 +30,16 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.WKTReader;
 /**
- * Test basinshape.
+ * Test {@link BasinShape}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestBasinShape extends HMTestCase {
+
+    private static final String geom1Txt = "POLYGON ((1640710 5139990, 1640710 5139960, 1640680 5139960, 1640680 5139840, 1640710 5139840, 1640710 5139810, 1640800 5139810, 1640800 5139990, 1640710 5139990))";
+    private static final String geom2Txt = "POLYGON ((1640800 5139990, 1640800 5139810, 1640920 5139810, 1640920 5139990, 1640800 5139990))";
 
     @SuppressWarnings("nls")
     public void testBasinShape() throws Exception {
@@ -31,10 +51,8 @@ public class TestBasinShape extends HMTestCase {
         double[][] basinsData = HMTestMaps.basinShapeData;
         GridCoverage2D basinsCoverage = CoverageUtilities.buildCoverage("basins", basinsData, envelopeParams, crs, true);
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-
         BasinShape basin = new BasinShape();
-        basin.inPit = pitCoverage;
+        basin.inElev = pitCoverage;
         basin.inBasins = basinsCoverage;
         basin.pm = pm;
 
@@ -50,7 +68,15 @@ public class TestBasinShape extends HMTestCase {
             int numGeometries = line.getNumGeometries();
             for( int i = 0; i < numGeometries; i++ ) {
                 Geometry geometryN = line.getGeometryN(i);
-                System.out.println(geometryN.toText());
+                int length = geometryN.getCoordinates().length;
+                if (length == 9) {
+                    Geometry g1 = new WKTReader().read(geom1Txt);
+                    assertTrue(geometryN.equals(g1));
+                }
+                if (length == 5) {
+                    Geometry g2 = new WKTReader().read(geom2Txt);
+                    assertTrue(geometryN.equals(g2));
+                }
             }
         }
         basinsIter.close();

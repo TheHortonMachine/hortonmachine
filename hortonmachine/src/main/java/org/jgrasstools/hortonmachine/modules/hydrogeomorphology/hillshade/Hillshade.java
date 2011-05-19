@@ -1,8 +1,9 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
@@ -11,10 +12,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
+ * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade;
+
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateFactor;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -28,80 +34,78 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("This class evalutate the hillshade of a DEM.")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, radiation")
+@Documentation("Hillshade.html")
+@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Hydrology, Radiation, SkyviewFactor, Insolation")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
         + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/")
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Name("hillshade")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Hillshade extends JGTModel {
     @Description("The map of the elevation.")
-    @Role(Role.INPUT)
     @In
-    public GridCoverage2D inElevation = null;
-
-    @Description("The output map")
-    @Out
-    public GridCoverage2D outMap;
+    public GridCoverage2D inElev = null;
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-
-    @Description(" minimum diffuse insolation 0 to 1")
-    @Role(Role.PARAMETER)
+    @Description("The minimum value of diffuse insolation between 0 to 1 (default is 0).")
     @In
-    public double defaultMinDiffuse = 0.0;
+    public double pMinDiffuse = 0.0;
 
-    @Description("azimuth")
-    @Role(Role.PARAMETER)
+    @Description("The value of the azimuth (default is 360).")
     @In
-    public double defaultAzimuth = 360;
+    public double pAzimuth = 360;
 
-    @Description("the sun elevation")
-    @Role(Role.PARAMETER)
+    @Description("The sun elevation (default is 90).")
     @In
-    public double defaultElevation = 90;
+    public double pElev = 90;
 
-    private ModelsEngine engine = new ModelsEngine();
+    @Description("The map of hillshade.")
+    @Out
+    public GridCoverage2D outHill;
+
     private final static double doubleNoValue = JGTConstants.doubleNovalue;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
     public void process() throws Exception {
         // Check on the input parameters
-        if (defaultAzimuth < 0.0 || defaultAzimuth > 360.0) {
+        if (pAzimuth < 0.0 || pAzimuth > 360.0) {
             System.err.println(msg.message("hillshade.errAzimuth"));
         }
-        if (defaultElevation < 0.0 || defaultElevation > 90.0) {
+        if (pElev < 0.0 || pElev > 90.0) {
             System.err.println(msg.message("hillshade.errElevation"));
         }
-        RenderedImage pitRI = inElevation.getRenderedImage();
+        RenderedImage pitRI = inElev.getRenderedImage();
         WritableRaster pitWR = CoverageUtilities.replaceNovalue(pitRI, -9999.0);
         // extract some attributes of the dem
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElevation);
+        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);
         int width = pitRI.getWidth();
         int height = pitRI.getHeight();
@@ -116,8 +120,8 @@ public class Hillshade extends JGTModel {
         // re-set the value to NaN
         setNoValueBorder(pitWR, width, height, hillshadeWR);
 
-        outMap = CoverageUtilities
-                .buildCoverage("insolation", hillshadeWR, attribute, inElevation.getCoordinateReferenceSystem());
+        outHill = CoverageUtilities
+                .buildCoverage("insolation", hillshadeWR, attribute, inElev.getCoordinateReferenceSystem());
     }
 
     /*
@@ -163,25 +167,25 @@ public class Hillshade extends JGTModel {
      */
     private void calchillshade( WritableRaster pitWR, WritableRaster hillshadeWR, WritableRaster gradientWR, double dx ) {
 
-        defaultAzimuth = Math.toRadians(defaultAzimuth);
-        defaultElevation = Math.toRadians(defaultElevation);
+        pAzimuth = Math.toRadians(pAzimuth);
+        pElev = Math.toRadians(pElev);
 
         double[] sunVector = calcSunVector();
-        double[] normalSunVector = engine.calcNormalSunVector(sunVector);
-        double[] inverseSunVector = engine.calcInverseSunVector(sunVector);
+        double[] normalSunVector = calcNormalSunVector(sunVector);
+        double[] inverseSunVector = calcInverseSunVector(sunVector);
         int rows = pitWR.getHeight();
         int cols = pitWR.getWidth();
-        WritableRaster sOmbraWR = engine.calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, dx);
+        WritableRaster sOmbraWR = calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, dx);
         pm.beginTask(msg.message("hillshade.calculating"), rows * cols);
         for( int j = 1; j < rows - 1; j++ ) {
             for( int i = 1; i < cols - 1; i++ ) {
 
                 double[] ng = gradientWR.getPixel(i, j, new double[3]);
-                double cosinc = engine.scalarProduct(sunVector, ng);
+                double cosinc = scalarProduct(sunVector, ng);
                 if (cosinc < 0) {
                     sOmbraWR.setSample(i, j, 0, 0);
                 }
-                hillshadeWR.setSample(i, j, 0, (int) (212.5 * (cosinc * sOmbraWR.getSample(i, j, 0) + defaultMinDiffuse)));
+                hillshadeWR.setSample(i, j, 0, (int) (212.5 * (cosinc * sOmbraWR.getSample(i, j, 0) + pMinDiffuse)));
                 pm.worked(1);
             }
         }
@@ -191,9 +195,9 @@ public class Hillshade extends JGTModel {
 
     protected double[] calcSunVector() {
         double[] sunVector = new double[3];
-        sunVector[0] = Math.sin(defaultAzimuth) * Math.cos(defaultElevation);
-        sunVector[1] = -Math.cos(defaultAzimuth) * Math.cos(defaultElevation);
-        sunVector[2] = Math.sin(defaultElevation);
+        sunVector[0] = Math.sin(pAzimuth) * Math.cos(pElev);
+        sunVector[1] = -Math.cos(pAzimuth) * Math.cos(pElev);
+        sunVector[2] = Math.sin(pElev);
         return sunVector;
 
     }

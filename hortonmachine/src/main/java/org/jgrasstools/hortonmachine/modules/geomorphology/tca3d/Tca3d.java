@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.modules.geomorphology.tca3d;
 
 import static java.lang.Math.abs;
@@ -15,32 +32,36 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("The OMS3 component representation of the tca model. The upslope catchment (or simply contributing) areas represent the planar projection of the areas afferent to a point in the basin. Once the drainage directions have been defined, it is possible to calculate, for each site, the total drainage area afferent to it, indicated as TCA (Total Contributing Area).")
-@Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Bibliography("Take this from the Horton Manual")
-@Status(Status.DRAFT)
-@License("GPL3")
+@Description("Calculates the contributing areas considering also the elevation (3D), that represent the areas (in number of pixels) afferent to each point.")
+@Documentation("Tca3d.html")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Keywords("Geomorphology, DrainDir, Tca, Ab, Multitca")
+@Label(JGTConstants.GEOMORPHOLOGY)
+@Name("tca3d")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Tca3d extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
     @Description("The depitted elevation model.")
     @In
     public GridCoverage2D inPit = null;
@@ -51,18 +72,13 @@ public class Tca3d extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of total contributing areas 3d.")
     @Out
-    public GridCoverage2D outTca3d = null;
+    public GridCoverage2D outTca = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    private static final double NaN = doubleNovalue;
 
     private int cols;
     private int rows;
@@ -75,7 +91,7 @@ public class Tca3d extends JGTModel {
      */
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outTca3d == null, doReset)) {
+        if (!concatOr(outTca == null, doReset)) {
             return;
         }
 
@@ -90,13 +106,11 @@ public class Tca3d extends JGTModel {
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
 
-        pm.message(msg.message("tca3d.initializematrix")); //$NON-NLS-1$
-
         // Initialize new RasterData and set value
-        WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
+        WritableRaster tca3dWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
         tca3dWR = area3d(pitWR, flowWR, tca3dWR);
-        outTca3d = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
+        outTca = CoverageUtilities.buildCoverage("tca3d", tca3dWR, regionMap, //$NON-NLS-1$
                 inPit.getCoordinateReferenceSystem());
 
     }
@@ -138,8 +152,7 @@ public class Tca3d extends JGTModel {
         RandomIter pitIter = RandomIterFactory.create(pitImage, null);
         WritableRandomIter tca3dIter = RandomIterFactory.createWritable(tca3dImage, null);
 
-        pm.message(msg.message("tca3d.woringon")); //$NON-NLS-1$
-
+        pm.beginTask(msg.message("tca3d.woringon"), rows - 2); //$NON-NLS-1$
         for( int j = 1; j < rows - 1; j++ ) {
             for( int i = 1; i < cols - 1; i++ ) {
                 double pitAtIJ = pitIter.getSampleDouble(i, j, 0);
@@ -198,12 +211,12 @@ public class Tca3d extends JGTModel {
                         tca3dIter.setSample(i, j, 0, areamed * 8);
                     }
                 } else
-                    tca3dIter.setSample(i, j, 0, NaN);
+                    tca3dIter.setSample(i, j, 0, doubleNovalue);
             }
+            pm.worked(1);
         }
-        pm.message(msg.message("tca3d.summ")); //$NON-NLS-1$
+        pm.done();
         RandomIter flowIter = RandomIterFactory.create(flowImage, null);
-        ModelsEngine prova = new ModelsEngine();
-        return prova.sumDownstream(flowIter, tca3dIter, cols, rows, pm);
+        return ModelsEngine.sumDownstream(flowIter, tca3dIter, cols, rows, null, null, pm);
     }
 }

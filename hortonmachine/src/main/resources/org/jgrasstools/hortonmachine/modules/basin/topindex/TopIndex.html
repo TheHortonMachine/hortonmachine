@@ -1,0 +1,32 @@
+Calculates the topographic index of a basin defined as: 
+<table>
+<tr>
+<td>
+   log (A/s) - mu
+</td>
+</tr>
+</table>
+where:
+<ul>
+<li>A is the contributing area in one point</li>
+<li>s the slope</li>
+<li>mu = 1/N sum<sub>i</sub> log(A<sub>i</sub>/s<sub>i</sub>) is the mean value of the logarithm over the whole basin (N is the number of pixels belonging to the basin)</li>
+</ul>
+<br>
+It is an index which is necessary to recognize the sites generating
+dunnian surface flow in a similar way. Sites with higher topographic
+index become saturated before than sites with lower topographic
+index.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of the contributing areas (obtained with DrainDir or Tca)</li>
+<li>the file containing the matrix of the slope (obtained with Gradient or Slope)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the file containing the matrix of the topographic indexes</li> 
+</ul>

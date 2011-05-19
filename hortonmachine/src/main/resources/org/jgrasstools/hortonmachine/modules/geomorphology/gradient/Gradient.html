@@ -1,0 +1,22 @@
+Estimates the gradient in each site, defined as the module of the gradient vector.
+<br>
+It is possible to choose between different formulas to calculate the gradient and to define if the output map values should be in tangent of the angles or in degrees.
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the file containing the matrix of elevations (the DEM or the map obtained with pitfiller)</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>file containing the matrix of the gradients</li> 
+</ul>
+<br>
+<br>
+<h3>Notes</h3>
+Let's observe that <i>gradients</i>, contrarily to <i>slope</i>, does not use the drainage directions defined by DrainDir or FlowDirections. Moreover, <i>Gradients</i> calculates only the module of the gradient which in reality is a vectorial quantity, oriented in the direction from the minimal to the maximal potential. 
+<br>
+As a rule, the program places on
+the catchment boundary the gradient equal to zero.

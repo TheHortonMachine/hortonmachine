@@ -18,9 +18,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -31,13 +33,28 @@ import org.joda.time.Interval;
 public class RealJeff {
 
     private double rain_timestep = 0f;
-    private final List<DateTime> rainfallTimestampList;
-    private final List<double[]> rainfallList;
+    private final HashMap<DateTime, double[]> rainfallMap;
 
-    public RealJeff( List<DateTime> rainfallTimestampList, List<double[]> rainfallList ) {
-        this.rainfallTimestampList = rainfallTimestampList;
-        this.rainfallList = rainfallList;
-        Interval interval = new Interval(rainfallTimestampList.get(0), rainfallTimestampList.get(1));
+    private DateTime first;
+    private DateTime second;
+
+    /**
+     * @param rainfallMap the sorted map of rainfall values in time. <b>This has to be a sorted map.</b>
+     */
+    public RealJeff( HashMap<DateTime, double[]> rainfallMap ) {
+        this.rainfallMap = rainfallMap;
+
+        Set<Entry<DateTime, double[]>> entrySet = rainfallMap.entrySet();
+        for( Entry<DateTime, double[]> entry : entrySet ) {
+            if (first == null) {
+                first = entry.getKey();
+            } else if (second == null) {
+                second = entry.getKey();
+                break;
+            }
+        }
+
+        Interval interval = new Interval(first, second);
         rain_timestep = interval.toDuration().getStandardSeconds();
     }
 
@@ -49,10 +66,11 @@ public class RealJeff {
          */
         double converter = 1.0 / (1000.0 * 3600.0);
 
-        for( int i = 0; i < rainfallTimestampList.size(); i++ ) {
-            DateTime dateTime = rainfallTimestampList.get(i);
+        Set<Entry<DateTime, double[]>> entrySet = rainfallMap.entrySet();
+        for( Entry<DateTime, double[]> entry : entrySet ) {
+            DateTime dateTime = entry.getKey();
             // rainvalue is in mm/h
-            double rainValue = rainfallList.get(i)[0];
+            double rainValue = entry.getValue()[0];
             // need it in m/s
             double jeff = converter * rainValue;
             jeffData.put(dateTime, jeff);
@@ -66,7 +84,7 @@ public class RealJeff {
     }
 
     public DateTime getFirstDate() {
-        return rainfallTimestampList.get(0);
+        return first;
     }
 
 }

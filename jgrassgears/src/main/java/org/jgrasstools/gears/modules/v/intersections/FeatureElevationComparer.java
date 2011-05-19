@@ -51,7 +51,19 @@ public class FeatureElevationComparer implements Comparable<FeatureElevationComp
         geometry = (Geometry) feature.getDefaultGeometry();
 
         if (buffer > 0) {
-            bufferPolygon = geometry.buffer(buffer);
+            try{
+                bufferPolygon = geometry.buffer(buffer);
+            }catch (Exception e) {
+                e.printStackTrace();
+                try{
+                System.out.println("TRYING WITH WIDER BUFFER: *2");
+                bufferPolygon = geometry.buffer(buffer*2);
+                }catch (Exception e1) {
+                    e1.printStackTrace();
+                    System.out.println("TRYING WITH WIDER BUFFER: *4");
+                    bufferPolygon = geometry.buffer(buffer*4);
+                }
+            }
         }
     }
 

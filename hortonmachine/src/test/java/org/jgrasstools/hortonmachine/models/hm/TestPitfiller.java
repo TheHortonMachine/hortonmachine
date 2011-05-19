@@ -1,7 +1,23 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.models.hm;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -10,8 +26,6 @@ import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.InternationalString;
-import org.opengis.util.ProgressListener;
 
 /**
  * Test the {@link Pitfiller} module.
@@ -21,95 +35,18 @@ import org.opengis.util.ProgressListener;
 public class TestPitfiller extends HMTestCase {
     public void testPitfiller() throws Exception {
 
-        // Locale.setDefault(Locale.ITALIAN);
-
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-                elevationData, envelopeParams, crs, true);
-
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         Pitfiller pitfiller = new Pitfiller();
-        pitfiller.inDem = elevationCoverage;
+        pitfiller.inElev = elevationCoverage;
         pitfiller.pm = pm;
-
         pitfiller.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
 
         checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitData, 0);
     }
-
-    public void testPitfillerGeotoolsProcessMode() throws Exception {
-
-        double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
-                elevationData, envelopeParams, crs, true);
-
-        Pitfiller pitfiller = new Pitfiller();
-        Map<String, Object> inputMap = new HashMap<String, Object>();
-        inputMap.put("inDem", elevationCoverage);
-
-        // quite dummy listener
-        ProgressListener listener = new ProgressListener(){
-            public void warningOccurred( String source, String location, String warning ) {
-                System.out.println(warning);
-            }
-            
-            public void started() {
-                System.out.println("Started");
-            }
-            
-            public void setTask( InternationalString task ) {
-            }
-            
-            public void setDescription( String description ) {
-                System.out.println(description);
-            }
-            
-            public void setCanceled( boolean cancel ) {
-            }
-            
-            public void progress( float percent ) {
-                System.out.println("Worked: " + percent);
-            }
-            
-            public boolean isCanceled() {
-                return false;
-            }
-            
-            public InternationalString getTask() {
-                return null;
-            }
-            
-            public float getProgress() {
-                return 0;
-            }
-            
-            public String getDescription() {
-                return null;
-            }
-            
-            public void exceptionOccurred( Throwable exception ) {
-            }
-            
-            public void dispose() {
-            }
-            
-            public void complete() {
-                System.out.println("Finished");
-            }
-        };
-        
-        Map<String, Object> outputMap = pitfiller.execute(inputMap, listener);
-
-        GridCoverage2D pitfillerCoverage = (GridCoverage2D) outputMap.get("outPit");
-
-        checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.outPitData, 0);
-    }
-
 }

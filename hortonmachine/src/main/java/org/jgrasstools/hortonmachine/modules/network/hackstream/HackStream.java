@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.network.hackstream;
 
@@ -31,71 +30,36 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-/**
- * <p>
- * The openmi compliant representation of the hackstream model. HackStream
- * arranges a channel net starting from the identification of the branch
- * according to Hack. The main stream is of order 1 and its tributaries of order
- * 2 and so on, the sub-tributaries are of order 3 and so on.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map containing the drainage directions (-flow)</LI>
- * <LI>the map containing the contributing areas (-tca)</LI>
- * <LI>the map containing the network (-net)</LI>
- * <LI>the map containing the Hack lengths (-hack)</LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG><BR>
- * </DT>
- * <DD>
- * <OL>
- * <LI>the map of the order according the Hack lengths (-hacks)</LI>
- * </OL>
- * <P></DD> Usage: mode 0: h.hackstream --mode 0 --igrass-flow flow --igrass-tca
- * tca --igrass-hackl hackl --igrass-net net --ograss-hacks hacks
- * </p>
- * <p>
- * Usage: mode 1: h.hackstream --mode 1 --igrass-flow flow --igrass-num num
- * --ograss-hacks hacks
- * </p>
- * <p>
- * Note: Such order correponds in some ways to the Horton numeration. It is
- * necessary that the output pixels present a drainage direction value equal to
- * 10. If there is not such identification of the mouth points, the program does
- * not function correctly.
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Rigon
- *         Riccardo
- */
-
-@Description("HackStream arranges a channel net starting from the identification of the branch according to Hack..")
-@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Riccardo Rigon", contact = "www.hydrologis.com")
+@Description("HackStream arranges a channel net starting from the identification of the branch according to Hack.")
+@Documentation("HackStream.html")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, Hack")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Label(JGTConstants.NETWORK)
+@Name("hackstream")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class HackStream extends JGTModel {
 
     @Description("The map of flowdirections.")
@@ -124,15 +88,14 @@ public class HackStream extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of hackstream.")
     @Out
     public GridCoverage2D outHackstream = null;
 
-    int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
+    private int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
 
     private int nCols;
 
@@ -242,7 +205,7 @@ public class HackStream extends JGTModel {
                         } else if (flowIter.getSampleDouble(i, j, 0) != 10 || !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
                             // after the call to go_downstream the flow is the
                             // next pixel in the channel.
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
                             // this if is true if there is a fork (segna==10 but
                             // m!=10) so add one to the hack number.
@@ -268,7 +231,7 @@ public class HackStream extends JGTModel {
                 kk = 0;
                 // the flow point is changed in order to follow the drainage
                 // direction.
-                modelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+                ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
                 // the direction
                 kk = param[0];
                 // number of pixel which drainage into this pixel, N.B. in a
@@ -293,7 +256,7 @@ public class HackStream extends JGTModel {
                     flow_p[0] = flow[0];
                     flow_p[1] = flow[1];
                     kk = 0;
-                    modelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+                    ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
                     kk = param[0];
                     count = param[1];
                     double temp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
@@ -312,8 +275,8 @@ public class HackStream extends JGTModel {
             }
         } while( contr == 1 );
 
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+                inFlow.getCoordinateReferenceSystem());
 
     }
 
@@ -357,7 +320,7 @@ public class HackStream extends JGTModel {
                             // why these checks if segnaRandomIter is a copy of
                             // flowRandomIter?
                         } else if (flowIter.getSampleDouble(i, j, 0) != 10 && !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
                             double tmp = 0;
                             if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -388,7 +351,7 @@ public class HackStream extends JGTModel {
                 flow_p[0] = flow[0];
                 flow_p[1] = flow[1];
                 kk = 0;
-                modelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+                ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
                 kk = param[0];
                 count = param[1];
                 double tmp = 0;
@@ -407,7 +370,7 @@ public class HackStream extends JGTModel {
                     flow_p[0] = flow[0];
                     flow_p[1] = flow[1];
                     kk = 0;
-                    modelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+                    ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
                     kk = param[0];
                     count = param[1];
                     tmp = hackstreamIter.getSample(punto[0], punto[1], 0);
@@ -441,14 +404,14 @@ public class HackStream extends JGTModel {
                             if (netnumIter.getSampleDouble(n, l, 0) == channel) {
                                 flow[0] = n;
                                 flow[1] = l;
-                                if (modelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
+                                if (ModelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
                                     punto[0] = flow[0];
                                     punto[1] = flow[1];
-                                    modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                                    ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                                     while( netnumIter.getSampleDouble(flow[0], flow[1], 0) == channel ) {
                                         flow_p[0] = flow[0];
                                         flow_p[1] = flow[1];
-                                        modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                                         channelLength++;
                                     }
                                     double tmp = 0.;
@@ -463,7 +426,7 @@ public class HackStream extends JGTModel {
                                         flow_p[0] = punto[0];
                                         flow_p[1] = punto[1];
                                         hackstreamIter.setSample(punto[0], punto[1], 0, hacksValue);
-                                        modelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
+                                        ModelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
                                         length++;
                                     }
                                     break;
@@ -477,8 +440,8 @@ public class HackStream extends JGTModel {
         }
         pm.done();
 
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+                inFlow.getCoordinateReferenceSystem());
 
     }
 

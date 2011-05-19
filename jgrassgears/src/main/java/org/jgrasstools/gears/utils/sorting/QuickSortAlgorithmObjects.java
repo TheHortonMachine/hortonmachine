@@ -20,7 +20,7 @@ package org.jgrasstools.gears.utils.sorting;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 /**
  * Sorting of a double array with an array of objects following.
@@ -32,7 +32,7 @@ public class QuickSortAlgorithmObjects {
     private double[] valuesToSort;
     private int number;
     private Object[] valuesToFollow;
-    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+    private IJGTProgressMonitor monitor = new LogProgressMonitor();
 
     public QuickSortAlgorithmObjects( IJGTProgressMonitor monitor ) {
         if (monitor != null)

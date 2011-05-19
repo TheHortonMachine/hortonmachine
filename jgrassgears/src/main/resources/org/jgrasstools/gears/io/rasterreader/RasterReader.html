@@ -1,0 +1,21 @@
+Generic module for raster reader. Supported raster formats are:
+<ul>
+<li>ESRI asci</li>
+<li>GRASS binary format</li>
+<li>tiff</li>
+<li>adf (only if there is installed the needed library</li>
+</ul>
+The model recognize the raster type from the file extension, if you are not using a conventional extension you can force the program to read that format simply specifying the <i>type</i>.
+<br>
+<br>
+<h3>Parameters</h3>
+<ul>      
+<li>the file path of the raster that has to be read</li>
+<li>the file nodata</li>
+<li>the output raster nodata</li>
+<li>the optional coordinates of the boundaries of the raster (north, south, east and west)</li>
+<li>the optional working resolution (in x and y)</li>
+<li>the optional working number of columns and rows</li>
+<li>the raster <i>type</i> to read: supported are: asc, tiff, grass, adf</li>
+<li>the read output raster map</li>
+</ul>

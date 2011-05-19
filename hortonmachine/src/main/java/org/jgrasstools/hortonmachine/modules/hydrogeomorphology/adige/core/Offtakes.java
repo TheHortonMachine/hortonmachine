@@ -30,11 +30,12 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class Offtakes implements DischargeContributor {
+public class Offtakes implements IDischargeContributor {
 
     private final HashMap<String, Integer> offtakes_pfaff2idMap;
     private HashMap<Integer, double[]> offtakes_id2valuesQMap;
     private final IJGTProgressMonitor out;
+    private String pNum;
 
     /**
      * Constructor.
@@ -48,28 +49,29 @@ public class Offtakes implements DischargeContributor {
         this.out = out;
     }
 
-    public Double getDischarge( String pNum, double inputDischarge ) {
+    public Double getDischarge( String pNum ) {
+        this.pNum = pNum;
         Integer damId = offtakes_pfaff2idMap.get(pNum);
         if (damId != null) {
-            double[] discharge = offtakes_id2valuesQMap.get(damId);
-            if (discharge != null) {
-                if (inputDischarge >= discharge[0]) {
-                    return inputDischarge - discharge[0];
-                } else {
-                    out
-                            .errorMessage(MessageFormat
-                                    .format(
-                                            "WARNING: offtake discharge at {0} is greater than the river discharge. Offtake discharge set to 0 to continue.",
-                                            pNum));
-                    return inputDischarge;
-                }
-            }
+            double[] discharges = offtakes_id2valuesQMap.get(damId);
+            return discharges[0];
         }
         return JGTConstants.doubleNovalue;
     }
 
     public void setCurrentData( HashMap<Integer, double[]> currentDataMap ) {
         offtakes_id2valuesQMap = currentDataMap;
+    }
+
+    public double mergeWithDischarge( double contributorDischarge, double inputDischarge ) {
+        if (inputDischarge >= contributorDischarge) {
+            return inputDischarge - contributorDischarge;
+        } else {
+            out.errorMessage(MessageFormat
+                    .format("WARNING: offtake discharge at {0} is greater than the river discharge. Offtake discharge set to 0 to continue.",
+                            pNum));
+            return inputDischarge;
+        }
     }
 
 }

@@ -40,8 +40,6 @@ public class IUHDiffusion implements IUHCalculator {
 
     private final IJGTProgressMonitor pm;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
      * @param effectsBox
      * @param fixedParams
@@ -78,8 +76,8 @@ public class IUHDiffusion implements IUHCalculator {
 
         double tcorr = ampidiffsurface[ampidiffsurface.length - 1][0];
 
-        totalampidiffusion = calculateTotalDiffusion(ampidiffsurface, ampisubsurface, delta_sup,
-                delta_sub, vc, tcorr, area_sub, area);
+        totalampidiffusion = calculateTotalDiffusion(ampidiffsurface, ampisubsurface, delta_sup, delta_sub, vc, tcorr, area_sub,
+                area);
 
         /*
          * next calculates the maximum rain time
@@ -110,16 +108,14 @@ public class IUHDiffusion implements IUHCalculator {
                 index++;
             }
 
-            dt = modelsEngine.henderson(totalampidiffusion, tp);
+            dt = ModelsEngine.henderson(totalampidiffusion, tp);
             tstar = tp + dt;
             if (tstar < tcorr) {
                 prov = n_idf
                         - 1
-                        + (tp
-                                * (double) modelsEngine.width_interpolate(totalampidiffusion,
-                                        tstar, 0, 1) / (area_tot * ((double) modelsEngine
-                                .width_interpolate(totalampidiffusion, tstar, 0, 2) - (double) modelsEngine
-                                .width_interpolate(totalampidiffusion, dt, 0, 2))));
+                        + (tp * (double) ModelsEngine.width_interpolate(totalampidiffusion, tstar, 0, 1) / (area_tot * ((double) ModelsEngine
+                                .width_interpolate(totalampidiffusion, tstar, 0, 2) - (double) ModelsEngine.width_interpolate(
+                                totalampidiffusion, dt, 0, 2))));
 
                 if (Math.abs(prov) < error) {
                     tpmax = tp;
@@ -140,9 +136,8 @@ public class IUHDiffusion implements IUHCalculator {
      * @param ampidiffsubsurface
      * @return
      */
-    private double[][] calculateTotalDiffusion( double[][] ampidiffsurface,
-            double[][] ampisubsurface, double delta_sup, double delta_sub, double vc, double tcorr,
-            double area_sub, double area_super ) {
+    private double[][] calculateTotalDiffusion( double[][] ampidiffsurface, double[][] ampisubsurface, double delta_sup,
+            double delta_sub, double vc, double tcorr, double area_sub, double area_super ) {
 
         double[][] totaldiff = null;
 
@@ -162,8 +157,7 @@ public class IUHDiffusion implements IUHCalculator {
                 }
             }
 
-            int totallength = ampidiffsurface.length + ampisubsurface.length
-                    - rowinampisubwhereampisupfinishes;
+            int totallength = ampidiffsurface.length + ampisubsurface.length - rowinampisubwhereampisupfinishes;
 
             totaldiff = new double[totallength][3];
 
@@ -171,13 +165,10 @@ public class IUHDiffusion implements IUHCalculator {
             double intsup = 0f;
             for( int i = 0; i < ampidiffsurface.length; i++ ) {
                 totaldiff[i][0] = ampidiffsurface[i][0];
-                intsub = (double) modelsEngine.width_interpolate(ampisubsurface,
-                        ampidiffsurface[i][0], 0, 1);
+                intsub = (double) ModelsEngine.width_interpolate(ampisubsurface, ampidiffsurface[i][0], 0, 1);
                 intsup = ampidiffsurface[i][1];
                 if (isNovalue(intsub)) {
-                    pm
-                            .errorMessage("Found undefined interpolated value for subsuperficial. Not summing it. Index: "
-                                    + i);
+                    pm.errorMessage("Found undefined interpolated value for subsuperficial. Not summing it. Index: " + i);
                     totaldiff[i][1] = intsup;
                 } else {
                     totaldiff[i][1] = intsup + intsub;

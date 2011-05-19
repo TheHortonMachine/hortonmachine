@@ -173,7 +173,7 @@ public class FileUtilities {
     /**
      * Read text from a file to a list of lines.
      * 
-     * @param file the path to the file to read.
+     * @param outFile the path to the file to read.
      * @return the list of lines.
      * @throws IOException 
      */
@@ -224,7 +224,7 @@ public class FileUtilities {
      * Write a list of lines to a file.
      * 
      * @param lines the list of lines to write.
-     * @param file the path to the file to write to.
+     * @param outFile the path to the file to write to.
      * @throws IOException 
      */
     public static void writeFile( List<String> lines, String filePath ) throws IOException {

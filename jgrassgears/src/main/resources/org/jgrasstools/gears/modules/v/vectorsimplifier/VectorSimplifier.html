@@ -1,0 +1,23 @@
+Collection of vector simplification algorithms. This model works on all kind of feature types (point, line or polygon), obviously the simplification of a point layer is nonsense.
+<br>
+Simplification is used to reducing the number of points in a geometry that is approximated by a series of points.
+<br>
+There are two different simplification algorithms integrated in this module:
+<ul>
+<li> 0 : TopologyPreservingSimplifier: simplifies a geometry, ensuring that the result is a valid geometry having the same dimension and number of components as the input. The simplification uses a maximum distance difference algorithm similar to the one used in the Douglas-Peucker algorithm</li>
+<li> 1 : Douglas Peucker: a detailed description of this method is available in <a href="http://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm"> Wikipedia </a></li>
+</ul>
+<br>
+<br>
+<h3>Inputs</h3>
+<ul>      
+<li>the vector to be simplified</li>
+<li>the simplification type: TopologyPreservingSimplifier (0), Douglas Peucker (1) (default = 0)</li>
+<li>the distance tolerance for the simplification</li>
+</ul>
+<br>
+<br>
+<h3>Output</h3>
+<ul>      
+<li>the simplified vector</li> 
+</ul>

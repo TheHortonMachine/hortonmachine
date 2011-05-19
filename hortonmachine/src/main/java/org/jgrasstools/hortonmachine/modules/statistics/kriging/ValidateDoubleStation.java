@@ -18,7 +18,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
@@ -56,7 +56,7 @@ public class ValidateDoubleStation extends JGTModel {
 	@Role(Role.PARAMETER)
 	@Description("The progress monitor.")
 	@In
-	public IJGTProgressMonitor pm = new DummyProgressMonitor();
+	public IJGTProgressMonitor pm = new LogProgressMonitor();
 
 	@Role(Role.PARAMETER)
 	@Description("Select if do the mean between double value or delete one of these if they are equals.")
@@ -132,7 +132,7 @@ public class ValidateDoubleStation extends JGTModel {
 		int j = 0;
 		hStation[k] = hStationList.get(0);
 		idStation[k] = idStationList.get(0);
-		ModelsEngine modelsEngine = new ModelsEngine();
+		
 		List<Integer> idStationtoDelete = new ArrayList<Integer>();
 		outData = new HashMap<Integer, double[]>();
 		for (int i = 1; i < xStation.length; i++) {
@@ -141,7 +141,7 @@ public class ValidateDoubleStation extends JGTModel {
 			double yTmp = yStationList.get(i);
 			double zTmp = zStationList.get(i);
 			double hTmp = hStationList.get(i);
-			boolean doubleStation = modelsEngine.verifyDoubleStation(xStation,
+			boolean doubleStation = ModelsEngine.verifyDoubleStation(xStation,
 					yStation, zStation, hStation, xTmp, yTmp, zTmp, hTmp, i,
 					doMean, null);
 

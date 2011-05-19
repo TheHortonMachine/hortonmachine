@@ -99,12 +99,14 @@ public class HmProcessFactory implements ProcessFactory {
         List<ClassField> list = modulename2fields.get(moduleName);
 
         Map<String, Parameter< ? >> output = new LinkedHashMap<String, Parameter< ? >>();
-        for( ClassField classField : list ) {
-            if (classField.isOut) {
-                String fieldName = classField.fieldName;
-                String fieldDescription = classField.fieldDescription;
-                Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
-                output.put(param.key, param);
+        if (list != null) {
+            for( ClassField classField : list ) {
+                if (classField.isOut) {
+                    String fieldName = classField.fieldName;
+                    String fieldDescription = classField.fieldDescription;
+                    Parameter< ? > param = new Parameter(fieldName, classField.fieldClass, fieldName, fieldDescription);
+                    output.put(param.key, param);
+                }
             }
         }
         return output;

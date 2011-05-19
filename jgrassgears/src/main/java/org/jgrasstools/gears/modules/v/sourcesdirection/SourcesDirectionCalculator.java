@@ -26,6 +26,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 import oms3.annotations.Author;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -45,8 +46,9 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -60,6 +62,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.DRAFT)
+@Label(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class SourcesDirectionCalculator extends JGTModel {
 
@@ -77,7 +80,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The source point features with the added azimuth angle.")
     @Out
@@ -111,7 +114,6 @@ public class SourcesDirectionCalculator extends JGTModel {
         Envelope2D env = inCoverage.getEnvelope2D();
         GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
         
-        int id = 0;
         int size = inSources.size();
         pm.beginTask("Extracting azimuth...", size);
         while( inFeatureIterator.hasNext() ) {
@@ -244,8 +246,7 @@ public class SourcesDirectionCalculator extends JGTModel {
 
             SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth,
                     pixelNum, getValue(v11), getValue(v12), getValue(v13), getValue(v21),
-                    getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)},
-                    id++);
+                    getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)});
             outSources.add(azimuthFeature);
 
         }

@@ -1,0 +1,20 @@
+Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all other columns of data related to the ids defined. This reader reads a time series data file step by step, so it is time dependent, if you need to read a time series all in one please refer to TimeSeriesReader.
+<br>
+This model allow the user to aggregate data for working with different timesteps. This means that if you will work with a different timestep respect to the data original one, you simply need to specify the number of timesteps to aggregate (number of rows) as an integer value and the operation that you would do with the aggregated data, sum or average.
+<br>
+<br>
+<h3>Parameters</h3>
+<ul>      
+<li>the csv file to read from</li>
+<li>the id metadata field</li>
+<li>the file novalue to be translated into the internal novalue (defaults to -9999.0); it can be also a string.</li>
+<li>the internal novalue to use (defaults to NaN, usually not changed)</li>
+<li>the number of rows to aggregate (default is 1, i.e. no aggregation)</li>
+<li>the aggregation type to use (0 = sum, 1 = avg)</li>
+<li>the time at which start to read (format: yyyy-MM-dd HH:mm)</li>
+<li>the time at which end to read (format: yyyy-MM-dd HH:mm)</li>
+<li>the reading timestep in minutes</li>
+<li>the current time read (format: yyyy-MM-dd HH:mm)</li>
+<li>the previous time read (format: yyyy-MM-dd HH:mm)</li>
+<li>the read map of ids and values</li>
+</ul>

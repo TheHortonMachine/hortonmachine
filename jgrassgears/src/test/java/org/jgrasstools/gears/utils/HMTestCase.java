@@ -28,13 +28,36 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+
 import junit.framework.TestCase;
 
 public class HMTestCase extends TestCase {
+    /**
+     * The progress monitor to be usedd by testcases.
+     */
+    protected PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    
     public void testDummy(){
         // done to not make the maven test fail
     }
 
+    protected void printImage( RenderedImage image ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                System.out.print(value + " ");
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+            System.out.println();
+        } while( !rectIter.nextLineDone() );
+    }
+    
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
@@ -53,7 +76,25 @@ public class HMTestCase extends TestCase {
             rectIter.startPixels();
             y++;
         } while( !rectIter.nextLineDone() );
+    }
 
+    protected void checkEqualsSinlgeValue( RenderedImage image, double expectedResult, double delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
     }
 
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix ) {

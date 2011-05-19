@@ -19,8 +19,7 @@
 package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -29,20 +28,29 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.files.FileTraversal;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that iterates over files in a folder")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Iterator, File")
+@Label(JGTConstants.LIST_READER)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FileIterator extends JGTModel {
 
     @Description("The folder on which to iterate")
+    @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
@@ -50,36 +58,68 @@ public class FileIterator extends JGTModel {
     @In
     public String pRegex = null;
 
+    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @UI(JGTConstants.CRS_UI_HINT)
+    @In
+    public String pCode;
+
     @Description("The current file of the list of files in the folder.")
     @Out
     public String outCurrentfile = null;
 
-    private List<File> filesList = null;
+    @Description("All the files that were found matching.")
+    @Out
+    public List<File> filesList = null;
+
+    @Description("All the file path that were found matching.")
+    @Out
+    public List<String> pathsList = null;
+
     private int fileIndex = 0;
-    
+
+    private String prjWkt;
+
     @Initialize
     public void initProcess() {
         doProcess = true;
     }
-    
+
     @Execute
-    public void process() {
+    public void process() throws Exception {
+        if (pCode != null) {
+            CoordinateReferenceSystem crs = CRS.decode(pCode);
+            prjWkt = crs.toWKT();
+        }
+
         if (filesList == null) {
-            File folderFile = new File(inFolder);
-            File[] listFiles = folderFile.listFiles(new FilenameFilter(){
-                public boolean accept( File dir, String name ) {
+            filesList = new ArrayList<File>();
+            pathsList = new ArrayList<String>();
+
+            new FileTraversal(){
+                public void onFile( final File f ) {
                     if (pRegex == null) {
-                        // all files
-                        return true;
+                        filesList.add(f);
+                        pathsList.add(f.getAbsolutePath());
                     } else {
-                        if (name.matches(pRegex)) {
-                            return true;
+                        if (f.getName().matches(".*" + pRegex + ".*")) { //$NON-NLS-1$//$NON-NLS-2$
+                            filesList.add(f);
+                            pathsList.add(f.getAbsolutePath());
                         }
-                        return false;
                     }
                 }
-            });
-            filesList = Arrays.asList(listFiles);
+            }.traverse(new File(inFolder));
+
+            if (prjWkt != null) {
+                for( File file : filesList ) {
+                    String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
+                    File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj"); //$NON-NLS-1$
+                    if (!prjFile.exists()) {
+                        // create it
+                        FileUtilities.writeFile(prjWkt, prjFile);
+                    }
+                }
+            }
+
         }
 
         outCurrentfile = filesList.get(fileIndex).getAbsolutePath();

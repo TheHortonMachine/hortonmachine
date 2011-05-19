@@ -31,15 +31,10 @@ public class ConvolutionDiffusionDischarge extends SimpsonIntegral implements In
     private double dist = 0;
     private double c = 0;
 
-    private ModelsEngine modelsEngine = new ModelsEngine();
-
     /**
-    * 
     */
-    public ConvolutionDiffusionDischarge( double lowerintegrationlimit,
-            double upperintegrationlimit, int maximalsteps, double integrationaccuracy,
-            double[][] discharge, double diffusionparam, double time, double distance,
-            double celerity ) {
+    public ConvolutionDiffusionDischarge( double lowerintegrationlimit, double upperintegrationlimit, int maximalsteps,
+            double integrationaccuracy, double[][] discharge, double diffusionparam, double time, double distance, double celerity ) {
 
         lowerlimit = lowerintegrationlimit;
         upperlimit = upperintegrationlimit;
@@ -58,24 +53,15 @@ public class ConvolutionDiffusionDischarge extends SimpsonIntegral implements In
         t = newt;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.util.integration.IntegrableFunction#integrate()
-     */
     public double integrate() {
         return simpson();
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see bsh.util.integration.SimpsonIntegral#equation(double)
-     */
     protected double equation( double tau ) {
 
         double result = t <= tau ? 0.0 : tau > q[q.length - 1][0] ? 0.0 : 1
-                / (Math.sqrt(4 * Math.PI * D * Math.pow((t - tau), 3)))
-                * modelsEngine.width_interpolate(q, tau, 0, 1) * dist
+                / (Math.sqrt(4 * Math.PI * D * Math.pow((t - tau), 3))) * ModelsEngine.width_interpolate(q, tau, 0, 1) * dist
                 / (Math.exp(Math.pow(dist - c * (t - tau), 2) / (4 * D * (t - tau))));
 
         return (double) result;

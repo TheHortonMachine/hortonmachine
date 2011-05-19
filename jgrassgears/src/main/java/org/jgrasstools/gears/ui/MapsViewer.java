@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.ui;
 
@@ -29,17 +28,18 @@ import javax.media.jai.iterator.RectIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.GeoTools;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.map.DefaultMapContext;
 import org.geotools.map.MapContext;
 import org.geotools.styling.ColorMap;
@@ -69,27 +69,29 @@ import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 
-@Description("Utility class for viewing coverages.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Description("A simple geodata viewer.")
+@Documentation("MapsViewer.html")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Coverage, Raster, Viewer, UI")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(Status.CERTIFIED)
+@Name("mapsviewer")
+@License("General Public License Version 3 (GPLv3)")
 public class MapsViewer {
-    @Description("The coverages to visualize.")
+    @Description("The rasters to visualize.")
     @In
-    public GridCoverage2D[] coverages = new GridCoverage2D[0];
+    public GridCoverage2D[] inRasters = new GridCoverage2D[0];
 
-    @Description("The coverage to visualize.")
+    @Description("The raster to visualize.")
     @In
-    public GridCoverage2D coverage = null;
+    public GridCoverage2D inRaster = null;
 
     @Description("The feature collections to visualize.")
     @In
-    public SimpleFeatureCollection[] featureCollections = new SimpleFeatureCollection[0];
+    public SimpleFeatureCollection[] inVectors = new SimpleFeatureCollection[0];
 
     @Description("The feature collection to visualize.")
     @In
-    public SimpleFeatureCollection featureCollection = null;
+    public SimpleFeatureCollection inVector = null;
 
     @Description("The feature collections style layer.")
     @In
@@ -108,13 +110,13 @@ public class MapsViewer {
 
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
 
-        if (coverage != null) {
-            coverages = new GridCoverage2D[]{coverage};
+        if (inRaster != null) {
+            inRasters = new GridCoverage2D[]{inRaster};
         }
         addCoverages(map, sb, rasterSym);
 
-        if (featureCollection != null) {
-            featureCollections = new SimpleFeatureCollection[]{featureCollection};
+        if (inVector != null) {
+            inVectors = new SimpleFeatureCollection[]{inVector};
             // does it have style
             if (inSld != null) {
                 File sldFile = new File(inSld);
@@ -153,7 +155,7 @@ public class MapsViewer {
     }
 
     private void addFeatureCollections( MapContext map ) {
-        for( SimpleFeatureCollection fc : featureCollections ) {
+        for( SimpleFeatureCollection fc : inVectors ) {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
             GEOMETRYTYPE type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
@@ -220,7 +222,7 @@ public class MapsViewer {
     private void addCoverages( final MapContext map, StyleBuilder sB, RasterSymbolizer rasterSym ) {
         ColorMap colorMap = sf.createColorMap();
 
-        for( GridCoverage2D coverage : coverages ) {
+        for( GridCoverage2D coverage : inRasters ) {
             RenderedImage renderedImage = coverage.getRenderedImage();
             double max = Double.NEGATIVE_INFINITY;
             double min = Double.POSITIVE_INFINITY;
@@ -276,17 +278,17 @@ public class MapsViewer {
     }
 
     public static synchronized void displayRasterAndFeatures( final GridCoverage2D raster,
-            final SimpleFeatureCollection vector ) throws Exception {
+            final SimpleFeatureCollection... vectors ) throws Exception {
 
         new Thread(){
             @Override
             public void run() {
                 MapsViewer viewer = new MapsViewer();
                 if (raster != null) {
-                    viewer.coverages = new GridCoverage2D[]{raster};
+                    viewer.inRasters = new GridCoverage2D[]{raster};
                 }
-                if (vector != null) {
-                    viewer.featureCollections = new SimpleFeatureCollection[]{vector};
+                if (vectors != null) {
+                    viewer.inVectors = vectors;
                 }
                 try {
                     viewer.displayMaps();

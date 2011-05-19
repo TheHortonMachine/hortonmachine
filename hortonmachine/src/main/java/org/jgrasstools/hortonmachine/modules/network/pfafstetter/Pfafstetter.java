@@ -20,6 +20,8 @@ package org.jgrasstools.hortonmachine.modules.network.pfafstetter;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
+import static org.jgrasstools.gears.libs.modules.ModelsEngine.net2ShapeGeometries;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -34,6 +36,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
@@ -53,10 +56,10 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -86,7 +89,8 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Description("Creates a hierarchial form of the network.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
 @Keywords("Network, Pfafstetter")
-@Status(Status.TESTED)
+@Label(JGTConstants.NETWORK)
+@Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pfafstetter extends JGTModel {
 
@@ -116,7 +120,7 @@ public class Pfafstetter extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The processing mode (0 = normal, 1 = with channel and channelfeatures map.")
     @In
@@ -148,7 +152,7 @@ public class Pfafstetter extends JGTModel {
     private List<Object[]> attributesList = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    private ModelsEngine modelsEngine = new ModelsEngine();
+    
 
     private int cols;
     private int rows;
@@ -338,7 +342,7 @@ public class Pfafstetter extends JGTModel {
                         netNumValue = (int) netnumIter.getSampleDouble(i, j, 0);
                         channel.addNetNumComp(netNumValue);
                         netNumList.add(netNumValue);
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         // while the channels have the same order add properties
                         // the ChannelInfo
@@ -351,7 +355,7 @@ public class Pfafstetter extends JGTModel {
                                 netNumList.add(netNumValue);
                                 channel.setIsTrim(true);
                             }
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;
                         }
                         channel.setChannelParentNum((int) netnumIter.getSampleDouble(flow[0], flow[1], 0));
@@ -394,7 +398,7 @@ public class Pfafstetter extends JGTModel {
                         }
                         netNumValue = (int) netnumIter.getSampleDouble(i, j, 0);
                         channel.addNetNumComp(netNumValue);
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && hackIter.getSampleDouble(flow[0], flow[1], 0) == hackIter.getSampleDouble(i, j, 0)
@@ -404,10 +408,10 @@ public class Pfafstetter extends JGTModel {
                                 channel.addNetNumComp(netNumValue);
                                 channel.setIsTrim(true);
                             }
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;
                         }
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         channel.setChannelParentNum((int) netnumIter.getSampleDouble(flow[0], flow[1], 0));
                         channelList.add(channel);
@@ -553,7 +557,7 @@ public class Pfafstetter extends JGTModel {
      * @throws IOException 
      */
     private void createGeometries() throws IOException, TransformException {
-        newRiverGeometriesList = modelsEngine.net2ShapeGeometries(flowIter, netnumIter, numberOfStreams,
+        newRiverGeometriesList = net2ShapeGeometries(flowIter, netnumIter, numberOfStreams,
                 inFlow.getGridGeometry(), pm);
     }
 
@@ -692,7 +696,7 @@ public class Pfafstetter extends JGTModel {
                                     .getSampleDouble(flow[0], flow[1], 0));
                         }
                         // insert netNum and channelNum in the HashMap
-                        if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
@@ -706,7 +710,7 @@ public class Pfafstetter extends JGTModel {
                                 netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0), channelIter
                                         .getSampleDouble(flow[0], flow[1], 0));
                             }
-                            if (!modelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;
                             if (!isNovalue(netnumIter.getSampleDouble(flow[0], flow[1], 0))
                                     && !isNovalue(channelIter.getSampleDouble(flow[0], flow[1], 0))) {

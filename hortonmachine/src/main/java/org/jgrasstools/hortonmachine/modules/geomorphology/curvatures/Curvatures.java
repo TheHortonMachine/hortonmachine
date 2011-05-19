@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.curvatures;
 
@@ -29,69 +28,41 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
+import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-/**
- * <p>
- * The openmi compliant representation of the aspect model. It estimates the longitudinal, normal
- * and planar curvatures for each site through a finite difference schema.
- * </p>
- * <p>
- * <DT><STRONG>Inputs:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map of elevations (-pit);</LI>
- * </OL>
- * <P></DD>
- * <DT><STRONG>Returns:</STRONG></DT>
- * <DD>
- * <OL>
- * <LI>the map of longitudinal curvatures (-prof);</LI>
- * <LI>the map of normal (or tangent) curvatures (-tang);</LI>
- * <LI>the file containing the matrix of planar curvatures (--plan);</LI>
- * </OL>
- * <P></DD> Usage: h.curvatures --igrass-pit pit --ograss-prof prof --ograss-plan plan --ograss-tang
- * tang
- * </p>
- * <p>
- * Note: The planar and normal (or tangent) curvatures are proportional to each other. To function,
- * the program uses a matrix in input with a NOVALUE boundary and as a rule it places the curve
- * equal to zero on the catchment boundary.<BR>
- * <BR>
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi
- *         Silvia, Pisoni Silvano, Rigon Riccardo,
- */
-@Description("It estimates the longitudinal, normal and planar curvatures for each site through a finite difference schema.")
-@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo, Pisoni Silvano", contact = "www.hydrologis.com")
+
+@Description("It estimates the longitudinal, normal and planar curvatures.")
+@Documentation("Curvatures.html")
+@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology")
-@Status(Status.TESTED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Label(JGTConstants.GEOMORPHOLOGY)
+@Name("curvatures")
+@Status(Status.CERTIFIED)
+@License("General Public License Version 3 (GPLv3)")
 public class Curvatures extends JGTModel {
-    /*
-     * EXTERNAL VARIABLES
-     */
-    // input
-    @Description("The digital elevation model (DEM).")
+    @Description("The map of the digital elevation model (DEM or pit).")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
     
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     // output
     @Description("The map of profile curvatures.")
@@ -106,9 +77,6 @@ public class Curvatures extends JGTModel {
     @Out
     public GridCoverage2D outTang = null;
 
-    /*
-     * INTERNAL VARIABLES
-     */
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
@@ -116,13 +84,13 @@ public class Curvatures extends JGTModel {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage elevationRI = inDem.getRenderedImage();
+        RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
 
         WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
@@ -233,8 +201,8 @@ public class Curvatures extends JGTModel {
         if (isCanceled(pm)) {
             return;
         }
-        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inDem.getCoordinateReferenceSystem());
-        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inDem.getCoordinateReferenceSystem());
-        outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inDem.getCoordinateReferenceSystem());
+        outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inElev.getCoordinateReferenceSystem());
+        outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inElev.getCoordinateReferenceSystem());
     }
 }

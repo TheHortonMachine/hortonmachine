@@ -77,11 +77,9 @@ public class FeatureExtender {
     /**
      * @param oldFeature the feature from which to clone the existing attributes from.
      * @param additionalAttributes the array of attributes to add.
-     * @param index the index for the feature id creation.
      * @return the new created feature, as merged from the old feature plus the new attributes.
      */
-    public SimpleFeature extendFeature( SimpleFeature oldFeature, Object[] additionalAttributes,
-            int index ) {
+    public SimpleFeature extendFeature( SimpleFeature oldFeature, Object[] additionalAttributes ) {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length + additionalAttributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
@@ -91,7 +89,7 @@ public class FeatureExtender {
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
         builder.addAll(newAttributes);
-        SimpleFeature f = builder.buildFeature(newFeatureType.getTypeName() + "." + index);
+        SimpleFeature f = builder.buildFeature(null);
         return f;
     }
 

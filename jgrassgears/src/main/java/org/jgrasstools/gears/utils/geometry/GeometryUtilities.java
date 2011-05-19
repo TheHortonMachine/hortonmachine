@@ -24,6 +24,12 @@ import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import jaitools.numeric.ArrayUtils;
+
 import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -92,18 +98,16 @@ public class GeometryUtilities {
      * @return a dummy {@link Polygon}.
      */
     public static Polygon createDummyPolygon() {
-        Coordinate[] c = new Coordinate[]{new Coordinate(0.0, 0.0), new Coordinate(1.0, 1.0),
-                new Coordinate(1.0, 0.0), new Coordinate(0.0, 0.0)};
+        Coordinate[] c = new Coordinate[]{new Coordinate(0.0, 0.0), new Coordinate(1.0, 1.0), new Coordinate(1.0, 0.0),
+                new Coordinate(0.0, 0.0)};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
     }
 
     public static Polygon createPolygonFromEnvelope( Envelope env ) {
         Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
-                new Coordinate(env.getMinX(), env.getMaxY()),
-                new Coordinate(env.getMaxX(), env.getMaxY()),
-                new Coordinate(env.getMaxX(), env.getMinY()),
-                new Coordinate(env.getMinX(), env.getMinY())};
+                new Coordinate(env.getMinX(), env.getMaxY()), new Coordinate(env.getMaxX(), env.getMaxY()),
+                new Coordinate(env.getMaxX(), env.getMinY()), new Coordinate(env.getMinX(), env.getMinY())};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
     }
@@ -131,10 +135,8 @@ public class GeometryUtilities {
         // use the cosine law to calculate angle between
 
         // transform line segments tail to tail, originating at (0,0)
-        LineSegment tls1 = new LineSegment(new Coordinate(0, 0), new Coordinate(l1.p1.x - l1.p0.x,
-                l1.p1.y - l1.p0.y));
-        LineSegment tls2 = new LineSegment(new Coordinate(0, 0), new Coordinate(l2.p1.x - l2.p0.x,
-                l2.p1.y - l2.p0.y));
+        LineSegment tls1 = new LineSegment(new Coordinate(0, 0), new Coordinate(l1.p1.x - l1.p0.x, l1.p1.y - l1.p0.y));
+        LineSegment tls2 = new LineSegment(new Coordinate(0, 0), new Coordinate(l2.p1.x - l2.p0.x, l2.p1.y - l2.p0.y));
 
         // line segment for third side of triangle
         LineSegment ls3 = new LineSegment(tls1.p1, tls2.p1);
@@ -274,5 +276,4 @@ public class GeometryUtilities {
         area /= 2;
         return (area < 0 ? -area : area);
     }
-    
 }

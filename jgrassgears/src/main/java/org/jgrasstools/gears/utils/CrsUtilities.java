@@ -22,11 +22,15 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class CrsUtilities {
@@ -62,7 +66,7 @@ public class CrsUtilities {
     }
 
     /**
-     * Reproject a geometry
+     * Reproject a set of geometries
      * 
      * @param from the starting crs
      * @param to the destination crs
@@ -75,6 +79,23 @@ public class CrsUtilities {
 
         for( int i = 0; i < geometries.length; i++ ) {
             geometries[i] = JTS.transform((Geometry) geometries[i], mathTransform);
+        }
+    }
+
+    /**
+     * Reproject a set of coordinates.
+     * 
+     * @param from the starting crs
+     * @param to the destination crs
+     * @param coordinates the array of coordinates, wrapped into an Object array
+     * @throws Exception
+     */
+    public static void reproject( CoordinateReferenceSystem from, CoordinateReferenceSystem to, Coordinate[] coordinates )
+            throws Exception {
+        MathTransform mathTransform = CRS.findMathTransform(from, to);
+
+        for( int i = 0; i < coordinates.length; i++ ) {
+            coordinates[i] = JTS.transform(coordinates[i], coordinates[i], mathTransform);
         }
     }
 

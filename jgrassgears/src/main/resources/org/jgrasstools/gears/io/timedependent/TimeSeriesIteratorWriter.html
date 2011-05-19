@@ -1,0 +1,12 @@
+Utility class for writing a id2value map to a OMS formatted csv file. This writer writes a time series data file step by step, so it is time dependent, if you need to write a time series all in one please refer to TimeSeriesWriter.
+<br>
+<br>
+<h3>Parameters</h3>
+<ul>      
+<li>the table name</li>
+<li>the map of ids and values to write</li>
+<li>the start date, if available time is added as first column</li>
+<li>the timestep</li>
+<li>the novalue to use in the file (default is -9999.0)</li>
+<li>the csv file to write to</li>
+</ul>

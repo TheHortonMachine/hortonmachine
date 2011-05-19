@@ -46,7 +46,7 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         EnergyIndexCalculator eiCalculator = new EnergyIndexCalculator();
         eiCalculator.inAspect = aspectCoverage;
         eiCalculator.inCurvatures = nablaCoverage;
-        eiCalculator.inDem = pitCoverage;
+        eiCalculator.inElev = pitCoverage;
         eiCalculator.inSlope = slopeCoverage;
         eiCalculator.inBasins = subbasinsCoverage;
         eiCalculator.pDt = 1;

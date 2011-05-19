@@ -29,18 +29,22 @@ import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Utility class for writing altimetry data to csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
-@Status(Status.DRAFT)
+@Label(JGTConstants.LIST_WRITER)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class EIAltimetryWriter extends JGTModel {
     @Description("The data to write.")
@@ -48,6 +52,7 @@ public class EIAltimetryWriter extends JGTModel {
     public List<EIAltimetry> inAltimetry;
 
     @Description("The csv file to write to.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
@@ -58,7 +63,7 @@ public class EIAltimetryWriter extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private BufferedWriter csvWriter;
 

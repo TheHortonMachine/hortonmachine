@@ -29,13 +29,37 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+
 import junit.framework.TestCase;
 @SuppressWarnings("nls")
 public class HMTestCase extends TestCase {
-    public void testDummy(){
+    
+    /**
+     * The progress monitor to be usedd by testcases.
+     */
+    protected PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    
+    public void testDummy() {
         // done to not make the maven test fail
     }
 
+    protected void printImage( RenderedImage image ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                System.out.print(value + " ");
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+            System.out.println();
+        } while( !rectIter.nextLineDone() );
+    }
+    
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
@@ -66,8 +90,8 @@ public class HMTestCase extends TestCase {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
                 if (isNovalue(value)) {
-                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got "
-                            + expectedResult, isNovalue(expectedResult));
+                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got " + expectedResult,
+                            isNovalue(expectedResult));
                 } else {
                     assertEquals("Difference at position: " + x + " " + y, expectedResult, value);
                 }
@@ -101,6 +125,34 @@ public class HMTestCase extends TestCase {
 
     }
 
+
+    /**
+     * Verifiy a Matrix result.
+     * 
+     * @param matrix
+     * @param expectedMatrix
+     * @param tolerance
+     */
+    protected void checkMatrixEqual( double[][] matrix, double[][] expectedMatrix, double tolerance ) {
+        // assertEquals("different dimension", matrix.length,
+        // expectedMatrix.length);
+        // assertEquals("different dimension", matrix[0].length,
+        // expectedMatrix[0].length);
+
+        for( int j = 0; j < matrix.length; j++ ) {
+            for( int i = 0; i < matrix[0].length; i++ ) {
+                double expectedResult = expectedMatrix[j][i];
+                double value = matrix[j][i];
+                if (isNovalue(value)) {
+                    assertTrue("Difference at position: " + i + " " + j, isNovalue(expectedResult));
+                } else {
+                    assertEquals("Difference at position: " + i + " " + j, expectedResult, value, tolerance);
+                }
+            }
+        }
+
+    }
+
     /**
      * Method to translate resources names from class-test path to src resources.
      * 
@@ -109,9 +161,8 @@ public class HMTestCase extends TestCase {
      */
     protected File classesTestFile2srcTestResourcesFile( File classesTestFile ) {
         String classesTestPath = classesTestFile.getAbsolutePath();
-        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator
-                + File.separator + "test");
-        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources");
+        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
+        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources//");
 
         File srcTestResourcesFile = new File(classesTestPath);
         return srcTestResourcesFile;
