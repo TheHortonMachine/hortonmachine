@@ -4,13 +4,17 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.util.List;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
+import org.jgrasstools.grass.dtd64.Flag;
 import org.jgrasstools.grass.dtd64.GrassInterface;
+import org.jgrasstools.grass.dtd64.Parameter;
+import org.jgrasstools.grass.dtd64.ParameterGroup;
 import org.jgrasstools.grass.dtd64.Task;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
@@ -48,9 +52,39 @@ public class Test {
 
         String name = grassInterface.getName();
         String desc = grassInterface.getDescription();
-
         System.out.println(name.trim());
         System.out.println(desc.trim());
+
+        List<Flag> flagList = grassInterface.getFlag();
+        System.out.println("Flags:");
+        for( Flag flag : flagList ) {
+            String flagName = flag.getName().trim();
+            System.out.print("\t" + flagName + " - ");
+            String descr = flag.getDescription().trim();
+            System.out.println(descr);
+        }
+
+        List<ParameterGroup> parameterGroupList = grassInterface.getParameterGroup();
+        if (parameterGroupList.size() > 0) {
+            System.out.println("ParameterGroup:");
+            for( ParameterGroup parameterGroup : parameterGroupList ) {
+                String pgName = parameterGroup.getName().trim();
+                System.out.println(pgName);
+                String pgDescr = parameterGroup.getDescription().trim();
+                System.out.println(pgDescr);
+            }
+        }
+
+        List<Parameter> parameterList = grassInterface.getParameter();
+        if (parameterList.size() > 0) {
+            System.out.println("Parameters:");
+            for( Parameter parameter : parameterList ) {
+                String pgName = parameter.getName().trim();
+                System.out.print("\t" + pgName + " - ");
+                String pgDescr = parameter.getDescription().trim();
+                System.out.println(pgDescr);
+            }
+        }
     }
 
     public static void main( String[] args ) throws Exception {
