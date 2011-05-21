@@ -1,9 +1,7 @@
 package org.jgrasstools.grass.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
-import java.net.URL;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
@@ -16,6 +14,8 @@ import org.jgrasstools.grass.dtd64.GrassInterface;
 import org.jgrasstools.grass.dtd64.Parameter;
 import org.jgrasstools.grass.dtd64.ParameterGroup;
 import org.jgrasstools.grass.dtd64.Task;
+import org.jgrasstools.grass.dtd64.Value;
+import org.jgrasstools.grass.dtd64.Values;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -28,8 +28,10 @@ public class Test {
     private static final String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
 
     public Test() throws Exception {
-        String result = GrassRunner.runModule(new String[]{"/usr/lib/grass64/bin/v.in.ascii", "--interface-description"},
-                "/usr/lib/grass64", "/tmp/grass6-moovida-6724/gisrc");
+        System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, "/usr/lib/grass64");
+
+        GrassRunner grassRunner = new GrassRunner(null, null, false);
+        String result = grassRunner.runModule(new String[]{"/usr/lib/grass64/bin/v.in.ascii", "--interface-description"});
 
         System.out.println(result);
 
@@ -83,6 +85,30 @@ public class Test {
                 System.out.print("\t" + pgName + " - ");
                 String pgDescr = parameter.getDescription().trim();
                 System.out.println(pgDescr);
+
+                String req = parameter.getRequired().trim();
+                System.out.println("\t\t" + req);
+                String type = parameter.getType().trim();
+                System.out.println("\t\t" + type);
+                String defaultv = parameter.getDefault();
+                if (defaultv != null) {
+                    defaultv = defaultv.trim();
+                    System.out.println("\t\t" + defaultv);
+                }
+                String multiple = parameter.getMultiple().trim();
+                System.out.println("\t\t" + multiple);
+
+                Values values = parameter.getValues();
+                if (values != null) {
+                    System.out.println("\t\tValues:");
+                    List<Value> value = values.getValue();
+                    for( Value v : value ) {
+                        String name2 = v.getName().trim();
+                        System.out.print("\t\t\t" + name2 + " - ");
+                        String description = v.getDescription().trim();
+                        System.out.println(description);
+                    }
+                }
             }
         }
     }
