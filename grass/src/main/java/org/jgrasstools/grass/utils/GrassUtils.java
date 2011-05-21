@@ -108,7 +108,8 @@ public class GrassUtils {
     /**
      * The base package to use to generate the wrapper code in.
      */
-    public static final String BASEPACKAGE = "org/osgeo/grass/";
+    public static final String BASEPACKAGE_PATH = "org/osgeo/grass/";
+    public static final String BASEPACKAGE = "org.osgeo.grass.";
 
     /**
      * Get the jaxb grass {@link Task} for a given xml string.
@@ -397,7 +398,7 @@ public class GrassUtils {
     }
 
     /**
-     * Get the full qualified name/structure of the given module.
+     * Get the full qualified file path of the given module.
      * 
      * <p>Note that the module can't have dots in it. It is supposed
      * to be a class safe name with underscores.
@@ -408,7 +409,23 @@ public class GrassUtils {
     public static String getModuleQualifiedStructure( String module ) {
         String[] split = module.split("\\_");
         String prefix = split[0];
-        String qualifiedName = BASEPACKAGE + prefix + "/" + module;
+        String qualifiedName = BASEPACKAGE_PATH + prefix + "/" + module + ".java";
+        return qualifiedName;
+    }
+
+    /**
+     * Get the full qualified name of the given module.
+     * 
+     * <p>Note that the module can't have dots in it. It is supposed
+     * to be a class safe name with underscores.
+     * 
+     * @param module the module's name.
+     * @return the package for the module.
+     */
+    public static String getModulePackage( String module ) {
+        String[] split = module.split("\\_");
+        String prefix = split[0];
+        String qualifiedName = BASEPACKAGE + prefix;
         return qualifiedName;
     }
 

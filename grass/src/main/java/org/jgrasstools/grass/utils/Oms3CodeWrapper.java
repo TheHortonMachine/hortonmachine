@@ -57,10 +57,13 @@ public class Oms3CodeWrapper {
         description = grassTask.getDescription();
         String keyWords = grassTask.getKeywords();
         category = GrassUtils.name2GrassCategory(name);
+        String modulePackage = GrassUtils.getModulePackage(classSafeName);
 
         /*
          * the main class
          */
+        codeBuilder.append("package ").append(modulePackage).append(";\n");
+        codeBuilder.append("").append("\n");
         codeBuilder.append("import org.jgrasstools.gears.libs.modules.JGTModel;").append("\n");
         codeBuilder.append("").append("\n");
         codeBuilder.append("import oms3.annotations.Author;").append("\n");
