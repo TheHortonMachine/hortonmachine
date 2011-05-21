@@ -1,26 +1,13 @@
 package org.jgrasstools.grass.utils;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.transform.Source;
-import javax.xml.transform.sax.SAXSource;
-
 import org.jgrasstools.grass.dtd64.Flag;
-import org.jgrasstools.grass.dtd64.GrassInterface;
 import org.jgrasstools.grass.dtd64.Parameter;
 import org.jgrasstools.grass.dtd64.ParameterGroup;
 import org.jgrasstools.grass.dtd64.Task;
 import org.jgrasstools.grass.dtd64.Value;
 import org.jgrasstools.grass.dtd64.Values;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 public class Test {
 
@@ -67,16 +54,16 @@ public class Test {
                 System.out.println(pgDescr);
 
                 String req = parameter.getRequired().trim();
-                System.out.println("\t\t" + req);
+                System.out.println("\t\tRequired: " + req);
                 String type = parameter.getType().trim();
-                System.out.println("\t\t" + type);
+                System.out.println("\t\tType:" + type);
                 String defaultv = parameter.getDefault();
                 if (defaultv != null) {
                     defaultv = defaultv.trim();
-                    System.out.println("\t\t" + defaultv);
+                    System.out.println("\t\tDefault: " + defaultv);
                 }
                 String multiple = parameter.getMultiple().trim();
-                System.out.println("\t\t" + multiple);
+                System.out.println("\t\tMultiple: " + multiple);
 
                 Values values = parameter.getValues();
                 if (values != null) {

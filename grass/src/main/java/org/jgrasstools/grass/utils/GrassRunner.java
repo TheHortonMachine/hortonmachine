@@ -95,7 +95,6 @@ public class GrassRunner implements GrassRunnerListener {
         Thread outputThread = new Thread(){
             public void run() {
                 try {
-
                     InputStream is = process.getInputStream();
                     InputStreamReader isr = new InputStreamReader(is);
                     BufferedReader br = new BufferedReader(isr);
@@ -113,7 +112,6 @@ public class GrassRunner implements GrassRunnerListener {
                     }
                 }
             }
-
         };
 
         Thread errorThread = new Thread(){
