@@ -19,16 +19,10 @@ package org.jgrasstools.grass.utils;
 
 import java.util.List;
 
-import oms3.annotations.Execute;
-import oms3.annotations.UI;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.grass.dtd64.Flag;
 import org.jgrasstools.grass.dtd64.Gisprompt;
 import org.jgrasstools.grass.dtd64.Parameter;
 import org.jgrasstools.grass.dtd64.Task;
-import org.jgrasstools.grass.dtd64.Value;
-import org.jgrasstools.grass.dtd64.Values;
 
 /**
  * OMS3 Code generation class. 
@@ -55,6 +49,7 @@ public class Oms3CodeWrapper {
         name = grassTask.getName().trim();
         classSafeName = name.replaceAll("\\.", "_");
         description = grassTask.getDescription();
+        description = cleanDescription(description);
         String keyWords = grassTask.getKeywords();
         category = GrassUtils.name2GrassCategory(name);
         String modulePackage = GrassUtils.getModulePackage(classSafeName);
@@ -72,6 +67,7 @@ public class Oms3CodeWrapper {
         codeBuilder.append("import oms3.annotations.Description;").append("\n");
         codeBuilder.append("import oms3.annotations.Execute;").append("\n");
         codeBuilder.append("import oms3.annotations.In;").append("\n");
+        codeBuilder.append("import oms3.annotations.UI;").append("\n");
         codeBuilder.append("import oms3.annotations.Keywords;").append("\n");
         codeBuilder.append("import oms3.annotations.License;").append("\n");
         codeBuilder.append("import oms3.annotations.Name;").append("\n");
@@ -85,7 +81,7 @@ public class Oms3CodeWrapper {
             codeBuilder.append("@Keywords(\"").append(keyWords.trim()).append("\")").append("\n");
         if (category != null)
             codeBuilder.append("@Label(\"").append(category).append("\")").append("\n");
-        codeBuilder.append("@Name(\"").append(name).append("\")").append("\n");
+        codeBuilder.append("@Name(\"").append(classSafeName).append("\")").append("\n");
         codeBuilder.append("@Status(Status.CERTIFIED)").append("\n");
         codeBuilder.append("@License(\"General Public License Version >=2)\")").append("\n");
         codeBuilder.append("public class ").append(classSafeName).append(" extends JGTModel {").append("\n");
@@ -98,7 +94,10 @@ public class Oms3CodeWrapper {
         if (parameterList.size() > 0) {
             for( Parameter parameter : parameterList ) {
                 String parameterName = parameter.getName().trim();
+                parameterName = GrassUtils.checkValidVar(parameterName, "$");
+
                 String parameterDescription = parameter.getDescription().trim();
+                parameterDescription = cleanDescription(parameterDescription);
                 String isRequired = parameter.getRequired().trim();
                 String defaultValue = parameter.getDefault();
                 Gisprompt gisprompt = parameter.getGisprompt();
@@ -116,7 +115,7 @@ public class Oms3CodeWrapper {
                 codeBuilder.append(INDENT).append("@In\n");
                 codeBuilder.append(INDENT).append("public String ").append(parameterName);
                 if (defaultValue != null) {
-                    codeBuilder.append(" = ").append(defaultValue.trim());
+                    codeBuilder.append(" = \"").append(defaultValue.trim()).append("\"");
                 }
                 codeBuilder.append(";\n\n");
 
@@ -143,7 +142,10 @@ public class Oms3CodeWrapper {
         List<Flag> flagList = grassTask.getFlag();
         for( Flag flag : flagList ) {
             String flagName = flag.getName().trim();
+            flagName = flagName + "FLAG";
+            flagName = GrassUtils.checkValidVar(flagName, "_");
             String descr = flag.getDescription().trim();
+            descr = cleanDescription(descr);
             codeBuilder.append(INDENT).append("@Description(\"").append(descr).append("\")\n");
             codeBuilder.append(INDENT).append("@In\n");
             codeBuilder.append(INDENT).append("public String ").append(flagName).append(";\n\n");
@@ -158,6 +160,21 @@ public class Oms3CodeWrapper {
         codeBuilder.append(INDENT).append("}").append("\n\n");
 
         codeBuilder.append("}").append("\n");
+    }
+
+    /**
+     * Clean description from quotes and linefeeds. 
+     * 
+     * @param description the description to clean.
+     * @return the cleaned description or <code>null</code> if the input value is null.
+     */
+    public String cleanDescription( String description ) {
+        if (description == null) {
+            return null;
+        }
+        description = description.replaceAll("\"", "\\\\\"");
+        description = description.replaceAll("\n", " ");
+        return description;
     }
 
     public String getGeneratedOms3Class() {

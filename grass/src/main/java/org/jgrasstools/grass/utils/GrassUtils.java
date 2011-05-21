@@ -102,6 +102,13 @@ public class GrassUtils {
             "v.db.univar", "v.db.update", "v.in.e00", "v.in.sites.all", "v.univar.sh", "r.external", "v.external", "v.colors",
             "v.in.garmin", "v.in.gpsbabel", "v.out.gpsbabel", "r.proj", "v.proj", "r.category");
 
+    public static final List<String> reservedWords = Arrays
+            .asList("abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
+                    "default", "double", "do", "else", "enum", "extends", "false", "final", "finally", "float", "for", "goto",
+                    "if", "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "null", "package",
+                    "private", "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized",
+                    "this", "throw", "throws", "transient", "true", "try", "void", "volatile", "while");
+
     // The default prefix for temporary files and folders
     public static final String TMP_PREFIX = "JGT-";
 
@@ -427,6 +434,26 @@ public class GrassUtils {
         String prefix = split[0];
         String qualifiedName = BASEPACKAGE + prefix;
         return qualifiedName;
+    }
+
+    /**
+     * Check validity of a var name and returns the proper name.
+     * 
+     * @param parameterName the name to check.
+     * @param prefix the prefix to give in case of invalid names.
+     * @return the new or unchanged name.
+     */
+    public static String checkValidVar( String parameterName, String prefix ) {
+        boolean isValid = true;
+        if (!parameterName.matches("^[a-zA-Z][a-zA-Z0-9]*?$")) {
+            isValid = false;
+        }
+        if (GrassUtils.reservedWords.contains(parameterName)) {
+            isValid = false;
+        }
+        if (!isValid)
+            parameterName = prefix + parameterName;
+        return parameterName;
     }
 
 }
