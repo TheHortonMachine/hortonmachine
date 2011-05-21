@@ -8,13 +8,15 @@ public class Test {
         System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, "/usr/lib/grass64");
 
         GrassRunner grassRunner = new GrassRunner(null, null, false);
-        String result = grassRunner.runModule(new String[]{"/usr/lib/grass64/bin/v.in.ascii", "--interface-description"});
+        String result = grassRunner.runModule(new String[]{"/usr/lib/grass64/bin/r.sun", "--interface-description"});
 
         Task task = GrassUtils.getTask(result);
 
         Oms3CodeGenerator gen = new Oms3CodeGenerator(task);
 
         System.out.println(gen.getOms3Class());
+        
+        
 
         // String name = task.getName();
         // String desc = task.getDescription();

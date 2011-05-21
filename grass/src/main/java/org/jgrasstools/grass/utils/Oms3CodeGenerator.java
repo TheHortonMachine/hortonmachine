@@ -17,7 +17,13 @@
  */
 package org.jgrasstools.grass.utils;
 
+import java.util.List;
+
+import org.jgrasstools.grass.dtd64.Flag;
+import org.jgrasstools.grass.dtd64.Parameter;
 import org.jgrasstools.grass.dtd64.Task;
+import org.jgrasstools.grass.dtd64.Value;
+import org.jgrasstools.grass.dtd64.Values;
 
 /**
  * OMS3 Code generation class. 
@@ -28,6 +34,8 @@ import org.jgrasstools.grass.dtd64.Task;
 public class Oms3CodeGenerator {
 
     private StringBuilder codeBuilder = new StringBuilder();
+
+    private String INDENT = "\t";
 
     public Oms3CodeGenerator( Task grassTask ) {
 
@@ -52,20 +60,66 @@ public class Oms3CodeGenerator {
         codeBuilder.append("import oms3.annotations.Status;").append("\n");
         codeBuilder.append("").append("\n");
         if (description != null)
-            codeBuilder.append("@Description(\"" + description.trim() + "\")").append("\n");
+            codeBuilder.append("@Description(\"").append(description.trim()).append("\")").append("\n");
         codeBuilder.append("@Author(name = \"Grass Developers Community\", contact = \"http://grass.osgeo.org\")").append("\n");
         if (keyWords != null)
-            codeBuilder.append("@Keywords(\"" + keyWords.trim() + "\")").append("\n");
+            codeBuilder.append("@Keywords(\"").append(keyWords.trim()).append("\")").append("\n");
         if (category != null)
-            codeBuilder.append("@Label(\"" + category + "\")").append("\n");
-        codeBuilder.append("@Name(\"" + name + "\")").append("\n");
+            codeBuilder.append("@Label(\"").append(category).append("\")").append("\n");
+        codeBuilder.append("@Name(\"").append(name).append("\")").append("\n");
         codeBuilder.append("@Status(Status.CERTIFIED)").append("\n");
         codeBuilder.append("@License(\"General Public License Version >=2)\")").append("\n");
-        codeBuilder.append("public class " + classSafeName + " extends JGTModel {").append("\n");
+        codeBuilder.append("public class ").append(classSafeName).append(" extends JGTModel {").append("\n");
+        codeBuilder.append("").append("\n");
+
+        List<Parameter> parameterList = grassTask.getParameter();
+        if (parameterList.size() > 0) {
+            for( Parameter parameter : parameterList ) {
+                String parameterName = parameter.getName().trim();
+                String parameterDescription = parameter.getDescription().trim();
+                String isRequired = parameter.getRequired().trim();
+                String defaultValue = parameter.getDefault();
+
+                codeBuilder.append(INDENT).append("@Description(\"").append(parameterDescription);
+                if (isRequired.trim().equals("no")) {
+                    codeBuilder.append(" (optional)");
+                }
+                codeBuilder.append("\")\n");
+                codeBuilder.append(INDENT).append("@In\n");
+                codeBuilder.append(INDENT).append("public String ").append(parameterName);
+                if (defaultValue != null) {
+                    codeBuilder.append(" = ").append(defaultValue.trim());
+                }
+                codeBuilder.append(";\n\n");
+
+                // String multiple = parameter.getMultiple().trim();
+                // System.out.println("\t\tMultiple: " + multiple);
+
+                // Values values = parameter.getValues();
+                // if (values != null) {
+                // System.out.println("\t\tValues:");
+                // List<Value> value = values.getValue();
+                // for( Value v : value ) {
+                // String name2 = v.getName().trim();
+                // System.out.print("\t\t\t" + name2 + " - ");
+                // String description = v.getDescription().trim();
+                // System.out.println(description);
+                // }
+                // }
+            }
+        }
+
+        List<Flag> flagList = grassTask.getFlag();
+        for( Flag flag : flagList ) {
+            String flagName = flag.getName().trim();
+            String descr = flag.getDescription().trim();
+            codeBuilder.append(INDENT).append("@Description(\"").append(descr).append("\")\n");
+            codeBuilder.append(INDENT).append("@In\n");
+            codeBuilder.append(INDENT).append("public String ").append(flagName).append(";\n\n");
+        }
+
         codeBuilder.append("}").append("\n");
-
     }
-
     public String getOms3Class() {
         return codeBuilder.toString();
     }
