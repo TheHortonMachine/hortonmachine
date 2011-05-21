@@ -21,9 +21,24 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
+
+import org.jgrasstools.grass.dtd64.GrassInterface;
+import org.jgrasstools.grass.dtd64.Task;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 /**
  * Grass utilities.
@@ -56,6 +71,35 @@ public class GrassUtils {
 
     // The default prefix for temporary files and folders
     public static final String TMP_PREFIX = "JGT-";
+
+    /**
+     * Get the jaxb grass {@link Task} for a given xml string.
+     * 
+     * @param grassXml te xml string to parse.
+     * @return the grass task.
+     * @throws Exception
+     */
+    public static Task getTask( String grassXml ) throws Exception {
+        String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
+        String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
+        JAXBContext jaxbContext = JAXBContext.newInstance(GrassInterface.class);
+
+        XMLReader xmlreader = XMLReaderFactory.createXMLReader();
+        xmlreader.setFeature(FEATURE_NAMESPACES, true);
+        xmlreader.setFeature(FEATURE_NAMESPACE_PREFIXES, true);
+        xmlreader.setEntityResolver(new EntityResolver(){
+            public InputSource resolveEntity( String publicId, String systemId ) throws SAXException, IOException {
+                InputSource inputSource = new InputSource(GrassInterface.class.getResourceAsStream("grass-interface.dtd"));
+                return inputSource;
+            }
+        });
+
+        InputSource input = new InputSource(new StringReader(grassXml));
+        Source source = new SAXSource(xmlreader, input);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        Task grassInterface = (Task) unmarshaller.unmarshal(source);
+        return grassInterface;
+    }
 
     /**
      * Creates a path and folder in the system's default temporary files path. This will be used to store temporary GRASS mapsets

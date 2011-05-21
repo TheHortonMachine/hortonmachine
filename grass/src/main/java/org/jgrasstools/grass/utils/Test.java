@@ -24,40 +24,20 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 public class Test {
 
-    private static final String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
-    private static final String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
-
     public Test() throws Exception {
         System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, "/usr/lib/grass64");
 
         GrassRunner grassRunner = new GrassRunner(null, null, false);
         String result = grassRunner.runModule(new String[]{"/usr/lib/grass64/bin/v.in.ascii", "--interface-description"});
 
-        System.out.println(result);
+        Task task = GrassUtils.getTask(result);
 
-        JAXBContext jaxbContext = JAXBContext.newInstance(GrassInterface.class);
-
-        XMLReader xmlreader = XMLReaderFactory.createXMLReader();
-        xmlreader.setFeature(FEATURE_NAMESPACES, true);
-        xmlreader.setFeature(FEATURE_NAMESPACE_PREFIXES, true);
-        xmlreader.setEntityResolver(new EntityResolver(){
-            public InputSource resolveEntity( String publicId, String systemId ) throws SAXException, IOException {
-                InputSource inputSource = new InputSource(GrassInterface.class.getResourceAsStream("grass-interface.dtd"));
-                return inputSource;
-            }
-        });
-
-        InputSource input = new InputSource(new StringReader(result));
-        Source source = new SAXSource(xmlreader, input);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        Task grassInterface = (Task) unmarshaller.unmarshal(source);
-
-        String name = grassInterface.getName();
-        String desc = grassInterface.getDescription();
+        String name = task.getName();
+        String desc = task.getDescription();
         System.out.println(name.trim());
         System.out.println(desc.trim());
 
-        List<Flag> flagList = grassInterface.getFlag();
+        List<Flag> flagList = task.getFlag();
         System.out.println("Flags:");
         for( Flag flag : flagList ) {
             String flagName = flag.getName().trim();
@@ -66,7 +46,7 @@ public class Test {
             System.out.println(descr);
         }
 
-        List<ParameterGroup> parameterGroupList = grassInterface.getParameterGroup();
+        List<ParameterGroup> parameterGroupList = task.getParameterGroup();
         if (parameterGroupList.size() > 0) {
             System.out.println("ParameterGroup:");
             for( ParameterGroup parameterGroup : parameterGroupList ) {
@@ -77,7 +57,7 @@ public class Test {
             }
         }
 
-        List<Parameter> parameterList = grassInterface.getParameter();
+        List<Parameter> parameterList = task.getParameter();
         if (parameterList.size() > 0) {
             System.out.println("Parameters:");
             for( Parameter parameter : parameterList ) {
