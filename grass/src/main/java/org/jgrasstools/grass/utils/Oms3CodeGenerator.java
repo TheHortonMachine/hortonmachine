@@ -31,28 +31,43 @@ public class Oms3CodeGenerator {
 
     public Oms3CodeGenerator( Task grassTask ) {
 
-        codeBuilder.append("import oms3.annotations.Author;");
-        codeBuilder.append("import oms3.annotations.Documentation;");
-        codeBuilder.append("import oms3.annotations.Label;");
-        codeBuilder.append("import oms3.annotations.Description;");
-        codeBuilder.append("import oms3.annotations.Execute;");
-        codeBuilder.append("import oms3.annotations.In;");
-        codeBuilder.append("import oms3.annotations.Keywords;");
-        codeBuilder.append("import oms3.annotations.License;");
-        codeBuilder.append("import oms3.annotations.Name;");
-        codeBuilder.append("import oms3.annotations.Out;");
-        codeBuilder.append("import oms3.annotations.Status;");
-        codeBuilder.append("");
-        codeBuilder.append("@Description(\"\")");
-        codeBuilder.append("@Author(name = \"Grass Developers Community\", contact = \"http://grass.osgeo.org\")");
-        codeBuilder.append("@Keywords(\"\")");
-        codeBuilder.append("@Label(\"\")");
-        codeBuilder.append("@Name(\"\")");
-        codeBuilder.append("@Status(Status.CERTIFIED)");
-        codeBuilder.append("@License(\"General Public License Version >=2)\")");
-        codeBuilder.append("public class Pitfiller extends JGTModel {");
-        codeBuilder.append("}");
+        String name = grassTask.getName().trim();
+        String classSafeName = name.replaceAll("\\.", "_");
+        String description = grassTask.getDescription();
+        String keyWords = grassTask.getKeywords();
+        String category = GrassUtils.name2GrassCategory(name);
 
+        codeBuilder.append("import org.jgrasstools.gears.libs.modules.JGTModel;").append("\n");
+        codeBuilder.append("").append("\n");
+        codeBuilder.append("import oms3.annotations.Author;").append("\n");
+        codeBuilder.append("import oms3.annotations.Documentation;").append("\n");
+        codeBuilder.append("import oms3.annotations.Label;").append("\n");
+        codeBuilder.append("import oms3.annotations.Description;").append("\n");
+        codeBuilder.append("import oms3.annotations.Execute;").append("\n");
+        codeBuilder.append("import oms3.annotations.In;").append("\n");
+        codeBuilder.append("import oms3.annotations.Keywords;").append("\n");
+        codeBuilder.append("import oms3.annotations.License;").append("\n");
+        codeBuilder.append("import oms3.annotations.Name;").append("\n");
+        codeBuilder.append("import oms3.annotations.Out;").append("\n");
+        codeBuilder.append("import oms3.annotations.Status;").append("\n");
+        codeBuilder.append("").append("\n");
+        if (description != null)
+            codeBuilder.append("@Description(\"" + description.trim() + "\")").append("\n");
+        codeBuilder.append("@Author(name = \"Grass Developers Community\", contact = \"http://grass.osgeo.org\")").append("\n");
+        if (keyWords != null)
+            codeBuilder.append("@Keywords(\"" + keyWords.trim() + "\")").append("\n");
+        if (category != null)
+            codeBuilder.append("@Label(\"" + category + "\")").append("\n");
+        codeBuilder.append("@Name(\"" + name + "\")").append("\n");
+        codeBuilder.append("@Status(Status.CERTIFIED)").append("\n");
+        codeBuilder.append("@License(\"General Public License Version >=2)\")").append("\n");
+        codeBuilder.append("public class " + classSafeName + " extends JGTModel {").append("\n");
+        codeBuilder.append("}").append("\n");
+
+    }
+
+    public String getOms3Class() {
+        return codeBuilder.toString();
     }
 
 }

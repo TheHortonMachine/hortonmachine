@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
@@ -56,6 +55,19 @@ public class GrassUtils {
      */
     public static String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
 
+    /**
+     * Category to use for raster processing.
+     */
+    public static String GRASS_RASTER_CATEGORY = "Grass Raster Processing";
+
+    /**
+     * Category to use for vector processing.
+     */
+    public static String GRASS_VECTOR_CATEGORY = "Grass Vector Processing";
+
+    /**
+     * Modules that can't be launched in non-interactive mode or simply do not make sense.
+     */
     public static final List<String> incompatibleGrassModules = Arrays.asList("v.build.polylines", "v.build", "v.category",
             "v.convert", "v.db.connect", "v.digit", "v.in.db", "v.in.sites", "v.kernel", "v.label.sa", "v.label", "v.lrs.create",
             "v.lrs.label", "v.lrs.segment", "v.lrs.where", "v.proj", "v.support", "v.to.rast3", "v.what", "v.what.rast",
@@ -318,5 +330,20 @@ public class GrassUtils {
     public static boolean isUnix() {
         final String os = System.getProperty("os.name").toLowerCase();
         return ((os.indexOf("nix") >= 0) || (os.indexOf("nux") >= 0));
+    }
+
+    /**
+     * Guess the category to use from the module name.
+     * 
+     * @param name the module's name.
+     * @return the guessed category or <code>null</code> if none was guessed.
+     */
+    public static String name2GrassCategory( String name ) {
+        if (name.toLowerCase().startsWith("r.")) {
+            return GRASS_RASTER_CATEGORY;
+        } else if (name.toLowerCase().startsWith("v.")) {
+            return GRASS_VECTOR_CATEGORY;
+        }
+        return null;
     }
 }
