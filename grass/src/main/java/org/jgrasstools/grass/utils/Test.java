@@ -12,11 +12,9 @@ public class Test {
 
         Task task = GrassUtils.getTask(result);
 
-        Oms3CodeGenerator gen = new Oms3CodeGenerator(task);
+        Oms3CodeWrapper gen = new Oms3CodeWrapper(task);
 
-        System.out.println(gen.getOms3Class());
-        
-        
+        System.out.println(gen.getGeneratedOms3Class());
 
         // String name = task.getName();
         // String desc = task.getDescription();

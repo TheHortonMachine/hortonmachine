@@ -31,6 +31,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 
+import org.jgrasstools.grass.dtd64.Gisprompt;
 import org.jgrasstools.grass.dtd64.GrassInterface;
 import org.jgrasstools.grass.dtd64.Task;
 import org.xml.sax.EntityResolver;
@@ -66,6 +67,26 @@ public class GrassUtils {
     public static String GRASS_VECTOR_CATEGORY = "Grass Vector Processing";
 
     /**
+     * GUI hint: item is an existing file path.
+     */
+    public static final String FILEIN_UI_HINT = "infile";
+
+    /**
+     * GUI hint: item is an existing folder path.
+     */
+    public static final String FOLDERIN_UI_HINT = "infolder";
+
+    /**
+     * GUI hint: item is a new file path.
+     */
+    public static final String FILEOUT_UI_HINT = "outfile";
+
+    /**
+     * GUI hint: item is a new folder path.
+     */
+    public static final String FOLDEROUT_UI_HINT = "outfolder";
+
+    /**
      * Modules that can't be launched in non-interactive mode or simply do not make sense.
      */
     public static final List<String> incompatibleGrassModules = Arrays.asList("v.build.polylines", "v.build", "v.category",
@@ -83,6 +104,11 @@ public class GrassUtils {
 
     // The default prefix for temporary files and folders
     public static final String TMP_PREFIX = "JGT-";
+
+    /**
+     * The base package to use to generate the wrapper code in.
+     */
+    public static final String BASEPACKAGE = "org/osgeo/grass/";
 
     /**
      * Get the jaxb grass {@link Task} for a given xml string.
@@ -346,4 +372,44 @@ public class GrassUtils {
         }
         return null;
     }
+
+    public static String getGuiHintsFromGisprompt( Gisprompt gisprompt ) {
+        String age = gisprompt.getAge();
+        String element = gisprompt.getElement();
+        String prompt = gisprompt.getPrompt();
+
+        if (age.trim().equals("old")) {
+            // existing file == open file hint
+            return FILEIN_UI_HINT;
+        } else if (age.trim().equals("new")) {
+            // new file == save file hint
+            return FILEOUT_UI_HINT;
+        } else if (age.trim().equals("mapset")) {
+            // mapset == open folder hint
+            return FOLDERIN_UI_HINT;
+        }
+        // else if (age.trim().equals("any")) {
+        // // ???
+        // return null;
+        // }
+
+        return null;
+    }
+
+    /**
+     * Get the full qualified name/structure of the given module.
+     * 
+     * <p>Note that the module can't have dots in it. It is supposed
+     * to be a class safe name with underscores.
+     * 
+     * @param module the module's name.
+     * @return the path to the module to be used in {@link File} construction.
+     */
+    public static String getModuleQualifiedStructure( String module ) {
+        String[] split = module.split("\\_");
+        String prefix = split[0];
+        String qualifiedName = BASEPACKAGE + prefix + "/" + module;
+        return qualifiedName;
+    }
+
 }

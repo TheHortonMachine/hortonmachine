@@ -19,7 +19,12 @@ package org.jgrasstools.grass.utils;
 
 import java.util.List;
 
+import oms3.annotations.Execute;
+import oms3.annotations.UI;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.grass.dtd64.Flag;
+import org.jgrasstools.grass.dtd64.Gisprompt;
 import org.jgrasstools.grass.dtd64.Parameter;
 import org.jgrasstools.grass.dtd64.Task;
 import org.jgrasstools.grass.dtd64.Value;
@@ -31,20 +36,31 @@ import org.jgrasstools.grass.dtd64.Values;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class Oms3CodeGenerator {
+public class Oms3CodeWrapper {
 
     private StringBuilder codeBuilder = new StringBuilder();
 
     private String INDENT = "\t";
 
-    public Oms3CodeGenerator( Task grassTask ) {
+    private String classSafeName;
 
-        String name = grassTask.getName().trim();
-        String classSafeName = name.replaceAll("\\.", "_");
-        String description = grassTask.getDescription();
+    private String name;
+
+    private String description;
+
+    private String category;
+
+    public Oms3CodeWrapper( Task grassTask ) {
+
+        name = grassTask.getName().trim();
+        classSafeName = name.replaceAll("\\.", "_");
+        description = grassTask.getDescription();
         String keyWords = grassTask.getKeywords();
-        String category = GrassUtils.name2GrassCategory(name);
+        category = GrassUtils.name2GrassCategory(name);
 
+        /*
+         * the main class
+         */
         codeBuilder.append("import org.jgrasstools.gears.libs.modules.JGTModel;").append("\n");
         codeBuilder.append("").append("\n");
         codeBuilder.append("import oms3.annotations.Author;").append("\n");
@@ -72,6 +88,9 @@ public class Oms3CodeGenerator {
         codeBuilder.append("public class ").append(classSafeName).append(" extends JGTModel {").append("\n");
         codeBuilder.append("").append("\n");
 
+        /*
+         * parameters
+         */
         List<Parameter> parameterList = grassTask.getParameter();
         if (parameterList.size() > 0) {
             for( Parameter parameter : parameterList ) {
@@ -79,7 +98,13 @@ public class Oms3CodeGenerator {
                 String parameterDescription = parameter.getDescription().trim();
                 String isRequired = parameter.getRequired().trim();
                 String defaultValue = parameter.getDefault();
+                Gisprompt gisprompt = parameter.getGisprompt();
+                String guiHints = null;
+                if (gisprompt != null)
+                    guiHints = GrassUtils.getGuiHintsFromGisprompt(gisprompt);
 
+                if (guiHints != null)
+                    codeBuilder.append(INDENT).append("@UI(\"").append(guiHints).append("\")\n");
                 codeBuilder.append(INDENT).append("@Description(\"").append(parameterDescription);
                 if (isRequired.trim().equals("no")) {
                     codeBuilder.append(" (optional)");
@@ -109,6 +134,9 @@ public class Oms3CodeGenerator {
             }
         }
 
+        /*
+         * flags
+         */
         List<Flag> flagList = grassTask.getFlag();
         for( Flag flag : flagList ) {
             String flagName = flag.getName().trim();
@@ -118,10 +146,35 @@ public class Oms3CodeGenerator {
             codeBuilder.append(INDENT).append("public String ").append(flagName).append(";\n\n");
         }
 
+        /*
+         * execution method
+         */
+        codeBuilder.append("\n");
+        codeBuilder.append(INDENT).append("@Execute").append("\n");
+        codeBuilder.append(INDENT).append("public void process() throws Exception {").append("\n");
+        codeBuilder.append(INDENT).append("}").append("\n\n");
+
         codeBuilder.append("}").append("\n");
     }
-    public String getOms3Class() {
+
+    public String getGeneratedOms3Class() {
         return codeBuilder.toString();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getClassSafeName() {
+        return classSafeName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getCategory() {
+        return category;
     }
 
 }
