@@ -18,9 +18,7 @@
 package org.jgrasstools.grass.utils;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -33,24 +31,19 @@ import java.util.Map;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GrassRunner implements GrassRunnerListener {
+public class GrassRunner {
     private List<GrassRunnerListener> listeners = new ArrayList<GrassRunnerListener>();
-    private String tmpMapset;
-    private File tmpGisrc;
-    private final boolean isLatLong;
     private final PrintStream outputStream;
     private final PrintStream errorStream;
     private StringBuffer outSb = new StringBuffer();
     private StringBuffer errSb = new StringBuffer();
 
-    public GrassRunner( final PrintStream outputStream, final PrintStream errorStream, boolean isLatLong ) {
+    public GrassRunner( final PrintStream outputStream, final PrintStream errorStream ) {
         this.outputStream = outputStream;
         this.errorStream = errorStream;
-        this.isLatLong = isLatLong;
     }
 
-    public String runModule( String[] cmdArgs ) throws Exception {
-        addListener(this);
+    public String runModule( String[] cmdArgs, final String mapset, String gisrc ) throws Exception {
 
         String gisbaseProperty = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);
         if (gisbaseProperty == null || !new File(gisbaseProperty).exists()) {
@@ -65,9 +58,8 @@ public class GrassRunner implements GrassRunnerListener {
         processBuilder.directory(new File(homeDir));
         Map<String, String> environment = processBuilder.environment();
 
-        tmpGisrc = File.createTempFile(GrassUtils.TMP_PREFIX, ".gisrc");
         environment.put("GISBASE", gisbaseProperty);
-        environment.put("GISRC", tmpGisrc.getAbsolutePath());
+        environment.put("GISRC", gisrc);
         environment.put("LD_LIBRARY_PATH", gisbaseProperty + "/lib");
 
         if (GrassUtils.isWindows()) {
@@ -76,22 +68,7 @@ public class GrassRunner implements GrassRunnerListener {
             environment.put("PATH", "$PATH:$GISBASE/bin:$GISBASE/scripts");
         }
 
-        tmpMapset = GrassUtils.createTemporaryMapsetName();
-        GrassUtils.createTemporaryMapset(tmpMapset, isLatLong);
-
-        File tmpMapsetFile = new File(tmpMapset);
-        File tmpLocationFile = tmpMapsetFile.getParentFile();
-        File tmpGrassdbFile = tmpLocationFile.getParentFile();
-
-        BufferedWriter gisRcWriter = new BufferedWriter(new FileWriter(tmpGisrc));
-        gisRcWriter.write("GISDBASE: " + tmpGrassdbFile.getAbsolutePath() + "\n");
-        gisRcWriter.write("LOCATION_NAME: " + tmpLocationFile.getName() + "\n");
-        gisRcWriter.write("MAPSET: " + tmpMapsetFile.getName() + "\n");
-        gisRcWriter.write("GRASS_GUI: text\n");
-        gisRcWriter.close();
-
         final Process process = processBuilder.start();
-
         Thread outputThread = new Thread(){
             public void run() {
                 try {
@@ -108,7 +85,7 @@ public class GrassRunner implements GrassRunnerListener {
                 } finally {
                     outputDone[0] = true;
                     for( GrassRunnerListener listener : listeners ) {
-                        listener.processfinished(tmpMapset);
+                        listener.processfinished(mapset);
                     }
                 }
             }
@@ -181,8 +158,8 @@ public class GrassRunner implements GrassRunnerListener {
         }
     };
 
-    @Override
-    public void processfinished( String mapsetFolder ) {
-        GrassUtils.deleteTempMapset(mapsetFolder);
-    }
+    // @Override
+    // public void processfinished( String mapsetFolder ) {
+    // GrassUtils.deleteTempMapset(mapsetFolder);
+    // }
 }

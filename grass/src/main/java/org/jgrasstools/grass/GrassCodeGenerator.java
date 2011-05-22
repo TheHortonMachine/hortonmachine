@@ -42,20 +42,25 @@ public class GrassCodeGenerator {
         File gisbaseFile = new File("/usr/lib/grass64");
         File binFolder = new File(gisbaseFile, "bin");
 
+        String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
+        String mapset = mapsetForRun[0];
+        String gisrc = mapsetForRun[1];
+
         File[] binFiles = binFolder.listFiles();
         for( File binFile : binFiles ) {
             String binName = binFile.getName().replaceFirst("\\.exe", "");
             System.out.println("Generating class: " + binName);
-//            if (GrassUtils.incompatibleGrassModules.contains(binName)) {
-//                continue;
-//            }
+            // if (GrassUtils.incompatibleGrassModules.contains(binName)) {
+            // continue;
+            // }
 
             // if (!binName.equals("nviz_cmd")) {
             // continue;
             // }
 
-            GrassRunner grassRunner = new GrassRunner(null, null, false);
-            String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"});
+            GrassRunner grassRunner = new GrassRunner(null, null);
+            String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"}, mapset,
+                    gisrc);
             Task task;
             try {
                 task = GrassUtils.getTask(result);

@@ -54,7 +54,7 @@ public class GrassUtils {
      */
     public static String VARIABLE_PARAMETER_PREFIX = "$$";
     public static String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
-    
+
     /**
      * Prefix for flag variables names. 
      */
@@ -65,7 +65,7 @@ public class GrassUtils {
      * Suffix for parameter variables names. 
      */
     public static String VARIABLE_PARAMETER_SUFFIX = "PARAMETER";
-    
+
     /**
      * Suffix for flag variables names. 
      */
@@ -88,7 +88,7 @@ public class GrassUtils {
      * Category to use for raster processing.
      */
     public static String GRASS_RASTER_CATEGORY = "Grass Raster Modules";
-    
+
     /**
      * Category to use for raster 3d processing.
      */
@@ -108,7 +108,7 @@ public class GrassUtils {
      * Category to use for generic.
      */
     public static String GRASS_GENERAL_CATEGORY = "Grass General Modules";
-    
+
     /**
      * Category to use for database.
      */
@@ -277,6 +277,31 @@ public class GrassUtils {
         } catch (final IOException e) {
             throw (e);
         }
+    }
+
+    /**
+     * Prepare a tmp mapset for run. 
+     * 
+     * @param isLatLong
+     * @return an array containing [mapset, gisrc].
+     * @throws IOException
+     */
+    public static String[] prepareMapsetForRun( boolean isLatLong ) throws IOException {
+        String tmpMapset = GrassUtils.createTemporaryMapsetName();
+        GrassUtils.createTemporaryMapset(tmpMapset, isLatLong);
+        File tmpMapsetFile = new File(tmpMapset);
+        File tmpLocationFile = tmpMapsetFile.getParentFile();
+        File tmpGrassdbFile = tmpLocationFile.getParentFile();
+
+        File tmpGisrc = File.createTempFile(GrassUtils.TMP_PREFIX, ".gisrc");
+        BufferedWriter gisRcWriter = new BufferedWriter(new FileWriter(tmpGisrc));
+        gisRcWriter.write("GISDBASE: " + tmpGrassdbFile.getAbsolutePath() + "\n");
+        gisRcWriter.write("LOCATION_NAME: " + tmpLocationFile.getName() + "\n");
+        gisRcWriter.write("MAPSET: " + tmpMapsetFile.getName() + "\n");
+        gisRcWriter.write("GRASS_GUI: text\n");
+        gisRcWriter.close();
+
+        return new String[]{tmpMapset, tmpGisrc.getAbsolutePath()};
     }
 
     /**
