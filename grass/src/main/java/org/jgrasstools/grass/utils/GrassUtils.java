@@ -73,6 +73,7 @@ public class GrassUtils {
      * Substitution string from dots in parameters names. 
      */
     public static String VARIABLE_DOT_SUBSTITUTION = "__";
+    public static String VARIABLE_DOT_SUBSTITUTION_REG = "\\_\\_";
 
     /**
      * Key used to set and retrieve the grass installation location.
