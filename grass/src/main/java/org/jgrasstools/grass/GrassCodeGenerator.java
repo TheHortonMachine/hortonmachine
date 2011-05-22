@@ -46,13 +46,13 @@ public class GrassCodeGenerator {
         for( File binFile : binFiles ) {
             String binName = binFile.getName().replaceFirst("\\.exe", "");
             System.out.println("Generating class: " + binName);
-            if (GrassUtils.incompatibleGrassModules.contains(binName)) {
-                continue;
-            }
-            
-            if (!binName.equals("nviz_cmd")) {
-                continue;
-            }
+//            if (GrassUtils.incompatibleGrassModules.contains(binName)) {
+//                continue;
+//            }
+
+            // if (!binName.equals("nviz_cmd")) {
+            // continue;
+            // }
 
             GrassRunner grassRunner = new GrassRunner(null, null, false);
             String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"});

@@ -18,7 +18,9 @@
 package org.jgrasstools.grass.utils;
 
 import java.util.List;
+import java.util.TreeSet;
 
+import static org.jgrasstools.grass.utils.GrassUtils.*;
 import org.jgrasstools.grass.dtd64.Flag;
 import org.jgrasstools.grass.dtd64.Gisprompt;
 import org.jgrasstools.grass.dtd64.Parameter;
@@ -47,7 +49,7 @@ public class Oms3CodeWrapper {
     public Oms3CodeWrapper( Task grassTask ) {
 
         name = grassTask.getName().trim();
-        classSafeName = name.replaceAll("\\.", "_");
+        classSafeName = name.replaceAll("\\.", VARIABLE_DOT_SUBSTITUTION);
         description = grassTask.getDescription();
         description = cleanDescription(description);
         String keyWords = grassTask.getKeywords();
@@ -87,6 +89,8 @@ public class Oms3CodeWrapper {
         codeBuilder.append("public class ").append(classSafeName).append(" extends JGTModel {").append("\n");
         codeBuilder.append("").append("\n");
 
+        TreeSet<String> namesMap = new TreeSet<String>();
+
         /*
          * parameters
          */
@@ -94,7 +98,12 @@ public class Oms3CodeWrapper {
         if (parameterList.size() > 0) {
             for( Parameter parameter : parameterList ) {
                 String parameterName = parameter.getName().trim();
-                parameterName = GrassUtils.checkValidVar(parameterName, "$");
+                parameterName = parameterName.replaceAll("\\.", VARIABLE_DOT_SUBSTITUTION);
+                parameterName = VARIABLE_PARAMETER_PREFIX + parameterName + VARIABLE_PARAMETER_SUFFIX;
+                if (!namesMap.add(parameterName)) {
+                    System.err.println(INDENT + "Found double parameter " + parameterName + " in " + name);
+                    continue;
+                }
 
                 String parameterDescription = parameter.getDescription().trim();
                 parameterDescription = cleanDescription(parameterDescription);
@@ -142,13 +151,18 @@ public class Oms3CodeWrapper {
         List<Flag> flagList = grassTask.getFlag();
         for( Flag flag : flagList ) {
             String flagName = flag.getName().trim();
-            flagName = flagName + "FLAG";
-            flagName = GrassUtils.checkValidVar(flagName, "_");
+            flagName = flagName.replaceAll("\\.", VARIABLE_DOT_SUBSTITUTION);
+            flagName = VARIABLE_FLAG_PREFIX + flagName + VARIABLE_FLAG_SUFFIX;
+            if (!namesMap.add(flagName)) {
+                System.err.println(INDENT + "Found double flag " + flagName + " in " + name);
+                continue;
+            }
+
             String descr = flag.getDescription().trim();
             descr = cleanDescription(descr);
             codeBuilder.append(INDENT).append("@Description(\"").append(descr).append("\")\n");
             codeBuilder.append(INDENT).append("@In\n");
-            codeBuilder.append(INDENT).append("public String ").append(flagName).append(";\n\n");
+            codeBuilder.append(INDENT).append("public boolean ").append(flagName).append(" = false;\n\n");
         }
 
         /*
@@ -161,7 +175,6 @@ public class Oms3CodeWrapper {
 
         codeBuilder.append("}").append("\n");
     }
-
     /**
      * Clean description from quotes and linefeeds. 
      * 
