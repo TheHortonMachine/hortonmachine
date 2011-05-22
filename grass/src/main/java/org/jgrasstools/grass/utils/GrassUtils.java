@@ -381,6 +381,12 @@ public class GrassUtils {
         return null;
     }
 
+    /**
+     * Get the hints string from the {@link Gisprompt}.
+     * 
+     * @param gisprompt the gisprompt to use.
+     * @return the guihint to use for gui generation.
+     */
     public static String getGuiHintsFromGisprompt( Gisprompt gisprompt ) {
         String age = gisprompt.getAge();
         String element = gisprompt.getElement();
