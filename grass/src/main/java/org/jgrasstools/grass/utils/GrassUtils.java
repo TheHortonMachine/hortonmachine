@@ -53,11 +53,13 @@ public class GrassUtils {
      * Prefix for parameter variables names. 
      */
     public static String VARIABLE_PARAMETER_PREFIX = "$$";
+    public static String VARIABLE_PARAMETER_PREFIX_REGEX = "\\$\\$";
     
     /**
      * Prefix for flag variables names. 
      */
     public static String VARIABLE_FLAG_PREFIX = "$$";
+    public static String VARIABLE_FLAG_PREFIX_REGEX = "\\$\\$";
 
     /**
      * Suffix for parameter variables names. 
