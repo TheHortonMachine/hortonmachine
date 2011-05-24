@@ -143,6 +143,10 @@ public class GrassRunner {
     }
 
     private void print( String line ) {
+        if (line.contains("\u0008")) {
+            line = line.replaceAll("\u0008+", "\n");
+        }
+
         if (outputStream != null) {
             outputStream.append(line).append("\n");
         } else {
@@ -162,4 +166,5 @@ public class GrassRunner {
     // public void processfinished( String mapsetFolder ) {
     // GrassUtils.deleteTempMapset(mapsetFolder);
     // }
+
 }

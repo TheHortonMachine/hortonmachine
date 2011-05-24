@@ -289,7 +289,19 @@ public class GrassUtils {
     public static String[] prepareMapsetForRun( boolean isLatLong ) throws IOException {
         String tmpMapset = GrassUtils.createTemporaryMapsetName();
         GrassUtils.createTemporaryMapset(tmpMapset, isLatLong);
-        File tmpMapsetFile = new File(tmpMapset);
+        String gisRc = createGisRc(tmpMapset);
+        return new String[]{tmpMapset, gisRc};
+    }
+
+    /**
+     * Create a gisrc file to run grass commands in a given mapset.
+     * 
+     * @param mapsetPath the mapset path.
+     * @return the created gisrc path.
+     * @throws IOException
+     */
+    public static String createGisRc( String mapsetPath ) throws IOException {
+        File tmpMapsetFile = new File(mapsetPath);
         File tmpLocationFile = tmpMapsetFile.getParentFile();
         File tmpGrassdbFile = tmpLocationFile.getParentFile();
 
@@ -301,7 +313,7 @@ public class GrassUtils {
         gisRcWriter.write("GRASS_GUI: text\n");
         gisRcWriter.close();
 
-        return new String[]{tmpMapset, tmpGisrc.getAbsolutePath()};
+        return tmpGisrc.getAbsolutePath();
     }
 
     /**

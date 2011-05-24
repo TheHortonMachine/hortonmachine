@@ -34,6 +34,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
  */
 public class ModuleSupporter {
     public static void processModule( Object owner ) throws ModelsIOException, IOException, IllegalAccessException, Exception {
+
         String gisBase = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);
         File gisBasefile = new File(gisBase);
         if (!gisBasefile.exists()) {
@@ -45,8 +46,6 @@ public class ModuleSupporter {
         if (!grassCommandFile.exists()) {
             throw new ModelsIOException("Command does not exist: " + grassCommandFile.getAbsolutePath(), owner);
         }
-
-        String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
 
         GrassRunner runner = new GrassRunner(System.out, System.err);
 
@@ -73,6 +72,8 @@ public class ModuleSupporter {
             }
         }
 
+        String mapset = null;
+
         // and parameters
         for( Field field : fields ) {
             String parameterName = field.getName();
@@ -87,21 +88,45 @@ public class ModuleSupporter {
                 StringBuilder sb = new StringBuilder();
                 sb.append(parameterName);
                 sb.append("=");
-                sb.append(valueObj.toString());
-                args.add(sb.toString());
+
+                String valueString = valueObj.toString();
 
                 // if parameter is input file use r.external
                 UI uiAnnotation = field.getAnnotation(UI.class);
                 if (uiAnnotation != null) {
                     String value = uiAnnotation.value();
                     if (value.toLowerCase().contains("infile")) {
-                        GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
                         String inPath = valueObj.toString();
                         File inFile = new File(inPath);
-                        tmpRunner.runModule(new String[]{"r.external", inPath, inFile.getName()}, mapsetForRun[0],
-                                mapsetForRun[1]);
+                        if (isGrassFile(inPath)) {
+                            String name = getGrassRasterName(inPath);
+                            File mapsetFile = getMapsetFile(inPath);
+                            if (mapset == null)
+                                mapset = mapsetFile.getAbsolutePath();
+                            valueString = name + "@" + mapsetFile.getName();
+                        } else {
+                            // TODO
+                            String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
+                            GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
+                            tmpRunner.runModule(new String[]{"r.external", inPath, inFile.getName()}, mapsetForRun[0],
+                                    mapsetForRun[1]);
+                            mapset = mapsetForRun[0];
+                        }
+                    } else if (value.toLowerCase().contains("outfile")) {
+                        String outPath = valueObj.toString();
+                        if (isGrassFile(outPath)) {
+                            String name = getGrassRasterName(outPath);
+                            File mapsetFile = getMapsetFile(outPath);
+                            if (mapset == null)
+                                mapset = mapsetFile.getAbsolutePath();
+                            valueString = name + "@" + mapsetFile.getName();
+                        }
                     }
                 }
+
+                sb.append(valueString);
+                args.add(sb.toString());
+
             }
 
         }
@@ -114,6 +139,50 @@ public class ModuleSupporter {
         System.out.println();
         System.out.println();
 
-        runner.runModule(argsArray, mapsetForRun[0], mapsetForRun[1]);
+        String gisrc = null;
+        if (mapset == null) {
+            String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
+            mapset = mapsetForRun[0];
+            gisrc = mapsetForRun[1];
+        }
+        if (gisrc == null) {
+            gisrc = GrassUtils.createGisRc(mapset);
+        }
+        runner.runModule(argsArray, mapset, gisrc);
+    }
+
+    /**
+     * Checks if the given path is a GRASS raster file.
+     * 
+     * <p>Note that there is no check on the existence of the file.
+     * 
+     * @param path the path to check.
+     * @return true if the file is a grass raster.
+     */
+    public static boolean isGrassFile( String path ) {
+        File file = new File(path);
+        File cellFolderFile = file.getParentFile();
+        File mapsetFile = cellFolderFile.getParentFile();
+        File windFile = new File(mapsetFile, "WIND");
+        return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
+    }
+
+    public static String getLocationPath( String path ) {
+        File file = new File(path);
+        File cellFolderFile = file.getParentFile();
+        File mapsetFile = cellFolderFile.getParentFile();
+        return mapsetFile.getParent();
+    }
+
+    public static File getMapsetFile( String path ) {
+        File file = new File(path);
+        File cellFolderFile = file.getParentFile();
+        File mapsetFile = cellFolderFile.getParentFile();
+        return mapsetFile;
+    }
+
+    public static String getGrassRasterName( String path ) {
+        File file = new File(path);
+        return file.getName();
     }
 }
