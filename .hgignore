@@ -21,5 +21,4 @@ syntax: regexp
 .orig$
 .swp$
 .directory
-
 ^grass/src/main/java/org/osgeo/

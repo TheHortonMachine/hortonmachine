@@ -65,7 +65,14 @@ public class GrassRunner {
         if (GrassUtils.isWindows()) {
             environment.put("PATH", "%PATH%;%GISBASE%/bin:%GISBASE%/scripts");
         } else {
-            environment.put("PATH", "$PATH:$GISBASE/bin:$GISBASE/scripts");
+            // environment.put("PATH", "$PATH:$GISBASE/bin:$GISBASE/scripts");
+            String path = "";
+            if (environment.containsKey("Path")) {
+                path = environment.get("Path");
+            }
+            path = path + File.pathSeparator + gisbaseProperty + File.separator + "bin";
+            path = path + File.pathSeparator + gisbaseProperty + File.separator + "lib";
+            environment.put("Path", path);
         }
 
         final Process process = processBuilder.start();
@@ -100,7 +107,7 @@ public class GrassRunner {
                     String line;
                     while( (line = br.readLine()) != null ) {
                         print(line);
-                    }
+                    }   
                 } catch (Exception e) {
                     e.printStackTrace();
                     printErr(e.getLocalizedMessage());
@@ -166,5 +173,27 @@ public class GrassRunner {
     // public void processfinished( String mapsetFolder ) {
     // GrassUtils.deleteTempMapset(mapsetFolder);
     // }
+    
+    
+    public static void main(String[] args) throws Exception {
+
+        System.setProperty("PATH", "/home/moovida/TMP/test/");
+        
+        ProcessBuilder builder = new ProcessBuilder("list.sh");
+        Map<String, String> environment = builder.environment();
+
+        environment.put("PATH", "/home/moovida/TMP/test/");
+
+        Process process = builder.start();
+        
+        InputStream is = process.getInputStream();
+        InputStreamReader isr = new InputStreamReader(is);
+        BufferedReader br = new BufferedReader(isr);
+        String line;
+        while( (line = br.readLine()) != null ) {
+            System.out.println(line);
+        }
+    }
+
 
 }

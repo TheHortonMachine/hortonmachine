@@ -20,6 +20,9 @@ package org.jgrasstools.grass;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jgrasstools.grass.dtd64.Task;
 import org.jgrasstools.grass.utils.GrassRunner;
@@ -41,25 +44,33 @@ public class GrassCodeGenerator {
 
         File gisbaseFile = new File("/usr/lib/grass64");
         File binFolder = new File(gisbaseFile, "bin");
+        File scriptsFolder = new File(gisbaseFile, "scripts");
 
         String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
         String mapset = mapsetForRun[0];
         String gisrc = mapsetForRun[1];
 
+        List<File> allFiles = new ArrayList<File>();
         File[] binFiles = binFolder.listFiles();
-        for( File binFile : binFiles ) {
+        List<File> binsList = Arrays.asList(binFiles);
+        allFiles.addAll(binsList);
+        File[] scriptFiles = scriptsFolder.listFiles();
+        List<File> scriptsList = Arrays.asList(scriptFiles);
+        allFiles.addAll(scriptsList);
+
+        for( File binFile : allFiles ) {
             String binName = binFile.getName().replaceFirst("\\.exe", "");
             System.out.println("Generating class: " + binName);
             // if (GrassUtils.incompatibleGrassModules.contains(binName)) {
             // continue;
             // }
 
-            // if (!binName.equals("nviz_cmd")) {
-            // continue;
-            // }
+             if (!binName.equals("d.vect.thematic")) {
+             continue;
+             }
 
             GrassRunner grassRunner = new GrassRunner(null, null);
-            String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"}, mapset,
+            String result = grassRunner.runModule(new String[]{binFile.getName(), "--interface-description"}, mapset,
                     gisrc);
             Task task;
             try {
@@ -88,4 +99,6 @@ public class GrassCodeGenerator {
         }
 
     }
+    
+    
 }
