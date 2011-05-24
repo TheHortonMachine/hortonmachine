@@ -26,6 +26,8 @@ import java.util.List;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 /**
  * Module supporter for execution.
@@ -67,7 +69,11 @@ public class ModuleSupporter {
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_PREFIX_REGEX, "");
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_SUFFIX, "");
 
-                    args.add("-" + flagName);
+                    if (flagName.length() == 1) {
+                        args.add("-" + flagName);
+                    }else{
+                        args.add("--" + flagName);
+                    }
                 }
             }
         }
@@ -130,7 +136,7 @@ public class ModuleSupporter {
             }
 
         }
-
+        
         String[] argsArray = args.toArray(new String[0]);
         System.out.println("Command launched: ");
         for( String arg : argsArray ) {
