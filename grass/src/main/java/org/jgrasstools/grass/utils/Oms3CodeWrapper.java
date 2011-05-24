@@ -62,13 +62,7 @@ public class Oms3CodeWrapper {
         codeBuilder.append("package ").append(modulePackage).append(";\n");
         codeBuilder.append("").append("\n");
         codeBuilder.append("import org.jgrasstools.gears.libs.modules.JGTModel;").append("\n");
-        codeBuilder.append("import java.io.File;").append("\n");
-        codeBuilder.append("import java.lang.reflect.Field;").append("\n");
-        codeBuilder.append("import java.util.ArrayList;").append("\n");
-        codeBuilder.append("import java.util.List;").append("\n");
-        codeBuilder.append("import org.jgrasstools.gears.libs.exceptions.ModelsIOException;").append("\n");
-        codeBuilder.append("import org.jgrasstools.grass.utils.GrassRunner;").append("\n");
-        codeBuilder.append("import org.jgrasstools.grass.utils.GrassUtils;").append("\n");
+        codeBuilder.append("import org.jgrasstools.grass.utils.ModuleSupporter;").append("\n");
         codeBuilder.append("").append("\n");
         codeBuilder.append("import oms3.annotations.Author;").append("\n");
         codeBuilder.append("import oms3.annotations.Documentation;").append("\n");
@@ -178,82 +172,12 @@ public class Oms3CodeWrapper {
         codeBuilder.append("\n");
         codeBuilder.append(INDENT).append("@Execute").append("\n");
         codeBuilder.append(INDENT).append("public void process() throws Exception {").append("\n");
-        executeGenetration();
+        codeBuilder.append(INDENT).append(INDENT).append("ModuleSupporter.processModule(this);").append("\n");
         codeBuilder.append(INDENT).append("}").append("\n\n");
-
 
         codeBuilder.append("}").append("\n");
     }
 
-    private void executeGenetration(  ) {
-        codeBuilder.append("        String gisBase = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);                                           ").append("\n");
-        codeBuilder.append("        File gisBasefile = new File(gisBase);                                                                                    ").append("\n");
-        codeBuilder.append("        if (!gisBasefile.exists()) {                                                                                             ").append("\n");
-        codeBuilder.append("            throw new ModelsIOException(\"Gisbase variable not properly set. Check your settings!\", this);                        ").append("\n");
-        codeBuilder.append("        }                                                                                                                        ").append("\n");
-        codeBuilder.append("        String className = this.getClass().getSimpleName();                                                                      ").append("\n");
-        codeBuilder.append("        className = className.replaceAll(GrassUtils.VARIABLE_DOT_SUBSTITUTION, \".\");                                             ").append("\n");
-        codeBuilder.append("        File grassCommandFile = new File(gisBase, \"bin/\" + className);                                                           ").append("\n");
-        codeBuilder.append("        if (!grassCommandFile.exists()) {                                                                                        ").append("\n");
-        codeBuilder.append("            throw new ModelsIOException(\"Command does not exist: \" + grassCommandFile.getAbsolutePath(), this);                  ").append("\n");
-        codeBuilder.append("        }                                                                                                                        ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        GrassRunner runner = new GrassRunner(System.out, System.err, false);                                                     ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        List<String> args = new ArrayList<String>();                                                                             ").append("\n");
-        codeBuilder.append("        args.add(grassCommandFile.getAbsolutePath());                                                                            ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        Field[] fields = this.getClass().getFields();                                                                            ").append("\n");
-        codeBuilder.append("        // first flags                                                                                                           ").append("\n");
-        codeBuilder.append("        for( Field field : fields ) {                                                                                            ").append("\n");
-        codeBuilder.append("            String flagName = field.getName();                                                                                   ").append("\n");
-        codeBuilder.append("            if (!flagName.endsWith(GrassUtils.VARIABLE_FLAG_SUFFIX)) {                                                           ").append("\n");
-        codeBuilder.append("                continue;                                                                                                        ").append("\n");
-        codeBuilder.append("            }                                                                                                                    ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("            Object valueObj = field.get(this);                                                                                   ").append("\n");
-        codeBuilder.append("            if (valueObj instanceof Boolean) {                                                                                   ").append("\n");
-        codeBuilder.append("                Boolean flagBoolean = (Boolean) valueObj;                                                                        ").append("\n");
-        codeBuilder.append("                if (flagBoolean) {                                                                                               ").append("\n");
-        codeBuilder.append("                    flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_PREFIX_REGEX, \"\");                                 ").append("\n");
-        codeBuilder.append("                    flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_SUFFIX, \"\");                                       ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("                    args.add(\"-\" + flagName);                                                                                    ").append("\n");
-        codeBuilder.append("                }                                                                                                                ").append("\n");
-        codeBuilder.append("            }                                                                                                                    ").append("\n");
-        codeBuilder.append("        }                                                                                                                        ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        // and parameters                                                                                                        ").append("\n");
-        codeBuilder.append("        for( Field field : fields ) {                                                                                            ").append("\n");
-        codeBuilder.append("            String parameterName = field.getName();                                                                              ").append("\n");
-        codeBuilder.append("            if (!parameterName.endsWith(GrassUtils.VARIABLE_PARAMETER_SUFFIX)) {                                                 ").append("\n");
-        codeBuilder.append("                continue;                                                                                                        ").append("\n");
-        codeBuilder.append("            }                                                                                                                    ").append("\n");
-        codeBuilder.append("            parameterName = parameterName.replaceFirst(GrassUtils.VARIABLE_PARAMETER_PREFIX_REGEX, \"\");                          ").append("\n");
-        codeBuilder.append("            parameterName = parameterName.replaceFirst(GrassUtils.VARIABLE_PARAMETER_SUFFIX, \"\");                              ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("            Object valueObj = field.get(this);                                                                                   ").append("\n");
-        codeBuilder.append("            if (valueObj != null) {                                                                                              ").append("\n");
-        codeBuilder.append("                StringBuilder sb = new StringBuilder();                                                                          ").append("\n");
-        codeBuilder.append("                sb.append(parameterName);                                                                                        ").append("\n");
-        codeBuilder.append("                sb.append(\"=\");                                                                                                  ").append("\n");
-        codeBuilder.append("                sb.append(valueObj.toString());                                                                                  ").append("\n");
-        codeBuilder.append("                args.add(sb.toString());                                                                                         ").append("\n");
-        codeBuilder.append("            }                                                                                                                    ").append("\n");
-        codeBuilder.append("        }                                                                                                                        ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        String[] argsArray = args.toArray(new String[0]);                                                                        ").append("\n");
-        codeBuilder.append("        System.out.println(\"Command launched: \");                                                                                ").append("\n");
-        codeBuilder.append("        for( String arg : argsArray ) {                                                                                          ").append("\n");
-        codeBuilder.append("            System.out.print(arg + \" \");                                                                                         ").append("\n");
-        codeBuilder.append("        }                                                                                                                        ").append("\n");
-        codeBuilder.append("        System.out.println();                                                                                                    ").append("\n");
-        codeBuilder.append("        System.out.println();                                                                                                    ").append("\n");
-        codeBuilder.append("                                                                                                                                 ").append("\n");
-        codeBuilder.append("        String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);                                                           ").append("\n");
-        codeBuilder.append("        runner.runModule(argsArray, mapsetForRun[0], mapsetForRun[1]);                                                           ").append("\n");
-    }
-    
     /**
      * Clean description from quotes and linefeeds. 
      * 

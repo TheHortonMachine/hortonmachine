@@ -183,7 +183,7 @@ public class GrassUtils {
         xmlreader.setFeature(FEATURE_NAMESPACE_PREFIXES, true);
         xmlreader.setEntityResolver(new EntityResolver(){
             public InputSource resolveEntity( String publicId, String systemId ) throws SAXException, IOException {
-                InputSource inputSource = new InputSource(GrassInterface.class.getResourceAsStream("grass-interface.dtd"));
+                InputSource inputSource = new InputSource(GrassInterface.class.getResourceAsStream("/grass-interface.dtd"));
                 return inputSource;
             }
         });

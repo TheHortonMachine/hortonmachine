@@ -67,6 +67,7 @@ public class GrassCodeGenerator {
             } catch (Exception e) {
                 // ignore
                 System.out.println("Ignoring: " + binName);
+                e.printStackTrace();
                 continue;
             }
             Oms3CodeWrapper gen = new Oms3CodeWrapper(task);
