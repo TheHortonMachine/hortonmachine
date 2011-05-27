@@ -39,11 +39,9 @@ import oms3.annotations.UI;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.math.Statistics;
 import org.geotools.referencing.operation.builder.AdvancedAffineBuilder;
-import org.geotools.referencing.operation.builder.AffineToGeometric;
 import org.geotools.referencing.operation.builder.MappedPosition;
 import org.geotools.referencing.operation.builder.MathTransformBuilder;
 import org.geotools.referencing.operation.builder.SimilarTransformBuilder;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.geometry.DirectPosition;
@@ -51,7 +49,6 @@ import org.opengis.geometry.DirectPosition;
 @Description("A module to calculate world file coefficients from set of GCPs")
 @Author(name = "Jan Jezek", contact = "http://code.google.com/p/oldmapsonline/")
 @Keywords("gcp, wld")
-@Label(JGTConstants.GENERICREADER)
 @Status(Status.EXPERIMENTAL)
 @Name("gcps2wld")
 @License("General Public License Version 3 (GPLv3)")
@@ -62,75 +59,75 @@ public class GroundControlPoints2World extends JGTModel {
     @In
     public String inFile;
 
-    @Description("todo")
+    @Description("pSkew")
     @In
     public Double pSkew;
 
-    @Description("todo")
+    @Description("pPhix")
     @In
     public Double pPhix;
 
-    @Description("todo")
+    @Description("pPhiy")
     @In
     public Double pPhiy;
 
-    @Description("todo")
+    @Description("pTx")
     @In
     public Double pTx;
 
-    @Description("todo")
+    @Description("pTy")
     @In
     public Double pTy;
 
-    @Description("todo")
+    @Description("pSx")
     @In
     public Double pSx;
 
-    @Description("todo")
+    @Description("pSy")
     @In
     public Double pSy;
 
-    @Description("todo")
+    @Description("doSimilar")
     @In
     public boolean doSimilar = false;
 
-    @Description("todo")
+    @Description("outScaley")
     @Out
     public double outScaley;
 
-    @Description("todo")
+    @Description("outScalex")
     @Out
     public double outScalex;
 
-    @Description("todo")
+    @Description("outSheary")
     @Out
     public double outSheary;
 
-    @Description("todo")
+    @Description("outShearx")
     @Out
     public double outShearx;
 
-    @Description("todo")
+    @Description("outTranslatex")
     @Out
     public double outTranslatex;
 
-    @Description("todo")
+    @Description("outTranslatey")
     @Out
     public double outTranslatey;
 
-    @Description("todo")
+    @Description("outErrmean")
     @Out
     public double outErrmean;
 
-    @Description("todo")
+    @Description("outErrrms")
     @Out
     public double outErrrms;
 
-    @Description("todo")
+    @Description("outErrmax")
     @Out
     public double outErrmax;
 
-    @Description("todo")
+    @Description("outErrmin")
     @Out
     public double outErrmin;
 
