@@ -85,7 +85,7 @@ public class ModelsSupporter {
     public final static String UITABLE = "UITABLE"; //$NON-NLS-1$
 
     /**
-     * The 9 directions around a pixel.
+     * The 9 directions around a pixel as <b>ROW/COL of the flowdirections grid</b>.
      * <p>
      * Also containing the central position 0,0
      * </p>
@@ -97,7 +97,7 @@ public class ModelsSupporter {
     public final static int[][] DIR = {{0, 0}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}};
 
     /**
-     * The 9 directions and their flow values around a pixel.
+     * The 9 directions and their flow values around a pixel as <b>ROW/COL of the flowdirections grid</b>..
      * <p>
      * Also containing the central position 0,0
      * </p>
@@ -109,7 +109,7 @@ public class ModelsSupporter {
     public final static int[][] DIR_WITHFLOW_ENTERING = {{0, 0, 0}, {0, 1, 5}, {-1, 1, 6}, {-1, 0, 7}, {-1, -1, 8}, {0, -1, 1}, {1, -1, 2}, {1, 0, 3}, {1, 1, 4}};
     public static final int[][] DIR_WITHFLOW_EXITING = {{0, 0, 0}, {-1, 0, 5}, {-1, 1, 6}, {-1, 0, 7}, {1, 1, 8}, {0, -1, 3}, {1, -1, 2}, {1, 0, 1}, {-1, -1, 4}, {0, 0, 9}, {0, 0, 10}};
     /*
-     * This is similar to exiting inverted, but is in cols and dows and have a particular order to work (in tca3d) with triangle.
+     * This is similar to exiting inverted, but is in cols and rows and have a particular order to work (in tca3d) with triangle.
      */
     public static final int[][] DIR_WITHFLOW_EXITING_INVERTED = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4}, {0, -1, 5}, {1, -1, 6}, {1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
 
