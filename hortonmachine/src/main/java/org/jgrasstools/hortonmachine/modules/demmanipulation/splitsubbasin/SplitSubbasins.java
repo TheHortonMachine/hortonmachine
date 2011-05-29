@@ -22,9 +22,6 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -37,6 +34,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -48,14 +46,17 @@ import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 @Description("A tool for" + " labeling the subbasins of a basin. Given the Hacks number of the channel"
         + " network, the subbasin up to a selected order are labeled. If Hack order 2 was"
         + " selected, the subbasins of Hack order 1 and 2 and the network of the same" + " order are extracted.")
-@Author(name = "Erica Ghesla, Rigon Riccardo, Antonello Andrea, Franceschi Silvia, Rigon Riccardo", contact = "http://www.hydrologis.com")
+@Author(name = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla", contact = "http://www.hydrologis.com")
 @Keywords("Subbasins, Dem, Raster")
 @Label(JGTConstants.DEMMANIPULATION)
+@Name("splitsubbasins")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class SplitSubbasins extends JGTModel {
@@ -67,15 +68,7 @@ public class SplitSubbasins extends JGTModel {
     @In
     public GridCoverage2D inHack = null;
 
-    @Description("The map of tca.")
-    @In
-    public GridCoverage2D inTca = null;
-
-    @Description("The threshold.")
-    @In
-    public double pThres = 0.0;
-
-    @Description("The hack order.")
+    @Description("The maximum hack order to consider for basin split.")
     @In
     public Double pHackorder = null;
 
@@ -93,196 +86,132 @@ public class SplitSubbasins extends JGTModel {
 
     private int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
+    private int nCols;
+    private int nRows;
+    private double hackOrder;
+
     @Execute
     public void process() {
         if (!concatOr(outSubbasins == null, doReset)) {
             return;
         }
-        checkNull(inFlow, inHack, inTca, pHackorder);
+        checkNull(inFlow, inHack, pHackorder);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        nCols = regionMap.getCols();
+        nRows = regionMap.getRows();
+
+        hackOrder = pHackorder;
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         RenderedImage hacksRI = inHack.getRenderedImage();
-        RenderedImage tcaRI = inTca.getRenderedImage();
+        WritableRaster hackWR = CoverageUtilities.renderedImage2WritableRaster(hacksRI, true);
 
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        RandomIter hacksIter = RandomIterFactory.create(hacksRI, null);
-        RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
+        WritableRandomIter hacksIter = RandomIterFactory.createWritable(hackWR, null);
 
-        WritableRaster netWR = net(hacksIter, tcaIter, pHackorder, pThres, nRows, nCols);
-        RandomIter netIter = RandomIterFactory.create(netWR, null);
+        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null,
+                JGTConstants.doubleNovalue);
+        WritableRandomIter netIter = RandomIterFactory.createWritable(netImage, null);
+        net(hacksIter, netIter);
 
-        WritableRaster netNumberWR = netNumber(flowIter, hacksIter, tcaIter, netIter, pThres, nRows, nCols);
+        WritableRaster netNumberWR = netNumber(flowIter, hacksIter, netIter);
         WritableRandomIter netNumberIter = RandomIterFactory.createWritable(netNumberWR, null);
         WritableRaster subbasinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumberIter, nRows, nCols, pm);
 
         outNetnum = CoverageUtilities.buildCoverage("netnum", netNumberWR, regionMap, inFlow.getCoordinateReferenceSystem()); //$NON-NLS-1$
         outSubbasins = CoverageUtilities.buildCoverage("subbasins", subbasinWR, regionMap, inFlow.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
-
     /**
      * Return the map of the network with only the river of the choosen order.
      * 
-     * @param hacksIter
-     *            the hack stream map.
-     * @param tcaIter
-     *            the total contribouting area.
-     * @param hackOrder
-     * @param thresholdValue
-     * @param rows
-     * @param cols
+     * @param hacksIter the hack stream map.
+     * @param netIter the network map to build on the required hack orders.
      * @return the map of the network with the choosen order.
      */
-    public WritableRaster net( RandomIter hacksIter, RandomIter tcaIter, double hackOrder, double thresholdValue, int rows,
-            int cols ) {
+    private void net( WritableRandomIter hacksIter, WritableRandomIter netIter ) {
         // calculates the max order of basin (max hackstream value)
-        double maxHacksValue = 0.0;
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                double value = hacksIter.getSampleDouble(i, j, 0);
+        pm.beginTask("Extraction of rivers of chosen order...", nRows);
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                double value = hacksIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(value)) {
-                    if (value > maxHacksValue) {
-                        maxHacksValue = value;
-                    }
-                }
-            }
-        }
-        if (hackOrder > maxHacksValue) {
-            throw new ModelsIllegalargumentException("Error on max hackstream", this);
-        }
-
-        /*
-         * Calculate the new network choosing the stream of n order and area
-         * greater than the threshold.
-         */
-        // create the net map with the value choose.
-        WritableRaster netImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
-        pm.beginTask("Extraction of rivers of chosen order...", rows);
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                double hackValue = hacksIter.getSampleDouble(i, j, 0);
-                if (!isNovalue(hackValue)) {
-                    // calculates the network selecting the streams of 1, 2,..,n
-                    // order
-                    if (hackValue <= hackOrder) {
-                        if (tcaIter.getSampleDouble(i, j, 0) > thresholdValue) {
-                            netRandomIter.setSample(i, j, 0, 2);
-                        } else {
-                            netRandomIter.setSample(i, j, 0, JGTConstants.doubleNovalue);
-                        }
+                    /*
+                     * if the hack value is in the asked range 
+                     * => keep it as net
+                     */
+                    if (value <= hackOrder) {
+                        netIter.setSample(c, r, 0, 2);
                     } else {
-                        netRandomIter.setSample(i, j, 0, JGTConstants.doubleNovalue);
+                        hacksIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
                     }
-                } else {
-                    netRandomIter.setSample(i, j, 0, JGTConstants.doubleNovalue);
                 }
             }
             pm.worked(1);
         }
         pm.done();
-        return netImage;
     }
 
-    public WritableRaster netNumber( RandomIter flowIter, RandomIter hacksIter, RandomIter tcaIter, RandomIter netIter,
-            double thresholdValue, int rows, int cols ) {
-        int gg = 0, n = 0, f;
-        int[] flow = new int[2];
-        double area = 0.0;
-        double[] tcavalue = new double[2];
+    private WritableRaster netNumber( RandomIter flowIter, RandomIter hacksIter, RandomIter netIter ) {
+        int drainingPixelNum = 0;
+        int[] flowColRow = new int[2];
 
-        WritableRaster netNumberingImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRaster netNumberingImage = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, 0.0);
         WritableRandomIter netNumberRandomIter = RandomIterFactory.createWritable(netNumberingImage, null);
-        List<Integer> nstream = new ArrayList<Integer>();
 
-        pm.beginTask("Numbering network...", rows);
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (netIter.getSampleDouble(i, j, 0) == 2 && flowIter.getSampleDouble(i, j, 0) != 10.0
-                        && netNumberRandomIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    // looks for the source
+        int n = 0;
+        pm.beginTask("Numbering network...", nRows);
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                flowColRow[0] = c;
+                flowColRow[1] = r;
+                if (!isNovalue(netIter.getSampleDouble(c, r, 0)) && flowIter.getSampleDouble(c, r, 0) != 10.0
+                        && NumericsUtilities.dEq(netNumberRandomIter.getSampleDouble(c, r, 0), 0.0)) {
+
+                    boolean isSource = true;
                     for( int k = 1; k <= 8; k++ ) {
-                        /* test if neighbor drains in the cell */
-                        if (flowIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]
-                                && netIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == 2) {
+                        boolean isDraining = flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0) == dir[k][2];
+                        boolean isOnNet = !isNovalue(netIter.getSampleDouble(flowColRow[0] + dir[k][1],
+                                flowColRow[1] + dir[k][0], 0));
+                        if (isDraining && isOnNet) {
+                            isSource = false;
                             break;
-                        } else
-                            f++;
+                        }
                     }
-                    // se f=8 nessun pixel appartenete alla rete drena nel pixel
-                    // considerato quindi
-                    // questo e' sorgente
-                    if (f == 8) {
+
+                    /*
+                     * if it is source pixel, go down
+                     */
+                    if (isSource) {
                         n++;
-                        nstream.add(n);
-                        netNumberRandomIter.setSample(i, j, 0, n);
-                        tcavalue[0] = tcaIter.getSampleDouble(i, j, 0);
-                        tcavalue[1] = 0.0;
-                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            throw new ModelsIllegalargumentException("Godownstream failure...", this);
-                        // while it is into the network.
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && netNumberRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
-                            gg = 0;
+                        netNumberRandomIter.setSample(c, r, 0, n);
+                        if (!ModelsEngine.go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
+                            throw new ModelsIllegalargumentException("go_downstream failure...", this);
+                        /*
+                         * while it is on the network, go downstream
+                         */
+                        while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
+                                && netNumberRandomIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) == 0 ) {
+                            /*
+                             * calculate how many pixels drain into the current pixel.
+                             */
+                            drainingPixelNum = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                // calculate how much pixel drining into the
-                                // pixel.
-                                if (netIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == 2
-                                        && flowIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
-                                    gg++;
+                                if (!isNovalue(netIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0))
+                                        && flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0) == dir[k][2]) {
+                                    drainingPixelNum++;
                                 }
                             }
-                            if (gg >= 2) {
-                                // the value of the upstream area of the node.
-                                for( int k = 1; k <= 8; k++ ) {
-                                    if (flowIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]
-                                            && hacksIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == 1) {
-                                        if (tcaIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) + tcavalue[1]
-                                                - tcavalue[0] > thresholdValue) {
-                                            tcavalue[1] = 0;
-                                            n++;
-                                            nstream.add(n);
-                                        }
-                                        area = tcaIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) + tcavalue[1];
-                                    }
-                                }
-                            }
-                            /*
-                             * if there is 2 pixel which are draining in the
-                             * same node then increase the order of this pixels.
-                             */
-                            if (gg >= 2 && (area - tcavalue[0]) > thresholdValue) {
-                                // n++;
-                                netNumberRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcavalue[0] = tcaIter.getSampleDouble(flow[0], flow[1], 0);
-                            }
 
-                            /*
-                             * If the pixel is a node and is inside a main
-                             * channel (hacks ==1) and the tca which drain in
-                             * the previous tract is less than th then I keep
-                             * the previuos value.
-                             */
+                            if (drainingPixelNum > 1) {
+                                n++;
+                            }
+                            netNumberRandomIter.setSample(flowColRow[0], flowColRow[1], 0, n);
 
-                            else if (gg >= 2 && (area - tcavalue[0]) < thresholdValue
-                                    && hacksIter.getSampleDouble(flow[0], flow[1], 0) == 1) {
-                                netNumberRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcavalue[1] = area - tcavalue[0];
-                                tcavalue[0] = tcaIter.getSampleDouble(flow[0], flow[1], 0);
-                            }
-                            // otherwise cointinuing with the previous number.
-                            else {
-                                netNumberRandomIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                throw new ModelsIllegalargumentException("Godownstream failure...", this);
+                            if (!ModelsEngine
+                                    .go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
+                                throw new ModelsIllegalargumentException("go_downstream failure...", this);
                         }
                     }
                 }

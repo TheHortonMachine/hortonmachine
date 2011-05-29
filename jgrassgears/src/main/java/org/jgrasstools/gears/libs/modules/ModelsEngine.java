@@ -55,6 +55,7 @@ import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.datum.PixelInCell;
@@ -91,15 +92,15 @@ public class ModelsEngine {
     /**
      * Moves one pixel downstream.
      * 
-     * @param rowCol
-     *            the array containing the row and column of the current pixel.
+     * @param colRow
+     *            the array containing the column and row of the current pixel.
      *            It will be modified here to represent the next downstream
      *            pixel.
      * @param flowdirection
      *            the current flowdirection number.
      * @return true if everything went well.
      */
-    public static boolean go_downstream( int[] rowCol, double flowdirection ) {
+    public static boolean go_downstream( int[] colRow, double flowdirection ) {
 
         int n = (int) flowdirection;
         if (n == 10) {
@@ -107,8 +108,8 @@ public class ModelsEngine {
         } else if (n < 1 || n > 9) {
             return false;
         } else {
-            rowCol[1] += DIR[n][0];
-            rowCol[0] += DIR[n][1];
+            colRow[1] += DIR[n][0];
+            colRow[0] += DIR[n][1];
             return true;
         }
     }
@@ -1106,41 +1107,43 @@ public class ModelsEngine {
     }
 
     /**
-     * Extract subbasin of a raster.
+     * Extract the subbasins of a raster map.
      * 
-     * 
-     * @param flowRandomIter
-     *            usually is the flow map.
-     * @param cols 
-     * @param rows 
-     * @param net
-     *            the network map.
-     * @param netNumber
-     *            the netnumbering map.
-     * @return the map of subbasin
+     * @param flowIter the map of flowdirections.
+     * @param netRandomIter the network map.
+     * @param netNumberIter the netnumber map.
+     * @param rows rows of the region.
+     * @param cols columns of the region.
+     * @param pm
+     * @return the map of extracted subbasins.
      */
-    public static WritableRaster extractSubbasins( WritableRandomIter flowRandomIter, RandomIter netRandomIter,
-            WritableRandomIter netNumberRandomIter, int rows, int cols, IJGTProgressMonitor pm ) {
+    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, RandomIter netRandomIter,
+            WritableRandomIter netNumberIter, int rows, int cols, IJGTProgressMonitor pm ) {
 
-        for( int l = 0; l < rows; l++ ) {
-            for( int k = 0; k < cols; k++ ) {
-                if (!isNovalue(netRandomIter.getSampleDouble(k, l, 0)))
-                    flowRandomIter.setSample(k, l, 0, 10);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                if (!isNovalue(netRandomIter.getSampleDouble(c, r, 0)))
+                    flowIter.setSample(c, r, 0, 10);
             }
         }
 
-        WritableRaster subbImage = go2channel(flowRandomIter, netNumberRandomIter, cols, rows, pm);
+        WritableRaster subbImage = go2channel(flowIter, netNumberIter, cols, rows, pm);
 
         WritableRandomIter subbRandomIter = RandomIterFactory.createWritable(subbImage, null);
 
-        for( int l = 0; l < rows; l++ ) {
-            for( int k = 0; k < cols; k++ ) {
-                if (!isNovalue(netRandomIter.getSampleDouble(k, l, 0)))
-                    subbRandomIter.setSample(k, l, 0, netNumberRandomIter.getSampleDouble(k, l, 0));
-                if (netNumberRandomIter.getSampleDouble(k, l, 0) == 0)
-                    netNumberRandomIter.setSample(k, l, 0, JGTConstants.doubleNovalue);
-                if (subbRandomIter.getSampleDouble(k, l, 0) == 0)
-                    subbRandomIter.setSample(k, l, 0, JGTConstants.doubleNovalue);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double netValue = netRandomIter.getSampleDouble(c, r, 0);
+                double netNumberValue = netNumberIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(netValue)) {
+                    subbRandomIter.setSample(c, r, 0, netNumberValue);
+                }
+                if (NumericsUtilities.dEq(netNumberValue, 0)) {
+                    netNumberIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                }
+                double subbValue = subbRandomIter.getSampleDouble(c, r, 0);
+                if (NumericsUtilities.dEq(subbValue, 0))
+                    subbRandomIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
             }
         }
 
@@ -1148,46 +1151,65 @@ public class ModelsEngine {
     }
 
     /**
-     * @param flowImage
-     * @param att
-     * @param dist
+     * Moves from every source pixel to the outlet.
+     * 
+     * @param flowIter map of flow direction.
+     * @param attributeIter map of attributes.
+     * @param cols
+     * @param rows
+     * @param pm
+     * @return the calculated distance map.
      */
-    public static WritableRaster go2channel( RandomIter mRandomIter, RandomIter attRandomIter, int cols, int rows,
+    public static WritableRaster go2channel( RandomIter flowIter, RandomIter attributeIter, int cols, int rows,
             IJGTProgressMonitor pm ) {
-        int[] flow = new int[2];
+        int[] flowColRow = new int[2];
         double value = 0.0;
 
         WritableRaster dist = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter distIter = RandomIterFactory.createWritable(dist, null);
 
         pm.beginTask("Calculating the distance along the flowstream...", rows - 2);
-        for( int j = 1; j < rows - 1; j++ ) {
-            for( int i = 1; i < cols - 1; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
+                flowColRow[0] = c;
+                flowColRow[1] = r;
 
                 // Rectangle aroundSample = new Rectangle(i - 1, j - 1, 3, 3);
                 // Raster aroundRaster = flowImage.getData(aroundSample);
 
-                if (!isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0)) && isSourcePixel(mRandomIter, flow[0], flow[1])) {
-                    while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                            && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10.0 ) {
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
+                if (!isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
+                        && isSourcePixel(flowIter, flowColRow[0], flowColRow[1])) {
+                    /*
+                     * if in a source pixel, go downstream until you get  
+                     * to a novalue or an exit.
+                     */
+                    while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
+                            && flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) != 10.0 ) {
+                        if (!go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
                             return null;
                     }
 
-                    if (isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))) {
-                        throw new ModelsIllegalargumentException("No proper outlets were found in the flow file", "");
-                    } else if (mRandomIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
-                        value = attRandomIter.getSampleDouble(flow[0], flow[1], 0);
+                    /*
+                     * get the value that the basin should have
+                     */
+                    if (isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))) {
+                        throw new ModelsIllegalargumentException("No proper outlets were found in the flow file", "ModelsEngine");
+                    } else if (flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) == 10) {
+                        value = attributeIter.getSampleDouble(flowColRow[0], flowColRow[1], 0);
+                    } else {
+                        throw new ModelsIllegalargumentException("Undefined situation while go2channel", "ModelsEngine");
                     }
-                    flow[0] = i;
-                    flow[1] = j;
-                    distIter.setSample(i, j, 0, value);
-                    while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                            && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10.0 ) {
-                        distIter.setSample(flow[0], flow[1], 0, value);
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
+                    
+                    /*
+                     * and start over again, setting the whole downstream to that value == basin number
+                     */
+                    flowColRow[0] = c;
+                    flowColRow[1] = r;
+                    distIter.setSample(c, r, 0, value);
+                    while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
+                            && flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) != 10.0 ) {
+                        distIter.setSample(flowColRow[0], flowColRow[1], 0, value);
+                        if (!go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
                             return null;
                     }
                 }
@@ -1389,22 +1411,22 @@ public class ModelsEngine {
         }
 
         pm.beginTask("Calculating downstream sum...", height);
-        for( int j = 0; j < height; j++ ) {
-            for( int i = 0; i < width; i++ ) {
-                double mapToSumValue = mapToSumIter.getSampleDouble(i, j, 0);
-                if (!isNovalue(flowIter.getSampleDouble(i, j, 0)) && //
+        for( int r = 0; r < height; r++ ) {
+            for( int c = 0; c < width; c++ ) {
+                double mapToSumValue = mapToSumIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(flowIter.getSampleDouble(c, r, 0)) && //
                         mapToSumValue < uThres && //
                         mapToSumValue > lThres //
                 ) {
-                    point[0] = i;
-                    point[1] = j;
+                    point[0] = c;
+                    point[1] = r;
                     while( flowIter.getSampleDouble(point[0], point[1], 0) < 9
                             && //
                             !isNovalue(flowIter.getSampleDouble(point[0], point[1], 0))
                             && (checkRange(mapToSumIter.getSampleDouble(point[0], point[1], 0), uThres, lThres)) ) {
 
                         double sumValue = summedMapIter.getSampleDouble(point[0], point[1], 0)
-                                + mapToSumIter.getSampleDouble(i, j, 0);
+                                + mapToSumIter.getSampleDouble(c, r, 0);
 
                         summedMapIter.setSample(point[0], point[1], 0, sumValue);
 
@@ -1413,10 +1435,10 @@ public class ModelsEngine {
                     }
 
                     double sumValue = summedMapIter.getSampleDouble(point[0], point[1], 0)
-                            + mapToSumIter.getSampleDouble(i, j, 0);
+                            + mapToSumIter.getSampleDouble(c, r, 0);
                     summedMapIter.setSample(point[0], point[1], 0, sumValue);
                 } else {
-                    summedMapIter.setSample(i, j, 0, doubleNovalue);
+                    summedMapIter.setSample(c, r, 0, doubleNovalue);
                 }
             }
             pm.worked(1);

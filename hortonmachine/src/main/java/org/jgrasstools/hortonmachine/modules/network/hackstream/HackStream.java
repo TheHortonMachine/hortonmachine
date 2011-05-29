@@ -78,11 +78,11 @@ public class HackStream extends JGTModel {
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The map of the netnum.")
+    @Description("The map of the netnum (in mode 1).")
     @In
     public GridCoverage2D inNetnum = null;
 
-    @Description("The processing mode.")
+    @Description("The processing mode (0=default, 1=with fixed network).")
     @In
     public double pMode = 0;
 
