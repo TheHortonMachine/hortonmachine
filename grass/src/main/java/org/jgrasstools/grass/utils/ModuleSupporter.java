@@ -48,7 +48,6 @@ public class ModuleSupporter {
         GrassModuleRunnerWithScript runner = new GrassModuleRunnerWithScript(System.out, System.err);
 
         List<String> args = new ArrayList<String>();
-        // PIPPO args.add(grassCommandFile.getAbsolutePath());
         args.add(grassCommandFile.getName());
 
         Field[] fields = owner.getClass().getFields();
@@ -66,11 +65,11 @@ public class ModuleSupporter {
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_PREFIX_REGEX, "");
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_SUFFIX, "");
 
-                    // FIXME this has to be done with overwrite, quiet etc
-                    if (flagName.length() == 1) {
-                        args.add("-" + flagName);
-                    } else {
+                    String cleanFlag = flagName.trim().toLowerCase();
+                    if (cleanFlag.equals("overwrite") || cleanFlag.equals("verbose") || cleanFlag.equals("quiet")) {
                         args.add("--" + flagName);
+                    } else {
+                        args.add("-" + flagName);
                     }
                 }
             }
