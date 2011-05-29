@@ -26,7 +26,6 @@ import java.util.List;
 
 import org.jgrasstools.grass.dtd64.Task;
 import org.jgrasstools.grass.utils.GrassModuleRunnerWithScript;
-import org.jgrasstools.grass.utils.GrassRunner;
 import org.jgrasstools.grass.utils.GrassUtils;
 import org.jgrasstools.grass.utils.Oms3CodeWrapper;
 
