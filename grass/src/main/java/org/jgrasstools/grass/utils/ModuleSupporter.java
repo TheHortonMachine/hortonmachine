@@ -25,31 +25,27 @@ import java.util.List;
 
 import oms3.annotations.UI;
 
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-
 /**
  * Module supporter for execution.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ModuleSupporter {
-    public static void processModule( Object owner ) throws ModelsIOException, IOException, IllegalAccessException, Exception {
+    public static void processModule( Object owner ) throws IOException, IllegalAccessException, Exception {
 
         String gisBase = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);
         File gisBasefile = new File(gisBase);
         if (!gisBasefile.exists()) {
-            throw new ModelsIOException("Gisbase variable not properly set. Check your settings!", owner);
+            throw new IOException("Gisbase variable not properly set. Check your settings!");
         }
         String className = owner.getClass().getSimpleName();
         className = className.replaceAll(GrassUtils.VARIABLE_DOT_SUBSTITUTION, ".");
         File grassCommandFile = new File(gisBase, "bin/" + className);
         if (!grassCommandFile.exists()) {
-            throw new ModelsIOException("Command does not exist: " + grassCommandFile.getAbsolutePath(), owner);
+            throw new IOException("Command does not exist: " + grassCommandFile.getAbsolutePath());
         }
 
-        GrassRunner runner = new GrassRunner(System.out, System.err);
+        GrassModuleRunnerWithScript runner = new GrassModuleRunnerWithScript(System.out, System.err);
 
         List<String> args = new ArrayList<String>();
         args.add(grassCommandFile.getAbsolutePath());
@@ -71,7 +67,7 @@ public class ModuleSupporter {
 
                     if (flagName.length() == 1) {
                         args.add("-" + flagName);
-                    }else{
+                    } else {
                         args.add("--" + flagName);
                     }
                 }
@@ -112,11 +108,13 @@ public class ModuleSupporter {
                             valueString = name + "@" + mapsetFile.getName();
                         } else {
                             // TODO
-                            String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
-                            GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
-                            tmpRunner.runModule(new String[]{"r.external", inPath, inFile.getName()}, mapsetForRun[0],
-                                    mapsetForRun[1]);
-                            mapset = mapsetForRun[0];
+                            throw new RuntimeException("Non grass files are not supported yet!");
+                            // String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
+                            // GrassRunner tmpRunner = new GrassRunner(System.out, System.err);
+                            // tmpRunner.runModule(new String[]{"r.external", inPath,
+                            // inFile.getName()}, mapsetForRun[0],
+                            // mapsetForRun[1]);
+                            // mapset = mapsetForRun[0];
                         }
                     } else if (value.toLowerCase().contains("outfile")) {
                         String outPath = valueObj.toString();
@@ -136,7 +134,7 @@ public class ModuleSupporter {
             }
 
         }
-        
+
         String[] argsArray = args.toArray(new String[0]);
         System.out.println("Command launched: ");
         for( String arg : argsArray ) {
@@ -145,18 +143,11 @@ public class ModuleSupporter {
         System.out.println();
         System.out.println();
 
-        String gisrc = null;
         if (mapset == null) {
-            String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
-            mapset = mapsetForRun[0];
-            gisrc = mapsetForRun[1];
+            mapset = GrassUtils.prepareMapsetForRun(false);
         }
-        if (gisrc == null) {
-            gisrc = GrassUtils.createGisRc(mapset);
-        }
-        runner.runModule(argsArray, mapset, gisrc);
+        runner.runModule(argsArray, mapset);
     }
-
     /**
      * Checks if the given path is a GRASS raster file.
      * 

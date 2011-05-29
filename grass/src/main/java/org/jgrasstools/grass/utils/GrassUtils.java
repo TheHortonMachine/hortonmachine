@@ -283,14 +283,13 @@ public class GrassUtils {
      * Prepare a tmp mapset for run. 
      * 
      * @param isLatLong
-     * @return an array containing [mapset, gisrc].
+     * @return the mapset path.
      * @throws IOException
      */
-    public static String[] prepareMapsetForRun( boolean isLatLong ) throws IOException {
+    public static String prepareMapsetForRun( boolean isLatLong ) throws IOException {
         String tmpMapset = GrassUtils.createTemporaryMapsetName();
         GrassUtils.createTemporaryMapset(tmpMapset, isLatLong);
-        String gisRc = createGisRc(tmpMapset);
-        return new String[]{tmpMapset, gisRc};
+        return tmpMapset;
     }
 
     /**

@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jgrasstools.grass.dtd64.Task;
+import org.jgrasstools.grass.utils.GrassModuleRunnerWithScript;
 import org.jgrasstools.grass.utils.GrassRunner;
 import org.jgrasstools.grass.utils.GrassUtils;
 import org.jgrasstools.grass.utils.Oms3CodeWrapper;
@@ -46,9 +47,7 @@ public class GrassCodeGenerator {
         File binFolder = new File(gisbaseFile, "bin");
         File scriptsFolder = new File(gisbaseFile, "scripts");
 
-        String[] mapsetForRun = GrassUtils.prepareMapsetForRun(false);
-        String mapset = mapsetForRun[0];
-        String gisrc = mapsetForRun[1];
+        String mapsetForRun = GrassUtils.prepareMapsetForRun(false);
 
         List<File> allFiles = new ArrayList<File>();
         File[] binFiles = binFolder.listFiles();
@@ -64,14 +63,16 @@ public class GrassCodeGenerator {
             // if (GrassUtils.incompatibleGrassModules.contains(binName)) {
             // continue;
             // }
+            // if (!binName.equals("r.cats")) {
+            // continue;
+            // }
 
-             if (!binName.equals("d.vect.thematic")) {
-             continue;
-             }
-
-            GrassRunner grassRunner = new GrassRunner(null, null);
-            String result = grassRunner.runModule(new String[]{binFile.getName(), "--interface-description"}, mapset,
-                    gisrc);
+            GrassModuleRunnerWithScript grassRunner = new GrassModuleRunnerWithScript(null, null);
+            String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"},
+                    mapsetForRun);
+            if (result.startsWith("WARNING")) {
+                continue;
+            }
             Task task;
             try {
                 task = GrassUtils.getTask(result);
@@ -99,6 +100,5 @@ public class GrassCodeGenerator {
         }
 
     }
-    
-    
+
 }

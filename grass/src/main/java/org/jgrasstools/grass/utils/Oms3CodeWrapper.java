@@ -61,7 +61,6 @@ public class Oms3CodeWrapper {
          */
         codeBuilder.append("package ").append(modulePackage).append(";\n");
         codeBuilder.append("").append("\n");
-        codeBuilder.append("import org.jgrasstools.gears.libs.modules.JGTModel;").append("\n");
         codeBuilder.append("import org.jgrasstools.grass.utils.ModuleSupporter;").append("\n");
         codeBuilder.append("").append("\n");
         codeBuilder.append("import oms3.annotations.Author;").append("\n");
@@ -87,7 +86,7 @@ public class Oms3CodeWrapper {
         codeBuilder.append("@Name(\"").append(classSafeName).append("\")").append("\n");
         codeBuilder.append("@Status(Status.CERTIFIED)").append("\n");
         codeBuilder.append("@License(\"General Public License Version >=2)\")").append("\n");
-        codeBuilder.append("public class ").append(classSafeName).append(" extends JGTModel {").append("\n");
+        codeBuilder.append("public class ").append(classSafeName).append(" {").append("\n");
         codeBuilder.append("").append("\n");
 
         TreeSet<String> namesMap = new TreeSet<String>();
