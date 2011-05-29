@@ -41,14 +41,15 @@ public class ModuleSupporter {
         String className = owner.getClass().getSimpleName();
         className = className.replaceAll(GrassUtils.VARIABLE_DOT_SUBSTITUTION, ".");
         File grassCommandFile = new File(gisBase, "bin/" + className);
-        if (!grassCommandFile.exists()) {
-            throw new IOException("Command does not exist: " + grassCommandFile.getAbsolutePath());
-        }
+        // if (!grassCommandFile.exists()) {
+        // throw new IOException("Command does not exist: " + grassCommandFile.getAbsolutePath());
+        // }
 
         GrassModuleRunnerWithScript runner = new GrassModuleRunnerWithScript(System.out, System.err);
 
         List<String> args = new ArrayList<String>();
-        args.add(grassCommandFile.getAbsolutePath());
+        // PIPPO args.add(grassCommandFile.getAbsolutePath());
+        args.add(grassCommandFile.getName());
 
         Field[] fields = owner.getClass().getFields();
         // first flags
@@ -65,6 +66,7 @@ public class ModuleSupporter {
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_PREFIX_REGEX, "");
                     flagName = flagName.replaceFirst(GrassUtils.VARIABLE_FLAG_SUFFIX, "");
 
+                    // FIXME this has to be done with overwrite, quiet etc
                     if (flagName.length() == 1) {
                         args.add("-" + flagName);
                     } else {
