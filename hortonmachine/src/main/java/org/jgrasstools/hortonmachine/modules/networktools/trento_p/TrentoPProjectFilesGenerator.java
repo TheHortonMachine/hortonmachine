@@ -53,7 +53,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Generates the input shapefiles for  a TrentoP simulation.")
+@Description("Generates the input shapefiles for a TrentoP simulation.")
 @Author(name = "Daniele Andreis")
 @Keywords("TrentoP")
 @Status(Status.DRAFT)
@@ -69,7 +69,7 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
     @In
     public String pCode;
 
-    @Description("The name of the .shp file. By deafault it is network.shp")
+    @Description("The name of the .shp file. By default it is network.shp")
     @In
     public String pShapeFileName = "network.shp";
 
