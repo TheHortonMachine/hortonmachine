@@ -200,23 +200,24 @@ public class GrassUtilsSextante {
             m_ComFile.deleteOnExit();
 
             // Write windows startup script
-            String shToolsPath = "";
-            if (shell == null || shell.length() < 2) {
-                return (null);
+            String shToolsPath = null;
+            if (shell != null && shell.contains(File.separator)) {
+                shToolsPath = shell;
+                shToolsPath = shToolsPath.substring(0, shToolsPath.lastIndexOf(File.separator));
             }
-            shToolsPath = shell;
-            shToolsPath = shToolsPath.substring(0, shToolsPath.lastIndexOf(File.separator));
             try {
                 m_ComFile.createNewFile();
                 output = new BufferedWriter(new FileWriter(script));
                 // Turn on/off verbose output
-                // output.write("@echo off\n");
+                 output.write("@echo off\n");
                 // Settings that would otherwise be done in grassXx.bat
                 output.write("set HOME=" + System.getProperty("user.home") + "\n");
                 output.write("set GISRC=" + gisrc.getAbsolutePath() + "\n");
                 output.write("set GRASS_SH=" + shell + "\n");
-                output.write("set PATH=" + shToolsPath + File.separator + "bin;" + shToolsPath + File.separator + "lib;"
-                        + "%PATH%\n");
+                if (shToolsPath!=null) {
+                    output.write("set PATH=" + shToolsPath + File.separator + "bin;" + shToolsPath + File.separator + "lib;"
+                            + "%PATH%\n");
+                }
                 output.write("set WINGISBASE=" + gisBase + "\n");
                 output.write("set GISBASE=" + gisBase + "\n");
                 output.write("set GRASS_PROJSHARE=" + gisBase + File.separator + "share" + File.separator + "proj" + "\n");

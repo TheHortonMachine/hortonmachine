@@ -49,8 +49,14 @@ public class GrassModuleRunnerWithScript {
         if (gisbaseProperty == null || !new File(gisbaseProperty).exists()) {
             throw new IllegalArgumentException("GISBASE environment not set.");
         }
-
-        String shell = "/bin/sh";
+        String shellProperty = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_SHELL_KEY);
+        String shell = shellProperty;
+        if (shell == null && (GrassUtils.isUnix() || GrassUtils.isMacOSX())) {
+            shell = "/bin/sh";
+        }
+        if (shell == null) {
+            throw new IllegalArgumentException("SHELL not set.");
+        }
         StringBuilder grassCommandSb = new StringBuilder();
         for( String cmdArg : cmdArgs ) {
             grassCommandSb.append(" ").append(cmdArg);

@@ -85,6 +85,13 @@ public class GrassUtils {
     public static String GRASS_ENVIRONMENT_GISBASE_KEY = "jgt-grass.gisbase";
 
     /**
+     * Key used to set and retrieve the grass shell.
+     * 
+     * <p>Example on linux: /usr/bin/sh
+     */
+    public static String GRASS_ENVIRONMENT_SHELL_KEY = "jgt-grass.shell";
+
+    /**
      * Category to use for raster processing.
      */
     public static String GRASS_RASTER_CATEGORY = "Grass Raster Modules";
@@ -134,6 +141,11 @@ public class GrassUtils {
      */
     public static final String FOLDEROUT_UI_HINT = "outfolder";
 
+    /**
+     * Module to ignore during the code generation.
+     */
+    public static final List<String> grassModulesToIgnore = Arrays.asList("mkftcap.bat");
+    
     /**
      * Modules that can't be launched in non-interactive mode or simply do not make sense.
      */

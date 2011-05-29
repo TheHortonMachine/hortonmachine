@@ -38,11 +38,19 @@ public class GrassCodeGenerator {
 
     public static void main( String[] args ) throws Exception {
 
-        File generationFolder = new File("/home/moovida/development/jgrasstools-hg/grass/src/main/java/");
+        File generationFolder = new File("D:\\development\\jgrasstools-hg\\jgrasstools\\grass\\src\\main\\java\\");
+        String gisbase = "C:\\OSGeo4W\\apps\\grass\\grass-6.4.1\\";
+        String shell = "C:\\OSGeo4W\\apps\\msys\\bin\\sh.exe";
 
-        System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, "/usr/lib/grass64");
+        // LINUX
+        // File generationFolder = new
+        // File("/home/moovida/development/jgrasstools-hg/grass/src/main/java/");
+        // String gisbase = "/usr/lib/grass64";
 
-        File gisbaseFile = new File("/usr/lib/grass64");
+        System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, gisbase);
+        System.setProperty(GrassUtils.GRASS_ENVIRONMENT_SHELL_KEY, shell);
+
+        File gisbaseFile = new File(gisbase);
         File binFolder = new File(gisbaseFile, "bin");
         File scriptsFolder = new File(gisbaseFile, "scripts");
 
@@ -52,12 +60,29 @@ public class GrassCodeGenerator {
         File[] binFiles = binFolder.listFiles();
         List<File> binsList = Arrays.asList(binFiles);
         allFiles.addAll(binsList);
-        File[] scriptFiles = scriptsFolder.listFiles();
-        List<File> scriptsList = Arrays.asList(scriptFiles);
-        allFiles.addAll(scriptsList);
+        boolean isWindows = GrassUtils.isWindows();
+        if (!isWindows) {
+            // in windows the scripts are linked from the bin folder through the win shell
+            File[] scriptFiles = scriptsFolder.listFiles();
+            List<File> scriptsList = Arrays.asList(scriptFiles);
+            allFiles.addAll(scriptsList);
+        }
 
         for( File binFile : allFiles ) {
-            String binName = binFile.getName().replaceFirst("\\.exe", "");
+            String binName = binFile.getName();
+            if (GrassUtils.grassModulesToIgnore.contains(binName)) {
+                continue;
+            }
+            if (binName.toLowerCase().endsWith("manifest")) {
+                continue;
+            } else if (binName.toLowerCase().endsWith("exe")) {
+                binName = binName.replaceFirst("\\.exe", "");
+            } else if (binName.toLowerCase().endsWith("bat")) {
+                binName = binName.replaceFirst("\\.bat", "");
+            } else if (isWindows && binName.toLowerCase().endsWith("sh")) {
+                continue;
+            }
+
             System.out.println("Generating class: " + binName);
             // if (GrassUtils.incompatibleGrassModules.contains(binName)) {
             // continue;
@@ -68,18 +93,23 @@ public class GrassCodeGenerator {
 
             GrassModuleRunnerWithScript grassRunner = new GrassModuleRunnerWithScript(null, null);
             String result = grassRunner.runModule(new String[]{binFile.getAbsolutePath(), "--interface-description"},
-                    mapsetForRun);
+                    mapsetForRun).trim();
             if (result.startsWith("WARNING")) {
                 continue;
             }
-            Task task;
+            Task task = null;
             try {
                 task = GrassUtils.getTask(result);
             } catch (Exception e) {
                 // ignore
-                System.out.println("Ignoring: " + binName);
-                e.printStackTrace();
-                continue;
+                System.err.println("Ignoring: " + binName);
+                System.err.println("*********************************");
+                System.err.println(e.getLocalizedMessage());
+                System.err.println(result);
+                System.err.println("*********************************");
+                if (!result.startsWith("<?xml") || !result.endsWith("task>")) {
+                    continue;
+                }
             }
             Oms3CodeWrapper gen = new Oms3CodeWrapper(task);
             String oms3Class = gen.getGeneratedOms3Class();
