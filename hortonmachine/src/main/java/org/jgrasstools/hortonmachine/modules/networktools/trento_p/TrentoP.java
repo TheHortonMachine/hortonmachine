@@ -131,7 +131,7 @@ public class TrentoP {
 
     @Description("Maximum Fill degree")
     @Unit("-")
-    @Range(min = 3.14)
+    @Range(min = Math.PI)
     @In
     public double pMaxTheta = DEFAULT_MAX_THETA;
 
@@ -330,8 +330,6 @@ public class TrentoP {
                     tmpList.add(tmpID);
                     outDischargeIDPipes.add(tmpList);
                     networkPipes[t].setAccuracy(pAccuracy);
-                    networkPipes[t].setMinimumDepth(pMinimumDepth);
-                    networkPipes[t].setMinG(pMinG);
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxTheta(pMaxTheta);
                     networkPipes[t].setTolerance(pTolerance);

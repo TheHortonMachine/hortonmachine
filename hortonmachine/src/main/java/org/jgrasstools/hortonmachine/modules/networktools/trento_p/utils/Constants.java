@@ -206,8 +206,20 @@ public class Constants {
      */
 
     public final static double DEFAULT_DT = 15;
-    /**
-     * The field of the ID of the pipe in the inPipes featureCollections.
-     */
+    
+    public final static Double[] CELERITY_RANGE = {new Double(1),new Double(1.6)};
+    public final static Double[] JMAX_RANGE = {new Double(3),new Double(1000)};
+    public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0),null};
+    public final static Double[] GAMMA_RANGE = {new Double(0),null};
+    public final static Double[] TOLERANCE_RANGE = {new Double(0),null};
+    public final static Double[] THETA_RANGE = {new Double(Math.PI),null};
+    public final static Double[] EPS_RANGE = {new Double(0),new Double(1)};
+    public final static Double[] C_RANGE = {new Double(0),null};
+    public final static Double[] EXPONENT_RANGE = {new Double(0),null};
+    public final static Double[] MIN_DEPTH_RANGE = {null,null};
+    public final static Double[] MAX_JUNCTIONS_RANGE = {new Double(0),new Double(6)};
+    public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0),new Double(0.1)};
+    public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0),null};
+
 
 }

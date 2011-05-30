@@ -1,15 +1,7 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
-public enum ProjectTimeParameterCodes implements IParametersCode {
-    STEP(0, "Time step", "Simulation duration [min]", Double.toString(Constants.DEFAULT_TDTP), 0.015, null), //
-    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMIN), 5.0,
-            null), //
-    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX), 30.0,
-            null); //
-
-    private final static String PROJECT_TIME_PAGE_NAME = "Calibration optional parameters";//$NON-NLS-1$
-    private final static String PROJECT_TIME_PAGE_TITLE = "Optional parameters in calibration mode";//$NON-NLS-1$
-    private final static String PROJECT_TIME_PAGE_DESCRIPTION = "This field could not be setted to calibrate";//$NON-NLS-1$
+public enum CalibrationNeededParameterCodes implements IParametersCode {
+    ACCURACY(0, "Accuracy to use to calculate a solution", " ", null, null, null);  //$NON-NLS-1$
 
     private int code;
     private String key;
@@ -17,7 +9,12 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
     private final String defaultValue;
     private final Double minRange;
     private final Double maxRange;
-    ProjectTimeParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
+    private final static String  CALIBRATION_NEEDED_PAGE_NAME = "Calibration parameters";//$NON-NLS-1$
+    private final static String  CALIBRATION_NEEDED_PAGE_TITLE = "Mandatory parameters in calibration mode";//$NON-NLS-1$
+    private final static String  CALIBRATION_NEEDED_PAGE_DESCRIPTION = "This fields have to be setted to calibrate";//$NON-NLS-1$
+
+    CalibrationNeededParameterCodes( int code, String key, String description, String defaultValue, Double minRange,
+            Double maxRange ) {
         this.code = code;
         this.key = key;
         this.description = description;
@@ -42,9 +39,9 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
         return defaultValue;
     }
 
-    public static ProjectTimeParameterCodes forCode( int i ) {
-        ProjectTimeParameterCodes[] values = values();
-        for( ProjectTimeParameterCodes type : values ) {
+    public static CalibrationNeededParameterCodes forCode( int i ) {
+        CalibrationNeededParameterCodes[] values = values();
+        for( CalibrationNeededParameterCodes type : values ) {
             if (type.code == i) {
                 return type;
             }
@@ -52,9 +49,9 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
         throw new IllegalArgumentException("No type for the given code: " + i);
     }
 
-    public static ProjectTimeParameterCodes forKey( String key ) {
-        ProjectTimeParameterCodes[] values = values();
-        for( ProjectTimeParameterCodes type : values ) {
+    public static CalibrationNeededParameterCodes forKey( String key ) {
+        CalibrationNeededParameterCodes[] values = values();
+        for( CalibrationNeededParameterCodes type : values ) {
             if (type.key.equals(key)) {
                 return type;
             }
@@ -75,21 +72,20 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
     }
 
     @Override
-    public String getPageName() {
+    public  String getPageName() {
         // TODO Auto-generated method stub
-        return PROJECT_TIME_PAGE_NAME;
+        return CALIBRATION_NEEDED_PAGE_NAME;
     }
 
     @Override
     public String getPageTitle() {
         // TODO Auto-generated method stub
-        return PROJECT_TIME_PAGE_TITLE;
+        return CALIBRATION_NEEDED_PAGE_TITLE;
     }
 
     @Override
     public String getPageDescription() {
         // TODO Auto-generated method stub
-        return PROJECT_TIME_PAGE_DESCRIPTION;
+        return CALIBRATION_NEEDED_PAGE_DESCRIPTION;
     }
-
 }

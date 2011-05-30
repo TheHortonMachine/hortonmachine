@@ -52,8 +52,9 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Generates the input shapefiles for a TrentoP simulation.")
+@Description("Generates the input shapefiles for  a TrentoP simulation.")
 @Author(name = "Daniele Andreis")
 @Keywords("TrentoP")
 @Status(Status.DRAFT)
@@ -69,9 +70,13 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
     @In
     public String pCode;
 
-    @Description("The name of the .shp file. By default it is network.shp")
+    @Description("The name of the .shp file. By deafault it is network.shp")
     @In
     public String pShapeFileName = "network.shp";
+    
+    @Description("The name of the .shp file. By deafault it is network.shp")
+    @In
+    public String pAreaShapeFileName = "area.shp";
 
     @Description("The progress monitor.")
     @In
@@ -89,7 +94,40 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         pm.worked(1);
         ITrentoPType[] values = PipesTrentoP.values();
         makeLineStringShp(values, baseFolder, crs);
+        makePolygonShp(values, baseFolder, crs);
+
+        
+        
         pm.done();
+    }
+
+    private void makePolygonShp( ITrentoPType[] values, File baseFolder, CoordinateReferenceSystem crs ) throws IOException {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        String typeName= values[0].getName();
+        b.setName(typeName);
+        b.setCRS(crs);
+        b.add("the_geom", Polygon.class);
+        b.add(PipesTrentoP.ID.getAttributeName(),PipesTrentoP.ID.getClazz() );
+        SimpleFeatureType tanksType = b.buildFeatureType();
+        ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+        File file = new File(baseFolder, pAreaShapeFileName);
+        Map<String, Serializable> create = new HashMap<String, Serializable>();
+        create.put("url", file.toURI().toURL());
+        ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
+        newDataStore.createSchema(tanksType);
+        Transaction transaction = new DefaultTransaction();
+        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
+                .getFeatureSource();
+        featureStore.setTransaction(transaction);
+        try {
+            featureStore.addFeatures(FeatureCollections.newCollection());
+            transaction.commit();
+        } catch (Exception problem) {
+            problem.printStackTrace();
+            transaction.rollback();
+        } finally {
+            transaction.close();
+        }
     }
 
     /*
