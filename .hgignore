@@ -10,6 +10,8 @@ syntax: regexp
 ^jgrassgears.bin
 ^oms3.target
 ^oms3.bin
+^grass.target
+^grass.bin
 ^docsbundle.target
 ^docsbundle.bin
 ~$
@@ -19,3 +21,4 @@ syntax: regexp
 .orig$
 .swp$
 .directory
+^grass/src/main/java/org/osgeo/
