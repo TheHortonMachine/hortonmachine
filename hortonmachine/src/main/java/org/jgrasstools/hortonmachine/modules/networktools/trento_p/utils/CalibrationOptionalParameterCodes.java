@@ -2,7 +2,7 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.*;
 
 public enum CalibrationOptionalParameterCodes implements IParametersCode{
-    JMAX(0, "Max bisection number", "[-]", Double.toString(Constants.DEFAULT_J_MAX),JMAX_RANGE[0],JMAX_RANGE[1]), //
+    JMAX(0, "Max bisection number", "[-]", Integer.toString(Constants.DEFAULT_J_MAX),JMAX_RANGE[0],JMAX_RANGE[1]), //
     EPS(1, "Accuracy", "[-]", Double.toString(Constants.DEFAULT_ACCURACY),EPS_RANGE[0],EPS_RANGE[1]), //
     MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", Double.toString(Constants.DEFAULT_MAX_THETA),THETA_RANGE[0],THETA_RANGE[1]), //
     CELERITY_FACTOR(3, "Celerity factor", "[-]", Double.toString(DEFAULT_CELERITY_FACTOR),CELERITY_RANGE[0],CELERITY_RANGE[1]),// //$NON-NLS-1$
@@ -18,10 +18,10 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode{
     private String key;
     private String description;
     private final String defaultValue;
-    private final Double minRange;
-    private final Double maxRange;
+    private final Number minRange;
+    private final Number maxRange;
     
-    CalibrationOptionalParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
+    CalibrationOptionalParameterCodes( int code, String key, String description, String defaultValue, Number minRange, Number maxRange ) {
         this.code = code;
         this.key = key;
         this.description = description;
@@ -67,13 +67,13 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode{
     }
 
     @Override
-    public Double getMinRange() {
+    public Number getMinRange() {
         // TODO Auto-generated method stub
         return minRange;
     }
 
     @Override
-    public Double getMaxRange() {
+    public Number getMaxRange() {
         // TODO Auto-generated method stub
         return maxRange;
     }

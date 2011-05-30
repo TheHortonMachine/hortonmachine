@@ -5,9 +5,9 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 public enum ProjectOptionalParameterCodes implements IParametersCode {
     MIN_DEPTH(0, "Minimum excavation depth", "[m]", Double.toString(DEFAULT_MINIMUM_DEPTH), MIN_DEPTH_RANGE[0],
             MIN_DEPTH_RANGE[1]), //
-    MAX_JUNCTION(1, "Maz number of junction", "[-]", Double.toString(Constants.DEFAULT_MAX_JUNCTION), MAX_JUNCTIONS_RANGE[0],
+    MAX_JUNCTION(1, "Maz number of junction", "[-]", Integer.toString(Constants.DEFAULT_MAX_JUNCTION), MAX_JUNCTIONS_RANGE[0],
             MAX_JUNCTIONS_RANGE[1]), //
-    JMAX(2, "Max bisection number", "[-]", Double.toString(Constants.DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
+    JMAX(2, "Max bisection number", "[-]", Integer.toString(Constants.DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
     EPS(3, "Accuracy", "[-]", Double.toString(Constants.DEFAULT_ACCURACY), EPS_RANGE[0], EPS_RANGE[1]), //
     MIN_FILL_DEGREE(4, "Minimum fill degree", "[-]", Double.toString(Constants.DEFAULT_MING), MIN_FILL_DEGREE_RANGE[0],
             MIN_FILL_DEGREE_RANGE[1]), //
@@ -29,14 +29,14 @@ public enum ProjectOptionalParameterCodes implements IParametersCode {
     private String key;
     private String description;
     private final String defaultValue;
-    private final Double minRange;
-    private final Double maxRange;
+    private final Number minRange;
+    private final Number maxRange;
 
     private final static String PROJECT_OPTIONAL_PAGE_NAME = "project optional parameters";//$NON-NLS-1$
     private final static String PROJECT_OPTIONAL_PAGE_TITLE = "optional parameters in project mode";//$NON-NLS-1$
     private final static String PROJECT_OPTIONAL_PAGE_DESCRIPTION = "This field could not  be setted  to project";//$NON-NLS-1$
 
-    ProjectOptionalParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
+    ProjectOptionalParameterCodes( int code, String key, String description, String defaultValue, Number minRange, Number maxRange ) {
         this.code = code;
         this.key = key;
         this.description = description;
@@ -82,13 +82,13 @@ public enum ProjectOptionalParameterCodes implements IParametersCode {
     }
 
     @Override
-    public Double getMinRange() {
+    public Number getMinRange() {
         // TODO Auto-generated method stub
         return minRange;
     }
 
     @Override
-    public Double getMaxRange() {
+    public Number getMaxRange() {
         // TODO Auto-generated method stub
         return maxRange;
     }

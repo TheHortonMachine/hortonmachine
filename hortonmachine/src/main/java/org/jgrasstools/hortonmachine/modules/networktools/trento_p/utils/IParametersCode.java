@@ -5,8 +5,8 @@ public interface IParametersCode {
     public String getKey(); 
     public String getDescription(); 
     public String getDefaultValue();
-    public Double getMinRange();
-    public Double getMaxRange();
+    public Number getMinRange();
+    public Number getMaxRange();
     public String getPageName();
     public String getPageTitle();
     public String getPageDescription();

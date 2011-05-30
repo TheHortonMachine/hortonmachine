@@ -208,7 +208,7 @@ public class Constants {
     public final static double DEFAULT_DT = 15;
     
     public final static Double[] CELERITY_RANGE = {new Double(1),new Double(1.6)};
-    public final static Double[] JMAX_RANGE = {new Double(3),new Double(1000)};
+    public final static Integer[] JMAX_RANGE = {new Integer(3),new Integer(1000)};
     public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0),null};
     public final static Double[] GAMMA_RANGE = {new Double(0),null};
     public final static Double[] TOLERANCE_RANGE = {new Double(0),null};
@@ -217,7 +217,7 @@ public class Constants {
     public final static Double[] C_RANGE = {new Double(0),null};
     public final static Double[] EXPONENT_RANGE = {new Double(0),null};
     public final static Double[] MIN_DEPTH_RANGE = {null,null};
-    public final static Double[] MAX_JUNCTIONS_RANGE = {new Double(0),new Double(6)};
+    public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0),new Integer(6)};
     public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0),new Double(0.1)};
     public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0),null};
 
