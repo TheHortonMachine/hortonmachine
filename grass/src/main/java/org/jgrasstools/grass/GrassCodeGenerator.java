@@ -36,16 +36,22 @@ import org.jgrasstools.grass.utils.Oms3CodeWrapper;
  */
 public class GrassCodeGenerator {
 
+    @SuppressWarnings("nls")
     public static void main( String[] args ) throws Exception {
 
-        File generationFolder = new File("D:\\development\\jgrasstools-hg\\jgrasstools\\grass\\src\\main\\java\\");
-        String gisbase = "C:\\OSGeo4W\\apps\\grass\\grass-6.4.1\\";
-        String shell = "C:\\OSGeo4W\\apps\\msys\\bin\\sh.exe";
+        // File generationFolder = new
+        // File("D:\\development\\jgrasstools-hg\\jgrasstools\\grass\\src\\main\\java\\");
+        // String gisbase = "C:\\OSGeo4W\\apps\\grass\\grass-6.4.1\\";
+        // String shell = "C:\\OSGeo4W\\apps\\msys\\bin\\sh.exe";
 
         // LINUX
-        // File generationFolder = new
-        // File("/home/moovida/development/jgrasstools-hg/grass/src/main/java/");
-        // String gisbase = "/usr/lib/grass64";
+        File generationFolder = new File("/home/moovida/development/jgrasstools-hg/jgrasstools/grass/src/main/java/");
+        String gisbase = "/usr/lib/grass64";
+        String shell = "/bin/sh";
+
+        if (!generationFolder.exists()) {
+            throw new RuntimeException();
+        }
 
         System.setProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY, gisbase);
         System.setProperty(GrassUtils.GRASS_ENVIRONMENT_SHELL_KEY, shell);
