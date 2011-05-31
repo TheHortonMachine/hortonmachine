@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Launches a GRASS graphical user interface (GUI) session.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, gui")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__gui")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

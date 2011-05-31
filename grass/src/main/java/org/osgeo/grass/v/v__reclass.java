@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Changes vector category values for an existing vector map according to results of SQL queries or a value in attribute table column.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, reclass, attributes")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__reclass")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

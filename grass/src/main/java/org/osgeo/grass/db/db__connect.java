@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Prints/sets general DB connection for current mapset and exits.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__connect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

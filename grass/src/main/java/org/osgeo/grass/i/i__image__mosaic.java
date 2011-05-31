@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Mosaics up to 4 images and extends colormap; creates map *.mosaic")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery, mosaicking")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__image__mosaic")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

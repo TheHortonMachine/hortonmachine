@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Removes outliers from vector point data.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__outlier")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

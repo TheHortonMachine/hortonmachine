@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Surface generation program.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__surf__idw2")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Attach, delete or report vector categories to map geometry.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, category")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__category")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

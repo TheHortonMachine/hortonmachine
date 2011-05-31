@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Randomly generate a 2D/3D vector points map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__random")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

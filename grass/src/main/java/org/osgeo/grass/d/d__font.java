@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects the font in which text will be displayed on the user's graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__font")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

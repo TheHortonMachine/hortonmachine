@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a 3D volume map based on 2D elevation and value raster maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, raster3d, voxel, conversion")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__to__rast3elev")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

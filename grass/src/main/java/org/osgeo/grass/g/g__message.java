@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("This module should be used in scripts for messages served to user.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, scripts")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__message")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

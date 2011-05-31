@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Performs an affine transformation (shift, scale and rotate, or GPCs) on vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, transformation")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__transform")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

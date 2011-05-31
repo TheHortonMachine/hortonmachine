@@ -17,7 +17,7 @@ import oms3.annotations.Status;
 
 @Description("Calculates new grid3D volume from r3.mapcalc expression.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__mapcalculator")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

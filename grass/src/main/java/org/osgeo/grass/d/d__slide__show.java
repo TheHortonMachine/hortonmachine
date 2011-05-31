@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Slide show of GRASS raster/vector maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, slideshow")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__slide__show")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Recursively traces the least cost path backwards to cells from which the cumulative cost was determined.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__spreadpath")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

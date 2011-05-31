@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Link GDAL supported raster file to a binary raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, import")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__external")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

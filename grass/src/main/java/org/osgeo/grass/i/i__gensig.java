@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates statistics for i.maxlik from raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, classification, supervised, MLC")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__gensig")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

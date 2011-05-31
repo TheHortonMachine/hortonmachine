@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Performs contextual image classification using sequential maximum a posteriori (SMAP) estimation.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, classification, supervised, SMAP")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__smap")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

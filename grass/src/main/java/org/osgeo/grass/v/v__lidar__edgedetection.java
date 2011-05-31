@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Detects the object's edges from a LIDAR data set.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, LIDAR, edges")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__lidar__edgedetection")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

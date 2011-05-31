@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a buffer around features of given type (areas must contain centroid).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, buffer")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__buffer")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

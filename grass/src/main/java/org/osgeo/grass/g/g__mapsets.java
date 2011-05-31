@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Modifies the user's current mapset search path, affecting the user's access to data existing under the other GRASS mapsets in the current location.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, settings")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__mapsets")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

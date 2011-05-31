@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Tasseled Cap (Kauth Thomas) transformation for LANDSAT-TM data")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__tasscap")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

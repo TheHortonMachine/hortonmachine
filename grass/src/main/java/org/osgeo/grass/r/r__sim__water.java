@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Overland flow hydrologic simulation using path sampling method (SIMWE)")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, flow, hydrology")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__sim__water")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

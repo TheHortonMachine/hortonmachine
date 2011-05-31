@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Aspect is calculated counterclockwise from east.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, terrain")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__slope__aspect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

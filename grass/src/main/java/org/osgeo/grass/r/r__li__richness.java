@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates dominance's diversity index on a raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, landscape structure analysis, dominance index")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__li__richness")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Reports geometry statistics for vectors.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, report, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__report")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

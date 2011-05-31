@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a new map layer whose category values are based upon a reclassification of the categories in an existing raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__reclass")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

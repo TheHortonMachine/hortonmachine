@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Available drivers: ESRI Shapefile,MapInfo File,UK .NTF,SDTS,TIGER,S57,DGN,VRT,REC,Memory,BNA,CSV,GML,GPX,KML,GeoJSON,Interlis 1,Interlis 2,GMT,SQLite,ODBC,PGeo,OGDI,PostgreSQL,MySQL,XPlane,AVCBin,AVCE00,Geoconcept")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__external")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Produces a vector map of specified contours from a raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, DEM, contours, vector")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__contour")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts 3 GRASS raster layers (R,G,B) to a PPM image file at the pixel resolution of the CURRENTLY DEFINED REGION.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__ppm3")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

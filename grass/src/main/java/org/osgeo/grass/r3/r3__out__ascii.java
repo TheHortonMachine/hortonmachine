@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a 3D raster map layer into an ASCII text file")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel, export")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__out__ascii")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

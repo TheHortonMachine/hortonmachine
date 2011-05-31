@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Allows creation and/or modification of raster map layer support files.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, metadata")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__support")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

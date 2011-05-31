@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Drops a column from selected attribute table")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__dropcol")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

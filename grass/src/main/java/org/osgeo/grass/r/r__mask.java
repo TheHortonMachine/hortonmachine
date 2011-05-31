@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Create a MASK for limiting raster operation")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, mask")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__mask")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

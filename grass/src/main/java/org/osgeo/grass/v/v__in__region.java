@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Create a new vector from the current region.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__region")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

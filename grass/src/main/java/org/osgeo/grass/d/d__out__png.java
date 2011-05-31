@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Saves active display monitor to PNG file in home directory")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, export")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__out__png")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

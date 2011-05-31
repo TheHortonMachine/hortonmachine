@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Set color rules for features in a vector using a numeric attribute column.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, color table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__colors")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

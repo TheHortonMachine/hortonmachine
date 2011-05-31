@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates raster plane map given dip (inclination), aspect (azimuth) and one point.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, elevation")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__plane")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

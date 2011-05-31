@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates linear regression from two raster maps: y = a + b*x")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, statistics")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__regression__line")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

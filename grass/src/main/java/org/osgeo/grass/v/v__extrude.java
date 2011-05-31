@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Extrudes flat vector object to 3D with defined height.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, geometry, 3D")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__extrude")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

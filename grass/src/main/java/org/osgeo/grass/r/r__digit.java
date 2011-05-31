@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Interactive tool used to draw and save vector features on a graphics monitor using a pointing device (mouse) and save to a raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__digit")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays the boundary of each r.le patch and shows how the boundary is traced, displays the attribute, size, perimeter and shape indices for each patch and saves the data in an output file.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__le__trace")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

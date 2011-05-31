@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts any directory separator characters in the input string to or from native host format, and writes the changed path to standard output. Useful in scripts for Windows compatibility.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__dirseps")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

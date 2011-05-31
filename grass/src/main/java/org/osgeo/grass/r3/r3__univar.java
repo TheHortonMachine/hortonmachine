@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates univariate statistics from the non-null 3d cells of a raster3d map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, statistics")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__univar")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

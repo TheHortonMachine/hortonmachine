@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Zero-crossing \"edge detection\" raster function for image processing.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__zc")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

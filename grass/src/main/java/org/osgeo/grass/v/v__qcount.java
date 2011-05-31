@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Indices for quadrat counts of sites lists.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__qcount")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

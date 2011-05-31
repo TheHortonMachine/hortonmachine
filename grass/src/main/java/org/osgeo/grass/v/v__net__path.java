@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Finds shortest path on vector network.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, networking")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__net__path")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Outputs raster map layer values lying along user defined transect line(s).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__transect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

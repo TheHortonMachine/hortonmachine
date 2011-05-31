@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Explicitly create the 3D NULL-value bitmap file.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__null")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

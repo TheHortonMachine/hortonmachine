@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Allows the user to change the current geographic region settings interactively, with a mouse.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__zoom")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

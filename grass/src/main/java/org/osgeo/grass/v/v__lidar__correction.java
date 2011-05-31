@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Correction of the v.lidar.growing output. It is the last of the three algorithms for LIDAR filtering.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, LIDAR")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__lidar__correction")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts raster maps into the VTK-Ascii format")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__vtk")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

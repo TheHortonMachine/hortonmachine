@@ -94,37 +94,37 @@ public class GrassUtils {
     /**
      * Category to use for raster processing.
      */
-    public static String GRASS_RASTER_CATEGORY = "Grass Raster Modules";
+    public static String GRASS_RASTER_CATEGORY = "Grass/Raster Modules";
 
     /**
      * Category to use for raster 3d processing.
      */
-    public static String GRASS_RASTER3D_CATEGORY = "Grass Raster 3D Modules";
+    public static String GRASS_RASTER3D_CATEGORY = "Grass/Raster 3D Modules";
 
     /**
      * Category to use for vector processing.
      */
-    public static String GRASS_VECTOR_CATEGORY = "Grass Vector Modules";
+    public static String GRASS_VECTOR_CATEGORY = "Grass/Vector Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_IMAGERY_CATEGORY = "Grass Imagery Modules";
+    public static String GRASS_IMAGERY_CATEGORY = "Grass/Imagery Modules";
 
     /**
      * Category to use for imagery.
      */
-    public static String GRASS_DISPLAY_CATEGORY = "Grass Display Modules";
+    public static String GRASS_DISPLAY_CATEGORY = "Grass/Display Modules";
 
     /**
      * Category to use for generic.
      */
-    public static String GRASS_GENERAL_CATEGORY = "Grass General Modules";
+    public static String GRASS_GENERAL_CATEGORY = "Grass/General Modules";
 
     /**
      * Category to use for database.
      */
-    public static String GRASS_DATABASE_CATEGORY = "Grass Database Modules";
+    public static String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
 
     /**
      * GUI hint: item is an existing file path.

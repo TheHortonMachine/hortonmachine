@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates and displays simple line graphs in the active graphics monitor display frame.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__linegraph")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Manages the boundary definitions for the geographic region.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__region")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

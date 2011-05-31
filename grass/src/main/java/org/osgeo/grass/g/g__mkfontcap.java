@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates the font configuration file by scanning various directories for fonts")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__mkfontcap")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

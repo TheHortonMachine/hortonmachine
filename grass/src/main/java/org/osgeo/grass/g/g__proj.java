@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Can also be used to create GRASS locations.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, projection")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__proj")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

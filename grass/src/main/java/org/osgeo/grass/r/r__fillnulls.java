@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Fills no-data areas in raster maps using v.surf.rst splines interpolation")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, elevation, interpolation")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__fillnulls")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

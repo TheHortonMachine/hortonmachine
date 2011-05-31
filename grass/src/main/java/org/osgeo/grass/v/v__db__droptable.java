@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Removes existing attribute table of a vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, database, attribute table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__db__droptable")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

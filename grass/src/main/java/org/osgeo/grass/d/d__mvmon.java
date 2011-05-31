@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Moves displayed maps to another monitor")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, setup")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__mvmon")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

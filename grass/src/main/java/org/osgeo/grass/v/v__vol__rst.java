@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Interpolates point data to a G3D grid volume using regularized spline with tension (RST) algorithm.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__vol__rst")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

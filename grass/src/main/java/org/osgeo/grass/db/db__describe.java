@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Describes a table in detail.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__describe")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

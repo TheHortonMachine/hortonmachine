@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Imports US-NGA GEOnet Names Server (GNS) country files into a GRASS vector points map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import, gazetteer")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__gns")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

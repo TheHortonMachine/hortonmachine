@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Renames data base element files in the user's current mapset.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, map management")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__rename")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

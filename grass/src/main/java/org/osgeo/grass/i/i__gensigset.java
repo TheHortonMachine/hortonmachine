@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates statistics for i.smap from raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, classification, supervised, SMAP")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__gensigset")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

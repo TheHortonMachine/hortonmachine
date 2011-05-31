@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates a raster map layer showing watershed subbasins.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__basins__fill")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

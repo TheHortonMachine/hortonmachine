@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Convert a 3D ASCII raster text file into a (binary) 3D raster map layer")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel, import")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__in__ascii")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

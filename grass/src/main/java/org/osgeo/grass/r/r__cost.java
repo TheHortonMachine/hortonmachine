@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a raster map showing the cumulative cost of moving between different geographic locations on an input raster map whose cell category values represent cost.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, cost surface, cumulative costs")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__cost")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

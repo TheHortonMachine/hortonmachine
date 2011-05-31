@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Controls access to the current mapset for other users on the system.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__access")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("The resulting signature file can be used as input for i.maxlik or as a seed signature file for i.cluster.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__class")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Export a raster map to a text file as x,y,z values based on cell centers.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, export")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__xyz")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

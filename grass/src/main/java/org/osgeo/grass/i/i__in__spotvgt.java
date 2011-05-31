@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Import of SPOT VGT NDVI file into a raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery, import")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__in__spotvgt")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Change current mapset.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, settings")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__mapset")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

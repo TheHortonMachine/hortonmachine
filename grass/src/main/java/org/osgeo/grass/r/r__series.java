@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Makes each output cell value a function of the values assigned to the corresponding cells in the input raster map layers.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, series")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__series")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

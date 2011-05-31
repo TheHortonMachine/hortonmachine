@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Splits net to bands between cost isolines (direction from centre). Centre node must be opened (costs >= 0). Costs of centre node are used in calculation.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, networking")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__net__iso")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

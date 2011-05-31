@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a GRASS binary vector map to a GRASS ASCII vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, export")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__out__ascii")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

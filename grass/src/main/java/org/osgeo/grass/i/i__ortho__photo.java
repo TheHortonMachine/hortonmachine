@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Menu driver for the photo imagery programs.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, orthorectify")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__ortho__photo")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

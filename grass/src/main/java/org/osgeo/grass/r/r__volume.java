@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates the volume of data \"clumps\", and (optionally) produces a GRASS vector points map containing the calculated centroids of these clumps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__volume")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

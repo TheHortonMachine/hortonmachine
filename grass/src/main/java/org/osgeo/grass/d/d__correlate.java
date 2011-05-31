@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Prints a graph of the correlation between data layers (in pairs).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, diagram")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__correlate")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

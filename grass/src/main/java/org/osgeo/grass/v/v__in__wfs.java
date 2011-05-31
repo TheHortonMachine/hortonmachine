@@ -17,7 +17,7 @@ import oms3.annotations.Status;
 
 @Description("Import GetFeature from WFS")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__wfs")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

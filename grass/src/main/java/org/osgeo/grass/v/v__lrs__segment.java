@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates points/segments from input lines, linear reference system and positions read from stdin or a file.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, LRS, networking")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__lrs__segment")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Convert all old GRASS < Ver5.7 vector maps in current mapset to current format")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__convert__all")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

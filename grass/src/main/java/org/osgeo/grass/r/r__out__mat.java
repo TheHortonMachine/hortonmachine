@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Exports a GRASS raster to a binary MAT-File.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, export")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__mat")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a fractal surface of a given fractal dimension.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, DEM, fractal")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__surf__fractal")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

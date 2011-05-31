@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Produces tilings of the source projection for use in the destination region and projection.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, tiling")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__tileset")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

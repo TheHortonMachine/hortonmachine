@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Performs transformation of 2D vector features to 3D.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, transformation, 3D")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__to__3d")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

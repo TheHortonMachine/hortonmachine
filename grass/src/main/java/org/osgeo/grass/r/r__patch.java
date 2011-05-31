@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a composite raster map layer by using known category values from one (or more) map layer(s) to fill in areas of \"no data\" in another map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__patch")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

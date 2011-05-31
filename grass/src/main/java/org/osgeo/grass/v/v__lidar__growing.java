@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Building contour determination and Region Growing algorithm for determining the building inside")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, LIDAR")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__lidar__growing")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

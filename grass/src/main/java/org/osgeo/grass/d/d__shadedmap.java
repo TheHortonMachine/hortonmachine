@@ -17,7 +17,7 @@ import oms3.annotations.Status;
 
 @Description("Drapes a color raster over a shaded relief map using d.his")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__shadedmap")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

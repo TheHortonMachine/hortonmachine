@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Resamples raster map layers to a finer grid using interpolation.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, resample")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__resamp__interp")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

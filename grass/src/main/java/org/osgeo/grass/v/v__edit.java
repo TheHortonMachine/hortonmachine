@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Edits a vector map, allows adding, deleting and modifying selected vector features.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, editing, geometry")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__edit")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

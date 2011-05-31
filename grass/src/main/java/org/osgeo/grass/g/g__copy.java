@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Copies available data files in the user's current mapset search path and location to the appropriate element directories under the user's current mapset.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, map management")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__copy")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

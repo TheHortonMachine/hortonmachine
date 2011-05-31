@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Create a raster map from an assemblage of many coordinates using univariate statistics.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, import, LIDAR")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__xyz")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates edge density index on a raster map, using a 4 neighbour algorithm")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, landscape structure analysis, patch index")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__li__edgedensity")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

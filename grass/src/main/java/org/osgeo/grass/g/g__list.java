@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Lists available GRASS data base files of the user-specified data type to standard output.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, map management")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__list")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

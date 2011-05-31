@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Makes each cell category value a function of the category values assigned to the cells around it, and stores new cell values in an output raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__neighbors")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

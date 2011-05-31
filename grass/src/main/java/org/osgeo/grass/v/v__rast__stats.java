@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates univariate statistics from a raster map based on vector polygons and uploads statistics to new attribute columns.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, raster, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__rast__stats")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

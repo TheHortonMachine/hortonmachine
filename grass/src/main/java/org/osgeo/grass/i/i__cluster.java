@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("The resulting signature file is used as input for i.maxlik, to generate an unsupervised image classification.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, classification, signatures")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__cluster")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

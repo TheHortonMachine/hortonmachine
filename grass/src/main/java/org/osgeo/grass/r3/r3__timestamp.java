@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Print/add/remove a timestamp for a 3D raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__timestamp")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

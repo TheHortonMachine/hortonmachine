@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Note that 'Minimum Steiner Tree' problem is NP-hard and heuristic algorithm is used in this module so the result may be sub optimal")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, networking")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__net__steiner")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

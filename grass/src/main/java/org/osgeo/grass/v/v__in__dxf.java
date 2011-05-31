@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts files in DXF format to GRASS vector map format.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__dxf")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

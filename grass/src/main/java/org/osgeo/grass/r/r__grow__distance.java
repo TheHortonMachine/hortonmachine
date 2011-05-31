@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates a raster map layer of distance to features in input layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__grow__distance")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

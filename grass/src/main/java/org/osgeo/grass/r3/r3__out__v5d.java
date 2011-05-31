@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Export of GRASS 3D raster map to 3-dimensional Vis5D file.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__out__v5d")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

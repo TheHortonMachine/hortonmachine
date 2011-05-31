@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("6S - Second Simulation of Satellite Signal in the Solar Spectrum.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, atmospheric correction")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__atcorr")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

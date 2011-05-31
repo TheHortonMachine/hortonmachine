@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Fast Fourier Transform (FFT) for image processing.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, FFT")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__fft")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

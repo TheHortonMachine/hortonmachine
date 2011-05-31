@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Export display monitor to a GpsDrive compatible backdrop image")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, export, GPS")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__out__gpsdrive")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

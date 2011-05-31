@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Outputs a covariance/correlation matrix for user-specified raster map layer(s).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__covar")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates shaded relief map from an elevation map (DEM).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, elevation")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__shaded__relief")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

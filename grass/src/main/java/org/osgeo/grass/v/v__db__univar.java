@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates univariate statistics on selected table column for a GRASS vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__db__univar")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

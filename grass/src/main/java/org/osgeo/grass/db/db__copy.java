@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Either 'from_table' (optionally with 'where') can be used or 'select' option, but not 'from_table' and 'select' at the same time.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table, SQL")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__copy")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

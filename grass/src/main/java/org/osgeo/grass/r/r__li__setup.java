@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Configuration editor for r.li.'index'")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, landscape structure analysis")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__li__setup")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

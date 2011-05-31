@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Interactive editing and digitization of vector maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, editing, digitization")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__digit")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

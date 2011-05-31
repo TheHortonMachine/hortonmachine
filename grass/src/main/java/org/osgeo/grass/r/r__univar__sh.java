@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("calculates univariate statistics from a GRASS raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, statistics")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__univar__sh")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

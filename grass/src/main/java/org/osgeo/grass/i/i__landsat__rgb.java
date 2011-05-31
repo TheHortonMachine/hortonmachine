@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Performs auto-balancing of colors for LANDSAT images.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery, colors")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__landsat__rgb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

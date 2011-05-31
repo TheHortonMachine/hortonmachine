@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Numerical calculation program for transient, confined and unconfined groundwater flow in two dimensions.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__gwflow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

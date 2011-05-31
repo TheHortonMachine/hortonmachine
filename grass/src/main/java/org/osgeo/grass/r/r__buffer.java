@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a raster map layer showing buffer zones surrounding cells that contain non-NULL category values.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, buffer")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__buffer")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

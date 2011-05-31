@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Toolset for cleaning topology of vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, topology")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__clean")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

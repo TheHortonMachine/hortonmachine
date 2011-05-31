@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts 2D raster map slices to one 3D raster volume map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, volume, conversion")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__to__rast3")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

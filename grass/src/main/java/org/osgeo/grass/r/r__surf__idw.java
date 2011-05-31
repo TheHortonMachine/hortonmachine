@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Surface interpolation utility for raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, interpolation")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__surf__idw")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

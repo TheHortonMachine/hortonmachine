@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Spatial approximation and topographic analysis from given point or isoline data in vector format to floating point raster format using regularized spline with tension.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__surf__rst")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

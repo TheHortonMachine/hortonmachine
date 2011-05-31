@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Re-projects a raster map from one location to the current location.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, projection")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__proj")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

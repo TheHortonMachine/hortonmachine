@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Rectifies an image by computing a coordinate transformation for each pixel in the image based on the control points.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, rectify")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__rectify")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

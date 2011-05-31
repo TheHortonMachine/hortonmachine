@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects vector objects from an existing vector map and creates a new map containing only the selected objects.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, extract")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__extract")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

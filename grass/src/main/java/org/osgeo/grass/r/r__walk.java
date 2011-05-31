@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Outputs a raster map layer showing the anisotropic cumulative cost of moving between different geographic locations on an input elevation raster map layer whose cell category values represent elevation combined with an input raster map layer whose cell values represent friction cost.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__walk")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

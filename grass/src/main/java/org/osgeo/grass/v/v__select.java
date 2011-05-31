@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects features from vector map (A) by features from other vector map (B).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, query")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__select")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

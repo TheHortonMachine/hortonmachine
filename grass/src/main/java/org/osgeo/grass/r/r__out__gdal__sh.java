@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Exports GRASS raster into GDAL supported formats.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, export")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__gdal__sh")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

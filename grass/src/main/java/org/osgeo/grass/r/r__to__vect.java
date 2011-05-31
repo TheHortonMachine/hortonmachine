@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a raster map into a vector map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__to__vect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

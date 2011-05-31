@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("GRASS raster map layer data resampling capability.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__resample")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

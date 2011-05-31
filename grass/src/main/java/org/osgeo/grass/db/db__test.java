@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Test database driver, database must exist and set by db.connect.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__test")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

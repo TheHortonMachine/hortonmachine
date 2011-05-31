@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Filters and generates a depressionless elevation map and a flow direction map from a given elevation layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__fill__dir")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Reclasses a raster map greater or less than user specified area size (in hectares).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, statistics, aggregation")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__reclass__area")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

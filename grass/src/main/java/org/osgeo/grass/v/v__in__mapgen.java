@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Import Mapgen or Matlab vector maps into GRASS.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__mapgen")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

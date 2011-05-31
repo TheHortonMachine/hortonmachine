@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts to POV-Ray format, GRASS x,y,z -> POV-Ray x,z,y")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, export")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__out__pov")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

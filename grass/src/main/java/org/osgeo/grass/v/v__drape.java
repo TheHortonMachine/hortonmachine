@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts vector map to 3D by sampling of elevation raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, geometry, sampling")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__drape")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

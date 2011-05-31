@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Line-of-sight raster analysis program.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__los")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Surface interpolation from vector point data by Inverse Distance Squared Weighting.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, interpolation")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__surf__idw")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

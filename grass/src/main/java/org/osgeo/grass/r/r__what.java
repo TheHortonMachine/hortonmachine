@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Queries raster map layers on their category values and category labels.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__what")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

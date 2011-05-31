@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Allows the user to interactively query a vector map layer at user-selected locations within the current geographic region.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__what__vect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

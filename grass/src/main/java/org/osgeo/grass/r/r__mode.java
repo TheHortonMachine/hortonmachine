@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Finds the mode of values in a cover map within areas assigned the same category value in a user-specified base map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__mode")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

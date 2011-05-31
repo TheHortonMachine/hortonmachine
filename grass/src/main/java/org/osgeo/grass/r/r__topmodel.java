@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Simulates TOPMODEL which is a physically based hydrologic model.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__topmodel")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

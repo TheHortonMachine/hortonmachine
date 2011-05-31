@@ -17,7 +17,7 @@ import oms3.annotations.Status;
 
 @Description("Calculate new raster map from a r.mapcalc expression.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__mapcalculator")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Exports a GRASS raster map to a 8/24bit TIFF image file at the pixel resolution of the currently defined region.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, export")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__tiff")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

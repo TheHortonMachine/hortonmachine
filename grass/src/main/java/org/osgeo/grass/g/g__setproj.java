@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Interactively reset the location's projection settings.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, projection")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__setproj")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

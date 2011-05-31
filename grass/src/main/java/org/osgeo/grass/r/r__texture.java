@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generate images with textural features from a raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__texture")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

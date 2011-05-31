@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Transforms raster maps from HIS (Hue-Intensity-Saturation) color space to RGB (Red-Green-Blue) color space.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, color transformation, RGB, HIS")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__his__rgb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

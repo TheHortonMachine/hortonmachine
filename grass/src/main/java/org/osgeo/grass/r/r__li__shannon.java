@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates Shannon's diversity index on a raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, landscape structure analysis, diversity index")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__li__shannon")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

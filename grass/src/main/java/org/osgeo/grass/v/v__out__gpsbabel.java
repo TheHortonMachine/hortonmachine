@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Exports a vector map to a GPS receiver or file format supported by GpsBabel.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, export, GPS")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__out__gpsbabel")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Computes a coordinate transformation based on the control points.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, transformation, GCP")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__transform")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("It optionally produces raster maps to contain backlink UTM coordinates for tracing spread paths.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__spread")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

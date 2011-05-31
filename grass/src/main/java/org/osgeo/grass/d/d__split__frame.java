@@ -17,7 +17,7 @@ import oms3.annotations.Status;
 
 @Description("Split the display into subframes.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__split__frame")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

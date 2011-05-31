@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Removes data base element files from the user's current mapset.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, map management")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__remove")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

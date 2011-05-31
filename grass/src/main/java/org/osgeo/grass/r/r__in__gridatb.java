@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Imports GRIDATB.FOR map file (TOPMODEL) into GRASS raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__gridatb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

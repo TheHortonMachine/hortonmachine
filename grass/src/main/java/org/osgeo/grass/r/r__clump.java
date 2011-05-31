@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Recategorizes data in a raster map by grouping cells that form physically discrete areas into unique categories.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, statistics, reclass")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__clump")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

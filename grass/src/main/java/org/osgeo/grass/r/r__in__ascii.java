@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts ASCII raster file to binary raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, import, conversion")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__ascii")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

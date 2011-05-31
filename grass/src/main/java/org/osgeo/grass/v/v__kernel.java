@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates a raster density map from vector points data using a moving 2D isotropic Gaussian kernel or optionally generates a vector density map on vector network with a 1D kernel.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, kernel density")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__kernel")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

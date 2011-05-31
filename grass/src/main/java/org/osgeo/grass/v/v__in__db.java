@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates new vector (points) map from database table containing coordinates.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import, database, points")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__db")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

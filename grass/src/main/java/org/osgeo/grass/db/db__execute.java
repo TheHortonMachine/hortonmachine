@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Executes any SQL statement.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table, SQL")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__execute")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

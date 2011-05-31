@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Combines red, green and blue raster maps into a single composite raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, composite")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__composite")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

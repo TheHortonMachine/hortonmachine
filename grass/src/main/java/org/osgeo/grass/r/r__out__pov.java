@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a raster map layer into a height-field file for POVRAY.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__pov")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Mark ground control points on image to be rectified.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__points")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

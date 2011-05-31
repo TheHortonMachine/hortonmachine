@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Split lines to shorter segments.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, geometry")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__split")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates raster maps from ASCII polygon/line/point data files.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, import")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__poly")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

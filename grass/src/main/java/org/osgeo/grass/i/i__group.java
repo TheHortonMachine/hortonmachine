@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates, edits, and lists groups and subgroups of imagery files.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__group")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

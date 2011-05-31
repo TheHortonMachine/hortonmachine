@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Bicubic or bilinear spline interpolation with Tykhonov regularization.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, interpolation")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__surf__bspline")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

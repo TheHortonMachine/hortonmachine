@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Reinterpolates and optionally computes topographic analysis from input raster map to a new raster map (possibly with different resolution) using regularized spline with tension and smoothing.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__resamp__rst")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

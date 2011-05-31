@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Renames a column in the attribute table connected to a given vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, database, attribute table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__db__renamecol")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

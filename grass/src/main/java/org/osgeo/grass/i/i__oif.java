@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates Optimum-Index-Factor table for LANDSAT TM bands 1-5, & 7")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery, statistics")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__oif")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

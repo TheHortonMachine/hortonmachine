@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Principal components analysis (pca) program for image processing.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, image transformation, PCA")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__pca")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

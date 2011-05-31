@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Makes each cell value a function of the attribute values assigned to the vector points or centroids around it, and stores new cell values in an output raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, raster, aggregation")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__neighbors")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

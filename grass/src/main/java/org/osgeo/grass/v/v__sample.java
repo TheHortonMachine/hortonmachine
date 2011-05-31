@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Samples a raster map at vector point locations.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__sample")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

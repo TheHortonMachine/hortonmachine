@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Prints/sets DB connection for a vector map to attribute table.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, database, attribute table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__db__connect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

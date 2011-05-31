@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates cross section 2D raster map from 3d raster map based on 2D elevation map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__cross__rast")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

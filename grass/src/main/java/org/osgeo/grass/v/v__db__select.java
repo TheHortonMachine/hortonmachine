@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Prints vector map attributes.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, database, attribute table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__db__select")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

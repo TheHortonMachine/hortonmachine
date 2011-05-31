@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Redraws the current display frame in the GRASS monitor")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__redraw")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("GRASS module to produce a raster map layer of gaussian deviates whose mean and standard deviation can be expressed by the user. It uses a gaussian random number generator.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__surf__gauss")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

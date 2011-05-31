@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Georeference, rectify and import Terra-ASTER imagery and relative DEM's using gdalwarp.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, imagery, import")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__aster")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Dissolves boundaries between adjacent areas sharing a common category number or attribute.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, area, dissolve")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__dissolve")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

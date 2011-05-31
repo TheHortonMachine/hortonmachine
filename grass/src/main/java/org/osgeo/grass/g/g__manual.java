@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Display the HTML man pages of GRASS")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general, manual, help")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__manual")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

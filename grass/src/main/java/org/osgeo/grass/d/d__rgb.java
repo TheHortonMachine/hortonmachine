@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays three user-specified raster map layers as red, green, and blue overlays in the active graphics frame.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__rgb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

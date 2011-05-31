@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Exports a GRASS vector map to SVG.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, export")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__out__svg")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

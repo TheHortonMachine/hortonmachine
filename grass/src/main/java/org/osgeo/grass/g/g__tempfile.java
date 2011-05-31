@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a temporary file and prints the file name.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("general")
-@Label("Grass General Modules")
+@Label("Grass/General Modules")
 @Name("g__tempfile")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

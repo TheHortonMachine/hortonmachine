@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Construction of slope curves (flowlines), flowpath lengths, and flowline densities (upslope areas) from a raster digital elevation model (DEM)")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__flow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

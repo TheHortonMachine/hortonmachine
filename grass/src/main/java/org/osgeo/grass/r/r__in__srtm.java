@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Import SRTM HGT files into GRASS")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, import")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__in__srtm")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

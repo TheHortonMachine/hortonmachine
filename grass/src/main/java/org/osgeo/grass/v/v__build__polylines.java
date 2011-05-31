@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Builds polylines from lines or boundaries.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, geometry, topology")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__build__polylines")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

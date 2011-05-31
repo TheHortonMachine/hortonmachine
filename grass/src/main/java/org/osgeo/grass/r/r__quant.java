@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Produces the quantization file for a floating-point map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__quant")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

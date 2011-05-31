@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a raster map containing concentric rings around a given point.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__circle")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

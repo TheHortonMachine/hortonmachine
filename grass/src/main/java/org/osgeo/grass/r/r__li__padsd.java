@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates standard deviation of patch area a raster map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, landscape structure analysis, patch index")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__li__padsd")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

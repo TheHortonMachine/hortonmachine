@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates cast shadow areas from sun position and DEM. Either A: exact sun position is specified, or B: date/time to calculate the sun position by r.sunmask itself.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__sunmask")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Contains a set of measures for attributes, diversity, texture, juxtaposition, and edge.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__le__pixel")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

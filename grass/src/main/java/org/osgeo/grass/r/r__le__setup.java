@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Interactive tool used to setup the sampling and analysis framework that will be used by the other r.le programs.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__le__setup")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

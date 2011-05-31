@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Rescales the range of category values in a raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__rescale")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

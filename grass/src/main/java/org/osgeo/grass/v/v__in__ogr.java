@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Convert OGR vector layers to GRASS vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, import")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__in__ogr")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

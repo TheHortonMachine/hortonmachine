@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculates univariate statistics for attribute. Variance and standard deviation is calculated only for points if specified.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, statistics")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__univar")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

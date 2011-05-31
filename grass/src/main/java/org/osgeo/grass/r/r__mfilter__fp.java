@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Raster map matrix filter.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, map algebra")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__mfilter__fp")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

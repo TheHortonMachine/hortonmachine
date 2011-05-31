@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Outputs basic information about a user-specified vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, metadata, history")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__info")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

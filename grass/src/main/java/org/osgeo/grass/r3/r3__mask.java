@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Establishes the current working 3D raster mask.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__mask")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

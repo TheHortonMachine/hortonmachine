@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Create stationing from input lines, and linear reference system")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, LRS, networking")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__lrs__label")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

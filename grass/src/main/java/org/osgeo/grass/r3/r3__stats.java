@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates volume statistics for raster3d maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, statistics")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__stats")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

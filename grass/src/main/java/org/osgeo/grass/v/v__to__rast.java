@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a binary GRASS vector map into a GRASS raster map .")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, raster, conversion")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__to__rast")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

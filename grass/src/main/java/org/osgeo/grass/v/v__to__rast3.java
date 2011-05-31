@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Converts a binary GRASS vector map (only points) layer into a 3D GRASS raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, volume, conversion")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__to__rast3")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

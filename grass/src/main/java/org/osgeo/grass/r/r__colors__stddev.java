@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Set color rules based on stddev from a map's mean value.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, color table")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__colors__stddev")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

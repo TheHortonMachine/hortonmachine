@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects data from table.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, attribute table, SQL")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__select")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

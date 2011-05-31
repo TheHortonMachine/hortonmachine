@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Recodes categorical raster maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, recode category")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__recode")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

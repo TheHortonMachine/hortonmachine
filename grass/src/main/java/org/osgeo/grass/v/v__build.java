@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates topology for GRASS vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, topology")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__build")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

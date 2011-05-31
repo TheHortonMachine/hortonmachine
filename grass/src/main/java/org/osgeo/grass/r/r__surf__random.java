@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Produces a raster map layer of uniform random deviates whose range can be expressed by the user.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__surf__random")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

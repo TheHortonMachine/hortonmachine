@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Watershed basin creation program.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__water__outlet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

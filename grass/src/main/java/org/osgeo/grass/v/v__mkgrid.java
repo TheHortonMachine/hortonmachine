@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a GRASS vector map of a user-defined grid.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__mkgrid")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

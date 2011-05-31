@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Produces a convex hull for a given vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, geometry")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__hull")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

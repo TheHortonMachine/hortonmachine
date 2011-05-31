@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Sets user/password for driver/database.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("database, SQL")
-@Label("Grass Database Modules")
+@Label("Grass/Database Modules")
 @Name("db__login")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

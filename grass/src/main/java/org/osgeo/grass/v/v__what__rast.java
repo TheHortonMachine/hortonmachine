@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Uploads raster values at positions of vector points to the table.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, raster, attribute table")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__what__rast")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Export GRASS raster as non-georeferenced PNG image format.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__out__png")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

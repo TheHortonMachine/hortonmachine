@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a Delaunay triangulation from an input vector map containing points or centroids.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__delaunay")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

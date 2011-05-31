@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Targets an imagery group to a GRASS location and mapset.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__target")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

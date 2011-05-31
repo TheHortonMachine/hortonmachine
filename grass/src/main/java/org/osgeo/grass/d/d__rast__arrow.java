@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Draws arrows representing cell aspect direction for a raster map containing aspect data.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
-@Label("Grass Display Modules")
+@Label("Grass/Display Modules")
 @Name("d__rast__arrow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

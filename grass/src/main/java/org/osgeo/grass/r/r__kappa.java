@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Calculate error matrix and kappa parameter for accuracy assessment of classification result.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__kappa")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

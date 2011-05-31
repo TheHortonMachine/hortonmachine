@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Brovey transform to merge multispectral and high-res panchromatic channels")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("imagery, fusion, Brovey")
-@Label("Grass Imagery Modules")
+@Label("Grass/Imagery Modules")
 @Name("i__fusion__brovey")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Create optimally placed labels for vector map(s)")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("vector, paint labels")
-@Label("Grass Vector Modules")
+@Label("Grass/Vector Modules")
 @Name("v__label__sa")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

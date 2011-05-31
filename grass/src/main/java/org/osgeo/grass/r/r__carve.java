@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Takes vector stream data, transforms it to raster and subtracts depth from the output DEM.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__carve")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

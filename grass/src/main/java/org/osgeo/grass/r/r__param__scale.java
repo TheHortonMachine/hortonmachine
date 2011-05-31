@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Uses a multi-scale approach by taking fitting quadratic parameters to any size window (via least squares).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, geomorphology")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__param__scale")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

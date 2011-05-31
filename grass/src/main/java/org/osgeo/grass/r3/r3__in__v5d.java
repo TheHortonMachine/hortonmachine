@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("import of 3-dimensional Vis5D files (i.e. the v5d file with 1 variable and 1 time step)")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster3d, voxel")
-@Label("Grass Raster 3D Modules")
+@Label("Grass/Raster 3D Modules")
 @Name("r3__in__v5d")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,7 +18,7 @@ import oms3.annotations.Status;
 @Description("Locates the closest points between objects in two raster maps.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster")
-@Label("Grass Raster Modules")
+@Label("Grass/Raster Modules")
 @Name("r__distance")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")
