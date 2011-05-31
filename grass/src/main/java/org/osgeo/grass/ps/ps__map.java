@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Hardcopy PostScript map output utility.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("postscript, map, printing")
+@Label("Grass")
 @Name("ps__map")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

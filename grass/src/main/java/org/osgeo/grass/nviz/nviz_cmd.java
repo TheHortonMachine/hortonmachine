@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Experimental NVIZ CLI prototype.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("visualization, raster, vector, raster3d")
+@Label("Grass")
 @Name("nviz_cmd")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

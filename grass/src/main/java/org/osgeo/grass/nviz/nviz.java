@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("nviz - Visualization and animation tool for GRASS data.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("raster, vector, visualization")
+@Label("Grass")
 @Name("nviz")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

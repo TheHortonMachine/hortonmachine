@@ -16,6 +16,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
+@Label("Grass")
 @Name("xganim")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

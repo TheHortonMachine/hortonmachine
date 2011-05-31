@@ -17,6 +17,7 @@ import oms3.annotations.Status;
 
 @Description("GIS manager for GRASS")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
+@Label("Grass")
 @Name("gis__m")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

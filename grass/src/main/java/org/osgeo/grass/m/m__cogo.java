@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("It assumes a cartesian coordinate system")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("miscellaneous")
+@Label("Grass")
 @Name("m__cogo")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

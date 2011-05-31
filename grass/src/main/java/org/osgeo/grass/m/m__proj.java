@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Convert coordinates from one projection to another (cs2cs frontend).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("miscellaneous, projection")
+@Label("Grass")
 @Name("m__proj")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")
