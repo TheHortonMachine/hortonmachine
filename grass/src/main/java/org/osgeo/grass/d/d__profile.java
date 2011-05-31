@@ -23,12 +23,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__profile {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to be profiled")
 	@In
 	public String $$rastPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Optional display raster (optional)")
 	@In
 	public String $$drastPARAMETER;

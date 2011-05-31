@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__lrs__create {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing lines")
 	@In
 	public String $$in_linesPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map where oriented lines are written")
 	@In
 	public String $$out_linesPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map of errors (optional)")
 	@In
 	public String $$errPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing reference points")
 	@In
 	public String $$pointsPARAMETER;

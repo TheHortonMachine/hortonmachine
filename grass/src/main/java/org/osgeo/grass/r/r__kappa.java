@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__kappa {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing classification result")
 	@In
 	public String $$classificationPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing reference classes")
 	@In
 	public String $$referencePARAMETER;

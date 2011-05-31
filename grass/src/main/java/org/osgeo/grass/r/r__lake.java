@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__lake {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of terrain raster map (DEM)")
 	@In
 	public String $$demPARAMETER;
@@ -33,7 +33,7 @@ public class r__lake {
 	@In
 	public String $$wlPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map with lake (optional)")
 	@In
 	public String $$lakePARAMETER;
@@ -42,7 +42,7 @@ public class r__lake {
 	@In
 	public String $$xyPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map with seed (at least 1 cell > 0) (optional)")
 	@In
 	public String $$seedPARAMETER;

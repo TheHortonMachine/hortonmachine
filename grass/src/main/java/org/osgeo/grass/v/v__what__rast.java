@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__what__rast {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector points map for which to edit attribute table")
 	@In
 	public String $$vectorPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of existing raster map to be queried")
 	@In
 	public String $$rasterPARAMETER;

@@ -28,7 +28,7 @@ public class r3__in__ascii {
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster3d map")
 	@In
 	public String $$outputPARAMETER;

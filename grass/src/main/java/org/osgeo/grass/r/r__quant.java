@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__quant {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Base map to take quant rules from (optional)")
 	@In
 	public String $$basemapPARAMETER = "NONE";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map(s) to be quantized")
 	@In
 	public String $$inputPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__segment {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map containing lines")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map where segments will be written")
 	@In
 	public String $$outputPARAMETER;

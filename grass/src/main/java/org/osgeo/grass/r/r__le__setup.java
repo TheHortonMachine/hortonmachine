@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__le__setup {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to use to setup sampling")
 	@In
 	public String $$mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map to overlay (optional)")
 	@In
 	public String $$vectPARAMETER;

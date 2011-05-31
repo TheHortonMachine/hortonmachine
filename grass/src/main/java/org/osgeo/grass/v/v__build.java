@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__build {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$mapPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for vector map where erroneous vector features are written to (optional)")
 	@In
 	public String $$errorPARAMETER;

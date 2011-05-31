@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__los {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;
@@ -38,7 +38,7 @@ public class r__los {
 	@In
 	public String $$coordinatePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Binary (1/0) raster map to use as a mask (optional)")
 	@In
 	public String $$patt_mapPARAMETER;

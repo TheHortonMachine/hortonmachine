@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__support {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map")
 	@In
 	public String $$mapPARAMETER;
@@ -57,7 +57,7 @@ public class r__support {
 	@In
 	public String $$descriptionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map from which to copy category table (optional)")
 	@In
 	public String $$rasterPARAMETER;

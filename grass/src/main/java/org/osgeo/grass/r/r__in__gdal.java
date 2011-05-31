@@ -28,7 +28,7 @@ public class r__in__gdal {
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (optional)")
 	@In
 	public String $$outputPARAMETER;

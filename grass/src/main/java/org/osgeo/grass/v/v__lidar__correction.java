@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__lidar__correction {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input observation vector map name (v.lidar.growing output)")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output classified vector map name")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Only 'terrain' points output vector map")
 	@In
 	public String $$terrainPARAMETER;

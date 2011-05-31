@@ -24,27 +24,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class g__region {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set current region from named region (optional)")
 	@In
 	public String $$regionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this raster map (optional)")
 	@In
 	public String $$rastPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this 3D raster map (both 2D and 3D values) (optional)")
 	@In
 	public String $$rast3dPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this vector map (optional)")
 	@In
 	public String $$vectPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this 3dview file (optional)")
 	@In
 	public String $$3dviewPARAMETER;
@@ -101,17 +101,17 @@ public class g__region {
 	@In
 	public String $$tbresPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Shrink region until it meets non-NULL data from this raster map (optional)")
 	@In
 	public String $$zoomPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Adjust region cells to cleanly align with this raster map (optional)")
 	@In
 	public String $$alignPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Save current region settings in named region file (optional)")
 	@In
 	public String $$savePARAMETER;

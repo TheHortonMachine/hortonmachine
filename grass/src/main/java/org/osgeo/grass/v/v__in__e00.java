@@ -32,7 +32,7 @@ public class v__in__e00 {
 	@In
 	public String $$typePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$vectPARAMETER;

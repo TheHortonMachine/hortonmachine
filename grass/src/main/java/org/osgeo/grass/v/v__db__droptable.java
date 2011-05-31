@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__db__droptable {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map from which to remove attribute table")
 	@In
 	public String $$mapPARAMETER;

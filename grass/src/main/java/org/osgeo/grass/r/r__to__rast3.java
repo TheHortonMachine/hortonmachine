@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__to__rast3 {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("2d raster maps which represent the slices")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster3d map")
 	@In
 	public String $$outputPARAMETER;

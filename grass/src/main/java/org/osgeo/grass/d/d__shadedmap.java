@@ -22,12 +22,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__shadedmap {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of shaded relief or aspect map")
 	@In
 	public String $$reliefmapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster to drape over relief map")
 	@In
 	public String $$drapemapPARAMETER;

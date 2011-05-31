@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__smap {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery group")
 	@In
 	public String $$groupPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery subgroup")
 	@In
 	public String $$subgroupPARAMETER;
@@ -38,7 +38,7 @@ public class i__smap {
 	@In
 	public String $$signaturefilePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;

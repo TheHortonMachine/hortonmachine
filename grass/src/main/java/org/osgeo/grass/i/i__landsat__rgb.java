@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__landsat__rgb {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT red channel")
 	@In
 	public String $$redPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT green channel")
 	@In
 	public String $$greenPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT blue channel")
 	@In
 	public String $$bluePARAMETER;

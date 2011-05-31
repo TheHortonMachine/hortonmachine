@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__mode {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Base map to be reclassified")
 	@In
 	public String $$basePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Coverage map")
 	@In
 	public String $$coverPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map")
 	@In
 	public String $$outputPARAMETER;

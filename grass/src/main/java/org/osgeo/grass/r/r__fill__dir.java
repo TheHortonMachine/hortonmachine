@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__fill__dir {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of existing raster map containing elevation surface")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output elevation raster map after filling")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output direction raster map")
 	@In
 	public String $$directionPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output raster map of problem areas (optional)")
 	@In
 	public String $$areasPARAMETER;

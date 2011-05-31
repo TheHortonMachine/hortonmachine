@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__out__v5d {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3d raster map to be converted to Vis5d (v5d) file")
 	@In
 	public String $$inputPARAMETER;

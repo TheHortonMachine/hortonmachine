@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__db__join {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map to which to join other table")
 	@In
 	public String $$mapPARAMETER;

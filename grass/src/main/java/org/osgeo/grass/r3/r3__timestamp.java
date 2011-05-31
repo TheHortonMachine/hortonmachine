@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__timestamp {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input grid3 filename")
 	@In
 	public String $$mapPARAMETER;

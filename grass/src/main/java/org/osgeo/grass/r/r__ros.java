@@ -24,57 +24,57 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__ros {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing fuel MODELs")
 	@In
 	public String $$modelPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing the 1-HOUR fuel MOISTURE (%) (optional)")
 	@In
 	public String $$moisture_1hPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing the 10-HOUR fuel MOISTURE (%) (optional)")
 	@In
 	public String $$moisture_10hPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing the 100-HOUR fuel MOISTURE (%) (optional)")
 	@In
 	public String $$moisture_100hPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing LIVE fuel MOISTURE (%)")
 	@In
 	public String $$moisture_livePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing midflame wind VELOCITYs (ft/min) (optional)")
 	@In
 	public String $$velocityPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing wind DIRECTIONs (degree) (optional)")
 	@In
 	public String $$directionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing SLOPE (degree) (optional)")
 	@In
 	public String $$slopePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing ASPECT (degree, anti-clockwise from E) (optional)")
 	@In
 	public String $$aspectPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing ELEVATION (m) (required w/ -s) (optional)")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster map to contain results (several new layers)")
 	@In
 	public String $$outputPARAMETER;

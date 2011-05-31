@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__patch {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster maps to be patched together")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for resultant raster map")
 	@In
 	public String $$outputPARAMETER;

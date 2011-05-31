@@ -24,62 +24,62 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class g__remove {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("rast file(s) to be removed (optional)")
 	@In
 	public String $$rastPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("rast3d file(s) to be removed (optional)")
 	@In
 	public String $$rast3dPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("vect file(s) to be removed (optional)")
 	@In
 	public String $$vectPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("oldvect file(s) to be removed (optional)")
 	@In
 	public String $$oldvectPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("asciivect file(s) to be removed (optional)")
 	@In
 	public String $$asciivectPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("icon file(s) to be removed (optional)")
 	@In
 	public String $$iconPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("labels file(s) to be removed (optional)")
 	@In
 	public String $$labelsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("sites file(s) to be removed (optional)")
 	@In
 	public String $$sitesPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("region file(s) to be removed (optional)")
 	@In
 	public String $$regionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("region3d file(s) to be removed (optional)")
 	@In
 	public String $$region3dPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("group file(s) to be removed (optional)")
 	@In
 	public String $$groupPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3dview file(s) to be removed (optional)")
 	@In
 	public String $$3dviewPARAMETER;

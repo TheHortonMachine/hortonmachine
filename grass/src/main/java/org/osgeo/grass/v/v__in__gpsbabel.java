@@ -28,7 +28,7 @@ public class v__in__gpsbabel {
 	@In
 	public String $$inputPARAMETER = "/dev/gps";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (omit for display to stdout) (optional)")
 	@In
 	public String $$outputPARAMETER;

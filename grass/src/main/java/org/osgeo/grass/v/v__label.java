@@ -28,7 +28,7 @@ public class v__label {
 	@In
 	public String $$labelsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$mapPARAMETER;

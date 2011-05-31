@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__random__cells {
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of independent cells map")
 	@In
 	public String $$outputPARAMETER;

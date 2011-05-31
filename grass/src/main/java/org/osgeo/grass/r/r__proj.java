@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__proj {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map to re-project (optional)")
 	@In
 	public String $$inputPARAMETER;
@@ -41,7 +41,7 @@ public class r__proj {
 	@In
 	public String $$dbasePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (default: input) (optional)")
 	@In
 	public String $$outputPARAMETER;

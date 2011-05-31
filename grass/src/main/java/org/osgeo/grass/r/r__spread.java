@@ -24,37 +24,37 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__spread {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing MAX rate of spread (ROS) (cm/min)")
 	@In
 	public String $$maxPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing DIRections of max ROS (degree)")
 	@In
 	public String $$dirPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing BASE ROS (cm/min)")
 	@In
 	public String $$basePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing STARTing sources")
 	@In
 	public String $$startPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing max SPOTting DISTance (m) (required w/ -s) (optional)")
 	@In
 	public String $$spot_distPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing midflame Wind SPEED (ft/min) (required w/ -s) (optional)")
 	@In
 	public String $$w_speedPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing fine Fuel MOISture of the cell receiving a spotting firebrand (%) (required w/ -s) (optional)")
 	@In
 	public String $$f_moisPARAMETER;
@@ -75,22 +75,22 @@ public class r__spread {
 	@In
 	public String $$lagPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map as a display backdrop (optional)")
 	@In
 	public String $$backdropPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster map to contain OUTPUT spread time (min)")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster map to contain X_BACK coordinates (optional)")
 	@In
 	public String $$x_outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster map to contain Y_BACK coordinates (optional)")
 	@In
 	public String $$y_outputPARAMETER;

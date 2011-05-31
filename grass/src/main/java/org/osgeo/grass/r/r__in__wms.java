@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__in__wms {
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (optional)")
 	@In
 	public String $$outputPARAMETER;

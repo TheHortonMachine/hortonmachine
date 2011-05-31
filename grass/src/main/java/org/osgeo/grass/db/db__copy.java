@@ -44,7 +44,7 @@ public class db__copy {
 	@In
 	public String $$to_databasePARAMETER = "$GISDBASE/$LOCATION_NAME/$MAPSET/dbf/";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output table name")
 	@In
 	public String $$to_tablePARAMETER;

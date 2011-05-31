@@ -23,12 +23,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__zoom {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map")
 	@In
 	public String $$rastPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector map (optional)")
 	@In
 	public String $$vectorPARAMETER;

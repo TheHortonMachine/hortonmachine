@@ -23,12 +23,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__extract {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map")
 	@In
 	public String $$outputPARAMETER;

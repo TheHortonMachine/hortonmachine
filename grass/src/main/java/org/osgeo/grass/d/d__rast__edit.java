@@ -23,17 +23,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__rast__edit {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of aspect raster map (optional)")
 	@In
 	public String $$aspectPARAMETER;

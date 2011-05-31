@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__horizon {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the input elevation raster map [meters]")
 	@In
 	public String $$elevinPARAMETER;
@@ -61,7 +61,7 @@ public class r__horizon {
 	@In
 	public String $$maxdistancePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Prefix of the horizon raster output maps (optional)")
 	@In
 	public String $$horizonPARAMETER;

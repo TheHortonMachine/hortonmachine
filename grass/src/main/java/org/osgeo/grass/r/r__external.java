@@ -32,7 +32,7 @@ public class r__external {
 	@In
 	public String $$sourcePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (optional)")
 	@In
 	public String $$outputPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__class {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be displayed")
 	@In
 	public String $$mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery group")
 	@In
 	public String $$groupPARAMETER;

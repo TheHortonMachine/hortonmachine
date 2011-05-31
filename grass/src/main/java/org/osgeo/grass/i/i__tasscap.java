@@ -24,37 +24,37 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__tasscap {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 1)")
 	@In
 	public String $$band1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 2)")
 	@In
 	public String $$band2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 3)")
 	@In
 	public String $$band3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 4)")
 	@In
 	public String $$band4PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 5)")
 	@In
 	public String $$band5PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (LANDSAT channel 7)")
 	@In
 	public String $$band7PARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("raster output TC maps prefix")
 	@In
 	public String $$outprefixPARAMETER;

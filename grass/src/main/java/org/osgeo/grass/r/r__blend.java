@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__blend {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of first raster map for blending")
 	@In
 	public String $$firstPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of second raster map for blending")
 	@In
 	public String $$secondPARAMETER;

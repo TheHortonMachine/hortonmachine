@@ -24,57 +24,57 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__gwflow {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The initial piezometric head in [m]")
 	@In
 	public String $$pheadPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Boundary condition status, 0-inactive, 1-active, 2-dirichlet")
 	@In
 	public String $$statusPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("X-part of the hydraulic conductivity tensor in [m/s]")
 	@In
 	public String $$hc_xPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Y-part of the hydraulic conductivity tensor in [m/s]")
 	@In
 	public String $$hc_yPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Water sources and sinks in [m^3/s] (optional)")
 	@In
 	public String $$qPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Specific yield in [1/m]")
 	@In
 	public String $$sPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Recharge map e.g: 6*10^-9 per cell in [m^3/s*m^2] (optional)")
 	@In
 	public String $$rPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Top surface of the aquifer in [m]")
 	@In
 	public String $$topPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Bottom surface of the aquifer in [m]")
 	@In
 	public String $$bottomPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("The map storing the numerical result [m]")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Calculate the groundwater filter velocity vector field [m/s] and write the x, and y components to maps named name_[xy] (optional)")
 	@In
 	public String $$velocityPARAMETER;
@@ -83,27 +83,27 @@ public class r__gwflow {
 	@In
 	public String $$typePARAMETER = "confined";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The height of the river bed in [m] (optional)")
 	@In
 	public String $$river_bedPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Water level (head) of the river with leakage connection in [m] (optional)")
 	@In
 	public String $$river_headPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The leakage coefficient of the river bed in [1/s]. (optional)")
 	@In
 	public String $$river_leakPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The height of the drainage bed in [m] (optional)")
 	@In
 	public String $$drain_bedPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The leakage coefficient of the drainage bed in [1/s] (optional)")
 	@In
 	public String $$drain_leakPARAMETER;

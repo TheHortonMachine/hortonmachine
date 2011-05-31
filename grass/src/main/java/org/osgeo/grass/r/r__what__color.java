@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__what__color {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of existing raster map to query colors")
 	@In
 	public String $$inputPARAMETER;

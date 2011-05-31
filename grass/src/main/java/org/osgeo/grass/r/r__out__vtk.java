@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__vtk {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map(s)")
 	@In
 	public String $$inputPARAMETER;
@@ -33,7 +33,7 @@ public class r__out__vtk {
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Elevation raster map (optional)")
 	@In
 	public String $$elevationPARAMETER;
@@ -46,12 +46,12 @@ public class r__out__vtk {
 	@In
 	public String $$elevation2dPARAMETER = "0.0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Three (r,g,b) raster maps to create rgb values [redmap,greenmap,bluemap] (optional)")
 	@In
 	public String $$rgbmapsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Three (x,y,z) raster maps to create vector values [xmap,ymap,zmap] (optional)")
 	@In
 	public String $$vectormapsPARAMETER;

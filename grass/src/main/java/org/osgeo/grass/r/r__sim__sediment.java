@@ -24,42 +24,42 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__sim__sediment {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the elevation raster map [m]")
 	@In
 	public String $$elevinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the water depth raster map [m]")
 	@In
 	public String $$wdepthPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the x-derivatives raster map [m/m]")
 	@In
 	public String $$dxinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the y-derivatives raster map [m/m]")
 	@In
 	public String $$dyinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the detachment capacity coefficient raster map [s/m]")
 	@In
 	public String $$detinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the transport capacity coefficient raster map [s]")
 	@In
 	public String $$traninPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the critical shear stress raster map [Pa]")
 	@In
 	public String $$tauinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the Mannings n raster map (optional)")
 	@In
 	public String $$maninPARAMETER;
@@ -68,27 +68,27 @@ public class r__sim__sediment {
 	@In
 	public String $$maninvalPARAMETER = "0.1";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output transport capacity raster map [kg/ms] (optional)")
 	@In
 	public String $$tcPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output transp.limited erosion-deposition raster map [kg/m2s] (optional)")
 	@In
 	public String $$etPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output sediment concentration raster map [particle/m3] (optional)")
 	@In
 	public String $$concPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output sediment flux raster map [kg/ms] (optional)")
 	@In
 	public String $$fluxPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output erosion-deposition raster map [kg/m2s] (optional)")
 	@In
 	public String $$erdepPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__vrml {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation map")
 	@In
 	public String $$elevPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of color file (optional)")
 	@In
 	public String $$colorPARAMETER;

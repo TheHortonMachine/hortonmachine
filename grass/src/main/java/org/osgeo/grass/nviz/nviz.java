@@ -23,27 +23,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class nviz {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for Elevation (optional)")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for Color (optional)")
 	@In
 	public String $$colorPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector lines/areas overlay map(s) (optional)")
 	@In
 	public String $$vectorPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector points overlay file(s) (optional)")
 	@In
 	public String $$pointsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of existing 3d raster map (optional)")
 	@In
 	public String $$volumePARAMETER;

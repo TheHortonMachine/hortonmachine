@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__random {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of cover raster map (optional)")
 	@In
 	public String $$coverPARAMETER;
@@ -38,12 +38,12 @@ public class r__random {
 	@In
 	public String $$nPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (optional)")
 	@In
 	public String $$raster_outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$vector_outputPARAMETER;

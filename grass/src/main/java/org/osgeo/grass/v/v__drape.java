@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__drape {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$inputPARAMETER;
@@ -33,12 +33,12 @@ public class v__drape {
 	@In
 	public String $$typePARAMETER = "point,centroid,line,boundary,face,kernel";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Elevation raster map for height extraction (optional)")
 	@In
 	public String $$rastPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map")
 	@In
 	public String $$outputPARAMETER;

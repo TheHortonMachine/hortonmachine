@@ -24,27 +24,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__cost {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing grid cell cost information")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of starting vector points map (optional)")
 	@In
 	public String $$start_pointsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of stop vector points map (optional)")
 	@In
 	public String $$stop_pointsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of starting raster points map (optional)")
 	@In
 	public String $$start_rastPARAMETER;

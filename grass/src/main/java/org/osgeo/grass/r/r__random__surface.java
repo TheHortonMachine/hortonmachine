@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__random__surface {
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Names of the resulting maps")
 	@In
 	public String $$outputPARAMETER;

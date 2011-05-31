@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__gridatb {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map")
 	@In
 	public String $$inputPARAMETER;

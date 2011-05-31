@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__mask {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3d raster map with reference values")
 	@In
 	public String $$mapPARAMETER;

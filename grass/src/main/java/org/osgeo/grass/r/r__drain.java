@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__drain {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;
@@ -38,7 +38,7 @@ public class r__drain {
 	@In
 	public String $$coordinatePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector map(s) containing starting point(s) (optional)")
 	@In
 	public String $$vector_pointsPARAMETER;

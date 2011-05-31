@@ -24,32 +24,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__rgb__his {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (red)")
 	@In
 	public String $$red_inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (green)")
 	@In
 	public String $$green_inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (blue)")
 	@In
 	public String $$blue_inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (hue)")
 	@In
 	public String $$hue_outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (intensity)")
 	@In
 	public String $$intensity_outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (saturation)")
 	@In
 	public String $$saturation_outputPARAMETER;

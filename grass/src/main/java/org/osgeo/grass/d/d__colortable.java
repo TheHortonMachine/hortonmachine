@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__colortable {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map whose color table is to be displayed")
 	@In
 	public String $$mapPARAMETER;

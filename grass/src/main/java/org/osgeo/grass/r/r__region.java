@@ -24,27 +24,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__region {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to change")
 	@In
 	public String $$mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region from named region (optional)")
 	@In
 	public String $$regionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this raster map (optional)")
 	@In
 	public String $$rasterPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this vector map (optional)")
 	@In
 	public String $$vectorPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Set region to match this 3dview file (optional)")
 	@In
 	public String $$3dviewPARAMETER;
@@ -65,7 +65,7 @@ public class r__region {
 	@In
 	public String $$wPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to align to (optional)")
 	@In
 	public String $$alignPARAMETER;

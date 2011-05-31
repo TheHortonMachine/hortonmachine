@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__polar {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster angle map")
 	@In
 	public String $$mapPARAMETER;

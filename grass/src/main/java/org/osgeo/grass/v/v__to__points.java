@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__to__points {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing lines")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map where points will be written")
 	@In
 	public String $$outputPARAMETER;

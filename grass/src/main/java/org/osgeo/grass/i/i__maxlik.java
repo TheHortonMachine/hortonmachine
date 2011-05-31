@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__maxlik {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery group")
 	@In
 	public String $$groupPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery subgroup")
 	@In
 	public String $$subgroupPARAMETER;
@@ -38,12 +38,12 @@ public class i__maxlik {
 	@In
 	public String $$sigfilePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for raster map holding classification results")
 	@In
 	public String $$classPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for raster map holding reject threshold results (optional)")
 	@In
 	public String $$rejectPARAMETER;

@@ -28,7 +28,7 @@ public class r__in__srtm {
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output raster map (default: input tile) (optional)")
 	@In
 	public String $$outputPARAMETER;

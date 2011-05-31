@@ -27,7 +27,7 @@ public class v__in__wfs {
 	@In
 	public String $$wfsPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Vector output map")
 	@In
 	public String $$outputPARAMETER;

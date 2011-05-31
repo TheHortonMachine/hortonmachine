@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__vol__rst {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the vector map with input x,y,z,w")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the surface raster map for cross-section (optional)")
 	@In
 	public String $$cellinpPARAMETER;
@@ -54,17 +54,17 @@ public class v__vol__rst {
 	@In
 	public String $$wherePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output deviations vector point file (optional)")
 	@In
 	public String $$deviPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output cross-validation vector map (optional)")
 	@In
 	public String $$cvdevPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the raster map used as mask (optional)")
 	@In
 	public String $$maskmapPARAMETER;
@@ -89,42 +89,42 @@ public class v__vol__rst {
 	@In
 	public String $$zmultPARAMETER = "1.0";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output cross-section raster map (optional)")
 	@In
 	public String $$celloutPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output elevation g3d-file (optional)")
 	@In
 	public String $$elevPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output gradient magnitude g3d-file (optional)")
 	@In
 	public String $$gradientPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output gradient horizontal angle g3d-file (optional)")
 	@In
 	public String $$aspect1PARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output gradient vertical angle g3d-file (optional)")
 	@In
 	public String $$aspect2PARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output change of gradient g3d-file (optional)")
 	@In
 	public String $$ncurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output gaussian curvature g3d-file (optional)")
 	@In
 	public String $$gcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output mean curvature g3d-file (optional)")
 	@In
 	public String $$mcurvPARAMETER;

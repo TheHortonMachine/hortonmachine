@@ -28,7 +28,7 @@ public class r__in__mat {
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for the output raster map (override) (optional)")
 	@In
 	public String $$outputPARAMETER;

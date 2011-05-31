@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__gdal {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map (or group) to export (optional)")
 	@In
 	public String $$inputPARAMETER;

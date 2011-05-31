@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__univar__sh {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of data table")
 	@In
 	public String $$tablePARAMETER;

@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__plane {
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster plane to be created")
 	@In
 	public String $$namePARAMETER;

@@ -24,67 +24,67 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__watershed {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map: elevation on which entire analysis is based")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map: locations of real depressions (optional)")
 	@In
 	public String $$depressionPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map: amount of overland flow per cell (optional)")
 	@In
 	public String $$flowPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map or value: percent of disturbed land, for USLE (optional)")
 	@In
 	public String $$disturbed__landPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input map: terrain blocking overland surface flow, for USLE (optional)")
 	@In
 	public String $$blockingPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: number of cells that drain through each cell (optional)")
 	@In
 	public String $$accumulationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: drainage direction (optional)")
 	@In
 	public String $$drainagePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: unique label for each watershed basin (optional)")
 	@In
 	public String $$basinPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: stream segments (optional)")
 	@In
 	public String $$streamPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: each half-basin is given a unique value (optional)")
 	@In
 	public String $$half__basinPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: useful for visual display of results (optional)")
 	@In
 	public String $$visualPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: slope length and steepness (LS) factor for USLE (optional)")
 	@In
 	public String $$length__slopePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output map: slope steepness (S) factor for USLE (optional)")
 	@In
 	public String $$slope__steepnessPARAMETER;

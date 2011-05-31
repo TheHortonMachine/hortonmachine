@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__report {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map(s) to report on")
 	@In
 	public String $$mapPARAMETER;

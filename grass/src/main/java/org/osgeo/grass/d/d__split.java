@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__split {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Enter raster map to display in 1st frame (optional)")
 	@In
 	public String $$map1PARAMETER;
@@ -32,7 +32,7 @@ public class d__split {
 	@In
 	public String $$cmd1PARAMETER = "d.rast";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Enter raster map to display in 2nd frame (optional)")
 	@In
 	public String $$map2PARAMETER;

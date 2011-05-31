@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__kernel {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector with training points")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input network vector map (optional)")
 	@In
 	public String $$netPARAMETER;

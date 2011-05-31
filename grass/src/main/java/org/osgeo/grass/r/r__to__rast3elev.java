@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__to__rast3elev {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map(s)")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map(s)")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster3d map")
 	@In
 	public String $$outputPARAMETER;

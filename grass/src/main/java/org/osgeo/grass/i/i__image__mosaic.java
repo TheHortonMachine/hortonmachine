@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__image__mosaic {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("1st map for mosaic (top of image stack).")
 	@In
 	public String $$image1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("2nd map for mosaic.")
 	@In
 	public String $$image2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3rd map for mosaic. (optional)")
 	@In
 	public String $$image3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("4th map for mosaic. (optional)")
 	@In
 	public String $$image4PARAMETER;

@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__basins__fill {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Number of passes through the dataset")
 	@In
 	public String $$numberPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Coded stream network file name")
 	@In
 	public String $$c_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Thinned ridge network file name")
 	@In
 	public String $$t_mapPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for the resultant watershed partition file")
 	@In
 	public String $$resultPARAMETER;

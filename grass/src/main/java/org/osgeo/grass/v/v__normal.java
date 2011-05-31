@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__normal {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("point vector defining sample points")
 	@In
 	public String $$mapPARAMETER;

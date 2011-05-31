@@ -28,7 +28,7 @@ public class v__in__ogr {
 	@In
 	public String $$dsnPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$outputPARAMETER;

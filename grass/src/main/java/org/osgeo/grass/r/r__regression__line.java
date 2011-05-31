@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__regression__line {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Map for x coefficient")
 	@In
 	public String $$map1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Map for y coefficient")
 	@In
 	public String $$map2PARAMETER;

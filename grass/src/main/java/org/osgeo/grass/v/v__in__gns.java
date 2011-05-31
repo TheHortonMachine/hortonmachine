@@ -28,7 +28,7 @@ public class v__in__gns {
 	@In
 	public String $$filePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$vectPARAMETER;

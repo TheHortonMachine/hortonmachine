@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__sunmask {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map")
 	@In
 	public String $$elevPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output raster map having shadows")
 	@In
 	public String $$outputPARAMETER;

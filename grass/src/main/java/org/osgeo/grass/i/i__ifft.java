@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__ifft {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (image fft, real part)")
 	@In
 	public String $$real_imagePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (image fft, imaginary part")
 	@In
 	public String $$imaginary_imagePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$output_imagePARAMETER;

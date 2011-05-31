@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__select {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map (A)")
 	@In
 	public String $$ainputPARAMETER;
@@ -37,7 +37,7 @@ public class v__select {
 	@In
 	public String $$alayerPARAMETER = "1";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map (B)")
 	@In
 	public String $$binputPARAMETER;
@@ -50,7 +50,7 @@ public class v__select {
 	@In
 	public String $$blayerPARAMETER = "1";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map")
 	@In
 	public String $$outputPARAMETER;

@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__rast__arrow {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster aspect map to be displayed (optional)")
 	@In
 	public String $$mapPARAMETER;
@@ -52,7 +52,7 @@ public class d__rast__arrow {
 	@In
 	public String $$skipPARAMETER = "1";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map containing values used for arrow length (optional)")
 	@In
 	public String $$magnitude_mapPARAMETER;

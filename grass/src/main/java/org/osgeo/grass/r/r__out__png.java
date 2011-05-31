@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__png {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster file to be converted.")
 	@In
 	public String $$inputPARAMETER;

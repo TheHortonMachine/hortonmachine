@@ -40,7 +40,7 @@ public class v__proj {
 	@In
 	public String $$dbasePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$outputPARAMETER;

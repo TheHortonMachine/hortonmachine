@@ -23,22 +23,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__correlate {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map")
 	@In
 	public String $$layer1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map")
 	@In
 	public String $$layer2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (optional)")
 	@In
 	public String $$layer3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("raster input map (optional)")
 	@In
 	public String $$layer4PARAMETER;

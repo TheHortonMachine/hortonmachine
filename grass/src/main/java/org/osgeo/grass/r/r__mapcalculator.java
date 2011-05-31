@@ -23,32 +23,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__mapcalculator {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("A (optional)")
 	@In
 	public String $$amapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("B (optional)")
 	@In
 	public String $$bmapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("C (optional)")
 	@In
 	public String $$cmapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("D (optional)")
 	@In
 	public String $$dmapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("E (optional)")
 	@In
 	public String $$emapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("F (optional)")
 	@In
 	public String $$fmapPARAMETER;
@@ -57,7 +57,7 @@ public class r__mapcalculator {
 	@In
 	public String $$formulaPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outfilePARAMETER;

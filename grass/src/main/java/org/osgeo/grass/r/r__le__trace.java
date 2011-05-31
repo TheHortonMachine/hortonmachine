@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__le__trace {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to be analyzed")
 	@In
 	public String $$mapPARAMETER;

@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__db__dropcol {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map for which to drop attribute column")
 	@In
 	public String $$mapPARAMETER;

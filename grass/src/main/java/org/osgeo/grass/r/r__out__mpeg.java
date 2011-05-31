@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__out__mpeg {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster file(s) for View1")
 	@In
 	public String $$view1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster file(s) for View2 (optional)")
 	@In
 	public String $$view2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster file(s) for View3 (optional)")
 	@In
 	public String $$view3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster file(s) for View4 (optional)")
 	@In
 	public String $$view4PARAMETER;

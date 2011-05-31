@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__rast__leg {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map")
 	@In
 	public String $$mapPARAMETER;
@@ -32,7 +32,7 @@ public class d__rast__leg {
 	@In
 	public String $$num_of_linesPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to generate legend from (optional)")
 	@In
 	public String $$rastPARAMETER;

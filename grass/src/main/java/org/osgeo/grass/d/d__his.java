@@ -23,17 +23,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__his {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for HUE")
 	@In
 	public String $$h_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for INTENSITY (optional)")
 	@In
 	public String $$i_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for SATURATION (optional)")
 	@In
 	public String $$s_mapPARAMETER;

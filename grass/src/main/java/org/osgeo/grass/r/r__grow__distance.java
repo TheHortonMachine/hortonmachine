@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__grow__distance {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for distance output map (optional)")
 	@In
 	public String $$distancePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for value output map (optional)")
 	@In
 	public String $$valuePARAMETER;

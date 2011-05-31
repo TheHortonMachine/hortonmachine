@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__net {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Required for operation 'connect' (optional)")
 	@In
 	public String $$pointsPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (optional)")
 	@In
 	public String $$outputPARAMETER;

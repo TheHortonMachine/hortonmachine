@@ -28,7 +28,7 @@ public class i__in__spotvgt {
 	@In
 	public String $$filePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map (optional)")
 	@In
 	public String $$rastPARAMETER;

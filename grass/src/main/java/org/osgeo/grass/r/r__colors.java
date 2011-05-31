@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__colors {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (optional)")
 	@In
 	public String $$mapPARAMETER;
@@ -33,7 +33,7 @@ public class r__colors {
 	@In
 	public String $$colorPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map name from which to copy color table (optional)")
 	@In
 	public String $$rasterPARAMETER;

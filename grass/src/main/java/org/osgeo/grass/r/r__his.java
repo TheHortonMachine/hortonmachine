@@ -24,32 +24,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__his {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for HUE")
 	@In
 	public String $$h_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for INTENSITY (optional)")
 	@In
 	public String $$i_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of layer to be used for SATURATION (optional)")
 	@In
 	public String $$s_mapPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of output layer to be used for RED")
 	@In
 	public String $$r_mapPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of output layer to be used for GREEN")
 	@In
 	public String $$g_mapPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of output layer to be used for BLUE")
 	@In
 	public String $$b_mapPARAMETER;

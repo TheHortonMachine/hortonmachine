@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__edit {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector map to edit")
 	@In
 	public String $$mapPARAMETER;
@@ -81,7 +81,7 @@ public class v__edit {
 	@In
 	public String $$queryPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of background vector map(s) (optional)")
 	@In
 	public String $$bgmapPARAMETER;

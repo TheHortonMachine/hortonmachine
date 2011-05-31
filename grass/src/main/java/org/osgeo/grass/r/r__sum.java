@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__sum {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of incidence or density file.")
 	@In
 	public String $$rastPARAMETER;

@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__transect {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to be queried")
 	@In
 	public String $$mapPARAMETER;

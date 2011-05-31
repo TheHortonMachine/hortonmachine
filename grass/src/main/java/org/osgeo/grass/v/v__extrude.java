@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__extrude {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input 2D vector map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of resulting 3D vector map")
 	@In
 	public String $$outputPARAMETER;
@@ -38,7 +38,7 @@ public class v__extrude {
 	@In
 	public String $$zshiftPARAMETER = "0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Elevation raster for height extraction (optional)")
 	@In
 	public String $$elevationPARAMETER;

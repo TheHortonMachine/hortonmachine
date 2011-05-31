@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__resamp__rst {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map")
 	@In
 	public String $$inputPARAMETER;
@@ -37,42 +37,42 @@ public class r__resamp__rst {
 	@In
 	public String $$ns_resPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output z-file (elevation) map (optional)")
 	@In
 	public String $$elevPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output slope map (or fx) (optional)")
 	@In
 	public String $$slopePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output aspect map (or fy) (optional)")
 	@In
 	public String $$aspectPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output profile curvature map (or fxx) (optional)")
 	@In
 	public String $$pcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output tangential curvature map (or fyy) (optional)")
 	@In
 	public String $$tcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output mean curvature map (or fxy) (optional)")
 	@In
 	public String $$mcurvPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing smoothing (optional)")
 	@In
 	public String $$smoothPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used as mask (optional)")
 	@In
 	public String $$maskmapPARAMETER;

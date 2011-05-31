@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__le__pixel {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to be analyzed")
 	@In
 	public String $$mapPARAMETER;
@@ -33,7 +33,7 @@ public class r__le__pixel {
 	@In
 	public String $$samPARAMETER = "w";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of regions map, only when sam = r; omit otherwise (optional)")
 	@In
 	public String $$regPARAMETER;

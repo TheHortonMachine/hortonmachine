@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__rescale__eq {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The name of the raster map to be rescaled")
 	@In
 	public String $$inputPARAMETER;
@@ -33,7 +33,7 @@ public class r__rescale__eq {
 	@In
 	public String $$fromPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("The resulting raster map name")
 	@In
 	public String $$outputPARAMETER;

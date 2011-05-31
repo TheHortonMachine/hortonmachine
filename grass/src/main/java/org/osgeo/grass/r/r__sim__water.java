@@ -24,22 +24,22 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__sim__water {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the elevation raster map [m]")
 	@In
 	public String $$elevinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the x-derivatives raster map [m/m]")
 	@In
 	public String $$dxinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the y-derivatives raster map [m/m]")
 	@In
 	public String $$dyinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the rainfall excess rate (rain-infilt) raster map [mm/hr] (optional)")
 	@In
 	public String $$rainPARAMETER;
@@ -48,7 +48,7 @@ public class r__sim__water {
 	@In
 	public String $$rain_valPARAMETER = "50";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the runoff infiltration rate raster map [mm/hr] (optional)")
 	@In
 	public String $$infilPARAMETER;
@@ -57,7 +57,7 @@ public class r__sim__water {
 	@In
 	public String $$infil_valPARAMETER = "0.0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the Mannings n raster map (optional)")
 	@In
 	public String $$maninPARAMETER;
@@ -66,22 +66,22 @@ public class r__sim__water {
 	@In
 	public String $$manin_valPARAMETER = "0.1";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the flow controls raster map (permeability ratio 0-1) (optional)")
 	@In
 	public String $$trapsPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output water depth raster map [m] (optional)")
 	@In
 	public String $$depthPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output water discharge raster map [m3/s] (optional)")
 	@In
 	public String $$dischPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output simulation error raster map [m] (optional)")
 	@In
 	public String $$errPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__lrs__where {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing lines")
 	@In
 	public String $$linesPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing points")
 	@In
 	public String $$pointsPARAMETER;

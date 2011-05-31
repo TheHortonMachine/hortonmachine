@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class nviz_cmd {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for elevation (optional)")
 	@In
 	public String $$elevation_mapPARAMETER;
@@ -32,7 +32,7 @@ public class nviz_cmd {
 	@In
 	public String $$elevation_valuePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for color (optional)")
 	@In
 	public String $$color_mapPARAMETER;
@@ -41,12 +41,12 @@ public class nviz_cmd {
 	@In
 	public String $$color_valuePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for mask (optional)")
 	@In
 	public String $$mask_mapPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for transparency (optional)")
 	@In
 	public String $$transparency_mapPARAMETER;
@@ -55,7 +55,7 @@ public class nviz_cmd {
 	@In
 	public String $$transparency_valuePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for shininess (optional)")
 	@In
 	public String $$shininess_mapPARAMETER;
@@ -64,7 +64,7 @@ public class nviz_cmd {
 	@In
 	public String $$shininess_valuePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) for emission (optional)")
 	@In
 	public String $$emission_mapPARAMETER;
@@ -101,7 +101,7 @@ public class nviz_cmd {
 	@In
 	public String $$positionPARAMETER = "0,0,0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of line vector overlay map(s) (optional)")
 	@In
 	public String $$vlinePARAMETER;
@@ -126,7 +126,7 @@ public class nviz_cmd {
 	@In
 	public String $$vline_positionPARAMETER = "0,0,0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of point vector overlay map(s) (optional)")
 	@In
 	public String $$vpointPARAMETER;
@@ -151,7 +151,7 @@ public class nviz_cmd {
 	@In
 	public String $$vpoint_positionPARAMETER = "0,0,0";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster3d map(s) (optional)")
 	@In
 	public String $$volumePARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__topidx {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input elevation map")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output topographic index map")
 	@In
 	public String $$outputPARAMETER;

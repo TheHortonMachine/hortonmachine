@@ -24,32 +24,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__topmodel {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("(i)   Basin map created by r.water.outlet (MASK) (optional)")
 	@In
 	public String $$basinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("(i)   Elevation map (optional)")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("(o)   Depressionless elevation map (optional)")
 	@In
 	public String $$depressionlessPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("(o)   Direction map for depressionless elevation map (optional)")
 	@In
 	public String $$directionPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("(o/i) Basin elevation map (MASK applied) (optional)")
 	@In
 	public String $$belevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("(o)   Topographic index ln(a/tanB) map (MASK applied) (optional)")
 	@In
 	public String $$topidxPARAMETER;

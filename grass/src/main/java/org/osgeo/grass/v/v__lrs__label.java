@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__lrs__label {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector map containing lines")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map where stationing will be written")
 	@In
 	public String $$outputPARAMETER;
@@ -50,7 +50,7 @@ public class v__lrs__label {
 	@In
 	public String $$rstablePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Label file (optional)")
 	@In
 	public String $$labelsPARAMETER;

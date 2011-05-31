@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__out__vtk {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("G3D map(s) to be converted to VTK-ASCII data format (optional)")
 	@In
 	public String $$inputPARAMETER;
@@ -37,22 +37,22 @@ public class r3__out__vtk {
 	@In
 	public String $$nullPARAMETER = "-99999.99";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("top surface 2D raster map (optional)")
 	@In
 	public String $$topPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("bottom surface 2D raster map (optional)")
 	@In
 	public String $$bottomPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Three (r,g,b) 3d raster maps to create rgb values [redmap,greenmap,bluemap] (optional)")
 	@In
 	public String $$rgbmapsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Three (x,y,z) 3d raster maps to create vector values [xmap,ymap,zmap] (optional)")
 	@In
 	public String $$vectormapsPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__statistics {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of base raster map")
 	@In
 	public String $$basePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of cover raster map")
 	@In
 	public String $$coverPARAMETER;
@@ -38,7 +38,7 @@ public class r__statistics {
 	@In
 	public String $$methodPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Resultant raster map (not used with 'distribution') (optional)")
 	@In
 	public String $$outputPARAMETER;

@@ -24,32 +24,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__oif {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 1.")
 	@In
 	public String $$image1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 2.")
 	@In
 	public String $$image2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 3.")
 	@In
 	public String $$image3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 4.")
 	@In
 	public String $$image4PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 5.")
 	@In
 	public String $$image5PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("LANDSAT TM band 7.")
 	@In
 	public String $$image7PARAMETER;

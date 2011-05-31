@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__what__vect {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map to modify")
 	@In
 	public String $$vectorPARAMETER;
@@ -37,7 +37,7 @@ public class v__what__vect {
 	@In
 	public String $$columnPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map to be queried")
 	@In
 	public String $$qvectorPARAMETER;

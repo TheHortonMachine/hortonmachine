@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__ortho__photo {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of imagery group for ortho-rectification")
 	@In
 	public String $$groupPARAMETER;

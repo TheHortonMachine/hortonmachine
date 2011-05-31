@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__surf__rst {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input vector map")
 	@In
 	public String $$inputPARAMETER;
@@ -37,57 +37,57 @@ public class v__surf__rst {
 	@In
 	public String $$wherePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output surface raster map (elevation) (optional)")
 	@In
 	public String $$elevPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output slope raster map (optional)")
 	@In
 	public String $$slopePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output aspect raster map (optional)")
 	@In
 	public String $$aspectPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output profile curvature raster map (optional)")
 	@In
 	public String $$pcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output tangential curvature raster map (optional)")
 	@In
 	public String $$tcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output mean curvature raster map (optional)")
 	@In
 	public String $$mcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output deviations vector point file (optional)")
 	@In
 	public String $$deviPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output cross-validation errors vector point file (optional)")
 	@In
 	public String $$cvdevPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map showing quadtree segmentation (optional)")
 	@In
 	public String $$treefilePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector map showing overlapping windows (optional)")
 	@In
 	public String $$overfilePARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the raster map used as mask (optional)")
 	@In
 	public String $$maskmapPARAMETER;

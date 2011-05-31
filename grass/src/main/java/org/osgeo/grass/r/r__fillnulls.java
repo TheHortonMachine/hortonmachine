@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__fillnulls {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map in which to fill nulls")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output raster map with nulls filled by interpolation from surrounding values")
 	@In
 	public String $$outputPARAMETER;

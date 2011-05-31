@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__in__garmin {
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (omit for display to stdout) (optional)")
 	@In
 	public String $$outputPARAMETER;

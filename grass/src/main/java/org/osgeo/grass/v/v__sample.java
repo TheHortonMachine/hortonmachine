@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__sample {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map defining sample points")
 	@In
 	public String $$inputPARAMETER;
@@ -33,12 +33,12 @@ public class v__sample {
 	@In
 	public String $$columnPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Vector map to store differences")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map to be sampled")
 	@In
 	public String $$rasterPARAMETER;

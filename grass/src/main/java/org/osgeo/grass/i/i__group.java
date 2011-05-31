@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__group {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of imagery group")
 	@In
 	public String $$groupPARAMETER;
@@ -33,7 +33,7 @@ public class i__group {
 	@In
 	public String $$subgroupPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map(s) to include in group (optional)")
 	@In
 	public String $$inputPARAMETER;

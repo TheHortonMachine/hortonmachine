@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__flow {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input elevation raster map")
 	@In
 	public String $$elevinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input aspect raster map (optional)")
 	@In
 	public String $$aspinPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input barrier raster map (optional)")
 	@In
 	public String $$barinPARAMETER;

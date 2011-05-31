@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__lidar__growing {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input vector (v.lidar.edgedetection output")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of the first pulse vector map")
 	@In
 	public String $$firstPARAMETER;

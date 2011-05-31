@@ -56,7 +56,7 @@ public class v__in__db {
 	@In
 	public String $$wherePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map")
 	@In
 	public String $$outputPARAMETER;

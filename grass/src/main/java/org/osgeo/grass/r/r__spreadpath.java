@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__spreadpath {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing back-path easting information")
 	@In
 	public String $$x_inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map containing back-path northing information")
 	@In
 	public String $$y_inputPARAMETER;
@@ -38,7 +38,7 @@ public class r__spreadpath {
 	@In
 	public String $$coordinatePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of spread path raster map")
 	@In
 	public String $$outputPARAMETER;

@@ -23,17 +23,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__rgb {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <red>")
 	@In
 	public String $$redPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <green>")
 	@In
 	public String $$greenPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <blue>")
 	@In
 	public String $$bluePARAMETER;

@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__what {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of existing raster map(s) to query")
 	@In
 	public String $$inputPARAMETER;

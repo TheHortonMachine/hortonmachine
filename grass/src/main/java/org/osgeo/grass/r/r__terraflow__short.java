@@ -24,32 +24,32 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__terraflow__short {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output filled (flooded) elevation raster map")
 	@In
 	public String $$filledPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output flow direction raster map")
 	@In
 	public String $$directionPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output sink-watershed raster map")
 	@In
 	public String $$swatershedPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output flow accumulation raster map")
 	@In
 	public String $$accumulationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output topographic convergence index (tci) raster map")
 	@In
 	public String $$tciPARAMETER;

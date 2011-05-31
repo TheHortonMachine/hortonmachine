@@ -36,7 +36,7 @@ public class r__in__aster {
 	@In
 	public String $$bandPARAMETER = "1";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;

@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__volume {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Existing raster map representing data that will be summed within clumps")
 	@In
 	public String $$dataPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Existing raster map, preferably the output of r.clump (optional)")
 	@In
 	public String $$clumpPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Vector points map to contain clump centroids (optional)")
 	@In
 	public String $$centroidsPARAMETER;

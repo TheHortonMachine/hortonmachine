@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__resample {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of an input layer")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of an output layer")
 	@In
 	public String $$outputPARAMETER;

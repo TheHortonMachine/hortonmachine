@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__labels {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of label file")
 	@In
 	public String $$labelsPARAMETER;

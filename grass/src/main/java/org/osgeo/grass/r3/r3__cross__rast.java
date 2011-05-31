@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__cross__rast {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Input 3D raster map for cross section.")
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("2D elevation map used to create the cross section map")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Resulting cross section 2D raster map")
 	@In
 	public String $$outputPARAMETER;

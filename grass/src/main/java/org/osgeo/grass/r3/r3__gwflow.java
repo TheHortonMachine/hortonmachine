@@ -24,52 +24,52 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__gwflow {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The initial piezometric head in [m]")
 	@In
 	public String $$pheadPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The status for each cell, = 0 - inactive, 1 - active, 2 - dirichlet")
 	@In
 	public String $$statusPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The x-part of the hydraulic conductivity tensor in [m/s]")
 	@In
 	public String $$hc_xPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The y-part of the hydraulic conductivity tensor in [m/s]")
 	@In
 	public String $$hc_yPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("The z-part of the hydraulic conductivity tensor in [m/s]")
 	@In
 	public String $$hc_zPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Sources and sinks in [m^3/s] (optional)")
 	@In
 	public String $$qPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Specific yield in 1/m")
 	@In
 	public String $$sPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Recharge raster map in m^3/s (optional)")
 	@In
 	public String $$rPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("The piezometric head result of the numerical calculation will be written to this map")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Calculate the groundwater distance velocity vector field and write the x, y, and z components to maps named name_[xyz]. Name is basename for the new raster3d maps (optional)")
 	@In
 	public String $$velocityPARAMETER;

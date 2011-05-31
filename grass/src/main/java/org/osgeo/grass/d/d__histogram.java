@@ -23,7 +23,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class d__histogram {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Raster map for which histogram will be displayed")
 	@In
 	public String $$mapPARAMETER;

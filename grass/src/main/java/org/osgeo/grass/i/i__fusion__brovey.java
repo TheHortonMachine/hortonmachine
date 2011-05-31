@@ -24,27 +24,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__fusion__brovey {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (green: tm2 | qbird_green | spot1)")
 	@In
 	public String $$ms1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (NIR: tm4 | qbird_nir | spot2)")
 	@In
 	public String $$ms2PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (MIR; tm5 | qbird_red | spot3)")
 	@In
 	public String $$ms3PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map (etmpan | qbird_pan | spotpan)")
 	@In
 	public String $$panPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map prefix (e.g. 'brov')")
 	@In
 	public String $$outputprefixPARAMETER;

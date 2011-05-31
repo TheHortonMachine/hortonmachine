@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__out__ascii {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3d raster map to be converted to ASCII")
 	@In
 	public String $$inputPARAMETER;

@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__composite {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <red>")
 	@In
 	public String $$redPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <green>")
 	@In
 	public String $$greenPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to be used for <blue>")
 	@In
 	public String $$bluePARAMETER;
@@ -55,7 +55,7 @@ public class r__composite {
 	@In
 	public String $$lev_bluePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output raster map")
 	@In
 	public String $$outputPARAMETER;

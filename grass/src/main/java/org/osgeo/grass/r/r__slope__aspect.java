@@ -24,17 +24,17 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__slope__aspect {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation raster map")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output slope raster map (optional)")
 	@In
 	public String $$slopePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output aspect raster map (optional)")
 	@In
 	public String $$aspectPARAMETER;
@@ -47,37 +47,37 @@ public class r__slope__aspect {
 	@In
 	public String $$precPARAMETER = "float";
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output profile curvature raster map (optional)")
 	@In
 	public String $$pcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output tangential curvature raster map (optional)")
 	@In
 	public String $$tcurvPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output first order partial derivative dx (E-W slope) raster map (optional)")
 	@In
 	public String $$dxPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output first order partial derivative dy (N-S slope) raster map (optional)")
 	@In
 	public String $$dyPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output second order partial derivative dxx raster map (optional)")
 	@In
 	public String $$dxxPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output second order partial derivative dyy raster map (optional)")
 	@In
 	public String $$dyyPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output second order partial derivative dxy raster map (optional)")
 	@In
 	public String $$dxyPARAMETER;

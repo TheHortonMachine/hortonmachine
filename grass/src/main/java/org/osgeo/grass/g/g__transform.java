@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class g__transform {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery group")
 	@In
 	public String $$groupPARAMETER;

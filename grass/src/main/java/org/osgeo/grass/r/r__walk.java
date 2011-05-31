@@ -24,27 +24,27 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__walk {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of elevation input raster map")
 	@In
 	public String $$elevationPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input raster map containing friction costs")
 	@In
 	public String $$frictionPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name of raster map to contain results")
 	@In
 	public String $$outputPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Starting points vector map (optional)")
 	@In
 	public String $$start_pointsPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Stop points vector map (optional)")
 	@In
 	public String $$stop_pointsPARAMETER;

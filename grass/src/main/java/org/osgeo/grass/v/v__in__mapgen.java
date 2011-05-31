@@ -28,7 +28,7 @@ public class v__in__mapgen {
 	@In
 	public String $$inputPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Name for output vector map (omit for display to stdout) (optional)")
 	@In
 	public String $$outputPARAMETER;

@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class i__cca {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery group")
 	@In
 	public String $$groupPARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of input imagery subgroup")
 	@In
 	public String $$subgroupPARAMETER;
@@ -38,7 +38,7 @@ public class i__cca {
 	@In
 	public String $$signaturePARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output raster map prefix name")
 	@In
 	public String $$outputPARAMETER;

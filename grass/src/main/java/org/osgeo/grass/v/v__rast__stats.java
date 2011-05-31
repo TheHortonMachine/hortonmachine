@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__rast__stats {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of vector polygon map")
 	@In
 	public String $$vectorPARAMETER;
@@ -33,7 +33,7 @@ public class v__rast__stats {
 	@In
 	public String $$layerPARAMETER = "1";
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map to calculate statistics from")
 	@In
 	public String $$rasterPARAMETER;

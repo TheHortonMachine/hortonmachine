@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r3__null {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("3d raster map for which to modify null values")
 	@In
 	public String $$mapPARAMETER;

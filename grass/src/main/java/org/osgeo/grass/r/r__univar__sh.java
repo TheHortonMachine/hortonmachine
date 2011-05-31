@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__univar__sh {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of raster map")
 	@In
 	public String $$mapPARAMETER;

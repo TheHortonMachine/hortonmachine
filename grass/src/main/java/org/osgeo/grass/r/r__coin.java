@@ -24,12 +24,12 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class r__coin {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of first raster map")
 	@In
 	public String $$map1PARAMETER;
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Name of second raster map")
 	@In
 	public String $$map2PARAMETER;

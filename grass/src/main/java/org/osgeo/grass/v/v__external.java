@@ -28,7 +28,7 @@ public class v__external {
 	@In
 	public String $$dsnPARAMETER;
 
-	@UI("outfile")
+	@UI("outfile,grassfile")
 	@Description("Output vector. If not given, available layers are printed only. (optional)")
 	@In
 	public String $$outputPARAMETER;

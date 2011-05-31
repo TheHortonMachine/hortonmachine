@@ -24,7 +24,7 @@ import oms3.annotations.Status;
 @License("General Public License Version >=2)")
 public class v__db__renamecol {
 
-	@UI("infile")
+	@UI("infile,grassfile")
 	@Description("Vector map for which to rename attribute column")
 	@In
 	public String $$mapPARAMETER;
