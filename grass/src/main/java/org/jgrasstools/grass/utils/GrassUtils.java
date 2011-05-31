@@ -499,9 +499,8 @@ public class GrassUtils {
         } else if (name.toLowerCase().startsWith("d.")) {
             return GRASS_DISPLAY_CATEGORY;
         } else {
-
+            return GRASS_OTHER_CATEGORY;
         }
-        return null;
     }
 
     /**
