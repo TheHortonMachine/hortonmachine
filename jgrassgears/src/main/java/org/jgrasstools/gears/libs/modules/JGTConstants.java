@@ -244,13 +244,13 @@ public class JGTConstants {
     public static final String RASTERPROCESSING = "Raster Processing";
     public static final String VECTORPROCESSING = "Vector Processing";
     // horton
-    public static final String BASIN = "Basin";
-    public static final String DEMMANIPULATION = "Dem Manipulation";
-    public static final String GEOMORPHOLOGY = "Geomorphology";
-    public static final String HYDROGEOMORPHOLOGY = "Hydro-Geomorphology";
-    public static final String HILLSLOPE = "Hillslope";
-    public static final String NETWORK = "Network";
-    public static final String STATISTICS = "Statistics";
+    public static final String BASIN = "HortonMachine/Basin";
+    public static final String DEMMANIPULATION = "HortonMachine/Dem Manipulation";
+    public static final String GEOMORPHOLOGY = "HortonMachine/Geomorphology";
+    public static final String HYDROGEOMORPHOLOGY = "HortonMachine/Hydro-Geomorphology";
+    public static final String HILLSLOPE = "HortonMachine/Hillslope";
+    public static final String NETWORK = "HortonMachine/Network";
+    public static final String STATISTICS = "HortonMachine/Statistics";
 
     /*
      * vars ui hints

@@ -127,6 +127,11 @@ public class GrassUtils {
     public static String GRASS_DATABASE_CATEGORY = "Grass/Database Modules";
 
     /**
+     * Category to use for otherl modules.
+     */
+    public static String GRASS_OTHER_CATEGORY = "Grass";
+
+    /**
      * GUI hint: item is an existing file path.
      */
     public static final String FILEIN_UI_HINT = "infile";
@@ -493,6 +498,8 @@ public class GrassUtils {
             return GRASS_GENERAL_CATEGORY;
         } else if (name.toLowerCase().startsWith("d.")) {
             return GRASS_DISPLAY_CATEGORY;
+        } else {
+
         }
         return null;
     }
