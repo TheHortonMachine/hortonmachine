@@ -74,7 +74,7 @@ public class Mapcalc extends JGTModel {
     public List<GridCoverage2D> inRasters;
 
     @Description("The function to process.")
-    @UI(JGTConstants.MULTILINE_UI_HINT + "5," + JGTConstants.MAPCALC_UI_HINT)
+    @UI(JGTConstants.MULTILINE_UI_HINT + "10," + JGTConstants.MAPCALC_UI_HINT)
     @In
     public String pFunction;
 
