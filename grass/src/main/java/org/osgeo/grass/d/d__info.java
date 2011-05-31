@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Display information about the active display monitor")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__info")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

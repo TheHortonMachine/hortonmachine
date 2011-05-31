@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Creates a list of commands for recreating screen graphics.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__save")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

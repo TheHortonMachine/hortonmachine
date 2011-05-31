@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Sets window region so that all currently displayed raster and vector maps can be shown in a monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, setup")
+@Label("Grass Display Modules")
 @Name("d__extend")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

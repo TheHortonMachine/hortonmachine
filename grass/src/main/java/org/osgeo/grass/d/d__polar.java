@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Draws polar diagram of angle map such as aspect or flow directions")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, diagram")
+@Label("Grass Display Modules")
 @Name("d__polar")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

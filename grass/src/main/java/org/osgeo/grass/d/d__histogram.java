@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays a histogram in the form of a pie or bar chart for a user-specified raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__histogram")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

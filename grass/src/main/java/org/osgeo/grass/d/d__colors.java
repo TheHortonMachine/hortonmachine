@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Allows the user to interactively change the color table of a raster map layer displayed on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__colors")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

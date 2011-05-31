@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays a geodesic line, tracing the shortest distance between two geographic points along a great circle, in a longitude/latitude data set.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__geodesic")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

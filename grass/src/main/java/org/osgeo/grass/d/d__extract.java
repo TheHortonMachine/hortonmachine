@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects and extracts vectors with mouse into new vector map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__extract")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

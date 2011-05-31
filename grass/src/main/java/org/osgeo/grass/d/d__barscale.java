@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays a barscale on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, cartography")
+@Label("Grass Display Modules")
 @Name("d__barscale")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

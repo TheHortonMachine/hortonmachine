@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Allows the user to interactively query the category contents of multiple raster map layers at user specified locations within the current geographic region.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__what__rast")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

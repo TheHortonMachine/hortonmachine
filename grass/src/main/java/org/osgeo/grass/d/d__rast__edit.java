@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Interactively edit cell values in a raster map.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, raster")
+@Label("Grass Display Modules")
 @Name("d__rast__edit")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

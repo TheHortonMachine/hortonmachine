@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Generates and displays simple graphics on map layers drawn in the active graphics monitor display frame.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__mapgraph")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

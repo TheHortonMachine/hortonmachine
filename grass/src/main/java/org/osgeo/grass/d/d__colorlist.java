@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Output a list of all available display colors with a configurable separator (default is comma).")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__colorlist")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

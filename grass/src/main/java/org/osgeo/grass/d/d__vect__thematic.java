@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays thematic vector map")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, vector, thematic, legend")
+@Label("Grass Display Modules")
 @Name("d__vect__thematic")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

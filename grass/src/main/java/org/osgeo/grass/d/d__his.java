@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays the result obtained by combining hue, intensity, and saturation (his) values from user-specified input raster map layers.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__his")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

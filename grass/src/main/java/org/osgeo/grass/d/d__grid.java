@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Overlays a user-specified grid in the active display frame on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, cartography")
+@Label("Grass Display Modules")
 @Name("d__grid")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

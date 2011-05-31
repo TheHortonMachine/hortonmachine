@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Selects/starts specified monitor at specified size")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, setup")
+@Label("Grass Display Modules")
 @Name("d__monsize")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

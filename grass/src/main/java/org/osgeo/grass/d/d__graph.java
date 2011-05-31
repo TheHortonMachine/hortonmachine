@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Program for generating and displaying simple graphics on the display monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, cartography")
+@Label("Grass Display Modules")
 @Name("d__graph")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

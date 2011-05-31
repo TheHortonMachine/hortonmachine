@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Prompts the user to select a GRASS data base file from among files displayed in a menu on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__ask")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

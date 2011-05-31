@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Finds shortest path for selected starting and ending node.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, networking")
+@Label("Grass Display Modules")
 @Name("d__path")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays the color table associated with a raster map layer.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, raster")
+@Label("Grass Display Modules")
 @Name("d__colortable")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

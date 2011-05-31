@@ -112,6 +112,11 @@ public class GrassUtils {
     public static String GRASS_IMAGERY_CATEGORY = "Grass Imagery Modules";
 
     /**
+     * Category to use for imagery.
+     */
+    public static String GRASS_DISPLAY_CATEGORY = "Grass Display Modules";
+
+    /**
      * Category to use for generic.
      */
     public static String GRASS_GENERAL_CATEGORY = "Grass General Modules";
@@ -486,6 +491,8 @@ public class GrassUtils {
             return GRASS_DATABASE_CATEGORY;
         } else if (name.toLowerCase().startsWith("g.")) {
             return GRASS_GENERAL_CATEGORY;
+        } else if (name.toLowerCase().startsWith("d.")) {
+            return GRASS_DISPLAY_CATEGORY;
         }
         return null;
     }

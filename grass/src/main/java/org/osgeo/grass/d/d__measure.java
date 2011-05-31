@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Measures the lengths and areas of features drawn by the user in the active display frame on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__measure")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

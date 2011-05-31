@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Saves the contents of the active display monitor to a graphics file.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, export")
+@Label("Grass Display Modules")
 @Name("d__out__file")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

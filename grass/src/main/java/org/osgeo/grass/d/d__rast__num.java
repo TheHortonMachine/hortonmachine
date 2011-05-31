@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Overlays cell category values on a raster map layer displayed to the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__rast__num")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

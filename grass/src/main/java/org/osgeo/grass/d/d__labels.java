@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Displays text labels (created with v.label) to the active frame on the graphics monitor.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__labels")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

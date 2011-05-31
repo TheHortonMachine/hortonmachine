@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Create a TITLE for a raster map in a form suitable for display with d.text.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display")
+@Label("Grass Display Modules")
 @Name("d__title")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")

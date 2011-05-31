@@ -18,6 +18,7 @@ import oms3.annotations.Status;
 @Description("Divides active display into two frames & displays maps/executes commands in each frame.")
 @Author(name = "Grass Developers Community", contact = "http://grass.osgeo.org")
 @Keywords("display, setup")
+@Label("Grass Display Modules")
 @Name("d__split")
 @Status(Status.CERTIFIED)
 @License("General Public License Version >=2)")
