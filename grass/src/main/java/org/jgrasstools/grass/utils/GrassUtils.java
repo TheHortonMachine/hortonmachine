@@ -142,10 +142,15 @@ public class GrassUtils {
     public static final String FOLDEROUT_UI_HINT = "outfolder";
 
     /**
+     * GUI hint: item is a grass file.
+     */
+    public static final String GRASSFILE_UI_HINT = "grassfile";
+
+    /**
      * Module to ignore during the code generation.
      */
     public static final List<String> grassModulesToIgnore = Arrays.asList("mkftcap.bat");
-    
+
     /**
      * Modules that can't be launched in non-interactive mode or simply do not make sense.
      */
@@ -498,10 +503,10 @@ public class GrassUtils {
 
         if (age.trim().equals("old")) {
             // existing file == open file hint
-            return FILEIN_UI_HINT;
+            return FILEIN_UI_HINT + "," + GRASSFILE_UI_HINT;
         } else if (age.trim().equals("new")) {
             // new file == save file hint
-            return FILEOUT_UI_HINT;
+            return FILEOUT_UI_HINT + "," + GRASSFILE_UI_HINT;
         } else if (age.trim().equals("mapset")) {
             // mapset == open folder hint
             return FOLDERIN_UI_HINT;

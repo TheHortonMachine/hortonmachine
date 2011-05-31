@@ -34,8 +34,7 @@ public class ModuleSupporter {
     public static void processModule( Object owner ) throws IOException, IllegalAccessException, Exception {
 
         String gisBase = System.getProperty(GrassUtils.GRASS_ENVIRONMENT_GISBASE_KEY);
-        File gisBasefile = new File(gisBase);
-        if (!gisBasefile.exists()) {
+        if (gisBase == null || !new File(gisBase).exists()) {
             throw new IOException("Gisbase variable not properly set. Check your settings!");
         }
         String className = owner.getClass().getSimpleName();
