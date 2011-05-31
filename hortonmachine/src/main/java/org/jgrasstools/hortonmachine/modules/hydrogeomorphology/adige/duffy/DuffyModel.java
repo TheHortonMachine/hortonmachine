@@ -38,6 +38,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillS
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy.Parameters;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 /**
  * The duffy model.
  * 
@@ -51,8 +52,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Pfafs
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 public class DuffyModel {
-    private double qd, qs, Q_trib, Qs_trib, K_Q;
-    private double flowdepth, hydrad, mannings_n;
+    private double qd, qs, Q_trib, Qs_trib;
     // public double pcoe;
 
     private double satsurf, mst, qdh, qds, inf, re, qe1, qe2;
@@ -331,55 +331,7 @@ public class DuffyModel {
 
             }
 
-            double linkWidth = currentHillslope.getLinkWidth(8.66, 0.6, 0.0);
-            double linkLength = currentHillslope.getLinkLength();
-            double linkSlope = currentHillslope.getLinkSlope();
-            double chezLawExpon = -1. / 3.;
-            double chezLawCoeff = 200. / Math.pow(0.000357911, chezLawExpon);
-            double linkChezy = currentHillslope.getLinkChezi(chezLawCoeff, chezLawExpon);
-
-            /* ROUTING RATE (K_Q) and CHANNEL VELOCITY (vc) */
-            // System.out.println(routingtype);
-            switch( routingType ) {
-            case 2: /* No Chezi explicitly */
-                K_Q = 8.796 * Math.pow(input[i], 1 / 3.) * Math.pow(linkWidth, -1 / 3.) * Math.pow(linkLength, -1)
-                        * Math.pow(linkSlope, 2 / 9.); // units
-                // 1/s*/
-                break;
-
-            case 3: /* Chezi explicit */
-                // System.out.println("Chezy");
-                K_Q = 3 / 2. * Math.pow(input[i], 1. / 3.) * Math.pow(linkChezy, 2. / 3.) * Math.pow(linkWidth, -1. / 3.)
-                        * Math.pow(linkLength, -1) * Math.pow(linkSlope, 1. / 3.); // units 1/s
-                break;
-
-            case 4: /* Mannings equation */
-                flowdepth = (1. / 3.) * Math.pow(input[i], 1. / 3.); // depth
-                // m,
-                // input m^3/s;
-                // general
-                // observed
-                // relation for
-                // gc from
-                // molnar and
-                // ramirez 1998
-                hydrad = (flowdepth * linkWidth) / (2.f * flowdepth + linkWidth); // m
-                mannings_n = 1; // 0.030f; // mannings n suggested by Jason via his
-                // observations at
-                // Whitewater for high flows. Low flows will have higher
-                // n ... up to 2x more.
-                K_Q = (Math.pow(hydrad, 2. / 3.) * Math.pow(linkSlope, 1 / 2.) / mannings_n) // m/s
-                        // ;
-                        // this
-                        // term
-                        // is v
-                        // from
-                        // mannings
-                        // eqn
-                        * Math.pow(linkLength, -1); // 1/s
-                break;
-
-            }
+            double K_Q = AdigeUtilities.doRouting(input[i], currentHillslope, routingType);
 
             /*
              * if (i == 62) { System.out.println(" WD ratio ="+
@@ -437,6 +389,7 @@ public class DuffyModel {
 
         return output;
     }
+
     public void addDischargeContributor( IDischargeContributor dischargeContributor ) {
         dischargeContributorList.add(dischargeContributor);
     }

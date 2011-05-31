@@ -34,6 +34,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.IAdigeEngi
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 import org.joda.time.DateTime;
 
 /**
@@ -114,7 +115,7 @@ public class HymodAdigeEngine implements IAdigeEngine {
 
         for( int i = orderedHillslopes.size() - 1; i >= 0; i-- ) {
             IHillSlope hillSlope = orderedHillslopes.get(i);
-            
+
             double rain = rainArray[i];
             double etp = etpArray[i];
 
@@ -146,7 +147,13 @@ public class HymodAdigeEngine implements IAdigeEngine {
             double basinDischarge = (QS + outflow2) / coeffs[i];
             double basinSubDischarge = QS / coeffs[i];
 
-            basinDischarge = handleContributors(hillSlope, basinDischarge);
+            double allContributionsDischarge = handleContributors(hillSlope, basinDischarge);
+
+            /*
+             * sum together the discharge contributed by the current hillslope 
+             * plus the contributions coming from upstream
+             */
+            basinDischarge = basinDischarge + allContributionsDischarge;
 
             PfafstetterNumber pfaf = hillSlope.getPfafstetterNumber();
             if (pfaffsList.contains(pfaf.toString())) {
@@ -164,14 +171,22 @@ public class HymodAdigeEngine implements IAdigeEngine {
         return null;
     }
 
-    private double handleContributors( IHillSlope hillSlope, double basinDischarge ) {
+    private double handleContributors( IHillSlope hillSlope, final double basinDischarge ) {
+        double summedContributions = 0;
+
         List<IHillSlope> connectedUpstreamHillSlopes = hillSlope.getConnectedUpstreamElements();
         if (connectedUpstreamHillSlopes != null) {
             for( IHillSlope tmpHillSlope : connectedUpstreamHillSlopes ) {
                 PfafstetterNumber pNum = tmpHillSlope.getPfafstetterNumber();
                 int hillslopeId = tmpHillSlope.getHillslopeId();
+
                 /*
-                 * contributors
+                 * get the inflow from upstream basins
+                 */
+                double upstreamDischarge = outDischargeInternal.get(hillslopeId)[0];
+
+                /*
+                 * handle the contributors
                  */
                 for( IDischargeContributor dContributor : dischargeContributorList ) {
                     Double contributedDischarge = dContributor.getDischarge(pNum.toString());
@@ -179,36 +194,34 @@ public class HymodAdigeEngine implements IAdigeEngine {
                         if (doLog && doPrint) {
                             pm.message("----> For hillslope " + hillSlope.getPfafstetterNumber()
                                     + " using hydrometer/dams data in pfafstetter: " + pNum.toString() + "(meaning added "
-                                    + contributedDischarge + " instead of " + basinDischarge + ")");
+                                    + contributedDischarge + " instead of " + upstreamDischarge + ")");
                         }
 
-                        // double routedDischarge = doRouting(contributedDischarge);
-                        // basinDischarge = dContributor.mergeWithDischarge(routedDischarge,
-                        // basinDischarge);
-                        basinDischarge = dContributor.mergeWithDischarge(contributedDischarge, basinDischarge);
+                        /*
+                         * here the contributor will give its contribution, which depends on the type
+                         * of contributor. For example a Hydrometer will completely substitute the
+                         * calculated discharge of the current hillslope (tmpHillSlope) with the 
+                         * measure supplied by the Hydrometer.
+                         */
+                        upstreamDischarge = dContributor.mergeWithDischarge(contributedDischarge, upstreamDischarge);
                     }
                 }
+                double routedDischarge = doRouting(upstreamDischarge, basinDischarge, tmpHillSlope);
 
-                /*
-                 * add inflow from upstream basins
-                 */
-                double[] upstreamDischarge = outDischargeInternal.get(hillslopeId);
-                basinDischarge = basinDischarge + upstreamDischarge[0];
-                // double routedDischarge = doRouting(upstreamDischarge[0]);
-                // basinDischarge = basinDischarge + routedDischarge;
+                summedContributions = summedContributions + routedDischarge;
             }
         }
 
-        return basinDischarge;
+        return summedContributions;
     }
 
-    // TODO
-    // private double doRouting( double discharge, IHillSlope hillSlope ) {
-    // double linkWidth = hillSlope.getLinkWidth(8.66, 0.6, 0.0);
-    // double linkLength = hillSlope.getLinkLength();
-    // double linkSlope = hillSlope.getLinkSlope();
-    // return 0;
-    // }
+    // TODO make this real
+    private double doRouting( double discharge, final double basinDischarge, IHillSlope hillslope ) {
+        // 
+        // double K_Q = AdigeUtilities.doRouting(discharge, hillslope, 2);
+
+        return discharge;
+    }
 
     private double[] excess( double x_losss, double Pval, double PETval ) {
         double[] o_exces = new double[3];

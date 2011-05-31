@@ -235,4 +235,74 @@ public class AdigeUtilities {
         return orderedHillslopes;
 
     }
+
+    /**
+     * Method to do the routing of a  discharge along the  link of {@link IHillSlope}.
+     * 
+     * @param discharge the discharge to be transported.
+     * @param hillslope the current hillslope. 
+     * @param routingType the routing type to use:
+     *                  <ul>
+     *                      <li>2 = No Chezi explicitly</li>
+     *                      <li>3 = Chezi explicitly</li>
+     *                      <li>4 = Manning equation</li>
+     *                  </ul>
+     * @return the routing cuencas coefficient.
+     */
+    public static double doRouting( double discharge, IHillSlope hillslope, int routingType ) {
+        double linkWidth = hillslope.getLinkWidth(8.66, 0.6, 0.0);
+        double linkLength = hillslope.getLinkLength();
+        double linkSlope = hillslope.getLinkSlope();
+        double chezLawExpon = -1. / 3.;
+        double chezLawCoeff = 200. / Math.pow(0.000357911, chezLawExpon);
+        double linkChezy = hillslope.getLinkChezi(chezLawCoeff, chezLawExpon);
+
+        double K_Q = 0;
+
+        /* ROUTING RATE (K_Q) and CHANNEL VELOCITY (vc) */
+        // System.out.println(routingtype);
+        switch( routingType ) {
+        case 2: /* No Chezi explicitly */
+            K_Q = 8.796 * Math.pow(discharge, 1 / 3.) * Math.pow(linkWidth, -1 / 3.) * Math.pow(linkLength, -1)
+                    * Math.pow(linkSlope, 2 / 9.); // units
+            // 1/s*/
+            break;
+
+        case 3: /* Chezi explicit */
+            // System.out.println("Chezy");
+            K_Q = 3 / 2. * Math.pow(discharge, 1. / 3.) * Math.pow(linkChezy, 2. / 3.) * Math.pow(linkWidth, -1. / 3.)
+                    * Math.pow(linkLength, -1) * Math.pow(linkSlope, 1. / 3.); // units 1/s
+            break;
+
+        case 4: /* Mannings equation */
+            double flowdepth = (1. / 3.) * Math.pow(discharge, 1. / 3.); // depth
+            // m,
+            // input m^3/s;
+            // general
+            // observed
+            // relation for
+            // gc from
+            // molnar and
+            // ramirez 1998
+            double hydrad = (flowdepth * linkWidth) / (2.f * flowdepth + linkWidth); // m
+            double mannings_n = 1; // 0.030f; // mannings n suggested by Jason via his
+            // observations at
+            // Whitewater for high flows. Low flows will have higher
+            // n ... up to 2x more.
+            K_Q = (Math.pow(hydrad, 2. / 3.) * Math.pow(linkSlope, 1 / 2.) / mannings_n) // m/s
+                    // ;
+                    // this
+                    // term
+                    // is v
+                    // from
+                    // mannings
+                    // eqn
+                    * Math.pow(linkLength, -1); // 1/s
+            break;
+
+        }
+
+        return K_Q;
+    }
+
 }
