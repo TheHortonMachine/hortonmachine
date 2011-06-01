@@ -168,6 +168,9 @@ public class Netshape2Flow extends JGTModel {
             // if the feature is active, start working on it
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
             Coordinate[] coordinates = geometry.getCoordinates();
+            if (coordinates.length < 2) {
+                continue;
+            }
 
             // boolean isLastCoordinateOfSegment = false;
             // boolean isSecondLastCoordinateOfSegment = false;
