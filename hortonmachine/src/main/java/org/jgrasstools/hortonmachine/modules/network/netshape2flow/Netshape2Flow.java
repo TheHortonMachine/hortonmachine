@@ -158,7 +158,7 @@ public class Netshape2Flow extends JGTModel {
             }
             // find the id of the reach
             int id = -1;
-            if (idFieldPosition != -1) {
+            if (idFieldPosition == -1) {
                 String[] idSplit = feature.getID().split("\\."); //$NON-NLS-1$
                 id = Integer.parseInt(idSplit[idSplit.length - 1]);
             } else {
@@ -203,18 +203,20 @@ public class Netshape2Flow extends JGTModel {
                     /*
                      * if there is already a value in that point, and if the point in the output
                      * matrix is an outlet (10), then it is an end of another reach and it is ok to
-                     * write over it. If it is another value and my actual reach is not at the end,
-                     * then jump over it, the outlet is threated at the after the loop. Let's create
+                     * write over it. 
+                     * If it is another value and my actual reach is not at the end,
+                     * then jump over it, the outlet is threated after the loop. Let's create
                      * a temporary resource that contains all the problem points. The user will for
                      * now have to change the shapefile to proceed.
                      */
                     if (!isNovalue(flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0))
                             && flowIter.getSampleDouble(firstOnRaster[1], firstOnRaster[0], 0) != 10.0) {
 
-                        if (i > coordinates.length - 2) {
+                        if (i > coordinates.length - 3) {
                             runningLength = runningLength + res;
                             continue;
-                        }
+                        } else
+                            problemPointsList.add(firstPoint);
                     }
                     /*
                      * if the two analized points are equal, the point will be added at the next
