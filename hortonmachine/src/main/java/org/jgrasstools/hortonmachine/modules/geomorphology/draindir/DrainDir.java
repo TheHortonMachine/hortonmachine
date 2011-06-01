@@ -225,9 +225,9 @@ public class DrainDir extends JGTModel {
             if (isCanceled(pm)) {
                 return;
             }
-            count = indexes[i];
-            col = (int) count % cols - 1;
-            row = (int) count / cols;
+            count = indexes[i] - 1;
+            row = (int) Math.floor(count / cols);
+            col = (int) (count % cols);
             if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
                 compose(analyseRandomIter, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
@@ -289,8 +289,6 @@ public class DrainDir extends JGTModel {
                         deviationRandomIter.setSample(col, row, 0, sumdev);
                     }
                 }
-            } else if (isNovalue(pitRandomIter.getSampleDouble(col, row, 0))) {
-                break;
             }
             pm.worked(1);
         }
@@ -350,9 +348,9 @@ public class DrainDir extends JGTModel {
             if (isCanceled(pm)) {
                 return;
             }
-            count = indexes[i];
-            col = (int) count % cols - 1;
-            row = (int) count / cols;
+            count = indexes[i] - 1;
+            row = (int) Math.floor(count / cols);
+            col = (int) (count % cols);
 
             if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
@@ -414,8 +412,6 @@ public class DrainDir extends JGTModel {
                         deviationRandomIter.setSample(col, row, 0, sumdev);
                     }
                 }
-            } else if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0))) {
-                break;
             }
             pm.worked(1);
         }
