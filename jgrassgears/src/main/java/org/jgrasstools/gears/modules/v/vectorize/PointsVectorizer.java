@@ -93,6 +93,7 @@ public class PointsVectorizer extends JGTModel {
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("pointtype");
+        b.setCRS(inRaster.getCoordinateReferenceSystem());
         b.add("the_geom", Point.class);
         b.add(fDefault, Double.class);
 
