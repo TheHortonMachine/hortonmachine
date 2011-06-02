@@ -33,7 +33,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 /**
  * The grass map named test and its values to be used in tests.
  * 
@@ -45,6 +47,7 @@ public class HMTestMaps {
     public static CoordinateReferenceSystem crs = null;
 
     public static SimpleFeatureCollection testFC;
+    public static SimpleFeatureCollection testLeftFC;
 
     static {
         double n = 5140020.0;
@@ -75,15 +78,19 @@ public class HMTestMaps {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         GeometryFactory gf = GeometryUtilities.gf();
 
-        Object[] nw = new Object[]{gf.createPoint(new Coordinate(w, n)), 1};
+        Coordinate westNorth = new Coordinate(w, n);
+        Coordinate eastSouth = new Coordinate(e, s);
+        Coordinate centerCoord = new Coordinate(w + (e - w) / 2, s + (n - s) / 2);
+
+        Object[] nw = new Object[]{gf.createPoint(westNorth), 1};
         builder.addAll(nw);
         SimpleFeature nwFeature = builder.buildFeature(type.getTypeName() + ".1");
 
-        Object[] se = new Object[]{gf.createPoint(new Coordinate(e, s)), 2};
+        Object[] se = new Object[]{gf.createPoint(eastSouth), 2};
         builder.addAll(se);
         SimpleFeature seFeature = builder.buildFeature(type.getTypeName() + ".2");
 
-        Object[] center = new Object[]{gf.createPoint(new Coordinate(w + (e - w) / 2, s + (n - s) / 2)), 3};
+        Object[] center = new Object[]{gf.createPoint(centerCoord), 3};
         builder.addAll(center);
         SimpleFeature centerFeature = builder.buildFeature(type.getTypeName() + ".3");
 
@@ -91,6 +98,28 @@ public class HMTestMaps {
         testFC.add(nwFeature);
         testFC.add(seFeature);
         testFC.add(centerFeature);
+
+        b = new SimpleFeatureTypeBuilder();
+        b.setName("testlefthalf");
+        b.setCRS(crs);
+        b.add("the_geom", Polygon.class);
+        type = b.buildFeatureType();
+        builder = new SimpleFeatureBuilder(type);
+
+        LinearRing linearRing = gf.createLinearRing(new Coordinate[]{//
+                westNorth, //
+                        new Coordinate(centerCoord.x, westNorth.y), //
+                        new Coordinate(centerCoord.x, eastSouth.y), //
+                        new Coordinate(westNorth.x, eastSouth.y), //
+                        westNorth //
+                });
+        Object[] leftPolygon = new Object[]{gf.createPolygon(linearRing, null)};
+        builder.addAll(leftPolygon);
+        SimpleFeature leftPolygonFeature = builder.buildFeature(null);
+
+        testLeftFC = FeatureCollections.newCollection();
+        testLeftFC.add(leftPolygonFeature);
+
     }
 
     /**

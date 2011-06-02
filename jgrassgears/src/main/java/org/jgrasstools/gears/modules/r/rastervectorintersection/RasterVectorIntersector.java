@@ -100,6 +100,7 @@ public class RasterVectorIntersector extends JGTModel {
         cutout.pm = pm;
         cutout.inRaster = inRaster;
         cutout.inMask = rasterizedVector;
+        cutout.doInverse = doInverse;
         cutout.process();
         outRaster = cutout.outRaster;
     }
