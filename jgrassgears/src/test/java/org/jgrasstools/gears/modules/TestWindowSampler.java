@@ -47,7 +47,6 @@ public class TestWindowSampler extends HMTestCase {
         windowSampler.process();
         GridCoverage2D outGeodata = windowSampler.outGeodata;
 
-        printImage(outGeodata.getRenderedImage());
         double[][] res2x2 = {//
         {766.6666666666666, 900.0, 1052.5, 1212.5, 1425.0}, //
                 {465.0, 700.0, 800.0, 810.0, 1137.5}, //

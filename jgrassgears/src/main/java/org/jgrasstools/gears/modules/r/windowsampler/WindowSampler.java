@@ -96,9 +96,6 @@ public class WindowSampler extends JGTModel {
 
         for( int r = 0; r < newRows; r++ ) {
             for( int c = 0; c < newCols; c++ ) {
-                if (!iter.hasNext()) {
-                    throw new RuntimeException();
-                }
                 double[][] window = iter.getWindowDouble(null);
                 double newValue = calculateValue(window);
                 iter.next();
