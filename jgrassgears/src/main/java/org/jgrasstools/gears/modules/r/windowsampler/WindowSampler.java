@@ -62,11 +62,11 @@ public class WindowSampler extends JGTModel {
 
     @Description("The windows rows to use (default is 3).")
     @In
-    public int pRows;
+    public int pRows = 3;
 
     @Description("The window cols to use (default is 3).")
     @In
-    public int pCols;
+    public int pCols = 3;
 
     @Description("The progress monitor.")
     @In
