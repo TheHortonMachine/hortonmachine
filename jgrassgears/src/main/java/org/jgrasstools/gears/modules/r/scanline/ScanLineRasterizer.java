@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Module for polygon vector to raster conversion.")
 @Documentation("ScanLineRasterizer.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, ContourExtractor")
+@Keywords("Raster, Vector, Rasterize")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("rscanline")
