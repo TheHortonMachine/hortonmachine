@@ -39,85 +39,70 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestMapcalc extends HMTestCase {
     
-    public void testMapcalc0() throws Exception {
-        GridCoverage2D elevationCoverage = RasterReader.readCoverage("/home/moovida/TMP/formetta/newLocation/newMapset/cell/netshp2fl_net");
-        
+    public void testMapcalc() throws Exception {
+
+        double[][] elevationData = HMTestMaps.pitData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
+
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
-        
+
         Mapcalc mapcalc = new Mapcalc();
         mapcalc.inRasters = maps;
-        mapcalc.pFunction = "images { netshp2fl_net = read; result = write; } if (!isnull(netshp2fl_net)) { result = 2.0; } else { result = null; }";
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest=ele*2-ele + sqrt(ele)^2-exp(log(ele));";
         mapcalc.process();
-        
+
         GridCoverage2D outMap = mapcalc.outRaster;
-        
-        RasterWriter.writeRaster("/home/moovida/TMP/formetta/newLocation/newMapset/cell/netshp2fl_net2", outMap);
+
+        RenderedImage renderedImage = outMap.getRenderedImage();
+        // printImage(renderedImage);
+        checkMatrixEqual(renderedImage, HMTestMaps.pitData, 0.000000001);
     }
-    
-//    public void testMapcalc() throws Exception {
-//
-//        double[][] elevationData = HMTestMaps.pitData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
-//        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
-//
-//        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
-//
-//        Mapcalc mapcalc = new Mapcalc();
-//        mapcalc.inRasters = maps;
-//        mapcalc.pFunction = "images{ele=read; dest=write;} dest=ele*2-ele + sqrt(ele)^2-exp(log(ele));";
-//        mapcalc.process();
-//
-//        GridCoverage2D outMap = mapcalc.outRaster;
-//
-//        RenderedImage renderedImage = outMap.getRenderedImage();
-//        // printImage(renderedImage);
-//        checkMatrixEqual(renderedImage, HMTestMaps.pitData, 0.000000001);
-//    }
-//
-//    public void testMapcalc2() throws Exception {
-//
-//        double[][] elevationData = HMTestMaps.flowData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
-//        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("flow", elevationData, envelopeParams, crs, true);
-//
-//        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
-//
-//        Mapcalc mapcalc = new Mapcalc();
-//        mapcalc.inRasters = maps;
-//        mapcalc.pFunction = "images{flow=read; dest=write;} dest = (flow+flow)/2;";
-//
-//        mapcalc.process();
-//
-//        GridCoverage2D outMap = mapcalc.outRaster;
-//        RenderedImage renderedImage = outMap.getRenderedImage();
-//        // printImage(renderedImage);
-//        checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
-//    }
-//
-//    public void testMapcalc3() throws Exception {
-//        double[][] elevationData = HMTestMaps.pitData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
-//        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
-//
-//        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
-//
-//        Mapcalc mapcalc = new Mapcalc();
-//        mapcalc.inRasters = maps;
-//        mapcalc.pFunction = "images{ele=read; dest=write;} dest = xres()*yres();";
-//        mapcalc.process();
-//
-//        GridCoverage2D outMap = mapcalc.outRaster;
-//
-//        RenderedImage renderedImage = outMap.getRenderedImage();
-//        // printImage(renderedImage);
-//
-//        checkEqualsSinlgeValue(renderedImage, 900.0, 0.000000001);
-//    }
-//
+
+    public void testMapcalc2() throws Exception {
+
+        double[][] elevationData = HMTestMaps.flowData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("flow", elevationData, envelopeParams, crs, true);
+
+        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
+
+        Mapcalc mapcalc = new Mapcalc();
+        mapcalc.inRasters = maps;
+        mapcalc.pFunction = "images{flow=read; dest=write;} dest = (flow+flow)/2;";
+
+        mapcalc.process();
+
+        GridCoverage2D outMap = mapcalc.outRaster;
+        RenderedImage renderedImage = outMap.getRenderedImage();
+        // printImage(renderedImage);
+        checkMatrixEqual(renderedImage, HMTestMaps.flowData, 0.000000001);
+    }
+
+    public void testMapcalc3() throws Exception {
+        double[][] elevationData = HMTestMaps.pitData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
+
+        List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
+
+        Mapcalc mapcalc = new Mapcalc();
+        mapcalc.inRasters = maps;
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = xres()*yres();";
+        mapcalc.process();
+
+        GridCoverage2D outMap = mapcalc.outRaster;
+
+        RenderedImage renderedImage = outMap.getRenderedImage();
+        // printImage(renderedImage);
+
+        checkEqualsSinlgeValue(renderedImage, 900.0, 0.000000001);
+    }
+
     public static void main( String[] args ) throws Exception {
-        new TestMapcalc().testMapcalc0();
+        new TestMapcalc().testMapcalc();
     }
 }
