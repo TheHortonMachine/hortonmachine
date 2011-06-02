@@ -164,7 +164,7 @@ public class ScanLineRasterizer extends JGTModel {
         } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
         } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
-            rasterizepolygon(inVector, outWR, pGrid);
+            rasterizepolygon(pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
                     .getSimpleName());
@@ -174,11 +174,7 @@ public class ScanLineRasterizer extends JGTModel {
                 .getCoordinateReferenceSystem());
 
     }
-    private void rasterizepolygon( SimpleFeatureCollection polygonFC, WritableRaster rasterized, GridGeometry2D gridGeometry )
-            throws InvalidGridGeometryException, TransformException {
-
-        int w = rasterized.getWidth();
-        int h = rasterized.getHeight();
+    private void rasterizepolygon( GridGeometry2D gridGeometry ) throws InvalidGridGeometryException, TransformException {
 
         int size = inVector.size();
         pm.beginTask("Rasterizing features...", size);
@@ -186,7 +182,7 @@ public class ScanLineRasterizer extends JGTModel {
 
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
-            Polygon polygon = (Polygon) feature.getDefaultGeometry();
+
             // extract the value to put into the raster.
             double value = -1.0;
             if (pValue == null) {
@@ -196,31 +192,37 @@ public class ScanLineRasterizer extends JGTModel {
             }
             double delta = xRes / 4.0;
 
-            for( int r = 0; r < h; r++ ) {
-                // do scan line to fill the polygon
-                double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
-                double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(w - 1, r)).getCoordinate();
-                Coordinate west = new Coordinate(westPos[0], westPos[1]);
-                Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
-                LineString line = gf.createLineString(new Coordinate[]{west, east});
-                if (polygon.intersects(line)) {
-                    Geometry internalLines = polygon.intersection(line);
-                    Coordinate[] coords = internalLines.getCoordinates();
-                    for( int j = 0; j < coords.length; j = j + 2 ) {
-                        Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
-                        Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            int numGeometries = geometry.getNumGeometries();
+            for( int i = 0; i < numGeometries; i++ ) {
+                Geometry geometryN = geometry.getGeometryN(i);
 
-                        GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(startC.x, startC.x));
-                        GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(endC.x, endC.x));
+                for( int r = 0; r < height; r++ ) {
+                    // do scan line to fill the polygon
+                    double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
+                    double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(width - 1, r)).getCoordinate();
+                    Coordinate west = new Coordinate(westPos[0], westPos[1]);
+                    Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
+                    LineString line = gf.createLineString(new Coordinate[]{west, east});
+                    if (geometryN.intersects(line)) {
+                        Geometry internalLines = geometryN.intersection(line);
+                        Coordinate[] coords = internalLines.getCoordinates();
+                        for( int j = 0; j < coords.length; j = j + 2 ) {
+                            Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
+                            Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                        /*
-                         * the part in between has to be filled
-                         */
-                        for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                            rasterized.setSample(k, r, 0, value);
+                            GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(startC.x, startC.x));
+                            GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(endC.x, endC.x));
+
+                            /*
+                             * the part in between has to be filled
+                             */
+                            for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
+                                outWR.setSample(k, r, 0, value);
+                            }
                         }
-                    }
 
+                    }
                 }
             }
 
