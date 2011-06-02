@@ -101,7 +101,7 @@ public class Mapcalc extends JGTModel {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
-        
+
         String script = pFunction;
         script = script.trim();
 
@@ -120,7 +120,7 @@ public class Mapcalc extends JGTModel {
 
                 worldBounds = mapGC.getEnvelope2D().getBounds2D();
                 Rectangle gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
-                
+
                 jiffleCRS = getTransform(worldBounds, gridBounds);
 
                 double xRes = regionParameters.get(CoverageUtilities.XRES).doubleValue();
@@ -154,7 +154,7 @@ public class Mapcalc extends JGTModel {
         executor.addEventListener(listener);
         listener.setNumTasks(1);
 
-        int jobID = executor.submit(jiffleRuntime, new JiffleProgressListener(){
+        executor.submit(jiffleRuntime, new JiffleProgressListener(){
             private long count = 0;
             public void update( long done ) {
                 if (count == done) {
@@ -192,12 +192,8 @@ public class Mapcalc extends JGTModel {
 
         JiffleExecutorResult result = listener.getResults().get(0);
         Map<String, RenderedImage> imgMap = result.getImages();
-        Set<Entry<String, RenderedImage>> entrySet = imgMap.entrySet();
-        for( Entry<String, RenderedImage> entry : entrySet ) {
-            RenderedImage resultImage = entry.getValue();
-            outRaster = CoverageUtilities.buildCoverage(entry.getKey(), resultImage, regionParameters, crs);
-            break;
-        }
+        RenderedImage destImage = imgMap.get(destName);
+        outRaster = CoverageUtilities.buildCoverage(destName, destImage, regionParameters, crs);
         executor.shutdown();
     }
 
@@ -208,7 +204,7 @@ public class Mapcalc extends JGTModel {
         if (imageBounds == null || imageBounds.isEmpty()) {
             throw new IllegalArgumentException("imageBounds must not be null or empty");
         }
-        
+
         double xscale = (imageBounds.getMaxX() - imageBounds.getMinX()) / (worldBounds.getMaxX() - worldBounds.getMinX());
 
         double xoff = imageBounds.getMinX() - xscale * worldBounds.getMinX();
