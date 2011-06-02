@@ -37,8 +37,8 @@ public class HMTestCase extends TestCase {
      * The progress monitor to be usedd by testcases.
      */
     protected PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-    
-    public void testDummy(){
+
+    public void testDummy() {
         // done to not make the maven test fail
     }
 
@@ -57,7 +57,16 @@ public class HMTestCase extends TestCase {
             System.out.println();
         } while( !rectIter.nextLineDone() );
     }
-    
+
+    protected void printMatrix( double[][] matrix ) {
+        for( int j = 0; j < matrix.length; j++ ) {
+            for( int i = 0; i < matrix[0].length; i++ ) {
+                System.out.print(matrix[j][i] + " ");
+            }
+            System.out.println();
+        }
+    }
+
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
@@ -106,8 +115,8 @@ public class HMTestCase extends TestCase {
                 double value = rectIter.getSampleDouble();
                 double expectedResult = matrix[y][x];
                 if (isNovalue(value)) {
-                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got "
-                            + expectedResult, isNovalue(expectedResult));
+                    assertTrue("Difference at position: " + x + " " + y + " expected NaN, got " + expectedResult,
+                            isNovalue(expectedResult));
                 } else {
                     assertEquals("Difference at position: " + x + " " + y, expectedResult, value);
                 }
@@ -149,8 +158,7 @@ public class HMTestCase extends TestCase {
      */
     protected File classesTestFile2srcTestResourcesFile( File classesTestFile ) {
         String classesTestPath = classesTestFile.getAbsolutePath();
-        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator
-                + File.separator + "test");
+        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
         classesTestPath = classesTestPath.replaceFirst("test-classes", "resources");
 
         File srcTestResourcesFile = new File(classesTestPath);

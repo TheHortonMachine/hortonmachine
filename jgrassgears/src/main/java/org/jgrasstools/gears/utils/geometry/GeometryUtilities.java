@@ -256,6 +256,45 @@ public class GeometryUtilities {
     }
 
     /**
+     * Checks if the given geometry is a {@link LineString} (or {@link MultiLineString}) geometry.
+     * 
+     * @param geometry the geometry to check.
+     * @return <code>true</code> if there are lines in there.
+     */
+    public static boolean isLine( Geometry geometry ) {
+        if (geometry instanceof LineString || geometry instanceof MultiLineString) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given geometry is a {@link Polygon} (or {@link MultiPolygon}) geometry.
+     * 
+     * @param geometry the geometry to check.
+     * @return <code>true</code> if there are polygons in there.
+     */
+    public static boolean isPolygon( Geometry geometry ) {
+        if (geometry instanceof Polygon || geometry instanceof MultiPolygon) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given geometry is a {@link Point} (or {@link MultiPoint}) geometry.
+     * 
+     * @param geometry the geometry to check.
+     * @return <code>true</code> if there are points in there.
+     */
+    public static boolean isPoint( Geometry geometry ) {
+        if (geometry instanceof Point || geometry instanceof MultiPoint) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Calculates the area of a polygon from its vertices.
      * 
      * @param x the array of x coordinates.

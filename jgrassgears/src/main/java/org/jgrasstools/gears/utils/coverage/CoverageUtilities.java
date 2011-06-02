@@ -63,8 +63,10 @@ import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -76,6 +78,8 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
 /**
@@ -676,55 +680,54 @@ public class CoverageUtilities {
     }
 
     /**
-     * Calculates the profile of a raster map between two given {@link Coordinate coordinates}.
+     * Calculates the profile of a raster map between given {@link Coordinate coordinates}.
      * 
-     * @param start the first coordinate.
-     * @param end the last coordinate.
      * @param coverage the coverage from which to extract the profile.
+     * @param coordinates the coordinates to use to trace the profile.
      * @return the list of {@link ProfilePoint}s.
      * @throws Exception
      */
-    public static List<ProfilePoint> doProfile( Coordinate start, Coordinate end, GridCoverage2D coverage ) throws Exception {
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
-        double xres = regionMap.get(CoverageUtilities.XRES);
+    public static List<ProfilePoint> doProfile( GridCoverage2D coverage, Coordinate... coordinates ) throws Exception {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        double step = Math.min(xres, yres);
+
         GridGeometry2D gridGeometry = coverage.getGridGeometry();
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
-
-        LineSegment pline = new LineSegment(start, end);
-        double lenght = pline.getLength();
+        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
 
         List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
+
+        LineString line = GeometryUtilities.gf().createLineString(coordinates);
+        double lineLength = line.getLength();
+        LengthIndexedLine indexedLine = new LengthIndexedLine(line);
+
         double progressive = 0.0;
-
-        // ad the first point
-        GridCoordinates2D gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(start.x, start.y));
-        double value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
-
-        ProfilePoint profilePoint = new ProfilePoint(0.0, value, start.x, start.y);
-        profilePointsList.add(profilePoint);
-        progressive = progressive + xres;
-
-        while( progressive < lenght ) {
-            Coordinate c = pline.pointAlong(progressive / lenght);
+        GridCoordinates2D gridCoords;
+        while( progressive < lineLength + step ) { // run over by a step to make sure we get the
+                                                   // last coord back from the extractor
+            Coordinate c = indexedLine.extractPoint(progressive);
             gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
-            value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
-            profilePoint = new ProfilePoint(progressive, value, c.x, c.y);
+            double value = JGTConstants.doubleNovalue;
+            if (envelope2d.contains(c.x, c.y) && isInside(cols, rows, gridCoords)) {
+                value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
+            }
+            ProfilePoint profilePoint = new ProfilePoint(progressive, value, c.x, c.y);
             profilePointsList.add(profilePoint);
-            progressive = progressive + xres;
+            progressive = progressive + step;
         }
 
-        // add the last point
-        gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(end.x, end.y));
-        value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
-        profilePoint = new ProfilePoint(lenght, value, end.x, end.y);
-        profilePointsList.add(profilePoint);
-
         iter.done();
-
         return profilePointsList;
     }
 
+    private static boolean isInside( int cols, int rows, GridCoordinates2D gridCoords ) {
+        return gridCoords.x >= 0 && gridCoords.x <= cols && gridCoords.y >= 0 && gridCoords.y <= rows;
+    }
     /**
      * Utility to tranform row/col to easting/westing.
      * 

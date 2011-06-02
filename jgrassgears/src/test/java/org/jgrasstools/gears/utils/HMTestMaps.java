@@ -49,6 +49,10 @@ public class HMTestMaps {
     public static SimpleFeatureCollection testFC;
     public static SimpleFeatureCollection testLeftFC;
 
+    public static Coordinate westNorth;
+    public static Coordinate eastSouth;
+    public static Coordinate centerCoord;
+
     static {
         double n = 5140020.0;
         double s = 5139780.0;
@@ -78,9 +82,9 @@ public class HMTestMaps {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         GeometryFactory gf = GeometryUtilities.gf();
 
-        Coordinate westNorth = new Coordinate(w, n);
-        Coordinate eastSouth = new Coordinate(e, s);
-        Coordinate centerCoord = new Coordinate(w + (e - w) / 2, s + (n - s) / 2);
+        westNorth = new Coordinate(w, n);
+        eastSouth = new Coordinate(e, s);
+        centerCoord = new Coordinate(w + (e - w) / 2, s + (n - s) / 2);
 
         Object[] nw = new Object[]{gf.createPoint(westNorth), 1};
         builder.addAll(nw);
