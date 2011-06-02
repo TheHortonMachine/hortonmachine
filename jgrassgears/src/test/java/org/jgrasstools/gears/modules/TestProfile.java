@@ -75,8 +75,6 @@ public class TestProfile extends HMTestCase {
             assertEquals(result[i], outProfile[i][1], 0.000001);
         }
 
-        printMatrix(outProfile);
-
     }
 
     private SimpleFeatureCollection doCollection() {
