@@ -1,4 +1,4 @@
-package org.jgrasstools.hortonmachine.models.externals;
+package org.jgrasstools.hortonmachine.models.hm;
 
 import java.io.File;
 import java.net.URL;
