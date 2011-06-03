@@ -30,6 +30,8 @@ import java.util.List;
 
 import jaitools.numeric.ArrayUtils;
 
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -315,4 +317,26 @@ public class GeometryUtilities {
         area /= 2;
         return (area < 0 ? -area : area);
     }
+
+    /**
+     * Calculates the 3d distance between two coordinates that have an elevation information.
+     * 
+     * <p>Note that the {@link Coordinate#distance(Coordinate)} method does only 2d.
+     * 
+     * @param c1 coordinate 1.
+     * @param c2 coordinate 2.
+     * @return the distance considering also elevation.
+     */
+    public static double distance3d( Coordinate c1, Coordinate c2 ) {
+        if (Double.isNaN(c1.z) || Double.isNaN(c2.z)) {
+            throw new IllegalArgumentException("Missing elevation information in the supplied coordinates.");
+        }
+
+        double projectedDistance = c1.distance(c2);
+        double deltaElev = Math.abs(c1.z - c2.z);
+
+        double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
+        return distance;
+    }
+
 }
