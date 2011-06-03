@@ -302,7 +302,7 @@ public class MapsViewer {
 
     @SuppressWarnings("nls")
     public static void main( String[] args ) throws Exception {
-        GridCoverage2D coverage = RasterReader.readCoverage("/home/moovida/TMP/byumba_basins.asc");
+        GridCoverage2D coverage = RasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
         SimpleFeatureCollection shapefile = ShapefileFeatureReader
                 .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
         displayRasterAndFeatures(coverage, shapefile);

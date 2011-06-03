@@ -167,7 +167,7 @@ public class GrassMosaicLegacy extends JGTModel {
 
         int index = 1;
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
             Envelope2D env = coverage.getEnvelope2D();
             GridGeometry2D gridGeometry = coverage.getGridGeometry();
             if (requestedEnvelope != null) {

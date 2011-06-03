@@ -439,7 +439,7 @@ public class RasterReader extends JGTModel {
      * @return the read coverage.
      * @throws Exception
      */
-    public static GridCoverage2D readCoverage( String path ) throws Exception {
+    public static GridCoverage2D readRaster( String path ) throws Exception {
         RasterReader reader = new RasterReader();
         reader.file = path;
         reader.process();

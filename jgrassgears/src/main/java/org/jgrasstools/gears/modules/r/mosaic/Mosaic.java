@@ -113,7 +113,7 @@ public class Mosaic extends JGTModel {
 
         pm.beginTask("Calculating final bounds...", inFiles.size());
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
             // pm.message(MessageFormat.format("Reading map: {0} with crs: {1}",
             // coverageFile.getAbsolutePath(),
             // CrsUtilities.getCodeFromCrs(crs)));
@@ -168,7 +168,7 @@ public class Mosaic extends JGTModel {
         int offestY = Math.abs(sp);
         int index = 1;
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readCoverage(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
 
             RenderedImage renderedImage = coverage.getRenderedImage();
             RandomIter randomIter = RandomIterFactory.create(renderedImage, null);
