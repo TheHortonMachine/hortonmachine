@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.utils.coverage;
 
@@ -841,4 +840,48 @@ public class CoverageUtilities {
         File windFile = new File(mapsetFile, "WIND");
         return cellFolderFile.getName().toLowerCase().equals("cell") && windFile.exists();
     }
+
+    /**
+     * Utility method to get col and row of a coordinate from a {@link GridGeometry2D}.
+     * 
+     * @param coordinate the coordinate to transform.
+     * @param gridGeometry the gridgeometry to use.
+     * @return the array with [col, row] or <code>null</code> if something went wrong.
+     */
+    public static int[] colRowFromCoordinate( Coordinate coordinate, GridGeometry2D gridGeometry ) {
+        try {
+            DirectPosition pos = new DirectPosition2D(coordinate.x, coordinate.y);
+            GridCoordinates2D worldToGrid = gridGeometry.worldToGrid(pos);
+            return new int[]{worldToGrid.x, worldToGrid.y};
+        } catch (InvalidGridGeometryException e) {
+            e.printStackTrace();
+        } catch (TransformException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    /**
+     * Utility method to get the coordinate of a col and row from a {@link GridGeometry2D}.
+     * 
+     * @param col the col to transform.
+     * @param row the row to transform.
+     * @param gridGeometry the gridgeometry to use.
+     * @return the coordinate or <code>null</code> if something went wrong.
+     */
+    public static Coordinate coordinateFromColRow( int col, int row, GridGeometry2D gridGeometry ) {
+        try {
+            GridCoordinates2D pos = new GridCoordinates2D(col, row);
+            DirectPosition gridToWorld = gridGeometry.gridToWorld(pos);
+            double[] coord = gridToWorld.getCoordinate();
+            return new Coordinate(coord[0], coord[1]);
+        } catch (InvalidGridGeometryException e) {
+            e.printStackTrace();
+        } catch (TransformException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
