@@ -21,6 +21,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doesOverFlow;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.ComponentSampleModel;
@@ -846,12 +847,17 @@ public class CoverageUtilities {
      * 
      * @param coordinate the coordinate to transform.
      * @param gridGeometry the gridgeometry to use.
+     * @param point if not <code>null</code>, the row col values are put inside the supplied point's x and y.
      * @return the array with [col, row] or <code>null</code> if something went wrong.
      */
-    public static int[] colRowFromCoordinate( Coordinate coordinate, GridGeometry2D gridGeometry ) {
+    public static int[] colRowFromCoordinate( Coordinate coordinate, GridGeometry2D gridGeometry, Point point ) {
         try {
             DirectPosition pos = new DirectPosition2D(coordinate.x, coordinate.y);
             GridCoordinates2D worldToGrid = gridGeometry.worldToGrid(pos);
+            if (point != null) {
+                point.x = worldToGrid.x;
+                point.y = worldToGrid.y;
+            }
             return new int[]{worldToGrid.x, worldToGrid.y};
         } catch (InvalidGridGeometryException e) {
             e.printStackTrace();
@@ -859,6 +865,8 @@ public class CoverageUtilities {
             e.printStackTrace();
         }
 
+        point.x = Integer.MAX_VALUE;
+        point.y = Integer.MAX_VALUE;
         return null;
     }
 
