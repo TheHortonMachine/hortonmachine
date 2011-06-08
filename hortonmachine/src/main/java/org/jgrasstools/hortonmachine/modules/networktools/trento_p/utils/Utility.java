@@ -17,9 +17,20 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FeatureStore;
+import org.geotools.data.Transaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -29,11 +40,14 @@ import org.jgrasstools.gears.utils.math.functions.MinimumFillDegreeFunction;
 import org.jgrasstools.gears.utils.math.rootfinding.RootFindingFunctions;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * It's a collection of method used only for the TrentoP project.
@@ -272,4 +286,80 @@ public class Utility {
 
     }
 
+   public static void makePolygonShp( ITrentoPType[] values, File baseFolder, CoordinateReferenceSystem crs, String pAreaShapeFileName ) throws IOException {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        String typeName= values[0].getName();
+        b.setName(typeName);
+        b.setCRS(crs);
+        b.add("the_geom", Polygon.class);
+        b.add(PipesTrentoP.ID.getAttributeName(),PipesTrentoP.ID.getClazz() );
+        SimpleFeatureType tanksType = b.buildFeatureType();
+        ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+        File file = new File(baseFolder, pAreaShapeFileName);
+        Map<String, Serializable> create = new HashMap<String, Serializable>();
+        create.put("url", file.toURI().toURL());
+        ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
+        newDataStore.createSchema(tanksType);
+        Transaction transaction = new DefaultTransaction();
+        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
+                .getFeatureSource();
+        featureStore.setTransaction(transaction);
+        try {
+            featureStore.addFeatures(FeatureCollections.newCollection());
+            transaction.commit();
+        } catch (Exception problem) {
+            problem.printStackTrace();
+            transaction.rollback();
+        } finally {
+            transaction.close();
+        }
+    }
+
+    /**
+     * Build the shapefile.
+     * 
+     * @param types the geometry type.
+     * @param baseFolder the folder where to put the file.
+     * @param mapCrs the name of the crs.
+     * @param pShapeFileName 
+     * @param networkFC 
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public static void makeLineStringShp( ITrentoPType[] types, File baseFolder, CoordinateReferenceSystem mapCrs, String pShapeFileName, SimpleFeatureCollection networkFC )
+            throws MalformedURLException, IOException {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        String typeName = types[0].getName();
+        b.setName(typeName);
+        b.setCRS(mapCrs);
+        b.add("the_geom", LineString.class);
+        for( ITrentoPType type : types ) {
+            b.add(type.getAttributeName(), type.getClazz());
+        }
+        SimpleFeatureType tanksType = b.buildFeatureType();
+        ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
+        File file = new File(baseFolder, pShapeFileName);
+        Map<String, Serializable> create = new HashMap<String, Serializable>();
+        create.put("url", file.toURI().toURL());
+        ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
+        newDataStore.createSchema(tanksType);
+        Transaction transaction = new DefaultTransaction();
+        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
+                .getFeatureSource();
+        featureStore.setTransaction(transaction);
+        try {
+            if(networkFC==null){
+            featureStore.addFeatures(FeatureCollections.newCollection());
+            }else{
+                featureStore.addFeatures(networkFC);
+
+            }
+            transaction.commit();
+        } catch (Exception problem) {
+            problem.printStackTrace();
+            transaction.rollback();
+        } finally {
+            transaction.close();
+        }
+    }
 }

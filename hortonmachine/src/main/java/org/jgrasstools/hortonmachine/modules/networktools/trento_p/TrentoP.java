@@ -65,6 +65,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkCa
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -203,11 +204,11 @@ public class TrentoP {
 
     @Description("Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).")
     @In
-    public short pAlign;
+    public Integer pAlign;
 
     @Description("Matrix which contains the commercial diameters of the pipes.")
     @In
-    public double[][] inDiameters;
+    public List<double[]> inDiameters;
 
     @Description("The outlet, the last pipe of the network,.")
     @Unit("-")
@@ -343,6 +344,7 @@ public class TrentoP {
             // initialize the NetworkCalibration.
             network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
+            network.geoSewer();
 
         } else {
             // set other common parameters for the project.
@@ -367,14 +369,16 @@ public class TrentoP {
             pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
             // initialize the NetworkCalibration.
 
-            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes, outPipes,
+            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
                     strBuilder);
             network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
                     .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
+            network.geoSewer();
+            outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
+        
         }
 
         // elaborate.
-        network.geoSewer();
 
         String w = strBuilder.toString();
         if (!w.equals(warnings)) {
@@ -524,13 +528,7 @@ public class TrentoP {
 
                 throw new IllegalArgumentException();
             }
-        } else {
-
-            if (inRain == null) {
-                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
-                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
-            }
-
+            
             /*
              * Il passo temporale con cui valutare le portate non puo' essere
              * inferiore a 0.015 [min]
@@ -557,6 +555,14 @@ public class TrentoP {
                 pm.errorMessage(msg.message("trentoP.error.tpmax"));
                 throw new IllegalArgumentException();
             }
+        } else {
+
+            if (inRain == null) {
+                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
+                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
+            }
+
+     
             // verificy if the field exist.
 
             verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName()));

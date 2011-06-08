@@ -7,8 +7,8 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
     MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX), 30.0,
             null); //
 
-    private final static String PROJECT_TIME_PAGE_NAME = "Calibration optional parameters";//$NON-NLS-1$
-    private final static String PROJECT_TIME_PAGE_TITLE = "Optional parameters in calibration mode";//$NON-NLS-1$
+    private final static String PROJECT_TIME_PAGE_NAME = "Time project  parameters";//$NON-NLS-1$
+    private final static String PROJECT_TIME_PAGE_TITLE = "time parameters in calibration mode";//$NON-NLS-1$
     private final static String PROJECT_TIME_PAGE_DESCRIPTION = "This field could not be setted to calibrate";//$NON-NLS-1$
 
     private int code;
