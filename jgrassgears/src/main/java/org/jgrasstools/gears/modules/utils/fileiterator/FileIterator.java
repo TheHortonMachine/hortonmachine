@@ -131,4 +131,18 @@ public class FileIterator extends JGTModel {
 
     }
 
+    /**
+     * Utility to add to all found files in a given folder the prj file following the supplied epsg.
+     * 
+     * @param folder the folder to browse.
+     * @param epsg the epsg from which to take the prj.
+     * @throws Exception
+     */
+    public static void addPrj( String folder, String epsg ) throws Exception {
+        FileIterator fiter = new FileIterator();
+        fiter.inFolder = folder;
+        fiter.pCode = epsg;
+        fiter.process();
+    }
+
 }
