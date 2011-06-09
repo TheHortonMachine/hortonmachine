@@ -1,32 +1,30 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.gears.utils;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.JTS;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.opengis.geometry.DirectPosition;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -37,22 +35,23 @@ public class CrsUtilities {
     /**
      * Fill the prj file with the actual map projection.
      * 
-     * @param shapePath the path to the regarding shapefile
-     * @throws IOException 
+     * @param filePath the path to the regarding data or prj file.
+     * @param extention the extention of the data file. If <code>null</code>, the crs is written to filePath directly.
+     * @param crs the {@link CoordinateReferenceSystem} to write.
+     * @throws IOException
      */
     @SuppressWarnings("nls")
-    public static void writeProjectionFile( String shapePath, CoordinateReferenceSystem crs ) throws IOException {
+    public static void writeProjectionFile( String filePath, String extention, CoordinateReferenceSystem crs ) throws IOException {
         /*
          * fill a prj file
          */
         String prjPath = null;
-        if (shapePath.toLowerCase().endsWith(".shp")) {
-            int dotLoc = shapePath.lastIndexOf(".");
-            prjPath = shapePath.substring(0, dotLoc);
+        if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
+            int dotLoc = filePath.lastIndexOf(".");
+            prjPath = filePath.substring(0, dotLoc);
             prjPath = prjPath + ".prj";
         } else {
-
-            prjPath = shapePath + ".prj";
+            prjPath = filePath + ".prj";
         }
 
         BufferedWriter bufferedWriter = null;
@@ -62,7 +61,33 @@ public class CrsUtilities {
         } finally {
             bufferedWriter.close();
         }
+    }
 
+    /**
+     * Reads a {@link CoordinateReferenceSystem} from a prj file.
+     * 
+     * @param filePath the path to the regarding data or prj file.
+     * @param extention the extention of the data file. If <code>null</code>, the crs is written to filePath directly.
+     * @return the read {@link CoordinateReferenceSystem}. 
+     * @throws Exception
+     */
+    @SuppressWarnings("nls")
+    public static CoordinateReferenceSystem readProjectionFile( String filePath, String extention ) throws Exception {
+        /*
+         * fill a prj file
+         */
+        String prjPath = null;
+        if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
+            int dotLoc = filePath.lastIndexOf(".");
+            prjPath = filePath.substring(0, dotLoc);
+            prjPath = prjPath + ".prj";
+        } else {
+            prjPath = filePath + ".prj";
+        }
+
+        String wkt = FileUtilities.readFile(new File(prjPath));
+        CoordinateReferenceSystem crs = CRS.parseWKT(wkt);
+        return crs;
     }
 
     /**
