@@ -73,20 +73,25 @@ public class CrsUtilities {
      */
     @SuppressWarnings("nls")
     public static CoordinateReferenceSystem readProjectionFile( String filePath, String extention ) throws Exception {
-        /*
-         * fill a prj file
-         */
-        String prjPath = null;
-        if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
-            int dotLoc = filePath.lastIndexOf(".");
-            prjPath = filePath.substring(0, dotLoc);
-            prjPath = prjPath + ".prj";
-        } else {
-            prjPath = filePath + ".prj";
-        }
+        CoordinateReferenceSystem crs = null;
+        try {
+            /*
+             * fill a prj file
+             */
+            String prjPath = null;
+            if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
+                int dotLoc = filePath.lastIndexOf(".");
+                prjPath = filePath.substring(0, dotLoc);
+                prjPath = prjPath + ".prj";
+            } else {
+                prjPath = filePath + ".prj";
+            }
 
-        String wkt = FileUtilities.readFile(new File(prjPath));
-        CoordinateReferenceSystem crs = CRS.parseWKT(wkt);
+            String wkt = FileUtilities.readFile(new File(prjPath));
+            crs = CRS.parseWKT(wkt);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return crs;
     }
 
