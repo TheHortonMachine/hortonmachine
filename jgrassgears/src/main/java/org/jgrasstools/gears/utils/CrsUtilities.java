@@ -24,6 +24,7 @@ import java.io.IOException;
 
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -74,20 +75,24 @@ public class CrsUtilities {
     @SuppressWarnings("nls")
     public static CoordinateReferenceSystem readProjectionFile( String filePath, String extention ) throws Exception {
         CoordinateReferenceSystem crs = null;
-        try {
-            /*
-             * fill a prj file
-             */
-            String prjPath = null;
-            if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
-                int dotLoc = filePath.lastIndexOf(".");
-                prjPath = filePath.substring(0, dotLoc);
-                prjPath = prjPath + ".prj";
-            } else {
-                prjPath = filePath + ".prj";
-            }
+        /*
+         * fill a prj file
+         */
+        String prjPath = null;
+        if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
+            int dotLoc = filePath.lastIndexOf(".");
+            prjPath = filePath.substring(0, dotLoc);
+            prjPath = prjPath + ".prj";
+        } else {
+            prjPath = filePath + ".prj";
+        }
 
-            String wkt = FileUtilities.readFile(new File(prjPath));
+        File prjFile = new File(prjPath);
+        if (!prjFile.exists()) {
+            throw new ModelsIOException("The prj file doesn't exist: " + prjPath, "CRSUTILITIES");
+        }
+        try {
+            String wkt = FileUtilities.readFile(prjFile);
             crs = CRS.parseWKT(wkt);
         } catch (Exception e) {
             e.printStackTrace();
