@@ -3,6 +3,7 @@ package org.jgrasstools.gears;
 import static java.lang.Math.abs;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.fEq;
+import static org.jgrasstools.gears.utils.math.NumericsUtilities.isBetween;
 
 import org.jgrasstools.gears.utils.HMTestCase;
 
@@ -55,6 +56,12 @@ public class TestNumericUtilities extends HMTestCase {
         a = 0.3 - 0.2 - 0.1;
         b = 0.0;
         assertTrue(dEq(a, b));
+
+        a = 1.0;
+        double[] ranges = {0.0, 1.0, -3.5, 6.7};
+        assertTrue(isBetween(a, ranges));
+        ranges = new double[]{0.0, 1.0, -3.5, 6.7, 1.2, 2.0};
+        assertFalse(isBetween(a, ranges));
 
     }
 }

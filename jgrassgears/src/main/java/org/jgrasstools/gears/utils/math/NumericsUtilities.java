@@ -222,4 +222,30 @@ public class NumericsUtilities {
         return sqrt(pow(d1, 2.0) + pow(d2, 2.0));
     }
 
+    /**
+     * Check if value is inside a ND interval (bounds included).
+     * 
+     * @param value the value to check.
+     * @param ranges the bounds (low1, high1, low2, high2, ...)
+     * @return <code>true</code> if value lies inside the interval.
+     */
+    public static boolean isBetween( double value, double... ranges ) {
+        boolean even = true;
+        for( int i = 0; i < ranges.length; i++ ) {
+            if (even) {
+                // lower bound
+                if (value < ranges[i]) {
+                    return false;
+                }
+            } else {
+                // higher bound
+                if (value > ranges[i]) {
+                    return false;
+                }
+            }
+            even = !even;
+        }
+        return true;
+    }
+
 }
