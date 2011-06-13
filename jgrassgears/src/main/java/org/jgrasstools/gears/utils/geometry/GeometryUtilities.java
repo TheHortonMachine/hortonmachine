@@ -24,13 +24,7 @@ import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import jaitools.numeric.ArrayUtils;
-
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.geotools.referencing.GeodeticCalculator;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.type.GeometryType;
 
@@ -325,15 +319,22 @@ public class GeometryUtilities {
      * 
      * @param c1 coordinate 1.
      * @param c2 coordinate 2.
+     * @param geodeticCalculator If supplied it will be used for planar distance calculation.
      * @return the distance considering also elevation.
      */
-    public static double distance3d( Coordinate c1, Coordinate c2 ) {
+    public static double distance3d( Coordinate c1, Coordinate c2, GeodeticCalculator geodeticCalculator ) {
         if (Double.isNaN(c1.z) || Double.isNaN(c2.z)) {
             throw new IllegalArgumentException("Missing elevation information in the supplied coordinates.");
         }
-
-        double projectedDistance = c1.distance(c2);
         double deltaElev = Math.abs(c1.z - c2.z);
+        double projectedDistance;
+        if (geodeticCalculator != null) {
+            geodeticCalculator.setStartingGeographicPoint(c1.x, c1.y);
+            geodeticCalculator.setDestinationGeographicPoint(c2.x, c2.y);
+            projectedDistance = geodeticCalculator.getOrthodromicDistance();
+        } else {
+            projectedDistance = c1.distance(c2);
+        }
 
         double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
         return distance;
