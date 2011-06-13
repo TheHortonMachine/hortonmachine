@@ -108,6 +108,7 @@ public class PointsRasterizer extends JGTModel {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         List<FeatureMate> matesList = FeatureUtilities.featureCollectionToMatesList(inVector);
+        pm.beginTask("Rasterizing points...", matesList.size());
         for( FeatureMate featureMate : matesList ) {
             Geometry geometry = featureMate.getGeometry();
 
@@ -123,7 +124,9 @@ public class PointsRasterizer extends JGTModel {
                 GridCoordinates2D onGrid = inGrid.worldToGrid(new DirectPosition2D(coordinate.x, coordinate.y));
                 outIter.setSample(onGrid.x, onGrid.y, 0, cat);
             }
+            pm.worked(1);
         }
+        pm.done();
 
         outRaster = CoverageUtilities.buildCoverage("pointsraster", outWR, regionMap, inVector.getSchema()
                 .getCoordinateReferenceSystem());
