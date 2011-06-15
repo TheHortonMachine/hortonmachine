@@ -1,27 +1,62 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.*;
+/**
+ * Optional parameters used to TrentoP in calibration mode.
+ * <p>
+ * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
+ * </p>
+ * 
+ * @author Daniele Andreis
+ *
+ */
 
-public enum CalibrationOptionalParameterCodes implements IParametersCode{
-    JMAX(0, "Max bisection number", "[-]", Integer.toString(Constants.DEFAULT_J_MAX),JMAX_RANGE[0],JMAX_RANGE[1]), //
-    EPS(1, "Accuracy", "[-]", Double.toString(Constants.DEFAULT_ACCURACY),EPS_RANGE[0],EPS_RANGE[1]), //
-    MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", Double.toString(Constants.DEFAULT_MAX_THETA),THETA_RANGE[0],THETA_RANGE[1]), //
-    CELERITY_FACTOR(3, "Celerity factor", "[-]", Double.toString(DEFAULT_CELERITY_FACTOR),CELERITY_RANGE[0],CELERITY_RANGE[1]),// //$NON-NLS-1$
-    TOLERANCE(4, "tollerance", "[-]", Double.toString(Constants.DEFAULT_TOLERANCE),TOLERANCE_RANGE[0],TOLERANCE_RANGE[1]), //
-    GAMMA(5, "Exponent of the average ponderal slope", "[-]", Double.toString(Constants.DEFAULT_GAMMA),GAMMA_RANGE[0],GAMMA_RANGE[1]), //
-    INFLUX_EXP(6, "Exponent of the influx coefficent", "[-]", Double.toString(Constants.DEFAULT_ESP1),INFLUX_EXPONENT_RANGE[0],INFLUX_EXPONENT_RANGE[1]), //
-    EXPONENT(7, "Exponent of the basin extension", "[-]", Double.toString(Constants.DEFAULT_EXPONENT),EXPONENT_RANGE[0],EXPONENT_RANGE[1]); //
-  
-    private final static String  CALIBRATION_OPTIONAL_PAGE_NAME = "Calibration optional parameters";//$NON-NLS-1$
-    private final static String  CALIBRATION_OPTIONAL_PAGE_TITLE = "Optional parameters in calibration mode";//$NON-NLS-1$
-    private final static String  CALIBRATION_OPTIONAL_PAGE_DESCRIPTION = "This field could not be setted to calibrate";//$NON-NLS-1$
+public enum CalibrationOptionalParameterCodes implements IParametersCode {
+    JMAX(0, "Max bisection number", "It's used inside the program to solve some root equation [-]", Integer
+            .toString(DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
+    EPS(1, "Precision", "It's related to the discharge evalutation [-]", Double.toString(DEFAULT_ACCURACY), EPS_RANGE[0],
+            EPS_RANGE[1]), //
+    MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", Double.toString(DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //
+    CELERITY_FACTOR(3, "Celerity factor", "[-]", Double.toString(DEFAULT_CELERITY_FACTOR), CELERITY_RANGE[0], CELERITY_RANGE[1]), // //$NON-NLS-1$
+    TOLERANCE(4, "tollerance", "used to find the delay.[-]", Double.toString(DEFAULT_TOLERANCE), TOLERANCE_RANGE[0],
+            TOLERANCE_RANGE[1]), //
+    GAMMA(5, "Exponent of the average ponderal slope", "It's used to evaluate the mean time to avvess to the network, value between 0.2 and 0.5  [-]",
+            Double.toString(DEFAULT_GAMMA), GAMMA_RANGE[0], GAMMA_RANGE[1]), //
+    INFLUX_EXP(6, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", Double
+            .toString(DEFAULT_ESP1), INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
+    EXPONENT(7, "Exponent of the basin extension", "It's used to evaluate the mean time to avvess to the network, usually is 0.3 [-]", Double
+            .toString(DEFAULT_EXPONENT), EXPONENT_RANGE[0], EXPONENT_RANGE[1]); //
+
+    /**
+     * The name of the WizardPage.
+     */
+    private final static String CALIBRATION_OPTIONAL_PAGE_NAME = "calibrationOptionalParameters";//$NON-NLS-1$
+    /**
+     * An id associate to the value. 
+     */
     private int code;
+    /**
+     * The key (used as label in a GUI).
+     */
     private String key;
+    /**
+     * The description of the parameter (used as a tip in a gui)
+     */
     private String description;
+    /**
+     * The default value of this parameter.
+     */
     private final String defaultValue;
+    /**
+     * Minimum value that the parameter can be.
+     */
     private final Number minRange;
+    /**
+    * Maximum value that the parameter can be.
+    */
     private final Number maxRange;
-    
-    CalibrationOptionalParameterCodes( int code, String key, String description, String defaultValue, Number minRange, Number maxRange ) {
+
+    CalibrationOptionalParameterCodes( int code, String key, String description, String defaultValue, Number minRange,
+            Number maxRange ) {
         this.code = code;
         this.key = key;
         this.description = description;
@@ -84,15 +119,4 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode{
         return CALIBRATION_OPTIONAL_PAGE_NAME;
     }
 
-    @Override
-    public String getPageTitle() {
-        // TODO Auto-generated method stub
-        return CALIBRATION_OPTIONAL_PAGE_TITLE;
-    }
-
-    @Override
-    public String getPageDescription() {
-        // TODO Auto-generated method stub
-        return CALIBRATION_OPTIONAL_PAGE_DESCRIPTION;
-    }
 }

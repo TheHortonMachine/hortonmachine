@@ -1,24 +1,50 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
-
+/**
+ * Needed parameters used to TrentoP in project mode.
+ * <p>
+ * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
+ * </p>
+ * 
+ * @author Daniele Andreis
+ *
+ */
 public enum ProjectNeededParameterCodes implements IParametersCode {
-    ACCURACY(0, "Accuracy to use to calculate a solution", " ", null, null, null), //
-    A(1, "Coefficient of the pluviometric curve", " ", null, null, null), //
-    N(2, "Exponent of the pluviometric curve", " ", null, null, null), //
-    TAU(3, "Tangential bottom stress", " ", null, null, null), //
-    G(4, "Fill degree", " ", null, null, null), //
+    ACCURACY(0, "Accuracy", "Used to evaluate the result with bisection mode  ", null, new Double(0), null), //
+    A(1, "Coefficient of the pluviometric curve", " ", null, new Double(0), null), //
+    N(2, "Exponent of the pluviometric curve", " ", null, new Double(0), null), //
+    TAU(3, "Tangential bottom stress", " ", null, new Double(0), null), //
+    G(4, "Fill degree", " ", null, new Double(0), null), //
     ALIGN(5, "Align mode", " ", null, null, null);
 
+    /**
+     * An id associate to the value. 
+     */
     private int code;
+    /**
+     * The key (used as label in a GUI).
+     */
     private String key;
+    /**
+     * The description of the parameter (used as a tip in a gui)
+     */
     private String description;
+    /**
+     * The default value of this parameter.
+     */
     private final String defaultValue;
+    /**
+     * Minimum value that the parameter can be.
+     */
     private final Double minRange;
+    /**
+     * Maximum value that the parameter can be.
+     */
     private final Double maxRange;
-    
-    private final static String  PROJECT_NEEDED_PAGE_NAME = "project needed project parameters";//$NON-NLS-1$
-    private final static String  PROJECT_NEEDED_PAGE_TITLE = "needed parameters in project mode";//$NON-NLS-1$
-    private final static String  PROJECT_NEEDED_PAGE_DESCRIPTION = "This field have to be setted  to project";//$NON-NLS-1$
-    
+    /**
+     * The name of the WizardPage.
+     */
+    private final static String PROJECT_NEEDED_PAGE_NAME = "projectNeededParameters";//$NON-NLS-1$
+
     ProjectNeededParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
         this.code = code;
         this.key = key;
@@ -82,15 +108,4 @@ public enum ProjectNeededParameterCodes implements IParametersCode {
         return PROJECT_NEEDED_PAGE_NAME;
     }
 
-    @Override
-    public String getPageTitle() {
-        // TODO Auto-generated method stub
-        return PROJECT_NEEDED_PAGE_TITLE;
-    }
-
-    @Override
-    public String getPageDescription() {
-        // TODO Auto-generated method stub
-        return PROJECT_NEEDED_PAGE_DESCRIPTION;
-    }
 }

@@ -52,6 +52,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Range;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -87,7 +88,7 @@ public class TrentoP {
 
     @Description("The progress monitor.")
     @In
-    public final IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
     @Description("Minimum excavation depth")
     @Unit("m")
@@ -205,7 +206,8 @@ public class TrentoP {
     @Description("Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).")
     @In
     public Integer pAlign;
-
+    
+    @UI("infile")
     @Description("Matrix which contains the commercial diameters of the pipes.")
     @In
     public List<double[]> inDiameters;
@@ -217,7 +219,7 @@ public class TrentoP {
 
     @Description(" Use mode, 0=project, 1=verify.")
     @In
-    public short pTest;
+    public int pTest;
 
     @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
@@ -249,6 +251,7 @@ public class TrentoP {
 
     @Description("rain data.")
     @Role(Role.INPUT)
+    @UI("infile")
     @In
     public HashMap<DateTime, double[]> inRain = null;
 
@@ -260,11 +263,13 @@ public class TrentoP {
     @Out
     public SimpleFeatureCollection outPipes = null;
 
+    @UI("outfile")
     @Description("The output if pTest=1, contains the discharge for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, double[]> outDischarge;
 
+    @UI("outfile")
     @Description("The id of the pipes. It can be used to print the outDischarge")
     @Role(Role.OUTPUT)
     @Out

@@ -1,22 +1,48 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
-
+/**
+ * Time parameters used to TrentoP in project mode.
+ * <p>
+ * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
+ * </p>
+ * 
+ * @author Daniele Andreis
+ *
+ */
 public enum ProjectTimeParameterCodes implements IParametersCode {
-    STEP(0, "Time step", "Simulation duration [min]", Double.toString(Constants.DEFAULT_TDTP), 0.015, null), //
+    STEP(0, "Time step", "Simulation duration", Double.toString(Constants.DEFAULT_TDTP), 0.015, null), //
     MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMIN), 5.0,
             null), //
     MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX), 30.0,
             null); //
-
-    private final static String PROJECT_TIME_PAGE_NAME = "Time project  parameters";//$NON-NLS-1$
-    private final static String PROJECT_TIME_PAGE_TITLE = "time parameters in calibration mode";//$NON-NLS-1$
-    private final static String PROJECT_TIME_PAGE_DESCRIPTION = "This field could not be setted to calibrate";//$NON-NLS-1$
-
+    /**
+     * The name of the WizardPage.
+     */
+    private final static String PROJECT_TIME_PAGE_NAME = "timeProjectParameters";//$NON-NLS-1$
+    /**
+     * An id associate to the value. 
+     */
     private int code;
+    /**
+     * The key (used as label in a GUI).
+     */
     private String key;
+    /**
+     * The description of the parameter (used as a tip in a gui)
+     */
     private String description;
+    /**
+     * The default value of this parameter.
+     */
     private final String defaultValue;
+    /**
+     * Minimum value that the parameter can be.
+     */
     private final Double minRange;
+    /**
+     * Maximum value that the parameter can be.
+     */
     private final Double maxRange;
+    
     ProjectTimeParameterCodes( int code, String key, String description, String defaultValue, Double minRange, Double maxRange ) {
         this.code = code;
         this.key = key;
@@ -80,16 +106,6 @@ public enum ProjectTimeParameterCodes implements IParametersCode {
         return PROJECT_TIME_PAGE_NAME;
     }
 
-    @Override
-    public String getPageTitle() {
-        // TODO Auto-generated method stub
-        return PROJECT_TIME_PAGE_TITLE;
-    }
 
-    @Override
-    public String getPageDescription() {
-        // TODO Auto-generated method stub
-        return PROJECT_TIME_PAGE_DESCRIPTION;
-    }
 
 }

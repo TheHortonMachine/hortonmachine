@@ -1,17 +1,43 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
-
+/**
+ * Needed parameters used to TrentoP in calibration mode.
+ * <p>
+ * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
+ * </p>
+ * 
+ * @author Daniele Andreis
+ *
+ */
 public enum CalibrationNeededParameterCodes implements IParametersCode {
-    ACCURACY(0, "Accuracy to use to calculate a solution", " ", null, null, null);  //$NON-NLS-1$
-
+    ACCURACY(0, "Accuracy", "Used to evaluate the result with bisection mode ", null, new Double(0), null); //$NON-NLS-1$
+    /**
+     * An id associate to the value. 
+     */
     private int code;
+    /**
+     * The key (used as label in a GUI).
+     */
     private String key;
+    /**
+     * The description of the parameter (used as a tip in a gui)
+     */
     private String description;
+    /**
+     * The default value of this parameter.
+     */
     private final String defaultValue;
+    /**
+     * Minimum value that the parameter can be.
+     */
     private final Double minRange;
+    /**
+     * Maximum value that the parameter can be.
+     */
     private final Double maxRange;
-    private final static String  CALIBRATION_NEEDED_PAGE_NAME = "Calibration parameters";//$NON-NLS-1$
-    private final static String  CALIBRATION_NEEDED_PAGE_TITLE = "Mandatory parameters in calibration mode";//$NON-NLS-1$
-    private final static String  CALIBRATION_NEEDED_PAGE_DESCRIPTION = "This fields have to be setted to calibrate";//$NON-NLS-1$
+    /**
+     * The name of the WizardPage.
+     */
+    private final static String CALIBRATION_NEEDED_PAGE_NAME = "calibrationNeededParameters";//$NON-NLS-1$
 
     CalibrationNeededParameterCodes( int code, String key, String description, String defaultValue, Double minRange,
             Double maxRange ) {
@@ -72,20 +98,9 @@ public enum CalibrationNeededParameterCodes implements IParametersCode {
     }
 
     @Override
-    public  String getPageName() {
+    public String getPageName() {
         // TODO Auto-generated method stub
         return CALIBRATION_NEEDED_PAGE_NAME;
     }
 
-    @Override
-    public String getPageTitle() {
-        // TODO Auto-generated method stub
-        return CALIBRATION_NEEDED_PAGE_TITLE;
-    }
-
-    @Override
-    public String getPageDescription() {
-        // TODO Auto-generated method stub
-        return CALIBRATION_NEEDED_PAGE_DESCRIPTION;
-    }
 }
