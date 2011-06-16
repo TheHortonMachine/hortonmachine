@@ -68,6 +68,14 @@ public class WindowSampler extends JGTModel {
     @In
     public int pCols = 3;
 
+    @Description("The windows rows to use (default is = pCols).")
+    @In
+    public Integer pXstep;
+    
+    @Description("The window cols to use (default is = pRows).")
+    @In
+    public Integer pYstep;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -79,20 +87,30 @@ public class WindowSampler extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inGeodata);
-
+        
+        
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
 
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
+        int xstep = cols; 
+        int ystep = rows;
+        if (pXstep!=null) {
+            xstep = pXstep;
+        }
+        if (pYstep!=null) {
+            ystep = pYstep;
+        }
+
         // new rows and cols are all that have space rounding down
-        int newRows = (int) ceil((double) rows / (double) pRows);
-        int newCols = (int) ceil((double) cols / (double) pCols);
+        int newRows = (int) ceil((double) rows / (double) ystep);
+        int newCols = (int) ceil((double) cols / (double) xstep);
         WritableRaster outputWR = CoverageUtilities.createDoubleWritableRaster(newCols, newRows, null, null,
                 JGTConstants.doubleNovalue);
 
         WindowIterator iter = new WindowIterator(inGeodata.getRenderedImage(), null, new Dimension(pCols, pRows),
-                new Point(0, 0), pCols, pRows, JGTConstants.doubleNovalue);
+                new Point(0, 0), xstep, ystep, JGTConstants.doubleNovalue);
 
         for( int r = 0; r < newRows; r++ ) {
             for( int c = 0; c < newCols; c++ ) {
