@@ -227,9 +227,10 @@ public class ExtractNetwork extends JGTModel {
             }
             for( int i = 0; i < cols; i++ ) {
                 double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
+                double slopeValue = slopeRandomIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp);
-                    if (tcaValue * slopeRandomIter.getSampleDouble(i, j, 0) >= pThres) {
+                    if (tcaValue * slopeValue >= pThres) {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
                         flw[1] = j;
@@ -272,8 +273,9 @@ public class ExtractNetwork extends JGTModel {
             }
             for( int i = 0; i < cols; i++ ) {
                 double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
-                    tcaValue = pow(tcaValue, pExp) * slopeRandomIter.getSampleDouble(i, j, 0);
+                double slopeValue = slopeRandomIter.getSampleDouble(i, j, 0);
+                if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
+                    tcaValue = pow(tcaValue, pExp) * slopeValue;
                     if (tcaValue >= pThres && classRandomIter.getSample(i, j, 0) == 15.0) {
                         netRandomIter.setSample(i, j, 0, 2);
                         flw[0] = i;
