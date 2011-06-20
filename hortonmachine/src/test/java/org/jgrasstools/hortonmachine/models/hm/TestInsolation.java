@@ -33,8 +33,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestInsolation extends HMTestCase {
 
-    private final static String START_DATE = "2010-01-01";
-    private final static String END_DATE = "2010-01-02";
+    private final static String START_DATE = "2010-06-01";
+    private final static String END_DATE = "2010-06-02";
 
     public void testInsolation() throws Exception {
 

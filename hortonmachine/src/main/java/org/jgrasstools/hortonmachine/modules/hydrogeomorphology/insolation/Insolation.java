@@ -213,6 +213,7 @@ public class Insolation extends JGTModel {
         // Evaluate the radiation in this day.
         double ss = Math.acos(-Math.tan(delta) * Math.tan(lambda));
         double hour = -ss + (Math.PI / 48.0);
+        int k = 0;
         while( hour <= ss - (Math.PI / 48) ) {
             omega = hour;
             // calculating the vector related to the sun
@@ -220,7 +221,7 @@ public class Insolation extends JGTModel {
             double zenith = calcZenith(sunVector[2]);
             double[] inverseSunVector = calcInverseSunVector(sunVector);
             double[] normalSunVector = calcNormalSunVector(sunVector);
-
+            k++;
             int height = demWR.getHeight();
             int width = demWR.getWidth();
             WritableRaster sOmbraWR = calculateFactor(height, width, sunVector, inverseSunVector, normalSunVector, demWR, dx);
