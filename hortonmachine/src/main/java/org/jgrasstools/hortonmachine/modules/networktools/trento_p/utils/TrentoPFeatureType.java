@@ -169,8 +169,8 @@ public class TrentoPFeatureType {
      * The {@link Pipe} attributes and classes.
      */
     public static enum PipesTrentoP implements ITrentoPType {
-        ID(ID_STR, String.class), //
-        ID_PIPE_WHERE_DRAIN(ID_PIPE_WHERE_DRAIN_STR, String.class), //
+        ID(ID_STR, Integer.class), //
+        ID_PIPE_WHERE_DRAIN(ID_PIPE_WHERE_DRAIN_STR, Integer.class), //
         DRAIN_AREA(DRAIN_AREA_STR, Float.class), //
         INITIAL_ELEVATION(INITIAL_ELEVATION_STR, Float.class), //
         FINAL_ELEVATION(FINAL_ELEVATION_STR, Float.class), //
@@ -181,7 +181,6 @@ public class TrentoPFeatureType {
         PIPE_SECTION_TYPE(PIPE_SECTION_TYPE_STR, Integer.class), //
         AVERAGE_SLOPE(AVERAGE_SLOPE_STR, Float.class), //
         DIAMETER_TO_VERIFY(DIAMETER_TO_VERIFY_STR, Float.class), //
-        VERIFY_PIPE_SLOPE(VERIFY_PIPE_SLOPE_STR, Float.class), //
         DISCHARGE(DISCHARGE_STR, Float.class), //
         COEFF_UDOMETRICO(COEFF_UDOMETRICO_STR, Float.class), //
         RESIDENCE_TIME(RESIDENCE_TIME_STR, Float.class), //

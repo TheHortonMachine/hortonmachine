@@ -191,7 +191,7 @@ public class Utility {
                     builderFeature.add(line);
                     builderFeature.add(networkPipes[t].getId());
                     builderFeature.add(networkPipes[t].getIdPipeWhereDrain());
-                    builderFeature.add(networkPipes[t].getIdPipeWhereDrain());
+                    builderFeature.add(networkPipes[t].getDrainArea());
                     builderFeature.add(networkPipes[t].getInitialElevation());
                     builderFeature.add(networkPipes[t].getFinalElevation());
                     builderFeature.add(networkPipes[t].getRunoffCoefficient());
@@ -201,7 +201,6 @@ public class Utility {
                     builderFeature.add(networkPipes[t].getPipeSectionType());
                     builderFeature.add(networkPipes[t].getAverageSlope());
                     builderFeature.add(networkPipes[t].diameterToVerify);
-                    builderFeature.add(networkPipes[t].verifyPipeSlope);
                     builderFeature.add(networkPipes[t].discharge);
                     builderFeature.add(networkPipes[t].coeffUdometrico);
                     builderFeature.add(networkPipes[t].residenceTime);
@@ -286,33 +285,19 @@ public class Utility {
 
     }
 
-   public static void makePolygonShp( ITrentoPType[] values, File baseFolder, CoordinateReferenceSystem crs, String pAreaShapeFileName ) throws IOException {
+    public static void makePolygonShp( ITrentoPType[] values, File baseFolder, CoordinateReferenceSystem crs,
+            String pAreaShapeFileName ) throws IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        String typeName= values[0].getName();
+        String typeName = values[0].getName();
         b.setName(typeName);
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
-        b.add(PipesTrentoP.ID.getAttributeName(),PipesTrentoP.ID.getClazz() );
+        b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
         SimpleFeatureType tanksType = b.buildFeatureType();
-        ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
-        File file = new File(baseFolder, pAreaShapeFileName);
-        Map<String, Serializable> create = new HashMap<String, Serializable>();
-        create.put("url", file.toURI().toURL());
-        ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
-        newDataStore.createSchema(tanksType);
-        Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource();
-        featureStore.setTransaction(transaction);
-        try {
-            featureStore.addFeatures(FeatureCollections.newCollection());
-            transaction.commit();
-        } catch (Exception problem) {
-            problem.printStackTrace();
-            transaction.rollback();
-        } finally {
-            transaction.close();
-        }
+        
+        makeShp(tanksType, baseFolder, pAreaShapeFileName,null);
+
+        
     }
 
     /**
@@ -326,8 +311,8 @@ public class Utility {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static void makeLineStringShp( ITrentoPType[] types, File baseFolder, CoordinateReferenceSystem mapCrs, String pShapeFileName, SimpleFeatureCollection networkFC )
-            throws MalformedURLException, IOException {
+    public static void makeLineStringShp( ITrentoPType[] types, File baseFolder, CoordinateReferenceSystem mapCrs,
+            String pShapeFileName, SimpleFeatureCollection networkFC ) throws MalformedURLException, IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         String typeName = types[0].getName();
         b.setName(typeName);
@@ -337,20 +322,37 @@ public class Utility {
             b.add(type.getAttributeName(), type.getClazz());
         }
         SimpleFeatureType tanksType = b.buildFeatureType();
+        makeShp(tanksType, baseFolder, pShapeFileName, networkFC);
+    }
+
+    /**
+     * Build the shapefile.
+     * 
+     * @param types the geometry type.
+     * @param baseFolder the folder where to put the file.
+     * @param mapCrs the name of the crs.
+     * @param pShapeFileName 
+     * @param networkFC 
+     * @throws MalformedURLException
+     * @throws IOException
+     */
+    public static void makeShp( SimpleFeatureType type, File baseFolder, String pShapeFileName,
+            SimpleFeatureCollection networkFC ) throws MalformedURLException, IOException {
+
         ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
         File file = new File(baseFolder, pShapeFileName);
         Map<String, Serializable> create = new HashMap<String, Serializable>();
         create.put("url", file.toURI().toURL());
         ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
-        newDataStore.createSchema(tanksType);
+        newDataStore.createSchema(type);
         Transaction transaction = new DefaultTransaction();
         FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
                 .getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
-            if(networkFC==null){
-            featureStore.addFeatures(FeatureCollections.newCollection());
-            }else{
+            if (networkFC == null) {
+                featureStore.addFeatures(FeatureCollections.newCollection());
+            } else {
                 featureStore.addFeatures(networkFC);
 
             }
@@ -362,4 +364,5 @@ public class Utility {
             transaction.close();
         }
     }
+
 }

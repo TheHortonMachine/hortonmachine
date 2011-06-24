@@ -24,7 +24,8 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode {
     INFLUX_EXP(6, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", Double
             .toString(DEFAULT_ESP1), INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
     EXPONENT(7, "Exponent of the basin extension", "It's used to evaluate the mean time to avvess to the network, usually is 0.3 [-]", Double
-            .toString(DEFAULT_EXPONENT), EXPONENT_RANGE[0], EXPONENT_RANGE[1]); //
+            .toString(DEFAULT_EXPONENT), EXPONENT_RANGE[0], EXPONENT_RANGE[1]), //
+    ACCURACY(8, "Accuracy", "Used to evaluate the result with bisection mode ", null, new Double(0), null); //$NON-NLS-1$
 
     /**
      * The name of the WizardPage.

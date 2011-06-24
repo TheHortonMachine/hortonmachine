@@ -9,12 +9,11 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
  *
  */
 public enum ProjectNeededParameterCodes implements IParametersCode {
-    ACCURACY(0, "Accuracy", "Used to evaluate the result with bisection mode  ", null, new Double(0), null), //
-    A(1, "Coefficient of the pluviometric curve", " ", null, new Double(0), null), //
-    N(2, "Exponent of the pluviometric curve", " ", null, new Double(0), null), //
-    TAU(3, "Tangential bottom stress", " ", null, new Double(0), null), //
-    G(4, "Fill degree", " ", null, new Double(0), null), //
-    ALIGN(5, "Align mode", " ", null, null, null);
+    A(0, "Coefficient of the pluviometric curve", " ", null, new Double(0), null), //
+    N(1, "Exponent of the pluviometric curve", " ", null, new Double(0), null), //
+    TAU(2, "Tangential bottom stress", " ", null, new Double(0), null), //
+    G(3, "Fill degree", " ", null, new Double(0), null), //
+    ALIGN(4, "Align mode", " ", null, null, null);
 
     /**
      * An id associate to the value. 

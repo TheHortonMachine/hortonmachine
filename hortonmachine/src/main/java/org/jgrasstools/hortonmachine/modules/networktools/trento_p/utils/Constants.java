@@ -220,6 +220,26 @@ public class Constants {
     public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0),new Integer(6)};
     public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0),new Double(0.1)};
     public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0),null};
+    /**
+     * The name of the Layer with the network data.
+     */
+    public static final String NETWORK_PROJECT_NAME = "networkProject"; //$NON-NLS-1$
+    public static final String NETWORK_PROJECT_NAME_SHP = "networkProject.shp";
+    /**
+     * The name of the Layer with the network data.
+     */
+    public static final String NETWORK_CALIBRATION_NAME = "networkCalibration"; //$NON-NLS-1$   
+    public static final String NETWORK_CALIBRATION_NAME_SHP = "networkCalibration.shp"; //$NON-NLS-1$
+    /**
+     * The name of the Layer with the aree.
+     */
+    public static final String AREA_NAME = "area"; //$NON-NLS-1$   
+    public static final String AREA_NAME_SHP = "area.shp"; //$NON-NLS-1$
 
+    /**
+     * The name of the Layer with the network data.
+     */
+    public static final String NETWORK_OUT_NAME = "networkDiameters"; //$NON-NLS-1$
+   
 
 }

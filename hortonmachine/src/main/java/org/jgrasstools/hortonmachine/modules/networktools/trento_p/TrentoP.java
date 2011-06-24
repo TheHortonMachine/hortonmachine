@@ -19,6 +19,7 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ESP1;
@@ -111,7 +112,7 @@ public class TrentoP {
     @Unit("-")
     @Range(min = 0)
     @In
-    public Double pAccuracy;
+    public Double pAccuracy = DEFAULT_ACCURACY;
 
     @Description("Accuracy to use to calculate the discharge.")
     @Unit("-")
@@ -206,7 +207,7 @@ public class TrentoP {
     @Description("Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).")
     @In
     public Integer pAlign;
-    
+
     @UI("infile")
     @Description("Matrix which contains the commercial diameters of the pipes.")
     @In
@@ -380,7 +381,7 @@ public class TrentoP {
                     .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
             network.geoSewer();
             outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
-        
+
         }
 
         // elaborate.
@@ -470,19 +471,19 @@ public class TrentoP {
             throw new IllegalArgumentException();
         }
 
-        // verificy if the field exist.
+        // verify if the field exist.
         SimpleFeatureType schema = inPipes.getSchema();
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.ID.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DRAIN_AREA.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.FINAL_ELEVATION.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()));
         verifyFeatureKey(findAttributeName(schema, PipesTrentoP.KS.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()));;
         if (pTest == 0) {
+            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName()));
+            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()));
+            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()));
+            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()));;
 
             if (pA <= 0 || pA == null) {
                 pm.errorMessage(msg.message("trentoP.error.a"));
@@ -533,7 +534,7 @@ public class TrentoP {
 
                 throw new IllegalArgumentException();
             }
-            
+
             /*
              * Il passo temporale con cui valutare le portate non puo' essere
              * inferiore a 0.015 [min]
@@ -567,11 +568,9 @@ public class TrentoP {
                 throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
             }
 
-     
             // verificy if the field exist.
 
             verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName()));
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.VERIFY_PIPE_SLOPE.getAttributeName()));
 
         }
     }
