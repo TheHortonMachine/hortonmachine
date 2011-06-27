@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
-import jaitools.jts.LineSmoother;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +34,7 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
+import org.jaitools.jts.LineSmoother;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;

@@ -18,9 +18,10 @@
  */
 package org.jgrasstools.gears.modules.r.windowsampler;
 
-import static java.lang.Math.*;
+import static java.lang.Math.ceil;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import jaitools.imageutils.WindowIterator;
 
 import java.awt.Dimension;
 import java.awt.Point;
@@ -37,6 +38,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jaitools.imageutils.WindowIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;

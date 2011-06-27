@@ -17,15 +17,6 @@
  */
 package org.jgrasstools.gears.modules.r.mapcalc;
 
-import jaitools.imageutils.ImageUtils;
-import jaitools.jiffle.Jiffle;
-import jaitools.jiffle.runtime.AffineCoordinateTransform;
-import jaitools.jiffle.runtime.CoordinateTransform;
-import jaitools.jiffle.runtime.JiffleDirectRuntime;
-import jaitools.jiffle.runtime.JiffleExecutor;
-import jaitools.jiffle.runtime.JiffleExecutorResult;
-import jaitools.jiffle.runtime.JiffleProgressListener;
-
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -34,8 +25,6 @@ import java.awt.image.WritableRenderedImage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -51,6 +40,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jaitools.imageutils.ImageUtils;
+import org.jaitools.jiffle.Jiffle;
+import org.jaitools.jiffle.runtime.AffineCoordinateTransform;
+import org.jaitools.jiffle.runtime.CoordinateTransform;
+import org.jaitools.jiffle.runtime.JiffleDirectRuntime;
+import org.jaitools.jiffle.runtime.JiffleExecutor;
+import org.jaitools.jiffle.runtime.JiffleExecutorResult;
+import org.jaitools.jiffle.runtime.JiffleProgressListener;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;

@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.gears.modules.v.vectorize;
 
-import jaitools.media.jai.vectorize.VectorizeDescriptor;
-
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.util.Collection;
@@ -47,6 +45,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;

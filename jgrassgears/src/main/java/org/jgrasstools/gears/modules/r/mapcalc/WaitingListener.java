@@ -20,14 +20,14 @@
 
 package org.jgrasstools.gears.modules.r.mapcalc;
 
-import jaitools.CollectionFactory;
-import jaitools.jiffle.runtime.JiffleEvent;
-import jaitools.jiffle.runtime.JiffleEventListener;
-import jaitools.jiffle.runtime.JiffleExecutorResult;
-
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.jaitools.CollectionFactory;
+import org.jaitools.jiffle.runtime.JiffleEvent;
+import org.jaitools.jiffle.runtime.JiffleEventListener;
+import org.jaitools.jiffle.runtime.JiffleExecutorResult;
 
 
 /**
