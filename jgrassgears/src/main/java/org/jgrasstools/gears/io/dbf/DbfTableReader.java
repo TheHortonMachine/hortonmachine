@@ -87,6 +87,8 @@ public class DbfTableReader extends JGTModel {
                     list.add(field);
                 }
             }
+        }catch (Exception e) {
+            e.printStackTrace();
         } finally {
             dbfReader.close();
             fis.close();
