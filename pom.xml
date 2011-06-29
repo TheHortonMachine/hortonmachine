@@ -6,8 +6,8 @@
     <properties>
 		<gt.version>2.7.1</gt.version>
 		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
-		<jaitools.version>2.0-SNAPSHOT</jaitools.version>
-		<jiffle.version>0.1.0</jiffle.version>
+		<jaitools.version>1.2.0</jaitools.version>
+		<jiffle.version>0.2.0</jiffle.version>
 		<performRelease>false</performRelease>
 	</properties>
 
@@ -116,7 +116,7 @@
 		</dependency>
 		
         <dependency>
-            <groupId>org.scannotation</groupId>
+            <groupId>net.sf.scannotation</groupId>
             <artifactId>scannotation</artifactId>
             <version>1.0.2</version>
         </dependency>
@@ -209,12 +209,12 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.googlecode.jaitools</groupId>
+			<groupId>org.jaitools</groupId>
 			<artifactId>jt-all</artifactId>
 			<version>${jaitools.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.googlecode.jaitools</groupId>
+			<groupId>org.jaitools</groupId>
 			<artifactId>jt-jiffle-language</artifactId>
 			<version>${jiffle.version}</version>
 		</dependency>

@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.gears.modules.v.contoursextractor;
 
-import jaitools.media.jai.contour.ContourDescriptor;
-
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,6 +43,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jaitools.media.jai.contour.ContourDescriptor;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;

@@ -17,9 +17,6 @@
  */
 package org.jgrasstools.gears.modules.r.rangelookup;
 
-import jaitools.media.jai.rangelookup.RangeLookupTable;
-import jaitools.numeric.Range;
-
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
@@ -39,6 +36,8 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jaitools.media.jai.rangelookup.RangeLookupTable;
+import org.jaitools.numeric.Range;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;

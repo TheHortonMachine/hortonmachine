@@ -156,7 +156,8 @@ public class FlowDirections extends JGTModel {
             }
         }
 
-        outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap, inPit.getCoordinateReferenceSystem(), true);
+        outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
+                inPit.getCoordinateReferenceSystem(), true);
     }
 
     /**
@@ -182,16 +183,23 @@ public class FlowDirections extends JGTModel {
         }
         pm.message(msg.message("flow.initpointers"));
         /* initialize internal pointers */
-        for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
+        for( int col = (i2 + 1); col < (n2 - 1); col++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
-                if (elevations[j][i] <= FLOWNOVALUE) {
-                    dir[j][i] = -1;
+            for( int row = (i1 + 1); row < (n1 - 1); row++ ) {
+
+                if (doesntTouchNovalue(col, row)) {
+                    dir[row][col] = 0;
                 } else {
-                    dir[j][i] = 0;
+                    dir[row][col] = -1;
                 }
+
+                // if (elevations[row][col] <= FLOWNOVALUE) {
+                // dir[row][col] = -1;
+                // } else {
+                // dir[row][col] = 0;
+                // }
             }
         }
 
@@ -300,7 +308,25 @@ public class FlowDirections extends JGTModel {
         }
     }
 
-    private void flatrout( int n, int[] sloc, int[] s, int[][] spos, int iter, double[] elev1, double[] elev2, double[] fact, int ns ) {
+    private boolean doesntTouchNovalue( int col, int row ) {
+        int rows = elevations.length;
+        int cols = elevations[0].length;
+        for( int i = -1; i <= 1; i++ ) {
+            for( int j = -1; j <= 1; j++ ) {
+                int r = row + i;
+                int c = col + j;
+                if (r >= 0 && r < rows && c >= 0 && c < cols) {
+                    if (elevations[r][c] <= FLOWNOVALUE) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private void flatrout( int n, int[] sloc, int[] s, int[][] spos, int iter, double[] elev1, double[] elev2, double[] fact,
+            int ns ) {
         int nu, ipp;
         int[] sloc2;
         double[] elev3;
