@@ -160,13 +160,7 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
                         throw new IllegalArgumentException();
                     }
                     builder.add(field);
-                    // add the ID where this pipe drain.
-                    field = ((Integer) networkFeature.getAttribute(TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR));
-                    if (field == null) {
 
-                        throw new IllegalArgumentException();
-                    }
-                    builder.add(field);
                     // add the area.
                     Double value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.DRAIN_AREA_STR));
                     if (value == null) {
@@ -177,14 +171,12 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
 
                     // the pipes elevation is the elevation of the
                     // terrain minus the depth.
-                    value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.INITIAL_ELEVATION_STR))
-                            + ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_INITIAL_PIPE_STR));
+                    value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_INITIAL_PIPE_STR));
 
                     builder.add(value);
                     // the pipes elevation is the elevation of the
                     // terrain minus the depth.
-                    value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.FINAL_ELEVATION_STR))
-                            + ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_FINAL_PIPE_STR));
+                    value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_FINAL_PIPE_STR));
 
                     builder.add(value);
                     // add the runoff coefficent.
@@ -236,15 +228,14 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         b.setCRS(crs);
         b.add("the_geom", LineString.class);
         b.add(values[0].getAttributeName(), values[0].getClazz());
-        b.add(values[1].getAttributeName(), values[1].getClazz());
-        b.add(values[2].getAttributeName(), values[2].getClazz());
-        b.add(values[3].getAttributeName(), values[3].getClazz());
-        b.add(values[4].getAttributeName(), values[4].getClazz());
-        b.add(values[5].getAttributeName(), values[5].getClazz());
-        b.add(values[6].getAttributeName(), values[6].getClazz());
-        b.add(values[7].getAttributeName(), values[7].getClazz());
-        b.add(values[10].getAttributeName(), values[10].getClazz());
-        b.add(values[11].getAttributeName(), values[11].getClazz());
+        b.add(values[2].getAttributeName(), values[1].getClazz());
+        b.add(values[3].getAttributeName(), values[2].getClazz());
+        b.add(values[4].getAttributeName(), values[3].getClazz());
+        b.add(values[5].getAttributeName(), values[4].getClazz());
+        b.add(values[6].getAttributeName(), values[5].getClazz());
+        b.add(values[7].getAttributeName(), values[6].getClazz());
+        b.add(values[10].getAttributeName(), values[7].getClazz());
+        b.add(values[11].getAttributeName(), values[10].getClazz());
         return b.buildFeatureType();
     }
     /**
@@ -261,16 +252,15 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         b.setCRS(crs);
         b.add("the_geom", LineString.class);
         b.add(values[0].getAttributeName(), values[0].getClazz());
-        b.add(values[1].getAttributeName(), values[1].getClazz());
-        b.add(values[2].getAttributeName(), values[2].getClazz());
-        b.add(values[3].getAttributeName(), values[3].getClazz());
-        b.add(values[4].getAttributeName(), values[4].getClazz());
-        b.add(values[5].getAttributeName(), values[5].getClazz());
-        b.add(values[6].getAttributeName(), values[6].getClazz());
-        b.add(values[7].getAttributeName(), values[7].getClazz());
-        b.add(values[8].getAttributeName(), values[8].getClazz());
-        b.add(values[9].getAttributeName(), values[9].getClazz());
-        b.add(values[10].getAttributeName(), values[10].getClazz());
+        b.add(values[2].getAttributeName(), values[1].getClazz());
+        b.add(values[3].getAttributeName(), values[2].getClazz());
+        b.add(values[4].getAttributeName(), values[3].getClazz());
+        b.add(values[5].getAttributeName(), values[4].getClazz());
+        b.add(values[6].getAttributeName(), values[5].getClazz());
+        b.add(values[7].getAttributeName(), values[6].getClazz());
+        b.add(values[8].getAttributeName(), values[7].getClazz());
+        b.add(values[9].getAttributeName(), values[8].getClazz());
+        b.add(values[10].getAttributeName(), values[9].getClazz());
         return b.buildFeatureType();
     }
 }

@@ -404,9 +404,9 @@ public class TestTrentoP extends HMTestCase {
         checkMatrixEqual(result, HMTestMapstrentoP.projectTrentoP2, TOLL);
 
     }
-    private double[][] hashToMatrix( HashMap<DateTime, double[]> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
+    private double[][] hashToMatrix( HashMap<DateTime, HashMap<Integer, double[]>> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
         // create the rains array from the input.
-        Set<Entry<DateTime, double[]>> dischargeSet = outDischarge.entrySet();
+        Set<Entry<DateTime, HashMap<Integer, double[]>>> dischargeSet = outDischarge.entrySet();
         DateTime first = null;
         DateTime second = null;
         int l = outDischarge.size();
@@ -414,28 +414,39 @@ public class TestTrentoP extends HMTestCase {
         double[][] rainData = new double[l][nStation + 1];
         int index = 0;
         int dt = 0;
-        for( Entry<DateTime, double[]> dischargeRecord : dischargeSet ) {
+        int n = outDischarge.size()-1;
+        for( Entry<DateTime, HashMap<Integer, double[]>> dischargeRecord : dischargeSet ) {
+            
             DateTime dateTime = dischargeRecord.getKey();
-            double[] values = dischargeRecord.getValue();
+            HashMap<Integer, double[]> values = dischargeRecord.getValue();
             if (first == null) {
                 first = dateTime;
                 rainData[index][0] = 1;
-
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
+                 Set<Integer> tmp = values.keySet();
+                 int i = 0;
+                 for(Integer f : tmp ) {
+                    rainData[index][i + 1] = values.get(f)[0];
+                    i++;
                 }
 
             } else if (second == null) {
                 second = dateTime;
                 dt = Math.abs(second.getMinuteOfDay() - first.getMinuteOfDay());
                 rainData[index][0] = rainData[index - 1][0] + dt;
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
-                }
+                Set<Integer> tmp = values.keySet();
+                int i = 0;
+                for(Integer f : tmp ) {
+                   rainData[index][i + 1] = values.get(f)[0];
+                   i++;
+               }
+     
             } else {
                 rainData[index][0] = rainData[index - 1][0] + dt;
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
+                int i = 0;
+                Set<Integer> tmp = values.keySet();
+                for(Integer f : tmp ) {
+                    rainData[index][i + 1] = values.get(f)[0];
+                    i++;
                 }
             }
             index++;

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
-
+import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,7 +30,6 @@ import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -57,8 +56,6 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 
 public class Utility {
-
-    static final String USER_DIR_KEY = "user.dir";
 
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -294,10 +291,9 @@ public class Utility {
         b.add("the_geom", Polygon.class);
         b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
         SimpleFeatureType tanksType = b.buildFeatureType();
-        
-        makeShp(tanksType, baseFolder, pAreaShapeFileName,null);
 
-        
+        makeShp(tanksType, baseFolder, pAreaShapeFileName, null);
+
     }
 
     /**
@@ -336,8 +332,8 @@ public class Utility {
      * @throws MalformedURLException
      * @throws IOException
      */
-    public static void makeShp( SimpleFeatureType type, File baseFolder, String pShapeFileName,
-            SimpleFeatureCollection networkFC ) throws MalformedURLException, IOException {
+    public static void makeShp( SimpleFeatureType type, File baseFolder, String pShapeFileName, SimpleFeatureCollection networkFC )
+            throws MalformedURLException, IOException {
 
         ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
         File file = new File(baseFolder, pShapeFileName);
@@ -363,6 +359,85 @@ public class Utility {
         } finally {
             transaction.close();
         }
+    }
+
+    /**
+     * Verify the schema.
+     * 
+     * <p>
+     * Verify if the FeatureCollection contains all the needed fields.
+     * </p>
+     * @param schema is yhe type for the calibration mode.
+     * @param pm
+     */
+    public static void verifyCalibrationType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
+        String searchedField = PipesTrentoP.ID.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.INITIAL_ELEVATION.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.FINAL_ELEVATION.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.KS.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.AVERAGE_SLOPE.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+    }
+
+    /**
+     * Verify the schema.
+     * 
+     * <p>
+     * Verify if the FeatureCollection contains all the needed fields.
+     * </p>
+     * @param schema is yhe type for the project mode.
+     * @param pm
+     */
+    public static void verifyProjectType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
+        String searchedField = PipesTrentoP.ID.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.INITIAL_ELEVATION.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.FINAL_ELEVATION.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.KS.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.AVERAGE_SLOPE.getAttributeName();
+        verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+    }
+
+    /**
+     * Verify if there is a key of a FeatureCollections.
+     * 
+     * @param key
+     * @throws IllegalArgumentException
+     *             if the key is null.
+     */
+    private static void verifyFeatureKey( String key, String searchedField, IJGTProgressMonitor pm ) {
+        if (key == null) {
+            if (pm != null) {
+                pm.errorMessage(msg.message("trentoP.error.featureKey") + searchedField);
+            }
+            throw new IllegalArgumentException(msg.message("trentoP.error.featureKey") + searchedField);
+        }
+
     }
 
 }

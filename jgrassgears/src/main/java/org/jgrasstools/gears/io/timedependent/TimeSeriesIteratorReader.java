@@ -122,12 +122,30 @@ public class TimeSeriesIteratorReader extends JGTModel {
     public void initProcess() {
         // activate time
         doProcess = true;
-    }
 
+    }
     private void ensureOpen() throws IOException {
         if (table == null) {
             table = DataIO.table(new File(file), null);
             rowsIterator = (TableIterator<String[]>) table.rows().iterator();
+            // if the reader read all the file, nb time step constant
+            if (tStart == null) {
+                String secondTime = null;
+                if (rowsIterator.hasNext()) {
+                    String[] row = rowsIterator.next();
+                    tStart = row[1];
+                }
+                if (rowsIterator.hasNext()) {
+                    String[] row = rowsIterator.next();
+                    secondTime = row[1];
+                }
+
+                tTimestep = formatter.parseDateTime(secondTime).getMinuteOfDay()
+                        - formatter.parseDateTime(tStart).getMinuteOfDay();
+                rowsIterator.close();
+                rowsIterator = (TableIterator<String[]>) table.rows().iterator();
+            }
+
         }
     }
 
@@ -139,6 +157,7 @@ public class TimeSeriesIteratorReader extends JGTModel {
             tCurrent = tStart.trim();
             expectedTimestamp = formatter.parseDateTime(tCurrent);
         } else {
+
             tPrevious = tCurrent;
             expectedTimestamp = expectedTimestamp.plusMinutes(tTimestep);
             tCurrent = expectedTimestamp.toString(formatter);
@@ -165,7 +184,7 @@ public class TimeSeriesIteratorReader extends JGTModel {
                         count = 1;
                     }
                 }
-                if (i==columnCount) {
+                if (i == columnCount) {
                     idCountList.add(count);
                 }
                 previousIdInteger = idInteger;

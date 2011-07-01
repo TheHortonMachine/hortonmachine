@@ -18,7 +18,6 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
-import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
@@ -37,7 +36,6 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TOLERANCE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,7 +64,6 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkBu
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkCalibration;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import org.opengis.feature.simple.SimpleFeature;
@@ -268,14 +265,7 @@ public class TrentoP {
     @Description("The output if pTest=1, contains the discharge for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
-    public HashMap<DateTime, double[]> outDischarge;
-
-    @UI("outfile")
-    @Description("The id of the pipes. It can be used to print the outDischarge")
-    @Role(Role.OUTPUT)
-    @Out
-    public List<List<String>> outDischargeIDPipes;
-
+    public HashMap<DateTime, HashMap<Integer, double[]>> outDischarge;
     /**
      * Is an array with all the pipe of the net.
      */
@@ -286,7 +276,8 @@ public class TrentoP {
      * end of the processes.
      */
     private String warnings = "warnings";
-    private StringBuilder strBuilder = new StringBuilder(warnings);
+
+    public StringBuilder strBuilder = new StringBuilder(warnings);
 
     /**
      * 
@@ -329,13 +320,9 @@ public class TrentoP {
         Network network = null;
         if (pTest == 1) {
             // set other common parameters for the verify.
-            outDischargeIDPipes = new ArrayList<List<String>>();
             if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
-                    String tmpID = Integer.toString(networkPipes[t].getId());
-                    ArrayList<String> tmpList = new ArrayList<String>();
-                    tmpList.add(tmpID);
-                    outDischargeIDPipes.add(tmpList);
+
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxTheta(pMaxTheta);
@@ -346,7 +333,7 @@ public class TrentoP {
 
             }
 
-            outDischarge = new LinkedHashMap<DateTime, double[]>();
+            outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
             network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
@@ -471,19 +458,11 @@ public class TrentoP {
             throw new IllegalArgumentException();
         }
 
-        // verify if the field exist.
         SimpleFeatureType schema = inPipes.getSchema();
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.ID.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DRAIN_AREA.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.FINAL_ELEVATION.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.KS.getAttributeName()));
+
         if (pTest == 0) {
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName()));
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()));
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()));
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()));;
+
+            Utility.verifyProjectType(schema, pm);
 
             if (pA <= 0 || pA == null) {
                 pm.errorMessage(msg.message("trentoP.error.a"));
@@ -562,32 +541,17 @@ public class TrentoP {
                 throw new IllegalArgumentException();
             }
         } else {
+            Utility.verifyCalibrationType(schema, pm);
 
             if (inRain == null) {
+
                 pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
                 throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
             }
 
             // verificy if the field exist.
 
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName()));
-
         }
-    }
-
-    /**
-     * Verify if there is a key of a FeatureCollections.
-     * 
-     * @param key
-     * @throws IllegalArgumentException
-     *             if the key is null.
-     */
-    private void verifyFeatureKey( String key ) {
-        if (key == null) {
-            pm.errorMessage(msg.message("trentoP.error.featureKey") + key);
-            throw new IllegalArgumentException(msg.message("trentoP.error.featureKey") + key);
-        }
-
     }
 
     /**

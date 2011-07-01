@@ -88,13 +88,13 @@ public class TrentoPFeatureType {
      * featureCollections.
      */
 
-    public final static String DIAMETER_TO_VERIFY_STR = "D Verify";
+    public final static String DIAMETER_TO_VERIFY_STR = "D_Verify";
     /**
      * The field of slope to verify, only for verify mode, the inPipes
      * featureCollections.
      */
 
-    public final static String VERIFY_PIPE_SLOPE_STR = "Slope ver";
+    public final static String VERIFY_PIPE_SLOPE_STR = "Slope_ver";
     /**
      * The field of the height of the free surface at the begin of the pipe.
      */
@@ -106,7 +106,7 @@ public class TrentoPFeatureType {
     /**
      * The field of Empty degree of the pipe.
      */
-    public final static String EMPTYDEGREE_STR = "empty deg";
+    public final static String EMPTYDEGREE_STR = "empty_deg";
 
     /**
      * The field of the depth of the dig at the end of the pipe.
@@ -115,7 +115,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the depth of the dig at the begin of the pipe.
      */
-    public final static String DEPTH_INITIAL_PIPE_STR = "in depth";
+    public final static String DEPTH_INITIAL_PIPE_STR = "in_depth";
     /**
      * The field of the diameter of the pipe.
      */
@@ -127,7 +127,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the time at the maximum discharge.
      */
-    public final static String T_QMAX_STR = "t Qmax";
+    public final static String T_QMAX_STR = "t_Qmax";
     /**
      * The field of the discharge.
      */
@@ -139,7 +139,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the average speed into the pipe.
      */
-    public final static String MEAN_SPEED_STR = "mean speed";
+    public final static String MEAN_SPEED_STR = "mean_speed";
     /**
      * Residence time.
      */
