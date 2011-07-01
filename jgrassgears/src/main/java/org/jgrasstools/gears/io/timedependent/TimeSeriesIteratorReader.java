@@ -128,20 +128,25 @@ public class TimeSeriesIteratorReader extends JGTModel {
         if (table == null) {
             table = DataIO.table(new File(file), null);
             rowsIterator = (TableIterator<String[]>) table.rows().iterator();
-            // if the reader read all the file, nb time step constant
+            /*
+             * If tStart is null then the reader try to read all the value in the file, nb time step constant.
+             */
             if (tStart == null) {
                 String secondTime = null;
+                // get the first time in the file.
                 if (rowsIterator.hasNext()) {
                     String[] row = rowsIterator.next();
                     tStart = row[1];
                 }
+                // get the time of the second row in the file.
                 if (rowsIterator.hasNext()) {
                     String[] row = rowsIterator.next();
                     secondTime = row[1];
                 }
-
+                // the dt is equal to the fifference of the time of 2 rows.
                 tTimestep = formatter.parseDateTime(secondTime).getMinuteOfDay()
                         - formatter.parseDateTime(tStart).getMinuteOfDay();
+                // close and reopen to read the row.
                 rowsIterator.close();
                 rowsIterator = (TableIterator<String[]>) table.rows().iterator();
             }
