@@ -206,8 +206,32 @@ public class Constants {
      */
 
     public final static double DEFAULT_DT = 15;
+    
+    public final static Double[] CELERITY_RANGE = {new Double(1),new Double(1.6)};
+    public final static Integer[] JMAX_RANGE = {new Integer(3),new Integer(1000)};
+    public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0),null};
+    public final static Double[] GAMMA_RANGE = {new Double(0),null};
+    public final static Double[] TOLERANCE_RANGE = {new Double(0),null};
+    public final static Double[] THETA_RANGE = {new Double(Math.PI),null};
+    public final static Double[] EPS_RANGE = {new Double(0),new Double(1)};
+    public final static Double[] C_RANGE = {new Double(0),null};
+    public final static Double[] EXPONENT_RANGE = {new Double(0),null};
+    public final static Double[] MIN_DEPTH_RANGE = {null,null};
+    public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0),new Integer(6)};
+    public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0),new Double(0.1)};
+    public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0),null};
     /**
-     * The field of the ID of the pipe in the inPipes featureCollections.
+     * The name of the shp with the network data.
      */
+    public static final String NETWORK_PROJECT_NAME_SHP = "networkProject.shp";
+    /**
+     * The name of the shp with the network data.
+     */
+    public static final String NETWORK_CALIBRATION_NAME_SHP = "networkCalibration.shp"; //$NON-NLS-1$
+    /**
+     * The name of the shp with the aree.
+     */
+    public static final String AREA_NAME_SHP = "area.shp"; //$NON-NLS-1$
+
 
 }

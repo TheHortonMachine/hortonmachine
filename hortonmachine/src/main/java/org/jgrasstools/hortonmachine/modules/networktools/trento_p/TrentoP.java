@@ -18,7 +18,7 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
-import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ESP1;
@@ -36,7 +36,6 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TOLERANCE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TPMIN;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +51,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Range;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -64,7 +64,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkBu
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkCalibration;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -86,7 +86,7 @@ public class TrentoP {
 
     @Description("The progress monitor.")
     @In
-    public final IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
     @Description("Minimum excavation depth")
     @Unit("m")
@@ -109,7 +109,7 @@ public class TrentoP {
     @Unit("-")
     @Range(min = 0)
     @In
-    public Double pAccuracy;
+    public Double pAccuracy = DEFAULT_ACCURACY;
 
     @Description("Accuracy to use to calculate the discharge.")
     @Unit("-")
@@ -131,7 +131,7 @@ public class TrentoP {
 
     @Description("Maximum Fill degree")
     @Unit("-")
-    @Range(min = 3.14)
+    @Range(min = Math.PI)
     @In
     public double pMaxTheta = DEFAULT_MAX_THETA;
 
@@ -203,11 +203,12 @@ public class TrentoP {
 
     @Description("Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).")
     @In
-    public short pAlign;
+    public Integer pAlign;
 
+    @UI("infile")
     @Description("Matrix which contains the commercial diameters of the pipes.")
     @In
-    public double[][] inDiameters;
+    public List<double[]> inDiameters;
 
     @Description("The outlet, the last pipe of the network,.")
     @Unit("-")
@@ -216,7 +217,7 @@ public class TrentoP {
 
     @Description(" Use mode, 0=project, 1=verify.")
     @In
-    public short pTest;
+    public int pTest;
 
     @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
@@ -248,6 +249,7 @@ public class TrentoP {
 
     @Description("rain data.")
     @Role(Role.INPUT)
+    @UI("infile")
     @In
     public HashMap<DateTime, double[]> inRain = null;
 
@@ -259,16 +261,11 @@ public class TrentoP {
     @Out
     public SimpleFeatureCollection outPipes = null;
 
+    @UI("outfile")
     @Description("The output if pTest=1, contains the discharge for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
-    public HashMap<DateTime, double[]> outDischarge;
-
-    @Description("The id of the pipes. It can be used to print the outDischarge")
-    @Role(Role.OUTPUT)
-    @Out
-    public List<List<String>> outDischargeIDPipes;
-
+    public HashMap<DateTime, HashMap<Integer, double[]>> outDischarge;
     /**
      * Is an array with all the pipe of the net.
      */
@@ -279,7 +276,8 @@ public class TrentoP {
      * end of the processes.
      */
     private String warnings = "warnings";
-    private StringBuilder strBuilder = new StringBuilder(warnings);
+
+    public StringBuilder strBuilder = new StringBuilder(warnings);
 
     /**
      * 
@@ -322,16 +320,10 @@ public class TrentoP {
         Network network = null;
         if (pTest == 1) {
             // set other common parameters for the verify.
-            outDischargeIDPipes = new ArrayList<List<String>>();
             if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
-                    String tmpID = Integer.toString(networkPipes[t].getId());
-                    ArrayList<String> tmpList = new ArrayList<String>();
-                    tmpList.add(tmpID);
-                    outDischargeIDPipes.add(tmpList);
+
                     networkPipes[t].setAccuracy(pAccuracy);
-                    networkPipes[t].setMinimumDepth(pMinimumDepth);
-                    networkPipes[t].setMinG(pMinG);
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxTheta(pMaxTheta);
                     networkPipes[t].setTolerance(pTolerance);
@@ -341,10 +333,11 @@ public class TrentoP {
 
             }
 
-            outDischarge = new LinkedHashMap<DateTime, double[]>();
+            outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
             network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
+            network.geoSewer();
 
         } else {
             // set other common parameters for the project.
@@ -369,14 +362,16 @@ public class TrentoP {
             pA = pA / pow(60, pN); /* [mm/hour^n] -> [mm/min^n] */
             // initialize the NetworkCalibration.
 
-            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes, outPipes,
+            NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
                     strBuilder);
             network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
                     .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
+            network.geoSewer();
+            outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
+
         }
 
         // elaborate.
-        network.geoSewer();
 
         String w = strBuilder.toString();
         if (!w.equals(warnings)) {
@@ -463,19 +458,11 @@ public class TrentoP {
             throw new IllegalArgumentException();
         }
 
-        // verificy if the field exist.
         SimpleFeatureType schema = inPipes.getSchema();
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.ID.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DRAIN_AREA.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.INITIAL_ELEVATION.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.FINAL_ELEVATION.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.KS.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()));
-        verifyFeatureKey(findAttributeName(schema, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()));;
+
         if (pTest == 0) {
+
+            Utility.verifyProjectType(schema, pm);
 
             if (pA <= 0 || pA == null) {
                 pm.errorMessage(msg.message("trentoP.error.a"));
@@ -526,12 +513,6 @@ public class TrentoP {
 
                 throw new IllegalArgumentException();
             }
-        } else {
-
-            if (inRain == null) {
-                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
-                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
-            }
 
             /*
              * Il passo temporale con cui valutare le portate non puo' essere
@@ -559,27 +540,18 @@ public class TrentoP {
                 pm.errorMessage(msg.message("trentoP.error.tpmax"));
                 throw new IllegalArgumentException();
             }
+        } else {
+            Utility.verifyCalibrationType(schema, pm);
+
+            if (inRain == null) {
+
+                pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
+                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
+            }
+
             // verificy if the field exist.
 
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName()));
-            verifyFeatureKey(findAttributeName(schema, PipesTrentoP.VERIFY_PIPE_SLOPE.getAttributeName()));
-
         }
-    }
-
-    /**
-     * Verify if there is a key of a FeatureCollections.
-     * 
-     * @param key
-     * @throws IllegalArgumentException
-     *             if the key is null.
-     */
-    private void verifyFeatureKey( String key ) {
-        if (key == null) {
-            pm.errorMessage(msg.message("trentoP.error.featureKey") + key);
-            throw new IllegalArgumentException(msg.message("trentoP.error.featureKey") + key);
-        }
-
     }
 
     /**

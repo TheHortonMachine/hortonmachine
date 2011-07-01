@@ -500,14 +500,7 @@ public class Pipe {
                 pm.errorMessage(msg.message("trentoP.error.runO") + this.id);
                 throw new IllegalArgumentException(msg.message("trentoP.error.runO" + this.id));
             }
-            tmp = setFeatureField(pipeFeature, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()).doubleValue();;
 
-            if (tmp >= 0) {
-                this.averageResidenceTime = tmp;
-            } else {
-                pm.errorMessage(msg.message("trentoP.error.averageTime") + this.id);
-                throw new IllegalArgumentException(msg.message("trentoP.error.averageTime" + this.id));
-            }
             tmp = setFeatureField(pipeFeature, PipesTrentoP.KS.getAttributeName()).doubleValue();
             if (tmp >= 0) {
                 this.ks = tmp;
@@ -516,18 +509,16 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.ks" + this.id));
 
             }
-
-            this.minimumPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())
-                    .doubleValue();
-
-            int sectionTmp = setFeatureField(pipeFeature, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()).intValue();
-            if (sectionTmp > 0 && sectionTmp < 4) {
-                this.pipeSectionType = sectionTmp;
-            } else {
-                pm.errorMessage(msg.message("trentoP.error.section") + this.id);
-                throw new IllegalArgumentException(msg.message("trentoP.error.section" + this.id));
-            }
             this.averageSlope = setFeatureField(pipeFeature, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()).intValue();;
+
+            tmp = setFeatureField(pipeFeature, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()).doubleValue();;
+
+            if (tmp >= 0) {
+                this.averageResidenceTime = tmp;
+            } else {
+                pm.errorMessage(msg.message("trentoP.error.averageTime") + this.id);
+                throw new IllegalArgumentException(msg.message("trentoP.error.averageTime" + this.id));
+            }
             if (verify == 1) {
                 /* Pipe diameter [cm] */
 
@@ -535,9 +526,20 @@ public class Pipe {
                         .doubleValue();
                 /* Pipe slope [%] */
 
-                this.verifyPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.VERIFY_PIPE_SLOPE.getAttributeName())
+                this.verifyPipeSlope = 100.0 * Math.abs(this.finalElevation - this.initialElevation) / this.lenght;
+
+            } else if (verify == 0) {
+                this.minimumPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())
                         .doubleValue();
 
+                int sectionTmp = setFeatureField(pipeFeature, PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName()).intValue();
+                if (sectionTmp > 0 && sectionTmp < 4) {
+                    this.pipeSectionType = sectionTmp;
+                } else {
+                    pm.errorMessage(msg.message("trentoP.error.section") + this.id);
+                    throw new IllegalArgumentException(msg.message("trentoP.error.section" + this.id));
+                }
+          
             }
 
         } catch (NullPointerException e) {
