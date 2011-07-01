@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Description("Utility class for reading dbf tables.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.GENERICREADER)
+@Label(JGTConstants.HASHMAP_READER)
 @Status(Status.DRAFT)
 @Name("dbfreader")
 @License("General Public License Version 3 (GPLv3)")
