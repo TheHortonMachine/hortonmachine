@@ -30,8 +30,8 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWOOVERTHREE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWO_THIRTEENOVERTHREE;
 
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -100,7 +100,7 @@ public class NetworkCalibration implements Network {
     /*
      * The discharg for each pipe and for each time.
      */
-    private HashMap<DateTime, double[]> discharge;
+    private HashMap<DateTime, HashMap<Integer, double[]>> discharge;
     /**
      * Builder for the Calibration class.
      */
@@ -117,7 +117,7 @@ public class NetworkCalibration implements Network {
         /*
          * The discharg for each pipe and for each time.
          */
-        private final HashMap<DateTime, double[]> discharge;
+        private final HashMap<DateTime, HashMap<Integer, double[]>> discharge;
         /*
          * Dati di pioggia.
          */
@@ -150,7 +150,7 @@ public class NetworkCalibration implements Network {
          *            a tring used to store the warnings.
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
-                HashMap<DateTime, double[]> outDischarge, StringBuilder strBuilder ) {
+                HashMap<DateTime, HashMap<Integer, double[]>> outDischarge, StringBuilder strBuilder ) {
             this.pm = pm;
             this.networkPipe = networkPipe;
             this.inRain = inRain;
@@ -634,11 +634,19 @@ public class NetworkCalibration implements Network {
     private void getDischarge() {
         int nTime = timeDischarge.length;
         int length = timeDischarge[0].length;
-        discharge.put(first, Arrays.copyOfRange(timeDischarge[0], 1, length));
+        HashMap<Integer, double[]> tmpHM = new LinkedHashMap<Integer, double[]>();
+        for( int i = 1; i < length; i++ ) {
+            tmpHM.put(networkPipes[i - 1].getId(), new double[]{timeDischarge[0][i]});
+        }
+        discharge.put(first, tmpHM);
         DateTime tmp = first;
         for( int i = 1; i < nTime; ++i ) {
             tmp = tmp.plusMinutes(dt);
-            discharge.put(tmp, Arrays.copyOfRange(timeDischarge[i], 1, length));
+            tmpHM = new LinkedHashMap<Integer, double[]>();
+            for( int j = 1; j < length; j++ ) {
+                tmpHM.put(networkPipes[j - 1].getId(), new double[]{timeDischarge[i][j]});
+            }
+            discharge.put(tmp, tmpHM);
         }
     }
     /**

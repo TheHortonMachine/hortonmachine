@@ -34,6 +34,8 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.MINUTE2SEC;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -80,7 +82,7 @@ public class NetworkBuilder implements Network {
     /*
      * Commercial diameters of a pipe.
      */
-    private final double[][] diameters;
+    private double[][] diameters;
     /*
      * a string where store the warning messages.
      */
@@ -125,10 +127,6 @@ public class NetworkBuilder implements Network {
      * The input feature collection of the model trentoP.
      */
     private final SimpleFeatureCollection inPipesFC;
-    /*
-     * The output of the model if the mode is project.
-     */
-    private SimpleFeatureCollection outPipesFC;
 
     private final HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -138,7 +136,7 @@ public class NetworkBuilder implements Network {
         private final IJGTProgressMonitor pm;
         private final double n;
         private final double a;
-        private final double[][] diameters;
+        private final List<double[]> diameters;
         private final StringBuilder strBuilder;
 
         /*
@@ -146,7 +144,6 @@ public class NetworkBuilder implements Network {
          */
         private final Pipe[] networkPipe;
         private final SimpleFeatureCollection inPipeFC;
-        private final SimpleFeatureCollection outPipeFC;
         private double tDTp = DEFAULT_TDTP;
         private double celerityfactor1 = DEFAULT_CELERITY_FACTOR;
         private double tpMin = DEFAULT_TPMIN;
@@ -162,8 +159,8 @@ public class NetworkBuilder implements Network {
          * @param pm
          * @param msg
          */
-        public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, double n, double a, double[][] diameters,
-                SimpleFeatureCollection inPipeFC, SimpleFeatureCollection outPipeFC, StringBuilder strBuilder ) {
+        public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, double n, double a, List<double[]> diameters,
+                SimpleFeatureCollection inPipeFC, StringBuilder strBuilder ) {
             this.pm = pm;
             this.n = n;
             this.a = a;
@@ -171,7 +168,7 @@ public class NetworkBuilder implements Network {
             this.networkPipe = networkPipe;
             this.strBuilder = strBuilder;
             this.inPipeFC = inPipeFC;
-            this.outPipeFC = outPipeFC;
+
         }
 
         /**
@@ -233,7 +230,6 @@ public class NetworkBuilder implements Network {
         this.pm = builder.pm;
         this.celerityfactor = builder.celerityfactor1;
         this.n = builder.n;
-        this.diameters = builder.diameters;
         this.strBuilder = builder.strBuilder;
         this.tpMin = builder.tpMin;
         this.tpMax = builder.tpMax;
@@ -244,7 +240,9 @@ public class NetworkBuilder implements Network {
         this.tDTp = builder.tDTp;
         this.a = builder.a;
         this.inPipesFC = builder.inPipeFC;
-        this.outPipesFC = builder.outPipeFC;
+        if (builder.diameters != null) {
+            setDiameters(builder.diameters);
+        }
 
         if (builder.networkPipe != null) {
 
@@ -254,6 +252,16 @@ public class NetworkBuilder implements Network {
             throw new IllegalArgumentException("networkPipe is null");
         }
 
+    }
+
+    private void setDiameters( List<double[]> diametersList ) {
+        diameters = new double[diametersList.size()][2];
+        Iterator<double[]> iter = diametersList.iterator();
+        int i = 0;
+        while( iter.hasNext() ) {
+            diameters[i] = iter.next();
+            i++;
+        }
     }
 
     /**
@@ -894,7 +902,7 @@ public class NetworkBuilder implements Network {
             pm.worked(1);
         }
         resetDepths(two);
-        outPipesFC = Utility.createFeatureCollections(inPipesFC, networkPipes);
+
     }
 
     /**

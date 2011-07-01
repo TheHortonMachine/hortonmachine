@@ -88,13 +88,13 @@ public class TrentoPFeatureType {
      * featureCollections.
      */
 
-    public final static String DIAMETER_TO_VERIFY_STR = "D Verify";
+    public final static String DIAMETER_TO_VERIFY_STR = "D_Verify";
     /**
      * The field of slope to verify, only for verify mode, the inPipes
      * featureCollections.
      */
 
-    public final static String VERIFY_PIPE_SLOPE_STR = "Slope ver";
+    public final static String VERIFY_PIPE_SLOPE_STR = "Slope_ver";
     /**
      * The field of the height of the free surface at the begin of the pipe.
      */
@@ -106,7 +106,7 @@ public class TrentoPFeatureType {
     /**
      * The field of Empty degree of the pipe.
      */
-    public final static String EMPTYDEGREE_STR = "empty deg";
+    public final static String EMPTYDEGREE_STR = "empty_deg";
 
     /**
      * The field of the depth of the dig at the end of the pipe.
@@ -115,7 +115,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the depth of the dig at the begin of the pipe.
      */
-    public final static String DEPTH_INITIAL_PIPE_STR = "in depth";
+    public final static String DEPTH_INITIAL_PIPE_STR = "in_depth";
     /**
      * The field of the diameter of the pipe.
      */
@@ -127,7 +127,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the time at the maximum discharge.
      */
-    public final static String T_QMAX_STR = "t Qmax";
+    public final static String T_QMAX_STR = "t_Qmax";
     /**
      * The field of the discharge.
      */
@@ -139,7 +139,7 @@ public class TrentoPFeatureType {
     /**
      * The field of the average speed into the pipe.
      */
-    public final static String MEAN_SPEED_STR = "mean speed";
+    public final static String MEAN_SPEED_STR = "mean_speed";
     /**
      * Residence time.
      */
@@ -169,20 +169,35 @@ public class TrentoPFeatureType {
      * The {@link Pipe} attributes and classes.
      */
     public static enum PipesTrentoP implements ITrentoPType {
-        ID(ID_STR, String.class), ID_PIPE_WHERE_DRAIN(ID_PIPE_WHERE_DRAIN_STR, String.class), DRAIN_AREA(DRAIN_AREA_STR,
-                Float.class), INITIAL_ELEVATION(INITIAL_ELEVATION_STR, Float.class), FINAL_ELEVATION(FINAL_ELEVATION_STR,
-                Float.class), RUNOFF_COEFFICIENT(RUNOFF_COEFFICIENT_STR, Float.class), AVERAGE_RESIDENCE_TIME(
-                AVERAGE_RESIDENCE_TIME_STR, Float.class), KS(KS_STR, Float.class), MINIMUM_PIPE_SLOPE(MINIMUM_PIPE_SLOPE_STR,
-                Float.class), PIPE_SECTION_TYPE(PIPE_SECTION_TYPE_STR, Integer.class), AVERAGE_SLOPE(AVERAGE_SLOPE_STR,
-                Float.class), DIAMETER_TO_VERIFY(DIAMETER_TO_VERIFY_STR, Float.class), VERIFY_PIPE_SLOPE(VERIFY_PIPE_SLOPE_STR,
-                Float.class), DISCHARGE(DISCHARGE_STR, Float.class), COEFF_UDOMETRICO(COEFF_UDOMETRICO_STR, Float.class), RESIDENCE_TIME(
-                RESIDENCE_TIME_STR, Float.class), T_P(T_P_STR, Float.class), T_QMAX(T_QMAX_STR, Float.class), MEAN_SPEED(
-                MEAN_SPEED_STR, Float.class), PIPE_SLOPE(PIPE_SLOPE_STR, Float.class), DIAMETER(DIAMETER_STR, Float.class), EMPTYDEGREE(
-                EMPTYDEGREE_STR, Float.class), DEPTH_INITIAL_PIPE(DEPTH_INITIAL_PIPE_STR, Float.class), DEPTH_FINAL_PIPE(
-                DEPTH_FINAL_PIPE_STR, Float.class), INITIAL_FREE_SURFACE(INITIAL_FREE_SURFACE_STR, Float.class), FINAL_FREE_SURFACE(
-                FINAL_FREE_SURFACE_STR, Float.class), TOTAL_SUB_NET_AREA(TOTAL_SUB_NET_AREA_STR, Float.class), TOTAL_SUB_NET_LENGTH(
-                TOTAL_SUB_NET_LENGTH_STR, Float.class), MEAN_LENGTH_SUBNET(MEAN_LENGTH_SUBNET_STR, Float.class), VARIANCE_LENGTH_SUBNET(
-                VARIANCE_LENGTH_SUBNET_STR, Float.class);
+        ID(ID_STR, Integer.class), //
+        ID_PIPE_WHERE_DRAIN(ID_PIPE_WHERE_DRAIN_STR, Integer.class), //
+        DRAIN_AREA(DRAIN_AREA_STR, Float.class), //
+        INITIAL_ELEVATION(INITIAL_ELEVATION_STR, Float.class), //
+        FINAL_ELEVATION(FINAL_ELEVATION_STR, Float.class), //
+        RUNOFF_COEFFICIENT(RUNOFF_COEFFICIENT_STR, Float.class), //
+        AVERAGE_RESIDENCE_TIME(AVERAGE_RESIDENCE_TIME_STR, Float.class), //
+        KS(KS_STR, Float.class), //
+        MINIMUM_PIPE_SLOPE(MINIMUM_PIPE_SLOPE_STR, Float.class), //
+        PIPE_SECTION_TYPE(PIPE_SECTION_TYPE_STR, Integer.class), //
+        AVERAGE_SLOPE(AVERAGE_SLOPE_STR, Float.class), //
+        DIAMETER_TO_VERIFY(DIAMETER_TO_VERIFY_STR, Float.class), //
+        DISCHARGE(DISCHARGE_STR, Float.class), //
+        COEFF_UDOMETRICO(COEFF_UDOMETRICO_STR, Float.class), //
+        RESIDENCE_TIME(RESIDENCE_TIME_STR, Float.class), //
+        T_P(T_P_STR, Float.class), //
+        T_QMAX(T_QMAX_STR, Float.class), //
+        MEAN_SPEED(MEAN_SPEED_STR, Float.class), //
+        PIPE_SLOPE(PIPE_SLOPE_STR, Float.class), //
+        DIAMETER(DIAMETER_STR, Float.class), //
+        EMPTYDEGREE(EMPTYDEGREE_STR, Float.class), //
+        DEPTH_INITIAL_PIPE(DEPTH_INITIAL_PIPE_STR, Float.class), //
+        DEPTH_FINAL_PIPE(DEPTH_FINAL_PIPE_STR, Float.class), //
+        INITIAL_FREE_SURFACE(INITIAL_FREE_SURFACE_STR, Float.class), //
+        FINAL_FREE_SURFACE(FINAL_FREE_SURFACE_STR, Float.class), //
+        TOTAL_SUB_NET_AREA(TOTAL_SUB_NET_AREA_STR, Float.class), //
+        TOTAL_SUB_NET_LENGTH(TOTAL_SUB_NET_LENGTH_STR, Float.class),//
+        MEAN_LENGTH_SUBNET(MEAN_LENGTH_SUBNET_STR, Float.class), //
+        VARIANCE_LENGTH_SUBNET(VARIANCE_LENGTH_SUBNET_STR, Float.class);
 
         private Class< ? > clazz;
 
