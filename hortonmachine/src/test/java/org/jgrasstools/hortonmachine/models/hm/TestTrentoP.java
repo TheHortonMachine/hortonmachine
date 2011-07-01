@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -12,9 +13,11 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.DiametersReader;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMapstrentoP;
 import org.joda.time.DateTime;
+
 
 /**
  * A test case for the trentoP-java model.
@@ -23,11 +26,6 @@ import org.joda.time.DateTime;
  * 
  */
 public class TestTrentoP extends HMTestCase {
-    /**
-     * The commercial diameters.
-     */
-    public double[][] pipe = new double[][]{{30, 2}, {40, 2}, {50, 2}, {60, 2}, {70, 2}, {80, 2}, {90, 2}, {100, 2}, {110, 2},
-            {120, 2}, {140, 4}, {160, 4}, {180, 4}, {200, 4}, {240, 6}, {280, 6}};
 
     private final static double TOLL = 0.009;
 
@@ -44,7 +42,7 @@ public class TestTrentoP extends HMTestCase {
     private static double n = 0.61;
     private static double tau = 2.5;
     private static double g = 0.8;
-    private static short align = 0;
+    private static Integer align = 0;
 
     /**
      * Test project 1.
@@ -57,6 +55,14 @@ public class TestTrentoP extends HMTestCase {
         double[][] result = null;
         double[] globalparameters = INTERNAL_PARAMETERS;
         TrentoP trento_P = new TrentoP();
+        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
+        DiametersReader diametersreader = new DiametersReader();
+        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
+        diametersreader.pCols = 2;
+        diametersreader.pSeparator = "\\s+";
+        diametersreader.fileNovalue = "-9999.0";
+        diametersreader.readFile();
+        List<double[]> pipe = diametersreader.data;
         // set parameters;
         trento_P.pTest = 0; // project
         trento_P.pA = a;
@@ -81,7 +87,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = this.pipe;
+        trento_P.inDiameters = pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -111,6 +117,14 @@ public class TestTrentoP extends HMTestCase {
         double[] globalparameters = INTERNAL_PARAMETERS;
         TrentoP trento_P = new TrentoP();
         // set parameters;
+        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
+        DiametersReader diametersreader = new DiametersReader();
+        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
+        diametersreader.pCols = 2;
+        diametersreader.pSeparator = "\\s+";
+        diametersreader.fileNovalue = "-9999.0";
+        diametersreader.readFile();
+        List<double[]> pipe = diametersreader.data;
         trento_P.pTest = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
@@ -134,7 +148,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = this.pipe;
+        trento_P.inDiameters = pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Rect.shp");
         File netFile = new File(net.toURI());
@@ -151,7 +165,6 @@ public class TestTrentoP extends HMTestCase {
         checkMatrixEqual(result, HMTestMapstrentoP.project1Rectangular, TOLL);
 
     }
-
     /**
      * Test project 1, rectangular.
      * 
@@ -164,6 +177,14 @@ public class TestTrentoP extends HMTestCase {
         double[] globalparameters = INTERNAL_PARAMETERS;
         TrentoP trento_P = new TrentoP();
         // set parameters;
+        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
+        DiametersReader diametersreader = new DiametersReader();
+        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
+        diametersreader.pCols = 2;
+        diametersreader.pSeparator = "\\s+";
+        diametersreader.fileNovalue = "-9999.0";
+        diametersreader.readFile();
+        List<double[]> pipe = diametersreader.data;
         trento_P.pTest = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
@@ -187,7 +208,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = this.pipe;
+        trento_P.inDiameters = pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Trap.shp");
         File netFile = new File(net.toURI());
@@ -215,6 +236,14 @@ public class TestTrentoP extends HMTestCase {
     public void testProject1Align1() throws Exception {
         double[][] result = null;
         double[] globalparameters = INTERNAL_PARAMETERS;
+        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
+        DiametersReader diametersreader = new DiametersReader();
+        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
+        diametersreader.pCols = 2;
+        diametersreader.pSeparator = "\\s+";
+        diametersreader.fileNovalue = "-9999.0";
+        diametersreader.readFile();
+        List<double[]> pipe = diametersreader.data;
         TrentoP trento_P = new TrentoP();
         // set parameters;
         trento_P.pTest = 0; // project
@@ -240,7 +269,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters[14];
         trento_P.pGamma = globalparameters[15];
         trento_P.pEspInflux = globalparameters[16];
-        trento_P.inDiameters = this.pipe;
+        trento_P.inDiameters = pipe;
         trento_P.pOutPipe = 16;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
         File netFile = new File(net.toURI());
@@ -327,6 +356,14 @@ public class TestTrentoP extends HMTestCase {
         double[] globalparameters2 = INTERNAL_PARAMETERS2;
         TrentoP trento_P = new TrentoP();
         // set parameters;
+        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
+        DiametersReader diametersreader = new DiametersReader();
+        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
+        diametersreader.pCols = 2;
+        diametersreader.pSeparator = "\\s+";
+        diametersreader.fileNovalue = "-9999.0";
+        diametersreader.readFile();
+        List<double[]> pipe = diametersreader.data;
         trento_P.pTest = 0; // project
         trento_P.pA = 60.5;
         trento_P.pN = 0.64;
@@ -350,7 +387,7 @@ public class TestTrentoP extends HMTestCase {
         trento_P.pC = globalparameters2[14];
         trento_P.pGamma = globalparameters2[15];
         trento_P.pEspInflux = globalparameters2[16];
-        trento_P.inDiameters = this.pipe;
+        trento_P.inDiameters = pipe;
         trento_P.pOutPipe = 38;
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP2Verifica.shp");
         File netFile = new File(net.toURI());
@@ -367,9 +404,9 @@ public class TestTrentoP extends HMTestCase {
         checkMatrixEqual(result, HMTestMapstrentoP.projectTrentoP2, TOLL);
 
     }
-    private double[][] hashToMatrix( HashMap<DateTime, double[]> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
+    private double[][] hashToMatrix( HashMap<DateTime, HashMap<Integer, double[]>> outDischarge, HashMap<DateTime, double[]> inRain, int nStation ) {
         // create the rains array from the input.
-        Set<Entry<DateTime, double[]>> dischargeSet = outDischarge.entrySet();
+        Set<Entry<DateTime, HashMap<Integer, double[]>>> dischargeSet = outDischarge.entrySet();
         DateTime first = null;
         DateTime second = null;
         int l = outDischarge.size();
@@ -377,28 +414,39 @@ public class TestTrentoP extends HMTestCase {
         double[][] rainData = new double[l][nStation + 1];
         int index = 0;
         int dt = 0;
-        for( Entry<DateTime, double[]> dischargeRecord : dischargeSet ) {
+        int n = outDischarge.size()-1;
+        for( Entry<DateTime, HashMap<Integer, double[]>> dischargeRecord : dischargeSet ) {
+            
             DateTime dateTime = dischargeRecord.getKey();
-            double[] values = dischargeRecord.getValue();
+            HashMap<Integer, double[]> values = dischargeRecord.getValue();
             if (first == null) {
                 first = dateTime;
                 rainData[index][0] = 1;
-
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
+                 Set<Integer> tmp = values.keySet();
+                 int i = 0;
+                 for(Integer f : tmp ) {
+                    rainData[index][i + 1] = values.get(f)[0];
+                    i++;
                 }
 
             } else if (second == null) {
                 second = dateTime;
                 dt = Math.abs(second.getMinuteOfDay() - first.getMinuteOfDay());
                 rainData[index][0] = rainData[index - 1][0] + dt;
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
-                }
+                Set<Integer> tmp = values.keySet();
+                int i = 0;
+                for(Integer f : tmp ) {
+                   rainData[index][i + 1] = values.get(f)[0];
+                   i++;
+               }
+     
             } else {
                 rainData[index][0] = rainData[index - 1][0] + dt;
-                for( int i = 0; i < values.length; i++ ) {
-                    rainData[index][i + 1] = values[i];
+                int i = 0;
+                Set<Integer> tmp = values.keySet();
+                for(Integer f : tmp ) {
+                    rainData[index][i + 1] = values.get(f)[0];
+                    i++;
                 }
             }
             index++;
