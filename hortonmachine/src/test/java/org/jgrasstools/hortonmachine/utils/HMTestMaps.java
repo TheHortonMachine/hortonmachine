@@ -118,6 +118,21 @@ public class HMTestMaps {
     };
 
     /**
+     * Output data of the {@link FlowDirections} module, since 
+     * it has changed to also eat a border of data around the basin.
+     */
+    public static double[][] newFlowData = new double[][]{ //
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+        {NaN, NaN, NaN, 6, 6, 6, 6, 6, 6, NaN}, //
+        {NaN, NaN, NaN, 6, 6, 6, 6, 7, 7, NaN}, //
+        {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //
+        {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, //
+        {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, //
+        {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
+        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+    };
+
+    /**
      * Output data for the {@link DrainDir} module run in LTD mode.
      */
     public static double[][] drainData0 = new double[][]{ //
