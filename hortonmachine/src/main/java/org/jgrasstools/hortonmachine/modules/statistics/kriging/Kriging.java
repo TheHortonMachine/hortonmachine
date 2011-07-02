@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Kriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Name("kriging")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class Kriging extends JGTModel {
 
