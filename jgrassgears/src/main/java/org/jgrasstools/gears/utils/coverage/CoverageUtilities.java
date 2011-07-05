@@ -729,6 +729,26 @@ public class CoverageUtilities {
     }
 
     /**
+     * Transforms an array of values into a {@link WritableRaster}.
+     * 
+     * @param array the values to transform.
+     * @param divide the factor by which to divide the values.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the raster.
+     */
+    public static WritableRaster doubleArray2WritableRaster( double[] array, int width, int height ) {
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                writableRaster.setSample(x, y, 0, array[index++]);
+            }
+        }
+        return writableRaster;
+    }
+
+    /**
      * Creates a border of novalues.
      * 
      * @param raster the raster to process.
