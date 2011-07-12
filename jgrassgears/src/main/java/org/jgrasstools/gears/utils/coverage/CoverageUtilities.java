@@ -77,7 +77,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
@@ -657,6 +656,95 @@ public class CoverageUtilities {
             }
         }
 
+        return writableRaster;
+    }
+
+    /**
+     * Transform a rendered image in its array representation.
+     * 
+     * @param renderedImage the rendered image to transform.
+     * @return the array holding the data.
+     */
+    public static double[] renderedImage2DoubleArray( RenderedImage renderedImage ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        double[] values = new double[width * height];
+        RandomIter imageIter = RandomIterFactory.create(renderedImage, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                double sample = imageIter.getSampleDouble(x, y, 0);
+                values[index++] = sample;
+            }
+        }
+        imageIter.done();
+        return values;
+    }
+
+    /**
+     * Transform a double values rendered image in its integer array representation by scaling the values.
+     * 
+     * @param renderedImage the rendered image to transform.
+     * @param multiply value by which to multiply the values before casting to integer.
+     * @return the array holding the data.
+     */
+    public static int[] renderedImage2IntegerArray( RenderedImage renderedImage, double multiply ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        int[] values = new int[width * height];
+        RandomIter imageIter = RandomIterFactory.create(renderedImage, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                double sample = imageIter.getSampleDouble(x, y, 0);
+                sample = sample * multiply;
+                values[index++] = (int) sample;
+            }
+        }
+        imageIter.done();
+        return values;
+    }
+
+    /**
+     * Transforms an array of integer values into a {@link WritableRaster}.
+     * 
+     * @param array the values to transform.
+     * @param divide the factor by which to divide the values.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the raster.
+     */
+    public static WritableRaster integerArray2WritableRaster( int[] array, double divide, int width, int height ) {
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                double value = (double) array[index++] / divide;
+                writableRaster.setSample(x, y, 0, value);
+            }
+        }
+        return writableRaster;
+    }
+
+    /**
+     * Transforms an array of values into a {@link WritableRaster}.
+     * 
+     * @param array the values to transform.
+     * @param divide the factor by which to divide the values.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the raster.
+     */
+    public static WritableRaster doubleArray2WritableRaster( double[] array, int width, int height ) {
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                writableRaster.setSample(x, y, 0, array[index++]);
+            }
+        }
         return writableRaster;
     }
 
