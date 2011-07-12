@@ -64,7 +64,7 @@ public class TestTrentoP extends HMTestCase {
         diametersreader.readFile();
         List<double[]> pipe = diametersreader.data;
         // set parameters;
-        trento_P.pTest = 0; // project
+        trento_P.pMode = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
         trento_P.pTau = tau;
@@ -125,7 +125,7 @@ public class TestTrentoP extends HMTestCase {
         diametersreader.fileNovalue = "-9999.0";
         diametersreader.readFile();
         List<double[]> pipe = diametersreader.data;
-        trento_P.pTest = 0; // project
+        trento_P.pMode = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
         trento_P.pTau = tau;
@@ -185,7 +185,7 @@ public class TestTrentoP extends HMTestCase {
         diametersreader.fileNovalue = "-9999.0";
         diametersreader.readFile();
         List<double[]> pipe = diametersreader.data;
-        trento_P.pTest = 0; // project
+        trento_P.pMode = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
         trento_P.pTau = tau;
@@ -246,7 +246,7 @@ public class TestTrentoP extends HMTestCase {
         List<double[]> pipe = diametersreader.data;
         TrentoP trento_P = new TrentoP();
         // set parameters;
-        trento_P.pTest = 0; // project
+        trento_P.pMode = 0; // project
         trento_P.pA = a;
         trento_P.pN = n;
         trento_P.pTau = tau;
@@ -305,7 +305,7 @@ public class TestTrentoP extends HMTestCase {
 
         TrentoP trento_P = new TrentoP();
         // set parameters;
-        trento_P.pTest = 1; // verify
+        trento_P.pMode = 1; // verify
         trento_P.pMinimumDepth = globalparameters[0];
         trento_P.pMaxJunction = (int) globalparameters[1];
         trento_P.pJMax = (int) globalparameters[2];
@@ -364,7 +364,7 @@ public class TestTrentoP extends HMTestCase {
         diametersreader.fileNovalue = "-9999.0";
         diametersreader.readFile();
         List<double[]> pipe = diametersreader.data;
-        trento_P.pTest = 0; // project
+        trento_P.pMode = 0; // project
         trento_P.pA = 60.5;
         trento_P.pN = 0.64;
         trento_P.pTau = 2.6;

@@ -215,9 +215,9 @@ public class TrentoP {
     @In
     public Integer pOutPipe = null;
 
-    @Description(" Use mode, 0=project, 1=verify.")
+    @Description("Processing mode, 0=project, 1=verification.")
     @In
-    public int pTest;
+    public int pMode;
 
     @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
@@ -318,19 +318,16 @@ public class TrentoP {
          * (pTest==1) verify otherwise is a NetworkBuilder.
          */
         Network network = null;
-        if (pTest == 1) {
-            // set other common parameters for the verify.
+        if (pMode == 1) {
+            // set other common parameters for the verification.
             if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
-
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxTheta(pMaxTheta);
                     networkPipes[t].setTolerance(pTolerance);
                     networkPipes[t].setK(pEspInflux, pExponent, pGamma);
-
                 }
-
             }
 
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
@@ -460,7 +457,7 @@ public class TrentoP {
 
         SimpleFeatureType schema = inPipes.getSchema();
 
-        if (pTest == 0) {
+        if (pMode == 0) {
 
             Utility.verifyProjectType(schema, pm);
 
@@ -588,7 +585,7 @@ public class TrentoP {
                         throw new IllegalArgumentException(msg.message("trentoP.error.number" + TrentoPFeatureType.ID_STR));
                     }
                     t = field.intValue();
-                    networkPipes[t - 1] = new Pipe(feature, pTest);
+                    networkPipes[t - 1] = new Pipe(feature, pMode);
 
                 } catch (NullPointerException e) {
                     pm.errorMessage(msg.message("trentop.illegalNet"));
