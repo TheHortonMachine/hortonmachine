@@ -20,15 +20,11 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade.Hillshade;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import com.sun.org.apache.regexp.internal.ReaderCharacterIterator;
 
 /**
  * Test the {@link Hillshade} module.
@@ -42,12 +38,7 @@ public class TestHillshade extends HMTestCase {
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs3004;
-       
-        RasterReader rasterR = new RasterReader();
-        rasterR.fileNovalue = -9999.0;
-        rasterR.file="/home/daniele/Downloads/dtm000191_wor/dtm000191_wor.asc";
-        rasterR.process();
-        GridCoverage2D elevationCoverage = rasterR.outRaster;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         Hillshade hillshade = new Hillshade();
         hillshade.inElev = elevationCoverage;
@@ -59,13 +50,7 @@ public class TestHillshade extends HMTestCase {
         hillshade.process();
 
         GridCoverage2D hillshadeCoverage = hillshade.outHill;
-        
-        RasterWriter write = new RasterWriter();
-        write.inRaster=hillshadeCoverage;
-       write.pType="asc";
-        write.file="/home/daniele/Downloads/dtm000191_wor/shade";
-        write.process();
-        
+
         checkMatrixEqual(hillshadeCoverage.getRenderedImage(), HMTestMaps.outHillshade, 0.1);
     }
 
