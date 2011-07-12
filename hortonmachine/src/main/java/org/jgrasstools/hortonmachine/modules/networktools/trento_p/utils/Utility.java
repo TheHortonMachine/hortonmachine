@@ -114,7 +114,7 @@ public class Utility {
         int i;
         /*
          * questo ciclo for mi consente di decrementare l'angolo theta di delta,
-         * me fermo solo quando trovo l'estremo inferiore per un bracketing
+         * mi fermo solo quando trovo l'estremo inferiore per un bracketing
          * corretto
          */
         for( i = 0; i < 10; i++ ) {
