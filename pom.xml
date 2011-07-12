@@ -4,7 +4,7 @@
 
 
     <properties>
-		<gt.version>2.7.1</gt.version>
+		<gt.version>8.0-M1</gt.version>
 		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
 		<jaitools.version>1.2.0</jaitools.version>
 		<jiffle.version>0.2.0</jiffle.version>

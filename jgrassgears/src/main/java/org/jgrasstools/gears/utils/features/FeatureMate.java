@@ -18,9 +18,14 @@
  */
 package org.jgrasstools.gears.utils.features;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -49,7 +54,7 @@ public class FeatureMate {
     public FeatureMate( SimpleFeature feature ) {
         this.feature = feature;
     }
-    
+
     public SimpleFeature getFeature() {
         return feature;
     }
@@ -77,6 +82,23 @@ public class FeatureMate {
     }
 
     /**
+     * Getter for the list of attribute names.
+     * 
+     * @return the list of attribute names.
+     */
+    public List<String> getAttributesNames() {
+        SimpleFeatureType featureType = feature.getFeatureType();
+        List<AttributeDescriptor> attributeDescriptors = featureType.getAttributeDescriptors();
+
+        List<String> attributeNames = new ArrayList<String>();
+        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
+            String name = attributeDescriptor.getLocalName();
+            attributeNames.add(name);
+        }
+        return attributeNames;
+    }
+
+    /**
      * Gets an attribute from the feature table, adapting to the supplied class.
      * 
      * @param attrName the attribute name to pick.
@@ -92,6 +114,9 @@ public class FeatureMate {
         }
 
         Object attribute = feature.getAttribute(attrName);
+        if (attribute == null) {
+            return null;
+        }
         if (attribute instanceof Number) {
             Number num = (Number) attribute;
             if (adaptee.isAssignableFrom(Double.class)) {
@@ -132,8 +157,10 @@ public class FeatureMate {
             } else {
                 throw new IllegalArgumentException();
             }
+        } else if (attribute instanceof Geometry) {
+            return null;
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Can't adapt attribute of type: " + attribute.getClass().getCanonicalName());
         }
     }
 
