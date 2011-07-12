@@ -1422,67 +1422,24 @@ public class Pipe {
 
         return b;
     }
-    /**
-     * Dimensiona il tubo, imponendo uno sforzo tangenziale al fondo.
-     * 
-     * <p>
-     * <ol>
-     * <li>Calcola l'angolo theta in funzione di g.
-     * <li>Nota la portata di progetto del tratto considerato, determina il
-     * diametro oldD (adottando una pendenza che garantisca l'autopulizia).
-     * <li>Successivamente oldD viene approssimato al diametro commerciale piu
-     * vicino, letto dalla martice diametrs. Lo spessore adottato, anche esso
-     * letto dalla matrice dei diametri, viene assegnato al puntatore dD. Mentre
-     * la varabile maxd fa in modo che andando verso valle i diametri utilizzati
-     * possano solo aumentare.
-     * <li>A questo punto la get_diameter() ricalcola il nuovo valore
-     * dell'angolo theta, chiamando la funzione this_bisection(), theta deve
-     * risultare piu piccolo.
-     * <li>Se invece oldD risulta maggiore del diametro commerciale piu grande
-     * disponibile, allora si mantiene il suo valore.
-     * <li>Infine calcola il grado di riempimento e pendenza del tratto a
-     * partire dal raggio idraulico, e li registra nella matrice networkPipes.
-     * <ol>
-     * </p>
-     * 
-     * @param diametrs
-     *            matrice che contiene i diametri e spessori commerciali.
-     * @param tau
-     *            [Pa] Sforzo tangenziale al fondo che garantisca l'autopulizia
-     *            della rete
-     * @param dD
-     * @param g
-     *            Grado di riempimento da considerare nella progettazione della
-     *            rete
-     * @param maxd
-     *            Diamtetro o altezza piu' grande adottato nei tratti piu' a
-     *            monte
+
+    /** Verify if the empty degree is greather than the 0.8.
      * @param strWarnings
      *            a string which collect all the warning messages.
+     *   @param q discharge in this pipe.                
      */
-
     public double verifyEmptyDegree( StringBuilder strWarnings, double q ) {
         /* Pari a A * ( Rh ^1/6 ) */
         double B;
         /* Anglo formato dalla sezione bagnata */
         double thta;
-        /* Diametro calcolato imponendo il criterio di autopulizia della rete */
-        double oldD;
-        /* [cm]Diametro commerciale */
-        double D = 0;
-        /* Costane */
+        /* Costante */
         double known;
         /*
          * [rad]Angolo formato dalla sezione bagnata, adottando un diametro
          * commerciale
          */
         double newtheta = 0;
-        /*
-         * [cm] Nuovo raggio idraulico calcolato in funzione del diametro
-         * commerciale
-         */
-        double newrh = 0;
-        /* B=A(Rh^1/6) [m^13/6] */
 
         B = (q * sqrt(WSPECIFICWEIGHT / 2.8)) / (CUBICMETER2LITER * getKs());
         /* Angolo formato dalla sezione bagnata [rad] */
@@ -1492,11 +1449,9 @@ public class Pipe {
          * Angolo formato dalla sezione bagnata considerando un diametro
          * commerciale [rad]
          */
-        try {
+
             newtheta = Utility.thisBisection(thta, known, ONEOVERSIX, minG, accuracy, jMax, pm, strWarnings);
-        } catch (ArithmeticException e) {
-            strWarnings.append(msg.message("trentoP.warning.emptydegree") + id);
-        }
+  
         /* Grado di riempimento del tubo */
         emptyDegree = 0.5 * (1 - cos(newtheta / 2));
         return newtheta;
