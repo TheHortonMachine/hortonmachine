@@ -1,0 +1,125 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.jgrasstools.gears.utils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.GeoTools;
+import org.geotools.feature.NameImpl;
+import org.geotools.styling.FeatureTypeConstraint;
+import org.geotools.styling.FeatureTypeStyle;
+import org.geotools.styling.SLD;
+import org.geotools.styling.SLDParser;
+import org.geotools.styling.SLDTransformer;
+import org.geotools.styling.Style;
+import org.geotools.styling.StyleBuilder;
+import org.geotools.styling.StyleFactory;
+import org.geotools.styling.StyledLayerDescriptor;
+import org.geotools.styling.UserLayer;
+import org.opengis.filter.FilterFactory;
+
+/**
+ * utilities to handle style.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public class SldUtilities {
+    /**
+     * The default {@link StyleFactory} to use.
+     */
+    public static StyleFactory sf = CommonFactoryFinder.getStyleFactory(GeoTools.getDefaultHints());
+
+    /**
+     * The default {@link FilterFactory} to use.
+     */
+    public static FilterFactory ff = CommonFactoryFinder.getFilterFactory(GeoTools.getDefaultHints());
+
+    /**
+     * The default {@link StyleBuilder} to use.
+     */
+    public static StyleBuilder sb = new StyleBuilder(sf, ff);
+
+    /**
+     * The type name that can be used in an SLD in the featuretypestyle that matches all feature types.
+     */
+    public static final String GENERIC_FEATURE_TYPENAME = "Feature";
+
+    /**
+     * Get the style from an sld file.
+     * 
+     * @param file the SLD file.
+     * @return the {@link Style} object.
+     * @throws IOException
+     */
+    public static Style getStyleFromFile( File file ) throws IOException {
+        SLDParser stylereader = new SLDParser(sf, file);
+        StyledLayerDescriptor sld = stylereader.parseSLD();
+        Style style = getDefaultStyle(sld);
+        return style;
+    }
+
+    /**
+     * Converts a style to its string representation to be written to file.
+     * 
+     * @param style the style to convert.
+     * @return the style string.
+     * @throws Exception
+     */
+    public static String styleToString( Style style ) throws Exception {
+        StyledLayerDescriptor sld = sf.createStyledLayerDescriptor();
+        UserLayer layer = sf.createUserLayer();
+        layer.setLayerFeatureConstraints(new FeatureTypeConstraint[]{null});
+        sld.addStyledLayer(layer);
+        layer.addUserStyle(style);
+
+        SLDTransformer aTransformer = new SLDTransformer();
+        aTransformer.setIndentation(4);
+        String xml = aTransformer.transform(sld);
+        return xml;
+    }
+
+    public static Style getDefaultStyle( StyledLayerDescriptor sld ) {
+        Style[] styles = SLD.styles(sld);
+        for( int i = 0; i < styles.length; i++ ) {
+            Style style = styles[i];
+            List<FeatureTypeStyle> ftStyles = style.featureTypeStyles();
+            genericizeftStyles(ftStyles);
+            if (style.isDefault()) {
+                return style;
+            }
+        }
+        // no default, so just grab the first one
+        return styles[0];
+    }
+
+    /**
+     * Converts the type name of all FeatureTypeStyles to Feature so that the all apply to any feature type.  This is admittedly dangerous
+     * but is extremely useful because it means that the style can be used with any feature type.
+     *
+     * @param ftStyles
+     */
+    private static void genericizeftStyles( List<FeatureTypeStyle> ftStyles ) {
+        for( FeatureTypeStyle featureTypeStyle : ftStyles ) {
+            featureTypeStyle.featureTypeNames().clear();
+            featureTypeStyle.featureTypeNames().add(new NameImpl(GENERIC_FEATURE_TYPENAME));
+        }
+    }
+}

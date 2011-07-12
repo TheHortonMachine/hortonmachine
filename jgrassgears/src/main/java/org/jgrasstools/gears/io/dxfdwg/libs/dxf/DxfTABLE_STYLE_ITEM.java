@@ -68,7 +68,7 @@ public class DxfTABLE_STYLE_ITEM extends DxfTABLE_ITEM {
         super(name, flags);
         this.textHeight = textHeight;
         this.widthFactor = widthFactor;
-        this.obliquingAngle = obliquingAngle;
+        this.obliquingAngle = obliqingAngle;
         this.textGenerationFlags = textGenerationFlags;
         this.lastHeightUsed = lastHeightUsed;
         this.primaryFontFileName = primaryFontFileName;

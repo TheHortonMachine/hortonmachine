@@ -49,6 +49,10 @@ public class FeatureMate {
     public FeatureMate( SimpleFeature feature ) {
         this.feature = feature;
     }
+    
+    public SimpleFeature getFeature() {
+        return feature;
+    }
 
     /**
      * Getter for the geometry.

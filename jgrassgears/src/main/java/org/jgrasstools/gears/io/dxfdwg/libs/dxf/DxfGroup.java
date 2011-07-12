@@ -77,7 +77,7 @@ public class DxfGroup {
     public int getIntValue() {return Integer.parseInt(value.trim());}
     public float getFloatValue() {return Float.parseFloat(value.trim());}
     public double getDoubleValue() {return Double.parseDouble(value.trim());}
-    public void setValue() {this.value = value;}
+    //    public void setValue() {this.value = value;}
     public long getAddress() {return address;}
     private void setAddress(long address) {this.address = address;}
     

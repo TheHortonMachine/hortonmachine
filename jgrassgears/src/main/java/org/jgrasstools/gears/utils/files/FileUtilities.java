@@ -230,7 +230,7 @@ public class FileUtilities {
     public static void writeFile( List<String> lines, String filePath ) throws IOException {
         writeFile(lines, new File(filePath));
     }
-    
+
     /**
      * Write a list of lines to a file.
      * 
@@ -266,5 +266,19 @@ public class FileUtilities {
         int lastDot = name.lastIndexOf("."); //$NON-NLS-1$
         name = name.substring(0, lastDot);
         return name;
+    }
+
+    /**
+     * Substitute the extention of a file.
+     * 
+     * @param file the file.
+     * @param newExtention the new extention.
+     * @return the file with the new extention.
+     */
+    public static File substituteExtention( File file, String newExtention ) {
+        String path = file.getAbsolutePath();
+        int lastDot = path.lastIndexOf("."); //$NON-NLS-1$
+        path = path.substring(0, lastDot) + "." + newExtention;
+        return new File(path);
     }
 }
