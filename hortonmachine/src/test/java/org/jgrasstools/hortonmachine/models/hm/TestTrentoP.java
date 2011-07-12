@@ -327,7 +327,10 @@ public class TestTrentoP extends HMTestCase {
         rainReader.file = rainFile.getAbsolutePath();
         rainReader.read();
         rainReader.close();
-        trento_P.inRain = rainReader.outData;
+     //   trento_P.inRain = rainReader.outData;
+        trento_P.pA=60.4;
+        trento_P.pN=0.61;
+        trento_P.dt=15;
         // set global parameters.
         URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
         File netFile = new File(net.toURI());

@@ -412,7 +412,11 @@ public class NetworkCalibration implements Network {
 
             Qpartial[j][k] = Q;
             if (Q > 0.0) {
-                networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
+                try {
+                    networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
+                } catch (ArithmeticException e) {
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
+                }
             }
             if (Q >= Qmax) {
                 Qmax = Q;
@@ -590,22 +594,27 @@ public class NetworkCalibration implements Network {
 
         double[] cDelays = new double[networkPipes.length];
         while( magnitude[k] == 1 ) {
+            try {
+                headPipeVerify(l, cDelays);
 
-            headPipeVerify(l, cDelays);
+                // Passo allo stato successivo
+                k++;
 
-            // Passo allo stato successivo
-            k++;
-
-            if (k < magnitude.length) {
-                /*
-                 * Il prossimo tratto da progettare, ovviamente se avra
-                 * magnitude=1
-                 */
-                l = (int) one[k];
-            } else {
+                if (k < magnitude.length) {
+                    /*
+                     * Il prossimo tratto da progettare, ovviamente se avra
+                     * magnitude=1
+                     */
+                    l = (int) one[k];
+                } else {
+                    break;
+                }
+                pm.worked(1);
+            } catch (ArithmeticException e) {
+                strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
                 break;
+
             }
-            pm.worked(1);
         }
 
         /*
@@ -615,24 +624,28 @@ public class NetworkCalibration implements Network {
          * Magnitude > 1 AREE NON DI TESTA
          */
         while( k < magnitude.length ) {
-            net = new double[(int) (magnitude[k] - 1)][9];
-            scanNetwork(k, l, one, net);
-            internalPipeVerify(l, cDelays, net);
+            try {
+                net = new double[(int) (magnitude[k] - 1)][9];
+                scanNetwork(k, l, one, net);
+                internalPipeVerify(l, cDelays, net);
 
-            /* Passo allo stato successivo */
-            k++;
-            /* se non sono arrivato alla fine */
-            if (k < magnitude.length) {
-                /* Prossimo stato da progettare */
-                l = (int) one[k];
-            } else {
+                /* Passo allo stato successivo */
+                k++;
+                /* se non sono arrivato alla fine */
+                if (k < magnitude.length) {
+                    /* Prossimo stato da progettare */
+                    l = (int) one[k];
+                } else {
+                    break;
+                }
+                pm.worked(1);
+            } catch (ArithmeticException e) {
+                strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
                 break;
             }
-            pm.worked(1);
         }
         getDischarge();
     }
-
     private void getDischarge() {
         int nTime = timeDischarge.length;
         int length = timeDischarge[0].length;

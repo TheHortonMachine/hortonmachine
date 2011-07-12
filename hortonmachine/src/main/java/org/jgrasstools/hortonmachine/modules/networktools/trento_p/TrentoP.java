@@ -543,6 +543,28 @@ public class TrentoP {
         } else {
             Utility.verifyCalibrationType(schema, pm);
 
+            /*
+             * If the inRain is null and the users set the a and n parameters then create the rain data.
+             */
+            if (pA != null && pN != null && inRain == null) {
+                if(dt==null){
+                    pm.errorMessage(msg.message("trentoP.error.dtp"));
+                    throw new IllegalArgumentException();
+                }
+
+                int iMax = (int) (Math.floor((double)tMax /(double)dt));
+                DateTime startTime = new DateTime(System.currentTimeMillis());
+                inRain = new LinkedHashMap<DateTime, double[]>();
+                double tp = 1;
+                for( int i = 0; i <= iMax; i++ ) {
+                    DateTime newDate = startTime.minusMinutes(dt);
+                    double value = pA * pow(tp, pN - 1);
+                    inRain.put(newDate, new double[]{value});
+                    tp = tp + dt;
+                }
+
+            }
+
             if (inRain == null) {
 
                 pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
