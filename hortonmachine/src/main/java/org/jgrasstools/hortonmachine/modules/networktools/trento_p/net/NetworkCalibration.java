@@ -411,7 +411,9 @@ public class NetworkCalibration implements Network {
             }
 
             Qpartial[j][k] = Q;
-
+            if (Q > 0.0) {
+                networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
+            }
             if (Q >= Qmax) {
                 Qmax = Q;
             }
@@ -461,9 +463,9 @@ public class NetworkCalibration implements Network {
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
             double tmp1 = 0;
             double tmp2 = 0;
-            if (k - 2 >= 0) {
-                tmp1 = networkPipes[k - 2].diameterToVerify;
-                tmp2 = networkPipes[k - 2].getLenght();
+            if (k - 1 >= 0) {
+                tmp1 = networkPipes[k - 1].diameterToVerify;
+                tmp2 = networkPipes[k - 1].getLenght();
             }
 
             // Average velocity in pipe [ m / s ]

@@ -32,6 +32,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.indexed.IndexedShapefileDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
@@ -70,7 +71,7 @@ public class ShapefileFeatureReader extends JGTModel {
         try {
             File shapeFile = new File(file);
             pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
-            ShapefileDataStore store = new ShapefileDataStore(shapeFile.toURI().toURL());
+            IndexedShapefileDataStore   store = new IndexedShapefileDataStore(shapeFile.toURI().toURL());
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
         } finally {
@@ -94,4 +95,8 @@ public class ShapefileFeatureReader extends JGTModel {
         return reader.geodata;
     }
 
+    
+  
+    
+    
 }
