@@ -164,7 +164,12 @@ public class TrentoPFeatureType {
      * The variance in the mean length calculation.
      */
     public final static String VARIANCE_LENGTH_SUBNET_STR = "varLength";
+    /**
+     * The percentage of dry area.
+     */
+    public final static String PERCENTAGE_OF_DRY_AREA = "dryArea";
 
+    
     /**
      * The {@link Pipe} attributes and classes.
      */
@@ -181,6 +186,7 @@ public class TrentoPFeatureType {
         PIPE_SECTION_TYPE(PIPE_SECTION_TYPE_STR, Integer.class), //
         AVERAGE_SLOPE(AVERAGE_SLOPE_STR, Float.class), //
         DIAMETER_TO_VERIFY(DIAMETER_TO_VERIFY_STR, Float.class), //
+        PER_AREA(PERCENTAGE_OF_DRY_AREA,Float.class ), //
         DISCHARGE(DISCHARGE_STR, Float.class), //
         COEFF_UDOMETRICO(COEFF_UDOMETRICO_STR, Float.class), //
         RESIDENCE_TIME(RESIDENCE_TIME_STR, Float.class), //

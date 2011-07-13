@@ -266,6 +266,14 @@ public class TrentoP {
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outDischarge;
+    
+    
+    @UI("outfile")
+    @Description("The output if pTest=1, contains the fill degree for each pipes at several time.")
+    @Role(Role.OUTPUT)
+    @Out
+    public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
+    
     /**
      * Is an array with all the pipe of the net.
      */
@@ -306,13 +314,13 @@ public class TrentoP {
          * verify the parameter in input (these method, when the OMS annotation
          * work well, can be deleted).
          */
-        verifyParameter();
+
 
         Pipe.pm = pm;
         // begin the process.
         pm.message(msg.message("trentoP.firstMessage"));
         // create the net as an array of pipes.
-        setNetworkPipes();
+        setNetworkPipes( verifyParameter());
         /*
          * create an network object. It can be a NetworkCalibration if the mode
          * (pTest==1) verify otherwise is a NetworkBuilder.
@@ -322,17 +330,21 @@ public class TrentoP {
             // set other common parameters for the verification.
             if (inPipes != null) {
                 for( int t = 0; t < networkPipes.length; t++ ) {
+
                     networkPipes[t].setAccuracy(pAccuracy);
                     networkPipes[t].setJMax(pJMax);
                     networkPipes[t].setMaxTheta(pMaxTheta);
                     networkPipes[t].setTolerance(pTolerance);
                     networkPipes[t].setK(pEspInflux, pExponent, pGamma);
+
                 }
+
             }
 
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
+            outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, strBuilder)
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge,outFillDegree, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
 
@@ -385,9 +397,11 @@ public class TrentoP {
      * 
      * @throw IllegalArgumentException se un parametro non rispetta certe
      * condizioni (in OMS3 fatto dalle annotation)
+     * 
+     * @return true if there is the percentage area.
      */
-    private void verifyParameter() {
-
+    private boolean verifyParameter() {
+        boolean isAreaAllDry;
         if (inPipes == null) {
             pm.errorMessage(msg.message("trentoP.error.inputMatrix") + " geometry file");
             throw new IllegalArgumentException(msg.message("trentoP.error.inputMatrix" + " geometry file"));
@@ -459,7 +473,7 @@ public class TrentoP {
 
         if (pMode == 0) {
 
-            Utility.verifyProjectType(schema, pm);
+            isAreaAllDry = Utility.verifyProjectType(schema, pm);
 
             if (pA <= 0 || pA == null) {
                 pm.errorMessage(msg.message("trentoP.error.a"));
@@ -538,18 +552,18 @@ public class TrentoP {
                 throw new IllegalArgumentException();
             }
         } else {
-            Utility.verifyCalibrationType(schema, pm);
+            isAreaAllDry = Utility.verifyCalibrationType(schema, pm);
 
             /*
              * If the inRain is null and the users set the a and n parameters then create the rain data.
              */
-            if (pA != null && pN != null && inRain == null) {
-                if(dt==null){
+            if (pA != null && pN != null) {
+                if (dt == null) {
                     pm.errorMessage(msg.message("trentoP.error.dtp"));
                     throw new IllegalArgumentException();
                 }
 
-                int iMax = (int) (Math.floor((double)tMax /(double)dt));
+                int iMax = (int) (Math.floor((double) tMax / (double) dt));
                 DateTime startTime = new DateTime(System.currentTimeMillis());
                 inRain = new LinkedHashMap<DateTime, double[]>();
                 double tp = 1;
@@ -561,7 +575,6 @@ public class TrentoP {
                 }
 
             }
-
             if (inRain == null) {
 
                 pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
@@ -571,6 +584,7 @@ public class TrentoP {
             // verificy if the field exist.
 
         }
+        return isAreaAllDry;
     }
 
     /**
@@ -583,10 +597,11 @@ public class TrentoP {
      * oss: if the FeatureCillection is null a IllegalArgumentException is throw
      * in {@link TrentoP#verifyParameter()}.
      * 
+     * @param isAreaNotAllDry it is true if there is only a percentage of the input area dry.
      * @throws IllegalArgumentException
      *             if the FeatureCollection hasn't the correct parameters.
      */
-    private void setNetworkPipes() throws Exception {
+    private void setNetworkPipes( boolean isAreaNotAllDry ) throws Exception {
 
         int length = inPipes.size();
         networkPipes = new Pipe[length];
@@ -607,7 +622,7 @@ public class TrentoP {
                         throw new IllegalArgumentException(msg.message("trentoP.error.number" + TrentoPFeatureType.ID_STR));
                     }
                     t = field.intValue();
-                    networkPipes[t - 1] = new Pipe(feature, pMode);
+                    networkPipes[t - 1] = new Pipe(feature, pMode, isAreaNotAllDry);
 
                 } catch (NullPointerException e) {
                     pm.errorMessage(msg.message("trentop.illegalNet"));

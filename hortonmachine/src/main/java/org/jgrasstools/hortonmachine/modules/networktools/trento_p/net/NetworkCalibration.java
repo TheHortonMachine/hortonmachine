@@ -98,12 +98,17 @@ public class NetworkCalibration implements Network {
      */
     private final StringBuilder strBuilder;
     /*
+     * The fill degree for each pipe and for each time.
+     */
+    private HashMap<DateTime, HashMap<Integer, double[]>> fillDegree;
+
+    /*
      * The discharg for each pipe and for each time.
      */
     private HashMap<DateTime, HashMap<Integer, double[]>> discharge;
     /**
-     * Builder for the Calibration class.
-     */
+        * Builder for the Calibration class.
+        */
     public static class Builder {
 
         // Parametri obbligatori
@@ -115,13 +120,16 @@ public class NetworkCalibration implements Network {
 
         private final StringBuilder strBuilder;
         /*
+         * The fillDegree for each pipe and for each time.
+         */
+        private final HashMap<DateTime, HashMap<Integer, double[]>> fillDegree;
+        /*
          * The discharg for each pipe and for each time.
          */
         private final HashMap<DateTime, HashMap<Integer, double[]>> discharge;
         /*
          * Dati di pioggia.
          */
-
         private final HashMap<DateTime, double[]> inRain;
         /*
          * Dati relativi alla rete
@@ -146,16 +154,20 @@ public class NetworkCalibration implements Network {
          *            the rain data.
          * @param outDischarge
          *            the output, discharge.
+         * @param outFillDegree
+         *            the output, fill degree.           
          * @param strBuilder
          *            a tring used to store the warnings.
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
-                HashMap<DateTime, HashMap<Integer, double[]>> outDischarge, StringBuilder strBuilder ) {
+                HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
+                HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree, StringBuilder strBuilder ) {
             this.pm = pm;
             this.networkPipe = networkPipe;
             this.inRain = inRain;
             this.dt = dt;
             this.discharge = outDischarge;
+            this.fillDegree = outFillDegree;
             this.strBuilder = strBuilder;
         }
 
@@ -196,6 +208,7 @@ public class NetworkCalibration implements Network {
         this.pm = builder.pm;
         this.celerityfactor1 = builder.celerityfactor1;
         this.discharge = builder.discharge;
+        this.fillDegree = builder.fillDegree;
         this.tMax = builder.tMax;
         this.strBuilder = builder.strBuilder;
         if (builder.networkPipe != null) {
@@ -411,13 +424,14 @@ public class NetworkCalibration implements Network {
             }
 
             Qpartial[j][k] = Q;
-            if (Q > 0.0) {
-                try {
-                    networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
-                } catch (ArithmeticException e) {
-                    strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
-                }
-            }
+            // if (Q > 0.0) {
+            // try {
+            // networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
+            // } catch (ArithmeticException e) {
+            // strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k -
+            // 1].getId());
+            // }
+            // }
             if (Q >= Qmax) {
                 Qmax = Q;
             }
@@ -479,7 +493,13 @@ public class NetworkCalibration implements Network {
 
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
+        networkPipes[k - 1].setG(calculateFillDegree(theta));
         cDelays[k - 1] = localdelay;
+
+    }
+
+    private double calculateFillDegree( double theta ) {
+        return 0.5 * (1 - Math.cos(theta / 2));
 
     }
 
@@ -591,8 +611,9 @@ public class NetworkCalibration implements Network {
         // tratto che si sta analizzando o progettando
         l = (int) one[k];
         pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
-
+        boolean isFill = false;
         double[] cDelays = new double[networkPipes.length];
+        double maxFill = calculateFillDegree(networkPipes[k].getMaxTheta());
         while( magnitude[k] == 1 ) {
             try {
                 headPipeVerify(l, cDelays);
@@ -611,7 +632,13 @@ public class NetworkCalibration implements Network {
                 }
                 pm.worked(1);
             } catch (ArithmeticException e) {
-                strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
+                strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                strBuilder.append(maxFill);
+                strBuilder.append(" ");
+                strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
+                strBuilder.append(networkPipes[k].getId());
+                strBuilder.append("\n");
+                isFill = true;
                 break;
 
             }
@@ -623,45 +650,68 @@ public class NetworkCalibration implements Network {
          * 
          * Magnitude > 1 AREE NON DI TESTA
          */
-        while( k < magnitude.length ) {
-            try {
-                net = new double[(int) (magnitude[k] - 1)][9];
-                scanNetwork(k, l, one, net);
-                internalPipeVerify(l, cDelays, net);
+        if (!isFill) {
+            while( k < magnitude.length ) {
 
-                /* Passo allo stato successivo */
-                k++;
-                /* se non sono arrivato alla fine */
-                if (k < magnitude.length) {
-                    /* Prossimo stato da progettare */
-                    l = (int) one[k];
-                } else {
+                try {
+                    net = new double[(int) (magnitude[k] - 1)][9];
+                    scanNetwork(k, l, one, net);
+                    internalPipeVerify(l, cDelays, net);
+
+                    /* Passo allo stato successivo */
+                    k++;
+                    /* se non sono arrivato alla fine */
+                    if (k < magnitude.length) {
+                        /* Prossimo stato da progettare */
+                        l = (int) one[k];
+                    } else {
+                        break;
+                    }
+                    pm.worked(1);
+                } catch (ArithmeticException e) {
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                    strBuilder.append(maxFill);
+                    strBuilder.append(" ");
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
+                    strBuilder.append(networkPipes[k].getId());
+                    strBuilder.append("\n");
                     break;
                 }
-                pm.worked(1);
-            } catch (ArithmeticException e) {
-                strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k - 1].getId());
-                break;
             }
         }
-        getDischarge();
+        getNetData();
+
     }
-    private void getDischarge() {
+
+    /*
+     * Fill the two output HashMap.
+     */
+    private void getNetData() {
         int nTime = timeDischarge.length;
         int length = timeDischarge[0].length;
-        HashMap<Integer, double[]> tmpHM = new LinkedHashMap<Integer, double[]>();
+        HashMap<Integer, double[]> tmpHMDis = new LinkedHashMap<Integer, double[]>();
+        HashMap<Integer, double[]> tmpHMFill = new LinkedHashMap<Integer, double[]>();
+
         for( int i = 1; i < length; i++ ) {
-            tmpHM.put(networkPipes[i - 1].getId(), new double[]{timeDischarge[0][i]});
+            tmpHMDis.put(networkPipes[i - 1].getId(), new double[]{timeDischarge[0][i]});
+            tmpHMFill.put(networkPipes[i - 1].getId(), new double[]{networkPipes[i - 1].getG()});
+
         }
-        discharge.put(first, tmpHM);
+        discharge.put(first, tmpHMDis);
+        fillDegree.put(first, tmpHMFill);
         DateTime tmp = first;
         for( int i = 1; i < nTime; ++i ) {
             tmp = tmp.plusMinutes(dt);
-            tmpHM = new LinkedHashMap<Integer, double[]>();
+            tmpHMDis = new LinkedHashMap<Integer, double[]>();
+            tmpHMFill = new LinkedHashMap<Integer, double[]>();
+
             for( int j = 1; j < length; j++ ) {
-                tmpHM.put(networkPipes[j - 1].getId(), new double[]{timeDischarge[i][j]});
+                tmpHMDis.put(networkPipes[j - 1].getId(), new double[]{timeDischarge[i][j]});
+                tmpHMFill.put(networkPipes[j - 1].getId(), new double[]{networkPipes[j - 1].getG()});
+
             }
-            discharge.put(tmp, tmpHM);
+            discharge.put(tmp, tmpHMDis);
+            fillDegree.put(tmp, tmpHMFill);
         }
     }
     /**

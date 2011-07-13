@@ -369,8 +369,9 @@ public class Utility {
      * </p>
      * @param schema is yhe type for the calibration mode.
      * @param pm
+     * @return true if there is the percentage of the area.
      */
-    public static void verifyCalibrationType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
+    public static boolean verifyCalibrationType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
         String searchedField = PipesTrentoP.ID.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
@@ -389,6 +390,13 @@ public class Utility {
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.PER_AREA.getAttributeName();
+        String attributeName = findAttributeName(schema, searchedField);
+        if (attributeName != null) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -399,8 +407,9 @@ public class Utility {
      * </p>
      * @param schema is yhe type for the project mode.
      * @param pm
+     * @return true if there is the percentage of the area.
      */
-    public static void verifyProjectType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
+    public static boolean verifyProjectType( SimpleFeatureType schema, IJGTProgressMonitor pm ) {
         String searchedField = PipesTrentoP.ID.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.DRAIN_AREA.getAttributeName();
@@ -421,6 +430,14 @@ public class Utility {
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.AVERAGE_SLOPE.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
+        searchedField = PipesTrentoP.PER_AREA.getAttributeName();
+        String attributeName = findAttributeName(schema, searchedField);
+        if (attributeName != null) {
+            return true;
+        }
+
+        return false;
+    
     }
 
     /**

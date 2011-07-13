@@ -297,8 +297,8 @@ public class Pipe {
     public static IJGTProgressMonitor pm;
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    public Pipe( SimpleFeature feature, int verify ) throws Exception {
-        setKnowNetworkValue(feature, verify);
+    public Pipe( SimpleFeature feature, int verify, boolean isAreaNotAllDry ) throws Exception {
+        setKnowNetworkValue(feature, verify, isAreaNotAllDry);
 
     }
 
@@ -467,10 +467,11 @@ public class Pipe {
      *            the feature where the value are stored.
      * @param verify
      *            if the mode is project or verify.
+     * @param isAreaNotAllDry 
      * @throws Exception
      *             if the featureCollection doesn't contains the field
      */
-    private void setKnowNetworkValue( SimpleFeature pipeFeature, int verify ) throws Exception {
+    private void setKnowNetworkValue( SimpleFeature pipeFeature, int verify, boolean isAreaNotAllDry ) throws Exception {
 
         try {
 
@@ -481,7 +482,18 @@ public class Pipe {
             this.id = setFeatureField(pipeFeature, PipesTrentoP.ID.getAttributeName()).intValue();
             double tmp = setFeatureField(pipeFeature, PipesTrentoP.DRAIN_AREA.getAttributeName()).doubleValue();
             if (tmp >= 0.0) {
-                this.drainArea = tmp;
+                if (!isAreaNotAllDry) {
+                    this.drainArea = tmp;
+                } else {
+                    double tmpPerc = setFeatureField(pipeFeature, PipesTrentoP.PER_AREA.getAttributeName()).doubleValue();
+                    if (tmpPerc >= 0 && tmpPerc <= 1) {
+                        this.drainArea = tmp * tmpPerc;
+                    } else {
+                        pm.errorMessage(msg.message("trentoP.error.fieldPerArea") + tmpPerc);
+                        throw new IllegalArgumentException(msg.message("trentoP.error.fieldPerArea" + tmpPerc));
+                    }
+
+                }
             } else {
                 pm.errorMessage(msg.message("trentoP.error.fieldArea") + tmp);
                 throw new IllegalArgumentException(msg.message("trentoP.error.fieldArea" + tmp));
@@ -1450,8 +1462,8 @@ public class Pipe {
          * commerciale [rad]
          */
 
-            newtheta = Utility.thisBisection(thta, known, ONEOVERSIX, minG, accuracy, jMax, pm, strWarnings);
-  
+        newtheta = Utility.thisBisection(thta, known, ONEOVERSIX, minG, accuracy, jMax, pm, strWarnings);
+
         /* Grado di riempimento del tubo */
         emptyDegree = 0.5 * (1 - cos(newtheta / 2));
         return newtheta;
