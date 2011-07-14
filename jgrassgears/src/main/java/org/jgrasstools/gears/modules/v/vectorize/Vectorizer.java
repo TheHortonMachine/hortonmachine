@@ -17,6 +17,11 @@
  */
 package org.jgrasstools.gears.modules.v.vectorize;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
+import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.util.Collection;
@@ -27,6 +32,8 @@ import java.util.Map.Entry;
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -41,21 +48,27 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.rangelookup.RangeLookup;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
@@ -87,6 +100,10 @@ public class Vectorizer extends JGTModel {
     @In
     public double pThres = 0;
 
+    @Description("Make a check on the raster first and shrink the boundaries on the region with data.")
+    @In
+    public boolean doRegioncheck = false;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -97,6 +114,10 @@ public class Vectorizer extends JGTModel {
 
     private CoordinateReferenceSystem crs;
 
+    private int cols;
+
+    private int rows;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outVector == null, doReset)) {
@@ -104,6 +125,11 @@ public class Vectorizer extends JGTModel {
         }
         checkNull(inRaster);
         crs = inRaster.getCoordinateReferenceSystem();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        cols = regionMap.getCols();
+        rows = regionMap.getRows();
+
+        doRegionCheck();
 
         String classes = null;
         StringBuilder sb = new StringBuilder();
@@ -173,6 +199,36 @@ public class Vectorizer extends JGTModel {
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
             index++;
             outVector.add(feature);
+        }
+    }
+
+    private void doRegionCheck() throws TransformException {
+        if (doRegioncheck) {
+            int left = Integer.MAX_VALUE;
+            int right = -Integer.MAX_VALUE;
+            int top = -Integer.MAX_VALUE;
+            int bottom = Integer.MAX_VALUE;
+
+            RenderedImage rasterRI = inRaster.getRenderedImage();
+            RandomIter rasterIter = RandomIterFactory.create(rasterRI, null);
+            for( int c = 0; c < cols; c++ ) {
+                for( int r = 0; r < rows; r++ ) {
+                    double value = rasterIter.getSampleDouble(c, r, 0);
+                    if (!isNovalue(value)) {
+                        left = min(left, c);
+                        right = max(right, c);
+                        top = max(top, r);
+                        bottom = min(bottom, r);
+                    }
+                }
+            }
+
+            GridGeometry2D gridGeometry = inRaster.getGridGeometry();
+            GridEnvelope2D gEnv = new GridEnvelope2D();
+            gEnv.setLocation(new Point(left, top));
+            gEnv.add(new Point(right, bottom));
+            Envelope2D envelope2d = gridGeometry.gridToWorld(gEnv);
+            inRaster = (GridCoverage2D) Operations.DEFAULT.crop(inRaster, envelope2d);
         }
     }
 
