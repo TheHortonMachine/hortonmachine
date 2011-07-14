@@ -64,6 +64,10 @@ public class H2cd extends JGTModel {
     @In
     public GridCoverage2D inNet = null;
 
+    @Description("The optional map of the elevation used for 3d mode in pMode = 1.")
+    @In
+    public GridCoverage2D inElev = null;
+
     @Description("The processing mode (0 = in number of pixels (default), 1 = in meters).")
     @In
     public int pMode = 0;
@@ -90,6 +94,12 @@ public class H2cd extends JGTModel {
         RenderedImage netRI = inNet.getRenderedImage();
         RandomIter netIter = RandomIterFactory.create(netRI, null);
 
+        RandomIter elevIter = null;
+        if (inElev != null && pMode == 1) {
+            RenderedImage elevRI = inElev.getRenderedImage();
+            elevIter = RandomIterFactory.create(elevRI, null);
+        }
+
         WritableRaster h2cdWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 0.0);
         WritableRandomIter h2cdIter = RandomIterFactory.createWritable(h2cdWR, null);
 
@@ -102,7 +112,7 @@ public class H2cd extends JGTModel {
         }
 
         if (pMode == 1) {
-            ModelsEngine.topologicalOutletdistance(flowIter, h2cdIter, regionMap, pm);
+            ModelsEngine.topologicalOutletdistance(flowIter, elevIter, h2cdIter, regionMap, pm);
         } else {
             ModelsEngine.outletdistance(flowIter, h2cdIter, regionMap, pm);
         }

@@ -62,6 +62,18 @@ public class TestH2cd extends HMTestCase {
 
         checkMatrixEqual(outH2cd.getRenderedImage(), HMTestMaps.h2cdTopoData, 0.05);
 
+        // 3d mode
+        double[][] elevData = HMTestMaps.pitData;
+        GridCoverage2D elevRaster = CoverageUtilities.buildCoverage("pit", elevData, envelopeParams, crs, true);
+        h2cd = new H2cd();
+        h2cd.inFlow = flowRaster;
+        h2cd.inNet = netRaster;
+        h2cd.inElev = elevRaster;
+        h2cd.pMode = 1;
+        h2cd.process();
+        outH2cd = h2cd.outH2cd;
+        
+        checkMatrixEqual(outH2cd.getRenderedImage(), HMTestMaps.h2cd3dData, 0.05);
     }
 
 }
