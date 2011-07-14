@@ -46,13 +46,13 @@ public class TrentoPFeatureType {
      * featureCollections.
      */
 
-    public final static String INITIAL_ELEVATION_STR = "initialZ";
+    public final static String INITIAL_ELEVATION_STR = "downstrZ";
     /**
      * The field of the final elevation of this pipe, in the inPipes
      * featureCollections.
      */
 
-    public final static String FINAL_ELEVATION_STR = "finalZ";
+    public final static String FINAL_ELEVATION_STR = "upstreamZ";
     /**
      * The field of the runoff coefficent in the inPipes featureCollections.
      */
@@ -98,11 +98,11 @@ public class TrentoPFeatureType {
     /**
      * The field of the height of the free surface at the begin of the pipe.
      */
-    public final static String INITIAL_FREE_SURFACE_STR = "InFreeSurf";
+    public final static String INITIAL_FREE_SURFACE_STR = "DoFreeSurf";
     /**
      * The field of the height of the free surface at the end of the pipe.
      */
-    public final static String FINAL_FREE_SURFACE_STR = "FFreeSurf";
+    public final static String FINAL_FREE_SURFACE_STR = "UpFreeSurf";
     /**
      * The field of Empty degree of the pipe.
      */
@@ -111,11 +111,11 @@ public class TrentoPFeatureType {
     /**
      * The field of the depth of the dig at the end of the pipe.
      */
-    public final static String DEPTH_FINAL_PIPE_STR = "fidepth";
+    public final static String DEPTH_FINAL_PIPE_STR = "upDepth";
     /**
      * The field of the depth of the dig at the begin of the pipe.
      */
-    public final static String DEPTH_INITIAL_PIPE_STR = "in_depth";
+    public final static String DEPTH_INITIAL_PIPE_STR = "DownDepth";
     /**
      * The field of the diameter of the pipe.
      */
