@@ -54,6 +54,7 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -1199,7 +1200,7 @@ public class ModelsEngine {
                     } else {
                         throw new ModelsIllegalargumentException("Undefined situation while go2channel", "ModelsEngine");
                     }
-                    
+
                     /*
                      * and start over again, setting the whole downstream to that value == basin number
                      */
@@ -1760,13 +1761,154 @@ public class ModelsEngine {
     }
 
     /**
-     * Approximate to multiple.
+     * Calculates the distance of every pixel of the basin from the outlet (in pixel number),
+     * calculated along the drainage directions
      * 
-     * @param tMAX2 value to approximate
-     * @param dt unity.
-     * @return multiple of dt (which is the best approximation of tMAX2).
+     * @param flowIter the flow map.
+     * @param distToOutRandomIter the resulting outlet distance map.
+     * @param region the region parameters.
+     * @param pm the monitor.
      */
-    public static double approximate2Multiple( double tMAX2, double dt ) {
-        return tMAX2 - abs(tMAX2 % dt);
+    public static void topologicalOutletdistance( RandomIter flowIter, WritableRandomIter distToOutRandomIter, RegionMap region,
+            IJGTProgressMonitor pm ) {
+        int activeCols = region.getCols();
+        int activeRows = region.getRows();
+        double dx = region.getXres();
+        double dy = region.getYres();
+        int[] flow = new int[2];
+        double oldir = 0.0;
+        double[] grid = new double[11];
+        double count = 0.0;
+
+        grid[0] = grid[9] = grid[10] = 0;
+        grid[1] = grid[5] = abs(dx);
+        grid[3] = grid[7] = abs(dy);
+        grid[2] = grid[4] = grid[6] = grid[8] = sqrt(dx * dx + dy * dy);
+
+        pm.beginTask("Calculating topological outlet distance...", activeRows);
+        for( int r = 0; r < activeRows; r++ ) {
+            for( int c = 0; c < activeCols; c++ ) {
+                flow[0] = c;
+                flow[1] = r;
+                if (isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
+                    distToOutRandomIter.setSample(flow[0], flow[1], 0, doubleNovalue);
+                } else {
+                    if (isSourcePixel(flowIter, flow[0], flow[1])) {
+                        count = 0;
+                        oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
+                        go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
+                                && distToOutRandomIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                            count += grid[(int) oldir];
+                            oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
+                            go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        }
+                        if (distToOutRandomIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
+                            count += grid[(int) oldir] + distToOutRandomIter.getSampleDouble(flow[0], flow[1], 0);
+                            distToOutRandomIter.setSample(c, r, 0, count);
+                        } else if (flowIter.getSampleDouble(flow[0], flow[1], 0) > 9) {
+                            distToOutRandomIter.setSample(flow[0], flow[1], 0, 0);
+                            count += grid[(int) oldir];
+                            distToOutRandomIter.setSample(c, r, 0, count);
+                        }
+
+                        flow[0] = c;
+                        flow[1] = r;
+                        oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
+                        go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
+                                && distToOutRandomIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                            count -= grid[(int) oldir];
+                            distToOutRandomIter.setSample(flow[0], flow[1], 0, count);
+                            oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
+                            go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        }
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+    }
+
+    /**
+     * Calculates the distance of every pixel of the basin from the outlet (in map units),
+     * calculated along the drainage directions
+     * 
+     * @param flowIter the flow map.
+     * @param h2cdIter the resulting outlet distance map.
+     * @param region the region parameters.
+     * @param pm the monitor.
+     */
+    public static void outletdistance( RandomIter flowIter, WritableRandomIter h2cdIter, RegionMap region,
+            IJGTProgressMonitor pm ) {
+        int cols = region.getCols();
+        int rows = region.getRows();
+        int[] flow = new int[2];
+        double count = 0.0;
+
+        pm.beginTask("Calculating outlet distance...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                flow[0] = c;
+                flow[1] = r;
+                if (isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
+                    h2cdIter.setSample(flow[0], flow[1], 0, doubleNovalue);
+                } else {
+                    flow[0] = c;
+                    flow[1] = r;
+                    if (isSourcePixel(flowIter, flow[0], flow[1])) {
+                        count = 0;
+                        go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
+                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                            count += 1;
+                            go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        }
+                        if (h2cdIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
+                            count += 1 + h2cdIter.getSampleDouble(flow[0], flow[1], 0);
+                            h2cdIter.setSample(c, r, 0, count);
+                        } else if (flowIter.getSampleDouble(flow[0], flow[1], 0) > 9) {
+                            h2cdIter.setSample(flow[0], flow[1], 0, 0);
+                            count += 1;
+                            h2cdIter.setSample(c, r, 0, count);
+                        }
+
+                        flow[0] = c;
+                        flow[1] = r;
+                        go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
+                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                            count -= 1;
+                            h2cdIter.setSample(flow[0], flow[1], 0, count);
+                            go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+                        }
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+    }
+
+    /**
+     * Approximate a value to a multiple of a divisor value.
+     *
+     * <p>
+     * It evaluates a multiple of the divisor (which is the nearest number to valueToApproximate).
+     * </p>
+     * 
+     * @param valueToApproximate value to approximate
+     * @param divisor the unit value, it's the divisor number.
+     * @return the largest value less than or equal to valueToApproximate and divisible to divisor.
+     */
+    public static double approximate2Multiple( double valueToApproximate, double divisor ) {
+        return valueToApproximate - abs(valueToApproximate % divisor);
     }
 }
