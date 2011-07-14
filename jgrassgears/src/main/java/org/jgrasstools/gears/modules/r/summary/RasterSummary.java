@@ -65,6 +65,10 @@ public class RasterSummary extends JGTModel {
     @In
     public int pBins = 100;
 
+    @Description("Flag that defines if the histogram should be done also (default = false).")
+    @In
+    public boolean doHistogram = false;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -102,9 +106,10 @@ public class RasterSummary extends JGTModel {
         if (!concatOr(outMin == null, doReset)) {
             return;
         }
-        
-        // TODO use the geotools bridge instead of jaitools: http://svn.osgeo.org/geotools/trunk/modules/library/coverage/src/test/java/org/geotools/coverage/processing/operation/ZonalStasTest.java
-        
+
+        // TODO use the geotools bridge instead of jaitools:
+        // http://svn.osgeo.org/geotools/trunk/modules/library/coverage/src/test/java/org/geotools/coverage/processing/operation/ZonalStasTest.java
+
         RenderedImage inRI = inRaster.getRenderedImage();
         ParameterBlockJAI pb = new ParameterBlockJAI("ZonalStats");
         pb.setSource("dataImage", inRI);
@@ -144,6 +149,9 @@ public class RasterSummary extends JGTModel {
                 break;
             }
         }
+
+        if (!doHistogram)
+            return;
 
         double[][] cb = new CoupledFieldsMoments().process(inRI, null, pBins, 1, 2, pm, 1);
 
