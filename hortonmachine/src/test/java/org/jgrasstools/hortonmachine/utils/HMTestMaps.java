@@ -721,7 +721,7 @@ public class HMTestMaps {
             {NaN, 0, 2, 1, 1, 1, 2, 2, 1, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-
+    
     public static double[][] h2cd3dData = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 347.63, 155.88, 226.53, 217.26, 264.51, 411.61, 253.57, NaN}, //

@@ -87,11 +87,6 @@ public class Tc extends JGTModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    /**
-     * Calculates new drainage directions
-     * 
-     * @throws Exception
-     */
     @Execute
     public void process() throws Exception {
         if (!concatOr(outTc3 == null, outTc9 == null, doReset)) {
