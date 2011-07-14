@@ -980,4 +980,44 @@ public class CoverageUtilities {
         return null;
     }
 
+    /**
+     * Mappes the values of a map (valuesMap) into the valid pixels of the second map (maskMap).
+     * 
+     * @param valuesMap the map holding the values that are needed in the resulting map.
+     * @param maskMap the map to use as mask for the values.
+     * @return the map containing the values of the valuesMap, but only in the places in which the maskMap is valid.
+     */
+    public static GridCoverage2D coverageValuesMapper( GridCoverage2D valuesMap, GridCoverage2D maskMap ) {
+        RegionMap valuesRegionMap = getRegionParamsFromGridCoverage(valuesMap);
+        int cs = valuesRegionMap.getCols();
+        int rs = valuesRegionMap.getRows();
+        RegionMap maskRegionMap = getRegionParamsFromGridCoverage(maskMap);
+        int tmpcs = maskRegionMap.getCols();
+        int tmprs = maskRegionMap.getRows();
+
+        if (cs != tmpcs || rs != tmprs) {
+            throw new IllegalArgumentException("The raster maps have to be of equal size to be mapped.");
+        }
+
+        RandomIter valuesIter = RandomIterFactory.create(valuesMap.getRenderedImage(), null);
+        RandomIter maskIter = RandomIterFactory.create(maskMap.getRenderedImage(), null);
+        WritableRaster writableRaster = createDoubleWritableRaster(cs, rs, null, null, JGTConstants.doubleNovalue);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(writableRaster, null);
+
+        for( int c = 0; c < cs; c++ ) {
+            for( int r = 0; r < rs; r++ ) {
+                if (!isNovalue(maskIter.getSampleDouble(c, r, 0))) {
+                    // if not nv, put the value from the valueMap in the new map
+                    double value = valuesIter.getSampleDouble(c, r, 0);
+                    if (!isNovalue(value))
+                        outIter.setSample(c, r, 0, value);
+                }
+            }
+        }
+
+        GridCoverage2D outCoverage = buildCoverage(
+                "mapped", writableRaster, maskRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        return outCoverage;
+    }
+
 }
