@@ -337,7 +337,7 @@ public class NetworkCalibration implements Network {
             localdelay = networkPipes[k - 1].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
 
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
-
+        networkPipes[k - 1].setG(calculateFillDegree(theta));
         cDelays[k - 1] = localdelay;
 
     }
@@ -636,7 +636,7 @@ public class NetworkCalibration implements Network {
                 strBuilder.append(maxFill);
                 strBuilder.append(" ");
                 strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                strBuilder.append(networkPipes[k].getId());
+                strBuilder.append(networkPipes[l-1].getId());
                 strBuilder.append("\n");
                 isFill = true;
                 break;
@@ -673,7 +673,7 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(maxFill);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                    strBuilder.append(networkPipes[k].getId());
+                    strBuilder.append(networkPipes[l-1].getId());
                     strBuilder.append("\n");
                     break;
                 }
