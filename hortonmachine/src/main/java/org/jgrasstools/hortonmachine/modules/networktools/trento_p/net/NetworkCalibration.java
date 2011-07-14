@@ -89,6 +89,12 @@ public class NetworkCalibration implements Network {
      * The time of discharge.
      */
     private double[][] timeDischarge;
+
+    /*
+     * The time of fill degree..
+     */
+    private double[][] timeFillDegree;
+
     /*
      * The
      */
@@ -265,6 +271,8 @@ public class NetworkCalibration implements Network {
             tmin = rainData[0][0];
             time = tmin;
             timeDischarge = new double[nTime][networkPipes.length + 1];
+            timeFillDegree = new double[nTime][networkPipes.length + 1];
+
             for( int i = 0; i < nTime; ++i ) {
                 timeDischarge[i][0] = time;
                 time += dt;
@@ -328,7 +336,7 @@ public class NetworkCalibration implements Network {
             for( int i = 0; i < net.length; i++ ) {
                 net[i][2] -= localdelay;
             }
-
+            calculateFillDegree(k, timeDischarge);
             B = Qmax / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
             known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
@@ -337,8 +345,24 @@ public class NetworkCalibration implements Network {
             localdelay = networkPipes[k - 1].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
 
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
-
         cDelays[k - 1] = localdelay;
+
+    }
+
+    
+    private void calculateFillDegree( int k, double[][] timeDischarge2 ) {
+        double accuracy = networkPipes[0].getAccuracy();
+        int jMax = networkPipes[0].getjMax();
+        double minG = networkPipes[0].getMinG();
+        double maxtheta = networkPipes[0].getMaxTheta();
+        for( int i = 0; i < timeDischarge2.length; i++ ) {
+            double q = timeDischarge2[i][k];
+            double B = q
+                    / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
+            double known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
+            double theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
+            timeFillDegree[i][k] = angleToFillDegree(theta);
+        }
 
     }
 
@@ -474,7 +498,8 @@ public class NetworkCalibration implements Network {
             Qmax = getHydrograph(k, timeDischarge, olddelay, 0);
             if (Qmax <= 1) {
                 Qmax = 1;
-            }
+            } 
+            calculateFillDegree(k, timeDischarge);
             B = Qmax
                     / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * Math.sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
             known = (B * TWO_THIRTEENOVERTHREE) / Math.pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
@@ -493,12 +518,18 @@ public class NetworkCalibration implements Network {
 
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
-        networkPipes[k - 1].setG(calculateFillDegree(theta));
         cDelays[k - 1] = localdelay;
 
     }
 
-    private double calculateFillDegree( double theta ) {
+    
+    /**
+     * Calculate the fill degree of a pipe.
+     * 
+     * @param theta the angle.
+     * @return the value of y/D.
+     */
+    private double angleToFillDegree( double theta ) {
         return 0.5 * (1 - Math.cos(theta / 2));
 
     }
@@ -613,7 +644,7 @@ public class NetworkCalibration implements Network {
         pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
         boolean isFill = false;
         double[] cDelays = new double[networkPipes.length];
-        double maxFill = calculateFillDegree(networkPipes[k].getMaxTheta());
+        double maxFill = angleToFillDegree(networkPipes[k].getMaxTheta());
         while( magnitude[k] == 1 ) {
             try {
                 headPipeVerify(l, cDelays);
@@ -636,7 +667,7 @@ public class NetworkCalibration implements Network {
                 strBuilder.append(maxFill);
                 strBuilder.append(" ");
                 strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                strBuilder.append(networkPipes[k].getId());
+                strBuilder.append(networkPipes[l - 1].getId());
                 strBuilder.append("\n");
                 isFill = true;
                 break;
@@ -673,7 +704,7 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(maxFill);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                    strBuilder.append(networkPipes[k].getId());
+                    strBuilder.append(networkPipes[l - 1].getId());
                     strBuilder.append("\n");
                     break;
                 }
@@ -694,7 +725,7 @@ public class NetworkCalibration implements Network {
 
         for( int i = 1; i < length; i++ ) {
             tmpHMDis.put(networkPipes[i - 1].getId(), new double[]{timeDischarge[0][i]});
-            tmpHMFill.put(networkPipes[i - 1].getId(), new double[]{networkPipes[i - 1].getG()});
+            tmpHMFill.put(networkPipes[i - 1].getId(), new double[]{timeFillDegree[0][i]});
 
         }
         discharge.put(first, tmpHMDis);
@@ -707,7 +738,7 @@ public class NetworkCalibration implements Network {
 
             for( int j = 1; j < length; j++ ) {
                 tmpHMDis.put(networkPipes[j - 1].getId(), new double[]{timeDischarge[i][j]});
-                tmpHMFill.put(networkPipes[j - 1].getId(), new double[]{networkPipes[j - 1].getG()});
+                tmpHMFill.put(networkPipes[j - 1].getId(), new double[]{timeFillDegree[i][j]});
 
             }
             discharge.put(tmp, tmpHMDis);

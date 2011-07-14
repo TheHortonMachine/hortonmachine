@@ -1199,7 +1199,7 @@ public class ModelsEngine {
                     } else {
                         throw new ModelsIllegalargumentException("Undefined situation while go2channel", "ModelsEngine");
                     }
-                    
+
                     /*
                      * and start over again, setting the whole downstream to that value == basin number
                      */
@@ -1760,13 +1760,13 @@ public class ModelsEngine {
     }
 
     /**
-     * Approximate to multiple.
+     * Approximate a value to multiple of a divisor.
      * 
-     * @param tMAX2 value to approximate
-     * @param dt unity.
-     * @return multiple of dt (which is the best approximation of tMAX2).
+     * @param valueToApproximate value to approximate
+     * @param divisor unity.
+     * @return multiple of the divisor (which is the nearest number to valueToApproximate and a multiple of the divisor).
      */
-    public static double approximate2Multiple( double tMAX2, double dt ) {
-        return tMAX2 - abs(tMAX2 % dt);
+    public static double approximate2Multiple( double valueToApproximate, double divisor ) {
+        return valueToApproximate - abs(valueToApproximate % divisor);
     }
 }
