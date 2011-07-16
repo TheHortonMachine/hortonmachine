@@ -534,7 +534,7 @@ public class Pipe {
             if (verify == 1) {
                 /* Pipe diameter [cm] */
 
-                this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName())
+                this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName())
                         .doubleValue();
                 /* Pipe slope [%] */
 

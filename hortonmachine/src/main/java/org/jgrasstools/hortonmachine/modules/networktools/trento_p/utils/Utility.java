@@ -391,7 +391,7 @@ public class Utility {
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.KS.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
-        searchedField = PipesTrentoP.DIAMETER_TO_VERIFY.getAttributeName();
+        searchedField = PipesTrentoP.DIAMETER.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);
         searchedField = PipesTrentoP.AVERAGE_SLOPE.getAttributeName();
         verifyFeatureKey(findAttributeName(schema, searchedField), searchedField, pm);

@@ -42,7 +42,7 @@ public class TrentoPFeatureType {
 
     public final static String DRAIN_AREA_STR = "Area";
     /**
-     * The field of the initial elevation of this pipe this pipe, in the inPipes
+     * The field of the initial elevation of this pipe, in the inPipes
      * featureCollections.
      */
 
@@ -185,7 +185,6 @@ public class TrentoPFeatureType {
         MINIMUM_PIPE_SLOPE(MINIMUM_PIPE_SLOPE_STR, Float.class), //
         PIPE_SECTION_TYPE(PIPE_SECTION_TYPE_STR, Integer.class), //
         AVERAGE_SLOPE(AVERAGE_SLOPE_STR, Float.class), //
-        DIAMETER_TO_VERIFY(DIAMETER_TO_VERIFY_STR, Float.class), //
         PER_AREA(PERCENTAGE_OF_DRY_AREA,Float.class ), //
         DISCHARGE(DISCHARGE_STR, Float.class), //
         COEFF_UDOMETRICO(COEFF_UDOMETRICO_STR, Float.class), //

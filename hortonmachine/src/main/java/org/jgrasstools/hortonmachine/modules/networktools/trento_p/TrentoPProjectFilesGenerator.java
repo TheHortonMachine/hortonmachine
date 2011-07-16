@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makeLineStringShp;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makePolygonShp;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makeShp;
 
@@ -42,6 +41,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.ITrentoPType;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
@@ -52,7 +52,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Generates the input shapefiles for  a TrentoP simulation.")
+@Description("Generates the input shapefiles for a TrentoP simulation.")
 @Author(name = "Daniele Andreis")
 @Keywords("TrentoP")
 @Status(Status.DRAFT)
@@ -61,11 +61,11 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
 
     @Description("If it is 0 then create a project file (default mode) otherwise create the calibration shp")
     @In
-    public Integer pTest = null;
+    public Integer pMode = null;
 
     @Description("If it is true then generate it from an old output file")
     @In
-    public Boolean pExistOldShp = false;
+    public Boolean pExistProjectShp = false;
 
     @Description("The folder into which to create the base files.")
     @In
@@ -76,64 +76,64 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
     @In
     public String pCode;
 
-    @Description("The name of the .shp file. By deafault it is network.shp")
+    @Description("The name of the .shp file.")
     @In
-    public String pShapeFileName = null;
+    public String pShapeNetworkName = null;
 
-    @Description("the output fc of TrentoP")
+    @Description("the output fc of TrentoP. It's a geosewere network")
     @In
     public SimpleFeatureCollection pOldFC = null;
 
-    @Description("The name of the .shp file. By deafault it is network.shp")
+    @Description("The name of the .shp file. By deafault it is aree.shp")
     @In
-    public String pAreaShapeFileName = Constants.AREA_NAME_SHP;
+    public String pShapeAreeName = Constants.AREA_NAME_SHP;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
+    /**
+     * Message handler.
+     */
+    private final HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
     public void process() throws Exception {
-        // if the test isn't setted then set it to project mode.
-        if (pTest == null) {
-            pTest = 0;
+        // if the test isn't set then set it to project mode.
+        if (pMode == null) {
+            pMode = 0;
         }
 
         // verify if the file name is setted otherwise set it to a default value.
-        if (pShapeFileName == null) {
-            if (pTest == 0) {
-                pShapeFileName = Constants.NETWORK_PROJECT_NAME_SHP;
-            } else if (pTest == 1) {
-                pShapeFileName = Constants.NETWORK_CALIBRATION_NAME_SHP;
+        if (pShapeNetworkName == null) {
+            if (pMode == 0) {
+                pShapeNetworkName = Constants.NETWORK_PROJECT_NAME_SHP;
+            } else if (pMode == 1) {
+                pShapeNetworkName = Constants.NETWORK_CALIBRATION_NAME_SHP;
             }
         }
 
         checkNull(inFolder, pCode);
         CoordinateReferenceSystem crs = CRS.decode(pCode);
-
         File baseFolder = new File(inFolder);
-
-        pm.beginTask("Create TrentoP project shapefiles...", 7);
+        pm.beginTask(msg.message("trentoP.generatefile.project"), 7);
         pm.worked(1);
         // if you want to create an empty file
-        if (!pExistOldShp) {
+        if (!pExistProjectShp) {
             ITrentoPType[] values = PipesTrentoP.values();
             // project
-            if (pTest == 0) {
-                makeShp(getProjectType(crs), baseFolder, pShapeFileName, null);
-
-            } else if (pTest == 1) {
+            if (pMode == 0) {
+                makeShp(getProjectType(crs), baseFolder, pShapeNetworkName, null);
+            } else if (pMode == 1) {
                 // calibration
-                makeShp(getCalibrationType(crs), baseFolder, pShapeFileName, null);
-
+                makeShp(getCalibrationType(crs), baseFolder, pShapeNetworkName, null);
             }
-            makePolygonShp(values, baseFolder, crs, pAreaShapeFileName);
-        } else if (pExistOldShp) {
+            makePolygonShp(values, baseFolder, crs, pShapeAreeName);
+        } else if (pExistProjectShp) {
             if (pOldFC == null) {
-                throw new IllegalArgumentException("No old feature collection");
+                throw new IllegalArgumentException(msg.message("trentoP.generatefile.error.noFeature"));
             }
             SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationType(crs));
-            makeShp(calibrationFC.getSchema(), baseFolder, pShapeFileName, calibrationFC);
+            makeShp(calibrationFC.getSchema(), baseFolder, pShapeNetworkName, calibrationFC);
         }
 
         pm.done();
@@ -146,8 +146,6 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
 
         // create the features.
         try {
-            int t;
-
             while( stationsIter.hasNext() ) {
                 SimpleFeature networkFeature = stationsIter.next();
                 try {
@@ -168,16 +166,16 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
                         throw new IllegalArgumentException();
                     }
                     builder.add(value);
-
+                    // add the percentage of the area which is dry.
+                    value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA));
+                    builder.add(value);
                     // the pipes elevation is the elevation of the
                     // terrain minus the depth.
                     value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_INITIAL_PIPE_STR));
-
                     builder.add(value);
                     // the pipes elevation is the elevation of the
                     // terrain minus the depth.
                     value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.DEPTH_FINAL_PIPE_STR));
-
                     builder.add(value);
                     // add the runoff coefficent.
                     value = ((Double) networkFeature.getAttribute(TrentoPFeatureType.RUNOFF_COEFFICIENT_STR));
@@ -227,15 +225,26 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         b.setName(typeName);
         b.setCRS(crs);
         b.add("the_geom", LineString.class);
+        // create ID attribute.
         b.add(values[0].getAttributeName(), values[0].getClazz());
+        // create drain area attribute.
         b.add(values[2].getAttributeName(), values[2].getClazz());
+        // create the percentage area.
+        b.add(values[11].getAttributeName(), values[12].getClazz());
+        // The upstream elevation of the node.
         b.add(values[3].getAttributeName(), values[3].getClazz());
+        //The downstream elevation of the land.
         b.add(values[4].getAttributeName(), values[4].getClazz());
+        //runoff coefficent.
         b.add(values[5].getAttributeName(), values[5].getClazz());
+        //average residence time.
         b.add(values[6].getAttributeName(), values[6].getClazz());
+        //ks
         b.add(values[7].getAttributeName(), values[7].getClazz());
+        //average slope
         b.add(values[10].getAttributeName(), values[10].getClazz());
-        b.add(values[11].getAttributeName(), values[11].getClazz());
+        //diameter to verify
+        b.add(values[19].getAttributeName(), values[11].getClazz());
         return b.buildFeatureType();
     }
     /**
@@ -251,15 +260,27 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         b.setName(typeName);
         b.setCRS(crs);
         b.add("the_geom", LineString.class);
+        // create ID attribute.
         b.add(values[0].getAttributeName(), values[0].getClazz());
+        // create drain area attribute.
         b.add(values[2].getAttributeName(), values[2].getClazz());
+        // create the percentage area.
+        b.add(values[11].getAttributeName(), values[12].getClazz());
+        // The upstream elevation of the land.
         b.add(values[3].getAttributeName(), values[3].getClazz());
+        // The downstream elevation of the land.
         b.add(values[4].getAttributeName(), values[4].getClazz());
+        // runoff coefficent.
         b.add(values[5].getAttributeName(), values[5].getClazz());
+        // average residence time.
         b.add(values[6].getAttributeName(), values[6].getClazz());
+        // ks
         b.add(values[7].getAttributeName(), values[7].getClazz());
+        // minimum slope.
         b.add(values[8].getAttributeName(), values[8].getClazz());
+        // section type
         b.add(values[9].getAttributeName(), values[9].getClazz());
+        // average slope of the basin.
         b.add(values[10].getAttributeName(), values[10].getClazz());
         return b.buildFeatureType();
     }
