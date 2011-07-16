@@ -199,7 +199,6 @@ public class Utility {
                     builderFeature.add(networkPipes[t].getMinimumPipeSlope());
                     builderFeature.add(networkPipes[t].getPipeSectionType());
                     builderFeature.add(networkPipes[t].getAverageSlope());
-                    builderFeature.add(networkPipes[t].diameterToVerify);
                     if (attributeName != null) {
                         builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA)).doubleValue());
                     } else {
