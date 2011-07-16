@@ -30,6 +30,6 @@ public class ModelsRuntimeException extends RuntimeException {
     private static final long serialVersionUID = -2224076859462976278L;
 
     public ModelsRuntimeException( String message, Object owner ) {
-        super(owner.getClass().getSimpleName() + ": " + message);
+        super(owner instanceof String ? (String) owner + ": " + message : owner.getClass().getSimpleName() + ": " + message);
     }
 }

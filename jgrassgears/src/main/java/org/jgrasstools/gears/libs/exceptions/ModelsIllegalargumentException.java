@@ -29,6 +29,6 @@ public class ModelsIllegalargumentException extends IllegalArgumentException {
     private static final long serialVersionUID = 4509285779491321905L;
 
     public ModelsIllegalargumentException( String message, Object owner ) {
-        super(owner instanceof String ? (String) owner : owner.getClass().getSimpleName() + ": " + message);
+        super(owner instanceof String ? (String) owner + ": " + message : owner.getClass().getSimpleName() + ": " + message);
     }
 }
