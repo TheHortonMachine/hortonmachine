@@ -295,58 +295,56 @@ public class TestTrentoP extends HMTestCase {
      * 
      * @throws IOException
      */
-//    public void testVerify1() throws Exception {
-//
-//        URL rainUrl = this.getClass().getClassLoader().getResource("rain_trentop.csv"); //$NON-NLS-1$
-//        File rainFile = new File(rainUrl.toURI());
-//
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//
-//        TrentoP trento_P = new TrentoP();
-//        // set parameters;
-//        trento_P.pTest = 1; // verify
-//        trento_P.pMinimumDepth = globalparameters[0];
-//        trento_P.pMaxJunction = (int) globalparameters[1];
-//        trento_P.pJMax = (int) globalparameters[2];
-//        trento_P.pAccuracy = globalparameters[3];
-//        trento_P.tDTp = globalparameters[4];
-//        trento_P.tpMin = globalparameters[5];
-//        trento_P.tpMax = globalparameters[6];
-//        trento_P.pEpsilon = globalparameters[7];
-//        trento_P.pMaxTheta = 6.28;
-//        trento_P.pCelerityFactor = Constants.DEFAULT_CELERITY_FACTOR;
-//        trento_P.pExponent = globalparameters[12];
-//        trento_P.pTolerance = 0.01;
-//        trento_P.pGamma = globalparameters[15];
-//        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.pOutPipe = 16;
-//        TimeSeriesReader rainReader = new TimeSeriesReader();
-//
+    public void testVerify1() throws Exception {
+
+      //  URL rainUrl = this.getClass().getClassLoader().getResource(""); //$NON-NLS-1$
+     //   File rainFile = new File(rainUrl.toURI());
+
+        double[][] result = null;
+        double[] globalparameters = INTERNAL_PARAMETERS;
+
+        TrentoP trento_P = new TrentoP();
+        // set parameters;
+        trento_P.pMode = 1; // verify
+        trento_P.pMinimumDepth = globalparameters[0];
+        trento_P.pMaxJunction = (int) globalparameters[1];
+        trento_P.pJMax = (int) globalparameters[2];
+        trento_P.pAccuracy = globalparameters[3];
+        trento_P.tDTp = globalparameters[4];
+        trento_P.tpMin = globalparameters[5];
+        trento_P.tpMax = globalparameters[6];
+        trento_P.pEpsilon = globalparameters[7];
+        trento_P.pMaxTheta = 6.28;
+        trento_P.pCelerityFactor = Constants.DEFAULT_CELERITY_FACTOR;
+        trento_P.pExponent = globalparameters[12];
+        trento_P.pTolerance = 0.01;
+        trento_P.pGamma = globalparameters[15];
+        trento_P.pEspInflux = globalparameters[16];
+        trento_P.pOutPipe = 16;
+        TimeSeriesReader rainReader = new TimeSeriesReader();
+
 //        rainReader.fileNovalue = "-9999";
 //        rainReader.file = rainFile.getAbsolutePath();
 //        rainReader.read();
 //        rainReader.close();
-//     //   trento_P.inRain = rainReader.outData;
-//        trento_P.pA=60.4;
-//        trento_P.pN=0.61;
-//        trento_P.dt=15;
-//        // set global parameters.
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
-//        File netFile = new File(net.toURI());
-//        ShapefileFeatureReader netReader = new ShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
-//        checkMatrixEqual(result, HMTestMapstrentoP.verify1, TOLL);
-//
-//    }
+     //   trento_P.inRain = rainReader.outData;
+
+        // set global parameters.
+        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
+        File netFile = new File(net.toURI());
+        ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+        netReader.file = netFile.getAbsolutePath();
+        netReader.readFeatureCollection();
+        SimpleFeatureCollection netFC = netReader.geodata;
+        // set global parameters
+        // verify
+        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
+        trento_P.inPipes = netFC;
+        trento_P.process();
+        result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
+        checkMatrixEqual(result, HMTestMapstrentoP.verify1, TOLL);
+
+    }
 
     /**
      * Test project 2.

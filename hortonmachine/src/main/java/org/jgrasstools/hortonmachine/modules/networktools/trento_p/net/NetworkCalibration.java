@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.net;
-
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.angleToFillDegree;
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
@@ -30,6 +30,8 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWOOVERTHREE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWO_THIRTEENOVERTHREE;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
@@ -349,13 +351,16 @@ public class NetworkCalibration implements Network {
 
     }
 
-    
     private void calculateFillDegree( int k, double[][] timeDischarge2 ) {
         double accuracy = networkPipes[0].getAccuracy();
         int jMax = networkPipes[0].getjMax();
         double minG = networkPipes[0].getMinG();
         double maxtheta = networkPipes[0].getMaxTheta();
+        double initialFillValue = angleToFillDegree(maxtheta) + 0.1;
         for( int i = 0; i < timeDischarge2.length; i++ ) {
+            // set it over the max value so if the bisection fails(because it's over the max) it's
+            // setted
+            timeFillDegree[i][k] = initialFillValue;
             double q = timeDischarge2[i][k];
             double B = q
                     / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
@@ -498,7 +503,7 @@ public class NetworkCalibration implements Network {
             Qmax = getHydrograph(k, timeDischarge, olddelay, 0);
             if (Qmax <= 1) {
                 Qmax = 1;
-            } 
+            }
             calculateFillDegree(k, timeDischarge);
             B = Qmax
                     / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * Math.sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
@@ -519,18 +524,6 @@ public class NetworkCalibration implements Network {
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
         cDelays[k - 1] = localdelay;
-
-    }
-
-    
-    /**
-     * Calculate the fill degree of a pipe.
-     * 
-     * @param theta the angle.
-     * @return the value of y/D.
-     */
-    private double angleToFillDegree( double theta ) {
-        return 0.5 * (1 - Math.cos(theta / 2));
 
     }
 
@@ -663,8 +656,11 @@ public class NetworkCalibration implements Network {
                 }
                 pm.worked(1);
             } catch (ArithmeticException e) {
+                NumberFormat formatter = new DecimalFormat("#.###");
+                String limit = formatter.format(maxFill);
+                strBuilder.append(" ");
                 strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
-                strBuilder.append(maxFill);
+                strBuilder.append(limit);
                 strBuilder.append(" ");
                 strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
                 strBuilder.append(networkPipes[l - 1].getId());

@@ -177,6 +177,8 @@ public class Utility {
         SimpleFeatureCollection outPipesFC = FeatureCollections.newCollection();
         SimpleFeatureBuilder builderFeature = new SimpleFeatureBuilder(type);
         FeatureIterator<SimpleFeature> stationsIter = inPipesFC.features();
+        String searchedField = PipesTrentoP.PER_AREA.getAttributeName();
+        String attributeName = findAttributeName(inPipesFC.getSchema(), searchedField);
         try {
             int t;
             while( stationsIter.hasNext() ) {
@@ -188,7 +190,7 @@ public class Utility {
                     builderFeature.add(line);
                     builderFeature.add(networkPipes[t].getId());
                     builderFeature.add(networkPipes[t].getIdPipeWhereDrain());
-                    builderFeature.add(networkPipes[t].getDrainArea());
+                    builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.DRAIN_AREA_STR)).doubleValue());
                     builderFeature.add(networkPipes[t].getInitialElevation());
                     builderFeature.add(networkPipes[t].getFinalElevation());
                     builderFeature.add(networkPipes[t].getRunoffCoefficient());
@@ -198,6 +200,11 @@ public class Utility {
                     builderFeature.add(networkPipes[t].getPipeSectionType());
                     builderFeature.add(networkPipes[t].getAverageSlope());
                     builderFeature.add(networkPipes[t].diameterToVerify);
+                    if (attributeName != null) {
+                        builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA)).doubleValue());
+                    } else {
+                        builderFeature.add(1.0);
+                    }
                     builderFeature.add(networkPipes[t].discharge);
                     builderFeature.add(networkPipes[t].coeffUdometrico);
                     builderFeature.add(networkPipes[t].residenceTime);
@@ -437,7 +444,7 @@ public class Utility {
         }
 
         return false;
-    
+
     }
 
     /**
@@ -454,6 +461,17 @@ public class Utility {
             }
             throw new IllegalArgumentException(msg.message("trentoP.error.featureKey") + searchedField);
         }
+
+    }
+
+    /**
+     * Calculate the fill degree of a pipe.
+     * 
+     * @param theta the angle.
+     * @return the value of y/D.
+     */
+    public static double angleToFillDegree( double theta ) {
+        return 0.5 * (1 - Math.cos(theta / 2));
 
     }
 

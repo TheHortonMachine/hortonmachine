@@ -46,13 +46,13 @@ public class TrentoPFeatureType {
      * featureCollections.
      */
 
-    public final static String INITIAL_ELEVATION_STR = "downstrZ";
+    public final static String INITIAL_ELEVATION_STR = "upstreamZ";
     /**
      * The field of the final elevation of this pipe, in the inPipes
      * featureCollections.
      */
 
-    public final static String FINAL_ELEVATION_STR = "upstreamZ";
+    public final static String FINAL_ELEVATION_STR = "downstrZ";
     /**
      * The field of the runoff coefficent in the inPipes featureCollections.
      */

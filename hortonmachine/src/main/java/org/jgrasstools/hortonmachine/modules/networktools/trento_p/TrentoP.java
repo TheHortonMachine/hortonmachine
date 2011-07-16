@@ -566,7 +566,7 @@ public class TrentoP {
                 int iMax = (int) (Math.floor((double) tMax / (double) dt));
                 DateTime startTime = new DateTime(System.currentTimeMillis());
                 inRain = new LinkedHashMap<DateTime, double[]>();
-                double tp = 1;
+                double tp = dt/2;
                 for( int i = 0; i <= iMax; i++ ) {
                     DateTime newDate = startTime.minusMinutes(dt);
                     double value = pA * pow(tp, pN - 1);
@@ -672,11 +672,12 @@ public class TrentoP {
             Coordinate[] coords = networkPipes[i].point;
             // if one of the coordinates are near of coord then the 2 pipe are
             // linked.
+          int lastIndex = coords.length-1;
             if (cord.distance(coords[0]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);
-                findIdWhereDrain(networkPipes[i].getId(), coords[1]);
+                findIdWhereDrain(networkPipes[i].getId(), coords[lastIndex ]);
                 t++;
-            } else if (cord.distance(coords[1]) < toll) {
+            } else if (cord.distance(coords[lastIndex]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);
                 findIdWhereDrain(networkPipes[i].getId(), coords[0]);
                 t++;

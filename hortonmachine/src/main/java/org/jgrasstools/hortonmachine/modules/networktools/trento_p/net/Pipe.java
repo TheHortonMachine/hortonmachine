@@ -538,7 +538,7 @@ public class Pipe {
                         .doubleValue();
                 /* Pipe slope [%] */
 
-                this.verifyPipeSlope = 100.0 * Math.abs(this.finalElevation - this.initialElevation) / this.lenght;
+                this.verifyPipeSlope = 100.0 * Math.abs(this.initialElevation - this.finalElevation) / this.lenght;
 
             } else if (verify == 0) {
                 this.minimumPipeSlope = setFeatureField(pipeFeature, PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName())

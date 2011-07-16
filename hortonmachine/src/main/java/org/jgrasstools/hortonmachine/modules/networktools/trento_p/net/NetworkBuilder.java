@@ -645,7 +645,7 @@ public class NetworkBuilder implements Network {
                 networkPipes[l - 1].residenceTime = ((HOUR2MIN * networkPipes[l - 1].getAverageResidenceTime() * pow(
                         networkPipes[l - 1].getDrainArea() / METER2CM, exponent))
 
-                / (pow(networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l].getAverageSlope(), gamma)));
+                / (pow(networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l-1].getAverageSlope(), gamma)));
             } else {
                 /*
                  * Considero solo l 'acqua che drena dalla strada k = alfa * S /
