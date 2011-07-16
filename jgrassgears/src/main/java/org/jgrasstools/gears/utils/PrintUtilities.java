@@ -91,4 +91,21 @@ public class PrintUtilities {
         }
     }
 
+    /**
+     * Print data from a matrix.
+     * 
+     * @param matrix the matrix.
+     */
+    public static void printMatrixData( double[][] matrix ) {
+        int cols = matrix[0].length;
+        int rows = matrix.length;
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                printer.print(matrix[r][c]);
+                printer.print(separator);
+            }
+            printer.println();
+        }
+    }
+
 }
