@@ -70,6 +70,7 @@ import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
@@ -177,6 +178,10 @@ public class Vectorizer extends JGTModel {
         b.add("the_geom", Polygon.class);
         b.add("cat", Integer.class);
         b.add(fDefault, Double.class);
+        b.add("area", Double.class);
+        b.add("perimeter", Double.class);
+        b.add("xcentroid", Double.class);
+        b.add("ycentroid", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
 
         outVector = FeatureCollections.newCollection();
@@ -194,7 +199,12 @@ public class Vectorizer extends JGTModel {
             }
             polygon.apply(jtsTransformation);
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            Object[] values = new Object[]{polygon, index, tmpValue};
+
+            area = polygon.getArea();
+            double perim = polygon.getLength();
+            com.vividsolutions.jts.geom.Point centroid = polygon.getCentroid();
+            Coordinate centroidCoord = centroid.getCoordinate();
+            Object[] values = new Object[]{polygon, index, tmpValue, area, perim, centroidCoord.x, centroidCoord.y};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
             index++;
