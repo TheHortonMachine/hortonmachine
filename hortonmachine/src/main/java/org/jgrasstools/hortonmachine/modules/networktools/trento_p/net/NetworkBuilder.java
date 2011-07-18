@@ -692,7 +692,7 @@ public class NetworkBuilder implements Network {
                  */
                 R_F rfFunction = new R_F();
                 rfFunction.setParameters(n, No);
-                r = RootFindingFunctions.rtbis(rfFunction, inf, sup, tolerance, jMax, pm);
+                r = RootFindingFunctions.bisectionRootFinding(rfFunction, inf, sup, tolerance, jMax, pm);
                 networkPipes[l - 1].tP = (r * networkPipes[l - 1].residenceTime);
                 /*
                  * coefficiente udometrico calcolato con la formula 2.17 u [ l /

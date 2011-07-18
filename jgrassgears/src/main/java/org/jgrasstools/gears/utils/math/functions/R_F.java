@@ -20,6 +20,8 @@ package org.jgrasstools.gears.utils.math.functions;
 
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
+import org.jgrasstools.gears.i18n.GearsMessageHandler;
+
 /**
  * Rappresentazione della funzione matematica R_F.
  * 
@@ -40,6 +42,10 @@ public final class R_F implements ISingleArgmentFunction {
 
     private double known;
     private double exponent;
+    /**
+     * Message handler.
+     */
+    private final GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
     /*
      * Valuta la funzione in forma implicita che lega n a r*, dove r = tp / k-
@@ -53,7 +59,7 @@ public final class R_F implements ISingleArgmentFunction {
             return ((1 - known) - x * (1 - exp(x) / (exp(exponent) + exp(x) - 1))
                     / (exponent + x - log(exp(exponent) + exp(x) - 1)));
         } else {
-            throw new ArithmeticException("Sign error in root finding");
+            throw new ArithmeticException(msg.message("rf.error.wrongSign"));
         }
     }
 

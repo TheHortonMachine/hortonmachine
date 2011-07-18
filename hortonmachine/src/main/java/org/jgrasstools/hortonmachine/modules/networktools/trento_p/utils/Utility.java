@@ -34,7 +34,9 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.math.functions.MinimumFillDegreeFunction;
 import org.jgrasstools.gears.utils.math.rootfinding.RootFindingFunctions;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -73,19 +75,20 @@ public class Utility {
      * </ol>
      * </p>
      * 
-     * @param sup upper extremm value of the research.
+     * @param sup upper extrem value of the research.
      * @param known is a constant, evaluated in the main of the program.
-     * @param twooverthree2, constant.
+     * @param twooverthree, constant.
      * @param minG fill degree.
      * @param accuracy.
      * @param jMax maximum number of iteration.
-     * @param pm
+     * @param pm progress monitor
+     * @param strWarnings a StringBuilder where to put the warning messages.
      * @return the fill degree
      * 
      */
 
-    public static double thisBisection( double sup, double known, double twooverthree2, double minG, double accuracy,
-            double jMax, IJGTProgressMonitor pm, StringBuilder strWarnings ) {
+    public static double thisBisection( double sup, double known, double twooverthree, double minG, double accuracy, double jMax,
+            IJGTProgressMonitor pm, StringBuilder strWarnings ) {
 
         double thetai = 0;
         /* Ampiezza dell'intervallo per il bracketing */
@@ -95,12 +98,12 @@ public class Utility {
          * riempimento che si ottiene adottando il diametro commerciale, anziche
          * quello calcolato
          */
-        double lower = 0;
+        double lowerLimit = 0;
         /*
          * Estremo superiore da adottare nella ricerca dell'angolo formato dalla
          * sezione bagnata, relativa al diametro commerciale
          */
-        double higher;
+        double upperLimit;
         /* ampiezza dell'intervallo per effettuare il bracketing */
         delta = sup / 10;
         /*
@@ -108,8 +111,8 @@ public class Utility {
          * ricerca del'angolo di riempimento con metodo di bisezione
          */
         MinimumFillDegreeFunction gsmFunction = new MinimumFillDegreeFunction();
-        gsmFunction.setParameters(known, twooverthree2, minG);
-        higher = gsmFunction.getValue(sup);
+        gsmFunction.setParameters(known, twooverthree, minG);
+        upperLimit = gsmFunction.getValue(sup);
 
         int i;
         /*
@@ -120,10 +123,10 @@ public class Utility {
         for( i = 0; i < 10; i++ ) {
             thetai = sup - (i + 1) * delta;
 
-            lower = gsmFunction.getValue(thetai);
+            lowerLimit = gsmFunction.getValue(thetai);
 
             /* Ho trovato due punti in cui la funzione assume segno opposto */{
-                if (higher * lower < 0)
+                if (upperLimit * lowerLimit < 0)
                     break;
             }
         }
@@ -131,7 +134,7 @@ public class Utility {
          * Il bracketing non ha avuto successo, restituisco il riempimento
          * minimo.
          */
-        if (i == 11 && lower * higher > 0) {
+        if (i == 11 && lowerLimit * upperLimit > 0) {
             strWarnings.append(msg.message("trentoP.warning.minimumDepth"));
             return minG;
         }
@@ -139,8 +142,11 @@ public class Utility {
          * chiamata alla funzione rtbis(), che restiuira la radice cercata con
          * la precisione richiesta.
          */
-        gsmFunction.setParameters(known, twooverthree2, minG);
-        return RootFindingFunctions.rtbis(gsmFunction, thetai, thetai + delta, accuracy, jMax, pm);
+        gsmFunction.setParameters(known, twooverthree, minG);
+        if(Math.abs(thetai)<=NumericsUtilities.machineFEpsilon()){
+            thetai=0.0;
+        }
+        return RootFindingFunctions.bisectionRootFinding(gsmFunction, thetai, thetai + delta, accuracy, jMax, pm);
     }
 
     /**
@@ -200,7 +206,8 @@ public class Utility {
                     builderFeature.add(networkPipes[t].getPipeSectionType());
                     builderFeature.add(networkPipes[t].getAverageSlope());
                     if (attributeName != null) {
-                        builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA)).doubleValue());
+                        builderFeature.add(((Number) feature.getAttribute(TrentoPFeatureType.PERCENTAGE_OF_DRY_AREA))
+                                .doubleValue());
                     } else {
                         builderFeature.add(1.0);
                     }
@@ -252,16 +259,16 @@ public class Utility {
      * </p>
      * 
      * @param magnitudo is the array where the magnitudo is stored.
-     * @param two array which contains where a pipe drains.
+     * @param whereDrain array which contains where a pipe drains.
      * @param pm the progerss monitor.
      * @throw IllegalArgumentException if the water through a number of state
      *        which is greater than the state in the network.
      */
-    public static void pipeMagnitude( double[] magnitude, double[] two, IJGTProgressMonitor pm ) {
+    public static void pipeMagnitude( double[] magnitude, double[] whereDrain, IJGTProgressMonitor pm ) {
 
         int count = 0;
 
-        /* two Contiene gli indici degli stati riceventi. */
+        /* whereDrain Contiene gli indici degli stati riceventi. */
         /* magnitude Contiene la magnitude dei vari stati. */
 
         int length = magnitude.length;
@@ -275,8 +282,8 @@ public class Utility {
              * Si segue il percorso dell'acqua e si incrementa di 1 la mgnitude
              * di tutti gli stati attraversati prima di raggiungere l'uscita
              */
-            while( two[k] != 0 && count < length ) {
-                k = (int) two[k] - 1;
+            while( whereDrain[k] != 0 && count < length ) {
+                k = (int) whereDrain[k] - 1;
                 magnitude[k]++;
                 count++;
             }
@@ -288,7 +295,7 @@ public class Utility {
 
     }
 
-    public static void makePolygonShp( ITrentoPType[] values, File baseFolder, CoordinateReferenceSystem crs,
+    public static void makePolygonShp( ITrentoPType[] values, String path, CoordinateReferenceSystem crs,
             String pAreaShapeFileName ) throws IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         String typeName = values[0].getName();
@@ -296,76 +303,11 @@ public class Utility {
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
         b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
-        SimpleFeatureType tanksType = b.buildFeatureType();
-
-        makeShp(tanksType, baseFolder, pAreaShapeFileName, null);
+        SimpleFeatureType areaType = b.buildFeatureType();
+        ShapefileFeatureWriter.writeEmptyShapefile(path, areaType);
 
     }
 
-    /**
-     * Build the shapefile.
-     * 
-     * @param types the geometry type.
-     * @param baseFolder the folder where to put the file.
-     * @param mapCrs the name of the crs.
-     * @param pShapeFileName 
-     * @param networkFC 
-     * @throws MalformedURLException
-     * @throws IOException
-     */
-    public static void makeLineStringShp( ITrentoPType[] types, File baseFolder, CoordinateReferenceSystem mapCrs,
-            String pShapeFileName, SimpleFeatureCollection networkFC ) throws MalformedURLException, IOException {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        String typeName = types[0].getName();
-        b.setName(typeName);
-        b.setCRS(mapCrs);
-        b.add("the_geom", LineString.class);
-        for( ITrentoPType type : types ) {
-            b.add(type.getAttributeName(), type.getClazz());
-        }
-        SimpleFeatureType tanksType = b.buildFeatureType();
-        makeShp(tanksType, baseFolder, pShapeFileName, networkFC);
-    }
-
-    /**
-     * Build the shapefile.
-     * 
-     * @param types the geometry type.
-     * @param baseFolder the folder where to put the file.
-     * @param mapCrs the name of the crs.
-     * @param pShapeFileName 
-     * @param networkFC 
-     * @throws MalformedURLException
-     * @throws IOException
-     */
-    public static void makeShp( SimpleFeatureType type, File baseFolder, String pShapeFileName, SimpleFeatureCollection networkFC )
-            throws MalformedURLException, IOException {
-
-        ShapefileDataStoreFactory factory = new ShapefileDataStoreFactory();
-        File file = new File(baseFolder, pShapeFileName);
-        Map<String, Serializable> create = new HashMap<String, Serializable>();
-        create.put("url", file.toURI().toURL());
-        ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
-        newDataStore.createSchema(type);
-        Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource();
-        featureStore.setTransaction(transaction);
-        try {
-            if (networkFC == null) {
-                featureStore.addFeatures(FeatureCollections.newCollection());
-            } else {
-                featureStore.addFeatures(networkFC);
-
-            }
-            transaction.commit();
-        } catch (Exception problem) {
-            problem.printStackTrace();
-            transaction.rollback();
-        } finally {
-            transaction.close();
-        }
-    }
 
     /**
      * Verify the schema.
@@ -466,7 +408,7 @@ public class Utility {
     /**
      * Calculate the fill degree of a pipe.
      * 
-     * @param theta the angle.
+     * @param theta the angle between the free surface and the center of the pipe.
      * @return the value of y/D.
      */
     public static double angleToFillDegree( double theta ) {

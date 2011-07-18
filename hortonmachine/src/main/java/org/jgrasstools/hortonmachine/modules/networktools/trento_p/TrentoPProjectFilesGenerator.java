@@ -18,7 +18,6 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makePolygonShp;
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makeShp;
 
 import java.io.File;
 
@@ -37,6 +36,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -49,7 +49,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoP
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.*;
 import com.vividsolutions.jts.geom.LineString;
 
 @Description("Generates the input shapefiles for a TrentoP simulation.")
@@ -114,26 +114,31 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
 
         checkNull(inFolder, pCode);
         CoordinateReferenceSystem crs = CRS.decode(pCode);
-        File baseFolder = new File(inFolder);
         pm.beginTask(msg.message("trentoP.generatefile.project"), 7);
         pm.worked(1);
         // if you want to create an empty file
         if (!pExistProjectShp) {
             ITrentoPType[] values = PipesTrentoP.values();
+            String file = new File(inFolder, pShapeNetworkName).getAbsolutePath();
             // project
             if (pMode == 0) {
-                makeShp(getProjectType(crs), baseFolder, pShapeNetworkName, null);
+                ShapefileFeatureWriter.writeEmptyShapefile(inFolder, getProjectType(crs));
+
             } else if (pMode == 1) {
                 // calibration
-                makeShp(getCalibrationType(crs), baseFolder, pShapeNetworkName, null);
+                ShapefileFeatureWriter.writeEmptyShapefile(inFolder, getCalibrationType(crs));
+
             }
-            makePolygonShp(values, baseFolder, crs, pShapeAreeName);
+            file = new File(inFolder, pShapeAreeName).getAbsolutePath();
+            makePolygonShp(values, file, crs, pShapeAreeName);
         } else if (pExistProjectShp) {
             if (pOldFC == null) {
                 throw new IllegalArgumentException(msg.message("trentoP.generatefile.error.noFeature"));
             }
+            String file = new File(inFolder, pShapeNetworkName).getAbsolutePath();
             SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationType(crs));
-            makeShp(calibrationFC.getSchema(), baseFolder, pShapeNetworkName, calibrationFC);
+            ShapefileFeatureWriter.writeShapefile(file, calibrationFC);
+
         }
 
         pm.done();
@@ -233,17 +238,17 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
         b.add(values[11].getAttributeName(), values[12].getClazz());
         // The upstream elevation of the node.
         b.add(values[3].getAttributeName(), values[3].getClazz());
-        //The downstream elevation of the land.
+        // The downstream elevation of the land.
         b.add(values[4].getAttributeName(), values[4].getClazz());
-        //runoff coefficent.
+        // runoff coefficent.
         b.add(values[5].getAttributeName(), values[5].getClazz());
-        //average residence time.
+        // average residence time.
         b.add(values[6].getAttributeName(), values[6].getClazz());
-        //ks
+        // ks
         b.add(values[7].getAttributeName(), values[7].getClazz());
-        //average slope
+        // average slope
         b.add(values[10].getAttributeName(), values[10].getClazz());
-        //diameter to verify
+        // diameter to verify
         b.add(values[19].getAttributeName(), values[11].getClazz());
         return b.buildFeatureType();
     }

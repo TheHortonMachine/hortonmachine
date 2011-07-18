@@ -40,6 +40,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -54,6 +55,11 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 public class ShapefileFeatureWriter extends JGTModel {
+
+    @Description("The feature type. It's mandatory only if you want to write down an empty FeatureCollection")
+    @In
+    public SimpleFeatureType pType = null;
+
     @Description("The feature collection to write.")
     @In
     public SimpleFeatureCollection geodata = null;
@@ -85,11 +91,12 @@ public class ShapefileFeatureWriter extends JGTModel {
         Map<String, Serializable> params = new HashMap<String, Serializable>();
         params.put("url", shapeFile.toURI().toURL());
         // params.put("create spatial index", Boolean.TRUE);
-
-        SimpleFeatureType type = geodata.getSchema();
+        if (geodata != null && geodata.size() != 0) {
+            pType = geodata.getSchema();
+        }
         ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
-        newDataStore.createSchema(type);
-        newDataStore.forceSchemaCRS(type.getCoordinateReferenceSystem());
+        newDataStore.createSchema(pType);
+        newDataStore.forceSchemaCRS(pType.getCoordinateReferenceSystem());
 
         Transaction transaction = new DefaultTransaction("create");
         String typeName = newDataStore.getTypeNames()[0];
@@ -97,7 +104,11 @@ public class ShapefileFeatureWriter extends JGTModel {
 
         featureStore.setTransaction(transaction);
         try {
-            featureStore.addFeatures(geodata);
+            if (geodata == null) {
+                featureStore.addFeatures(FeatureCollections.newCollection());
+            } else {
+                featureStore.addFeatures(geodata);
+            }
             transaction.commit();
         } catch (Exception problem) {
             transaction.rollback();
@@ -114,6 +125,13 @@ public class ShapefileFeatureWriter extends JGTModel {
         ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
         writer.file = path;
         writer.geodata = featureCollection;
+        writer.writeFeatureCollection();
+    }
+
+    public static void writeEmptyShapefile( String path, SimpleFeatureType schema ) throws IOException {
+        ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
+        writer.file = path;
+        writer.pType = schema;
         writer.writeFeatureCollection();
     }
 

@@ -63,6 +63,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Network;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkBuilder;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkCalibration;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
@@ -266,14 +267,13 @@ public class TrentoP {
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outDischarge;
-    
-    
+
     @UI("outfile")
     @Description("The output if pTest=1, contains the fill degree for each pipes at several time.")
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
-    
+
     /**
      * Is an array with all the pipe of the net.
      */
@@ -314,15 +314,16 @@ public class TrentoP {
          * verify the parameter in input (these method, when the OMS annotation
          * work well, can be deleted).
          */
-
-
         Pipe.pm = pm;
         // begin the process.
         pm.message(msg.message("trentoP.firstMessage"));
-        // create the net as an array of pipes.
-        setNetworkPipes( verifyParameter());
         /*
-         * create an network object. It can be a NetworkCalibration if the mode
+         * verify the parameter in input (these method, when the OMS annotation
+         * work well, can be deleted) andcreate the net as an array of pipes. .
+         */
+        setNetworkPipes(verifyParameter());
+        /*
+         * create a network object. It can be a NetworkCalibration if the mode
          * (pTest==1) verify otherwise is a NetworkBuilder.
          */
         Network network = null;
@@ -344,7 +345,7 @@ public class TrentoP {
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge,outFillDegree, strBuilder)
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder)
                     .celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
 
@@ -566,10 +567,10 @@ public class TrentoP {
                 int iMax = (int) (Math.floor((double) tMax / (double) dt));
                 DateTime startTime = new DateTime(System.currentTimeMillis());
                 inRain = new LinkedHashMap<DateTime, double[]>();
-                double tp = dt/2;
+                double tp = dt / 2;
                 for( int i = 0; i <= iMax; i++ ) {
                     DateTime newDate = startTime.minusMinutes(dt);
-                    double value = pA * pow(tp, pN - 1);
+                    double value = pA * pow(tp, pN - 1)/Constants.HOUR2MIN;
                     inRain.put(newDate, new double[]{value});
                     tp = tp + dt;
                 }
@@ -672,10 +673,10 @@ public class TrentoP {
             Coordinate[] coords = networkPipes[i].point;
             // if one of the coordinates are near of coord then the 2 pipe are
             // linked.
-          int lastIndex = coords.length-1;
+            int lastIndex = coords.length - 1;
             if (cord.distance(coords[0]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);
-                findIdWhereDrain(networkPipes[i].getId(), coords[lastIndex ]);
+                findIdWhereDrain(networkPipes[i].getId(), coords[lastIndex]);
                 t++;
             } else if (cord.distance(coords[lastIndex]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(id);

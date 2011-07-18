@@ -39,6 +39,7 @@ import java.util.Set;
 
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
@@ -362,11 +363,15 @@ public class NetworkCalibration implements Network {
             // setted
             timeFillDegree[i][k] = initialFillValue;
             double q = timeDischarge2[i][k];
-            double B = q
-                    / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
-            double known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
-            double theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
-            timeFillDegree[i][k] = angleToFillDegree(theta);
+            if (q > NumericsUtilities.machineFEpsilon()) {
+                double B = q
+                        / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
+                double known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
+                double theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
+                timeFillDegree[i][k] = angleToFillDegree(theta);
+            } else {
+                timeFillDegree[i][k] = 0.0;
+            }
         }
 
     }
@@ -453,14 +458,6 @@ public class NetworkCalibration implements Network {
             }
 
             Qpartial[j][k] = Q;
-            // if (Q > 0.0) {
-            // try {
-            // networkPipes[k - 1].verifyEmptyDegree(strBuilder, Q);
-            // } catch (ArithmeticException e) {
-            // strBuilder.append(msg.message("trentoP.warning.emptydegree") + networkPipes[k -
-            // 1].getId());
-            // }
-            // }
             if (Q >= Qmax) {
                 Qmax = Q;
             }

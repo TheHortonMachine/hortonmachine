@@ -49,16 +49,16 @@ public class RootFindingFunctions {
      * </ol>
      * 
      * @param function is the function examined.
-     * @param x1 bottom left value of the x.
-     * @param x2 upper right value of the x.
-     * @param xacc accuracy to use in the evaluation.
-     * @param jMax maximum number of iteration.
+     * @param bottomLimit bottom left value of the x.
+     * @param upperLimit upper right value of the x.
+     * @param accuracy accuracy to use in the evaluation.
+     * @param maxIterationNumber maximum number of iteration.
      * @throws ArithmeticException if the method haven't achieve the solution in
      *         jMax steeps.
      * 
      * @return the solution of the equation.
      */
-    public static double rtbis( ISingleArgmentFunction function, double x1, double x2, double xacc, double jMax, IJGTProgressMonitor pm ) {
+    public static double bisectionRootFinding( ISingleArgmentFunction function, double bottomLimit, double upperLimit, double accuracy, double maxIterationNumber, IJGTProgressMonitor pm ) {
         /* Numero di iterazioni eseguite col metodo delle bisezioni */
         long j;
         /* Ampiezza dell'intervallo di ricerca della radice */
@@ -84,23 +84,23 @@ public class RootFindingFunctions {
          * chiamata alla funzione di cui si cerca la radice,nell'estremo
          * inferiore.
          */
-        f = function.getValue(x1);
+        f = function.getValue(bottomLimit);
         /*
          * chiamata alla funzione di cui si cerca la radice nell'estremo
          * superiore del bracketing.
          */
-        fmid = function.getValue(x2);
+        fmid = function.getValue(upperLimit);
         /* verifica se il bracketing della radice e corretto */
         if (f * fmid >= 0) {
             pm.errorMessage(msg.message("trentoP.error.braketed"));
             throw new ArithmeticException(msg.message("trentoP.error.braketed"));
         }
         if (f < 0) {
-            dx = x2 - x1;
-            rtb = x1;
+            dx = upperLimit - bottomLimit;
+            rtb = bottomLimit;
         } else {
-            dx = x1 - x2;
-            rtb = x2;
+            dx = bottomLimit - upperLimit;
+            rtb = upperLimit;
         }
         /*
          * se f< 0, mantengo il primo estremo fisso in x1, e sposto il secondo
@@ -109,7 +109,7 @@ public class RootFindingFunctions {
          * finche la f diventa negativa.
          */
 
-        for( j = 1; j <= jMax; j++ ) {
+        for( j = 1; j <= maxIterationNumber; j++ ) {
             fmid = function.getValue(xmid = rtb + (dx *= 0.5));
             /*
              * quando la f cambia segno rispetto all'estremo di riferimento, il
@@ -121,7 +121,7 @@ public class RootFindingFunctions {
              * restituisci la rdice se l'intervallo di ricerca e minore della
              * tolleranza prefissata, oppure se f=0
              */
-            if (Math.abs(dx) < xacc || fmid == 0)
+            if (Math.abs(dx) < accuracy || fmid == 0)
                 return rtb;
         }
         /*
