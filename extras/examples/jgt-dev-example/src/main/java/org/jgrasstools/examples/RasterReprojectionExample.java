@@ -30,7 +30,7 @@ public class RasterReprojectionExample {
         String outputRaster = "your output path here";
 
         // read the raster
-        GridCoverage2D readCoverage = RasterReader.readCoverage(inputRaster);
+        GridCoverage2D readCoverage = RasterReader.readRaster(inputRaster);
 
         // reproject
         RasterReprojector rasterReprojector = new RasterReprojector();
