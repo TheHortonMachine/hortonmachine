@@ -23,11 +23,12 @@ import static java.lang.Math.log;
 import org.jgrasstools.gears.i18n.GearsMessageHandler;
 
 /**
- * Rappresentazione della funzione matematica R_F.
  * 
- * Costruisce alcune equazioni che devono essere risolte, funzione che lega n a
- * r*.
+ * Mathematical function R_F.
  * 
+ * <p>
+ * An equation that it is used to estimate the value of the rain time that generate the maximum discharge.
+ * </p>
  * <p>
  * The parameters required by the functions in {@link #setParameters(double...)}
  * are:

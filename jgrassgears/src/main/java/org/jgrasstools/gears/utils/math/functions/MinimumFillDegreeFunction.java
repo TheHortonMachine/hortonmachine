@@ -24,8 +24,7 @@ import static java.lang.Math.sin;
  * Mathematical function for the minimum fill degree.
  * 
  * <p>
- * Costruisce alcune equazioni che devono essere risolte, per il calcolo del
- * nuovo angolo di riempimento
+ * It's a function that is used to evaluate the empty degree angle.
  * </p>
  * 
  * <p>
