@@ -43,6 +43,7 @@ public class TestRasterSummary extends HMTestCase {
         RasterSummary summary = new RasterSummary();
         summary.pm = pm;
         summary.inRaster = inCoverage;
+        summary.doHistogram = true;
         summary.pBins = 100;
         summary.process();
 
