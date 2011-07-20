@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.io.grasslegacy.modules;
 
+import java.awt.geom.RectangularShape;
 import java.io.File;
 import java.util.List;
 
@@ -171,7 +172,7 @@ public class GrassMosaicLegacy extends JGTModel {
             Envelope2D env = coverage.getEnvelope2D();
             GridGeometry2D gridGeometry = coverage.getGridGeometry();
             if (requestedEnvelope != null) {
-                if (!requestedEnvelope.intersects(env)) {
+                if (!((RectangularShape) requestedEnvelope).intersects(env)) {
                     // if a constraint envelope was supplied, only handle what is inside
                     continue;
                 }
