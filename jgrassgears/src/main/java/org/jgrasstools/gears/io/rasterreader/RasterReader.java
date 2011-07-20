@@ -106,7 +106,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @License("General Public License Version 3 (GPLv3)")
 public class RasterReader extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
-    @Description("The raster file to read.")
+    @Description("The raster file to read with extension (supported are: asc, tiff, grass).")
     @In
     public String file = null;
 
@@ -158,10 +158,6 @@ public class RasterReader extends JGTModel {
     @In
     public Integer pCols = null;
 
-    @Description("The raster type to read (Supported are: asc, tiff, grass, adf).")
-    @In
-    public String pType = null;
-
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -206,20 +202,19 @@ public class RasterReader extends JGTModel {
             pRowcol = new int[]{pRows, pCols};
         }
 
-        if (pType == null) {
-            // try to guess from the extension
-            if (file.toLowerCase().endsWith(ESRIGRID)) {
-                pType = ESRIGRID;
-            } else if (file.toLowerCase().endsWith(AIG)) {
-                pType = AIG;
-            } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
-                pType = GEOTIFF;
-            } else if (CoverageUtilities.isGrass(file)) {
-                pType = GRASS;
-            } else
-                throw new ModelsIllegalargumentException("Can't recognize the data type. Please supply a type.", this.getClass()
-                        .getSimpleName());
-        }
+        String pType = null;
+        // try to guess from the extension
+        if (file.toLowerCase().endsWith(ESRIGRID)) {
+            pType = ESRIGRID;
+        } else if (file.toLowerCase().endsWith(AIG)) {
+            pType = AIG;
+        } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
+            pType = GEOTIFF;
+        } else if (CoverageUtilities.isGrass(file)) {
+            pType = GRASS;
+        } else
+            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.", this
+                    .getClass().getSimpleName());
 
         File mapFile = new File(file);
         try {

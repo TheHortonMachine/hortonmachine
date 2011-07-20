@@ -79,11 +79,7 @@ public class RasterWriter extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The raster type to write (Supported are: asc, tiff, grass).")
-    @In
-    public String pType = null;
-
-    @Description("The file to write the raster to.")
+    @Description("The file to write the raster to with extension (supported are: asc, tiff, grass).")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
@@ -102,18 +98,17 @@ public class RasterWriter extends JGTModel {
             return;
         }
 
-        if (pType == null) {
-            // try to guess from the extension
-            if (file.toLowerCase().endsWith(ESRIGRID)) {
-                pType = ESRIGRID;
-            } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
-                pType = GEOTIFF;
-            } else if (CoverageUtilities.isGrass(file)) {
-                pType = GRASS;
-            } else
-                throw new ModelsIllegalargumentException("Can't recognize the data type. Please supply a type.", this.getClass()
-                        .getSimpleName());
-        }
+        String pType = null;
+        // guess from the extension
+        if (file.toLowerCase().endsWith(ESRIGRID)) {
+            pType = ESRIGRID;
+        } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
+            pType = GEOTIFF;
+        } else if (CoverageUtilities.isGrass(file)) {
+            pType = GRASS;
+        } else
+            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.",
+                    this.getClass().getSimpleName());
 
         File mapFile = new File(file);
         try {
