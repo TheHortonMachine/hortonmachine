@@ -243,6 +243,11 @@ public class TrentoP {
     @In
     public int tMax = (int) DEFAULT_TMAX;
 
+    @Description("Maximum Rain Time step to evaluate the Rain in calibration mode.")
+    @Unit("-")
+    @In
+    public Integer tpMaxCalibration = null;
+
     @Description("Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.")
     @Unit("minutes")
     @In
@@ -286,7 +291,10 @@ public class TrentoP {
     private String warnings = "warnings";
 
     public StringBuilder strBuilder = new StringBuilder(warnings);
-
+    /**
+     * Used in calibration mode if use the generation of the rain.
+     */
+    private boolean foundTp = false;
     /**
      * 
      * Elaboration on the net.
@@ -345,8 +353,8 @@ public class TrentoP {
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder)
-                    .celerityFactor(pCelerityFactor).tMax(tMax).build();
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder,
+                    foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
 
         } else {
@@ -559,18 +567,30 @@ public class TrentoP {
              * If the inRain is null and the users set the a and n parameters then create the rain data.
              */
             if (pA != null && pN != null) {
+                // set it to true in order to search the time at max discharge.
+                foundTp = true;
                 if (dt == null) {
                     pm.errorMessage(msg.message("trentoP.error.dtp"));
                     throw new IllegalArgumentException();
                 }
-
+                if (tMax < tpMaxCalibration) {
+                    tpMaxCalibration = tMax;
+                }
                 int iMax = (int) (Math.floor((double) tMax / (double) dt));
+                int iRainMax = (int) (Math.floor((double) tpMaxCalibration / (double) dt));
                 DateTime startTime = new DateTime(System.currentTimeMillis());
                 inRain = new LinkedHashMap<DateTime, double[]>();
-                double tp = dt / 2;
+                double tp = ((double) dt) / 2;
+                DateTime newDate = startTime;
                 for( int i = 0; i <= iMax; i++ ) {
-                    DateTime newDate = startTime.minusMinutes(dt);
-                    double value = pA * pow(tp, pN - 1)/Constants.HOUR2MIN;
+                    newDate = newDate.plusMinutes(dt);
+                    double hourTime = tp / Constants.HOUR2MIN;
+                    double value;
+                    if (i < iRainMax) {
+                        value = pA * pow(hourTime, pN - 1) / Constants.HOUR2MIN;
+                    } else {
+                        value = 0.0;
+                    }
                     inRain.put(newDate, new double[]{value});
                     tp = tp + dt;
                 }
@@ -587,7 +607,6 @@ public class TrentoP {
         }
         return isAreaAllDry;
     }
-
     /**
      * Initializating the array.
      * 

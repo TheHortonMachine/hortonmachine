@@ -56,10 +56,6 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @License("General Public License Version 3 (GPLv3)")
 public class ShapefileFeatureWriter extends JGTModel {
 
-    @Description("The feature type. It's mandatory only if you want to write down an empty FeatureCollection")
-    @In
-    public SimpleFeatureType pType = null;
-
     @Description("The feature collection to write.")
     @In
     public SimpleFeatureCollection geodata = null;
@@ -68,6 +64,10 @@ public class ShapefileFeatureWriter extends JGTModel {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
+    
+    @Description("The feature type. It's mandatory only if you want to write down an empty FeatureCollection")
+    @In
+    public SimpleFeatureType pType = null;
 
     @Description("The progress monitor.")
     @In
