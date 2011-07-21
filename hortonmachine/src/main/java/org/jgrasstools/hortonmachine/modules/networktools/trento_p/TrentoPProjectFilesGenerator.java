@@ -49,7 +49,7 @@ import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoP
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.*;
+
 import com.vividsolutions.jts.geom.LineString;
 
 @Description("Generates the input shapefiles for a TrentoP simulation.")
@@ -59,38 +59,39 @@ import com.vividsolutions.jts.geom.LineString;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TrentoPProjectFilesGenerator extends JGTModel {
 
-    @Description("If it is 0 then create a project file (default mode) otherwise create the calibration shp")
-    @In
-    public Integer pMode = null;
-
-    @Description("If it is true then generate it from an old output file")
-    @In
-    public Boolean pExistProjectShp = false;
-
     @Description("The folder into which to create the base files.")
     @In
     public String inFolder = null;
+
+    @Description("If it is 0 then create a project file (default mode), if 1 create the calibration shp.")
+    @In
+    public int pMode = 0;
+
+    @Description("If it is true then generate it from an old output file.")
+    @In
+    public boolean doFromold = false;
 
     @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The name of the .shp file.")
+    @Description("The optional name of the shapefile.")
     @In
-    public String pShapeNetworkName = null;
+    public String pNetname = null;
 
-    @Description("the output fc of TrentoP. It's a geosewere network")
+    @Description("The output vector of TrentoP. It's a geosewer network.")
     @In
-    public SimpleFeatureCollection pOldFC = null;
+    public SimpleFeatureCollection pOldVector = null;
 
-    @Description("The name of the .shp file. By deafault it is aree.shp")
+    @Description("The optional name of the shapefile. By default it is aree.shp")
     @In
     public String pShapeAreeName = Constants.AREA_NAME_SHP;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
+    
     /**
      * Message handler.
      */
@@ -98,55 +99,47 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        // if the test isn't set then set it to project mode.
-        if (pMode == null) {
-            pMode = 0;
-        }
 
         // verify if the file name is setted otherwise set it to a default value.
-        if (pShapeNetworkName == null) {
+        if (pNetname == null) {
             if (pMode == 0) {
-                pShapeNetworkName = Constants.NETWORK_PROJECT_NAME_SHP;
+                pNetname = Constants.NETWORK_PROJECT_NAME_SHP;
             } else if (pMode == 1) {
-                pShapeNetworkName = Constants.NETWORK_CALIBRATION_NAME_SHP;
+                pNetname = Constants.NETWORK_CALIBRATION_NAME_SHP;
             }
         }
 
         checkNull(inFolder, pCode);
         CoordinateReferenceSystem crs = CRS.decode(pCode);
-        pm.beginTask(msg.message("trentoP.generatefile.project"), 7);
+        pm.beginTask(msg.message("trentoP.generatefile.project"), -1);
         pm.worked(1);
         // if you want to create an empty file
-        if (!pExistProjectShp) {
+        if (!doFromold) {
             ITrentoPType[] values = PipesTrentoP.values();
-            String file = new File(inFolder, pShapeNetworkName).getAbsolutePath();
-            // project
+            String file = new File(inFolder, pNetname).getAbsolutePath();
             if (pMode == 0) {
-                ShapefileFeatureWriter.writeEmptyShapefile(inFolder, getProjectType(crs));
-
+                // project
+                ShapefileFeatureWriter.writeEmptyShapefile(file, getProjectFeatureType(crs));
             } else if (pMode == 1) {
                 // calibration
-                ShapefileFeatureWriter.writeEmptyShapefile(inFolder, getCalibrationType(crs));
-
+                ShapefileFeatureWriter.writeEmptyShapefile(file, getCalibrationFeatureType(crs));
             }
             file = new File(inFolder, pShapeAreeName).getAbsolutePath();
             makePolygonShp(values, file, crs, pShapeAreeName);
-        } else if (pExistProjectShp) {
-            if (pOldFC == null) {
+        } else if (doFromold) {
+            if (pOldVector == null) {
                 throw new IllegalArgumentException(msg.message("trentoP.generatefile.error.noFeature"));
             }
-            String file = new File(inFolder, pShapeNetworkName).getAbsolutePath();
-            SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationType(crs));
+            String file = new File(inFolder, pNetname).getAbsolutePath();
+            SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationFeatureType(crs));
             ShapefileFeatureWriter.writeShapefile(file, calibrationFC);
-
         }
-
         pm.done();
     }
 
     private SimpleFeatureCollection createNewCollection( SimpleFeatureType simpleFeatureType ) {
         SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
-        SimpleFeatureIterator stationsIter = pOldFC.features();
+        SimpleFeatureIterator stationsIter = pOldVector.features();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
 
         // create the features.
@@ -202,15 +195,11 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
                     featureCollection.add(feature);
                 } catch (NullPointerException e) {
                     throw new IllegalArgumentException();
-
                 }
             }
 
-        }
-
-        finally {
+        } finally {
             stationsIter.close();
-
         }
 
         return featureCollection;
@@ -223,7 +212,7 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
      * @param crs
      * @return the type for the calibration shp.
      */
-    private SimpleFeatureType getCalibrationType( CoordinateReferenceSystem crs ) {
+    private SimpleFeatureType getCalibrationFeatureType( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         ITrentoPType[] values = TrentoPFeatureType.PipesTrentoP.values();
         String typeName = values[0].getName();
@@ -258,7 +247,7 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
      * @param crs
      * @return the type for the calibration shp.
      */
-    private SimpleFeatureType getProjectType( CoordinateReferenceSystem crs ) {
+    private SimpleFeatureType getProjectFeatureType( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         ITrentoPType[] values = TrentoPFeatureType.PipesTrentoP.values();
         String typeName = values[0].getName();

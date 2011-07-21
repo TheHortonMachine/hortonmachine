@@ -449,17 +449,17 @@ public class CoverageUtilities {
         }
         WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
 
-        WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
+        WritableRandomIter rasterIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
                 if (matrixIsRowCol) {
-                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                    rasterIter.setSample(x, y, 0, matrix[y][x]);
                 } else {
-                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                    rasterIter.setSample(x, y, 0, matrix[x][y]);
                 }
             }
         }
-        disckRandomIter.done();
+        rasterIter.done();
 
         return writableRaster;
     }

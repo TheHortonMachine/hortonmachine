@@ -295,7 +295,7 @@ public class TrentoP {
      * 
      * <ol>
      * <li>Verify the net throughout the method verify.
-     * <li>Call the geoSewere method which calculate the pipes diameter or the
+     * <li>Call the geosewer method which calculate the pipes diameter or the
      * discharge.
      * </ol>
      * </p>

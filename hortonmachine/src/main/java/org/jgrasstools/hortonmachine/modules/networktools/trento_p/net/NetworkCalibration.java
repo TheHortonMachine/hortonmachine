@@ -51,7 +51,7 @@ import org.joda.time.DateTime;
  * 
  * <p>
  * 
- * It contains a geosewere method which verify the net..
+ * It contains a geosewer method which verify the net..
  * 
  * </p>
  * 
