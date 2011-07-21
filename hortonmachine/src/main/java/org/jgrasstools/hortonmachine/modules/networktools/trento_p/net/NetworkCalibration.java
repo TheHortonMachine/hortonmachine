@@ -319,8 +319,9 @@ public class NetworkCalibration implements Network {
      *            delay matrix (for the evalutation of the flow wave).
      * @param net
      *            matrix that contains value of the network.
+     * @throws Exception if the number of iteration is greather than a fixed value.
      */
-    private double internalPipeVerify( int k, double[] cDelays, double[][] net, int time ) {
+    private double internalPipeVerify( int k, double[] cDelays, double[][] net, int time ) throws Exception {
 
         int num;
         double localdelay, olddelay, qMax, B, known, theta, u;
@@ -342,7 +343,7 @@ public class NetworkCalibration implements Network {
             if (iterationNumber > maxDischargeIteration) {
                 String message = msg.message("trentoP.error.infiniteLoop");
                 pm.errorMessage(message);
-                throw new ArithmeticException(msg.message("trentoP.error.infiniteLoop"));
+                throw new Exception(msg.message("trentoP.error.infiniteLoop"));
             }
             olddelay = localdelay;
             qMax = 0;
@@ -483,8 +484,6 @@ public class NetworkCalibration implements Network {
                     Q += 0;
                 } else if (t <= (i + 1) * dt) {
                     Q += rain * pFunction(k, t - i * dt, localdelay, delay);
-                } else if (tpMax != null && tpMax > t) {
-                    Q += 0;
                 } else {
                     Q += rain * (pFunction(k, t - i * dt, localdelay, delay) - pFunction(k, t - (i + 1) * dt, localdelay, delay));
                 }
@@ -511,9 +510,10 @@ public class NetworkCalibration implements Network {
      * @param k
      *            ID of the pipe where evaluate the discharge.
      * @param cDelays
-     *            delay matrix (for the evalutation of the flow wave).
+     *            delay matrix (for the evaluation of the flow wave).
+     * @throws Exception if the number of iteration is greater than a fixed value.
      */
-    private double headPipeVerify( int k, double[] cDelays, int time ) {
+    private double headPipeVerify( int k, double[] cDelays, int time ) throws Exception {
 
         double olddelay = 0;
         double Qmax = 0;
@@ -534,7 +534,7 @@ public class NetworkCalibration implements Network {
             if (iterationNumber > maxDischargeIteration) {
                 String message = msg.message("trentoP.error.infiniteLoop");
                 pm.errorMessage(message);
-                throw new ArithmeticException(msg.message("trentoP.error.infiniteLoop"));
+                throw new Exception(msg.message("trentoP.error.infiniteLoop"));
             }
             olddelay = localdelay;
             Qmax = getHydrograph(k, timeDischarge, olddelay, 0, time);
@@ -673,6 +673,7 @@ public class NetworkCalibration implements Network {
         /*
          * if the rain was build throught the a and n parameters, then cycling to found the time of rain which give the maximum Q.
          */
+        tpMax=tMax;
         if (foundMaxTp) {
             double qMax = 0.0;
             /*
@@ -684,7 +685,7 @@ public class NetworkCalibration implements Network {
                 // tratto che si sta analizzando o progettando
                 k = 0;
                 l = (int) one[k];
-                pm.beginTask(msg.message("trentoP.begin")+" at rain time "+temp, networkPipes.length - 1);
+                pm.beginTask(msg.message("trentoP.begin") + " at rain time " + temp, -1);
                 boolean isFill = false;
                 double[] cDelays = new double[networkPipes.length];
                 double tmpQMax = 0.0;
@@ -762,8 +763,8 @@ public class NetworkCalibration implements Network {
                 }
                 pm.done();
             }
+            tpMax = tempTp;
         }
-        tpMax = tempTp;
         k = 0;
         int nTime = timeDischarge.length;
         timeDischarge = new double[nTime][networkPipes.length + 1];
@@ -782,7 +783,7 @@ public class NetworkCalibration implements Network {
         boolean isFill = false;
         while( magnitude[k] == 1 ) {
             try {
-                headPipeVerify(l, cDelays, tMax);
+                headPipeVerify(l, cDelays, tpMax);
 
                 // Passo allo stato successivo
                 k++;
@@ -825,7 +826,7 @@ public class NetworkCalibration implements Network {
                 try {
                     net = new double[(int) (magnitude[k] - 1)][9];
                     scanNetwork(k, l, one, net);
-                    internalPipeVerify(l, cDelays, net, tMax);
+                    internalPipeVerify(l, cDelays, net, tpMax);
 
                     /* Passo allo stato successivo */
                     k++;
@@ -849,6 +850,7 @@ public class NetworkCalibration implements Network {
                 }
             }
         }
+
         pm.done();
         getNetData();
 
