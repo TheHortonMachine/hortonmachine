@@ -17,18 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 import static org.jgrasstools.gears.utils.features.FeatureUtilities.findAttributeName;
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureStore;
-import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
@@ -59,6 +52,8 @@ import com.vividsolutions.jts.geom.Polygon;
 
 public class Utility {
 
+    public static NumberFormat F = new DecimalFormat("#.##############");
+    
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     /**

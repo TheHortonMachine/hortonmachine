@@ -1,5 +1,7 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.*;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.*;
+
 /**
  * Optional parameters used to TrentoP in calibration mode.
  * <p>
@@ -11,19 +13,20 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
  */
 
 public enum CalibrationOptionalParameterCodes implements IParametersCode {
-    JMAX(0, "Max bisection number", "It's used inside the program to solve some root equation [-]", String.valueOf(DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
-    EPS(1, "Precision", "It's related to the discharge evalutation [-]", Double.toString(DEFAULT_ACCURACY), EPS_RANGE[0],
-            EPS_RANGE[1]), //
-    MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", Double.toString(DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //
-    CELERITY_FACTOR(3, "Celerity factor", "[-]", Double.toString(DEFAULT_CELERITY_FACTOR), CELERITY_RANGE[0], CELERITY_RANGE[1]), // //$NON-NLS-1$
-    TOLERANCE(4, "tollerance", "used to find the delay.[-]", Double.toString(DEFAULT_TOLERANCE), TOLERANCE_RANGE[0],
-            TOLERANCE_RANGE[1]), //
-    GAMMA(5, "Exponent of the average ponderal slope", "It's used to evaluate the mean time to avvess to the network, value between 0.2 and 0.5  [-]",
-            Double.toString(DEFAULT_GAMMA), GAMMA_RANGE[0], GAMMA_RANGE[1]), //
-    INFLUX_EXP(6, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", Double
-            .toString(DEFAULT_ESP1), INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
-    EXPONENT(7, "Exponent of the basin extension", "It's used to evaluate the mean time to avvess to the network, usually is 0.3 [-]", Double
-            .toString(DEFAULT_EXPONENT), EXPONENT_RANGE[0], EXPONENT_RANGE[1]), //
+    JMAX(0, "Max bisection number", "It's used inside the program to solve some root equation [-]", F.format(DEFAULT_J_MAX),
+            JMAX_RANGE[0], JMAX_RANGE[1]), //
+    EPS(1, "Precision", "It's related to the discharge evalutation [-]", F.format(DEFAULT_ACCURACY), EPS_RANGE[0], EPS_RANGE[1]), //
+    MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", F.format(DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //
+    CELERITY_FACTOR(3, "Celerity factor", "[-]", F.format(DEFAULT_CELERITY_FACTOR), CELERITY_RANGE[0], CELERITY_RANGE[1]), // //$NON-NLS-1$
+    TOLERANCE(4, "tollerance", "used to find the delay.[-]", F.format(DEFAULT_TOLERANCE), TOLERANCE_RANGE[0], TOLERANCE_RANGE[1]), //
+    GAMMA(5, "Exponent of the average ponderal slope",
+            "It's used to evaluate the mean time to avvess to the network, value between 0.2 and 0.5  [-]", F
+                    .format(DEFAULT_GAMMA), GAMMA_RANGE[0], GAMMA_RANGE[1]), //
+    INFLUX_EXP(6, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", F.format(DEFAULT_ESP1),
+            INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
+    EXPONENT(7, "Exponent of the basin extension",
+            "It's used to evaluate the mean time to avvess to the network, usually is 0.3 [-]", F.format(DEFAULT_EXPONENT),
+            EXPONENT_RANGE[0], EXPONENT_RANGE[1]), //
     ACCURACY(8, "Accuracy", "Used to evaluate the result with bisection mode ", null, new Double(0), null); //$NON-NLS-1$
 
     /**
@@ -103,19 +106,16 @@ public enum CalibrationOptionalParameterCodes implements IParametersCode {
 
     @Override
     public Number getMinRange() {
-        // TODO Auto-generated method stub
         return minRange;
     }
 
     @Override
     public Number getMaxRange() {
-        // TODO Auto-generated method stub
         return maxRange;
     }
 
     @Override
     public String getPageName() {
-        // TODO Auto-generated method stub
         return CALIBRATION_OPTIONAL_PAGE_NAME;
     }
 

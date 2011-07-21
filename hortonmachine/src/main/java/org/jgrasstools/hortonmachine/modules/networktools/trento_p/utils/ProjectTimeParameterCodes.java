@@ -9,10 +9,10 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
  *
  */
 public enum ProjectTimeParameterCodes implements IParametersCode {
-    STEP(0, "Time step", "Simulation duration", Double.toString(Constants.DEFAULT_TDTP), 0.015, null), //
-    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMIN), 5.0,
+    STEP(0, "Time step", "Simulation duration", String.valueOf(Constants.DEFAULT_TDTP), 0.015, null), //
+    MINIMUM_TIME(1, "Minimum amount Rain Time step", "Hydraulic time step [min]", String.valueOf(Constants.DEFAULT_TPMIN), 5.0,
             null), //
-    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", Double.toString(Constants.DEFAULT_TPMAX), 30.0,
+    MAXIMUM_TIME(2, "Maximum amount Rain Time step", "Hydraulic time step [min]", String.valueOf(Constants.DEFAULT_TPMAX), 30.0,
             null); //
     /**
      * The name of the WizardPage.
