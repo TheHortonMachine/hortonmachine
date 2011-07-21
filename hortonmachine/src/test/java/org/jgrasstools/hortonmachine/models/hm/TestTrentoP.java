@@ -356,19 +356,22 @@ public class TestTrentoP extends HMTestCase {
         trento_P.dt=1;
         trento_P.tMax = 120;
         trento_P.tpMaxCalibration = 120;
-        trento_P.pEpsilon = 0.005;
+        trento_P.pEpsilon = 0.001;
         trento_P.pMaxTheta = 6.28;
         trento_P.pCelerityFactor = Constants.DEFAULT_CELERITY_FACTOR;
         trento_P.pExponent = 0.3;
-        trento_P.pTolerance = 0.001;
+        trento_P.pTolerance = 0.01;
         trento_P.pGamma =0.2;
         trento_P.pEspInflux = 0.4;
         trento_P.pOutPipe = 10;
         TimeSeriesReader rainReader = new TimeSeriesReader();
         trento_P.pA=40.0;
         trento_P.pN=0.6;
-        // set global parameters.
-        File netFile = new File("/home/daniele/Dropbox/hydrologis_daniele/rete_soraga/Rete_con_problema/networkCalibration.shp");
+        // set global parameters.//   
+        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
+
+     //   File netFile = new File("/home/daniele/Dropbox/hydrologis_daniele/rete_soraga/Rete_alta/networkCalibration.shp");
+        File netFile = new File(net.toURI());
         ShapefileFeatureReader netReader = new ShapefileFeatureReader();
         netReader.file = netFile.getAbsolutePath();
         netReader.readFeatureCollection();

@@ -11,8 +11,7 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
  */
 
 public enum CalibrationOptionalParameterCodes implements IParametersCode {
-    JMAX(0, "Max bisection number", "It's used inside the program to solve some root equation [-]", Integer
-            .toString(DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
+    JMAX(0, "Max bisection number", "It's used inside the program to solve some root equation [-]", String.valueOf(DEFAULT_J_MAX), JMAX_RANGE[0], JMAX_RANGE[1]), //
     EPS(1, "Precision", "It's related to the discharge evalutation [-]", Double.toString(DEFAULT_ACCURACY), EPS_RANGE[0],
             EPS_RANGE[1]), //
     MAX_FILL_DEGREE(2, "Maximum fill degree", "[-]", Double.toString(DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //

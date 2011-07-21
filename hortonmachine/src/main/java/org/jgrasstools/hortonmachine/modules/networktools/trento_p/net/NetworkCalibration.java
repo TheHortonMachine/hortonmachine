@@ -123,6 +123,11 @@ public class NetworkCalibration implements Network {
      * The maximum time of rain, it is used to limit the rain time to a specific value.
      */
     private Integer tpMax = null;
+    /*
+     * Is the limit to the iteration in the research of the discharge.
+     * 
+     */
+    private final static int maxDischargeIteration = 10000;
 
     /**
         * Builder for the Calibration class.
@@ -330,8 +335,15 @@ public class NetworkCalibration implements Network {
         double minG = networkPipes[0].getMinG();
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
-
+        int iterationNumber = 0;
         do {
+
+            iterationNumber++;
+            if (iterationNumber > maxDischargeIteration) {
+                String message = msg.message("trentoP.error.infiniteLoop");
+                pm.errorMessage(message);
+                throw new ArithmeticException(msg.message("trentoP.error.infiniteLoop"));
+            }
             olddelay = localdelay;
             qMax = 0;
             // Updates delays
@@ -509,6 +521,7 @@ public class NetworkCalibration implements Network {
         double known = 0;
         double theta = 0;
         double u = 0;
+        int iterationNumber = 0;
         /* First attempt local delay [min] */
         double localdelay = 1;
         double accuracy = networkPipes[0].getAccuracy();
@@ -517,6 +530,12 @@ public class NetworkCalibration implements Network {
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
         do {
+            iterationNumber++;
+            if (iterationNumber > maxDischargeIteration) {
+                String message = msg.message("trentoP.error.infiniteLoop");
+                pm.errorMessage(message);
+                throw new ArithmeticException(msg.message("trentoP.error.infiniteLoop"));
+            }
             olddelay = localdelay;
             Qmax = getHydrograph(k, timeDischarge, olddelay, 0, time);
             if (Qmax <= 1) {
@@ -544,7 +563,6 @@ public class NetworkCalibration implements Network {
         cDelays[k - 1] = localdelay;
         return Qmax;
     }
-
     /**
      * 
      * restituisce la funzione p.
@@ -666,7 +684,7 @@ public class NetworkCalibration implements Network {
                 // tratto che si sta analizzando o progettando
                 k = 0;
                 l = (int) one[k];
-                pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
+                pm.beginTask(msg.message("trentoP.begin")+" at rain time "+temp, networkPipes.length - 1);
                 boolean isFill = false;
                 double[] cDelays = new double[networkPipes.length];
                 double tmpQMax = 0.0;
@@ -742,8 +760,8 @@ public class NetworkCalibration implements Network {
                     tpMax = temp;
                     break;
                 }
+                pm.done();
             }
-
         }
         tpMax = tempTp;
         k = 0;
@@ -758,6 +776,8 @@ public class NetworkCalibration implements Network {
         }
         double[] cDelays = new double[networkPipes.length];
         // tratto che si sta analizzando o progettando
+        pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
+
         l = (int) one[k];
         boolean isFill = false;
         while( magnitude[k] == 1 ) {
@@ -829,6 +849,7 @@ public class NetworkCalibration implements Network {
                 }
             }
         }
+        pm.done();
         getNetData();
 
     }
