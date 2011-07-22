@@ -22,6 +22,7 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -332,7 +333,7 @@ public class Kriging extends JGTModel {
                 }
             }
         }
-        HashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = new HashMap<Integer, Coordinate>();
+        LinkedHashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = null;
         // vecchio int numPointToInterpolate = getNumPoint(inInterpolate);
         int numPointToInterpolate = 0;
 
@@ -632,7 +633,8 @@ public class Kriging extends JGTModel {
     // return coord;
     // }
 
-    private void storeResult( double[] interpolatedValues, HashMap<Integer, Coordinate> interpolatedCoordinatesMap ) throws MismatchedDimensionException, Exception {
+    private void storeResult( double[] interpolatedValues, HashMap<Integer, Coordinate> interpolatedCoordinatesMap )
+            throws MismatchedDimensionException, Exception {
 
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
@@ -669,8 +671,8 @@ public class Kriging extends JGTModel {
 
     }
 
-    private HashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
-        HashMap<Integer, Coordinate> out = new HashMap<Integer, Coordinate>();
+    private LinkedHashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
+        LinkedHashMap<Integer, Coordinate> out = new LinkedHashMap<Integer, Coordinate>();
         int count = 0;
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(grid);
         cols = regionMap.getCols();
@@ -681,7 +683,6 @@ public class Kriging extends JGTModel {
         yres = regionMap.getYres();
 
         outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         double northing = south;
         double easting = west;
@@ -692,20 +693,10 @@ public class Kriging extends JGTModel {
                 Coordinate coordinate = new Coordinate();
                 coordinate.x = west + i * xres;
                 coordinate.y = south + j * yres;
-                // do something with the northing and easting
-                // representing your cell coordinate
-                double interpolated = 0;
-                outIter.setSample(i, j, 0, interpolated);
                 out.put(count, coordinate);
                 count++;
-
             }
         }
-        outIter.done();
-
-        // at the end create the output gricoverage
-        outGrid = CoverageUtilities
-                .buildCoverage("kriging", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
 
         return out;
     }
@@ -719,9 +710,9 @@ public class Kriging extends JGTModel {
      * @throws Exception
      *             if a fiel of elevation isn't the same of the collection
      */
-    private HashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
+    private LinkedHashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
             throws Exception {
-        HashMap<Integer, Coordinate> id2CoordinatesMap = new HashMap<Integer, Coordinate>();
+        LinkedHashMap<Integer, Coordinate> id2CoordinatesMap = new LinkedHashMap<Integer, Coordinate>();
         FeatureIterator<SimpleFeature> iterator = collection.features();
         Coordinate coordinate = null;
         try {
