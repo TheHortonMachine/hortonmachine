@@ -474,7 +474,7 @@ public class Adige extends JGTModel {
                         index2Basinid, pfaffsList, pfaff2Index, outDischarge, outSubdischarge, startTimestamp, endTimestamp,
                         tTimestep);
             } else if (inHymodInput != null) {
-                initialConditions = new double[hillsSlopeNum * 2];
+                initialConditions =null;
                 adigeEngine = new HymodAdigeEngine(inHymodInput, orderedHillslopes, index2Basinid, outDischarge, outSubdischarge,
                         pfaffsList, doLog, doLog, pm);
             } else {
@@ -556,7 +556,8 @@ public class Adige extends JGTModel {
             if (isNovalue(value[0])) {
                 value[0] = 0.0;
             }
-            endArray[index] = value[0] / (tTimestep / 60.0);
+            //endArray[index] = value[0] / (tTimestep / 60.0);
+            endArray[index] = value[0];
         }
     }
 

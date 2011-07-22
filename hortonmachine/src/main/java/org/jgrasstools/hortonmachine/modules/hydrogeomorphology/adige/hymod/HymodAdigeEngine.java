@@ -1,5 +1,4 @@
-/*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+/* JGrass - Free Open Source Java GIS http://www.jgrass.org 
  * (C) HydroloGIS - www.hydrologis.com 
  * 
  * This library is free software; you can redistribute it and/or modify it under
@@ -34,12 +33,11 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.IAdigeEngi
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 import org.joda.time.DateTime;
 
 /**
  * The Hymod engine for the {@link Adige} framework.
- *  
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)
  * @author Giuseppe Formetta
@@ -48,7 +46,7 @@ public class HymodAdigeEngine implements IAdigeEngine {
 
     private final HymodInputs hymodInputs;
     private final List<IHillSlope> orderedHillslopes;
-
+    // private double[] initialConditions;
     private double[] xSlow = null;
     private double[] xLoss = null;
     private double[][] xQuick = null;
@@ -61,8 +59,9 @@ public class HymodAdigeEngine implements IAdigeEngine {
     private final boolean doLog;
     private final IJGTProgressMonitor pm;
     private final List<String> pfaffsList;
-    private double udo;
     private double[] coeffs;
+    public static final double doubleNovalue = Double.NaN;
+    int conta = 0;
 
     public HymodAdigeEngine( HymodInputs hymodInputs, List<IHillSlope> orderedHillslopes,
             HashMap<Integer, Integer> index2Basinid, HashMap<Integer, double[]> outDischarge,
@@ -78,10 +77,6 @@ public class HymodAdigeEngine implements IAdigeEngine {
         this.doPrint = doPrint;
         this.pm = pm;
         outDischargeInternal = new HashMap<Integer, double[]>();
-
-        double totalArea = orderedHillslopes.get(0).getUpstreamArea(null);
-        udo = hymodInputs.pQ0 / (totalArea / 1E6);
-
     }
 
     public void addDischargeContributor( IDischargeContributor dischargeContributor ) {
@@ -96,28 +91,86 @@ public class HymodAdigeEngine implements IAdigeEngine {
         return outSubDischarge;
     }
 
-    public double[] solve( DateTime currentTimstamp, int tTimestep, double internalTimestepInMinutes, double[] previousSolution,
+    public double[] solve( DateTime currentTimstamp, int tTimestep, double internalTimestepInMinutes, double[] initialConditions,
             double[] rainArray, double[] etpArray ) throws IOException {
 
-        if (xSlow == null) {
+        if (initialConditions != null) {
+
+            for( int i = orderedHillslopes.size() - 1; i >= 0; i-- ) {
+                xLoss[i] = initialConditions[i];
+                xSlow[i] = initialConditions[i + orderedHillslopes.size()];
+                xQuick[0][i] = initialConditions[i + 2 * orderedHillslopes.size()];
+                xQuick[1][i] = initialConditions[i + 3 * orderedHillslopes.size()];
+                xQuick[2][i] = initialConditions[i + 4 * orderedHillslopes.size()];
+
+            }
+        }
+
+        if (initialConditions == null) {
             xSlow = new double[orderedHillslopes.size()];
             coeffs = new double[orderedHillslopes.size()];
             xQuick = new double[3][orderedHillslopes.size()];
             xLoss = new double[orderedHillslopes.size()];
-
+            initialConditions = new double[orderedHillslopes.size() * 5];
             for( int i = orderedHillslopes.size() - 1; i >= 0; i-- ) {
                 IHillSlope hillSlope = orderedHillslopes.get(i);
                 double areaKm2 = hillSlope.getHillslopeArea() / 1E6;
-                coeffs[i] = pow(10, 9) * tTimestep * 60 / (areaKm2 * (pow(10, 12)));
-                xSlow[i] = udo * areaKm2 * coeffs[i] / hymodInputs.pRs;
+                // System.out.println(areaKm2);
+
+                coeffs[i] = (Math.pow(10, 9)) * tTimestep * 60 / (areaKm2 * (Math.pow(10, 12)));
+                xSlow[i] = 0 * hymodInputs.pQ0 * coeffs[i] / hymodInputs.pRs;
+
             }
         }
 
         for( int i = orderedHillslopes.size() - 1; i >= 0; i-- ) {
             IHillSlope hillSlope = orderedHillslopes.get(i);
 
+            // /////////////FISSATO PER CHECK///////////////
+            // hymodInputs.pAlpha=0.323;
+            // hymodInputs.pCmax=999.0;
+            // hymodInputs.pB=0.515;
+            // hymodInputs.pRq=0.135;
+            // hymodInputs.pRs=0.0091;
+            // /////////////FISSATO PER CHECK///////////////
+
             double rain = rainArray[i];
             double etp = etpArray[i];
+            // funziona
+            // if (rain == -999 || etp ==-999) {
+            // rain=0;etp=0;
+            // }
+            // modificato
+            // System.out.println("rain= "+rain+" etp= "+etp);
+            // if (isNovalue(rain) || isNovalue(etp)) {
+            // rain=0;
+            // etp=0;
+            // }
+            //
+            //
+            // /*
+            // * sum together the discharge contributed by the current
+            // * hillslope plus the contributions coming from upstream
+            // */
+            //
+            // PfafstetterNumber pfaf = hillSlope.getPfafstetterNumber();
+            // if (pfaffsList.contains(pfaf.toString())) {
+            // outDischarge.put(basinId, new double[] { -999 });
+            // outSubDischarge.put(basinId, new double[] { -999 });
+            // }
+            //
+            // outDischargeInternal.put(basinId,
+            // new double[] { -999 });
+            // System.out.println(basinId+" rain= "+rain+" etp="+etp+ "outDischargeInternal="+
+            // outDischargeInternal.get(basinId));
+            // // if (i == 2) {
+            // // //
+            // // System.out.println(conta+" basinDischarge"+(-999)
+            // // +" xloss="+xLoss[i]);
+            // // conta++;
+            // // }
+
+            // } else {
 
             double[] out_excess = excess(xLoss[i], rain, etp);
             double UT1 = out_excess[0];
@@ -125,7 +178,7 @@ public class HymodAdigeEngine implements IAdigeEngine {
             xLoss[i] = out_excess[2];
 
             double UQ = hymodInputs.pAlpha * UT2 + UT1;
-            double US = (1 - hymodInputs.pAlpha) * UT2;
+            double US = (1.0 - hymodInputs.pAlpha) * UT2;
 
             double inflow = US;
             double[] out_linres1 = linres(xSlow[i], inflow, hymodInputs.pRs, 1);
@@ -150,8 +203,8 @@ public class HymodAdigeEngine implements IAdigeEngine {
             double allContributionsDischarge = handleContributors(hillSlope, basinDischarge);
 
             /*
-             * sum together the discharge contributed by the current hillslope 
-             * plus the contributions coming from upstream
+             * sum together the discharge contributed by the current
+             * hillslope plus the contributions coming from upstream
              */
             basinDischarge = basinDischarge + allContributionsDischarge;
 
@@ -160,15 +213,32 @@ public class HymodAdigeEngine implements IAdigeEngine {
                 outDischarge.put(basinId, new double[]{basinDischarge});
                 outSubDischarge.put(basinId, new double[]{basinSubDischarge});
             }
-            outDischargeInternal.put(basinId, new double[]{basinDischarge});
+            initialConditions[i] = xLoss[i];
+            initialConditions[i + orderedHillslopes.size()] = xSlow[i];
+            initialConditions[i + 2 * orderedHillslopes.size()] = xQuick[0][i];
+            initialConditions[i + 3 * orderedHillslopes.size()] = xQuick[1][i];
+            initialConditions[i + 4 * orderedHillslopes.size()] = xQuick[2][i];
 
+            outDischargeInternal.put(basinId, new double[]{basinDischarge});
+            // System.out.println(basinId+" rain= "+rain+" etp="+etp+ "outDischargeInternal="+
+            // outDischargeInternal.get(basinId));
+            // if (i == 61) {
+            // System.out.println("rain= "+rain+" etp= "+etp+" basinId= "+basinId+
+            // " basinDischarge"+basinDischarge+" allcontributions= "+allContributionsDischarge+" xloss= "+xLoss[i]);
+            // }
+            // if (i == 61) {
+            // //
+            // System.out.println(conta+"rain= "+rain+" etp= "+etp+" basinDischarge"+(basinDischarge-allContributionsDischarge)
+            // +" xloss="+xLoss[i]);
+            // conta++;
+            // }
+            // }
         }
 
-        Integer basinId = index2Basinid.get(0);
-        System.out.println("out=" + outDischarge.get(basinId)[0] + " x_slow=" + xSlow[0] + "rain=" + rainArray[0] + " etp="
-                + etpArray[0]);
-
-        return null;
+        // System.out.println("out=" + outDischarge.get(basinId)[0] + " x_slow="
+        // + xSlow[0] + "rain=" + rainArray[0] + " etp="
+        // + etpArray[0]);
+        return initialConditions;
     }
 
     private double handleContributors( IHillSlope hillSlope, final double basinDischarge ) {
@@ -198,12 +268,26 @@ public class HymodAdigeEngine implements IAdigeEngine {
                         }
 
                         /*
-                         * here the contributor will give its contribution, which depends on the type
-                         * of contributor. For example a Hydrometer will completely substitute the
-                         * calculated discharge of the current hillslope (tmpHillSlope) with the 
-                         * measure supplied by the Hydrometer.
+                         * here the contributor will give its contribution,
+                         * which depends on the type of contributor. For example
+                         * a Hydrometer will completely substitute the
+                         * calculated discharge of the current hillslope
+                         * (tmpHillSlope) with the measure supplied by the
+                         * Hydrometer.
                          */
-                        upstreamDischarge = dContributor.mergeWithDischarge(contributedDischarge, upstreamDischarge);
+
+                        // funziona
+                        // if (contributedDischarge != -9999) {
+                        // upstreamDischarge = dContributor
+                        // .mergeWithDischarge(contributedDischarge,
+                        // upstreamDischarge);
+                        // }
+
+                        // modificato
+                        if (!isNovalue(contributedDischarge)) {
+                            upstreamDischarge = dContributor.mergeWithDischarge(contributedDischarge, upstreamDischarge);
+                        }
+
                     }
                 }
                 double routedDischarge = doRouting(upstreamDischarge, basinDischarge, tmpHillSlope);
@@ -217,7 +301,7 @@ public class HymodAdigeEngine implements IAdigeEngine {
 
     // TODO make this real
     private double doRouting( double discharge, final double basinDischarge, IHillSlope hillslope ) {
-        // 
+        //
         // double K_Q = AdigeUtilities.doRouting(discharge, hillslope, 2);
 
         return discharge;
@@ -229,21 +313,28 @@ public class HymodAdigeEngine implements IAdigeEngine {
         double pCmax = hymodInputs.pCmax;
 
         double xn_prev = x_losss;
-        double coeff1 = ((1 - ((pB + 1) * (xn_prev) / pCmax)));
-        double exp = 1 / (pB + 1);
-        double ct_prev = pCmax * (1 - pow(coeff1, exp));
+        double coeff1 = ((1.0 - ((pB + 1.0) * (xn_prev) / pCmax)));
+        // if(Math.abs(coeff1)<1E-10){coeff1=0;}
+        double exp = 1.0 / (pB + 1.0);
+        double ct_prev = pCmax * (1.0 - pow(coeff1, exp));
         double UT1 = max((Pval - pCmax + ct_prev), 0.0);
         Pval = Pval - UT1;
-        double dummy = min(((ct_prev + Pval) / pCmax), 1);
-        double coeff2 = (1 - dummy);
-        double exp2 = (pB + 1);
-        double xn = (pCmax / (pB + 1)) * (1 - (pow(coeff2, exp2)));
+        double dummy = min(((ct_prev + Pval) / pCmax), 1.0);
+        double coeff2 = (1.0 - dummy);
+        double exp2 = (pB + 1.0);
+        double xn = (pCmax / (pB + 1.0)) * (1.0 - (pow(coeff2, exp2)));
         double UT2 = max(Pval - (xn - xn_prev), 0);
         double evap = min(xn, PETval);
+
         xn = xn - evap;
+
         o_exces[0] = UT1;
         o_exces[1] = UT2;
         o_exces[2] = xn;
+        if (xn != xn || UT1 != UT1 || UT2 != UT2) {
+            System.out.println("FERMATI");
+
+        }
 
         return o_exces;
 
