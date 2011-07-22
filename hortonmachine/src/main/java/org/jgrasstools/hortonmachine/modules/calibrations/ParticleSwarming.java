@@ -1,11 +1,19 @@
 package org.jgrasstools.hortonmachine.modules.calibrations;
 
+import static java.lang.Math.min;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -14,11 +22,15 @@ import oms3.annotations.Out;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.DoubleArray;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 public class ParticleSwarming extends JGTModel {
 
@@ -79,24 +91,33 @@ public class ParticleSwarming extends JGTModel {
      */
     public double[] parRange_maxn;
 
-    private Object modelObject;
+    private HashMap<Integer, String> index2varNameMap;
+
+    private HashMap<String, String> varName2ValueMap;
+
+    private String modelName;
+
+    private Integer measuredDataId;
+
+    private double[] measuredInternalArray;
+
+    private double[] handleModelsOutput;
 
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        List<String> parametersLines = FileUtilities.readFileToLinesList(new File(inCalibrationParamfile));
+        readAndPrepareMeasuredData();
 
-        Class< ? > modelClass = Class.forName(parametersLines.get(0).trim());
-        modelObject = modelClass.newInstance();
+        // calibration values
+        List<String> calParametersLines = FileUtilities.readFileToLinesList(new File(inCalibrationParamfile));
+        modelName = calParametersLines.get(0).trim();
+        index2varNameMap = new HashMap<Integer, String>();
 
-        int parNum = parametersLines.size() - 1;
+        int parNum = calParametersLines.size() - 1;
         parRange_minn = new double[parNum];
         parRange_maxn = new double[parNum];
-
-        List<Double> maxList = new ArrayList<Double>();
-        List<Double> minList = new ArrayList<Double>();
-        for( int i = 1; i < parametersLines.size(); i++ ) {
-            String line = parametersLines.get(i);
+        for( int i = 1; i < calParametersLines.size(); i++ ) {
+            String line = calParametersLines.get(i);
             String[] lineSplit = line.split("="); //$NON-NLS-1$
             String varName = lineSplit[0].trim();
             String[] rangesSplit = lineSplit[1].trim().split(";");
@@ -106,6 +127,20 @@ public class ParticleSwarming extends JGTModel {
             // set it in the arrays for the calibrator
             parRange_minn[i - 1] = min;
             parRange_maxn[i - 1] = max;
+
+            index2varNameMap.put(i - 1, varName);
+        }
+
+        // model input values
+        List<String> parametersLines = FileUtilities.readFileToLinesList(new File(inParamfile));
+        varName2ValueMap = new HashMap<String, String>();
+        for( int i = 1; i < parametersLines.size(); i++ ) {
+            String line = parametersLines.get(i);
+            String[] lineSplit = line.split("="); //$NON-NLS-1$
+            String varName = lineSplit[0].trim();
+            String value = lineSplit[1].trim();
+
+            varName2ValueMap.put(varName, value);
         }
 
         double[][] parametersMatrix = uniformNumberGenerator(parRange_minn, parRange_maxn, pParticles);
@@ -184,6 +219,29 @@ public class ParticleSwarming extends JGTModel {
         outCalibrated = g_best;
     }
 
+    private void readAndPrepareMeasuredData() throws IOException {
+        /*
+         * first read the expected output.
+         * 
+         * For now that is assumed to have on single id. 
+         */
+        DoubleArray measuredValuesArray = new DoubleArray(100);
+        TimeSeriesIteratorReader measuresReader = new TimeSeriesIteratorReader();
+        measuresReader.file = inMeasuredfile;
+        measuresReader.idfield = "ID";
+        while( measuresReader.doProcess ) {
+            measuresReader.nextRecord();
+            HashMap<Integer, double[]> outData = measuresReader.outData;
+            Set<Entry<Integer, double[]>> entrySet = outData.entrySet();
+            Entry<Integer, double[]> entry = entrySet.iterator().next();
+            if (measuredDataId == null) {
+                measuredDataId = entry.getKey();
+            }
+            measuredValuesArray.addValue(entry.getValue()[0]);
+        }
+        measuredInternalArray = measuredValuesArray.getTrimmedInternalArray();
+    }
+
     private double[][] uniformNumberGenerator( double[] xmin, double[] xmax, int nsample ) {
         // Latin Hypercube sampling
         // double[][] LHSresult=new double [1][1];
@@ -200,27 +258,104 @@ public class ParticleSwarming extends JGTModel {
     }
 
     public double[] computeCostFunction( double parametersMatrix[][] ) throws Exception {
-        double[] res = new double[parametersMatrix.length];
 
-        if (ModelName.equals("Banana")) {
-            for( int numpart = 0; numpart < parametersMatrix.length; numpart++ ) {
-                double xuno = parametersMatrix[numpart][0];
-                double xdue = parametersMatrix[numpart][1];
-                res[numpart] = 100 * (xdue - xuno * xuno) * (xdue - xuno * xuno) + (1 - xuno) * (1 - xuno);
+        Class< ? > modelClass = Class.forName(modelName);
+
+        double[] result = new double[parametersMatrix.length];
+
+        // set calibration parameters
+        for( int i = 0; i < parametersMatrix.length; i++ ) {
+            Object modelObject = modelClass.newInstance();
+
+            for( int j = 0; j < parametersMatrix[0].length; j++ ) {
+                double parameterValue = parametersMatrix[i][j];
+                String varName = index2varNameMap.get(j);
+                Field field = modelClass.getField(varName);
+                Class type = field.getType();
+                Object number = NumericsUtilities.isNumber(String.valueOf(parameterValue), type);
+                field.set(modelObject, number);
             }
+
+            // set input parameters
+            Set<Entry<String, String>> entrySet = varName2ValueMap.entrySet();
+            for( Entry<String, String> entry : entrySet ) {
+                String varName = entry.getKey();
+                String value = entry.getValue();
+
+                Field field = modelClass.getField(varName);
+                Class type = field.getType();
+                if (type.getCanonicalName().equals(String.class.getCanonicalName())) {
+                    field.set(modelObject, value);
+                } else {
+                    Object number = NumericsUtilities.isNumber(value, type);
+                    field.set(modelObject, number);
+                }
+            }
+
+            // run the model
+            Method[] methods = modelClass.getMethods();
+            for( Method method : methods ) {
+                boolean didRun = false;
+                Annotation[] annotations = method.getAnnotations();
+                for( Annotation annotation : annotations ) {
+                    if (annotation.annotationType().getCanonicalName().equals(Execute.class.getCanonicalName())) {
+                        // run this method
+                        method.invoke(modelObject);
+                        didRun = true;
+                        break;
+                    }
+                }
+                if (didRun) {
+                    break;
+                }
+            }
+
+            // get the output variable
+            Field field = modelClass.getField(pVariable);
+            Object value = field.get(modelObject);
+            double[] out = handleModelsOutput(value);
+
+            // FIXME the following line is dummy
+            result[i] = result[i] + out[i];
         }
 
-        if (ModelName.equals("Eggcrate")) {
-            for( int numpart = 0; numpart < parametersMatrix.length; numpart++ ) {
-                double xuno = parametersMatrix[numpart][0];
-                double xdue = parametersMatrix[numpart][1];
-                res[numpart] = xuno * xuno + xdue * xdue + 25
-                        * (Math.sin(xuno) * Math.sin(xuno) + Math.sin(xdue) * Math.sin(xdue));
+        return result;
+
+    }
+
+    private double[] handleModelsOutput( Object value ) throws Exception {
+        String outputPath = value.toString();
+        /*
+         * then read the models output
+         */
+        DoubleArray modelValuesArray = new DoubleArray(measuredInternalArray.length);
+        TimeSeriesIteratorReader modelOutputReader = new TimeSeriesIteratorReader();
+        modelOutputReader.file = outputPath;
+        modelOutputReader.idfield = "ID";
+        while( modelOutputReader.doProcess ) {
+            modelOutputReader.nextRecord();
+            HashMap<Integer, double[]> outData = modelOutputReader.outData;
+            double[] computedData = outData.get(measuredDataId);
+            if (computedData == null) {
+                throw new ModelsIllegalargumentException(
+                        "The id defined in the measured data could not be found inside the model data.", this);
             }
+            modelValuesArray.addValue(computedData[0]);
+        }
+        double[] internalArray = modelValuesArray.getTrimmedInternalArray();
+
+        /*
+         * TODO do some check on the measured and computed array.
+         * 
+         * Making a dummy placeholder for now.
+         */
+        int dataSize = min(internalArray.length, measuredInternalArray.length);
+        for( int i = 0; i < dataSize; i++ ) {
+            double diff = internalArray[i] - measuredInternalArray[i];
+
         }
 
-        return res;
-
+        return internalArray;
     }
 
     private double[] compute_gBest( double xx[][], double[] vettcostnew ) {
