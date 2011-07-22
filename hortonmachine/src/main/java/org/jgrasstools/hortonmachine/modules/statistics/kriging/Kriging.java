@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Kriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Name("kriging")
-@Status(Status.EXPERIMENTAL)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Kriging extends JGTModel {
 
@@ -181,11 +181,19 @@ public class Kriging extends JGTModel {
     public HashMap<Integer, double[]> outData = null;
 
     /**
-     *A tolerance.
+     * A tolerance.
      */
     private static final double TOLL = 1.0d * 10E-8;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+
+    private WritableRaster outWR = null;
+    private int cols;
+    private int rows;
+    private double south;
+    private double west;
+    private double xres;
+    private double yres;
 
     /**
      * Executing ordinary kriging.
@@ -234,8 +242,8 @@ public class Kriging extends JGTModel {
                 double[] h = inData.get(id);
                 if (h == null || isNovalue(h[0])) {
                     /*
-                     * skip data for non existing stations, they are
-                     * allowed. Also skip novalues.
+                     * skip data for non existing stations, they are allowed.
+                     * Also skip novalues.
                      */
                     continue;
                 }
@@ -320,53 +328,22 @@ public class Kriging extends JGTModel {
             }
         }
         HashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = new HashMap<Integer, Coordinate>();
-        int numPointToInterpolate = getNumPoint(inInterpolate);
+        // vecchio int numPointToInterpolate = getNumPoint(inInterpolate);
+        int numPointToInterpolate = 0;
 
         /*
          * if the isLogarithmic is true then execute the model with log value.
          */
-        double[] result = new double[numPointToInterpolate];
+        // vecchio double[] result = new double[numPointToInterpolate];
 
         if (pMode == 0 || pMode == 1) {
             pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
         } else if (pMode == 2) {
 
-            /*
-             * TODO the following is a blueprint to get data for the 
-             * grid interpolation, it needs to be filled with the actual 
-             * interpolation.
-             */
-            RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inInterpolationGrid);
-            int cols = regionMap.getCols();
-            int rows = regionMap.getRows();
-            double south = regionMap.getSouth();
-            double west = regionMap.getWest();
-            double xres = regionMap.getXres();
-            double yres = regionMap.getYres();
+            pointsToInterpolateId2Coordinates = getCoordinate(inInterpolationGrid);
 
-            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-            WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+            numPointToInterpolate = pointsToInterpolateId2Coordinates.size();
 
-            double northing = south;
-            double easting = west;
-            for( int i = 0; i < cols; i++ ) {
-                easting = easting + xres;
-                for( int j = 0; j < rows; j++ ) {
-                    northing = northing + yres;
-
-                    // do something with the northing and easting
-                    // representing your cell coordinate
-                    double interpolated = 0;
-                    outIter.setSample(i, j, 0, interpolated);
-                }
-            }
-            outIter.done();
-
-            // at the end create the output gricoverage
-            outGrid = CoverageUtilities.buildCoverage("kriging", outWR, regionMap,
-                    inInterpolationGrid.getCoordinateReferenceSystem());
-
-            throw new RuntimeException(msg.message("notImplemented"));
         } else if (pMode == 3) {
             throw new RuntimeException(msg.message("notImplemented"));
             // Raster grid = (Raster)
@@ -377,12 +354,16 @@ public class Kriging extends JGTModel {
             // double xMin = envelope2d.getMinX();
             // double yMin = envelope2d.getMinY();
             // numPointToInterpolate = nRows * nCols;
-            // coordinateToInterpolate = getCoordinate(numPointToInterpolate, xMin, yMin, grid);
+            // coordinateToInterpolate = getCoordinate(numPointToInterpolate,
+            // xMin, yMin, grid);
         }
+
         Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
         Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
         int j = 0;
-        int[] idArray = new int[inInterpolate.size()];
+        // vecchio int[] idArray = new int[inInterpolate.size()];
+        int[] idArray = new int[pointsToInterpolateId2Coordinates.size()];
+        double[] result = new double[pointsToInterpolateId2Coordinates.size()];
         if (n1 != 0) {
             if (doLogarithmic) {
                 for( int i = 0; i < nStaz; i++ ) {
@@ -405,7 +386,8 @@ public class Kriging extends JGTModel {
              */
 
             if (!areAllEquals && n1 > 1) {
-                pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
+                // pm.beginTask(msg.message("kriging.working"),inInterpolate.size());
+                pm.beginTask(msg.message("kriging.working"), pointsToInterpolateId2Coordinates.size());
                 while( idIterator.hasNext() ) {
                     double sum = 0.;
                     int id = idIterator.next();
@@ -415,7 +397,8 @@ public class Kriging extends JGTModel {
                     yStation[n1] = coordinate.y;
                     zStation[n1] = coordinate.z;
                     /*
-                     * calculating the right hand side of the kriging linear system.
+                     * calculating the right hand side of the kriging linear
+                     * system.
                      */
                     double[] knownTerm = knownTermsCalculation(xStation, yStation, zStation, n1);
 
@@ -465,7 +448,9 @@ public class Kriging extends JGTModel {
             if (pMode == 0 || pMode == 1) {
                 storeResult(result, idArray);
             } else {
-                throw new RuntimeException("Not implemented"); // storeResult(result);
+                if (pMode == 2) {
+                    storeResult(result, pointsToInterpolateId2Coordinates);
+                };
             }
         } else {
             pm.errorMessage("No rain for this time step");
@@ -480,7 +465,9 @@ public class Kriging extends JGTModel {
             if (pMode == 0 || pMode == 1) {
                 storeResult(result, idArray);
             } else {
-                throw new RuntimeException("Not implemented");
+                if (pMode == 2) {
+                    storeResult(result, pointsToInterpolateId2Coordinates);
+                };
 
             }
         }
@@ -639,6 +626,75 @@ public class Kriging extends JGTModel {
     // }
     // return coord;
     // }
+
+    private void storeResult( double[] result2, HashMap<Integer, Coordinate> po ) {
+
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+
+        Set<Integer> pointsToInterpolateIdSett = po.keySet();
+        Iterator<Integer> idIterator = pointsToInterpolateIdSett.iterator();
+        int c = 0;
+        while( idIterator.hasNext() ) {
+            int id = idIterator.next();
+            Coordinate coordinate = (Coordinate) po.get(id);
+            double iiid = (coordinate.x - west) / xres;
+            int iii = (int) iiid;
+
+            double jjjd = (coordinate.y - south) / yres;
+            int jjj = (int) jjjd;
+            // do something with the northing and easting
+            // representing your cell coordinate
+            outIter.setSample(iii, jjj, 0, result2[c]);
+            c++;
+
+        }
+
+        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inInterpolationGrid);
+
+        outGrid = CoverageUtilities
+                .buildCoverage("gridded", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
+
+    }
+
+    private HashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
+        HashMap<Integer, Coordinate> index2GridCoordinatesMap = new HashMap<Integer, Coordinate>();
+        int count = 0;
+        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(grid);
+        cols = regionMap.getCols();
+        rows = regionMap.getRows();
+        south = regionMap.getSouth();
+        west = regionMap.getWest();
+        xres = regionMap.getXres();
+        yres = regionMap.getYres();
+
+        outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+
+        double northing = south;
+        double easting = west;
+        for( int i = 0; i < cols; i++ ) {
+            easting = easting + xres;
+            for( int j = 0; j < rows; j++ ) {
+                northing = northing + yres;
+                Coordinate coordinate = new Coordinate();
+                coordinate.x = west + i * xres;
+                coordinate.y = south + j * yres;
+                // do something with the northing and easting
+                // representing your cell coordinate
+                double interpolated = 0;
+                outIter.setSample(i, j, 0, interpolated);
+                index2GridCoordinatesMap.put(count, coordinate);
+                count++;
+            }
+        }
+        outIter.done();
+
+        // at the end create the output gricoverage
+        // outGrid = CoverageUtilities.buildCoverage("kriging", outWR, regionMap,
+        // inInterpolationGrid.getCoordinateReferenceSystem());
+
+        return index2GridCoordinatesMap;
+    }
 
     /**
      * Extract the coordinate of a FeatureCollection in a HashMap with an ID as
