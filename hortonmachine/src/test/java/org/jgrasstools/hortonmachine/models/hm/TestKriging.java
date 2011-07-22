@@ -133,7 +133,7 @@ public class TestKriging extends HMTestCase {
          * Set up the model in order to run with a FeatureCollection as point to
          * interpolated. In this case only 2D.
          */
-        kriging.pMode = 2;
+        kriging.pMode = 1;
         kriging.pSemivariogramType = 1;
 
         // TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();

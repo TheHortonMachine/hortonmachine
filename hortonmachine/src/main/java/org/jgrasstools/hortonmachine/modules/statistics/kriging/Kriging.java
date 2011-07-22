@@ -30,12 +30,12 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -49,12 +49,13 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.matrixes.ColumnVector;
@@ -64,7 +65,6 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -77,6 +77,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Name("kriging")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
+@SuppressWarnings("nls")
 public class Kriging extends JGTModel {
 
     @Description("The vector of the measurement point, containing the position of the stations.")
@@ -121,7 +122,7 @@ public class Kriging extends JGTModel {
      * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
      * so the grid have to contains a dem.
      */
-    @Description("The interpolation mode.")
+    @Description("The interpolation mode (0 = interpolate on irregular grid, 1 = interpolate on regular grid).")
     @In
     public int pMode = 0;
 
@@ -342,26 +343,11 @@ public class Kriging extends JGTModel {
          */
         // vecchio double[] result = new double[numPointToInterpolate];
 
-        if (pMode == 0 || pMode == 1) {
+        if (pMode == 0) {
             pointsToInterpolateId2Coordinates = getCoordinate(numPointToInterpolate, inInterpolate, fInterpolateid);
-        } else if (pMode == 2) {
-
+        } else if (pMode == 1) {
             pointsToInterpolateId2Coordinates = getCoordinate(inInterpolationGrid);
-
             numPointToInterpolate = pointsToInterpolateId2Coordinates.size();
-
-        } else if (pMode == 3) {
-            throw new RuntimeException(msg.message("notImplemented"));
-            // Raster grid = (Raster)
-            // gridToInterpolate.view(ViewType.GEOPHYSICS).getRenderedImage();
-            // nRows = grid.getHeight();
-            // nCols = grid.getWidth();
-            // Envelope2D envelope2d = gridToInterpolate.getEnvelope2D();
-            // double xMin = envelope2d.getMinX();
-            // double yMin = envelope2d.getMinY();
-            // numPointToInterpolate = nRows * nCols;
-            // coordinateToInterpolate = getCoordinate(numPointToInterpolate,
-            // xMin, yMin, grid);
         }
 
         Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
@@ -451,12 +437,10 @@ public class Kriging extends JGTModel {
 
             }
             pm.done();
-            if (pMode == 0 || pMode == 1) {
+            if (pMode == 0) {
                 storeResult(result, idArray);
             } else {
-                if (pMode == 2) {
-                    storeResult(result, pointsToInterpolateId2Coordinates);
-                };
+                storeResult(result, pointsToInterpolateId2Coordinates);
             }
         } else {
             pm.errorMessage("No rain for this time step");
@@ -468,13 +452,10 @@ public class Kriging extends JGTModel {
                 result[j] = value[0];
                 j++;
             }
-            if (pMode == 0 || pMode == 1) {
+            if (pMode == 0) {
                 storeResult(result, idArray);
             } else {
-                if (pMode == 2) {
-                    storeResult(result, pointsToInterpolateId2Coordinates);
-                };
-
+                storeResult(result, pointsToInterpolateId2Coordinates);
             }
         }
     }
@@ -486,13 +467,13 @@ public class Kriging extends JGTModel {
         if (inData == null || inStations == null) {
             throw new NullPointerException(msg.message("kriging.stationproblem"));
         }
-        if (pMode < 0 || pMode > 3) {
+        if (pMode < 0 || pMode > 1) {
             throw new IllegalArgumentException(msg.message("kriging.defaultMode"));
         }
-        if (pMode == 1 && (fStationsZ == null || fPointZ == null)) {
-            pm.errorMessage(msg.message("kriging.noElevation"));
-            throw new IllegalArgumentException(msg.message("kriging.noElevation"));
-        }
+        // if (pMode == 0 && (fStationsZ == null || fPointZ == null)) {
+        // pm.errorMessage(msg.message("kriging.noElevation"));
+        // throw new IllegalArgumentException(msg.message("kriging.noElevation"));
+        // }
 
         if (defaultVariogramMode != 0 && defaultVariogramMode != 1) {
             throw new IllegalArgumentException(msg.message("kriging.variogramMode"));
@@ -516,12 +497,12 @@ public class Kriging extends JGTModel {
             }
         }
 
-        if ((pMode == 1 || pMode == 0) && inInterpolate == null) {
-            throw new NullPointerException(msg.message("kriging.noPoint"));
+        if ((pMode == 0) && inInterpolate == null) {
+            throw new ModelsIllegalargumentException(msg.message("kriging.noPoint"), this);
         }
-        // if ((mode == 2 || mode == 3) && gridToInterpolate == null) {
-        // throw new NullPointerException("problema nei punti da interpolare");
-        // }
+        if (pMode == 1 && inInterpolationGrid == null) {
+            throw new ModelsIllegalargumentException("The gridded interpolation needs a gridgeometry in input.", this);
+        }
 
     }
 
@@ -536,102 +517,11 @@ public class Kriging extends JGTModel {
      * @throws SchemaException
      */
     private void storeResult( double[] result2, int[] id ) throws SchemaException {
-        if (pMode == 0 || pMode == 1) {
-            outData = new HashMap<Integer, double[]>();
-            for( int i = 0; i < result2.length; i++ ) {
-                outData.put(id[i], new double[]{result2[i]});
-            }
+        outData = new HashMap<Integer, double[]>();
+        for( int i = 0; i < result2.length; i++ ) {
+            outData.put(id[i], new double[]{result2[i]});
         }
     }
-
-    // /**
-    // * Store the result in a GridCoverage(if the mode is 2 or 3).
-    // *
-    // * @param result2
-    // * the result of the model
-    // * @throws SchemaException
-    // * @throws SchemaException
-    // */
-    // private void storeResult( double[] result2 ) {
-    //
-    // if (mode == 2 || mode == 3) {
-    // WritableRaster raster =
-    // CoverageUtilities.createDoubleWritableRaster(nCols, nRows,
-    // null, null, null);
-    // WritableRectIter rectIter = RectIterFactory.createWritable(raster, null);
-    // int i = 0;
-    // rectIter.startLines();
-    // do {
-    // rectIter.startPixels();
-    // i = 0;
-    // do {
-    // rectIter.setSample(result2[i]);
-    // i++;
-    // } while( !rectIter.nextPixelDone() );
-    //
-    // } while( !rectIter.nextLineDone() );
-    //
-    // HashMap<String, Double> regionMap = CoverageUtilities
-    // .getRegionParamsFromGridCoverage(gridToInterpolate);
-    // gridResult = CoverageUtilities.buildCoverage("interpolated", raster,
-    // regionMap,
-    // gridToInterpolate.getCoordinateReferenceSystem());
-    // }
-    //
-    // }
-
-    // /**
-    // * Extract the coordinates to interpolate from a regular grid in 3D.
-    // *
-    // * @param numPointToInterpolate the amount of the points to interpolate
-    // * @return an {@link HashMap} which contains, for each points, the
-    // coordinate and its ID
-    // */
-    // private HashMap<Integer, Coordinate> getCoordinate( int
-    // numPointToInterpolate, double minX,
-    // double minY, Raster grid ) {
-    // Coordinate coordinate = new Coordinate();
-    // HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
-    //
-    // // gridToInterpolate.
-    // int count = 0;
-    //
-    // for( int j = 0; j < nRows; j++ ) {
-    // for( int i = 0; i < nCols; i++ ) {
-    // coordinate.x = minX + i * xRes;
-    // coordinate.y = minY + j * yRes;
-    // coordinate.z = grid.getSampleDouble(i, j, 0);
-    // count++;
-    // coord.put(count, coordinate);
-    // }
-    // }
-    // return coord;
-    // }
-
-    // /**
-    // * * Extract the coordinates to interpolate from a regular grid in 2D.
-    // *
-    // * @param numPointToInterpolate
-    // * @return an {@link HashMap} which contains, for each points, the
-    // coordinate and its ID
-    // */
-    // private HashMap<Integer, Coordinate> getCoordinate( int
-    // numPointToInterpolate, double minX,
-    // double minY ) {
-    // Coordinate coordinate = new Coordinate();
-    // HashMap<Integer, Coordinate> coord = new HashMap<Integer, Coordinate>();
-    // int count = 0;
-    // for( int j = 0; j < nRows; j++ ) {
-    // for( int i = 0; i < nCols; i++ ) {
-    // coordinate.x = minX + i * xRes;
-    // coordinate.y = minY + j * yRes;
-    // count++;
-    // coord.put(count, coordinate);
-    //
-    // }
-    // }
-    // return coord;
-    // }
 
     private void storeResult( double[] interpolatedValues, HashMap<Integer, Coordinate> interpolatedCoordinatesMap )
             throws MismatchedDimensionException, Exception {
@@ -657,8 +547,6 @@ public class Kriging extends JGTModel {
             int x = (int) gridCoord[0];
             int y = (int) gridCoord[1];
 
-            // do something with the northing and easting
-            // representing your cell coordinate
             outIter.setSample(x, y, 0, interpolatedValues[c]);
             c++;
 
@@ -740,24 +628,6 @@ public class Kriging extends JGTModel {
     }
 
     /**
-     * Return the number of features.
-     * 
-     * @param collection
-     * @return
-     * @throws ModelsIOException
-     */
-    private int getNumPoint( SimpleFeatureCollection collection ) throws ModelsIOException {
-        int nStaz = 0;
-        if (collection != null) {
-            nStaz = collection.size();
-        }
-        if (nStaz == 0) {
-            throw new ModelsIOException("Didn't find any point in the FeatureCollection", this.getClass().getSimpleName());
-        }
-        return nStaz;
-    }
-
-    /**
      * The gaussian variogram
      * 
      * @param c0
@@ -835,7 +705,7 @@ public class Kriging extends JGTModel {
                     double rx = x[i] - x[j];
                     double ry = y[i] - y[j];
                     double rz = 0;
-                    if (pMode == 1) {
+                    if (pMode == 0) {
                         rz = z[i] - z[j];
                     }
                     double tmp = variogram(rx, ry, rz);
@@ -851,7 +721,7 @@ public class Kriging extends JGTModel {
                     double rx = x[i] - x[j];
                     double ry = y[i] - y[j];
                     double rz = 0;
-                    if (pMode == 1) {
+                    if (pMode == 0) {
                         rz = z[i] - z[j];
                     }
                     double tmp = variogram(pNug, pA, pS, rx, ry, rz);
