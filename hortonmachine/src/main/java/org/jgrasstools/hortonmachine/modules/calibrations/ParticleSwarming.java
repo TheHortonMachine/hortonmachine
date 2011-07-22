@@ -13,10 +13,6 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 public class ParticleSwarming extends JGTModel {
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-
     @Description("")
     @In
     public int Warmup;
@@ -68,6 +64,10 @@ public class ParticleSwarming extends JGTModel {
     @Description("parameters")
     @In
     public int parameters;
+    
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("gbest")
     @Out

@@ -46,6 +46,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
+import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -59,6 +60,10 @@ import org.jgrasstools.gears.utils.math.matrixes.ColumnVector;
 import org.jgrasstools.gears.utils.math.matrixes.LinearSystem;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -627,24 +632,32 @@ public class Kriging extends JGTModel {
     // return coord;
     // }
 
-    private void storeResult( double[] result2, HashMap<Integer, Coordinate> po ) {
+    private void storeResult( double[] interpolatedValues, HashMap<Integer, Coordinate> interpolatedCoordinatesMap ) throws MismatchedDimensionException, Exception {
 
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
-        Set<Integer> pointsToInterpolateIdSett = po.keySet();
+        Set<Integer> pointsToInterpolateIdSett = interpolatedCoordinatesMap.keySet();
         Iterator<Integer> idIterator = pointsToInterpolateIdSett.iterator();
         int c = 0;
+        MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
+
+        final DirectPosition gridPoint = new DirectPosition2D();
+
         while( idIterator.hasNext() ) {
             int id = idIterator.next();
-            Coordinate coordinate = (Coordinate) po.get(id);
-            double iiid = (coordinate.x - west) / xres;
-            int iii = (int) iiid;
+            Coordinate coordinate = (Coordinate) interpolatedCoordinatesMap.get(id);
 
-            double jjjd = (coordinate.y - south) / yres;
-            int jjj = (int) jjjd;
+            DirectPosition point = new DirectPosition2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
+                    coordinate.y);
+            transf.transform(point, gridPoint);
+
+            double[] gridCoord = gridPoint.getCoordinate();
+            int x = (int) gridCoord[0];
+            int y = (int) gridCoord[1];
+
             // do something with the northing and easting
             // representing your cell coordinate
-            outIter.setSample(iii, jjj, 0, result2[c]);
+            outIter.setSample(x, y, 0, interpolatedValues[c]);
             c++;
 
         }
@@ -657,7 +670,7 @@ public class Kriging extends JGTModel {
     }
 
     private HashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
-        HashMap<Integer, Coordinate> index2GridCoordinatesMap = new HashMap<Integer, Coordinate>();
+        HashMap<Integer, Coordinate> out = new HashMap<Integer, Coordinate>();
         int count = 0;
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(grid);
         cols = regionMap.getCols();
@@ -683,17 +696,18 @@ public class Kriging extends JGTModel {
                 // representing your cell coordinate
                 double interpolated = 0;
                 outIter.setSample(i, j, 0, interpolated);
-                index2GridCoordinatesMap.put(count, coordinate);
+                out.put(count, coordinate);
                 count++;
+
             }
         }
         outIter.done();
 
         // at the end create the output gricoverage
-        // outGrid = CoverageUtilities.buildCoverage("kriging", outWR, regionMap,
-        // inInterpolationGrid.getCoordinateReferenceSystem());
+        outGrid = CoverageUtilities
+                .buildCoverage("kriging", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
 
-        return index2GridCoordinatesMap;
+        return out;
     }
 
     /**

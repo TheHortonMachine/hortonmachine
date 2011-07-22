@@ -1,4 +1,3 @@
-//*
 package org.jgrasstools.hortonmachine.models.hm;
 
 import org.jgrasstools.hortonmachine.modules.calibrations.ParticleSwarming;

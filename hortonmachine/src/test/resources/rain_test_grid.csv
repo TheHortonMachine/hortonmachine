@@ -1,0 +1,9 @@
+@T,rain
+Author,Silvia Franceschi
+DataSource,rain test
+DateFormat,yyyy-MM-dd HH:mm
+
+@H,date,rain_1,rain_2,rain_3,rain_4,rain_5,rain_6,rain_7,rain_8,rain_9,rain_10,rain_11
+ID,,1133,1331,1224,1079,1032,1058,113,1008,1152,1101,1044
+,2000-01-01 00:00,0.6,0.1,-9999,0,-9999,-9999,-9999,0.2,1.8,-9999,0.4
+,2000-01-01 01:00,-9999,0.1,-9999,0.9,-9999,-9999,-9999,1.6,2.6,-9999,0.6
