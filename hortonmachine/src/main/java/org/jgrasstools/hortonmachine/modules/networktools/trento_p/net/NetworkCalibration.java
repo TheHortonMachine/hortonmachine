@@ -51,7 +51,7 @@ import org.joda.time.DateTime;
  * 
  * <p>
  * 
- * It contains a geosewer method which verify the net..
+ * It contains a geosewere method which verify the net..
  * 
  * </p>
  * 
@@ -115,20 +115,6 @@ public class NetworkCalibration implements Network {
      * The discharg for each pipe and for each time.
      */
     private HashMap<DateTime, HashMap<Integer, double[]>> discharge;
-    /*
-     *If the simulation run with the a and n parameters. 
-     */
-    private final boolean foundMaxTp;
-    /*
-     * The maximum time of rain, it is used to limit the rain time to a specific value.
-     */
-    private Integer tpMax = null;
-    /*
-     * Is the limit to the iteration in the research of the discharge.
-     * 
-     */
-    private final static int maxDischargeIteration = 10000;
-
     /**
         * Builder for the Calibration class.
         */
@@ -158,10 +144,7 @@ public class NetworkCalibration implements Network {
          * Dati relativi alla rete
          */
         private final Pipe[] networkPipe;
-        /*
-         * True if the aim of simulation is search the tp.
-         */
-        private final boolean foundMaxTp;
+
         // Precisione con cui vengono cercate alcune soluzioni col metodo delle
         // bisezioni.
         private double celerityfactor1 = DEFAULT_CELERITY_FACTOR;
@@ -187,7 +170,7 @@ public class NetworkCalibration implements Network {
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
                 HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
-                HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree, StringBuilder strBuilder, boolean foundMaxTp ) {
+                HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree, StringBuilder strBuilder ) {
             this.pm = pm;
             this.networkPipe = networkPipe;
             this.inRain = inRain;
@@ -195,7 +178,6 @@ public class NetworkCalibration implements Network {
             this.discharge = outDischarge;
             this.fillDegree = outFillDegree;
             this.strBuilder = strBuilder;
-            this.foundMaxTp = foundMaxTp;
         }
 
         /**
@@ -238,7 +220,6 @@ public class NetworkCalibration implements Network {
         this.fillDegree = builder.fillDegree;
         this.tMax = builder.tMax;
         this.strBuilder = builder.strBuilder;
-        this.foundMaxTp = builder.foundMaxTp;
         if (builder.networkPipe != null) {
             this.networkPipes = builder.networkPipe;
         } else {
@@ -319,12 +300,11 @@ public class NetworkCalibration implements Network {
      *            delay matrix (for the evalutation of the flow wave).
      * @param net
      *            matrix that contains value of the network.
-     * @throws Exception if the number of iteration is greather than a fixed value.
      */
-    private double internalPipeVerify( int k, double[] cDelays, double[][] net, int time ) throws Exception {
+    private void internalPipeVerify( int k, double[] cDelays, double[][] net ) {
 
         int num;
-        double localdelay, olddelay, qMax, B, known, theta, u;
+        double localdelay, olddelay, Qmax, B, known, theta, u;
         double[][] qPartial;
 
         qPartial = new double[timeDischarge.length][timeDischarge[0].length];
@@ -336,17 +316,10 @@ public class NetworkCalibration implements Network {
         double minG = networkPipes[0].getMinG();
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
-        int iterationNumber = 0;
-        do {
 
-            iterationNumber++;
-            if (iterationNumber > maxDischargeIteration) {
-                String message = msg.message("trentoP.error.infiniteLoop");
-                pm.errorMessage(message);
-                throw new Exception(msg.message("trentoP.error.infiniteLoop"));
-            }
+        do {
             olddelay = localdelay;
-            qMax = 0;
+            Qmax = 0;
             // Updates delays
             for( int i = 0; i < net.length; i++ ) {
                 net[i][2] += localdelay;
@@ -354,29 +327,29 @@ public class NetworkCalibration implements Network {
 
             for( int j = 0; j < net.length; ++j ) {
                 num = (int) net[j][0];
-                getHydrograph(num, qPartial, olddelay, net[j][2], time);
+                getHydrograph(num, qPartial, olddelay, net[j][2]);
 
             }
 
-            getHydrograph(k, qPartial, olddelay, 0, time);
-            qMax = ModelsEngine.sumDoublematrixColumns(k, qPartial, timeDischarge, 1, qPartial[0].length - 1, pm);
-            if (qMax <= 1)
-                qMax = 1;
+            getHydrograph(k, qPartial, olddelay, 0);
+            Qmax = ModelsEngine.sumDoublematrixColumns(k, qPartial, timeDischarge, 1, qPartial[0].length - 1, pm);
+            if (Qmax <= 1)
+                Qmax = 1;
             // Resets delays
             for( int i = 0; i < net.length; i++ ) {
                 net[i][2] -= localdelay;
             }
             calculateFillDegree(k, timeDischarge);
-            B = qMax / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
+            B = Qmax / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
             known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
             // Average velocity in pipe [ m / s ]
-            u = qMax * 80 / (pow(networkPipes[k - 1].diameterToVerify, 2) * (theta - sin(theta)));
+            u = Qmax * 80 / (pow(networkPipes[k - 1].diameterToVerify, 2) * (theta - sin(theta)));
             localdelay = networkPipes[k - 1].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
 
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
         cDelays[k - 1] = localdelay;
-        return qMax;
+
     }
 
     private void calculateFillDegree( int k, double[][] timeDischarge2 ) {
@@ -455,7 +428,7 @@ public class NetworkCalibration implements Network {
      * @param delay
      *            ritardo temporale.
      */
-    private double getHydrograph( int k, double[][] Qpartial, double localdelay, double delay, int time )
+    private double getHydrograph( int k, double[][] Qpartial, double localdelay, double delay )
 
     {
 
@@ -465,15 +438,10 @@ public class NetworkCalibration implements Network {
         double t = tmin;
         double Q;
         double rain;
-        for( t = tmin, j = 0; t <= time; t += dt, ++j ) {
+        for( t = tmin, j = 0; t <= tMax; t += dt, ++j ) {
             Q = 0;
-            int nTime;
-            if (foundMaxTp) {
-                nTime = (int) (time / dt);
-            } else {
-                nTime = (rainData.length - 1);
-            }
-            for( int i = 0; i <= nTime; ++i ) {
+
+            for( int i = 0; i <= (rainData.length) - 1; ++i ) {
 
                 // [ l / s ]
 
@@ -510,10 +478,9 @@ public class NetworkCalibration implements Network {
      * @param k
      *            ID of the pipe where evaluate the discharge.
      * @param cDelays
-     *            delay matrix (for the evaluation of the flow wave).
-     * @throws Exception if the number of iteration is greater than a fixed value.
+     *            delay matrix (for the evalutation of the flow wave).
      */
-    private double headPipeVerify( int k, double[] cDelays, int time ) throws Exception {
+    private void headPipeVerify( int k, double[] cDelays ) {
 
         double olddelay = 0;
         double Qmax = 0;
@@ -521,7 +488,6 @@ public class NetworkCalibration implements Network {
         double known = 0;
         double theta = 0;
         double u = 0;
-        int iterationNumber = 0;
         /* First attempt local delay [min] */
         double localdelay = 1;
         double accuracy = networkPipes[0].getAccuracy();
@@ -530,14 +496,8 @@ public class NetworkCalibration implements Network {
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
         do {
-            iterationNumber++;
-            if (iterationNumber > maxDischargeIteration) {
-                String message = msg.message("trentoP.error.infiniteLoop");
-                pm.errorMessage(message);
-                throw new Exception(msg.message("trentoP.error.infiniteLoop"));
-            }
             olddelay = localdelay;
-            Qmax = getHydrograph(k, timeDischarge, olddelay, 0, time);
+            Qmax = getHydrograph(k, timeDischarge, olddelay, 0);
             if (Qmax <= 1) {
                 Qmax = 1;
             }
@@ -561,8 +521,9 @@ public class NetworkCalibration implements Network {
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
         cDelays[k - 1] = localdelay;
-        return Qmax;
+
     }
+
     /**
      * 
      * restituisce la funzione p.
@@ -668,122 +629,15 @@ public class NetworkCalibration implements Network {
         t.sort(magnitude, one);
 
         int k = 0;
-        double maxFill = angleToFillDegree(networkPipes[k].getMaxTheta());
-        int tempTp = 0;
-        /*
-         * if the rain was build throught the a and n parameters, then cycling to found the time of rain which give the maximum Q.
-         */
-        tpMax=tMax;
-        if (foundMaxTp) {
-            double qMax = 0.0;
-            /*
-             * for each time, from the 3 dt to the simulation time, run the simulation to found the maximum rain time.
-             */
-            for( int temp = (int) 3 * dt; temp < tMax; temp = temp + dt ) {
-                tempTp = temp;
-
-                // tratto che si sta analizzando o progettando
-                k = 0;
-                l = (int) one[k];
-                pm.beginTask(msg.message("trentoP.begin") + " at rain time " + temp, -1);
-                boolean isFill = false;
-                double[] cDelays = new double[networkPipes.length];
-                double tmpQMax = 0.0;
-                int nTime = timeDischarge.length;
-                timeDischarge = new double[nTime][networkPipes.length + 1];
-                double time = rainData[0][0];
-                for( int i = 0; i < nTime; ++i ) {
-                    timeDischarge[i][0] = time;
-                    time += dt;
-                }
-                while( magnitude[k] == 1 ) {
-                    try {
-                        double q = headPipeVerify(l, cDelays, temp);
-                        if (q > tmpQMax) {
-                            tmpQMax = q;
-                        }
-                        // Passo allo stato successivo
-                        k++;
-
-                        if (k < magnitude.length) {
-                            /*
-                             * Il prossimo tratto da progettare, ovviamente se avra
-                             * magnitude=1
-                             */
-                            l = (int) one[k];
-                        } else {
-                            break;
-                        }
-                        pm.worked(1);
-                    } catch (ArithmeticException e) {
-                        isFill = true;
-                        break;
-
-                    }
-                }
-
-                /*
-                 * ----- INIZIO CICLO WHILE PER LA PROGETTAZIONE DELLE AREE NON DI TESTA
-                 * -----
-                 * 
-                 * Magnitude > 1 AREE NON DI TESTA
-                 */
-                if (!isFill) {
-                    while( k < magnitude.length ) {
-
-                        try {
-                            net = new double[(int) (magnitude[k] - 1)][9];
-                            scanNetwork(k, l, one, net);
-                            double q = internalPipeVerify(l, cDelays, net, temp);
-                            if (q > tmpQMax) {
-                                tmpQMax = q;
-                            }
-                            /* Passo allo stato successivo */
-                            k++;
-                            /* se non sono arrivato alla fine */
-                            if (k < magnitude.length) {
-                                /* Prossimo stato da progettare */
-                                l = (int) one[k];
-                            } else {
-                                break;
-                            }
-                            pm.worked(1);
-                        } catch (ArithmeticException e) {
-                            break;
-                        }
-                    }
-
-                }
-
-                if (tmpQMax > qMax) {
-                    qMax = tmpQMax;
-                } else if (tmpQMax < qMax) {
-                    tpMax = temp;
-                    break;
-                }
-                pm.done();
-            }
-            tpMax = tempTp;
-        }
-        k = 0;
-        int nTime = timeDischarge.length;
-        timeDischarge = new double[nTime][networkPipes.length + 1];
-        timeFillDegree = new double[nTime][networkPipes.length + 1];
-        double time = rainData[0][0];
-        for( int i = 0; i < nTime; ++i ) {
-            timeDischarge[i][0] = time;
-            timeFillDegree[i][0] = time;
-            time += dt;
-        }
-        double[] cDelays = new double[networkPipes.length];
         // tratto che si sta analizzando o progettando
-        pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
-
         l = (int) one[k];
+        pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
         boolean isFill = false;
+        double[] cDelays = new double[networkPipes.length];
+        double maxFill = angleToFillDegree(networkPipes[k].getMaxTheta());
         while( magnitude[k] == 1 ) {
             try {
-                headPipeVerify(l, cDelays, tpMax);
+                headPipeVerify(l, cDelays);
 
                 // Passo allo stato successivo
                 k++;
@@ -826,7 +680,7 @@ public class NetworkCalibration implements Network {
                 try {
                     net = new double[(int) (magnitude[k] - 1)][9];
                     scanNetwork(k, l, one, net);
-                    internalPipeVerify(l, cDelays, net, tpMax);
+                    internalPipeVerify(l, cDelays, net);
 
                     /* Passo allo stato successivo */
                     k++;
@@ -839,7 +693,6 @@ public class NetworkCalibration implements Network {
                     }
                     pm.worked(1);
                 } catch (ArithmeticException e) {
-                    strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
                     strBuilder.append(maxFill);
                     strBuilder.append(" ");
@@ -850,13 +703,8 @@ public class NetworkCalibration implements Network {
                 }
             }
         }
-
-        pm.done();
         getNetData();
 
-    }
-    private int foundTheMaximumTime() {
-        return 0;
     }
 
     /*

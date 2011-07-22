@@ -353,8 +353,8 @@ public class TrentoP {
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder,
-                    foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder
+                  ).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
 
         } else {
