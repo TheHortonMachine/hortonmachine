@@ -353,8 +353,8 @@ public class TrentoP {
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder
-                  ).celerityFactor(pCelerityFactor).tMax(tMax).build();
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder,
+                    tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
 
         } else {
@@ -568,7 +568,11 @@ public class TrentoP {
              */
             if (pA != null && pN != null) {
                 // set it to true in order to search the time at max discharge.
-                foundTp = true;
+                if (tpMaxCalibration != null) {
+                    foundTp = true;
+                } else {
+                    tpMaxCalibration = tMax;
+                }
                 if (dt == null) {
                     pm.errorMessage(msg.message("trentoP.error.dtp"));
                     throw new IllegalArgumentException();
