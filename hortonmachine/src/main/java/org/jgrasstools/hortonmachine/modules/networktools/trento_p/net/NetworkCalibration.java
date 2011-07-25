@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.net;
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.angleToFillDegree;
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
@@ -29,6 +28,7 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.MINUTE2SEC;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWOOVERTHREE;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.TWO_THIRTEENOVERTHREE;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.angleToFillDegree;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -118,7 +118,7 @@ public class NetworkCalibration implements Network {
 
     private final boolean foundMaxrainTime;
 
-    private final int tpMaxCalibration;
+    private final Integer tpMaxCalibration;
     private int nTime;
     /**
         * Builder for the Calibration class.
@@ -151,7 +151,7 @@ public class NetworkCalibration implements Network {
         private final Pipe[] networkPipe;
         private final boolean foundMaxrainTime;
 
-        private final int tpMaxCalibration;
+        private final Integer tpMaxCalibration;
         // Precisione con cui vengono cercate alcune soluzioni col metodo delle
         // bisezioni.
         private double celerityfactor1 = DEFAULT_CELERITY_FACTOR;
@@ -177,7 +177,7 @@ public class NetworkCalibration implements Network {
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
                 HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
-                HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree, StringBuilder strBuilder, int tpMaxCalibration,
+                HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree, StringBuilder strBuilder, Integer tpMaxCalibration,
                 boolean foundTpMax ) {
             this.pm = pm;
             this.networkPipe = networkPipe;
@@ -187,7 +187,11 @@ public class NetworkCalibration implements Network {
             this.fillDegree = outFillDegree;
             this.strBuilder = strBuilder;
             this.foundMaxrainTime = foundTpMax;
-            this.tpMaxCalibration = tpMaxCalibration;
+            if (tpMaxCalibration != null) {
+                this.tpMaxCalibration = tpMaxCalibration;
+            } else {
+                this.tpMaxCalibration = tMax;
+            }
         }
 
         /**
@@ -346,7 +350,7 @@ public class NetworkCalibration implements Network {
 
             for( int j = 0; j < net.length; ++j ) {
                 num = (int) net[j][0];
-                getHydrograph(num, qPartial, olddelay, net[j][2],tp);
+                getHydrograph(num, qPartial, olddelay, net[j][2], tp);
 
             }
 
@@ -458,14 +462,13 @@ public class NetworkCalibration implements Network {
         double t = tmin;
         double Q;
         double rain;
-        int maxRain=0;
-        if(tMax==tpMaxCalibration){
-            maxRain=rainData.length;
-        }else{
-            maxRain=tp;
+        int maxRain = 0;
+        if (tMax == tpMaxCalibration) {
+            maxRain = rainData.length;
+        } else {
+            maxRain = tp;
         }
-        
-        
+
         for( t = tmin, j = 0; t <= tMax; t += dt, ++j ) {
             Q = 0;
 
@@ -525,7 +528,7 @@ public class NetworkCalibration implements Network {
         double tolerance = networkPipes[0].getTolerance();
         do {
             olddelay = localdelay;
-            qMax = getHydrograph(k, timeDischarge, olddelay, 0,tp);
+            qMax = getHydrograph(k, timeDischarge, olddelay, 0, tp);
             if (qMax <= 1) {
                 qMax = 1;
             }
