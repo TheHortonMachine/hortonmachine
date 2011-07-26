@@ -333,7 +333,7 @@ public class TestTrentoP extends HMTestCase {
      // set global parameters
      // verify
      trento_P.inPipes = netFC;
-     trento_P.process();
+        trento_P.process();
      result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
      checkMatrixEqual(result, HMTestMapstrentoP.verify1, TOLL);
     

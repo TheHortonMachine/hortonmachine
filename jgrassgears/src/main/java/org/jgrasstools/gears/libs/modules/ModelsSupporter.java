@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-
 /**
  * <p>
  * Facility methods and constants used by the console engine
@@ -106,12 +105,15 @@ public class ModelsSupporter {
      * have to be tracked down.
      * </p>
      */
-    public final static int[][] DIR_WITHFLOW_ENTERING = {{0, 0, 0}, {0, 1, 5}, {-1, 1, 6}, {-1, 0, 7}, {-1, -1, 8}, {0, -1, 1}, {1, -1, 2}, {1, 0, 3}, {1, 1, 4}};
-    public static final int[][] DIR_WITHFLOW_EXITING = {{0, 0, 0}, {-1, 0, 5}, {-1, 1, 6}, {-1, 0, 7}, {1, 1, 8}, {0, -1, 3}, {1, -1, 2}, {1, 0, 1}, {-1, -1, 4}, {0, 0, 9}, {0, 0, 10}};
+    public final static int[][] DIR_WITHFLOW_ENTERING = {{0, 0, 0}, {0, 1, 5}, {-1, 1, 6}, {-1, 0, 7}, {-1, -1, 8}, {0, -1, 1},
+            {1, -1, 2}, {1, 0, 3}, {1, 1, 4}};
+    public static final int[][] DIR_WITHFLOW_EXITING = {{0, 0, 0}, {1, 0, 1}, {1, -1, 2}, {0, -1, 3}, {-1, -1, 4}, {-1, 0, 5},
+            {-1, 1, 6}, {-1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
     /*
      * This is similar to exiting inverted, but is in cols and rows and have a particular order to work (in tca3d) with triangle.
      */
-    public static final int[][] DIR_WITHFLOW_EXITING_INVERTED = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4}, {0, -1, 5}, {1, -1, 6}, {1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
+    public static final int[][] DIR_WITHFLOW_EXITING_INVERTED = {{0, 0, 0}, {0, 1, 1}, {-1, 1, 2}, {-1, 0, 3}, {-1, -1, 4},
+            {0, -1, 5}, {1, -1, 6}, {1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
 
     /**
      * Calculate the drainage direction factor (is used in some horton machine like pitfiller,
@@ -132,7 +134,7 @@ public class ModelsSupporter {
         }
         return fact;
     }
-    
+
     // ///////////////////////////////////////////////////
     // MAP TYPES
     // ///////////////////////////////////////////////////
