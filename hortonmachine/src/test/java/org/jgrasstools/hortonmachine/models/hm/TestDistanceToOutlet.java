@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.models.hm;
 
 import java.util.HashMap;
@@ -10,8 +27,31 @@ import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class TestDistanceToOutlet extends HMTestCase {
-    
-    public void testDistanceToOutlet() throws Exception {
+
+    /**
+     * test {@link DistanceToOutlet} in the topological mode.
+     * 
+     */
+    public void testDistanceToOutletTopological() {
+
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        double[][] flowData = HMTestMaps.mflowDataBorder;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+
+        DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
+        distanceToOutlet.inFlow = flowCoverage;
+        distanceToOutlet.pMode = 1;
+        distanceToOutlet.process();
+        GridCoverage2D distanceCoverage = distanceToOutlet.outDistance;
+        checkMatrixEqual(distanceCoverage.getRenderedImage(), HMTestMaps.d2oPixelData);
+    }
+
+    /**
+     * test {@link DistanceToOutlet} in the simple mode.
+     * 
+     */
+    public void testDistanceToOutletMetere() {
 
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
@@ -23,6 +63,6 @@ public class TestDistanceToOutlet extends HMTestCase {
         distanceToOutlet.pMode = 0;
         distanceToOutlet.process();
         GridCoverage2D distanceCoverage = distanceToOutlet.outDistance;
-        checkMatrixEqual(distanceCoverage.getRenderedImage(), HMTestMaps.d2oPixelData);
+        checkMatrixEqual(distanceCoverage.getRenderedImage(), HMTestMaps.d2oMeterData, 0.01);
     }
 }

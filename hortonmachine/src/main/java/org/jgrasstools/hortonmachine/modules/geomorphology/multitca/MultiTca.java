@@ -59,13 +59,16 @@ public class MultiTca extends JGTModel {
     private int[][] dir = ModelsSupporter.DIR_WITHFLOW_EXITING;
     // the incoming flow direction.
     private int[][] dirIn = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-    
+
     @Execute
     public void process() {
+        if (!concatOr(outMultiTca == null, doReset)) {
+            return;
+        }
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
- //       pm.message();
+        // pm.message();
 
         @SuppressWarnings("unused")
         int ipos, jpos, i, j, ncicli = 0;
@@ -75,7 +78,7 @@ public class MultiTca extends JGTModel {
         double[] elevationArray = new double[cols * rows];
         double[] indexOfElevation = new double[cols * rows];
 
-//        pm.message();
+        // pm.message();
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
         RandomIter pitIter = CoverageUtilities.getRandomIterator(inPit);
@@ -98,7 +101,7 @@ public class MultiTca extends JGTModel {
         /*
          * sorted the array of elevation.
          */
- //       pm.message();
+        // pm.message();
         try {
             QuickSortAlgorithm sortAlgorithm = new QuickSortAlgorithm(pm);
             sortAlgorithm.sort(elevationArray, indexOfElevation);
@@ -134,8 +137,7 @@ public class MultiTca extends JGTModel {
                             if (delta == 0) {
                                 if (alreadyDoneIter.getSampleDouble(ipos, jpos, 0) == 0.0
                                         && flowIter.getSampleDouble(ipos, jpos, 0) == dirIn[k][2]) {
-                                    resolveFlat(ipos, jpos, cols, rows, pitIter, multiTcaIter, alreadyDoneIter,
-                                            flowIter, cp9Iter);
+                                    resolveFlat(ipos, jpos, cols, rows, pitIter, multiTcaIter, alreadyDoneIter, flowIter, cp9Iter);
                                 }
                             }
                             if (delta > 0.0 && pitIter.getSampleDouble(ipos, jpos, 0) > 0.0) {
@@ -147,11 +149,12 @@ public class MultiTca extends JGTModel {
                             jpos = j + dir[k][1];
                             delta = pitIter.getSampleDouble(i, j, 0) - pitIter.getSampleDouble(ipos, jpos, 0);
                             if (delta > 0.0 && pitIter.getSampleDouble(ipos, jpos, 0) > 0.0) {
-                                multiTcaIter.setSample(ipos, jpos, 0, multiTcaIter.getSampleDouble(ipos, jpos, 0)
-                                        + multiTcaIter.getSampleDouble(i, j, 0) * (delta / sum));
+                                multiTcaIter.setSample(ipos, jpos, 0,
+                                        multiTcaIter.getSampleDouble(ipos, jpos, 0) + multiTcaIter.getSampleDouble(i, j, 0)
+                                                * (delta / sum));
                             } else if (delta == 0.0 && flowIter.getSampleDouble(i, j, 0) == dirIn[k][2]) {
-                                multiTcaIter.setSample(ipos, jpos, 0, multiTcaIter.getSampleDouble(ipos, jpos, 0)
-                                        + multiTcaIter.getSampleDouble(i, j, 0));
+                                multiTcaIter.setSample(ipos, jpos, 0,
+                                        multiTcaIter.getSampleDouble(ipos, jpos, 0) + multiTcaIter.getSampleDouble(i, j, 0));
                             }
                         }
 
@@ -165,19 +168,17 @@ public class MultiTca extends JGTModel {
                                 if (alreadyDoneIter.getSampleDouble(ipos, jpos, 0) == 0.0
                                         && flowIter.getSampleDouble(ipos, jpos, 0) == dirIn[k][2]) {
 
-                                    resolveFlat(ipos, jpos, cols, rows, pitIter, multiTcaIter, alreadyDoneIter,
-                                            flowIter, cp9Iter);
+                                    resolveFlat(ipos, jpos, cols, rows, pitIter, multiTcaIter, alreadyDoneIter, flowIter, cp9Iter);
                                 }
                             }
                         }
                         for( int k = 1; k <= 8; k++ ) {
                             ipos = i + dir[k][0];
                             jpos = j + dir[k][1];
-                            if (flowIter.getSampleDouble(i, j, 0) != 10
-                                    && flowIter.getSampleDouble(i, j, 0) == dir[k][2]) {
+                            if (flowIter.getSampleDouble(i, j, 0) != 10 && flowIter.getSampleDouble(i, j, 0) == dir[k][2]) {
 
-                                multiTcaIter.setSample(ipos, jpos, 0, multiTcaIter.getSampleDouble(ipos, jpos, 0)
-                                        + multiTcaIter.getSampleDouble(i, j, 0));
+                                multiTcaIter.setSample(ipos, jpos, 0,
+                                        multiTcaIter.getSampleDouble(ipos, jpos, 0) + multiTcaIter.getSampleDouble(i, j, 0));
                                 break;
                             }
                         }
@@ -193,9 +194,8 @@ public class MultiTca extends JGTModel {
                     multiTcaIter.setSample(s, t, 0, JGTConstants.doubleNovalue);
             }
         }
-        
-        outMultiTca = CoverageUtilities.buildCoverage("multiTca",multiTcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
+        outMultiTca = CoverageUtilities.buildCoverage("multiTca", multiTcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
     }
     private int resolveFlat( int ipos, int jpos, int cols, int rows, RandomIter pitRandomIter,

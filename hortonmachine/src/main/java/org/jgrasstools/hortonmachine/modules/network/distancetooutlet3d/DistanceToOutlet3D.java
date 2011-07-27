@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.modules.network.distancetooutlet3d;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
@@ -59,18 +76,16 @@ public class DistanceToOutlet3D extends JGTModel {
 
     @Execute
     public void process() {
-        // create the needed data
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        RandomIter pitIter = CoverageUtilities.getRandomIterator(inPit);
-        WritableRaster distanceWR = d2o3d(pitIter, flowIter);
+        if (!concatOr(outDistance == null, doReset)) {
+            return;
+        }
+        WritableRaster distanceWR = d2o3d();
         if (distanceWR != null) {
             RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
             outDistance = CoverageUtilities.buildCoverage("distanceToOutlet3d", distanceWR, regionMap,
                     inFlow.getCoordinateReferenceSystem());
         } else {
-            outDistance=null;
+            outDistance = null;
             pm.errorMessage(msg.message("distanceToOutlet3D.error"));
         }
 
@@ -79,13 +94,14 @@ public class DistanceToOutlet3D extends JGTModel {
     /**
      * Calculates the distance to the outlet, in 3d and in every pixel of the map
      * 
-     * 
-     * @param pitIter an iterator on the elevation raster.
-     * @param flowIter an iterator on the 
      * @return a WritableRaster that contains the distance to the outlet.
      */
-    private WritableRaster d2o3d( RandomIter pitIter, RandomIter flowIter ) {
-
+    private WritableRaster d2o3d() {
+        // create the needed data
+        RenderedImage flowRI = inFlow.getRenderedImage();
+        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
+        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
+        RandomIter pitIter = CoverageUtilities.getRandomIterator(inPit);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();

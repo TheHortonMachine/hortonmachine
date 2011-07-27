@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.modules.network.distancetooutlet;
 
 import java.awt.image.RenderedImage;
@@ -32,7 +49,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo")
 @Keywords("Geomorphology, DrainDir")
 @Label(JGTConstants.NETWORK)
-@Name("multitca")
+@Name("D2o")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class DistanceToOutlet extends JGTModel {
@@ -50,6 +67,9 @@ public class DistanceToOutlet extends JGTModel {
     public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
     @Execute
     public void process() {
+        if (!concatOr(outDistance == null, doReset)) {
+            return;
+        }
         if (pMode < 0 || pMode > 1) {
             throw new IllegalArgumentException();
         }
@@ -67,7 +87,7 @@ public class DistanceToOutlet extends JGTModel {
         if (pMode == 1) {
             ModelsEngine.outletdistance(flowIter, distanceIter, regionMap, pm);
         } else if (pMode == 0) {
-            ModelsEngine.meterOutletdistance(flowIter, distanceIter, regionMap, pm);
+            ModelsEngine.topologicalOutletdistance(flowIter,null, distanceIter, regionMap, pm);
         }
         outDistance = CoverageUtilities.buildCoverage("distanceToOutlet", distanceWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());

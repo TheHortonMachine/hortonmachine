@@ -122,14 +122,14 @@ public class HMTestMaps {
      * it has changed to also eat a border of data around the basin.
      */
     public static double[][] newFlowData = new double[][]{ //
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-        {NaN, NaN, NaN, 6, 6, 6, 6, 6, 6, NaN}, //
-        {NaN, NaN, NaN, 6, 6, 6, 6, 7, 7, NaN}, //
-        {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //
-        {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, //
-        {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, //
-        {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
-        {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+            {NaN, NaN, NaN, 6, 6, 6, 6, 6, 6, NaN}, //
+            {NaN, NaN, NaN, 6, 6, 6, 6, 7, 7, NaN}, //
+            {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //
+            {NaN, 3, 4, 5, 5, 5, 5, 5, 5, NaN}, //
+            {NaN, 2, 3, 3, 4, 4, 4, 3, 3, NaN}, //
+            {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
+            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
 
     /**
@@ -721,7 +721,7 @@ public class HMTestMaps {
             {NaN, 0, 2, 1, 1, 1, 2, 2, 1, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
-    
+
     public static double[][] h2cd3dData = new double[][]{ //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 347.63, 155.88, 226.53, 217.26, 264.51, 411.61, 253.57, NaN}, //
@@ -780,7 +780,7 @@ public class HMTestMaps {
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
     };
 
-    public static double[][] h2ca_forGradient = { //
+    public static double[][] h2caForGradient = { //
     {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 4.17, 4.17, 4.17, 2.95, 2.95, 3.34, 3.44, NaN}, //
             {NaN, 4.17, 4.17, 4.17, 2.95, 2.95, 3.34, 3.44, 3.44, NaN}, //
@@ -1098,6 +1098,18 @@ public class HMTestMaps {
             {NaN, NaN, 0.52, 0.56, 0.62, 0.50, 0.56, 0.55, NaN, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+    };
+
+    public static final double[][] d2oMeterData = {//
+    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN},//
+            {NaN, NaN, 72.43, 84.85, 114.85, 187.28, 199.71, 229.71, 277.28, NaN},//
+            {NaN, 30, 42.43, 72.43, 144.85, 157.28, 187.28, 234.85, 264.85, NaN},//
+            {NaN, 0, 30, 102.43, 114.85, 144.85, 174.85, 204.85, 234.85, NaN},//
+            {NaN, 30, 42.43, 72.43, 102.43, 132.43, 162.43, 192.43, 222.43, NaN},//
+            {NaN, 84.86, 72.43, 102.43, 114.85, 144.85, 174.85, 222.43, 252.43, NaN},//
+            {NaN, 0, 127.28, 114.85, 144.85, 157.28, 187.28, 217.28, 264.85, NaN},//
+            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}//
+
     };
 
     public static double[][] netFlowData = new double[][]{//
