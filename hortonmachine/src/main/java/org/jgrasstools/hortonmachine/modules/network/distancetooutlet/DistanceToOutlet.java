@@ -16,10 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.network.distancetooutlet;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -43,6 +45,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("calculates the projection on the plane of the distance of each pixel from the outlet.")
 @Documentation("DistanceToOutlet.html")
@@ -53,6 +56,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class DistanceToOutlet extends JGTModel {
+    @Description("The map of depitted elevation, if it's null the models work in 2d mode.")
+    @In
+    public GridCoverage2D inPit = null;
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
@@ -65,14 +71,22 @@ public class DistanceToOutlet extends JGTModel {
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+    HortonMessageHandler msg = HortonMessageHandler.getInstance();
+
     @Execute
     public void process() {
         if (!concatOr(outDistance == null, doReset)) {
             return;
+
         }
-        if (pMode < 0 || pMode > 1) {
-            throw new IllegalArgumentException();
+        checkInParameters();
+
+        RandomIter pitIter = null;
+        if (inPit != null) {
+            pitIter = CoverageUtilities.getRandomIterator(inPit);
         }
+
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -87,10 +101,32 @@ public class DistanceToOutlet extends JGTModel {
         if (pMode == 1) {
             ModelsEngine.outletdistance(flowIter, distanceIter, regionMap, pm);
         } else if (pMode == 0) {
-            ModelsEngine.topologicalOutletdistance(flowIter,null, distanceIter, regionMap, pm);
+            ModelsEngine.topologicalOutletdistance(flowIter, pitIter, distanceIter, regionMap, pm);
+        }
+
+        for( int j = 0; j < rows; j++ ) {
+            for( int i = 0; i < cols; i++ ) {
+                if (isNovalue(flowIter.getSampleDouble(i, j, 0))) {
+                    distanceIter.setSample(i, j, 0, JGTConstants.doubleNovalue);
+                }
+            }
         }
         outDistance = CoverageUtilities.buildCoverage("distanceToOutlet", distanceWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
+
+    }
+
+    /*
+     * Verify the input parameters.
+     */
+    private void checkInParameters() {
+        // TODO Auto-generated method stub
+        checkNull(inFlow);
+        if (pMode < 0 || pMode > 1) {
+            String message = msg.message("distancetooutlet.modeOutRange");
+            pm.errorMessage(message);
+            throw new IllegalArgumentException(message);
+        }
 
     }
 

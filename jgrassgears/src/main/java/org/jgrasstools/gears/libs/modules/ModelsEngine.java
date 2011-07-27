@@ -1761,16 +1761,16 @@ public class ModelsEngine {
     }
 
     /**
-     * Calculates the distance of every pixel of the basin from the outlet (in pixel number),
+     * Calculates the distance of every pixel of the basin from the outlet (in meter),
      * calculated along the drainage directions
      * 
      * @param flowIter the flow map.
      * @param pitIter the pit map (if available distance is calculated in 3d).
-     * @param h2cdIter the resulting outlet distance map.
+     * @param distanceToOutIter the resulting outlet distance map.
      * @param region the region parameters.
      * @param pm the monitor.
      */
-    public static void topologicalOutletdistance( RandomIter flowIter, RandomIter pitIter, WritableRandomIter h2cdIter,
+    public static void topologicalOutletdistance( RandomIter flowIter, RandomIter pitIter, WritableRandomIter distanceToOutIter,
             RegionMap region, IJGTProgressMonitor pm ) {
         int activeCols = region.getCols();
         int activeRows = region.getRows();
@@ -1793,7 +1793,7 @@ public class ModelsEngine {
                 flow[0] = c;
                 flow[1] = r;
                 if (isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
-                    h2cdIter.setSample(flow[0], flow[1], 0, doubleNovalue);
+                    distanceToOutIter.setSample(flow[0], flow[1], 0, doubleNovalue);
                 } else {
                     if (isSourcePixel(flowIter, flow[0], flow[1])) {
                         count = 0;
@@ -1804,7 +1804,7 @@ public class ModelsEngine {
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                                && distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
 
                             if (pitIter != null) {
                                 double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
@@ -1818,18 +1818,18 @@ public class ModelsEngine {
                             flow_p[1] = flow[1];
                             go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                         }
-                        if (h2cdIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
+                        if (distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
                             if (pitIter != null) {
                                 double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
                                         - pitIter.getSampleDouble(flow[0], flow[1], 0);
                                 count += sqrt(pow(grid[(int) oldir], 2) + pow(dz, 2))
-                                        + h2cdIter.getSampleDouble(flow[0], flow[1], 0);
+                                        + distanceToOutIter.getSampleDouble(flow[0], flow[1], 0);
                             } else {
-                                count += grid[(int) oldir] + h2cdIter.getSampleDouble(flow[0], flow[1], 0);
+                                count += grid[(int) oldir] + distanceToOutIter.getSampleDouble(flow[0], flow[1], 0);
                             }
-                            h2cdIter.setSample(c, r, 0, count);
+                            distanceToOutIter.setSample(c, r, 0, count);
                         } else if (flowIter.getSampleDouble(flow[0], flow[1], 0) > 9) {
-                            h2cdIter.setSample(flow[0], flow[1], 0, 0);
+                            distanceToOutIter.setSample(flow[0], flow[1], 0, 0);
 
                             if (pitIter != null) {
                                 double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
@@ -1838,7 +1838,7 @@ public class ModelsEngine {
                             } else {
                                 count += grid[(int) oldir];
                             }
-                            h2cdIter.setSample(c, r, 0, count);
+                            distanceToOutIter.setSample(c, r, 0, count);
                         }
 
                         flow[0] = c;
@@ -1850,7 +1850,7 @@ public class ModelsEngine {
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                                && distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
                             if (pitIter != null) {
                                 double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
                                         - pitIter.getSampleDouble(flow[0], flow[1], 0);
@@ -1859,9 +1859,9 @@ public class ModelsEngine {
                                 count -= grid[(int) oldir];
                             }
                             if (count < 0) {
-                                h2cdIter.setSample(flow[0], flow[1], 0, 0);
+                                distanceToOutIter.setSample(flow[0], flow[1], 0, 0);
                             } else {
-                                h2cdIter.setSample(flow[0], flow[1], 0, count);
+                                distanceToOutIter.setSample(flow[0], flow[1], 0, count);
                             }
                             oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
                             flow_p[0] = flow[0];
@@ -1882,11 +1882,11 @@ public class ModelsEngine {
      * calculated along the drainage directions
      * 
      * @param flowIter the flow map.
-     * @param h2cdIter the resulting outlet distance map.
+     * @param distanceToOutIter the resulting outlet distance map.
      * @param region the region parameters.
      * @param pm the monitor.
      */
-    public static void outletdistance( RandomIter flowIter, WritableRandomIter h2cdIter, RegionMap region, IJGTProgressMonitor pm ) {
+    public static void outletdistance( RandomIter flowIter, WritableRandomIter distanceToOutIter, RegionMap region, IJGTProgressMonitor pm ) {
         int cols = region.getCols();
         int rows = region.getRows();
         int[] flow = new int[2];
@@ -1898,7 +1898,7 @@ public class ModelsEngine {
                 flow[0] = c;
                 flow[1] = r;
                 if (isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
-                    h2cdIter.setSample(flow[0], flow[1], 0, doubleNovalue);
+                    distanceToOutIter.setSample(flow[0], flow[1], 0, doubleNovalue);
                 } else {
                     flow[0] = c;
                     flow[1] = r;
@@ -1907,17 +1907,17 @@ public class ModelsEngine {
                         go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                                && distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
                             count += 1;
                             go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                         }
-                        if (h2cdIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
-                            count += 1 + h2cdIter.getSampleDouble(flow[0], flow[1], 0);
-                            h2cdIter.setSample(c, r, 0, count);
+                        if (distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
+                            count += 1 + distanceToOutIter.getSampleDouble(flow[0], flow[1], 0);
+                            distanceToOutIter.setSample(c, r, 0, count);
                         } else if (flowIter.getSampleDouble(flow[0], flow[1], 0) > 9) {
-                            h2cdIter.setSample(flow[0], flow[1], 0, 0);
+                            distanceToOutIter.setSample(flow[0], flow[1], 0, 0);
                             count += 1;
-                            h2cdIter.setSample(c, r, 0, count);
+                            distanceToOutIter.setSample(c, r, 0, count);
                         }
 
                         flow[0] = c;
@@ -1925,9 +1925,9 @@ public class ModelsEngine {
                         go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && h2cdIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
+                                && distanceToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
                             count -= 1;
-                            h2cdIter.setSample(flow[0], flow[1], 0, count);
+                            distanceToOutIter.setSample(flow[0], flow[1], 0, count);
                             go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
                         }
                     }
@@ -1938,81 +1938,7 @@ public class ModelsEngine {
         pm.done();
     }
 
-    /**
-     * Calculates the distance of every pixel of the catchment basin from the outlet,
-     * calculated along the drainage directions, it's in meter.
-     * 
-     * @param flowImage an Iterator on an Image that contains the flow directions.
-     * @param distToOutIter where to store the distance.3
-     * @param region where to extract the property of the region.
-     * @param pm
-     */
-    public static void meterOutletdistance( RandomIter flowIter, WritableRandomIter distToOutIter, RegionMap region,
-            IJGTProgressMonitor pm ) {
-        int cols = region.getCols();
-        int rows = region.getRows();
-        double dx = region.get(CoverageUtilities.XRES).doubleValue();
-        double dy = region.get(CoverageUtilities.YRES).doubleValue();
 
-        int[] flow = new int[2];
-        double oldir = 0.0;
-        double[] grid = new double[11];
-        double count = 0.0;
-
-        grid[0] = grid[9] = grid[10] = 0;
-        grid[1] = grid[5] = abs(dx);
-        grid[3] = grid[7] = abs(dy);
-        grid[2] = grid[4] = grid[6] = grid[8] = sqrt(dx * dx + dy * dy);
-
-        pm.beginTask(msg.message("distanceToOutlet.workingon.meter"), rows);
-        for( int i = 0; i < rows; i++ ) {
-            for( int j = 0; j < cols; j++ ) {
-                flow[0] = j;
-                flow[1] = i;
-                if (isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
-                    distToOutIter.setSample(flow[0], flow[1], 0, doubleNovalue);
-                } else {
-                    if (ModelsEngine.isSourcePixel(flowIter, j, i)) {
-                        count = 0;
-                        oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && distToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
-                            count += grid[(int) oldir];
-                            oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                            ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                        }
-                        if (distToOutIter.getSampleDouble(flow[0], flow[1], 0) > 0) {
-                            count += grid[(int) oldir] + distToOutIter.getSampleDouble(flow[0], flow[1], 0);
-                            distToOutIter.setSample(j, i, 0, count);
-                        } else if (flowIter.getSampleDouble(flow[0], flow[1], 0) > 9) {
-                            distToOutIter.setSample(flow[0], flow[1], 0, 0);
-                            count += grid[(int) oldir];
-                            distToOutIter.setSample(j, i, 0, count);
-                        }
-
-                        flow[0] = j;
-                        flow[1] = i;
-                        oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && distToOutIter.getSampleDouble(flow[0], flow[1], 0) <= 0 ) {
-                            count -= grid[(int) oldir];
-                            distToOutIter.setSample(flow[0], flow[1], 0, count);
-                            oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                            ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-    }
 
     /**
      * Approximate a value to a multiple of a divisor value.

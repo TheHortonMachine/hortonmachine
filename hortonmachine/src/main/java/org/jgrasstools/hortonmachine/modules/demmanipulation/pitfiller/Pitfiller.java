@@ -74,7 +74,6 @@ public class Pitfiller extends JGTModel {
      * The novalue needed by PitFiller.
      */
     public static final double PITNOVALUE = -1.0;
-
     private WritableRandomIter pitIter;
     private RandomIter elevationIter = null;
 

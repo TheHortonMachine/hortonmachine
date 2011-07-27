@@ -65,4 +65,28 @@ public class TestDistanceToOutlet extends HMTestCase {
         GridCoverage2D distanceCoverage = distanceToOutlet.outDistance;
         checkMatrixEqual(distanceCoverage.getRenderedImage(), HMTestMaps.d2oMeterData, 0.01);
     }
+    
+    /**
+     * test {@link DistanceToOutlet} in 3d.
+     * 
+     */
+    public void testDistanceToOutlet3D() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        //get the flow direction map.
+        double[][] flowData = HMTestMaps.mflowDataBorder;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        //get the pit map.
+        double[][] pitData = HMTestMaps.pitData;
+        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
+        DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
+        //set the needed input. 
+        distanceToOutlet.pMode = 0;
+        distanceToOutlet.inFlow = flowCoverage;
+        distanceToOutlet.inPit = pitCoverage;
+        distanceToOutlet.process();
+        GridCoverage2D distanceCoverage = distanceToOutlet.outDistance;
+        checkMatrixEqual(distanceCoverage.getRenderedImage(), HMTestMaps.d2o3dData);
+    }
+    
 }
