@@ -81,7 +81,7 @@ public class TopIndex extends JGTModel {
         if (!concatOr(outTopindex == null, doReset)) {
             return;
         }
-        
+        checkNull(inTca, inSlope);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -104,7 +104,8 @@ public class TopIndex extends JGTModel {
                     topindexIter.setSample(i, j, 0, doubleNovalue);
                 } else {
                     if (slopeIter.getSampleDouble(i, j, 0) != 0) {
-                        topindexIter.setSample(i, j, 0, Math.log(tcaIter.getSampleDouble(i, j, 0) / slopeIter.getSampleDouble(i, j, 0)));
+                        topindexIter.setSample(i, j, 0,
+                                Math.log(tcaIter.getSampleDouble(i, j, 0) / slopeIter.getSampleDouble(i, j, 0)));
                     } else {
                         topindexIter.setSample(i, j, 0, doubleNovalue);
                     }

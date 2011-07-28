@@ -109,6 +109,7 @@ public class HackStream extends JGTModel {
             return;
         }
 
+        checkNull(inFlow);
         regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -123,7 +124,7 @@ public class HackStream extends JGTModel {
 
         int count = 0;
         if (pMode == 0) {
-
+            checkNull(inTca, inNet, inHacklength);
             RenderedImage tcaRI = inTca.getRenderedImage();
             RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
 
@@ -148,6 +149,7 @@ public class HackStream extends JGTModel {
             hackstream(flowIter, tcaIter, hacklengthIter, segnaIter);
 
         } else if (pMode == 1) {
+            checkNull(inNetnum);
             RenderedImage netnumRI = inNetnum.getRenderedImage();
             RandomIter netnumIter = RandomIterFactory.create(netnumRI, null);
 

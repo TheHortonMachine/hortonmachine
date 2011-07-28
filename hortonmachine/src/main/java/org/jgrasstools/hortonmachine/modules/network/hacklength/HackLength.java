@@ -80,7 +80,6 @@ public class HackLength extends JGTModel {
     public GridCoverage2D outHacklength = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
 
     private int nCols;
 
@@ -97,7 +96,7 @@ public class HackLength extends JGTModel {
         if (!concatOr(outHacklength == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow, inTca);
         regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -144,8 +143,7 @@ public class HackLength extends JGTModel {
                         if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return;
                         while( (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) && flowIter.getSampleDouble(flow[0],
-                                flow[1], 0) != 10.0)
-                                && ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count) ) {
+                                flow[1], 0) != 10.0) && ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count) ) {
                             count += grid[(int) oldir];
                             hacklengthIter.setSample(flow[0], flow[1], 0, count);
                             maz = tcaIter.getSampleDouble(flow[0], flow[1], 0);
@@ -168,8 +166,8 @@ public class HackLength extends JGTModel {
         }
         pm.done();
 
-        outHacklength = CoverageUtilities.buildCoverage("Hacklength", hacklengthWR, regionMap, inFlow
-                .getCoordinateReferenceSystem());
+        outHacklength = CoverageUtilities.buildCoverage("Hacklength", hacklengthWR, regionMap,
+                inFlow.getCoordinateReferenceSystem());
     }
 
 }

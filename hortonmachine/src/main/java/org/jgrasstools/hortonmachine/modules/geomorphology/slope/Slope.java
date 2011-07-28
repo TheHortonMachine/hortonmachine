@@ -82,7 +82,7 @@ public class Slope extends JGTModel {
         if (!concatOr(outSlope == null, doReset)) {
             return;
         }
-
+        checkNull(inPit, inFlow);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();

@@ -96,6 +96,7 @@ public class Hillshade extends JGTModel {
     @Execute
     public void process() throws Exception {
         // Check on the input parameters
+        checkNull(inElev);
         if (pAzimuth < 0.0 || pAzimuth > 360.0) {
             System.err.println(msg.message("hillshade.errAzimuth"));
         }
@@ -120,8 +121,7 @@ public class Hillshade extends JGTModel {
         // re-set the value to NaN
         setNoValueBorder(pitWR, width, height, hillshadeWR);
 
-        outHill = CoverageUtilities
-                .buildCoverage("insolation", hillshadeWR, attribute, inElev.getCoordinateReferenceSystem());
+        outHill = CoverageUtilities.buildCoverage("insolation", hillshadeWR, attribute, inElev.getCoordinateReferenceSystem());
     }
 
     /*
@@ -132,7 +132,7 @@ public class Hillshade extends JGTModel {
         for( int y = 2; y < height - 2; y++ ) {
             for( int x = 2; x < width - 2; x++ ) {
                 if (pitWR.getSampleDouble(x, y, 0) == -9999.0) {
-                    hillshadeWR.setSample(x, y, 0,doubleNoValue);
+                    hillshadeWR.setSample(x, y, 0, doubleNoValue);
                 }
             }
         }
@@ -192,7 +192,6 @@ public class Hillshade extends JGTModel {
         pm.done();
     }
 
-
     protected double[] calcSunVector() {
         double[] sunVector = new double[3];
         sunVector[0] = Math.sin(pAzimuth) * Math.cos(pElev);
@@ -201,7 +200,6 @@ public class Hillshade extends JGTModel {
         return sunVector;
 
     }
-
 
     protected WritableRaster normalVector( WritableRaster pitWR, double res ) {
         int minX = pitWR.getMinX();

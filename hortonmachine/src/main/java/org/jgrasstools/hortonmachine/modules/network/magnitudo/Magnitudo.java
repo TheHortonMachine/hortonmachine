@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.magnitudo;
 
-
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
@@ -73,6 +72,7 @@ public class Magnitudo extends JGTModel {
         if (!concatOr(outMag == null, doReset)) {
             return;
         }
+        checkNull(inFlow);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();

@@ -95,6 +95,7 @@ public class Aspect extends JGTModel {
         if (!concatOr(outAspect == null, doReset)) {
             return;
         }
+        checkNull(inElev);
         if (doRadiants) {
             radtodeg = 1.0;
         }

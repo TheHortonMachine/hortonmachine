@@ -141,7 +141,7 @@ public class Pitfiller extends JGTModel {
         if (!concatOr(outPit == null, doReset)) {
             return;
         }
-
+        checkNull(inElev);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();

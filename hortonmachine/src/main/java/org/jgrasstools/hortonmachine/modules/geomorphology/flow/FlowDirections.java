@@ -104,6 +104,7 @@ public class FlowDirections extends JGTModel {
         if (!concatOr(outFlow == null, doReset)) {
             return;
         }
+        checkNull(inPit);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         nx = regionMap.get(CoverageUtilities.COLS).intValue();
         ny = regionMap.get(CoverageUtilities.ROWS).intValue();

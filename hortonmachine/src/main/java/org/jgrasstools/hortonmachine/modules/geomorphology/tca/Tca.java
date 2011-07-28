@@ -105,7 +105,7 @@ public class Tca extends JGTModel {
         if (!concatOr(outTca == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow);
         // prepare the loop featurecollection
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("loop");

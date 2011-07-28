@@ -65,6 +65,7 @@ public class MultiTca extends JGTModel {
         if (!concatOr(outMultiTca == null, doReset)) {
             return;
         }
+        checkNull(inPit,inFlow,inCp9);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();

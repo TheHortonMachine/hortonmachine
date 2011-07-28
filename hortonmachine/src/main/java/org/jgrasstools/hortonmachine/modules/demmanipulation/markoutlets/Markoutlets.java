@@ -77,7 +77,7 @@ public class Markoutlets extends JGTModel {
         if (!concatOr(outFlow == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();

@@ -80,6 +80,7 @@ public class H2cA extends JGTModel {
         if (!concatOr(outAttribute == null, doReset)) {
             return;
         }
+        checkNull(inFlow, inNet, inAttribute);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         WritableRaster attributeWR = h2ca();
         outAttribute = CoverageUtilities.buildCoverage("h2ca", attributeWR, regionMap, inFlow.getCoordinateReferenceSystem());

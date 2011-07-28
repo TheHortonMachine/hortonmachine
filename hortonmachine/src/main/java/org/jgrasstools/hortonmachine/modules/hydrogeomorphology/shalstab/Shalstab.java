@@ -154,6 +154,7 @@ public class Shalstab extends JGTModel {
         if (!concatOr(outShalstab == null, doReset)) {
             return;
         }
+        checkNull(inSlope, inTca);
 
         if (pRock == -9999.0)
             pRock = 5.67;

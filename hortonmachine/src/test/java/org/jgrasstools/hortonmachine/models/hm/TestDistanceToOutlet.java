@@ -40,7 +40,7 @@ public class TestDistanceToOutlet extends HMTestCase {
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
-        distanceToOutlet.inFlow = flowCoverage;
+//        distanceToOutlet.inFlow = flowCoverage;
         distanceToOutlet.pMode = 1;
         distanceToOutlet.process();
         GridCoverage2D distanceCoverage = distanceToOutlet.outDistance;

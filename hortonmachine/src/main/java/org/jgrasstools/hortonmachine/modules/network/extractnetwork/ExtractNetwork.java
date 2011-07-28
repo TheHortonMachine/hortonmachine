@@ -119,7 +119,6 @@ public class ExtractNetwork extends JGTModel {
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
-
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();

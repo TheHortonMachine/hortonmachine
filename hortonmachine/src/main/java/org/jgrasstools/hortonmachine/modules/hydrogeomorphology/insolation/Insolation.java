@@ -125,7 +125,7 @@ public class Insolation extends JGTModel {
 
     @Execute
     public void process() throws Exception { // transform the
-
+        checkNull(inElev, tStartDate, tEndDate);
         // extract some attributes of the map
         HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);

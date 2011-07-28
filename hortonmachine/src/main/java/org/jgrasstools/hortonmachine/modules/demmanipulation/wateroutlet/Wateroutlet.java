@@ -103,7 +103,7 @@ public class Wateroutlet extends JGTModel {
         if (!concatOr(outBasin == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         ncols = regionMap.getCols();
         nrows = regionMap.getRows();

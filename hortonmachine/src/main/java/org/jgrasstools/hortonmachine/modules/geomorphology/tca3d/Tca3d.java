@@ -94,7 +94,7 @@ public class Tca3d extends JGTModel {
         if (!concatOr(outTca == null, doReset)) {
             return;
         }
-
+        checkNull(inPit, inFlow);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();

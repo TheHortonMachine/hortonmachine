@@ -106,7 +106,7 @@ public class NetNumbering extends JGTModel {
         if (!concatOr(outNetnum == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow, inNet);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.getCols();
         int nRows = regionMap.getRows();

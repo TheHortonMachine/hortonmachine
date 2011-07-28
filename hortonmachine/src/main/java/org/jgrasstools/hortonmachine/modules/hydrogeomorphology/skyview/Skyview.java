@@ -89,6 +89,7 @@ public class Skyview extends JGTModel {
 
     @Execute
     public void process() throws Exception {
+        checkNull(inElev);
         // extract some attributes of the map
         HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double dx = attribute.get(CoverageUtilities.XRES);

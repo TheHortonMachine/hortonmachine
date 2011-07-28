@@ -96,7 +96,7 @@ public class Gradient extends JGTModel {
         if (!concatOr(outSlope == null, doReset)) {
             return;
         }
-
+        checkNull(inElev);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();

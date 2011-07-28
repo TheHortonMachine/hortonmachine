@@ -118,6 +118,7 @@ public class Netshape2Flow extends JGTModel {
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
+        checkNull(inNet, inGrid);
         HashMap<String, Double> regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
         double res = regionMap.get(CoverageUtilities.XRES);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();

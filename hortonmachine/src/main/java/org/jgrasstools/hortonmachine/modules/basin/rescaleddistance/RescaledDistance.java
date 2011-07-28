@@ -81,16 +81,14 @@ public class RescaledDistance extends JGTModel {
     public GridCoverage2D outRescaled = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
 
     @Execute
     public void process() {
         if (!concatOr(outRescaled == null, doReset)) {
             return;
         }
-
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inFlow);
+        checkNull(inFlow, inNet);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         double xRes = regionMap.get(CoverageUtilities.XRES);
@@ -101,8 +99,7 @@ public class RescaledDistance extends JGTModel {
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         RandomIter netIter = RandomIterFactory.create(netRI, null);
 
-        WritableRaster rescaledWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows,
-                null, null, null);
+        WritableRaster rescaledWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
         WritableRandomIter rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
 
         int[] flow = new int[2];
@@ -133,21 +130,17 @@ public class RescaledDistance extends JGTModel {
                             && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
                         a = flowIter.getSampleDouble(flow[0], flow[1], 0);
                         count += grid[(int) a] * pRatio;
-                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
-                                flow[1], 0)))
-                            throw new ModelsIllegalargumentException(
-                                    "Error while going downstream!", this.getClass()
-                                            .getSimpleName());
+                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            throw new ModelsIllegalargumentException("Error while going downstream!", this.getClass()
+                                    .getSimpleName());
                     }
                     while( flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
                             && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
                         a = flowIter.getSampleDouble(flow[0], flow[1], 0);
                         count = count + grid[(int) a];
-                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
-                                flow[1], 0)))
-                            throw new ModelsIllegalargumentException(
-                                    "Error while going downstream!", this.getClass()
-                                            .getSimpleName());
+                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            throw new ModelsIllegalargumentException("Error while going downstream!", this.getClass()
+                                    .getSimpleName());
                     }
                     rescaledIter.setSample(i, j, 0, count);
 

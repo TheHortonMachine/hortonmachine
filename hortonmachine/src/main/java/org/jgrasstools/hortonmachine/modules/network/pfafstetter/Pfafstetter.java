@@ -152,7 +152,6 @@ public class Pfafstetter extends JGTModel {
     private List<Object[]> attributesList = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
 
     private int cols;
     private int rows;
@@ -189,7 +188,7 @@ public class Pfafstetter extends JGTModel {
         if (!concatOr(outPfaf == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow, inHackstream, inPit, inNetnum);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -496,7 +495,7 @@ public class Pfafstetter extends JGTModel {
                                             sb.append(String.valueOf(Integer.valueOf(st.nextToken()) + 1));
                                             sb.append("."); //$NON-NLS-1$
                                             sb.append(String.valueOf(pfafNum));
-                                            pfafToken += sb.toString(); 
+                                            pfafToken += sb.toString();
                                             pfafNum = pfafNum + 2;
                                         }
                                         token++;
@@ -557,8 +556,7 @@ public class Pfafstetter extends JGTModel {
      * @throws IOException 
      */
     private void createGeometries() throws IOException, TransformException {
-        newRiverGeometriesList = net2ShapeGeometries(flowIter, netnumIter, numberOfStreams,
-                inFlow.getGridGeometry(), pm);
+        newRiverGeometriesList = net2ShapeGeometries(flowIter, netnumIter, numberOfStreams, inFlow.getGridGeometry(), pm);
     }
 
     /**
@@ -692,8 +690,8 @@ public class Pfafstetter extends JGTModel {
                         numValue = netnumIter.getSampleDouble(flow[0], flow[1], 0);
                         channelValue = channelIter.getSampleDouble(flow[0], flow[1], 0);
                         if (netNumAndChannelHash.get(netnumIter.getSampleDouble(flow[0], flow[1], 0)) == null) {
-                            netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0), channelIter
-                                    .getSampleDouble(flow[0], flow[1], 0));
+                            netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0),
+                                    channelIter.getSampleDouble(flow[0], flow[1], 0));
                         }
                         // insert netNum and channelNum in the HashMap
                         if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -701,14 +699,14 @@ public class Pfafstetter extends JGTModel {
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                             if (netNumAndChannelHash.get(netnumIter.getSampleDouble(flow[0], flow[1], 0)) == null) {
-                                netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0), channelIter
-                                        .getSampleDouble(flow[0], flow[1], 0));
+                                netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0),
+                                        channelIter.getSampleDouble(flow[0], flow[1], 0));
                             }
                             if (channelValue != channelIter.getSampleDouble(flow[0], flow[1], 0)
                                     && numValue == netnumIter.getSampleDouble(flow[0], flow[1], 0)) {
                                 netNumAndChannelHash.remove(netnumIter.getSampleDouble(flow[0], flow[1], 0));
-                                netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0), channelIter
-                                        .getSampleDouble(flow[0], flow[1], 0));
+                                netNumAndChannelHash.put(netnumIter.getSampleDouble(flow[0], flow[1], 0),
+                                        channelIter.getSampleDouble(flow[0], flow[1], 0));
                             }
                             if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;

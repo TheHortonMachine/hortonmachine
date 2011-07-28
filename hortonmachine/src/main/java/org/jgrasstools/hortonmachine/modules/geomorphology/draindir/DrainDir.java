@@ -121,7 +121,7 @@ public class DrainDir extends JGTModel {
         if (!concatOr(outFlow == null, doReset)) {
             return;
         }
-
+        checkNull(inFlow, inPit);
         double[] orderedelev, indexes;
         int nelev;
 
@@ -280,8 +280,8 @@ public class DrainDir extends JGTModel {
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
                         while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
-                            tcaRandomIter.setSample(nc, nr, 0, tcaRandomIter.getSampleDouble(nc, nr, 0)
-                                    + tcaRandomIter.getSampleDouble(col, row, 0));
+                            tcaRandomIter.setSample(nc, nr, 0,
+                                    tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
                             nr = nr + order[(int) flow][0];
                             nc = nc + order[(int) flow][1];
@@ -403,8 +403,8 @@ public class DrainDir extends JGTModel {
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
                         while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
-                            tcaRandomIter.setSample(nc, nr, 0, (tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter
-                                    .getSampleDouble(col, row, 0)));
+                            tcaRandomIter.setSample(nc, nr, 0,
+                                    (tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0)));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
                             nr = nr + order[(int) flow][0];
                             nc = nc + order[(int) flow][1];
@@ -459,8 +459,12 @@ public class DrainDir extends JGTModel {
                      */
                     if (outdir - n == 4 || outdir - n == -4) {
                         ninflow = ninflow + 1;
-                        tcaRandomIter.setSample(col, row, 0, tcaRandomIter.getSampleDouble(col, row, 0)
-                                + tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0));
+                        tcaRandomIter.setSample(
+                                col,
+                                row,
+                                0,
+                                tcaRandomIter.getSampleDouble(col, row, 0)
+                                        + tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0));
                         dev[ninflow] = deviation.getSampleDouble(col + order[n][1], row + order[n][0], 0);
                         are[ninflow] = tcaRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
                     }

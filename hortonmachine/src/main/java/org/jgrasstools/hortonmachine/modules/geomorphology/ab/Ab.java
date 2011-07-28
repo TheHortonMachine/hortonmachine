@@ -71,7 +71,7 @@ public class Ab extends JGTModel {
     @Description("The map of area per length.")
     @Out
     public GridCoverage2D outAb = null;
-    
+
     @Description("The map of contour line.")
     @Out
     public GridCoverage2D outB = null;
@@ -83,7 +83,7 @@ public class Ab extends JGTModel {
         if (!concatOr(outAb == null, doReset)) {
             return;
         }
-        
+        checkNull(inTca, inPlan);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -134,8 +134,7 @@ public class Ab extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-        
-        
+
         outAb = CoverageUtilities.buildCoverage("alung", alungWR, regionMap, inTca.getCoordinateReferenceSystem());
         outB = CoverageUtilities.buildCoverage("b", bWR, regionMap, inTca.getCoordinateReferenceSystem());
     }

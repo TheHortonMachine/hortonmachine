@@ -59,7 +59,7 @@ public class Curvatures extends JGTModel {
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inElev = null;
-    
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -68,7 +68,7 @@ public class Curvatures extends JGTModel {
     @Description("The map of profile curvatures.")
     @Out
     public GridCoverage2D outProf = null;
-    
+
     @Description("The map of planar curvatures.")
     @Out
     public GridCoverage2D outPlan = null;
@@ -84,6 +84,7 @@ public class Curvatures extends JGTModel {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
+        checkNull(inElev);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -122,8 +123,12 @@ public class Curvatures extends JGTModel {
                     sxData.setSample(x, y, 0, doubleNovalue);
                     syData.setSample(x, y, 0, doubleNovalue);
                 } else {
-                    sxData.setSample(x, y, 0, 0.5 * (elevationIter.getSampleDouble(x, y + 1, 0) - elevationIter.getSampleDouble(x, y - 1, 0)) / xRes);
-                    syData.setSample(x, y, 0, 0.5 * (elevationIter.getSampleDouble(x + 1, y, 0) - elevationIter.getSampleDouble(x - 1, y, 0)) / yRes);
+                    sxData.setSample(x, y, 0,
+                            0.5 * (elevationIter.getSampleDouble(x, y + 1, 0) - elevationIter.getSampleDouble(x, y - 1, 0))
+                                    / xRes);
+                    syData.setSample(x, y, 0,
+                            0.5 * (elevationIter.getSampleDouble(x + 1, y, 0) - elevationIter.getSampleDouble(x - 1, y, 0))
+                                    / yRes);
                 }
             }
             pm.worked(1);
@@ -147,10 +152,26 @@ public class Curvatures extends JGTModel {
                     syyData.setSample(i, j, 0, doubleNovalue);
                     sxyData.setSample(i, j, 0, doubleNovalue);
                 } else {
-                    sxxData.setSample(i, j, 0, ((elevationIter.getSampleDouble(i, j + 1, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter.getSampleDouble(i, j - 1, 0)) / disXX));
-                    syyData.setSample(i, j, 0, ((elevationIter.getSampleDouble(i + 1, j, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter.getSampleDouble(i - 1, j, 0)) / disYY));
-                    sxyData.setSample(i, j, 0, 0.25 * ((elevationIter.getSampleDouble(i + 1, j + 1, 0) - elevationIter.getSampleDouble(i + 1, j - 1, 0)
-                            - elevationIter.getSampleDouble(i - 1, j + 1, 0) + elevationIter.getSampleDouble(i - 1, j - 1, 0)) / (xRes * yRes)));
+                    sxxData.setSample(
+                            i,
+                            j,
+                            0,
+                            ((elevationIter.getSampleDouble(i, j + 1, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter
+                                    .getSampleDouble(i, j - 1, 0)) / disXX));
+                    syyData.setSample(
+                            i,
+                            j,
+                            0,
+                            ((elevationIter.getSampleDouble(i + 1, j, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter
+                                    .getSampleDouble(i - 1, j, 0)) / disYY));
+                    sxyData.setSample(
+                            i,
+                            j,
+                            0,
+                            0.25 * ((elevationIter.getSampleDouble(i + 1, j + 1, 0)
+                                    - elevationIter.getSampleDouble(i + 1, j - 1, 0)
+                                    - elevationIter.getSampleDouble(i - 1, j + 1, 0) + elevationIter.getSampleDouble(i - 1,
+                                    j - 1, 0)) / (xRes * yRes)));
                 }
             }
             pm.worked(1);
@@ -184,9 +205,15 @@ public class Curvatures extends JGTModel {
                         double sxxSample = sxxData.getSampleDouble(i, j, 0);
                         double sxySample = sxyData.getSampleDouble(i, j, 0);
                         double syySample = syyData.getSampleDouble(i, j, 0);
-                        plan = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample * Math.pow(sxSample, 2.0)) / (Math.pow(p, 1.5));
-                        tang = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample * Math.pow(sxSample, 2.0)) / (p * Math.pow(q, 0.5));
-                        prof = (sxxSample * Math.pow(sxSample, 2.0) + 2 * sxySample * sxSample * sySample + syySample * Math.pow(sySample, 2.0)) / (p * Math.pow(q, 1.5));
+                        plan = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample
+                                * Math.pow(sxSample, 2.0))
+                                / (Math.pow(p, 1.5));
+                        tang = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample
+                                * Math.pow(sxSample, 2.0))
+                                / (p * Math.pow(q, 0.5));
+                        prof = (sxxSample * Math.pow(sxSample, 2.0) + 2 * sxySample * sxSample * sySample + syySample
+                                * Math.pow(sySample, 2.0))
+                                / (p * Math.pow(q, 1.5));
                     }
 
                 }

@@ -88,7 +88,7 @@ public class Cb extends JGTModel {
         if (!concatOr(outCb == null, doReset)) {
             return;
         }
-
+        checkNull(inRaster1);
         RenderedImage map1RI = inRaster1.getRenderedImage();
         RenderedImage map2RI = null;
         if (inRaster2 == null) {
