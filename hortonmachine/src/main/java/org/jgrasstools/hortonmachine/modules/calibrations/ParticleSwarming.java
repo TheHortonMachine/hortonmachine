@@ -1,26 +1,28 @@
 package org.jgrasstools.hortonmachine.modules.calibrations;
 
 import static java.lang.Math.min;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
-import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -32,6 +34,13 @@ import org.jgrasstools.gears.utils.DoubleArray;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
+@Description("")
+@Documentation("")
+@Author(name = "")
+@Keywords("")
+@Name("")
+
+@Status(Status.EXPERIMENTAL)
 public class ParticleSwarming extends JGTModel {
 
     @UI(JGTConstants.FILEIN_UI_HINT)

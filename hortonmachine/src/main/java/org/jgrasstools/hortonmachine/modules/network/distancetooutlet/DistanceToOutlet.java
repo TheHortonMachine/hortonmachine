@@ -47,13 +47,13 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("calculates the projection on the plane of the distance of each pixel from the outlet.")
+@Description("Calculates the projection on the plane of the distance of each pixel from the outlet.")
 @Documentation("DistanceToOutlet.html")
 @Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo")
 @Keywords("Geomorphology, DrainDir")
 @Label(JGTConstants.NETWORK)
-@Name("D2o")
-@Status(Status.EXPERIMENTAL)
+@Name("d2o")
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class DistanceToOutlet extends JGTModel {
     @Description("The map of depitted elevation, if it's null the models work in 2d mode.")

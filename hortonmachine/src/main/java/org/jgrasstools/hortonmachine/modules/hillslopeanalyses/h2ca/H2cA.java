@@ -55,7 +55,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Keywords("Geomorphology, DrainDir")
 @Label(JGTConstants.HILLSLOPE)
 @Name("H2cA")
-@Status(Status.EXPERIMENTAL)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class H2cA extends JGTModel {
     @Description("The map of flowdirections.")

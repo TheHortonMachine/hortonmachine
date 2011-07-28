@@ -45,7 +45,7 @@ import org.jgrasstools.hortonmachine.HortonMachine;
 @SuppressWarnings("nls")
 public class WikiModulesCreator {
 
-    private static final String outputWikiFolder = "/home/moovida/TMP/JGRASSTOOLS-WIKI/";
+    private static final String outputWikiFolder = "/home/daniele/jgrasswiki/";
 
     private static final String NEWLINE = "\n";
     private static final String IMAGES_HM_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/hortonmachine/";

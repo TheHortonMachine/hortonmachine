@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2c;
+package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2cd;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -28,6 +28,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,8 +52,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hillslope, Outlet, Distance")
 @Label(JGTConstants.HILLSLOPE)
+@Documentation("H2cd.html")
 @Name("h2cd")
-@Status(Status.EXPERIMENTAL)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class H2cd extends JGTModel {
 

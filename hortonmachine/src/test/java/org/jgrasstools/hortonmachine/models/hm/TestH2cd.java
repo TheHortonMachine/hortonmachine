@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2c.H2cd;
+import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2cd.H2cd;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
