@@ -579,14 +579,10 @@ public class NetworkCalibration implements Network {
      * 
      * restituisce la funzione p.
      * 
-     * @param k
-     *            tratto di tubazione esaminata.
-     * @param t
-     *            tempo esaminato.
-     * @param localdelay
-     *            ritardo nella tubazione k.
-     * @param delay
-     *            ritardo totale.
+     * @param k tratto di tubazione esaminata.
+     * @param ttempo esaminato.
+     * @param localdelay ritardo nella tubazione k.
+     * @param delay ritardo totale.
      * @return il valore della funxione p
      */
     private double pFunction( int k, double t, double localdelay, double delay ) {
@@ -696,14 +692,10 @@ public class NetworkCalibration implements Network {
      * Compila la mantrice net con tutte i dati del sottobacino con chiusura nel
      * tratto che si sta analizzando, e restituisce la sua superfice
      * 
-     * @param k
-     *            tratto analizzato del sottobacino chiuso in l.
-     * @param l
-     *            chiusura del bacino.
-     * @param one
-     *            indice dei versanti.
-     * @param net
-     *            sottobacino che si chiude in l.
+     * @param k tratto analizzato del sottobacino chiuso in l.
+     * @param l chiusura del bacino.
+     * @param one indice dei versanti.
+     * @param net sottobacino che si chiude in l.
      */
 
     private double scanNetwork( int k, int l, double[] one, double[][] net ) {

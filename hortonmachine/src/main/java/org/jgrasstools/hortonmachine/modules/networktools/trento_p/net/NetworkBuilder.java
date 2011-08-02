@@ -280,16 +280,10 @@ public class NetworkBuilder implements Network {
      * introduction of the bottom step.
      * </ol>
      * 
-     * @param align
-     *            is a switch that allow to select the metod to allign the free
-     *            surface.
-     * @param networkPipes
-     *            is a matrix which contains the networks value.
-     * @param two
-     *            array which contains the ID of the pipe where other pipes
-     *            drains.
-     * @param maxJunction
-     *            maximum number of junction in a node.
+     * @param align is a switch that allow to select the metod to allign the free surface.
+     * @param networkPipes is a matrix which contains the networks value.
+     * @param two array which contains the ID of the pipe where other pipes drains.
+     * @param maxJunction maximum number of junction in a node.
      */
     private void resetDepths( double[] two ) {
 
@@ -308,10 +302,8 @@ public class NetworkBuilder implements Network {
      * Aallineamento altimetrico del pelo libero.
      * 
      * 
-     * @param networkPipes
-     *            is a matrix which contains the networks value.
-     * @param two
-     *            vettore che contiene la magnitude delle varie aree.
+     * @param networkPipes   is a matrix which contains the networks value.
+     * @param two vettore che contiene la magnitude delle varie aree.
      * @param maxJunction
      */
     private void resetDepths0( double[] two ) {
@@ -408,11 +400,8 @@ public class NetworkBuilder implements Network {
      * andando da monte a valle.
      * </p>
      * 
-     * @param networkPipes
-     *            is a matrix which contains the networks value.
-     * @param two
-     *            Puntatore al vettore che contiene la magnitude delle varie
-     *            aree.
+     * @param networkPipes is a matrix which contains the networks value.
+     * @param two  Puntatore al vettore che contiene la magnitude delle varie aree.
      */
 
     private void resetDepths1( double[] two ) {
@@ -645,7 +634,7 @@ public class NetworkBuilder implements Network {
                 networkPipes[l - 1].residenceTime = ((HOUR2MIN * networkPipes[l - 1].getAverageResidenceTime() * pow(
                         networkPipes[l - 1].getDrainArea() / METER2CM, exponent))
 
-                / (pow(networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l-1].getAverageSlope(), gamma)));
+                / (pow(networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l - 1].getAverageSlope(), gamma)));
             } else {
                 /*
                  * Considero solo l 'acqua che drena dalla strada k = alfa * S /
@@ -916,19 +905,10 @@ public class NetworkBuilder implements Network {
      * che massimizza la portata.
      * <p>
      * 
-     * @param warnings2
-     *            file di output.
-     * @param l
-     *            Tratto che si sta dimensionando.
-     * @param dtp
-     *            \f$[min]\f$ Passo temporale con cui valutare la portata, per
-     *            cercare quella massima.
-     * @param net
-     *            Puntatore alla matrice che contiene tutti i dati del
-     *            subnetwork che si sta anallizzando: lunghezze, ritardi, ID,
-     *            diametri ecc..
-     * @param localdelay
-     *            Puntatore al vettore dei ritardi nella rete.
+     * @param l Tratto che si sta dimensionando.
+     * @param dtp [min] Passo temporale con cui valutare la portata, per cercare quella massima.
+     * @param netPuntatore alla matrice che contiene tutti i dati delsubnetwork che si sta anallizzando: lunghezze, ritardi, ID, diametri ecc..
+     * @param localdelay Puntatore al vettore dei ritardi nella rete.
      */
 
     private double discharge( int l, double dtp, double[][] net, double[] localdelay ) throws IOException {
@@ -1092,17 +1072,11 @@ public class NetworkBuilder implements Network {
      * sta considerando.
      * </p>
      * 
-     * @param indx
-     *            ID stato contribuente, di cui si vuol calcolare la portata.
-     * @param tp
-     *            [min] tempo di pioggia.
-     * @param t
-     *            [min] tempo reale.
-     * @param delay
-     *            [min] ritardo con cui l'onda arriva all'uscita che si sta
-     *            dimensionando.
-     * @param localdelay
-     *            vettore dei ritardi nella rete.
+     * @param indx ID stato contribuente, di cui si vuol calcolare la portata.
+     * @param tp [min] tempo di pioggia.
+     * @param t [min] tempo reale.
+     * @param delay [min] ritardo con cui l'onda arriva all'uscita che si sta dimensionando.
+     * @param localdelay vettore dei ritardi nella rete.
      * @return portata.
      */
 
@@ -1208,12 +1182,10 @@ public class NetworkBuilder implements Network {
      * assoluto.
      * </p>
      * 
-     * @param net
-     *            matrice che contiene i dati della rete (per aree di testa).
-     * @param localdelay
-     *            ritardo locale delle tubazioni.
+     * @param net matrice che contiene i dati della rete (per aree di testa).
+     * @param localdelayritardo locale delle tubazioni.
      * @param tp
-     * @param t
+     * @param  t
      */
 
     private void minMaxT( double[][] net, double[] localdelay, double tp, double[] t ) {
@@ -1254,16 +1226,11 @@ public class NetworkBuilder implements Network {
      * Compila la mantrice net con tutte i dati del sottobacino con chiusura nel
      * tratto che si sta analizzando, e restituisce la sua superfice
      * 
-     * @param k
-     *            tratto analizzato del sottobacino chiuso in l.
-     * @param l
-     *            chiusura del bacino.
-     * @param one
-     *            indice dei versanti.
-     * @param net
-     *            sottobacino che si chiude in l.
-     * @param qup
-     *            contiene l-ndice con il diametro massimo.
+     * @param k tratto analizzato del sottobacino chiuso in l.
+     * @param l chiusura del bacino.
+     * @param one indice dei versanti.
+     * @param net sottobacino che si chiude in l.
+     * @param qup contiene l-ndice con il diametro massimo.
      * @return total drainage area
      */
 
