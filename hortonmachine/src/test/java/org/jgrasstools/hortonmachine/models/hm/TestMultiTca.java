@@ -16,8 +16,7 @@ public class TestMultiTca extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pit", pitfillerData, envelopeParams, crs, true);
 
-        envelopeParams = HMTestMaps.envelopeParams;
-        crs = HMTestMaps.crs;
+
         double[][] flowData = HMTestMaps.drainData1;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 

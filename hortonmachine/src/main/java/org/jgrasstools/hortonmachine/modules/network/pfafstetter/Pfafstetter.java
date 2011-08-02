@@ -36,6 +36,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Documentation;
 import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -91,6 +92,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Keywords("Network, Pfafstetter")
 @Label(JGTConstants.NETWORK)
 @Status(Status.EXPERIMENTAL)
+@Documentation("Pfafstetter.html")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Pfafstetter extends JGTModel {
 

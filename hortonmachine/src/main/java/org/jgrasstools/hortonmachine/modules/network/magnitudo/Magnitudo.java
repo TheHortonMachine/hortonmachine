@@ -59,14 +59,15 @@ public class Magnitudo extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of magnitudo.")
     @Out
     public GridCoverage2D outMag = null;
 
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+    
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute

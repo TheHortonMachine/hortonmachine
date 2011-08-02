@@ -56,6 +56,7 @@ import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -78,7 +79,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Bibliography("http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TrentoP {
+public class TrentoP extends JGTModel {
 
     /**
      * Message handler.
@@ -88,6 +89,10 @@ public class TrentoP {
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
+    @Description("Processing mode, 0=project, 1=verification.")
+    @In
+    public int pMode;
 
     @Description("Minimum excavation depth")
     @Unit("m")
@@ -216,10 +221,6 @@ public class TrentoP {
     @In
     public Integer pOutPipe = null;
 
-    @Description("Processing mode, 0=project, 1=verification.")
-    @In
-    public int pMode;
-
     @Description("Time step to calculate the discharge in project mode.")
     @Unit("-")
     @Range(min = 0.015)
@@ -278,6 +279,9 @@ public class TrentoP {
     @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
+    
+    
+    public Integer outTpMax = null;
 
     /**
      * Is an array with all the pipe of the net.
@@ -356,6 +360,7 @@ public class TrentoP {
             network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder,
                     tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
+            outTpMax= ((NetworkCalibration) network).getTpMax();
 
         } else {
             // set other common parameters for the project.
@@ -410,10 +415,19 @@ public class TrentoP {
      * @return true if there is the percentage area.
      */
     private boolean verifyParameter() {
+        // checkNull(inPipes,pAccuracy);
         boolean isAreaAllDry;
+        
+        if(pMode<0 || pMode>1){
+            pm.errorMessage(msg.message("trentoP.error.mode"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.mode"));
+          
+        }
+        
+        
         if (inPipes == null) {
             pm.errorMessage(msg.message("trentoP.error.inputMatrix") + " geometry file");
-            throw new IllegalArgumentException(msg.message("trentoP.error.inputMatrix" + " geometry file"));
+            throw new IllegalArgumentException(msg.message("trentoP.error.inputMatrix") + " geometry file");
         }
 
         /* Il numero di giunzioni in un nodo non puo' superiore a 7 */
@@ -481,6 +495,7 @@ public class TrentoP {
         SimpleFeatureType schema = inPipes.getSchema();
 
         if (pMode == 0) {
+            // checkNull(pA,pN,pTau,inDiameters);
 
             isAreaAllDry = Utility.verifyProjectType(schema, pm);
 
@@ -561,6 +576,7 @@ public class TrentoP {
                 throw new IllegalArgumentException();
             }
         } else {
+            // checkNull(inRain);
             isAreaAllDry = Utility.verifyCalibrationType(schema, pm);
 
             /*
@@ -599,11 +615,14 @@ public class TrentoP {
                     tp = tp + dt;
                 }
 
+            } else {
+                // force the time steep to null in order to read it to the file.
+                dt = null;
             }
             if (inRain == null) {
 
                 pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");
-                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" + " rain file"));
+                throw new IllegalArgumentException(msg.message("trentoP.error.inputRainMatrix" )+ " rain file");
             }
 
             // verificy if the field exist.
@@ -643,7 +662,7 @@ public class TrentoP {
                     Number field = ((Number) feature.getAttribute(TrentoPFeatureType.ID_STR));
                     if (field == null) {
                         pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
-                        throw new IllegalArgumentException(msg.message("trentoP.error.number" + TrentoPFeatureType.ID_STR));
+                        throw new IllegalArgumentException(msg.message("trentoP.error.number" )+ TrentoPFeatureType.ID_STR);
                     }
                     t = field.intValue();
                     networkPipes[t - 1] = new Pipe(feature, pMode, isAreaNotAllDry);

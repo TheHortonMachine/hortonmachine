@@ -59,6 +59,17 @@ import org.joda.time.DateTime;
  * 
  */
 public class NetworkCalibration implements Network {
+
+    /**
+     * The initial time, it's the initial time whre to start to search the tp max.
+     * <p>
+     * It's fixed to 15 minutes.
+     * 
+     * </p>
+     * 
+     */
+    public static final Integer INITIAL_TIME = 15;
+
     DateTime first = null;
 
     /*
@@ -77,9 +88,15 @@ public class NetworkCalibration implements Network {
      * Dati di pioggia.
      */
     private double[][] rainData;
-
+    /*
+     * The input rain.
+     */
     private final HashMap<DateTime, double[]> inRain;
 
+    /*
+     * Flag to exit if a pipe is full.
+     */
+    boolean isFill = false;
     /*
      * Dati relativi alla rete
      */
@@ -99,7 +116,7 @@ public class NetworkCalibration implements Network {
     private double[][] lastTimeFillDegree;
 
     /*
-     * The
+     * The end time of the simulation.
      */
     private final int tMax;
     /*
@@ -115,11 +132,26 @@ public class NetworkCalibration implements Network {
      * The discharg for each pipe and for each time.
      */
     private HashMap<DateTime, HashMap<Integer, double[]>> discharge;
-
+    /*
+     * A flag that indicate to the program if search or not the maximum rain time.
+     */
     private final boolean foundMaxrainTime;
-
+    /*
+     * The upper limit time range. It is used to search the tpMax. The range to search the tpMax is [IITIAL_TIME, tpMaxCalibration].
+     */
     private final Integer tpMaxCalibration;
+    /*
+     * The rain time that give the maximum discharge.
+     */
+    private int tpMax;
+    /*
+     * Is the number of data rain to use.
+     */
     private int nTime;
+
+    public int getTpMax() {
+        return tpMax;
+    }
     /**
         * Builder for the Calibration class.
         */
@@ -149,8 +181,13 @@ public class NetworkCalibration implements Network {
          * Dati relativi alla rete
          */
         private final Pipe[] networkPipe;
+        /*
+         * Flag to indicate if search or not the tpMax.
+         */
         private final boolean foundMaxrainTime;
-
+        /*
+         * Maximum time of calibration.
+         */
         private final Integer tpMaxCalibration;
         // Precisione con cui vengono cercate alcune soluzioni col metodo delle
         // bisezioni.
@@ -162,18 +199,12 @@ public class NetworkCalibration implements Network {
          * 
          * @param pm
          * @param msg
-         * @param networkPipe
-         *            the array of pipes.
-         * @param dt
-         *            time step.
-         * @param inRain
-         *            the rain data.
-         * @param outDischarge
-         *            the output, discharge.
-         * @param outFillDegree
-         *            the output, fill degree.           
-         * @param strBuilder
-         *            a tring used to store the warnings.
+         * @param networkPipe the array of pipes.
+         * @param dt time step.
+         * @param inRain the rain data.
+         * @param outDischarge the output, discharge.
+         * @param outFillDegreethe output, fill degree.           
+         * @param strBuilder a tring used to store the warnings.
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
                 HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
@@ -239,8 +270,8 @@ public class NetworkCalibration implements Network {
         if (builder.networkPipe != null) {
             this.networkPipes = builder.networkPipe;
         } else {
-            pm.errorMessage("networkPipe is null");
-            throw new IllegalArgumentException("networkPipe is null");
+            pm.errorMessage(msg.message("trentoP.error.network"));
+            throw new IllegalArgumentException("trentoP.error.network");
         }
         if (builder.inRain != null) {
 
@@ -289,8 +320,8 @@ public class NetworkCalibration implements Network {
             lastTimeFillDegree = createMatrix();
 
         } else {
-            pm.errorMessage("rainData is null");
-            throw new IllegalArgumentException("rainData is null");
+            pm.errorMessage(msg.message("trentoP.error.rainData "));
+            throw new IllegalArgumentException(msg.message("trentoP.error.rainData"));
         }
     }
 
@@ -315,12 +346,9 @@ public class NetworkCalibration implements Network {
      * It evaluate the discharge.
      * </p>
      * 
-     * @param k
-     *            ID of the pipe where evaluate the discharge.
-     * @param cDelays
-     *            delay matrix (for the evalutation of the flow wave).
-     * @param net
-     *            matrix that contains value of the network.
+     * @param k  ID of the pipe where evaluate the discharge.
+     * @param cDelays delay matrix (for the evalutation of the flow wave).
+     * @param net matrix that contains value of the network.
      * @return 
      */
     private double internalPipeVerify( int k, double[] cDelays, double[][] net, double[][] timeDischarge,
@@ -403,12 +431,9 @@ public class NetworkCalibration implements Network {
     /**
      * Calcola il ritardo della tubazione k.
      * 
-     * @param k
-     *            indice della tubazione.
-     * @param cDelays
-     *            matrice dei ritardi.
-     * @param net
-     *            matrice che contiene la sottorete.
+     * @param k indice della tubazione.
+     * @param cDelays matrice dei ritardi.
+     * @param net  matrice che contiene la sottorete.
      */
 
     private void calculateDelays( int k, double[] cDelays, double[][] net )
@@ -442,15 +467,10 @@ public class NetworkCalibration implements Network {
     /**
      * Restituisce l'idrogramma.
      * 
-     * @param k
-     *            tratto di tubazione.
-     * @param Qpartial
-     *            matrice delle portate temporanee necessarie per costriure
-     *            l'idrogramma.
-     * @param localdelay
-     *            ritardo della tubazione k.
-     * @param delay
-     *            ritardo temporale.
+     * @param k tratto di tubazione.
+     * @param Qpartial matrice delle portate temporanee necessarie per costriure 'idrogramma.
+     * @param localdelay  ritardo della tubazione k.
+     * @param delay ritardo temporale.
      */
     private double getHydrograph( int k, double[][] Qpartial, double localdelay, double delay, int tp )
 
@@ -595,6 +615,10 @@ public class NetworkCalibration implements Network {
     /**
      * Estimate the discharge for each time and for each pipes.
      * 
+     *<p>
+     *It can work with a single rain time step (if there is an actual rain) or search the maximum rain time, if the rain is unknown and 
+     *the rain data are builtthroghout the rain possibility curve.
+     *</p>
      * <p>
      * It work throgout 2 loop:
      * <ol>
@@ -610,9 +634,14 @@ public class NetworkCalibration implements Network {
         if (!foundMaxrainTime) {
             evaluateDischarge(lastTimeDischarge, lastTimeFillDegree, tpMaxCalibration);
         } else {
-            int minTime = 3 * dt;
+            /*
+             *  start to evaluate the discharge from 15 minutes,evaluate the nearsted value to 15 minutes.
+             */
+            int mod = Math.round(INITIAL_TIME / dt);
+            int minTime = dt * mod;
             double qMax = 0;
             for( int i = minTime; i < tpMaxCalibration; i = i + dt ) {
+                tpMax = i;
                 double[][] timeDischarge = createMatrix();
                 double[][] timeFillDegree = createMatrix();
                 double q = evaluateDischarge(timeDischarge, timeFillDegree, i);
@@ -621,6 +650,9 @@ public class NetworkCalibration implements Network {
                     lastTimeDischarge = timeDischarge;
                     lastTimeFillDegree = timeFillDegree;
                 } else if (q < qMax) {
+                    break;
+                }
+                if (isFill) {
                     break;
                 }
             }
@@ -827,7 +859,7 @@ public class NetworkCalibration implements Network {
         // tratto che si sta analizzando o progettando
         l = (int) one[k];
         pm.beginTask(msg.message("trentoP.begin"), networkPipes.length - 1);
-        boolean isFill = false;
+        isFill = false;
         double[] cDelays = new double[networkPipes.length];
         double maxFill = angleToFillDegree(networkPipes[k].getMaxTheta());
         while( magnitude[k] == 1 ) {
@@ -859,6 +891,8 @@ public class NetworkCalibration implements Network {
                 strBuilder.append(" ");
                 strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
                 strBuilder.append(networkPipes[l - 1].getId());
+                strBuilder.append(" ");
+                strBuilder.append("tp " + tp);
                 strBuilder.append("\n");
                 isFill = true;
                 break;
@@ -899,7 +933,10 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
                     strBuilder.append(networkPipes[l - 1].getId());
+                    strBuilder.append(" ");
+                    strBuilder.append("tp " + tp);
                     strBuilder.append("\n");
+                    isFill = true;
                     break;
                 }
             }

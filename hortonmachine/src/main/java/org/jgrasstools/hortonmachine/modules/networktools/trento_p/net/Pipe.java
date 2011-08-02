@@ -549,7 +549,7 @@ public class Pipe {
                     this.pipeSectionType = sectionTmp;
                 } else {
                     pm.errorMessage(msg.message("trentoP.error.section") + this.id);
-                    throw new IllegalArgumentException(msg.message("trentoP.error.section" + this.id));
+                    throw new IllegalArgumentException(msg.message("trentoP.error.section" )+ this.id);
                 }
 
             }
@@ -575,7 +575,7 @@ public class Pipe {
         Number field = ((Number) pipe.getAttribute(key));
         if (field == null) {
             pm.errorMessage(msg.message("trentoP.error.number") + key);
-            throw new IllegalArgumentException(msg.message("trentoP.error.number" + key));
+            throw new IllegalArgumentException(msg.message("trentoP.error.number" )+ key);
         }
 
         // return the Number
