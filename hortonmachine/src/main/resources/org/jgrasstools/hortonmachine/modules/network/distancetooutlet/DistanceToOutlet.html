@@ -5,9 +5,9 @@ get the so called <i>width function</i>. It can evaluate the distance in as a pr
 <BR>
 The program can work in three different ways: 
 <ol>
-<li> calculate the distance (projected on the plane)  from the outlet in pixel number (pMode = 0)
-<li> calculate the distance (projected on the plane)  from the outlet in meters on the plane (pMode = 1)
-<li> calculate the distance (in 3d) from the outlet in meters in 3d (pMode = 1 and the inPit map not null)
+<li> calculate the distance (projected on the plane)  from the outlet in pixel number (pMode = 0)</li>
+<li> calculate the distance (projected on the plane)  from the outlet in meters on the plane (pMode = 1)</li>
+<li> calculate the distance (in 3d) from the outlet in meters in 3d (pMode = 1 and the inPit map not null)</li>
 </ol>
 <br>
 <br>
@@ -15,8 +15,10 @@ The program can work in three different ways:
 <br>
 <br>
 <ul>  
-<li> the ﬁle containing the matrix of the drainage directions (obtained with [markoutlets]);
+<li> the GridCoverage containing the matrix of the drainage directions (obtained with [Markoutlets]);</li>
+<li> theGridCoverage of elevations (obtained with [Pitﬁller]) if it run in 3d mode.</li>
 </ul>
 <h3>Output</h3>
 <ul>  
-<li>
+<li> the GridCoverage containing the matrix of the distances.</li>
+</ul>
