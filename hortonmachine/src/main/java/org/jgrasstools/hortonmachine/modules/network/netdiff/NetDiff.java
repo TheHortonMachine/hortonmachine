@@ -1,4 +1,4 @@
-package org.jgrasstools.hortonmachine.modules.network.netdif;
+package org.jgrasstools.hortonmachine.modules.network.netdiff;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
@@ -10,12 +10,20 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
@@ -24,7 +32,15 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-public class NetDif extends JGTModel {
+@Description("Calculates the difference between the value of a quantity in one point and the value of the same quantity in another point across a basin")
+@Author(name = "Daniele Andreis, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
+@Label(JGTConstants.NETWORK)
+@Documentation("NetDiff.html")
+@Keywords("Network, Pitfiller, DrainDir, FlowDirections")
+@Name("netdiff")
+@Status(Status.CERTIFIED)
+@License("GPL3")
+public class NetDiff extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In
@@ -60,7 +76,7 @@ public class NetDif extends JGTModel {
             return;
         } else {
             HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-            outDiff = CoverageUtilities.buildCoverage("mag", diffWR, regionMap, inFlow.getCoordinateReferenceSystem());
+            outDiff = CoverageUtilities.buildCoverage("netdiff", diffWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
         }
     }
