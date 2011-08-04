@@ -33,6 +33,7 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.math.functions.MinimumFillDegreeFunction;
 import org.jgrasstools.gears.utils.math.rootfinding.RootFindingFunctions;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.opengis.feature.simple.SimpleFeature;
@@ -53,7 +54,8 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Utility {
 
     public static NumberFormat F = new DecimalFormat("#.##############");
-    
+    public static NumberFormat F_INT = new DecimalFormat("#");
+
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     /**
@@ -138,8 +140,8 @@ public class Utility {
          * la precisione richiesta.
          */
         gsmFunction.setParameters(known, twooverthree, minG);
-        if(Math.abs(thetai)<=NumericsUtilities.machineFEpsilon()){
-            thetai=0.0;
+        if (Math.abs(thetai) <= NumericsUtilities.machineFEpsilon()) {
+            thetai = 0.0;
         }
         return RootFindingFunctions.bisectionRootFinding(gsmFunction, thetai, thetai + delta, accuracy, jMax, pm);
     }
@@ -181,12 +183,10 @@ public class Utility {
         String searchedField = PipesTrentoP.PER_AREA.getAttributeName();
         String attributeName = findAttributeName(inPipesFC.getSchema(), searchedField);
         try {
-            int t;
+            int t=0;
             while( stationsIter.hasNext() ) {
                 SimpleFeature feature = stationsIter.next();
                 try {
-                    t = ((Number) feature.getAttribute(TrentoPFeatureType.ID_STR)).intValue();
-                    t = t - 1;
                     Geometry line = (Geometry) feature.getDefaultGeometry();
                     builderFeature.add(line);
                     builderFeature.add(networkPipes[t].getId());
@@ -226,7 +226,7 @@ public class Utility {
 
                     SimpleFeature featureOut = builderFeature.buildFeature(null);
                     outPipesFC.add(featureOut);
-
+                    t++;
                 } catch (NullPointerException e) {
                     throw new IllegalArgumentException(msg.message("trentop.illegalNet" + "in output"));
 
@@ -277,8 +277,8 @@ public class Utility {
              * Si segue il percorso dell'acqua e si incrementa di 1 la mgnitude
              * di tutti gli stati attraversati prima di raggiungere l'uscita
              */
-            while( whereDrain[k] != 0 && count < length ) {
-                k = (int) whereDrain[k] - 1;
+            while( whereDrain[k] != TrentoP.outIndexPipe && count < length ) {
+                k = (int) whereDrain[k];
                 magnitude[k]++;
                 count++;
             }
@@ -302,7 +302,6 @@ public class Utility {
         ShapefileFeatureWriter.writeEmptyShapefile(path, areaType);
 
     }
-
 
     /**
      * Verify the schema.

@@ -157,6 +157,10 @@ public class Pipe {
      * It's the ID of the pipe where this drain.
      */
     private Integer idPipeWhereDrain = null;
+    /**    
+     * It's the ID of the pipe where this drain.
+     */
+    private Integer indexPipeWhereDrain = null;
     /**
      * Is the contributed area.
      */
@@ -1468,5 +1472,13 @@ public class Pipe {
         emptyDegree = 0.5 * (1 - cos(newtheta / 2));
         return newtheta;
 
+    }
+
+    public void setIndexPipeWhereDrain( Integer indexPipeWhereDrain ) {
+        this.indexPipeWhereDrain = indexPipeWhereDrain;
+    }
+
+    public Integer getIndexPipeWhereDrain() {
+        return indexPipeWhereDrain;
     }
 }

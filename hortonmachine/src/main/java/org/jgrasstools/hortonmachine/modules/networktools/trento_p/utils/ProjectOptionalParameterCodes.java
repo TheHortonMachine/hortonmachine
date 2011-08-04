@@ -1,6 +1,7 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.*;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.*;
 /**
  * Optional parameters used to TrentoP in project mode.
  * <p>
@@ -10,34 +11,35 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
  * @author Daniele Andreis
  *
  */
+
 public enum ProjectOptionalParameterCodes implements IParametersCode {
-    MIN_DEPTH(0, "Minimum excavation depth", "It's the minimum depth of a pipe [m]", String.valueOf(DEFAULT_MINIMUM_DEPTH),
+    MIN_DEPTH(0, "Minimum excavation depth", "It's the minimum depth of a pipe [m]", F.format(DEFAULT_MINIMUM_DEPTH),
             MIN_DEPTH_RANGE[0], MIN_DEPTH_RANGE[1]), //
-    MAX_JUNCTION(1, "Max number of junction", "It's the maximum number of junction in a node[-]", String
-            .valueOf(Constants.DEFAULT_MAX_JUNCTION), MAX_JUNCTIONS_RANGE[0], MAX_JUNCTIONS_RANGE[1]), //
-    JMAX(2, "Max bisection number", "used to find the diameter of pipes. [-]", String.valueOf(Constants.DEFAULT_J_MAX),
-            JMAX_RANGE[0], JMAX_RANGE[1]), //
-    EPS(3, "Precision", "It's related to the discharge evalutation [-]", String.valueOf(Constants.DEFAULT_ACCURACY),
-            EPS_RANGE[0], EPS_RANGE[1]), //
-    MIN_FILL_DEGREE(4, "Minimum fill degree", "[-]", String.valueOf(Constants.DEFAULT_MING), MIN_FILL_DEGREE_RANGE[0],
+    MAX_JUNCTION(1, "Max number of junction", "It's the maximum number of junction in a node[-]", F
+            .format(Constants.DEFAULT_MAX_JUNCTION), MAX_JUNCTIONS_RANGE[0], MAX_JUNCTIONS_RANGE[1]), //
+    JMAX(2, "Max bisection number", "used to find the diameter of pipes. [-]", F.format(Constants.DEFAULT_J_MAX), JMAX_RANGE[0],
+            JMAX_RANGE[1]), //
+    EPS(3, "Precision", "It's related to the discharge evalutation [-]", F.format(Constants.DEFAULT_ACCURACY), EPS_RANGE[0],
+            EPS_RANGE[1]), //
+    MIN_FILL_DEGREE(4, "Minimum fill degree", "[-]", F.format(Constants.DEFAULT_MING), MIN_FILL_DEGREE_RANGE[0],
             MIN_FILL_DEGREE_RANGE[1]), //
-    MIN_DISCHARGE(5, "Minimum discharge in a pipe", "[l/s]", String.valueOf(Constants.DEFAULT_MIN_DISCHARGE),
-            MIN_DISCHARGE_RANGE[0], MIN_DISCHARGE_RANGE[1]), //
-    MAX_FILL_DEGREE(6, "Maximum fill degree", "[-]", String.valueOf(Constants.DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //
-    CELERITY_FACTOR(7, "Celerity factor", "[-]", String.valueOf(Constants.DEFAULT_CELERITY_FACTOR), CELERITY_RANGE[0],
+    MIN_DISCHARGE(5, "Minimum discharge in a pipe", "[l/s]", F.format(Constants.DEFAULT_MIN_DISCHARGE), MIN_DISCHARGE_RANGE[0],
+            MIN_DISCHARGE_RANGE[1]), //
+    MAX_FILL_DEGREE(6, "Maximum fill degree", "[-]", F.format(Constants.DEFAULT_MAX_THETA), THETA_RANGE[0], THETA_RANGE[1]), //
+    CELERITY_FACTOR(7, "Celerity factor", "[-]", F.format(Constants.DEFAULT_CELERITY_FACTOR), CELERITY_RANGE[0],
             CELERITY_RANGE[1]), //
-    EXPONENT(8, "Exponent of the basin extension", "usually is 0.3[-]", String.valueOf(Constants.DEFAULT_EXPONENT),
-            EXPONENT_RANGE[0], EXPONENT_RANGE[1]), //
-    TOLERANCE(9, "tollerance", "used to find the pipes diameter[-]", String.valueOf(Constants.DEFAULT_TOLERANCE),
-            TOLERANCE_RANGE[0], TOLERANCE_RANGE[1]), //
-    C(10, "base to height", "It's used only in rectangular or trapezium section, value between o.5 and 2 [-]", String
-            .valueOf(Constants.DEFAULT_C), C_RANGE[0], C_RANGE[1]), //
+    EXPONENT(8, "Exponent of the basin extension", "usually is 0.3[-]", F.format(Constants.DEFAULT_EXPONENT), EXPONENT_RANGE[0],
+            EXPONENT_RANGE[1]), //
+    TOLERANCE(9, "tollerance", "used to find the pipes diameter[-]", F.format(Constants.DEFAULT_TOLERANCE), TOLERANCE_RANGE[0],
+            TOLERANCE_RANGE[1]), //
+    C(10, "base to height", "It's used only in rectangular or trapezium section, value between o.5 and 2 [-]", F
+            .format(Constants.DEFAULT_C), C_RANGE[0], C_RANGE[1]), //
     GAMMA(11, "Exponent of the average ponderal slope",
-            "It's used to evaluate the mean time to avvess to the network,, value between 0.2 and 0.5  [-]", String
-                    .valueOf(Constants.DEFAULT_GAMMA), GAMMA_RANGE[0], GAMMA_RANGE[1]), //
-    INFLUX_EXP(12, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", String
-            .valueOf(Constants.DEFAULT_ESP1), INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
-    ACCURACY(13, "Accuracy", "Used to evaluate the result with bisection mode  ", String.valueOf(Constants.DEFAULT_ACCURACY),
+            "It's used to evaluate the mean time to avvess to the network,, value between 0.2 and 0.5  [-]", F
+                    .format(Constants.DEFAULT_GAMMA), GAMMA_RANGE[0], GAMMA_RANGE[1]), //
+    INFLUX_EXP(12, "Exponent of the influx coefficent", "Used to evaluate the mean residence time[-]", F
+            .format(Constants.DEFAULT_ESP1), INFLUX_EXPONENT_RANGE[0], INFLUX_EXPONENT_RANGE[1]), //
+    ACCURACY(13, "Accuracy", "Used to evaluate the result with bisection mode  ", F.format(Constants.DEFAULT_ACCURACY),
             new Double(0), null), //
     ; //
     /**

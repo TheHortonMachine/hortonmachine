@@ -42,6 +42,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 
@@ -383,7 +384,7 @@ public class NetworkCalibration implements Network {
             }
 
             getHydrograph(k, qPartial, olddelay, 0, tp);
-            qMax = ModelsEngine.sumDoublematrixColumns(k, qPartial, timeDischarge, 1, qPartial[0].length - 1, pm);
+            qMax = ModelsEngine.sumDoublematrixColumns(k, qPartial, timeDischarge, 0, qPartial[0].length - 1, pm);
             if (qMax <= 1)
                 qMax = 1;
             // Resets delays
@@ -391,15 +392,15 @@ public class NetworkCalibration implements Network {
                 net[i][2] -= localdelay;
             }
             calculateFillDegree(k, timeDischarge, timeFillDegree);
-            B = qMax / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
-            known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
+            B = qMax / (CUBICMETER2LITER * networkPipes[k].getKs() * sqrt(networkPipes[k].verifyPipeSlope / METER2CM));
+            known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k].diameterToVerify / METER2CM, EIGHTOVERTHREE);
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
             // Average velocity in pipe [ m / s ]
-            u = qMax * 80 / (pow(networkPipes[k - 1].diameterToVerify, 2) * (theta - sin(theta)));
-            localdelay = networkPipes[k - 1].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
+            u = qMax * 80 / (pow(networkPipes[k].diameterToVerify, 2) * (theta - sin(theta)));
+            localdelay = networkPipes[k].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
 
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
-        cDelays[k - 1] = localdelay;
+        cDelays[k] = localdelay;
         return qMax;
 
     }
@@ -416,9 +417,8 @@ public class NetworkCalibration implements Network {
             timeFillDegree[i][k] = initialFillValue;
             double q = timeDischarge[i][k];
             if (q > NumericsUtilities.machineFEpsilon()) {
-                double B = q
-                        / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
-                double known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
+                double B = q / (CUBICMETER2LITER * networkPipes[k].getKs() * sqrt(networkPipes[k].verifyPipeSlope / METER2CM));
+                double known = (B * TWO_THIRTEENOVERTHREE) / pow(networkPipes[k].diameterToVerify / METER2CM, EIGHTOVERTHREE);
                 double theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
                 timeFillDegree[i][k] = angleToFillDegree(theta);
             } else {
@@ -449,9 +449,9 @@ public class NetworkCalibration implements Network {
             /*
              * Area k is not included in delays
              */
-            while( networkPipes[ind - 1].getIdPipeWhereDrain() != k ) {
-                ind = networkPipes[ind - 1].getIdPipeWhereDrain();
-                t += cDelays[ind - 1];
+            while( networkPipes[ind].getIndexPipeWhereDrain() != k ) {
+                ind = networkPipes[ind].getIndexPipeWhereDrain();
+                t += cDelays[ind];
                 r++;
             }
 
@@ -496,8 +496,7 @@ public class NetworkCalibration implements Network {
 
                 // [ l / s ]
 
-                rain = rainData[i][1] * networkPipes[k - 1].getDrainArea() * networkPipes[k - 1].getRunoffCoefficient()
-                        * 166.666667;
+                rain = rainData[i][1] * networkPipes[k].getDrainArea() * networkPipes[k].getRunoffCoefficient() * 166.666667;
 
                 if (t <= i * dt) {
                     Q += 0;
@@ -553,15 +552,14 @@ public class NetworkCalibration implements Network {
                 qMax = 1;
             }
             calculateFillDegree(k, timeDischarge, timeFillDegree);
-            B = qMax
-                    / (CUBICMETER2LITER * networkPipes[k - 1].getKs() * Math.sqrt(networkPipes[k - 1].verifyPipeSlope / METER2CM));
-            known = (B * TWO_THIRTEENOVERTHREE) / Math.pow(networkPipes[k - 1].diameterToVerify / METER2CM, EIGHTOVERTHREE);
+            B = qMax / (CUBICMETER2LITER * networkPipes[k].getKs() * Math.sqrt(networkPipes[k].verifyPipeSlope / METER2CM));
+            known = (B * TWO_THIRTEENOVERTHREE) / Math.pow(networkPipes[k].diameterToVerify / METER2CM, EIGHTOVERTHREE);
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
             double tmp1 = 0;
             double tmp2 = 0;
             if (k - 1 >= 0) {
-                tmp1 = networkPipes[k - 1].diameterToVerify;
-                tmp2 = networkPipes[k - 1].getLenght();
+                tmp1 = networkPipes[k].diameterToVerify;
+                tmp2 = networkPipes[k].getLenght();
             }
 
             // Average velocity in pipe [ m / s ]
@@ -571,7 +569,7 @@ public class NetworkCalibration implements Network {
 
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
-        cDelays[k - 1] = localdelay;
+        cDelays[k] = localdelay;
         return qMax;
     }
 
@@ -597,11 +595,10 @@ public class NetworkCalibration implements Network {
         if (t < delay) {
             P = 0;
         } else if (t <= (delay + localdelay)) {
-            P = (t - delay) / localdelay + networkPipes[k - 1].k / localdelay
-                    * (Math.exp(-(t - delay) / networkPipes[k - 1].k) - 1);
+            P = (t - delay) / localdelay + networkPipes[k].k / localdelay * (Math.exp(-(t - delay) / networkPipes[k].k) - 1);
         } else {
-            P = 1 + networkPipes[k - 1].k / localdelay * Math.exp(-(t - delay) / networkPipes[k - 1].k)
-                    * (1 - Math.exp(localdelay / networkPipes[k - 1].k));
+            P = 1 + networkPipes[k].k / localdelay * Math.exp(-(t - delay) / networkPipes[k].k)
+                    * (1 - Math.exp(localdelay / networkPipes[k].k));
         }
 
         return P;
@@ -665,10 +662,24 @@ public class NetworkCalibration implements Network {
         int length = lastTimeDischarge[0].length;
         HashMap<Integer, double[]> tmpHMDis = new LinkedHashMap<Integer, double[]>();
         HashMap<Integer, double[]> tmpHMFill = new LinkedHashMap<Integer, double[]>();
+        // order the outpt.
 
-        for( int i = 1; i < length; i++ ) {
-            tmpHMDis.put(networkPipes[i - 1].getId(), new double[]{lastTimeDischarge[0][i]});
-            tmpHMFill.put(networkPipes[i - 1].getId(), new double[]{lastTimeFillDegree[0][i]});
+        int netLength = networkPipes.length;
+        double[] one = new double[netLength];
+        double[] two = new double[netLength];
+        for (int i=0; i<netLength; i++){
+            one[i]=i;
+            two[i]= networkPipes[i].getId();
+        }
+
+        QuickSortAlgorithm sort = new QuickSortAlgorithm(pm);
+        sort.sort(two,one);
+
+
+        for( int i = 0; i < length - 1; i++ ) {
+            int index = (int) one[i];
+            tmpHMDis.put(networkPipes[index].getId(), new double[]{lastTimeDischarge[0][index]});
+            tmpHMFill.put(networkPipes[index].getId(), new double[]{lastTimeFillDegree[0][index]});
 
         }
         discharge.put(first, tmpHMDis);
@@ -678,10 +689,10 @@ public class NetworkCalibration implements Network {
             tmp = tmp.plusMinutes(dt);
             tmpHMDis = new LinkedHashMap<Integer, double[]>();
             tmpHMFill = new LinkedHashMap<Integer, double[]>();
-
-            for( int j = 1; j < length; j++ ) {
-                tmpHMDis.put(networkPipes[j - 1].getId(), new double[]{lastTimeDischarge[i][j]});
-                tmpHMFill.put(networkPipes[j - 1].getId(), new double[]{lastTimeFillDegree[i][j]});
+            for( int j = 0; j < length - 1; j++ ) {
+                int index = (int) one[j];
+                tmpHMDis.put(networkPipes[index].getId(), new double[]{lastTimeDischarge[i][index]});
+                tmpHMFill.put(networkPipes[index].getId(), new double[]{lastTimeFillDegree[i][index]});
 
             }
             discharge.put(tmp, tmpHMDis);
@@ -735,13 +746,13 @@ public class NetworkCalibration implements Network {
             i = (int) one[j];
             ind = i;
             // la lunghezza del tubo precedentemente progettato
-            length = networkPipes[ind - 1].getLenght();
+            length = networkPipes[ind].getLenght();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
-            while( networkPipes[ind - 1].getIdPipeWhereDrain() != 0 ) {
+            while( networkPipes[ind].getIdPipeWhereDrain() != TrentoP.outIdPipe ) {
 
                 // lo stato dove drena a sua volta.
-                ind = networkPipes[ind - 1].getIdPipeWhereDrain();
+                ind = networkPipes[ind].getIndexPipeWhereDrain();
                 /*
                  * se lo stato drena direttamente in quello che si sta
                  * progettando
@@ -755,7 +766,7 @@ public class NetworkCalibration implements Network {
                      * lunghezza del percorsa dall'acqua prima di raggiungere lo
                      * stato l che si sta progettando
                      */
-                    net[r][1] = length + networkPipes[l - 1].getLenght();
+                    net[r][1] = length + networkPipes[l].getLenght();
 
                     /*
                      * Ritardo accumulato dall'onda di piena formatasi in uno
@@ -768,7 +779,7 @@ public class NetworkCalibration implements Network {
                      * area di tutti gli stati a monte che direttamente o
                      * indirettamente drenano in l
                      */
-                    totalarea += networkPipes[i - 1].getDrainArea();
+                    totalarea += networkPipes[i].getDrainArea();
                     r++;
 
                     break;
@@ -785,7 +796,7 @@ public class NetworkCalibration implements Network {
 
         // area degli stati a monte che drenano in l, l compreso
 
-        totalarea += networkPipes[l - 1].getDrainArea();
+        totalarea += networkPipes[l].getDrainArea();
 
         return totalarea;
 
@@ -821,9 +832,9 @@ public class NetworkCalibration implements Network {
 
         for( int i = 0; i < networkPipes.length; i++ ) {
             /* Indice degli stati */
-            one[i] = networkPipes[i].getId();
+            one[i] = i;
             /* Indice degli stati riceventi, compresa almeno un'uscita */
-            two[i] = networkPipes[i].getIdPipeWhereDrain();
+            two[i] = networkPipes[i].getIndexPipeWhereDrain();
         }
         /* Calcola la magnitude di ciascun stato */
         Utility.pipeMagnitude(magnitude, two, pm);/*
@@ -903,7 +914,7 @@ public class NetworkCalibration implements Network {
             while( k < magnitude.length ) {
 
                 try {
-                    net = new double[(int) (magnitude[k] - 1)][9];
+                    net = new double[(int) (magnitude[k]-1)][9];
                     scanNetwork(k, l, one, net);
                     double q = internalPipeVerify(l, cDelays, net, timeDischarge, timeFillDegree, tp);
                     if (q > qMax) {
@@ -924,7 +935,7 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(maxFill);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                    strBuilder.append(networkPipes[l - 1].getId());
+                    strBuilder.append(networkPipes[l].getId());
                     strBuilder.append(" ");
                     strBuilder.append("tp " + tp);
                     strBuilder.append("\n");

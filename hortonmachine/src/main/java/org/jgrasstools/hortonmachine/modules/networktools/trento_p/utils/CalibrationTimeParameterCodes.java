@@ -8,11 +8,13 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
  * @author Daniele Andreis
  *
  */
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.*;
+
 public enum CalibrationTimeParameterCodes implements IParametersCode {
-    STEP(0, "Time step", "Hydraulic time step [min]", String.valueOf(Constants.DEFAULT_DT), 0.0, null), //
-    MAXIMUM_TIME(1, "Maximum amount of simulation time step","Simulation duration [min]" , String.valueOf(Constants.DEFAULT_TPMAX), 0.0,
+    STEP(0, "Time step", "Hydraulic time step [min]", F_INT.format(Constants.DEFAULT_DT), 0.0, null), //
+    MAXIMUM_TIME(1, "Maximum amount of simulation time step","Simulation duration [min]" , F_INT.format(Constants.DEFAULT_TPMAX), 0.0,
             null), //
-    MAXIMUM_RAIN_TIME(2, "Maximum amount Rain Time step","Simulation duration [min]" , String.valueOf(Constants.DEFAULT_TPMAX), 0.0,
+    MAXIMUM_RAIN_TIME(2, "Maximum amount Rain Time step","Simulation duration [min]" , F_INT.format(Constants.DEFAULT_TPMAX), 0.0,
             null); //
     /**
      * An id associate to the value. 

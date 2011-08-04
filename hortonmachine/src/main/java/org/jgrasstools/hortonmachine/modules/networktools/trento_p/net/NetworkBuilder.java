@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.net;
-
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP.*;
 import static java.lang.Math.abs;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
@@ -309,19 +309,22 @@ public class NetworkBuilder implements Network {
     private void resetDepths0( double[] two ) {
 
         int length = networkPipes.length;
-        int[][] upstreampipes = new int[length][networkPipes[0].getMaxJunction() + 1];
+        /*
+         * It contains the magnitudo and the index of the pipe that drain in this pipe.
+         */
+        int[][] upstreampipes = new int[length][networkPipes[0].getMaxJunction() + 2];
 
-        for( int i = 0; i < length; i++ ) {
-            upstreampipes[i][0] = 1;
-        }
+//        for( int i = 0; i < length; i++ ) {
+//            upstreampipes[i][0] = 1;
+//        }
 
         int[] controlstrip = new int[length];
         int count;
         for( int i = 0; i < length; i++ ) {
-            count = networkPipes[i].getIdPipeWhereDrain();
-            if (count != 0) {
-                upstreampipes[count - 1][0] += 1;
-                upstreampipes[count - 1][upstreampipes[count - 1][0] - 1] = i;
+            count = networkPipes[i].getIndexPipeWhereDrain();
+            if (count != outIndexPipe) {
+                upstreampipes[count][0] += 1;
+                upstreampipes[count][upstreampipes[count][0]] = i;
             }
         }
 
@@ -329,9 +332,9 @@ public class NetworkBuilder implements Network {
             if (two[i] == 1) {
                 int k = i;
 
-                while( networkPipes[k].getIdPipeWhereDrain() != 0 ) {
+                while( networkPipes[k].getIdPipeWhereDrain() != outIdPipe ) {
                     int oldk = k;
-                    k = networkPipes[k].getIdPipeWhereDrain() - 1;
+                    k = networkPipes[k].getIndexPipeWhereDrain();
 
                     if (networkPipes[oldk].finalFreesurface < networkPipes[k].initialFreesurface) {
                         double delta = -networkPipes[oldk].finalFreesurface + networkPipes[k].initialFreesurface;
@@ -356,19 +359,19 @@ public class NetworkBuilder implements Network {
         int childs = 0;
 
         for( int i = 0; i < length; i++ ) {
-            if (networkPipes[i].getIdPipeWhereDrain() == 0) {
+            if (networkPipes[i].getIdPipeWhereDrain() == outIdPipe) {
                 controlstrip[childs] = i;
                 childs++;
             }
 
         }
-
+        // at this time it is the number of outlet.
         int gchilds = childs;
 
         do {
             for( int i = parents; i < childs; i++ ) {
 
-                for( int j = 1; j < upstreampipes[controlstrip[i]][0]; j++ ) {
+                for( int j = 1; j <= upstreampipes[controlstrip[i]][0]; j++ ) {
                     controlstrip[gchilds] = upstreampipes[controlstrip[i]][j];
                     double delta = networkPipes[controlstrip[gchilds]].finalFreesurface
                             - networkPipes[controlstrip[i]].initialFreesurface;
@@ -421,8 +424,8 @@ public class NetworkBuilder implements Network {
         // per ogni stato a partire dal primo.
         for( int i = 0; i < networkPipes.length; i++ ) {
             // vedo dove va a drenare.
-            int count = networkPipes[i].getIdPipeWhereDrain();
-            if (count != 0) {
+            int count = networkPipes[i].getIndexPipeWhereDrain();
+            if (count != outIndexPipe) {
                 /*
                  * Se non si trarra dell'uscita incremento di uno la prima
                  * colonna della riga corrispondente allo statoricevente, nella
@@ -431,13 +434,13 @@ public class NetworkBuilder implements Network {
                  * drenano direttamente in lui
                  */
 
-                upstreamPipes[count - 1][0] += 1;
+                upstreamPipes[count][0] += 1;
                 /*
                  * Nelle colonne successive registro l'ID degli stati che vi
                  * drenano direttamente,(nell'ordine in cui si riscontrano nella
                  * matrice networkPipes)
                  */
-                upstreamPipes[count - 1][upstreamPipes[count - 1][0] - 1] = i;
+                upstreamPipes[count][upstreamPipes[count][0]] = i;
 
             }
         }
@@ -452,10 +455,10 @@ public class NetworkBuilder implements Network {
                  * Seguo il percorso dell'acqua verso valle, a partire da
                  * un'area di testa
                  */
-                while( networkPipes[k].getIdPipeWhereDrain() != 0 ) {
+                while( networkPipes[k].getIdPipeWhereDrain() != outIdPipe ) {
                     int oldk = k;
                     // Stato dove drena l'area di testa
-                    k = networkPipes[k].getIdPipeWhereDrain() - 1;
+                    k = networkPipes[k].getIndexPipeWhereDrain();
 
                     /*
                      * Controllo che procedendo verso valle la quota del pelo
@@ -578,9 +581,9 @@ public class NetworkBuilder implements Network {
 
         for( int i = 0; i < networkPipes.length; i++ ) {
             /* Indice degli stati */
-            one[i] = networkPipes[i].getId();
+            one[i] = i;
             /* Indice degli stati riceventi, compresa almeno un'uscita */
-            two[i] = networkPipes[i].getIdPipeWhereDrain();
+            two[i] = networkPipes[i].getIndexPipeWhereDrain();
         }
         /* Calcola la magnitude di ciascun stato */
         Utility.pipeMagnitude(magnitude, two, pm);/*
@@ -590,11 +593,7 @@ public class NetworkBuilder implements Network {
         double tolerance = networkPipes[0].getTolerance();
 
         /* al vettore two vengono assegnati gli elementi di magnitude */
-        for( int i = 0; i < two.length; i++ ) /*
-                                              * al vettore two vengono assegnati
-                                              * gli elementi di magnitude
-                                              */
-        {
+        for( int i = 0; i < two.length; i++ ) {
             two[i] = magnitude[i];
         }
         /*
@@ -626,29 +625,29 @@ public class NetworkBuilder implements Network {
              * Serve per tener conto della forma, piu o meno allungata, delle
              * aree drenanti
              */
-            if (networkPipes[l - 1].getAverageResidenceTime() >= 0) {
+            if (networkPipes[l].getAverageResidenceTime() >= 0) {
                 /*
                  * La formula 1.7 ( k = alfa * S ^ beta / ( ksi ^ b * s ^ GAMMA
                  * ) k tempo di residenza [ min ]
                  */
-                networkPipes[l - 1].residenceTime = ((HOUR2MIN * networkPipes[l - 1].getAverageResidenceTime() * pow(
-                        networkPipes[l - 1].getDrainArea() / METER2CM, exponent))
+                networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
+                        networkPipes[l].getDrainArea() / METER2CM, exponent))
 
-                / (pow(networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l - 1].getAverageSlope(), gamma)));
+                / (pow(networkPipes[l].getRunoffCoefficient(), esp) * pow(networkPipes[l].getAverageSlope(), gamma)));
             } else {
                 /*
                  * Considero solo l 'acqua che drena dalla strada k = alfa * S /
                  * L * i ^ GAMMA [ min ]
                  */
-                networkPipes[l - 1].residenceTime = (-networkPipes[l - 1].getDrainArea()
-                        * networkPipes[l - 1].getAverageResidenceTime() / networkPipes[l - 1].getLenght());
+                networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
+                        .getLenght());
             }
 
             maxd = 0;
             /*
              * Velocita media di primo tentativo nel tratto da progettare [m/s]
              */
-            networkPipes[l - 1].meanSpeed = (1.0);
+            networkPipes[l].meanSpeed = (1.0);
             // r di primo tentativo [adimensional]
             oldr = 1.0;
             /*
@@ -669,8 +668,8 @@ public class NetworkBuilder implements Network {
                  * convergenza di r .
                  */
 
-                No = networkPipes[l - 1].getLenght()
-                        / (MINUTE2SEC * networkPipes[l - 1].residenceTime * celerityfactor * networkPipes[l - 1].meanSpeed);
+                No = networkPipes[l].getLenght()
+                        / (MINUTE2SEC * networkPipes[l].residenceTime * celerityfactor * networkPipes[l].meanSpeed);
 
                 // Estremo superiore da adottare nella ricerca della r*.
 
@@ -682,22 +681,22 @@ public class NetworkBuilder implements Network {
                 R_F rfFunction = new R_F();
                 rfFunction.setParameters(n, No);
                 r = RootFindingFunctions.bisectionRootFinding(rfFunction, inf, sup, tolerance, jMax, pm);
-                networkPipes[l - 1].tP = (r * networkPipes[l - 1].residenceTime);
+                networkPipes[l].tP = (r * networkPipes[l].residenceTime);
                 /*
                  * coefficiente udometrico calcolato con la formula 2.17 u [ l /
                  * s * ha ]
                  */
-                networkPipes[l - 1].coeffUdometrico = (networkPipes[l - 1].getRunoffCoefficient()
+                networkPipes[l].coeffUdometrico = (networkPipes[l].getRunoffCoefficient()
                         * a
-                        * pow(networkPipes[l - 1].tP, n - 1)
-                        * (1 + MINUTE2SEC * celerityfactor * networkPipes[l - 1].meanSpeed * networkPipes[l - 1].tP
-                                / networkPipes[l - 1].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
+                        * pow(networkPipes[l].tP, n - 1)
+                        * (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
+                                / networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
                 /*
                  * Portata Q [ l / s ]
                  */
-                networkPipes[l - 1].discharge = (networkPipes[l - 1].coeffUdometrico * networkPipes[l - 1].getDrainArea());
+                networkPipes[l].discharge = (networkPipes[l].coeffUdometrico * networkPipes[l].getDrainArea());
 
-                networkPipes[l - 1].designPipe(diameters, tau, g, maxd, c, strBuilder);
+                networkPipes[l].designPipe(diameters, tau, g, maxd, c, strBuilder);
 
                 /*
                  * La r e stata determinata per via iterativa con la precisione
@@ -731,21 +730,21 @@ public class NetworkBuilder implements Network {
              * t * [ min ] tempo in cui si verifica la massima tra le portata
              * massime all 'uscita del tratta appena progettato
              */
-            networkPipes[l - 1].tQmax = (networkPipes[l - 1].residenceTime * log(exp(No) + exp(r) - 1));
+            networkPipes[l].tQmax = (networkPipes[l].residenceTime * log(exp(No) + exp(r) - 1));
             /*
              * L / u [ min ] ritardo locale dell 'onda di piena
              */
-            localdelay[l - 1] = (networkPipes[l - 1].getLenght()) / (celerityfactor * MINUTE2SEC * networkPipes[l - 1].meanSpeed);
+            localdelay[l] = (networkPipes[l].getLenght()) / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
 
             // Ac [ha] superfice servita
 
-            networkPipes[l - 1].totalSubNetArea = networkPipes[l - 1].getDrainArea();
+            networkPipes[l].totalSubNetArea = networkPipes[l].getDrainArea();
 
             // Mean length of upstream net [m] (=length of pipe)
 
-            networkPipes[l - 1].totalSubNetLength = networkPipes[l - 1].getLenght();
+            networkPipes[l].totalSubNetLength = networkPipes[l].getLenght();
 
-            networkPipes[l - 1].meanLengthSubNet = networkPipes[l - 1].getLenght();
+            networkPipes[l].meanLengthSubNet = networkPipes[l].getLenght();
 
             // Passo allo stato successivo
             k++;
@@ -784,7 +783,7 @@ public class NetworkBuilder implements Network {
          */
         while( k < magnitude.length ) {
             /*
-             * Crea una matrice net[k-1][9], dove k-1 e pari al numero di stati,
+             * Crea una matrice net[k][9], dove k e pari al numero di stati,
              * che direttamente o indirettamente , drenano nello stato
              */
             net = new double[(int) (magnitude[k] - 1)][9];
@@ -792,20 +791,20 @@ public class NetworkBuilder implements Network {
              * Serve per tener conto della forma, piu o meno allungata, delle
              * aree drenanti
              */
-            if (networkPipes[l - 1].getAverageResidenceTime() >= 0) {
+            if (networkPipes[l].getAverageResidenceTime() >= 0) {
                 /*
                  * La formula 1.7 ( k = alfa * S ^ beta * i ^ GAMMA ) k tempo di
                  * residenza [ min ]
                  */
-                networkPipes[l - 1].residenceTime = ((HOUR2MIN * networkPipes[l - 1].getAverageResidenceTime() * pow(
-                        networkPipes[l - 1].getDrainArea() / METER2CM, exponent)) / (pow(
-                        networkPipes[l - 1].getRunoffCoefficient(), esp) * pow(networkPipes[l - 1].getAverageSlope(), gamma)));
+                networkPipes[l].residenceTime = ((HOUR2MIN * networkPipes[l].getAverageResidenceTime() * pow(
+                        networkPipes[l].getDrainArea() / METER2CM, exponent)) / (pow(networkPipes[l].getRunoffCoefficient(), esp) * pow(
+                        networkPipes[l].getAverageSlope(), gamma)));
             } else {
 
                 // k tempo di residenza [ min ]
 
-                networkPipes[l - 1].residenceTime = (-networkPipes[l - 1].getDrainArea()
-                        * networkPipes[l - 1].getAverageResidenceTime() / networkPipes[l - 1].getLenght());
+                networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
+                        .getLenght());
             }
 
             // Restituisce l'area del subnetwork che si chiude in l
@@ -814,28 +813,27 @@ public class NetworkBuilder implements Network {
 
             // Diametro massimo riscontrato nel subnetwork analizzato
 
-            maxd = networkPipes[qup[0] - 1].diameter;
+            maxd = networkPipes[qup[0]].diameter;
             /*
              * Velocita media di primo tentativo [m/s]
              */
-            networkPipes[l - 1].meanSpeed = (1.0);
+            networkPipes[l].meanSpeed = (1.0);
             /*
              * Portata di primo tentativp [l/s]
              */
-            networkPipes[l - 1].discharge = (minDischarge);
+            networkPipes[l].discharge = (minDischarge);
 
             /*
              * ----- INIZIO CICLO DO WHILE (progettare fino alla convergenza
              * della Q) -----
              */
             do {
-                oldQ = networkPipes[l - 1].discharge;
-                networkPipes[l - 1].discharge = (0);
+                oldQ = networkPipes[l].discharge;
+                networkPipes[l].discharge = (0);
                 /*
                  * L / u [ min ]
                  */
-                localdelay[l - 1] = networkPipes[l - 1].getLenght()
-                        / (celerityfactor * MINUTE2SEC * networkPipes[l - 1].meanSpeed);
+                localdelay[l] = networkPipes[l].getLenght() / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
                 /*
                  * Aggiorna i ritardi nella matrice net, includendo il ritardo
                  * relativo allo stato che si sta progettando. Questo perche la
@@ -843,7 +841,7 @@ public class NetworkBuilder implements Network {
                  * calcolata iteraivamente.
                  */
                 for( int i = 0; i < net.length; i++ ) {
-                    net[i][2] += localdelay[l - 1];
+                    net[i][2] += localdelay[l];
                 }
                 /*
                  * Restituisce il contributo alla portata dello stato che si sta
@@ -855,29 +853,29 @@ public class NetworkBuilder implements Network {
                  * che si sta progettando
                  */
                 for( int i = 0; i < net.length; i++ ) {
-                    net[i][2] -= localdelay[l - 1];
+                    net[i][2] -= localdelay[l];
                 }
 
-                networkPipes[l - 1].designPipe(diameters, tau, g, maxd, c, strBuilder);
+                networkPipes[l].designPipe(diameters, tau, g, maxd, c, strBuilder);
                 /*
                  * finche' si arriva alla convergenza della portata Q
                  */
-            } while( abs(oldQ - networkPipes[l - 1].discharge) / oldQ > epsilon );
+            } while( abs(oldQ - networkPipes[l].discharge) / oldQ > epsilon );
 
             /*
              * Coefficiente udometrico u [l/(s*ha )]
              */
-            networkPipes[l - 1].coeffUdometrico = (networkPipes[l - 1].discharge / totalarea);
+            networkPipes[l].coeffUdometrico = (networkPipes[l].discharge / totalarea);
 
             /* Ac [ha] */
-            networkPipes[l - 1].totalSubNetArea = totalarea;
+            networkPipes[l].totalSubNetArea = totalarea;
             // Mean length of upstream net [ m ]
-            networkPipes[l - 1].meanLengthSubNet = ModelsEngine.meanDoublematrixColumn(net, 1);
+            networkPipes[l].meanLengthSubNet = ModelsEngine.meanDoublematrixColumn(net, 1);
             /*
              * Variance of lengths of upstream net [ m ^ 2 ]
              */
-            networkPipes[l - 1].varianceLengthSubNet = ModelsEngine.varianceDoublematrixColumn(net, 1,
-                    networkPipes[l - 1].meanLengthSubNet);
+            networkPipes[l].varianceLengthSubNet = ModelsEngine.varianceDoublematrixColumn(net, 1,
+                    networkPipes[l].meanLengthSubNet);
 
             /* Passo allo stato successivo */
             k++;
@@ -927,6 +925,7 @@ public class NetworkBuilder implements Network {
          */
         double tmin = 0;
         /*
+         * 
          * [min]\ Estremo superiore dell'intervallo in cui cercare la massima
          * tra le portate massime
          */
@@ -959,9 +958,8 @@ public class NetworkBuilder implements Network {
              * t * [ min ] che massimizza la portata dello stato che si sta
              * progettando
              */
-            tpeak = networkPipes[l - 1].residenceTime
-                    * log(exp(tp / networkPipes[l - 1].residenceTime)
-                            + exp(localdelay[l - 1] / networkPipes[l - 1].residenceTime) - 1);
+            tpeak = networkPipes[l].residenceTime
+                    * log(exp(tp / networkPipes[l].residenceTime) + exp(localdelay[l] / networkPipes[l].residenceTime) - 1);
 
             if (tmin > tpeak) {
                 /*
@@ -997,10 +995,10 @@ public class NetworkBuilder implements Network {
                  */
                 Q += deltaQ;
                 /* Aggiorna Q, t* e tp* */
-                if (Q > networkPipes[l - 1].discharge) {
-                    networkPipes[l - 1].discharge = (Q);
-                    networkPipes[l - 1].tQmax = (t);
-                    networkPipes[l - 1].tP = (tp);
+                if (Q > networkPipes[l].discharge) {
+                    networkPipes[l].discharge = (Q);
+                    networkPipes[l].tQmax = (t);
+                    networkPipes[l].tP = (tp);
 
                     for( int i = 0; i < net.length; i++ ) {
                         /*
@@ -1030,7 +1028,7 @@ public class NetworkBuilder implements Network {
         for( int i = 0; i < net.length; i++ ) {
             indx = (int) net[i][0];
 
-            net[i][3] = dischargeFunction(indx, networkPipes[l - 1].tP, networkPipes[l - 1].tQmax, net[i][2], localdelay);
+            net[i][3] = dischargeFunction(indx, networkPipes[l].tP, networkPipes[l].tQmax, net[i][2], localdelay);
 
             if (net[i][3] <= minDischarge) {
 
@@ -1041,7 +1039,7 @@ public class NetworkBuilder implements Network {
         /*
          * Contributo dello stato di chiusura
          */
-        deltaQ = dischargeFunction(l, networkPipes[l - 1].tP, networkPipes[l - 1].tQmax, 0, localdelay);
+        deltaQ = dischargeFunction(l, networkPipes[l].tP, networkPipes[l].tQmax, 0, localdelay);
 
         return deltaQ;
 
@@ -1093,13 +1091,13 @@ public class NetworkBuilder implements Network {
          */
         double ext2;
 
-        if (tp > localdelay[indx - 1]) {
-            ext1 = localdelay[indx - 1];
+        if (tp > localdelay[indx]) {
+            ext1 = localdelay[indx];
             ext2 = tp;
             s = 0;
         } else {
             ext1 = tp;
-            ext2 = localdelay[indx - 1];
+            ext2 = localdelay[indx];
             s = 1;
         }
 
@@ -1115,58 +1113,57 @@ public class NetworkBuilder implements Network {
         double d = 166.666667;
         if (t > delay && t <= delay + ext1) {
             // Q1 [ l / s ]
-            return networkPipes[indx - 1].getDrainArea()
-                    * networkPipes[indx - 1].getRunoffCoefficient()
+            return networkPipes[indx].getDrainArea()
+                    * networkPipes[indx].getRunoffCoefficient()
                     * a
                     * pow(tp, n - 1)
-                    * ((t - delay) / localdelay[indx - 1] + (networkPipes[indx - 1].residenceTime / localdelay[indx - 1])
-                            * (exp(-(t - delay) / networkPipes[indx - 1].residenceTime) - 1)) * d;
+                    * ((t - delay) / localdelay[indx] + (networkPipes[indx].residenceTime / localdelay[indx])
+                            * (exp(-(t - delay) / networkPipes[indx].residenceTime) - 1)) * d;
         }
 
         if (t > delay + ext1 && t <= delay + ext2) {
             if (s == 0) {
                 // Q2 [ l / s ]
-                return networkPipes[indx - 1].getDrainArea()
-                        * networkPipes[indx - 1].getRunoffCoefficient()
+                return networkPipes[indx].getDrainArea()
+                        * networkPipes[indx].getRunoffCoefficient()
                         * a
                         * pow(tp, n - 1)
-                        * (1 + (networkPipes[indx - 1].residenceTime / localdelay[indx - 1])
-                                * (1 - exp(localdelay[indx - 1] / networkPipes[indx - 1].residenceTime))
-                                * exp(-(t - delay) / networkPipes[indx - 1].residenceTime)) * d;
+                        * (1 + (networkPipes[indx].residenceTime / localdelay[indx])
+                                * (1 - exp(localdelay[indx] / networkPipes[indx].residenceTime))
+                                * exp(-(t - delay) / networkPipes[indx].residenceTime)) * d;
             } else {
                 // Q2 [ l / s ]
-                return networkPipes[indx - 1].getDrainArea()
-                        * networkPipes[indx - 1].getRunoffCoefficient()
+                return networkPipes[indx].getDrainArea()
+                        * networkPipes[indx].getRunoffCoefficient()
                         * a
                         * pow(tp, n - 1)
-                        * ((tp / localdelay[indx - 1]) + (networkPipes[indx - 1].residenceTime / localdelay[indx - 1])
-                                * (1 - exp(tp / networkPipes[indx - 1].residenceTime))
-                                * exp(-(t - delay) / networkPipes[indx - 1].residenceTime)) * d;
+                        * ((tp / localdelay[indx]) + (networkPipes[indx].residenceTime / localdelay[indx])
+                                * (1 - exp(tp / networkPipes[indx].residenceTime))
+                                * exp(-(t - delay) / networkPipes[indx].residenceTime)) * d;
             }
         }
 
         if (t > delay + ext2 && t <= delay + ext1 + ext2) {
             // Q3 [ l / s ]
-            return networkPipes[indx - 1].getDrainArea()
-                    * networkPipes[indx - 1].getRunoffCoefficient()
+            return networkPipes[indx].getDrainArea()
+                    * networkPipes[indx].getRunoffCoefficient()
                     * a
                     * pow(tp, n - 1)
-                    * (1 - (t - delay - tp) / localdelay[indx - 1] + (networkPipes[indx - 1].residenceTime / localdelay[indx - 1])
-                            * (1 + (1 - exp(localdelay[indx - 1] / networkPipes[indx - 1].residenceTime) - exp(tp
-                                    / networkPipes[indx - 1].residenceTime))
-                                    * exp(-(t - delay) / networkPipes[indx - 1].residenceTime))) * d;
+                    * (1 - (t - delay - tp) / localdelay[indx] + (networkPipes[indx].residenceTime / localdelay[indx])
+                            * (1 + (1 - exp(localdelay[indx] / networkPipes[indx].residenceTime) - exp(tp
+                                    / networkPipes[indx].residenceTime))
+                                    * exp(-(t - delay) / networkPipes[indx].residenceTime))) * d;
         }
 
         if (t > delay + ext1 + ext2) {
             /* Q4 [l/s] */
-            return networkPipes[indx - 1].getDrainArea()
-                    * networkPipes[indx - 1].getRunoffCoefficient()
+            return networkPipes[indx].getDrainArea()
+                    * networkPipes[indx].getRunoffCoefficient()
                     * a
                     * pow(tp, n - 1)
-                    * ((networkPipes[indx - 1].residenceTime / localdelay[indx - 1])
-                            * (1 - exp(tp / networkPipes[indx - 1].residenceTime))
-                            * (1 - exp(localdelay[indx - 1] / networkPipes[indx - 1].residenceTime)) * exp(-(t - delay)
-                            / networkPipes[indx - 1].residenceTime)) * d;
+                    * ((networkPipes[indx].residenceTime / localdelay[indx]) * (1 - exp(tp / networkPipes[indx].residenceTime))
+                            * (1 - exp(localdelay[indx] / networkPipes[indx].residenceTime)) * exp(-(t - delay)
+                            / networkPipes[indx].residenceTime)) * d;
         }
 
         return 1;
@@ -1203,7 +1200,7 @@ public class NetworkBuilder implements Network {
 
             // ID stato appartenente al subnetwork che si sta analizzando
 
-            num = (int) net[i][0] - 1;
+            num = (int) net[i][0];
             /*
              * t * [ min ] che massimizza la portata all 'uscita dello stato in
              * cui si e formata , considerando un 'afflusso distribuito .
@@ -1275,13 +1272,13 @@ public class NetworkBuilder implements Network {
             i = (int) one[j];
             ind = i;
             // la lunghezza del tubo precedentemente progettato
-            length = networkPipes[ind - 1].getLenght();
+            length = networkPipes[ind].getLenght();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
-            while( networkPipes[ind - 1].getIdPipeWhereDrain() != 0 ) {
+            while( networkPipes[ind].getIdPipeWhereDrain() != outIdPipe ) {
 
                 // lo stato dove drena a sua volta.
-                ind = networkPipes[ind - 1].getIdPipeWhereDrain();
+                ind = networkPipes[ind].getIndexPipeWhereDrain();
                 /*
                  * se lo stato drena direttamente in quello che si sta
                  * progettando
@@ -1295,7 +1292,7 @@ public class NetworkBuilder implements Network {
                      * lunghezza del percorsa dall'acqua prima di raggiungere lo
                      * stato l che si sta progettando
                      */
-                    net[r][1] = length + networkPipes[l - 1].getLenght();
+                    net[r][1] = length + networkPipes[l].getLenght();
 
                     /*
                      * Ritardo accumulato dall'onda di piena formatasi in uno
@@ -1304,13 +1301,13 @@ public class NetworkBuilder implements Network {
                      */
                     net[r][2] = t;
                     // Diametro precedentemente calcolato.
-                    net[r][8] = networkPipes[i - 1].diameter;
+                    net[r][8] = networkPipes[i].diameter;
                     /*
                      * procedendo verso valle il diametri adottati possono solo
                      * crescere
                      */
-                    if (maxdiam < networkPipes[i - 1].diameter) {
-                        maxdiam = networkPipes[i - 1].diameter;
+                    if (maxdiam < networkPipes[i].diameter) {
+                        maxdiam = networkPipes[i].diameter;
 
                         // tratto a cui corrisponde il diametro massimo
 
@@ -1320,7 +1317,7 @@ public class NetworkBuilder implements Network {
                      * area di tutti gli stati a monte che direttamente o
                      * indirettamente drenano in l
                      */
-                    totalarea += networkPipes[i - 1].getDrainArea();
+                    totalarea += networkPipes[i].getDrainArea();
                     r++;
 
                     break;
@@ -1334,12 +1331,12 @@ public class NetworkBuilder implements Network {
                  * non ha alcuna utilita se l 'acqua raggiunge un 'uscita senza
                  * attraversare lo stato che so sta progettando
                  */
-                t += networkPipes[ind - 1].getLenght() / (celerityfactor * MINUTE2SEC * networkPipes[ind - 1].meanSpeed);
+                t += networkPipes[ind].getLenght() / (celerityfactor * MINUTE2SEC * networkPipes[ind].meanSpeed);
                 /*
                  * accumula le lunghezze percorse dall'acqua per arrivare al
                  * tratto da progettare
                  */
-                length += networkPipes[ind - 1].getLenght();
+                length += networkPipes[ind].getLenght();
             }
             /*
              * viene incrementato solo se l'area drena in l quindi non puo'
@@ -1351,7 +1348,7 @@ public class NetworkBuilder implements Network {
 
         // area degli stati a monte che drenano in l, l compreso
 
-        totalarea += networkPipes[l - 1].getDrainArea();
+        totalarea += networkPipes[l].getDrainArea();
 
         return totalarea;
 

@@ -59,6 +59,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Network;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.NetworkBuilder;
@@ -288,10 +289,15 @@ public class TrentoP extends JGTModel {
      */
     private Pipe[] networkPipes;
 
+    public static final int outIdPipe=0;
+    public static final int outIndexPipe=-1;
+
+    
     /*
      * string which collected all the warnings. the warnings are printed at the
      * end of the processes.
      */
+    
     private String warnings = "warnings";
 
     public StringBuilder strBuilder = new StringBuilder(warnings);
@@ -649,8 +655,9 @@ public class TrentoP extends JGTModel {
         int length = inPipes.size();
         networkPipes = new Pipe[length];
         SimpleFeatureIterator stationsIter = inPipes.features();
+        int tmpOutIndex = 0;
         try {
-            int t;
+            int t=0;
             while( stationsIter.hasNext() ) {
                 SimpleFeature feature = stationsIter.next();
                 try {
@@ -664,8 +671,11 @@ public class TrentoP extends JGTModel {
                         pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                         throw new IllegalArgumentException(msg.message("trentoP.error.number" )+ TrentoPFeatureType.ID_STR);
                     }
-                    t = field.intValue();
-                    networkPipes[t - 1] = new Pipe(feature, pMode, isAreaNotAllDry);
+                    if(field==pOutPipe){
+                        tmpOutIndex=t;
+                    }
+                    networkPipes[t] = new Pipe(feature, pMode, isAreaNotAllDry);
+                    t++;
 
                 } catch (NullPointerException e) {
                     pm.errorMessage(msg.message("trentop.illegalNet"));
@@ -678,10 +688,13 @@ public class TrentoP extends JGTModel {
             stationsIter.close();
         }
         // set the id where drain of the outlet.
-        networkPipes[pOutPipe - 1].setIdPipeWhereDrain(0);
-        // start to construct the net.
-        findIdWhereDrain(pOutPipe, networkPipes[pOutPipe - 1].point[0]);
-        findIdWhereDrain(pOutPipe, networkPipes[pOutPipe - 1].point[1]);
+        networkPipes[tmpOutIndex].setIdPipeWhereDrain(0);
+        networkPipes[tmpOutIndex].setIndexPipeWhereDrain(-1);
+
+        // start to construct the net.               
+
+        findIdWhereDrain(tmpOutIndex, networkPipes[tmpOutIndex].point[0]);
+        findIdWhereDrain(tmpOutIndex, networkPipes[tmpOutIndex].point[1]);
 
         verifyNet(networkPipes, pm);
 
@@ -690,17 +703,17 @@ public class TrentoP extends JGTModel {
     /**
      * Find the pipes that are draining in this pipe.
      * 
-     * @param id
+     * @param index
      *            the ID of this pipe.
      * @param cord
      *            the Coordinate of the link where drain.
      */
-    private void findIdWhereDrain( int id, Coordinate cord ) {
+    private void findIdWhereDrain( int index, Coordinate cord ) {
         int t = 0;
         double toll = 0.1;
         for( int i = 0; i < networkPipes.length; i++ ) {
             // if it is this pipe then go haead.
-            if (id - 1 == i) {
+            if (index == i) {
                 continue;
             }
             // there isn-t other pipe that can drain in this.
@@ -717,12 +730,14 @@ public class TrentoP extends JGTModel {
             // linked.
             int lastIndex = coords.length - 1;
             if (cord.distance(coords[0]) < toll) {
-                networkPipes[i].setIdPipeWhereDrain(id);
-                findIdWhereDrain(networkPipes[i].getId(), coords[lastIndex]);
+                networkPipes[i].setIdPipeWhereDrain(networkPipes[index].getId());  
+                networkPipes[i].setIndexPipeWhereDrain(index);
+                findIdWhereDrain(i, coords[lastIndex]);
                 t++;
             } else if (cord.distance(coords[lastIndex]) < toll) {
-                networkPipes[i].setIdPipeWhereDrain(id);
-                findIdWhereDrain(networkPipes[i].getId(), coords[0]);
+                networkPipes[i].setIdPipeWhereDrain(networkPipes[index].getId());
+                networkPipes[i].setIndexPipeWhereDrain(index);
+                findIdWhereDrain(i, coords[0]);
                 t++;
             }
 
@@ -775,7 +790,7 @@ public class TrentoP extends JGTModel {
                  * rete, numero ID pipe in cui drena i >del numero consentito
                  * (la numerazione va da 1 a length
                  */
-                if (networkPipes[i].getIdPipeWhereDrain() > length) {
+                if (networkPipes[i].getIndexPipeWhereDrain() > length) {
                     pm.errorMessage(msg.message("trentoP.error.pipe"));
                     throw new IllegalArgumentException(msg.message("trentoP.error.pipe"));
                 }
@@ -805,7 +820,7 @@ public class TrentoP extends JGTModel {
                  * Seguo il percorso dell'acqua a partire dallo stato corrente
                  */
                 while( networkPipes[kj].getIdPipeWhereDrain() != 0 ) {
-                    kj = networkPipes[kj].getIdPipeWhereDrain() - 1;
+                    kj = networkPipes[kj].getIndexPipeWhereDrain();
                     /*
                      * L'acqua non puo finire in uno stato che con sia tra
                      * quelli esplicitamente definiti, in altre parole il
@@ -856,36 +871,47 @@ public class TrentoP extends JGTModel {
      */
     public double[][] getResults() {
         double[][] results = new double[networkPipes.length][28];
-
+        double[] one= new double[networkPipes.length];
+        double[] two= new double[networkPipes.length];
         for( int i = 0; i < networkPipes.length; i++ ) {
-            results[i][0] = networkPipes[i].getId();
-            results[i][1] = networkPipes[i].getIdPipeWhereDrain();
-            results[i][2] = networkPipes[i].getDrainArea();
-            results[i][3] = networkPipes[i].getLenght();
-            results[i][4] = networkPipes[i].getInitialElevation();
-            results[i][5] = networkPipes[i].getFinalElevation();
-            results[i][6] = networkPipes[i].getRunoffCoefficient();
-            results[i][7] = networkPipes[i].getAverageResidenceTime();
-            results[i][8] = networkPipes[i].getKs();
-            results[i][9] = networkPipes[i].getMinimumPipeSlope();
-            results[i][10] = networkPipes[i].getPipeSectionType();
-            results[i][11] = networkPipes[i].getAverageSlope();
-            results[i][12] = networkPipes[i].discharge;
-            results[i][13] = networkPipes[i].coeffUdometrico;
-            results[i][14] = networkPipes[i].residenceTime;
-            results[i][15] = networkPipes[i].tP;
-            results[i][16] = networkPipes[i].tQmax;
-            results[i][17] = networkPipes[i].meanSpeed;
-            results[i][18] = networkPipes[i].pipeSlope;
-            results[i][19] = networkPipes[i].diameter;
-            results[i][20] = networkPipes[i].emptyDegree;
-            results[i][21] = networkPipes[i].depthInitialPipe;
-            results[i][22] = networkPipes[i].depthFinalPipe;
-            results[i][23] = networkPipes[i].initialFreesurface;
-            results[i][24] = networkPipes[i].finalFreesurface;
-            results[i][25] = networkPipes[i].totalSubNetArea;
-            results[i][26] = networkPipes[i].meanLengthSubNet;
-            results[i][27] = networkPipes[i].varianceLengthSubNet;
+            one[i]=i;
+            two[i]=networkPipes[i].getId();
+            
+        }
+        QuickSortAlgorithm t = new QuickSortAlgorithm(pm);
+        t.sort(two, one);
+        
+        
+        for( int i = 0; i < networkPipes.length; i++ ) {
+            int index = (int) one[i];
+            results[i][0] = networkPipes[index].getId();
+            results[i][1] = networkPipes[index].getIdPipeWhereDrain();
+            results[i][2] = networkPipes[index].getDrainArea();
+            results[i][3] = networkPipes[index].getLenght();
+            results[i][4] = networkPipes[index].getInitialElevation();
+            results[i][5] = networkPipes[index].getFinalElevation();
+            results[i][6] = networkPipes[index].getRunoffCoefficient();
+            results[i][7] = networkPipes[index].getAverageResidenceTime();
+            results[i][8] = networkPipes[index].getKs();
+            results[i][9] = networkPipes[index].getMinimumPipeSlope();
+            results[i][10] = networkPipes[index].getPipeSectionType();
+            results[i][11] = networkPipes[index].getAverageSlope();
+            results[i][12] = networkPipes[index].discharge;
+            results[i][13] = networkPipes[index].coeffUdometrico;
+            results[i][14] = networkPipes[index].residenceTime;
+            results[i][15] = networkPipes[index].tP;
+            results[i][16] = networkPipes[index].tQmax;
+            results[i][17] = networkPipes[index].meanSpeed;
+            results[i][18] = networkPipes[index].pipeSlope;
+            results[i][19] = networkPipes[index].diameter;
+            results[i][20] = networkPipes[index].emptyDegree;
+            results[i][21] = networkPipes[index].depthInitialPipe;
+            results[i][22] = networkPipes[index].depthFinalPipe;
+            results[i][23] = networkPipes[index].initialFreesurface;
+            results[i][24] = networkPipes[index].finalFreesurface;
+            results[i][25] = networkPipes[index].totalSubNetArea;
+            results[i][26] = networkPipes[index].meanLengthSubNet;
+            results[i][27] = networkPipes[index].varianceLengthSubNet;
 
         }
 

@@ -8,6 +8,7 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
  * @author Daniele Andreis
  *
  */
+
 public enum ProjectNeededParameterCodes implements IParametersCode {
     A(0, "Coefficient of the pluviometric curve", " ", null, new Double(0), null), //
     N(1, "Exponent of the pluviometric curve", " ", null, new Double(0), null), //
