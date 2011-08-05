@@ -1456,26 +1456,29 @@ public class ModelsEngine {
         return false;
     }
 
-    
-    
     /**
+     * Compare two value of tca and distance.
      * 
-     * 
-     * @param flowIterator
-     * @param tcaIterator
-     * @param dist
-     * @param flow
-     * @param maz
-     * @param diss
-     * @return
+     * <p>
+     * It's used to evaluate some special distance (as hacklength). In these case, the value of the distance is a property of the path, and so when 
+     * two pixel drain in a same pixel the actual value is calculate from the pixel that have the maximum value. So this method evaluate if the distance is already evaluate, throghout another path, and 
+     * if the value of the old path is greater than the next path.
+     * </p>
+     * @param flowIterator the flow direction iterator map. 
+     * @param tcaIterator the tca direction iterator map. 
+     * @param dist the dis direction iterator map (it can be hacklength). 
+     * @param colsAndRows the position in the map (x and y value)
+     * @param maz the upper limit value, is the value of the next path pixel.
+     * @param diss the distance upper limit, is the value of the next path pixel.
+     * @return true if the value in the next path is greater  than the old one.
      */
-    public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz,
-            double diss ) {
+    public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] colsAndRows,
+            double maz, double diss ) {
         for( int k = 1; k <= 8; k++ ) {
-            if (flowIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                if (tcaIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) >= maz) {
-                    if (tcaIterator.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == maz) {
-                        if (dist.getSample(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) > diss)
+            if (flowIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) == dirIn[k][2]) {
+                if (tcaIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) >= maz) {
+                    if (tcaIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) == maz) {
+                        if (dist.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) > diss)
                             return false;
                     } else
                         return false;
@@ -1899,7 +1902,8 @@ public class ModelsEngine {
      * @param region the region parameters.
      * @param pm the monitor.
      */
-    public static void outletdistance( RandomIter flowIter, WritableRandomIter distanceToOutIter, RegionMap region, IJGTProgressMonitor pm ) {
+    public static void outletdistance( RandomIter flowIter, WritableRandomIter distanceToOutIter, RegionMap region,
+            IJGTProgressMonitor pm ) {
         int cols = region.getCols();
         int rows = region.getRows();
         int[] flow = new int[2];
@@ -1950,8 +1954,6 @@ public class ModelsEngine {
         }
         pm.done();
     }
-
-
 
     /**
      * Approximate a value to a multiple of a divisor value.
