@@ -54,4 +54,27 @@ public class TestHackLength extends HMTestCase {
         checkMatrixEqual(hackLengthCoverage.getRenderedImage(), HMTestMaps.hacklengthData, 0.01);
     }
 
+    public void testHacklength3d() throws IOException {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+
+        double[][] pitData = HMTestMaps.pitData;
+        GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
+        double[][] flowData = HMTestMaps.mflowDataBorder;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] tcaData = HMTestMaps.tcaData;
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
+
+        HackLength hackLength = new HackLength();
+        hackLength.inFlow = flowCoverage;
+        hackLength.inTca = tcaCoverage;
+        hackLength.inElevation = pitCoverage;
+        hackLength.pm = pm;
+
+        hackLength.process();
+
+        GridCoverage2D hackLengthCoverage = hackLength.outHacklength;
+        checkMatrixEqual(hackLengthCoverage.getRenderedImage(), HMTestMaps.hacklength3DData, 2);
+    }
+
 }

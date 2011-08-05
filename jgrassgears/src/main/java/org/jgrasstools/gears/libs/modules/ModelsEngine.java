@@ -1456,6 +1456,19 @@ public class ModelsEngine {
         return false;
     }
 
+    
+    
+    /**
+     * 
+     * 
+     * @param flowIterator
+     * @param tcaIterator
+     * @param dist
+     * @param flow
+     * @param maz
+     * @param diss
+     * @return
+     */
     public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] flow, double maz,
             double diss ) {
         for( int k = 1; k <= 8; k++ ) {

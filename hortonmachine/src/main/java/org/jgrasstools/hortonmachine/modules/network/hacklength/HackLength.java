@@ -31,12 +31,12 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -46,8 +46,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -62,6 +62,9 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class HackLength extends JGTModel {
+    @Description("The map of the depitted elevation. It's null if it work in 2d.")
+    @In
+    public GridCoverage2D inElevation = null;
 
     @Description("The map of flowdirections.")
     @In
@@ -102,19 +105,31 @@ public class HackLength extends JGTModel {
         nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
-
+        RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        RandomIter pitIter = null;
         RenderedImage flowRI = inFlow.getRenderedImage();
-        RenderedImage tcaRI = inTca.getRenderedImage();
-        RandomIter flowIter = RandomIterFactory.create(flowRI, null);
-        RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
+        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
+        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        hacklength(flowIter, tcaIter);
+        // if inElevation isn-t null then work in 3d.
+        if (inElevation != null) {
+            pitIter = CoverageUtilities.getRandomIterator(inElevation);
+        }
+
+        hacklength(flowIter, tcaIter, pitIter);
+
+        tcaIter.done();
+        flowIter.done();
+        if (pitIter != null) {
+            pitIter.done();
+        }
 
     }
 
-    private void hacklength( RandomIter flowIter, RandomIter tcaIter ) {
+    private void hacklength( RandomIter flowIter, RandomIter tcaIter, RandomIter pitIter ) {
 
         int[] flow = new int[2];
+        int[] flow_p = new int[2];
         double oldir;
         double count = 0.0, maz;
 
@@ -126,7 +141,6 @@ public class HackLength extends JGTModel {
         grid[1] = grid[5] = abs(xRes);
         grid[3] = grid[7] = abs(yRes);
         grid[2] = grid[4] = grid[6] = grid[8] = sqrt(xRes * xRes + yRes * yRes);
-
         pm.beginTask(msg.message("hacklength.calculating"), nRows); //$NON-NLS-1$
         for( int j = 0; j < nRows; j++ ) {
             for( int i = 0; i < nCols; i++ ) {
@@ -135,6 +149,8 @@ public class HackLength extends JGTModel {
                 } else {
                     flow[0] = i;
                     flow[1] = j;
+                    flow_p[0] = flow[0];
+                    flow_p[1] = flow[1];
                     if (ModelsEngine.isSourcePixel(flowIter, flow[0], flow[1])) {
                         count = 0;
                         maz = 1;
@@ -144,16 +160,30 @@ public class HackLength extends JGTModel {
                             return;
                         while( (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) && flowIter.getSampleDouble(flow[0],
                                 flow[1], 0) != 10.0) && ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count) ) {
-                            count += grid[(int) oldir];
+                            if (pitIter != null) {
+                                double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
+                                        - pitIter.getSampleDouble(flow[0], flow[1], 0);
+                                count += sqrt(Math.pow(grid[(int) oldir], 2) + Math.pow(dz, 2));
+                            } else {
+                                count += grid[(int) oldir];
+                            }
                             hacklengthIter.setSample(flow[0], flow[1], 0, count);
                             maz = tcaIter.getSampleDouble(flow[0], flow[1], 0);
                             oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
+                            flow_p[0] = flow[0];
+                            flow_p[1] = flow[1];
                             if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return;
                         }
                         if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
                             if (ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maz, count)) {
-                                count += grid[(int) oldir];
+                                if (pitIter != null) {
+                                    double dz = pitIter.getSampleDouble(flow_p[0], flow_p[1], 0)
+                                            - pitIter.getSampleDouble(flow[0], flow[1], 0);
+                                    count += sqrt(Math.pow(grid[(int) oldir], 2) + Math.pow(dz, 2));
+                                } else {
+                                    count += grid[(int) oldir];
+                                }
                                 hacklengthIter.setSample(flow[0], flow[1], 0, count);
                             }
                         }
@@ -165,7 +195,7 @@ public class HackLength extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-
+        hacklengthIter.done();
         outHacklength = CoverageUtilities.buildCoverage("Hacklength", hacklengthWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
     }
