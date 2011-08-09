@@ -32,6 +32,12 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * Utilities for CRS.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
+ */
 public class CrsUtilities {
     /**
      * Fill the prj file with the actual map projection.

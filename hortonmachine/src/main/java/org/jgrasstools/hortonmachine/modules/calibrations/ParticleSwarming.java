@@ -30,7 +30,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.DoubleArray;
+import org.jgrasstools.gears.utils.DynamicDoubleArray;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
@@ -234,7 +234,7 @@ public class ParticleSwarming extends JGTModel {
          * 
          * For now that is assumed to have on single id. 
          */
-        DoubleArray measuredValuesArray = new DoubleArray(100);
+        DynamicDoubleArray measuredValuesArray = new DynamicDoubleArray(100);
         TimeSeriesIteratorReader measuresReader = new TimeSeriesIteratorReader();
         measuresReader.file = inMeasuredfile;
         measuresReader.idfield = "ID";
@@ -337,7 +337,7 @@ public class ParticleSwarming extends JGTModel {
         /*
          * then read the models output
          */
-        DoubleArray modelValuesArray = new DoubleArray(measuredInternalArray.length);
+        DynamicDoubleArray modelValuesArray = new DynamicDoubleArray(measuredInternalArray.length);
         TimeSeriesIteratorReader modelOutputReader = new TimeSeriesIteratorReader();
         modelOutputReader.file = outputPath;
         modelOutputReader.idfield = "ID";

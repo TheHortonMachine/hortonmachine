@@ -44,6 +44,7 @@ import org.scannotation.ClasspathUrlFinder;
  * Class presenting modules names and classes.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 @SuppressWarnings("nls")
 public class JGrassGears {

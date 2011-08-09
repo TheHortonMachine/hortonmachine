@@ -24,6 +24,7 @@ import java.util.List;
  * An utilities class for handling strings and similar.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 public class StringUtilities {
 

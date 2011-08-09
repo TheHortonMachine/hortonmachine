@@ -37,9 +37,10 @@ import org.geotools.styling.UserLayer;
 import org.opengis.filter.FilterFactory;
 
 /**
- * utilities to handle style.
+ * Utilities to handle style.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 public class SldUtilities {
     /**

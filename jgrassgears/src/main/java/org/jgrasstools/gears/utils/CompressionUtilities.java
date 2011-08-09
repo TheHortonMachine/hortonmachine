@@ -32,6 +32,7 @@ import java.util.zip.ZipOutputStream;
  * Utilities class to zip and unzip folders.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 public class CompressionUtilities {
 

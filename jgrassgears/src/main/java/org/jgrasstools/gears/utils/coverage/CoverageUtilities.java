@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.utils.coverage;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doesOverFlow;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
@@ -64,6 +66,7 @@ import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -1018,6 +1021,72 @@ public class CoverageUtilities {
         GridCoverage2D outCoverage = buildCoverage(
                 "mapped", writableRaster, maskRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
         return outCoverage;
+    }
+
+    /**
+     * Calculates the hypsographic curve for the given raster, using the supplied bins.
+     * 
+     * @param elevationCoverage the elevation raster.
+     * @param bins the bins to use.
+     * @param pm the monitor.
+     */
+    public static void calculateHypsographic( GridCoverage2D elevationCoverage, int bins, IJGTProgressMonitor pm ) {
+        RegionMap regionMap = getRegionParamsFromGridCoverage(elevationCoverage);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
+
+        /*
+         * calculate the maximum and minimum value of the raster data
+         */
+        RandomIter elevIter = getRandomIterator(elevationCoverage);
+        double maxRasterValue = Double.NEGATIVE_INFINITY;
+        double minRasterValue = Double.POSITIVE_INFINITY;
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double value = elevIter.getSampleDouble(c, r, 0);
+                if (isNovalue(value)) {
+                    continue;
+                }
+                maxRasterValue = max(maxRasterValue, value);
+                minRasterValue = min(minRasterValue, value);
+            }
+        }
+
+        /*
+         * subdivide the whole value range in bins and count the number of pixels in each bin
+         */
+        double binWidth = (maxRasterValue - minRasterValue) / (bins);
+        double[] pixelPerBinCount = new double[bins];
+        double[] areaAtGreaterElevation = new double[bins];
+
+        pm.beginTask("Performing calculation of hypsographic curve...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double value = elevIter.getSampleDouble(c, r, 0);
+                if (isNovalue(value)) {
+                    continue;
+                }
+                for( int k = 0; k < pixelPerBinCount.length; k++ ) {
+                    if (value > (minRasterValue + (k) * binWidth)
+                    // && elevationRasterData.getValueAt(i, j) < (minRasterValue + (k + 1)
+                    // * binWidth)
+                    ) {
+                        pixelPerBinCount[k] = pixelPerBinCount[k] + 1;
+                        areaAtGreaterElevation[k] = areaAtGreaterElevation[k] + (yres * xres);
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        double[][] hypso = new double[pixelPerBinCount.length][3];
+        for( int j = 0; j < hypso.length; j++ ) {
+            hypso[j][0] = minRasterValue + (j * binWidth) + (binWidth / 2.0);
+            hypso[j][1] = areaAtGreaterElevation[j] / 1000000.0;
+        }
     }
 
 }

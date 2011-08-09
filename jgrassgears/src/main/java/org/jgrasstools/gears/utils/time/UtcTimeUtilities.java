@@ -13,6 +13,7 @@ import org.joda.time.format.DateTimeFormatter;
  * that format, with or without seconds, is used. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 public class UtcTimeUtilities {
 

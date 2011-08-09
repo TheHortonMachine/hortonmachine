@@ -27,6 +27,7 @@ import java.util.BitSet;
  * <p>Note that Java uses Big Endian by default.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.0
  */
 public class ByteUtilities {
 

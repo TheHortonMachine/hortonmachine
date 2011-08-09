@@ -23,8 +23,9 @@ import static java.lang.Math.max;
  * A wrapper for a dynamic growing array.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.3
  */
-public class DoubleArray {
+public class DynamicDoubleArray {
     private double[] internalArray = null;
     private final int growingSize;
     private int lastIndex = 0;
@@ -34,7 +35,7 @@ public class DoubleArray {
      * 
      * @param initalSize the initial size.
      */
-    public DoubleArray( int initalSize ) {
+    public DynamicDoubleArray( int initalSize ) {
         this(initalSize, 50);
     }
 
@@ -44,7 +45,7 @@ public class DoubleArray {
      * @param initalSize the initial size.
      * @param growingSize the size to grow the array additionally, if the array was too small. 
      */
-    public DoubleArray( int initalSize, int growingSize ) {
+    public DynamicDoubleArray( int initalSize, int growingSize ) {
         this.growingSize = growingSize;
         internalArray = new double[initalSize];
     }

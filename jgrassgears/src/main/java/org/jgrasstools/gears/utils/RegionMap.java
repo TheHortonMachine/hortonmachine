@@ -27,6 +27,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
  * Map containing a region definition, having utility methods to get the values.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.2
  */
 public class RegionMap extends HashMap<String, Double> {
     private static final long serialVersionUID = 1L;

@@ -1,10 +1,10 @@
 package org.jgrasstools.gears;
 
-import org.jgrasstools.gears.utils.DoubleArray;
+import org.jgrasstools.gears.utils.DynamicDoubleArray;
 import org.jgrasstools.gears.utils.HMTestCase;
 
 /**
- * Test {@link DoubleArray}.
+ * Test {@link DynamicDoubleArray}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -12,7 +12,7 @@ public class TestDoubleArray extends HMTestCase {
 
     public void testDoubleArray() throws Exception {
 
-        DoubleArray array = new DoubleArray(10);
+        DynamicDoubleArray array = new DynamicDoubleArray(10);
 
         for( int i = 0; i < 20; i++ ) {
             array.setValue(i, i);
