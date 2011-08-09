@@ -1070,10 +1070,8 @@ public class CoverageUtilities {
                     continue;
                 }
                 for( int k = 0; k < pixelPerBinCount.length; k++ ) {
-                    if (value > (minRasterValue + (k) * binWidth)
-                    // && elevationRasterData.getValueAt(i, j) < (minRasterValue + (k + 1)
-                    // * binWidth)
-                    ) {
+                    double thres = minRasterValue + k * binWidth;
+                    if (value >= thres) {
                         pixelPerBinCount[k] = pixelPerBinCount[k] + 1;
                         areaAtGreaterElevation[k] = areaAtGreaterElevation[k] + (yres * xres);
                     }
@@ -1088,7 +1086,7 @@ public class CoverageUtilities {
             hypso[j][0] = minRasterValue + (j * binWidth) + (binWidth / 2.0);
             hypso[j][1] = areaAtGreaterElevation[j] / 1000000.0;
         }
-        
+
         return hypso;
     }
 

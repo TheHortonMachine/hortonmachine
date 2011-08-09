@@ -20,6 +20,7 @@ package org.jgrasstools.gears;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -59,6 +60,34 @@ public class TestCoverageUtilities extends HMTestCase {
         assertEquals(eP.get(CoverageUtilities.YRES), paramsMap.getYres());
         assertEquals(eP.get(CoverageUtilities.COLS).intValue(), paramsMap.getCols());
         assertEquals(eP.get(CoverageUtilities.ROWS).intValue(), paramsMap.getRows());
+    }
+
+    public void testHypsographic() throws Exception {
+        double[][] elevationData = HMTestMaps.mapData;
+        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
+
+        double[][] calculateHypsographic = CoverageUtilities.calculateHypsographic(elevationCoverage, 10,
+                new DummyProgressMonitor());
+        double[][] expected = {{455.0, 0.0711},//
+                {565.0, 0.0612},//
+                {675.0, 0.0558},//
+                {785.0, 0.0504},//
+                {895.0, 0.0369},//
+                {1005.0, 0.0288},//
+                {1115.0, 0.0216},//
+                {1225.0, 0.018},//
+                {1335.0, 0.0117},//
+                {1445.0, 0.0090}//
+        };
+
+        for( int i = 0; i < expected.length; i++ ) {
+            for( int j = 0; j < expected[0].length; j++ ) {
+                assertEquals(expected[i][j], calculateHypsographic[i][j]);
+            }
+        }
+
     }
 
 }
