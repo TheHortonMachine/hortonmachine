@@ -1029,8 +1029,9 @@ public class CoverageUtilities {
      * @param elevationCoverage the elevation raster.
      * @param bins the bins to use.
      * @param pm the monitor.
+     * @return the matrix containing the hypsographic curve in [elev, area] pairs per row.
      */
-    public static void calculateHypsographic( GridCoverage2D elevationCoverage, int bins, IJGTProgressMonitor pm ) {
+    public static double[][] calculateHypsographic( GridCoverage2D elevationCoverage, int bins, IJGTProgressMonitor pm ) {
         RegionMap regionMap = getRegionParamsFromGridCoverage(elevationCoverage);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
@@ -1087,6 +1088,8 @@ public class CoverageUtilities {
             hypso[j][0] = minRasterValue + (j * binWidth) + (binWidth / 2.0);
             hypso[j][1] = areaAtGreaterElevation[j] / 1000000.0;
         }
+        
+        return hypso;
     }
 
 }
