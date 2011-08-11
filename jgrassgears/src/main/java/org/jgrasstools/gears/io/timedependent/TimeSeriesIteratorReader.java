@@ -322,7 +322,9 @@ public class TimeSeriesIteratorReader extends JGTModel {
                  * lost the moment, for now throw exception.
                  * Could be enhanced in future.
                  */
-                throw new IOException("The data are not aligned with the simulation interval. Check your data file: " + file);
+                String message = "The data are not aligned with the simulation interval (" + currentTimestamp + "/" + expectedDT
+                        + "). Check your data file: " + file;
+                throw new IOException(message);
             }
 
         }
