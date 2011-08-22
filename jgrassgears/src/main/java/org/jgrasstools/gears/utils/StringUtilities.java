@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -82,4 +83,39 @@ public class StringUtilities {
         }
         return sb.toString();
     }
+
+    /**
+     * Splits a string by char limit, not breaking works.
+     * 
+     * @param string the string to split.
+     * @param limit the char limit.
+     * @return the list of split words.
+     */
+    public static List<String> splitString( String string, int limit ) {
+        List<String> list = new ArrayList<String>();
+
+        char[] chars = string.toCharArray();
+        boolean endOfString = false;
+        int start = 0;
+        int end = start;
+        while( start < chars.length - 1 ) {
+            int charCount = 0;
+            int lastSpace = 0;
+            while( charCount < limit ) {
+                if (chars[charCount + start] == ' ') {
+                    lastSpace = charCount;
+                }
+                charCount++;
+                if (charCount + start == string.length()) {
+                    endOfString = true;
+                    break;
+                }
+            }
+            end = endOfString ? string.length() : (lastSpace > 0) ? lastSpace + start : charCount + start;
+            list.add(string.substring(start, end));
+            start = end + 1;
+        }
+        return list;
+    }
+
 }
