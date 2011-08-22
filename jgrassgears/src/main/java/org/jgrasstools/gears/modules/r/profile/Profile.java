@@ -98,15 +98,14 @@ public class Profile extends JGTModel {
         if (inCoordinates != null && inCoordinates.length() > 0) {
             profileFromManualCoordinates();
         } else if (inVector != null) {
-            checkNull(inVector, outFolder, fLineid);
+            if (inVector != null && inVector.size() != 1)
+                checkNull(outFolder, fLineid);
             profileFromFeatureCollection();
         }
 
     }
 
     private void profileFromFeatureCollection() throws Exception {
-
-        File outFolderFile = new File(outFolder);
 
         pm.message("Using supplied vector map to trace the profile...");
         List<FeatureMate> linesList = FeatureUtilities.featureCollectionToMatesList(inVector);
@@ -121,24 +120,37 @@ public class Profile extends JGTModel {
             } else {
                 throw new ModelsIllegalargumentException("The module works only for lines.", this);
             }
-
-            String id = lineFeature.getAttribute(fLineid, String.class);
-            File profileFile = new File(outFolderFile, id + ".csv");
-
             // dump the profile
             List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(inRaster, profileNodesList.toArray(new Coordinate[0]));
-            StringBuilder sb = new StringBuilder();
 
-            for( int i = 0; i < profilePoints.size(); i++ ) {
-                ProfilePoint profilePoint = profilePoints.get(i);
-                double progressive = profilePoint.getProgressive();
-                double elev = profilePoint.getElevation();
-                // Coordinate coord = profilePoint.getPosition();
-
-                sb.append(progressive).append(", ").append(elev).append("\n");
+            if (linesList.size() == 1) {
+                outProfile = new double[profilePoints.size()][4];
+                for( int i = 0; i < profilePoints.size(); i++ ) {
+                    ProfilePoint profilePoint = profilePoints.get(i);
+                    double progressive = profilePoint.getProgressive();
+                    double elev = profilePoint.getElevation();
+                    Coordinate coord = profilePoint.getPosition();
+                    outProfile[i][0] = progressive;
+                    outProfile[i][1] = elev;
+                    outProfile[i][2] = coord.x;
+                    outProfile[i][3] = coord.y;
+                }
             }
 
-            FileUtilities.writeFile(sb.toString(), profileFile);
+            if (outFolder != null && fLineid != null) {
+                String id = lineFeature.getAttribute(fLineid, String.class);
+                File outFolderFile = new File(outFolder);
+                File profileFile = new File(outFolderFile, id + ".csv");
+                StringBuilder sb = new StringBuilder();
+                for( int i = 0; i < profilePoints.size(); i++ ) {
+                    ProfilePoint profilePoint = profilePoints.get(i);
+                    double progressive = profilePoint.getProgressive();
+                    double elev = profilePoint.getElevation();
+                    // Coordinate coord = profilePoint.getPosition();
+                    sb.append(progressive).append(", ").append(elev).append("\n");
+                }
+                FileUtilities.writeFile(sb.toString(), profileFile);
+            }
         }
     }
 
