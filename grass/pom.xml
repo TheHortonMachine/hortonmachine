@@ -19,14 +19,18 @@
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgt-oms3</artifactId>
             <version>0.7.3-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.fusesource.jansi</groupId>
+					<artifactId>jansi</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jfree</groupId>
+					<artifactId>jfreechart</artifactId>
+				</exclusion>
+			</exclusions> 
 		</dependency>
 	
-		<dependency>
-			<groupId>org.jgrasstools</groupId>
-			<artifactId>jgt-jgrassgears</artifactId>
-            <version>0.7.3-SNAPSHOT</version>
-		</dependency>
-
 	</dependencies>
 
 
