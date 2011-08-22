@@ -66,6 +66,7 @@ import org.jgrasstools.gears.io.grasslegacy.GrassLegacyRandomIter;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWritableRaster;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
@@ -1032,6 +1033,9 @@ public class CoverageUtilities {
      * @return the matrix containing the hypsographic curve in [elev, area] pairs per row.
      */
     public static double[][] calculateHypsographic( GridCoverage2D elevationCoverage, int bins, IJGTProgressMonitor pm ) {
+        if (pm == null) {
+            pm = new DummyProgressMonitor();
+        }
         RegionMap regionMap = getRegionParamsFromGridCoverage(elevationCoverage);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
