@@ -144,5 +144,4 @@ public class FileIterator extends JGTModel {
         fiter.pCode = epsg;
         fiter.process();
     }
-
 }

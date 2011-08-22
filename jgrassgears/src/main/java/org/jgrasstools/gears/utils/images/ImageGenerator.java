@@ -56,6 +56,15 @@ import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * An utility class for simple image map generation. 
+ *
+ * <p>A sample usage could be the overlay of vector layers.
+ * <pre>
+ * ImageGenerator imgGen = new ImageGenerator();
+ * imgGen.addFeaturePath(reticolo, null);
+ * imgGen.setLayers();
+ * imgGen.dumpPngImage(imagePath, bounds, 300, 300, 100);
+ * imgGen.dispose();
+ * </pre>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @since 0.7.3
@@ -163,7 +172,7 @@ public class ImageGenerator {
         }
 
         renderer = new StreamingRenderer();
-        renderer.setMapContent(content);
+//        renderer.setMapContent(content );
     }
 
     /**

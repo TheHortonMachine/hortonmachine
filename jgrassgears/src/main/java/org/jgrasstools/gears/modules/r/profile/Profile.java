@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.modules.r.profile;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,6 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -41,8 +41,10 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.coverage.ProfilePoint;
+import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -68,6 +70,14 @@ public class Profile extends JGTModel {
     @In
     public SimpleFeatureCollection inVector;
 
+    @Description("The id of the line to use for the name of the profile output file name (used in case of inVector use).")
+    @In
+    public String fLineid;
+
+    @Description("The folder in which to place the output profiles if multiple (used in case of inVector use).")
+    @In
+    public String outFolder;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -85,40 +95,63 @@ public class Profile extends JGTModel {
                     "Either the coordinates or a vector map to trace the profile on have to be supplied.", this);
         }
 
-        List<Coordinate> profileNodesList = new ArrayList<Coordinate>();
         if (inCoordinates != null && inCoordinates.length() > 0) {
-            try {
-                pm.message("Using supplied coordinates to trace the profile...");
-                String[] split = inCoordinates.split(",");
-                for( int i = 0; i < split.length; i++ ) {
-                    double east = Double.parseDouble(split[i].trim());
-                    i++;
-                    double north = Double.parseDouble(split[i].trim());
-                    Coordinate tmp = new Coordinate(east, north);
-                    profileNodesList.add(tmp);
-                }
-
-            } catch (Exception e) {
-                throw new ModelsIllegalargumentException(
-                        "A problem occurred while parsing the supplied profile nodes coordinates. Check your syntax.", this);
-            }
+            profileFromManualCoordinates();
         } else if (inVector != null) {
-            // take just the first feature, we do not do them all
-            SimpleFeatureIterator featuresIterator = inVector.features();
-            if (featuresIterator.hasNext()) {
-                SimpleFeature f = featuresIterator.next();
-                Geometry geom = (Geometry) f.getDefaultGeometry();
+            checkNull(inVector, outFolder, fLineid);
+            profileFromFeatureCollection();
+        }
 
-                if (GeometryUtilities.isLine(geom)) {
-                    pm.message("Using supplied vector map to trace the profile...");
-                    Coordinate[] coordinates = geom.getCoordinates();
-                    for( Coordinate coordinate : coordinates ) {
-                        profileNodesList.add(coordinate);
-                    }
-                } else {
-                    throw new ModelsIllegalargumentException("The module works only for lines.", this);
+    }
+
+    private void profileFromFeatureCollection() throws Exception {
+
+        File outFolderFile = new File(outFolder);
+
+        pm.message("Using supplied vector map to trace the profile...");
+        List<FeatureMate> linesList = FeatureUtilities.featureCollectionToMatesList(inVector);
+        for( FeatureMate lineFeature : linesList ) {
+            Geometry geom = lineFeature.getGeometry();
+            List<Coordinate> profileNodesList = new ArrayList<Coordinate>();
+            if (GeometryUtilities.isLine(geom)) {
+                Coordinate[] coordinates = geom.getCoordinates();
+                for( Coordinate coordinate : coordinates ) {
+                    profileNodesList.add(coordinate);
                 }
+            } else {
+                throw new ModelsIllegalargumentException("The module works only for lines.", this);
             }
+
+            String id = lineFeature.getAttribute(fLineid, String.class);
+            File profileFile = new File(outFolderFile, id + ".csv");
+
+            // dump the profile
+            List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(inRaster, profileNodesList.toArray(new Coordinate[0]));
+            StringBuilder sb = new StringBuilder();
+
+            for( int i = 0; i < profilePoints.size(); i++ ) {
+                ProfilePoint profilePoint = profilePoints.get(i);
+                double progressive = profilePoint.getProgressive();
+                double elev = profilePoint.getElevation();
+                // Coordinate coord = profilePoint.getPosition();
+
+                sb.append(progressive).append(", ").append(elev).append("\n");
+            }
+
+            FileUtilities.writeFile(sb.toString(), profileFile);
+        }
+    }
+
+    private void profileFromManualCoordinates() throws Exception {
+        List<Coordinate> profileNodesList = new ArrayList<Coordinate>();
+        pm.message("Using supplied coordinates to trace the profile...");
+        String[] split = inCoordinates.split(",");
+        for( int i = 0; i < split.length; i++ ) {
+            double east = Double.parseDouble(split[i].trim());
+            i++;
+            double north = Double.parseDouble(split[i].trim());
+            Coordinate tmp = new Coordinate(east, north);
+            profileNodesList.add(tmp);
         }
 
         if (profileNodesList.size() < 2) {
@@ -138,6 +171,7 @@ public class Profile extends JGTModel {
             outProfile[i][2] = coord.x;
             outProfile[i][3] = coord.y;
         }
+
     }
 
 }

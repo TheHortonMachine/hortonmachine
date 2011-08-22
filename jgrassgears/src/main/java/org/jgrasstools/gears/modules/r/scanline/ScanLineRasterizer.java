@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometr
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
+import java.text.MessageFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -220,23 +221,27 @@ public class ScanLineRasterizer extends JGTModel {
                                 if (geometryN.intersects(line)) {
                                     Geometry internalLines = geometryN.intersection(line);
                                     Coordinate[] coords = internalLines.getCoordinates();
-                                    for( int j = 0; j < coords.length; j = j + 2 ) {
-                                        Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
-                                        Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
+                                    if (coords.length > 1) {
+                                        for( int j = 0; j < coords.length; j = j + 2 ) {
+                                            Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
+                                            Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                                        GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
-                                                startC.x, startC.x));
-                                        GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(endC.x,
-                                                endC.x));
+                                            GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
+                                                    startC.x, startC.x));
+                                            GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
+                                                    endC.x, endC.x));
 
-                                        /*
-                                         * the part in between has to be filled
-                                         */
-                                        for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                            outWR.setSample(k, r, 0, value);
+                                            /*
+                                             * the part in between has to be filled
+                                             */
+                                            for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
+                                                outWR.setSample(k, r, 0, value);
+                                            }
                                         }
+                                    } else {
+                                        pm.errorMessage(MessageFormat.format("Single intersection in: {0}/{1}", coords[0].x, coords[0].y));
+                                        pm.errorMessage("Might be a cusp.");
                                     }
-
                                 }
                             }
                         }

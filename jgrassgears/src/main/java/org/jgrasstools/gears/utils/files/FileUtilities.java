@@ -278,7 +278,37 @@ public class FileUtilities {
     public static File substituteExtention( File file, String newExtention ) {
         String path = file.getAbsolutePath();
         int lastDot = path.lastIndexOf("."); //$NON-NLS-1$
-        path = path.substring(0, lastDot) + "." + newExtention;
+        path = path.substring(0, lastDot) + "." + newExtention; //$NON-NLS-1$
         return new File(path);
+    }
+
+    /**
+     * Makes a file name safe to be used.
+     * 
+     * <p>Taken from http://stackoverflow.com/questions/1184176/how-can-i-safely-encode-a-string-in-java-to-use-as-a-filename
+     * 
+     * @param fileName the file name to "encode".
+     * @return the safe filename.
+     */
+    public static String getSafeFileName(String fileName){
+        char fileSep = '/'; // ... or do this portably.
+        char escape = '%'; // ... or some other legal char.
+        int len = fileName.length();
+        StringBuilder sb = new StringBuilder(len);
+        for (int i = 0; i < len; i++) {
+            char ch = fileName.charAt(i);
+            if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
+                || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
+                || ch == escape) {
+                sb.append(escape);
+                if (ch < 0x10) {
+                    sb.append('0');
+                }
+                sb.append(Integer.toHexString(ch));
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
     }
 }
