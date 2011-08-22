@@ -19,6 +19,29 @@
 			<artifactId>jfreechart</artifactId>
 			<version>1.0.13</version>
 		</dependency>
+       	<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>1.7.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.fusesource.jansi</groupId>
+					<artifactId>jansi</artifactId>
+				</exclusion>
+			</exclusions> 
+		</dependency>
+		
+		<dependency>
+			<groupId>org.fusesource.jansi</groupId>
+			<artifactId>jansi</artifactId>
+			<version>1.2.1</version>
+		</dependency>
+
+       	<dependency>
+			<groupId>com.sun.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.0.9</version>
+		</dependency>
 	</dependencies>
 	
   <properties>

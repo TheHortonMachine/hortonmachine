@@ -27,13 +27,13 @@
             <version>0.7.3-SNAPSHOT</version>
 		</dependency>
 
-		<!-- the tools jar, needed for standalone mode 
 		<dependency>
-		  <groupId>com.sun</groupId>
-		  <artifactId>tools</artifactId>
-		  <version>1.6.0</version>
-		</dependency>
-                -->
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.5</version>
+			<scope>test</scope>
+		</dependency>		
+		
 	</dependencies>
 
 
