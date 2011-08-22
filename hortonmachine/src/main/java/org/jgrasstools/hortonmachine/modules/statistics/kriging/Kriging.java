@@ -48,7 +48,6 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.geotools.geometry.DirectPosition2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -75,7 +74,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Kriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Name("kriging")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
 public class Kriging extends JGTModel {
