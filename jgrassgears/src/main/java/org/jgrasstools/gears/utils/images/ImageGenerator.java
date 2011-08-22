@@ -172,7 +172,7 @@ public class ImageGenerator {
         }
 
         renderer = new StreamingRenderer();
-//        renderer.setMapContent(content );
+        renderer.setMapContent(content );
     }
 
     /**
