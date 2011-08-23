@@ -1,4 +1,4 @@
-Subdivides the sites of a basin in 11 topographic classes, nine of which are deﬁned according to
+Subdivides the sites of a basin in 11 topographic classes, nine of which are deﬁned according to the program TC.
 <p> 
 Such classes are the nine classes based  obtained with
 [Tc] ; the points belonging to the channel networks constitute a tenth class (derived from the use of
@@ -8,29 +8,30 @@ ExtractNetwork), the points with high slope (higher than a critical angle) the e
 <br>
 <h3>Inputs</h3>
 <ol>
-<li>The GridCoverage containing the slopes, obtained with [Slope] or [Gradients];</li>
-<li>The GridCoverage containing the channel network, obtained with [ExtractNetwork];</li>
-<li>The GridCoverage containing the subdivisions in curvature classes, obtained with [Tc];
-</li>
+<li>The !GridCoverage containing the slopes, obtained with [Slope] or [Gradient];</li>
+<li>The !GridCoverage containing the channel network, obtained with [ExtractNetwork];</li>
+<li>The !GridCoverage containing the subdivisions in curvature classes, obtained with [Tc];</li>
+</ol>
 <br>
 <br>
 <h3>Outputs</h3>
 <ol>
-<li>The GridCoverage containing the subdivision in the 11 predeﬁned classes</li>
-<li>The GridCoverage  of the aggregated classes (hillslope, valleys and net);</li>
+<li>The !GridCoverage containing the subdivision in the 11 predeﬁned classes;</li>
+<li>The !GridCoverage  of the aggregated classes (hillslope, valleys and net);</li>
 </ol>
 <br>
 <br>
 <h3>Notes</h3>
 <p>
- Differently from the program TC, the program GC considers also the existence of the channel net,
+Differently from the program TC, the program GC considers also the existence of the channel net,
 which is extracted from the DEM. The channel net is thought as a topologically connected network,
-even though it is known that this cannot be the real case.</p>
+even though it is known that this cannot be the real case.
+</p>
 <p> The cases are identiﬁed as in TC plus:
-<ol>
+<ul>
 <li> 100 → channel sites (individuated by extract network)</li>
 <li> 110 → unconditionally unstable sites (slope > critic value)</li>
-</ol>
+</ul>
 </p>
 <p>
 The second output ﬁle contains an aggregation of these classes in the four fundamentals, indexed as
@@ -45,7 +46,7 @@ follows:
 <br>
 <br>
 <h3>References</h3>
-<ol>
-<li>[Bibliography#A._Parsons,_1988, [17] A. Parsons, 1988]</li>
-<li>[Bibliography#R._Suzuki,_1977, [18] R. Suzuki, 1977]</li>
-</ol>
+<ul>
+<li>[Bibliography#17, 17] A. Parsons, 1988</li>
+<li>[Bibliography#18, 18] R. Suzuki, 1977</li>
+</ul>

@@ -30,7 +30,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Subdivides the sites of a basin in 11 topographic classes.")
-@Documentation("GC.html")
+@Documentation("Gc.html")
 @Author(name = "Daniele Andreis,Erica Ghesla, Cozzini Andrea, Rigon Riccardo")
 @Keywords("Geomorphology, Tc, Slope, ExtractNetwork")
 @Label(JGTConstants.GEOMORPHOLOGY)
@@ -42,11 +42,11 @@ public class Gc extends JGTModel {
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map of with the network")
+    @Description("The map with the network")
     @In
     public GridCoverage2D inNetwork = null;
 
-    @Description("The map of with the Thopological classes cp9")
+    @Description("The map with the Thopological classes cp9")
     @In
     public GridCoverage2D inCp9 = null;
 
