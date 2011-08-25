@@ -69,7 +69,6 @@ public class LineChartGenerator {
             series.add(data[i][0], data[i][1]);
         }
 
-        XYSeriesCollection collection = new XYSeriesCollection();
         collection.addSeries(series);
     }
 
