@@ -18,7 +18,7 @@
 package org.jgrasstools.hortonmachine.modules.network.strahler;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
+import static java.lang.Math.*;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
@@ -107,10 +107,10 @@ public class Strahler extends JGTModel {
                     if (isNovalue(netRandomIter.getSampleDouble(c, r, 0))) {
                         tmpIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
                     }
-                    double v = tmpIter.getSampleDouble(c, r, 0);
-                    System.out.print(v + " ");
+                    // double v = tmpIter.getSampleDouble(c, r, 0);
+                    // System.out.print(v + " ");
                 }
-                System.out.println();
+                // System.out.println();
             }
             netRandomIter.done();
             flowIter = tmpIter;
@@ -131,19 +131,20 @@ public class Strahler extends JGTModel {
             for( int c = 0; c < nCols; c++ ) {
                 flow[0] = c;
                 flow[1] = r;
-                /* verify if the pixel is a source. If it is then set the value to 1.
-                 * 
-                 * */
+                /* 
+                 * verify if the pixel is a source. If it is then set the value to 1.
+                 */
                 if (ModelsEngine.isSourcePixel(flowIter, flow[0], flow[1])) {
-                    strahlerIter.setSample(c, r, 0, 1);
+                    strahlerIter.setSample(flow[0], flow[1], 0, 1.0);
                     /*
-                     *It go downstream, following the flow direction 
+                     * start wandering downstream 
                      */
                     if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                         throw new ModelsIllegalargumentException(
                                 "Unable to go further downstream at: " + flow[0] + "/" + flow[1], this);
                     /*
-                     * while it isn't an outlet point and flow and net have valid value, it loop and go downstream.
+                     * as long as it isn't an outlet point and both flow and net have valid value,
+                     * loop downstream.
                      */
                     while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                             && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
@@ -153,14 +154,22 @@ public class Strahler extends JGTModel {
                          */
                         vett_contr = new int[10];
                         for( int k = 1; k <= 8; k++ ) {
-                            if (flowIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
+                            int col = flow[0] + dir[k][0];
+                            int row = flow[1] + dir[k][1];
+                            double direction = flowIter.getSampleDouble(col, row, 0);
+                            if (isNovalue(direction))
+                                continue;
+                            int tmpDir = dir[k][2];
+                            if (direction == tmpDir) {
                                 contr += 1;
                                 vett_contr[contr] = k;
                             }
                         }
+
                         if (contr > 1)
                         /*
-                         * If the numeber of pixel which are going in this pixel then verify which have a greater strahler number. 
+                         * If the number of pixel which are going in this pixel is major than 1
+                         * then verify which has the larger strahler number. 
                          */
                         {
                             max = 0;
@@ -168,8 +177,8 @@ public class Strahler extends JGTModel {
                                 s = vett_contr[ii];
                                 io = flow[0] + dir[s][0];
                                 jo = flow[1] + dir[s][1];
-                                if (max < strahlerIter.getSampleDouble(io, jo, 0))
-                                    max = strahlerIter.getSampleDouble(io, jo, 0);
+                                double strahler = strahlerIter.getSampleDouble(io, jo, 0);
+                                max = max(max, strahler);
                             }
                             counter = 0;
                             for( int ii = 1; ii <= contr; ii++ ) {
@@ -180,7 +189,8 @@ public class Strahler extends JGTModel {
                                     counter += 1;
                             }
                             /*
-                            *if counter is greater than 1 then the strahler order is equal to the previous plus 1, otherwise is equal to the previus.
+                             * if counter is greater than 1 then the strahler order is
+                             * equal to the previous plus 1, otherwise is equal to the previus.
                              */
                             if (counter > 1)
                                 strahlerIter.setSample(flow[0], flow[1], 0, max + 1);
@@ -198,6 +208,7 @@ public class Strahler extends JGTModel {
                             strahlerIter.setSample(flow[0], flow[1], 0, max);
                         }
                         max = strahlerIter.getSampleDouble(flow[0], flow[1], 0);
+
                         if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             throw new ModelsIllegalargumentException("Unable to go further downstream at: " + flow[0] + "/"
                                     + flow[1], this);

@@ -17,15 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.models.hm;
 
-import java.awt.image.RenderedImage;
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.hortonmachine.modules.network.strahler.Strahler;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
-import org.jgrasstools.hortonmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test the {@link Strahler} module.
@@ -35,12 +31,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestStrahler extends HMTestCase {
 
     public void testStrahler() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        double[][] flowData = HMTestMaps.mflowDataBorder;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
-        double[][] netData = HMTestMaps.extractNet1Data;
-        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
+        GridCoverage2D flowCoverage = RasterReader.readRaster("D:\\TMP\\TESTSTRAHLER\\a.cravinaie_drain.asc");
+        GridCoverage2D netCoverage = RasterReader.readRaster("D:\\TMP\\TESTSTRAHLER\\a.cravinaie_net200.asc");
 
         Strahler strahler = new Strahler();
         strahler.inFlow = flowCoverage;
@@ -49,9 +41,28 @@ public class TestStrahler extends HMTestCase {
         strahler.process();
         GridCoverage2D outStrahler = strahler.outStrahler;
 
-        RenderedImage renderedImage = outStrahler.getRenderedImage();
-        // printImage(renderedImage);
-        // checkMatrixEqual(renderedImage, HMTestMaps.strahlerData, 0.000001);
+        RasterWriter.writeRaster("D:\\TMP\\TESTSTRAHLER\\a.cravinaie_strahler.asc", outStrahler);
     }
+    // public void testStrahler() throws Exception {
+    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+    // CoordinateReferenceSystem crs = HMTestMaps.crs;
+    // double[][] flowData = HMTestMaps.mflowDataBorder;
+    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
+    // envelopeParams, crs, true);
+    // double[][] netData = HMTestMaps.extractNet1Data;
+    // GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams,
+    // crs, true);
+    //
+    // Strahler strahler = new Strahler();
+    // strahler.inFlow = flowCoverage;
+    // strahler.inNet = netCoverage;
+    // strahler.pm = pm;
+    // strahler.process();
+    // GridCoverage2D outStrahler = strahler.outStrahler;
+    //
+    // RenderedImage renderedImage = outStrahler.getRenderedImage();
+    // // printImage(renderedImage);
+    // checkMatrixEqual(renderedImage, HMTestMaps.strahlerData, 0.000001);
+    // }
 
 }

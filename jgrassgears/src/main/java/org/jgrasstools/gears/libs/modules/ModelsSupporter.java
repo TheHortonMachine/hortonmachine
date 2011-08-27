@@ -96,19 +96,67 @@ public class ModelsSupporter {
     public final static int[][] DIR = {{0, 0}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1}, {1, 0}, {1, 1}};
 
     /**
-     * The 9 directions and their flow values around a pixel as <b>ROW/COL of the flowdirections grid</b>..
-     * <p>
-     * Also containing the central position 0,0
-     * </p>
-     * <p>
-     * FIXME Erica used to add several {0,0,0} at the end, in order to catch certain values. Those
-     * have to be tracked down.
-     * </p>
+     * The 8 flowdirections, defined as entering towards the center cell.
+     * 
+     * <p>Each array contains [<b>row, col</b>, flowvalue].
+     * 
+     * <p><b>NOTE that these work in ROW/COL order, not COL/ROW!</b>
+     * 
+     * <pre>
+     *        -1     0     1 
+     *      +-----+-----+-----+
+     * -1   |  8  |  7  |  6  |
+     *      +-----+-----+-----+
+     *  0   |  1  |  0  |  5  |
+     *      +-----+-----+-----+
+     *  1   |  2  |  3  |  4  |
+     *      +-----+-----+-----+
+     *      
+     * </pre>     
      */
-    public final static int[][] DIR_WITHFLOW_ENTERING = {{0, 0, 0}, {0, 1, 5}, {-1, 1, 6}, {-1, 0, 7}, {-1, -1, 8}, {0, -1, 1},
-            {1, -1, 2}, {1, 0, 3}, {1, 1, 4}};
-    public static final int[][] DIR_WITHFLOW_EXITING = {{0, 0, 0}, {1, 0, 1}, {1, -1, 2}, {0, -1, 3}, {-1, -1, 4}, {-1, 0, 5},
-            {-1, 1, 6}, {-1, 0, 7}, {1, 1, 8}, {0, 0, 9}, {0, 0, 10}};
+    public final static int[][] DIR_WITHFLOW_ENTERING = {//
+    {0, 0, 0}, //
+            {0, 1, 5}, //
+            {-1, 1, 6},//
+            {-1, 0, 7},//
+            {-1, -1, 8}, //
+            {0, -1, 1},//
+            {1, -1, 2}, //
+            {1, 0, 3}, //
+            {1, 1, 4}//
+    };
+
+    /**
+     * The 8 flowdirections, defined as exiting from the center cell.
+     * 
+     * <p>Each array contains [<b>col, row</b>, flowvalue].
+     * 
+     * <pre>
+     *        -1     0     1 
+     *      +-----+-----+-----+
+     * -1   |  4  |  3  |  2  |
+     *      +-----+-----+-----+
+     *  0   |  5  |  0  |  1  |
+     *      +-----+-----+-----+
+     *  1   |  6  |  7  |  8  |
+     *      +-----+-----+-----+
+     *      
+     * </pre>     
+     */
+    public static final int[][] DIR_WITHFLOW_EXITING = {//
+    {0, 0, 0},//
+            {1, 0, 1}, //
+            {1, -1, 2},//
+            {0, -1, 3}, //
+            {-1, -1, 4}, //
+            {-1, 0, 5},//
+            {-1, 1, 6},//
+            {-1, 0, 7},//
+            {1, 1, 8}, //
+            {0, 0, 9}, //
+            {0, 0, 10}//
+    };
+
     /*
      * This is similar to exiting inverted, but is in cols and rows and have a particular order to work (in tca3d) with triangle.
      */
