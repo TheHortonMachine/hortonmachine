@@ -247,9 +247,60 @@ public class NumericsUtilities {
         }
         return true;
     }
-    
-    
-    
-    
+
+    /** Lanczos coefficients */
+    private static final double[] LANCZOS = {0.99999999999999709182, 57.156235665862923517, -59.597960355475491248,
+            14.136097974741747174, -0.49191381609762019978, .33994649984811888699e-4, .46523628927048575665e-4,
+            -.98374475304879564677e-4, .15808870322491248884e-3, -.21026444172410488319e-3, .21743961811521264320e-3,
+            -.16431810653676389022e-3, .84418223983852743293e-4, -.26190838401581408670e-4, .36899182659531622704e-5,};
+
+    /** Avoid repeated computation of log of 2 PI in logGamma */
+    private static final double HALF_LOG_2_PI = 0.5 * log(2.0 * PI);
+
+    /**
+     * Gamma function ported from the apache math package.
+     * 
+     * <b>This should be removed if the apache math lib gets in use by jgrasstools.</b>
+     * 
+     * <p>Returns the natural logarithm of the gamma function &#915;(x).
+     *
+     * The implementation of this method is based on:
+     * <ul>
+     * <li><a href="http://mathworld.wolfram.com/GammaFunction.html">
+     * Gamma Function</a>, equation (28).</li>
+     * <li><a href="http://mathworld.wolfram.com/LanczosApproximation.html">
+     * Lanczos Approximation</a>, equations (1) through (5).</li>
+     * <li><a href="http://my.fit.edu/~gabdo/gamma.txt">Paul Godfrey, A note on
+     * the computation of the convergent Lanczos complex Gamma approximation
+     * </a></li>
+     * </ul>
+     *
+     * @param x Value.
+     * @return log(&#915;(x))
+     */
+    public static double logGamma( double x ) {
+        double ret;
+
+        if (Double.isNaN(x) || (x <= 0.0)) {
+            ret = Double.NaN;
+        } else {
+            double g = 607.0 / 128.0;
+
+            double sum = 0.0;
+            for( int i = LANCZOS.length - 1; i > 0; --i ) {
+                sum = sum + (LANCZOS[i] / (x + i));
+            }
+            sum = sum + LANCZOS[0];
+
+            double tmp = x + g + .5;
+            ret = ((x + .5) * log(tmp)) - tmp + HALF_LOG_2_PI + log(sum / x);
+        }
+
+        return ret;
+    }
+
+    public static double gamma( double x ) {
+        return exp(logGamma(x));
+    }
 
 }
