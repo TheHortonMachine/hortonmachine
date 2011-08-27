@@ -17,10 +17,13 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.strahler;
 
+import static java.lang.Math.max;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static java.lang.Math.*;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -38,6 +41,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -47,6 +51,10 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 
 @Description("Calculates the Strahler order on a basin.")
 @Author(name = "Erica Ghesla, Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
@@ -74,7 +82,7 @@ public class Strahler extends JGTModel {
     public GridCoverage2D outStrahler = null;
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outStrahler == null, doReset)) {
             return;
         }
@@ -107,10 +115,7 @@ public class Strahler extends JGTModel {
                     if (isNovalue(netRandomIter.getSampleDouble(c, r, 0))) {
                         tmpIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
                     }
-                    // double v = tmpIter.getSampleDouble(c, r, 0);
-                    // System.out.print(v + " ");
                 }
-                // System.out.println();
             }
             netRandomIter.done();
             flowIter = tmpIter;
@@ -136,6 +141,7 @@ public class Strahler extends JGTModel {
                  */
                 if (ModelsEngine.isSourcePixel(flowIter, flow[0], flow[1])) {
                     strahlerIter.setSample(flow[0], flow[1], 0, 1.0);
+
                     /*
                      * start wandering downstream 
                      */
@@ -154,8 +160,8 @@ public class Strahler extends JGTModel {
                          */
                         vett_contr = new int[10];
                         for( int k = 1; k <= 8; k++ ) {
-                            int col = flow[0] + dir[k][0];
-                            int row = flow[1] + dir[k][1];
+                            int col = flow[0] + dir[k][1];
+                            int row = flow[1] + dir[k][0];
                             double direction = flowIter.getSampleDouble(col, row, 0);
                             if (isNovalue(direction))
                                 continue;
@@ -175,16 +181,16 @@ public class Strahler extends JGTModel {
                             max = 0;
                             for( int ii = 1; ii <= contr; ii++ ) {
                                 s = vett_contr[ii];
-                                io = flow[0] + dir[s][0];
-                                jo = flow[1] + dir[s][1];
+                                io = flow[0] + dir[s][1];
+                                jo = flow[1] + dir[s][0];
                                 double strahler = strahlerIter.getSampleDouble(io, jo, 0);
                                 max = max(max, strahler);
                             }
                             counter = 0;
                             for( int ii = 1; ii <= contr; ii++ ) {
                                 s = vett_contr[ii];
-                                io = flow[0] + dir[s][0];
-                                jo = flow[1] + dir[s][1];
+                                io = flow[0] + dir[s][1];
+                                jo = flow[1] + dir[s][0];
                                 if (max == strahlerIter.getSampleDouble(io, jo, 0))
                                     counter += 1;
                             }
@@ -192,18 +198,20 @@ public class Strahler extends JGTModel {
                              * if counter is greater than 1 then the strahler order is
                              * equal to the previous plus 1, otherwise is equal to the previus.
                              */
-                            if (counter > 1)
+                            if (counter > 1) {
                                 strahlerIter.setSample(flow[0], flow[1], 0, max + 1);
-                            if (counter == 1)
+                            }
+                            if (counter == 1) {
                                 strahlerIter.setSample(flow[0], flow[1], 0, max);
+                            }
                         } else
                         /*
                          * If there is only one drained pixel then the order is equal to this pixel.
                          */
                         {
                             s = vett_contr[1];
-                            io = flow[0] + dir[s][0];
-                            jo = flow[1] + dir[s][1];
+                            io = flow[0] + dir[s][1];
+                            jo = flow[1] + dir[s][0];
                             max = strahlerIter.getSampleDouble(io, jo, 0);
                             strahlerIter.setSample(flow[0], flow[1], 0, max);
                         }
@@ -235,7 +243,7 @@ public class Strahler extends JGTModel {
                  */
                 if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
                     for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(flow[0] + dir[k][0], flow[1] + dir[k][1], 0) == dir[k][2]) {
+                        if (flowIter.getSampleDouble(flow[0] + dir[k][1], flow[1] + dir[k][0], 0) == dir[k][2]) {
                             contr += 1;
                             vett_contr[contr] = k;
                         }
@@ -255,8 +263,8 @@ public class Strahler extends JGTModel {
                     counter = 0;
                     for( int ii = 1; ii <= contr; ii++ ) {
                         s = vett_contr[ii];
-                        io = flow[0] + dir[s][0];
-                        jo = flow[1] + dir[s][1];
+                        io = flow[0] + dir[s][1];
+                        jo = flow[1] + dir[s][0];
                         if (max == strahlerIter.getSampleDouble(io, jo, 0))
                             counter += 1;
                     }
@@ -278,7 +286,6 @@ public class Strahler extends JGTModel {
                     strahlerIter.setSample(i, j, 0, JGTConstants.doubleNovalue);
             }
         }
-
         strahlerIter.done();
         flowIter.done();
 

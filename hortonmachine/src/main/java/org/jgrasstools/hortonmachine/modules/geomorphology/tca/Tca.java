@@ -60,6 +60,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.utils.CheckPoint;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.DirectPosition;
@@ -165,7 +166,7 @@ public class Tca extends JGTModel {
                             GeometryFactory gf = GeometryUtilities.gf();
                             List<Coordinate> coordinates = new ArrayList<Coordinate>();
                             while( iterator.hasNext() ) {
-                                Tca.CheckPoint checkPoint = (Tca.CheckPoint) iterator.next();
+                                CheckPoint checkPoint = (CheckPoint) iterator.next();
                                 DirectPosition world = gridGeometry.gridToWorld(new GridCoordinates2D(checkPoint.col,
                                         checkPoint.row));
                                 double[] coord = world.getCoordinate();
@@ -235,49 +236,9 @@ public class Tca extends JGTModel {
         }
     }
 
-    /**
-     * Class to check if the downstream trip gets into a loop.
-     * 
-     * @author Andrea Antonello (www.hydrologis.com)
-     */
-    public class CheckPoint implements Comparable<CheckPoint> {
-        public int col;
-        public int row;
-        public int index;
-
-        public CheckPoint( int col, int row, int index ) {
-            this.col = col;
-            this.row = row;
-            this.index = index;
-        }
-
-        public int compareTo( CheckPoint o ) {
-            /*
-             * if row and col are equal, return 0, which will 
-             * anyways trigger and exception
-             */
-            if (col == o.col && row == o.row) {
-                return 0;
-            }
-
-            /*
-             * in the case of non equal row/col, we need to make the normal sort
-             */
-            if (index < o.index) {
-                return -1;
-            } else if (index > o.index) {
-                return 1;
-            } else {
-                return 0;
-            }
-
-        }
-
-    }
-
     public static void main( String[] args ) {
         TreeSet<CheckPoint> p = new TreeSet<CheckPoint>();
-        System.out.println(p.add(new Tca().new CheckPoint(1, 3, 0)));
-        System.out.println(p.add(new Tca().new CheckPoint(1, 3, 1)));
+        System.out.println(p.add(new CheckPoint(1, 3, 0)));
+        System.out.println(p.add(new CheckPoint(1, 3, 1)));
     }
 }
