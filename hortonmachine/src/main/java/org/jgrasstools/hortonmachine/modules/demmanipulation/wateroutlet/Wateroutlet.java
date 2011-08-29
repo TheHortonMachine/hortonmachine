@@ -168,8 +168,7 @@ public class Wateroutlet extends JGTModel {
                 basinIter.setSample(c, r, 0, basinValue);
                 if (isNovalue(flowIter.getSampleDouble(c, r, 0)) || basinIter.getSampleDouble(c, r, 0) == 0.0) {
                     basinIter.setSample(c, r, 0, doubleNovalue);
-                }
-                if (!isNovalue(basinValue)) {
+                } else {
                     outArea = outArea + 1;
                 }
             }
