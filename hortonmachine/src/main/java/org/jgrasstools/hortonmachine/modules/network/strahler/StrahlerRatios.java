@@ -17,22 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.strahler;
 
-import static java.lang.Math.max;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
 import java.awt.geom.Point2D;
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -46,34 +35,28 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.vectorreader.VectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.summary.RasterSummary;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 
-@Description("Calculates the Strahler order on a basin.")
-@Author(name = "Erica Ghesla, Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Description("Calculates the Strahler ratios.")
+@Author(name = "Antonello Andrea, Silvia Francesci", contact = "http://www.hydrologis.com")
 @Keywords("Network, Strahler")
 @Label(JGTConstants.NETWORK)
-@Name("strahler")
+@Name("strahlerratio")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class StrahlerRatios extends JGTModel {
@@ -110,11 +93,6 @@ public class StrahlerRatios extends JGTModel {
     public void process() throws Exception {
         checkNull(inFlow, inNet, inStrahler);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
-
-        RenderedImage flowRI = inFlow.getRenderedImage();
         List<FeatureMate> netList = FeatureUtilities.featureCollectionToMatesList(inNet);
 
         RasterSummary summary = new RasterSummary();
@@ -124,23 +102,21 @@ public class StrahlerRatios extends JGTModel {
         int maxStrahler = summary.outMax.intValue();
 
         LinkedHashMap<Integer, List<FeatureMate>> strahler2FeaturesMap = new LinkedHashMap<Integer, List<FeatureMate>>();
-        for( int i = 1; i < maxStrahler; i++ ) {
+        for( int i = 1; i <= maxStrahler; i++ ) {
             strahler2FeaturesMap.put(i, new ArrayList<FeatureMate>());
         }
 
-        GeometryFactory gf = GeometryUtilities.gf();
         final double[] value = new double[1];
         for( FeatureMate featureMate : netList ) {
             Geometry geometry = featureMate.getGeometry();
             Coordinate[] coordinates = geometry.getCoordinates();
-            Coordinate coordinate;
-            if (coordinates.length > 2) {
-                coordinate = coordinates[coordinates.length / 2];
-            } else {
-                coordinate = coordinates[coordinates.length - 1];
-            }
+            Coordinate coordinate = coordinates[0];
 
             inStrahler.evaluate(new Point2D.Double(coordinate.x, coordinate.y), value);
+
+            if (JGTConstants.isNovalue(value[0]) || value[0] < 1 || value[0] > maxStrahler) {
+                throw new ModelsIllegalargumentException("An incorrect value of Strahler was extracted from the map.", this);
+            }
 
             int strahler = (int) value[0];
 
@@ -154,6 +130,7 @@ public class StrahlerRatios extends JGTModel {
         double ratioLengths = 0;
         double ratioAreas = 0;
         int num = strahlerArray.length - 1;
+        pm.beginTask("Calculating...", num);
         for( int i = 0; i < strahlerArray.length - 1; i++ ) {
             Integer strahler1 = strahlerArray[i];
             Integer strahler2 = strahlerArray[i + 1];
@@ -209,13 +186,32 @@ public class StrahlerRatios extends JGTModel {
             areaAvg2 = areaAvg2 / mates2.size();
 
             ratioAreas = ratioAreas + areaAvg2 / areaAvg1;
-
+            pm.worked(1);
         }
+        pm.done();
 
-        ratioSum = ratioSum / num;
-        ratioLengths = ratioLengths / num;
-        ratioAreas = ratioAreas / num;
+        outBisfurcation = ratioSum / num;
+        outLength = ratioLengths / num;
+        outArea = ratioAreas / num;
 
     }
+
+    // public static void main( String[] args ) throws Exception {
+    //
+    // String flow = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_drain";
+    // String strahler =
+    // "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_net70_strahler";
+    // // String strahler = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_strahler";
+    // String net = "D:/TMP/TESTSTRAHLER/cravinaie_net_70_strahler.shp";
+    //
+    // StrahlerRatios ratios = new StrahlerRatios();
+    // ratios.inFlow = RasterReader.readRaster(flow);
+    // ratios.inStrahler = RasterReader.readRaster(strahler);
+    // ratios.inNet = VectorReader.readVector(net);
+    // ratios.process();
+    // System.out.println(ratios.outBisfurcation);
+    // System.out.println(ratios.outLength);
+    // System.out.println(ratios.outArea);
+    // }
 
 }
