@@ -34,6 +34,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -52,6 +53,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Keywords("IO, Coverage, Raster, Downsampling, Interpolation")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
+@Name("winsampler")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class WindowSampler extends JGTModel {
     @Description("The input coverage.")
@@ -70,11 +72,11 @@ public class WindowSampler extends JGTModel {
     @In
     public int pCols = 3;
 
-    @Description("The windows rows to use (default is = pCols).")
+    @Description("The cols to move the window forward (default is = pCols).")
     @In
     public Integer pXstep;
     
-    @Description("The window cols to use (default is = pRows).")
+    @Description("The rows to move the window forward (default is = pRows).")
     @In
     public Integer pYstep;
 
