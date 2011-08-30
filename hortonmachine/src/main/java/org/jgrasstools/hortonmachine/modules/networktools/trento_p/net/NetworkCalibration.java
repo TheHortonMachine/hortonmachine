@@ -149,6 +149,12 @@ public class NetworkCalibration implements Network {
      * Is the number of data rain to use.
      */
     private int nTime;
+    /*
+     * True if there is an infinite loop.
+     */
+    private boolean infiniteLoop=false;
+
+    private final static int MAX_NUMBER_ITERATION = 1000;
 
     public int getTpMax() {
         return tpMax;
@@ -311,12 +317,9 @@ public class NetworkCalibration implements Network {
                 throw new IllegalArgumentException(msg.message("trentoP.error.t"));
             }
 
-            double tmax = 0;
-
-            tmax = ModelsEngine.approximate2Multiple(tMax, dt);
+            double tMaxApproximate = ModelsEngine.approximate2Multiple(tMax, dt);
             // initialize the output.
-
-            nTime = (int) (tmax / dt);
+            nTime = (int) (tMaxApproximate / dt);
             lastTimeDischarge = createMatrix();
             lastTimeFillDegree = createMatrix();
 
@@ -368,7 +371,7 @@ public class NetworkCalibration implements Network {
         double minG = networkPipes[0].getMinG();
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
-
+        int count = 0;
         do {
             olddelay = localdelay;
             qMax = 0;
@@ -398,7 +401,12 @@ public class NetworkCalibration implements Network {
             // Average velocity in pipe [ m / s ]
             u = qMax * 80 / (pow(networkPipes[k].diameterToVerify, 2) * (theta - sin(theta)));
             localdelay = networkPipes[k].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
+            count++;
+            if (count > MAX_NUMBER_ITERATION) {
+                infiniteLoop = true;
 
+                throw new ArithmeticException();
+            }
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
         cDelays[k] = localdelay;
         return qMax;
@@ -486,10 +494,11 @@ public class NetworkCalibration implements Network {
         if (tMax == tpMaxCalibration) {
             maxRain = rainData.length;
         } else {
-            maxRain = tp;
+            maxRain = tp / dt;
         }
+        double tMaxApproximate = ModelsEngine.approximate2Multiple(tMax, dt);
 
-        for( t = tmin, j = 0; t <= tMax; t += dt, ++j ) {
+        for( t = tmin, j = 0; t <= tMaxApproximate; t += dt, ++j ) {
             Q = 0;
 
             for( int i = 0; i <= maxRain - 1; ++i ) {
@@ -545,6 +554,7 @@ public class NetworkCalibration implements Network {
         double minG = networkPipes[0].getMinG();
         double maxtheta = networkPipes[0].getMaxTheta();
         double tolerance = networkPipes[0].getTolerance();
+        int count = 0;
         do {
             olddelay = localdelay;
             qMax = getHydrograph(k, timeDischarge, olddelay, 0, tp);
@@ -566,6 +576,11 @@ public class NetworkCalibration implements Network {
 
             u = qMax * 80 / (Math.pow(tmp1, 2) * (theta - Math.sin(theta)));
             localdelay = tmp2 / (celerityfactor1 * u * MINUTE2SEC);
+            count++;
+            if (count > MAX_NUMBER_ITERATION) {
+                infiniteLoop = true;
+                throw new ArithmeticException();
+            }
 
         } while( Math.abs(localdelay - olddelay) / olddelay >= tolerance );
 
@@ -630,8 +645,7 @@ public class NetworkCalibration implements Network {
             /*
              *  start to evaluate the discharge from 15 minutes,evaluate the nearsted value to 15 minutes.
              */
-            int mod = Math.round(INITIAL_TIME / dt);
-            int minTime = dt * mod;
+            int minTime = (int) ModelsEngine.approximate2Multiple(INITIAL_TIME, dt);
             double qMax = 0;
             for( int i = minTime; i < tpMaxCalibration; i = i + dt ) {
                 tpMax = i;
@@ -667,14 +681,13 @@ public class NetworkCalibration implements Network {
         int netLength = networkPipes.length;
         double[] one = new double[netLength];
         double[] two = new double[netLength];
-        for (int i=0; i<netLength; i++){
-            one[i]=i;
-            two[i]= networkPipes[i].getId();
+        for( int i = 0; i < netLength; i++ ) {
+            one[i] = i;
+            two[i] = networkPipes[i].getId();
         }
 
         QuickSortAlgorithm sort = new QuickSortAlgorithm(pm);
-        sort.sort(two,one);
-
+        sort.sort(two, one);
 
         for( int i = 0; i < length - 1; i++ ) {
             int index = (int) one[i];
@@ -886,18 +899,22 @@ public class NetworkCalibration implements Network {
                 }
                 pm.worked(1);
             } catch (ArithmeticException e) {
-                NumberFormat formatter = new DecimalFormat("#.###");
-                String limit = formatter.format(maxFill);
-                strBuilder.append(" ");
-                strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
-                strBuilder.append(limit);
-                strBuilder.append(" ");
-                strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                strBuilder.append(networkPipes[l - 1].getId());
-                strBuilder.append(" ");
-                strBuilder.append("tp " + tp);
-                strBuilder.append("\n");
-                isFill = true;
+                if (infiniteLoop) {
+                    strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
+                } else {
+                    NumberFormat formatter = new DecimalFormat("#.###");
+                    String limit = formatter.format(maxFill);
+                    strBuilder.append(" ");
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                    strBuilder.append(limit);
+                    strBuilder.append(" ");
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
+                    strBuilder.append(networkPipes[l - 1].getId());
+                    strBuilder.append(" ");
+                    strBuilder.append("tp " + tp);
+                    strBuilder.append("\n");
+                    isFill = true;
+                }
                 break;
 
             }
@@ -914,7 +931,7 @@ public class NetworkCalibration implements Network {
             while( k < magnitude.length ) {
 
                 try {
-                    net = new double[(int) (magnitude[k]-1)][9];
+                    net = new double[(int) (magnitude[k] - 1)][9];
                     scanNetwork(k, l, one, net);
                     double q = internalPipeVerify(l, cDelays, net, timeDischarge, timeFillDegree, tp);
                     if (q > qMax) {
@@ -931,15 +948,20 @@ public class NetworkCalibration implements Network {
                     }
                     pm.worked(1);
                 } catch (ArithmeticException e) {
-                    strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
-                    strBuilder.append(maxFill);
-                    strBuilder.append(" ");
-                    strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                    strBuilder.append(networkPipes[l].getId());
-                    strBuilder.append(" ");
-                    strBuilder.append("tp " + tp);
-                    strBuilder.append("\n");
-                    isFill = true;
+                    if (infiniteLoop) {
+                        strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
+                    } else {
+
+                        strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                        strBuilder.append(maxFill);
+                        strBuilder.append(" ");
+                        strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
+                        strBuilder.append(networkPipes[l].getId());
+                        strBuilder.append(" ");
+                        strBuilder.append("tp " + tp);
+                        strBuilder.append("\n");
+                        isFill = true;
+                    }
                     break;
                 }
             }
