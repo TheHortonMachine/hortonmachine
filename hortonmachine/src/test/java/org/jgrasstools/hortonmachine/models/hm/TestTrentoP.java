@@ -317,11 +317,15 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pGamma = globalparameters[15];
      trento_P.pEspInflux = globalparameters[16];
      trento_P.pOutPipe = 16;
-     
-     trento_P.pA = a;
-     trento_P.pN = n;
+     TimeSeriesReader rainReader = new TimeSeriesReader();
+     rainReader.fileNovalue = "-9999";
+     rainReader.file = rainFile.getAbsolutePath();
+     rainReader.read();
+     rainReader.close();
+     trento_P.inRain = rainReader.outData;
      // set global parameters.
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
+     File netFile = new File(net.toURI());
      ShapefileFeatureReader netReader = new ShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
