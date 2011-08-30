@@ -247,7 +247,7 @@ public class TrentoP extends JGTModel {
     public int tMax = (int) DEFAULT_TMAX;
 
     @Description("Maximum Rain Time step to evaluate the Rain in calibration mode.")
-    @Unit("-")
+    @Unit("minutes")
     @In
     public Integer tpMaxCalibration = null;
 
@@ -278,27 +278,24 @@ public class TrentoP extends JGTModel {
 
     @UI("outfile")
     @Description("The output if pTest=1, contains the fill degree for each pipes at several time.")
-    @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
     
-    
+    @Description("The time which give the maximum discharge.")
+    @Role(Role.OUTPUT)  
+    @Unit("minutes")
+    @Out
     public Integer outTpMax = null;
 
     /**
      * Is an array with all the pipe of the net.
      */
     private Pipe[] networkPipes;
-
-    public static final int outIdPipe=0;
-    public static final int outIndexPipe=-1;
-
     
     /*
      * string which collected all the warnings. the warnings are printed at the
      * end of the processes.
      */
-    
     private String warnings = "warnings";
 
     public StringBuilder strBuilder = new StringBuilder(warnings);

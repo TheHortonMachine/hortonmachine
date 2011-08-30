@@ -277,7 +277,7 @@ public class Utility {
              * Si segue il percorso dell'acqua e si incrementa di 1 la mgnitude
              * di tutti gli stati attraversati prima di raggiungere l'uscita
              */
-            while( whereDrain[k] != TrentoP.outIndexPipe && count < length ) {
+            while( whereDrain[k] != Constants.OUT_INDEX_PIPE && count < length ) {
                 k = (int) whereDrain[k];
                 magnitude[k]++;
                 count++;

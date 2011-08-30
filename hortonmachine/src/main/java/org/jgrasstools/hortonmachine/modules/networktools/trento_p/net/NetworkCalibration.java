@@ -20,7 +20,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.CUBICMETER2LITER;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.*;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TMAX;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.EIGHTOVERTHREE;
@@ -45,7 +45,8 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
-
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.OUT_ID_PIPE;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.OUT_INDEX_PIPE;
 /**
  * 
  * Class which contains methods to verify a sewer network.
@@ -74,7 +75,7 @@ public class NetworkCalibration implements Network {
     DateTime first = null;
 
     /*
-     * Intervallo temporale.
+     * Time step.
      */
     private Integer dt;
     /*
@@ -82,11 +83,11 @@ public class NetworkCalibration implements Network {
      */
     private final IJGTProgressMonitor pm;
     /*
-     * Gestore messaggi.
+     *
      */
     private final HortonMessageHandler msg = HortonMessageHandler.getInstance();
     /*
-     * Dati di pioggia.
+     * Rain data.
      */
     private double[][] rainData;
     /*
@@ -152,25 +153,29 @@ public class NetworkCalibration implements Network {
     /*
      * True if there is an infinite loop.
      */
-    private boolean infiniteLoop=false;
-
+    private boolean infiniteLoop = false;
+    /*
+     * Max number of iteration to search the solution.
+     */
     private final static int MAX_NUMBER_ITERATION = 1000;
 
-    public int getTpMax() {
-        return tpMax;
-    }
     /**
         * Builder for the Calibration class.
         */
     public static class Builder {
 
-        // Parametri obbligatori
+        // Mandatory parameters.
+        /*
+         * Progress monitor.
+         */
         private final IJGTProgressMonitor pm;
-        // intervallo temporale.
+        /*
+         * time step.
+         */
         private final Integer dt;
-        // max number of time step.
-        private int tMax = (int) DEFAULT_TMAX;
-
+        /*
+         * Builder that contains the warning messages.
+         */
         private final StringBuilder strBuilder;
         /*
          * The fillDegree for each pipe and for each time.
@@ -196,10 +201,15 @@ public class NetworkCalibration implements Network {
          * Maximum time of calibration.
          */
         private final Integer tpMaxCalibration;
-        // Precisione con cui vengono cercate alcune soluzioni col metodo delle
-        // bisezioni.
+        // optional parameter.
+        /*
+         * Celerity.
+         */
         private double celerityfactor1 = DEFAULT_CELERITY_FACTOR;
-
+        /*
+         *  max number of time step.
+         */
+        private int tMax = (int) DEFAULT_TMAX;
         /**
          * Initialize the object with the needed parameters
          * 
@@ -211,7 +221,7 @@ public class NetworkCalibration implements Network {
          * @param inRain the rain data.
          * @param outDischarge the output, discharge.
          * @param outFillDegreethe output, fill degree.           
-         * @param strBuilder a tring used to store the warnings.
+         * @param strBuilder a string used to store the warnings.
          */
         public Builder( IJGTProgressMonitor pm, Pipe[] networkPipe, Integer dt, HashMap<DateTime, double[]> inRain,
                 HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
@@ -254,6 +264,11 @@ public class NetworkCalibration implements Network {
             return this;
         }
 
+        /**
+         * Create a NetworkCalibration Object.
+         * 
+         * @return 
+         */
         public NetworkCalibration build() {
             return new NetworkCalibration(this);
         }
@@ -329,6 +344,18 @@ public class NetworkCalibration implements Network {
         }
     }
 
+    /**
+     * Return the rain time.
+     * 
+     * @return the rain time which give the maximum discharge.
+     */
+    public int getTpMax() {
+        return tpMax;
+    }
+
+    /*
+     * Create the matrix which contains the result.
+     */
     private double[][] createMatrix() {
         double time = 0;
         double tmin = 0;
@@ -402,9 +429,9 @@ public class NetworkCalibration implements Network {
             u = qMax * 80 / (pow(networkPipes[k].diameterToVerify, 2) * (theta - sin(theta)));
             localdelay = networkPipes[k].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
             count++;
+            // verify if it's an infiniteloop.
             if (count > MAX_NUMBER_ITERATION) {
                 infiniteLoop = true;
-
                 throw new ArithmeticException();
             }
         } while( abs(localdelay - olddelay) / olddelay >= tolerance );
@@ -505,7 +532,8 @@ public class NetworkCalibration implements Network {
 
                 // [ l / s ]
 
-                rain = rainData[i][1] * networkPipes[k].getDrainArea() * networkPipes[k].getRunoffCoefficient() * 166.666667;
+                rain = rainData[i][1] * networkPipes[k].getDrainArea() * networkPipes[k].getRunoffCoefficient()
+                        * HAOVERH_TO_METEROVERS;
 
                 if (t <= i * dt) {
                     Q += 0;
@@ -762,7 +790,7 @@ public class NetworkCalibration implements Network {
             length = networkPipes[ind].getLenght();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
-            while( networkPipes[ind].getIdPipeWhereDrain() != TrentoP.outIdPipe ) {
+            while( networkPipes[ind].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
 
                 // lo stato dove drena a sua volta.
                 ind = networkPipes[ind].getIndexPipeWhereDrain();
@@ -948,10 +976,11 @@ public class NetworkCalibration implements Network {
                     }
                     pm.worked(1);
                 } catch (ArithmeticException e) {
+                    // if there is an infinite loop.
                     if (infiniteLoop) {
                         strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
                     } else {
-
+                        // if a pipe is fill.
                         strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
                         strBuilder.append(maxFill);
                         strBuilder.append(" ");

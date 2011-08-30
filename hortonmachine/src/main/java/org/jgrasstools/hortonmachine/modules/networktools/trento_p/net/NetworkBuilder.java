@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.net;
-import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP.*;
 import static java.lang.Math.abs;
 import static java.lang.Math.exp;
 import static java.lang.Math.log;
@@ -32,6 +31,8 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.HOUR2MIN;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.METER2CM;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.MINUTE2SEC;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.OUT_ID_PIPE;
+import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.OUT_INDEX_PIPE;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -314,15 +315,15 @@ public class NetworkBuilder implements Network {
          */
         int[][] upstreampipes = new int[length][networkPipes[0].getMaxJunction() + 2];
 
-//        for( int i = 0; i < length; i++ ) {
-//            upstreampipes[i][0] = 1;
-//        }
+        // for( int i = 0; i < length; i++ ) {
+        // upstreampipes[i][0] = 1;
+        // }
 
         int[] controlstrip = new int[length];
         int count;
         for( int i = 0; i < length; i++ ) {
             count = networkPipes[i].getIndexPipeWhereDrain();
-            if (count != outIndexPipe) {
+            if (count != OUT_INDEX_PIPE) {
                 upstreampipes[count][0] += 1;
                 upstreampipes[count][upstreampipes[count][0]] = i;
             }
@@ -332,7 +333,7 @@ public class NetworkBuilder implements Network {
             if (two[i] == 1) {
                 int k = i;
 
-                while( networkPipes[k].getIdPipeWhereDrain() != outIdPipe ) {
+                while( networkPipes[k].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
                     int oldk = k;
                     k = networkPipes[k].getIndexPipeWhereDrain();
 
@@ -359,7 +360,7 @@ public class NetworkBuilder implements Network {
         int childs = 0;
 
         for( int i = 0; i < length; i++ ) {
-            if (networkPipes[i].getIdPipeWhereDrain() == outIdPipe) {
+            if (networkPipes[i].getIdPipeWhereDrain() == OUT_ID_PIPE) {
                 controlstrip[childs] = i;
                 childs++;
             }
@@ -425,7 +426,7 @@ public class NetworkBuilder implements Network {
         for( int i = 0; i < networkPipes.length; i++ ) {
             // vedo dove va a drenare.
             int count = networkPipes[i].getIndexPipeWhereDrain();
-            if (count != outIndexPipe) {
+            if (count != OUT_INDEX_PIPE) {
                 /*
                  * Se non si trarra dell'uscita incremento di uno la prima
                  * colonna della riga corrispondente allo statoricevente, nella
@@ -455,7 +456,7 @@ public class NetworkBuilder implements Network {
                  * Seguo il percorso dell'acqua verso valle, a partire da
                  * un'area di testa
                  */
-                while( networkPipes[k].getIdPipeWhereDrain() != outIdPipe ) {
+                while( networkPipes[k].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
                     int oldk = k;
                     // Stato dove drena l'area di testa
                     k = networkPipes[k].getIndexPipeWhereDrain();
@@ -1275,7 +1276,7 @@ public class NetworkBuilder implements Network {
             length = networkPipes[ind].getLenght();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
-            while( networkPipes[ind].getIdPipeWhereDrain() != outIdPipe ) {
+            while( networkPipes[ind].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
 
                 // lo stato dove drena a sua volta.
                 ind = networkPipes[ind].getIndexPipeWhereDrain();
