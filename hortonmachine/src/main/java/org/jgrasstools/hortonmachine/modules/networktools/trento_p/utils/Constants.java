@@ -26,23 +26,28 @@ package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
  */
 public class Constants {
     /**
-     * Convertion coefficent from hour to minutes.
+     * Conversion coefficient from ha/h to m/s.
+     */
+
+    public static final double HAOVERH_TO_METEROVERS = 166.666667;
+    /**
+     * Conversion coefficient from hour to minutes.
      */
     public static final double HOUR2MIN = 60.0;
     /**
-     * Convertion coefficent from meter to cm.
+     * Conversion coefficient from meter to cm.
      */
     public static final double METER2CM = 100.0;
     /**
-     * Convertion coefficent from minute to seconds.
+     * Conversion coefficient from minute to seconds.
      */
     public static final double MINUTE2SEC = 60.0;
     /**
-     * Convertion coefficent from m^3 to dm^3 or liter.
+     * Conversion coefficient from m^3 to dm^3 or liter.
      */
     public static final double CUBICMETER2LITER = 1000;
     /**
-     * Convertion coefficent from m^2 to cm^2.
+     * Conversion coefficient from m^2 to cm^2.
      */
     public static final double METER2CMSQUARED = 10000;
     /**
@@ -206,20 +211,20 @@ public class Constants {
      */
 
     public final static double DEFAULT_DT = 15;
-    
-    public final static Double[] CELERITY_RANGE = {new Double(1),new Double(1.6)};
-    public final static Integer[] JMAX_RANGE = {new Integer(3),new Integer(1000)};
-    public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0),null};
-    public final static Double[] GAMMA_RANGE = {new Double(0),null};
-    public final static Double[] TOLERANCE_RANGE = {new Double(0),null};
-    public final static Double[] THETA_RANGE = {new Double(Math.PI),null};
-    public final static Double[] EPS_RANGE = {new Double(0),new Double(1)};
-    public final static Double[] C_RANGE = {new Double(0),null};
-    public final static Double[] EXPONENT_RANGE = {new Double(0),null};
-    public final static Double[] MIN_DEPTH_RANGE = {null,null};
-    public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0),new Integer(6)};
-    public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0),new Double(0.1)};
-    public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0),null};
+
+    public final static Double[] CELERITY_RANGE = {new Double(1), new Double(1.6)};
+    public final static Integer[] JMAX_RANGE = {new Integer(3), new Integer(1000)};
+    public final static Double[] INFLUX_EXPONENT_RANGE = {new Double(0), null};
+    public final static Double[] GAMMA_RANGE = {new Double(0), null};
+    public final static Double[] TOLERANCE_RANGE = {new Double(0), null};
+    public final static Double[] THETA_RANGE = {new Double(Math.PI), null};
+    public final static Double[] EPS_RANGE = {new Double(0), new Double(1)};
+    public final static Double[] C_RANGE = {new Double(0), null};
+    public final static Double[] EXPONENT_RANGE = {new Double(0), null};
+    public final static Double[] MIN_DEPTH_RANGE = {null, null};
+    public final static Integer[] MAX_JUNCTIONS_RANGE = {new Integer(0), new Integer(6)};
+    public final static Double[] MIN_FILL_DEGREE_RANGE = {new Double(0), new Double(0.1)};
+    public final static Double[] MIN_DISCHARGE_RANGE = {new Double(0), null};
     /**
      * The name of the shp with the network data.
      */
@@ -232,6 +237,13 @@ public class Constants {
      * The name of the shp with the aree.
      */
     public static final String AREA_NAME_SHP = "area.shp"; //$NON-NLS-1$
-
+    /**
+     * The ID of the pipe where drain the last pipe of the net.(It doesn't exist).
+     */
+    public static final int OUT_ID_PIPE = 0;
+    /**
+    * The index of the pipe where drain the last pipe of the net.(It doesn't exist).
+    */
+    public static final int OUT_INDEX_PIPE = -1;
 
 }

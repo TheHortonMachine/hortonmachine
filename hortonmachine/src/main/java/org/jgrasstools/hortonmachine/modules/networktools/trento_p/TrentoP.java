@@ -57,6 +57,7 @@ import oms3.annotations.Unit;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
@@ -246,7 +247,7 @@ public class TrentoP extends JGTModel {
     public int tMax = (int) DEFAULT_TMAX;
 
     @Description("Maximum Rain Time step to evaluate the Rain in calibration mode.")
-    @Unit("-")
+    @Unit("minutes")
     @In
     public Integer tpMaxCalibration = null;
 
@@ -277,27 +278,24 @@ public class TrentoP extends JGTModel {
 
     @UI("outfile")
     @Description("The output if pTest=1, contains the fill degree for each pipes at several time.")
-    @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
     
-    
+    @Description("The time which give the maximum discharge.")
+    @Role(Role.OUTPUT)  
+    @Unit("minutes")
+    @Out
     public Integer outTpMax = null;
 
     /**
      * Is an array with all the pipe of the net.
      */
     private Pipe[] networkPipes;
-
-    public static final int outIdPipe=0;
-    public static final int outIndexPipe=-1;
-
     
     /*
      * string which collected all the warnings. the warnings are printed at the
      * end of the processes.
      */
-    
     private String warnings = "warnings";
 
     public StringBuilder strBuilder = new StringBuilder(warnings);
@@ -602,7 +600,10 @@ public class TrentoP extends JGTModel {
                 if (tMax < tpMaxCalibration) {
                     tpMaxCalibration = tMax;
                 }
-                int iMax = (int) (Math.floor((double) tMax / (double) dt));
+                
+                double  tMaxApproximate = ModelsEngine.approximate2Multiple(tMax, dt);
+                // initialize the output.
+                int iMax = (int)(tMaxApproximate / dt);
                 int iRainMax = (int) (Math.floor((double) tpMaxCalibration / (double) dt));
                 DateTime startTime = new DateTime(System.currentTimeMillis());
                 inRain = new LinkedHashMap<DateTime, double[]>();
@@ -655,6 +656,7 @@ public class TrentoP extends JGTModel {
         int length = inPipes.size();
         networkPipes = new Pipe[length];
         SimpleFeatureIterator stationsIter = inPipes.features();
+        boolean existOut = false;
         int tmpOutIndex = 0;
         try {
             int t=0;
@@ -671,8 +673,9 @@ public class TrentoP extends JGTModel {
                         pm.errorMessage(msg.message("trentoP.error.number") + TrentoPFeatureType.ID_STR);
                         throw new IllegalArgumentException(msg.message("trentoP.error.number" )+ TrentoPFeatureType.ID_STR);
                     }
-                    if(field==pOutPipe){
+                    if(field.equals(pOutPipe)){
                         tmpOutIndex=t;
+                        existOut=true;
                     }
                     networkPipes[t] = new Pipe(feature, pMode, isAreaNotAllDry);
                     t++;
@@ -687,14 +690,17 @@ public class TrentoP extends JGTModel {
         } finally {
             stationsIter.close();
         }
+        if(!existOut){
+            
+        }
         // set the id where drain of the outlet.
         networkPipes[tmpOutIndex].setIdPipeWhereDrain(0);
         networkPipes[tmpOutIndex].setIndexPipeWhereDrain(-1);
 
         // start to construct the net.               
-
+        int numberOfPoint = networkPipes[tmpOutIndex].point.length-1;
         findIdWhereDrain(tmpOutIndex, networkPipes[tmpOutIndex].point[0]);
-        findIdWhereDrain(tmpOutIndex, networkPipes[tmpOutIndex].point[1]);
+        findIdWhereDrain(tmpOutIndex, networkPipes[tmpOutIndex].point[numberOfPoint]);
 
         verifyNet(networkPipes, pm);
 

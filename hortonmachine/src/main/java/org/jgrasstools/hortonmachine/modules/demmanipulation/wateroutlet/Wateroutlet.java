@@ -80,9 +80,11 @@ public class Wateroutlet extends JGTModel {
     @Out
     public GridCoverage2D outBasin = null;
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+    @Description("The area of the extracted basin.")
+    @Out
+    public double outArea = 0;
 
-    private int total;
+    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private int[] pt_seg = new int[1];
     private int[] ba_seg = new int[1];
@@ -128,7 +130,6 @@ public class Wateroutlet extends JGTModel {
         WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, null);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
-        total = nrows * ncols;
         drain_ptrs = new double[size_array(pt_seg, nrows, ncols)];
         // bas = (CELL *) G_calloc (size_array (&ba_seg, nrows, ncols),
         // sizeof(CELL));
@@ -150,9 +151,6 @@ public class Wateroutlet extends JGTModel {
                 } else if (!isNovalue(flowValue)) {
                     flowIter.setSample(c, r, 0, flowValue - 1);
                 }
-                if (flowValue == 0.0) {
-                    total--;
-                }
                 drain_ptrs[seg_index(pt_seg, r, c)] = flowIter.getSample(c, r, 0);
             }
             pm.worked(1);
@@ -166,15 +164,19 @@ public class Wateroutlet extends JGTModel {
 
         for( int r = 0; r < nrows; r++ ) {
             for( int c = 0; c < ncols; c++ ) {
-                basinIter.setSample(c, r, 0, bas_ptrs[seg_index(ba_seg, r, c)]);
+                double basinValue = bas_ptrs[seg_index(ba_seg, r, c)];
+                basinIter.setSample(c, r, 0, basinValue);
                 if (isNovalue(flowIter.getSampleDouble(c, r, 0)) || basinIter.getSampleDouble(c, r, 0) == 0.0) {
                     basinIter.setSample(c, r, 0, doubleNovalue);
+                } else {
+                    outArea = outArea + 1;
                 }
             }
             pm.worked(1);
         }
         pm.done();
 
+        outArea = outArea * xRes * yRes;
         outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
