@@ -10,6 +10,7 @@ import java.util.List;
 import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
 
 import com.vividsolutions.jts.JTSVersion;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTReader;
@@ -81,13 +82,6 @@ public class DiskTreeReader implements IDiskTree {
 
     public static void main( String[] args ) throws Exception {
 
-        WKTReader r = new WKTReader();
-        Geometry pol = r.read("POLYGON ((210 350, 230 310, 290 350, 290 350, 210 350))");
-        pol.setUserData(1);
-        Geometry line = r.read("LINESTRING (50 380, 90 210, 180 160, 240 40, 240 40)");
-        line.setUserData(2);
-        Geometry point = r.read("POINT (130 120)");
-        point.setUserData(3);
 
         DiskTreeReader writer = new DiskTreeReader("/home/moovida/TMP/index.bin");
         Quadtree indexObj = writer.readIndex();
