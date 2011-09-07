@@ -5,15 +5,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
-import java.util.List;
 
 import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
 
 import com.vividsolutions.jts.JTSVersion;
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKTReader;
 
 public class DiskTreeReader implements IDiskTree {
 
@@ -80,21 +77,21 @@ public class DiskTreeReader implements IDiskTree {
         raf.close();
     }
 
-    public static void main( String[] args ) throws Exception {
-
-
-        DiskTreeReader writer = new DiskTreeReader("/home/moovida/TMP/index.bin");
-        Quadtree indexObj = writer.readIndex();
-
-        List queryAll = indexObj.queryAll();
-
-        for( Object object : queryAll ) {
-            if (object instanceof long[]) {
-                long[] posSize = (long[]) object;
-                Geometry geom = writer.pickGeometry(posSize[0], posSize[1]);
-                System.out.println(geom.toText());
-            }
-        }
-
-    }
+    // public static void main( String[] args ) throws Exception {
+    //
+    //
+    // DiskTreeReader writer = new DiskTreeReader("/home/moovida/TMP/index.bin");
+    // Quadtree indexObj = writer.readIndex();
+    //
+    // List queryAll = indexObj.queryAll();
+    //
+    // for( Object object : queryAll ) {
+    // if (object instanceof long[]) {
+    // long[] posSize = (long[]) object;
+    // Geometry geom = writer.pickGeometry(posSize[0], posSize[1]);
+    // System.out.println(geom.toText());
+    // }
+    // }
+    //
+    // }
 }
