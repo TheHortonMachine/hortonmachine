@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.gears.io.disktree;
 
 import java.io.ByteArrayOutputStream;
@@ -13,10 +30,21 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKBWriter;
 
+/**
+ * Writer for the quadtree disk index.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ * @see IDiskTree
+ */
 public class DiskTreeWriter implements IDiskTree {
 
     private final String path;
 
+    /**
+     * Constructor.
+     * 
+     * @param path the path to which the index will be written.
+     */
     public DiskTreeWriter( String path ) {
         this.path = path;
     }
