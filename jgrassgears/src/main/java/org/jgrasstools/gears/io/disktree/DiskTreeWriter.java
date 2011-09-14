@@ -28,7 +28,6 @@ import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBWriter;
 
 /**
  * Writer for the quadtree disk index.
@@ -72,7 +71,6 @@ public class DiskTreeWriter implements IDiskTree {
             raf.seek(geometriesStart);
             System.out.println("geometriesStart: " + geometriesStart);
 
-            WKBWriter w = new WKBWriter();
             Quadtree tree = new Quadtree();
 
             long fileIndex = geometriesStart;
@@ -81,7 +79,7 @@ public class DiskTreeWriter implements IDiskTree {
                 Geometry geometry = geometries[i];
                 Envelope envelope = geometry.getEnvelopeInternal();
 
-                byte[] geomBytes = w.write(geometry);
+                byte[] geomBytes = serialize(geometry);
                 raf.write(geomBytes);
 
                 /*
@@ -103,12 +101,8 @@ public class DiskTreeWriter implements IDiskTree {
             /*
              * serialize index
              */
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(bos);
-            out.writeObject(tree);
-            out.close();
+            byte[] treeBytes = serialize(tree);
 
-            byte[] treeBytes = bos.toByteArray();
             long treeSize = treeBytes.length;
             raf.seek(fileIndex);
             raf.write(treeBytes, 0, (int) treeSize);
@@ -125,6 +119,15 @@ public class DiskTreeWriter implements IDiskTree {
             System.out.println("close");
             raf.close();
         }
+    }
+
+    private byte[] serialize( Object obj ) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(bos);
+        out.writeObject(obj);
+        out.close();
+        byte[] treeBytes = bos.toByteArray();
+        return treeBytes;
     }
 
     // public static void main( String[] args ) throws ParseException, IOException {

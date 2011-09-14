@@ -27,7 +27,6 @@ import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
 
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKBReader;
 
 /**
  * Reader for the quadtree disk index.
@@ -110,8 +109,9 @@ public class DiskTreeReader implements IDiskTree {
         byte[] geomBytes = new byte[(int) size];
         raf.seek(position);
         raf.read(geomBytes);
-        WKBReader r = new WKBReader();
-        Geometry geometry = r.read(geomBytes);
+
+        ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(geomBytes));
+        Geometry geometry = (Geometry) in.readObject();
         return geometry;
     }
 
