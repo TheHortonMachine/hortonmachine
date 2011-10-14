@@ -77,6 +77,9 @@ public class DiskTreeWriter implements IDiskTree {
 
             for( int i = 0; i < geometries.length; i++ ) {
                 Geometry geometry = geometries[i];
+                if (geometry.isEmpty()) {
+                    continue;
+                }
                 Envelope envelope = geometry.getEnvelopeInternal();
 
                 byte[] geomBytes = serialize(geometry);
