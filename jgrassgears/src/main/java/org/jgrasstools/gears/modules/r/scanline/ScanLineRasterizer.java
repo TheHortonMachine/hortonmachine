@@ -239,7 +239,8 @@ public class ScanLineRasterizer extends JGTModel {
                                             }
                                         }
                                     } else {
-                                        pm.errorMessage(MessageFormat.format("Single intersection in: {0}/{1}", coords[0].x, coords[0].y));
+                                        pm.errorMessage(MessageFormat.format("Single intersection in: {0}/{1}", coords[0].x,
+                                                coords[0].y));
                                         pm.errorMessage("Might be a cusp.");
                                     }
                                 }

@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -102,6 +102,10 @@ public class Peakflow extends JGTModel {
     @In
     public GridCoverage2D inTopindex = null;
 
+    @Description("Optional map of saturation.")
+    @In
+    public GridCoverage2D inSat = null;
+
     @Description("The map of superficial rescaled distance.")
     @In
     public GridCoverage2D inRescaledsup = null;
@@ -151,41 +155,19 @@ public class Peakflow extends JGTModel {
     private boolean isReal = false;
     private boolean isStatistics = false;
 
+    private int cols;
+
+    private int rows;
+
     @Execute
     public void process() throws Exception {
+        checkNull(inRescaledsup);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTopindex);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRescaledsup);
+        cols = regionMap.get(CoverageUtilities.COLS).intValue();
+        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
         xRes = regionMap.get(CoverageUtilities.XRES);
         yRes = regionMap.get(CoverageUtilities.YRES);
-
-        double[][] topindexCb = doCb(inTopindex);
-
-        // cumulate topindex
-        for( int i = 0; i < topindexCb.length; i++ ) {
-            if (i > 0) {
-                topindexCb[i][1] = topindexCb[i][1] + topindexCb[i - 1][1];
-            }
-        }
-        double max = topindexCb[topindexCb.length - 1][1];
-        // normalize
-        for( int i = 0; i < topindexCb.length; i++ ) {
-            topindexCb[i][1] = topindexCb[i][1] / max;
-        }
-
-        List<Double> meanValueList = new ArrayList<Double>();
-        List<Double> cumulatedValueList = new ArrayList<Double>();
-        for( int i = 0; i < topindexCb.length; i++ ) {
-            meanValueList.add(topindexCb[i][0]);
-            cumulatedValueList.add(topindexCb[i][1]);
-        }
-
-        LinearListInterpolator interpolator = new LinearListInterpolator(meanValueList, cumulatedValueList);
-        double topindexThreshold = interpolator.linearInterpolateX(1 - pSat / 100);
-
-        RenderedImage topindexRI = inTopindex.getRenderedImage();
-        RandomIter topindexIter = RandomIterFactory.create(topindexRI, null);
 
         RenderedImage supRescaledRI = inRescaledsup.getRenderedImage();
         WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(supRescaledRI, false);
@@ -195,17 +177,14 @@ public class Peakflow extends JGTModel {
             RenderedImage subRescaledRI = inRescaledsub.getRenderedImage();
             subRescaledWR = CoverageUtilities.renderedImage2WritableRaster(subRescaledRI, false);
         }
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
-                double topindex = topindexIter.getSampleDouble(c, r, 0);
-                if (topindex >= topindexThreshold) {
-                    if (subRescaledWR != null) {
-                        subRescaledWR.setSample(c, r, 0, doubleNovalue);
-                    }
-                } else {
-                    supRescaledWR.setSample(c, r, 0, doubleNovalue);
-                }
-            }
+
+        if (inTopindex != null) {
+            processWithTopIndex(supRescaledWR, subRescaledWR);
+        } else if (inSat != null) {
+            processWithSaturation(inSat, supRescaledWR, subRescaledWR);
+        } else {
+            throw new ModelsIllegalargumentException(
+                    "At least one of the topindex or the saturation map have to be available to proceed.", this);
         }
 
         GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup", supRescaledWR, regionMap,
@@ -371,6 +350,64 @@ public class Peakflow extends JGTModel {
         // // throw some
         // }
         // }
+    }
+
+    private void processWithSaturation( GridCoverage2D sat, WritableRaster supRescaledWR, WritableRaster subRescaledWR ) {
+        RandomIter satIter = CoverageUtilities.getRandomIterator(sat);
+        for( int c = 0; c < cols; c++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                double saturation = satIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(saturation)) {
+                    if (subRescaledWR != null) {
+                        subRescaledWR.setSample(c, r, 0, doubleNovalue);
+                    }
+                } else {
+                    supRescaledWR.setSample(c, r, 0, doubleNovalue);
+                }
+            }
+        }
+    }
+
+    private void processWithTopIndex( WritableRaster supRescaledWR, WritableRaster subRescaledWR ) throws Exception {
+        double[][] topindexCb = doCb(inTopindex);
+
+        // cumulate topindex
+        for( int i = 0; i < topindexCb.length; i++ ) {
+            if (i > 0) {
+                topindexCb[i][1] = topindexCb[i][1] + topindexCb[i - 1][1];
+            }
+        }
+        double max = topindexCb[topindexCb.length - 1][1];
+        // normalize
+        for( int i = 0; i < topindexCb.length; i++ ) {
+            topindexCb[i][1] = topindexCb[i][1] / max;
+        }
+
+        List<Double> meanValueList = new ArrayList<Double>();
+        List<Double> cumulatedValueList = new ArrayList<Double>();
+        for( int i = 0; i < topindexCb.length; i++ ) {
+            meanValueList.add(topindexCb[i][0]);
+            cumulatedValueList.add(topindexCb[i][1]);
+        }
+
+        LinearListInterpolator interpolator = new LinearListInterpolator(meanValueList, cumulatedValueList);
+        double topindexThreshold = interpolator.linearInterpolateX(1 - pSat / 100);
+
+        RenderedImage topindexRI = inTopindex.getRenderedImage();
+        RandomIter topindexIter = RandomIterFactory.create(topindexRI, null);
+
+        for( int c = 0; c < cols; c++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                double topindex = topindexIter.getSampleDouble(c, r, 0);
+                if (topindex >= topindexThreshold) {
+                    if (subRescaledWR != null) {
+                        subRescaledWR.setSample(c, r, 0, doubleNovalue);
+                    }
+                } else {
+                    supRescaledWR.setSample(c, r, 0, doubleNovalue);
+                }
+            }
+        }
     }
 
     private void setSuperficialWidthFunction( double[][] widthfunctionSupCb ) {
