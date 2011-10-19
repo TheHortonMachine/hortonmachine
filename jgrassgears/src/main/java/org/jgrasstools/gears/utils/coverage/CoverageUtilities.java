@@ -1093,5 +1093,20 @@ public class CoverageUtilities {
 
         return hypso;
     }
+    
+    
+    /**
+     * Simple method to get a value from a single band raster.
+     * 
+     * @param raster the single band raster.
+     * @param col the column.
+     * @param row the row.
+     * @return the value in the [col, row] of the first band.
+     */
+    public static double getValue(GridCoverage2D raster, int col, int row){
+    	double[] values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
+    	return values[0];
+    }
+    
 
 }

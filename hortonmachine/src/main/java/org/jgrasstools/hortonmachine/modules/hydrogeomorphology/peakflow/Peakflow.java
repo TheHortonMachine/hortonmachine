@@ -188,13 +188,13 @@ public class Peakflow extends JGTModel {
         }
 
         GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup", supRescaledWR, regionMap,
-                inTopindex.getCoordinateReferenceSystem());
+                inRescaledsup.getCoordinateReferenceSystem());
         double[][] widthfunctionSupCb = doCb(widthfunctionSupCoverage);
 
         double[][] widthfunctionSubCb = null;
         if (inRescaledsub != null) {
             GridCoverage2D widthfunctionSubCoverage = CoverageUtilities.buildCoverage("sub", subRescaledWR, regionMap,
-                    inTopindex.getCoordinateReferenceSystem());
+                    inRescaledsup.getCoordinateReferenceSystem());
             widthfunctionSubCb = doCb(widthfunctionSubCoverage);
         }
 

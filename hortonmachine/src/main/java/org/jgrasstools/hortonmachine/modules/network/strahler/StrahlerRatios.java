@@ -196,22 +196,22 @@ public class StrahlerRatios extends JGTModel {
 
     }
 
-    // public static void main( String[] args ) throws Exception {
-    //
-    // String flow = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_drain";
-    // String strahler =
-    // "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_net70_strahler";
-    // // String strahler = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_strahler";
-    // String net = "D:/TMP/TESTSTRAHLER/cravinaie_net_70_strahler.shp";
-    //
-    // StrahlerRatios ratios = new StrahlerRatios();
-    // ratios.inFlow = RasterReader.readRaster(flow);
-    // ratios.inStrahler = RasterReader.readRaster(strahler);
-    // ratios.inNet = VectorReader.readVector(net);
-    // ratios.process();
-    // System.out.println(ratios.outBisfurcation);
-    // System.out.println(ratios.outLength);
-    // System.out.println(ratios.outArea);
-    // }
+     public static void main( String[] args ) throws Exception {
+    
+     String flow = "C:/dati_gis/grassdata/liguria_gbovest/def10m/cell/a.cravinaie_drain";
+     String strahler =
+     "C:/dati_gis/grassdata/liguria_gbovest/def10m/cell/a.cravinaie_strahler_50";
+     // String strahler = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_strahler";
+     String net = "E:/lavori_tmp/2011_06_roggeri_cravinaie/shape/cravinaie_net_50_small.shp";
+    
+     StrahlerRatios ratios = new StrahlerRatios();
+     ratios.inFlow = RasterReader.readRaster(flow);
+     ratios.inStrahler = RasterReader.readRaster(strahler);
+     ratios.inNet = VectorReader.readVector(net);
+     ratios.process();
+     System.out.println(ratios.outBisfurcation);
+     System.out.println(ratios.outLength);
+     System.out.println(ratios.outArea);
+     }
 
 }
