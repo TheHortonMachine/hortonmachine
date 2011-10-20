@@ -68,8 +68,12 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description("Module for polygon vector to raster conversion.")
 @Documentation("ScanLineRasterizer.html")
@@ -211,6 +215,7 @@ public class ScanLineRasterizer extends JGTModel {
                         int numGeometries = geometry.getNumGeometries();
                         for( int i = 0; i < numGeometries; i++ ) {
                             final Geometry geometryN = geometry.getGeometryN(i);
+                            PreparedGeometry preparedGeometryN = PreparedGeometryFactory.prepare(geometryN);
                             for( int r = 0; r < height; r++ ) {
                                 // do scan line to fill the polygon
                                 double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
@@ -218,14 +223,21 @@ public class ScanLineRasterizer extends JGTModel {
                                 Coordinate west = new Coordinate(westPos[0], westPos[1]);
                                 Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
                                 LineString line = gf.createLineString(new Coordinate[]{west, east});
-                                if (geometryN.intersects(line)) {
+                                if (preparedGeometryN.intersects(line)) {
                                     Geometry internalLines = geometryN.intersection(line);
                                     Coordinate[] coords = internalLines.getCoordinates();
                                     if (coords.length > 1) {
                                         for( int j = 0; j < coords.length; j = j + 2 ) {
                                             Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
                                             Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
-
+                                            LineSegment segment = new LineSegment(startC, endC);
+                                            Coordinate centerPointCoord = segment.pointAlong(0.5);
+                                            Point centerPoint = gf.createPoint(centerPointCoord);
+                                            if (!preparedGeometryN.contains(centerPoint)) {
+                                                // not internal, so scale just one
+                                                j = j - 1;
+                                                continue;
+                                            }
                                             GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
                                                     startC.x, startC.x));
                                             GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
