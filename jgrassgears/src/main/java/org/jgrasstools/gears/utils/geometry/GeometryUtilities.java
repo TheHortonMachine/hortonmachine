@@ -25,7 +25,9 @@ import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
 import org.geotools.referencing.GeodeticCalculator;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -338,6 +340,24 @@ public class GeometryUtilities {
 
         double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
         return distance;
+    }
+
+    public static void sortHorizontal( Coordinate[] coordinates ) {
+        QuickSortAlgorithm sorter = new QuickSortAlgorithm(new DummyProgressMonitor());
+
+        double[] x = new double[coordinates.length];
+        double[] y = new double[coordinates.length];
+        for( int i = 0; i < x.length; i++ ) {
+            x[i] = coordinates[i].x;
+            y[i] = coordinates[i].y;
+        }
+
+        sorter.sort(x, y);
+
+        for( int i = 0; i < x.length; i++ ) {
+            coordinates[i].x = x[i];
+            coordinates[i].y = y[i];
+        }
     }
 
 }
