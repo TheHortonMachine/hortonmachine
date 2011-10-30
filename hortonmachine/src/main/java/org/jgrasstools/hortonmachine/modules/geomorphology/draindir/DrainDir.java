@@ -29,24 +29,23 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -69,16 +68,14 @@ public class DrainDir extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of flowdirections on the network pixels.")
+    @Description("The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.")
     @In
     public GridCoverage2D inFlownet = null;
 
-    @Role(Role.PARAMETER)
     @Description("The direction correction factor.")
     @In
     public double pLambda = 1.0;
 
-    @Role(Role.PARAMETER)
     @Description("Switch for the mode to use: true = LAD (default), false = LTD)).")
     @In
     public boolean doLad = true;
@@ -615,7 +612,7 @@ public class DrainDir extends JGTModel {
                 null, null);
         WritableRandomIter modflowRandomIter = RandomIterFactory.createWritable(modflowImage, null);
 
-        pm.beginTask("new directions...", rows);
+        pm.beginTask("Correcting drainage directions...", rows);
         for( int j = 0; j < rows; j++ ) {
             if (isCanceled(pm)) {
                 return;
