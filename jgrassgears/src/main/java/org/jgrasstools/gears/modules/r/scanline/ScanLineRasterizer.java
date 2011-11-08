@@ -48,6 +48,7 @@ import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -68,8 +69,12 @@ import org.opengis.referencing.operation.TransformException;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description("Module for polygon vector to raster conversion.")
 @Documentation("ScanLineRasterizer.html")
@@ -211,6 +216,8 @@ public class ScanLineRasterizer extends JGTModel {
                         int numGeometries = geometry.getNumGeometries();
                         for( int i = 0; i < numGeometries; i++ ) {
                             final Geometry geometryN = geometry.getGeometryN(i);
+                            // PreparedGeometry preparedGeometryN =
+                            // PreparedGeometryFactory.prepare(geometryN);
                             for( int r = 0; r < height; r++ ) {
                                 // do scan line to fill the polygon
                                 double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
@@ -220,29 +227,45 @@ public class ScanLineRasterizer extends JGTModel {
                                 LineString line = gf.createLineString(new Coordinate[]{west, east});
                                 if (geometryN.intersects(line)) {
                                     Geometry internalLines = geometryN.intersection(line);
-                                    Coordinate[] coords = internalLines.getCoordinates();
-                                    if (coords.length > 1) {
-                                        for( int j = 0; j < coords.length; j = j + 2 ) {
-                                            Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
-                                            Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
+                                    int lineNums = internalLines.getNumGeometries();
+                                    for( int l = 0; l < lineNums; l++ ) {
+                                        Coordinate[] coords = internalLines.getGeometryN(l).getCoordinates();
+                                        if (coords.length == 2) {
+                                            for( int j = 0; j < coords.length; j = j + 2 ) {
+                                                Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
+                                                Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                                            GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
-                                                    startC.x, startC.x));
-                                            GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(new DirectPosition2D(
-                                                    endC.x, endC.x));
+                                                DirectPosition2D startDP;
+                                                DirectPosition2D endDP;
+                                                if (startC.x < endC.x) {
+                                                    startDP = new DirectPosition2D(startC.x, startC.x);
+                                                    endDP = new DirectPosition2D(endC.x, endC.x);
+                                                } else {
+                                                    startDP = new DirectPosition2D(endC.x, endC.x);
+                                                    endDP = new DirectPosition2D(startC.x, startC.x);
+                                                }
+                                                GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
+                                                GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);
 
-                                            /*
-                                             * the part in between has to be filled
-                                             */
-                                            for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                                outWR.setSample(k, r, 0, value);
+                                                /*
+                                                 * the part in between has to be filled
+                                                 */
+                                                for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
+                                                    outWR.setSample(k, r, 0, value);
+                                                }
+                                            }
+                                        } else {
+                                            if (coords.length == 1) {
+                                                pm.errorMessage(MessageFormat.format("Found a cusp in: {0}/{1}", coords[0].x,
+                                                        coords[0].y));
+                                            } else {
+                                                throw new ModelsIOException(MessageFormat.format(
+                                                        "Found intersection with more than 2 points in: {0}/{1}", coords[0].x,
+                                                        coords[0].y), this);
                                             }
                                         }
-                                    } else {
-                                        pm.errorMessage(MessageFormat.format("Single intersection in: {0}/{1}", coords[0].x,
-                                                coords[0].y));
-                                        pm.errorMessage("Might be a cusp.");
                                     }
+
                                 }
                             }
                         }

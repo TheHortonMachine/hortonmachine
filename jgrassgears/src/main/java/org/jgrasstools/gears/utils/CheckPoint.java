@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.utils;
+package org.jgrasstools.gears.utils;
 
 /**
  * A point that can checked by comparison.
