@@ -123,18 +123,16 @@ public class Profile extends JGTModel {
             // dump the profile
             List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(inRaster, profileNodesList.toArray(new Coordinate[0]));
 
-            if (linesList.size() == 1) {
-                outProfile = new double[profilePoints.size()][4];
-                for( int i = 0; i < profilePoints.size(); i++ ) {
-                    ProfilePoint profilePoint = profilePoints.get(i);
-                    double progressive = profilePoint.getProgressive();
-                    double elev = profilePoint.getElevation();
-                    Coordinate coord = profilePoint.getPosition();
-                    outProfile[i][0] = progressive;
-                    outProfile[i][1] = elev;
-                    outProfile[i][2] = coord.x;
-                    outProfile[i][3] = coord.y;
-                }
+            outProfile = new double[profilePoints.size()][4];
+            for( int i = 0; i < profilePoints.size(); i++ ) {
+                ProfilePoint profilePoint = profilePoints.get(i);
+                double progressive = profilePoint.getProgressive();
+                double elev = profilePoint.getElevation();
+                Coordinate coord = profilePoint.getPosition();
+                outProfile[i][0] = progressive;
+                outProfile[i][1] = elev;
+                outProfile[i][2] = coord.x;
+                outProfile[i][3] = coord.y;
             }
 
             if (outFolder != null && fLineid != null) {
@@ -150,6 +148,9 @@ public class Profile extends JGTModel {
                     sb.append(progressive).append(", ").append(elev).append("\n");
                 }
                 FileUtilities.writeFile(sb.toString(), profileFile);
+            } else {
+                pm.errorMessage("Evaluating only first feature when writing to console. If you need the profile of all features, define an output folder.");
+                break;
             }
         }
     }
