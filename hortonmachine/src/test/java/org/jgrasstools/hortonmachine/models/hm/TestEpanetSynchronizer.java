@@ -14,8 +14,14 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
  */
 public class TestEpanetSynchronizer extends HMTestCase {
 
-    public void testEpanetSynchronizer() throws Exception {
+    private SimpleFeatureCollection jFC;
+    private SimpleFeatureCollection tFC;
+    private SimpleFeatureCollection puFC;
+    private SimpleFeatureCollection piFC;
+    private SimpleFeatureCollection vFC;
+    private SimpleFeatureCollection rFC;
 
+    protected void setUp() throws Exception {
         URL jUrl = this.getClass().getClassLoader().getResource("junctions.shp");
         String jPath = new File(jUrl.toURI()).getAbsolutePath();
         URL piUrl = this.getClass().getClassLoader().getResource("pipes.shp");
@@ -29,12 +35,15 @@ public class TestEpanetSynchronizer extends HMTestCase {
         URL rUrl = this.getClass().getClassLoader().getResource("reservoirs.shp");
         String rPath = new File(rUrl.toURI()).getAbsolutePath();
 
-        SimpleFeatureCollection jFC = ShapefileFeatureReader.readShapefile(jPath);
-        SimpleFeatureCollection tFC = ShapefileFeatureReader.readShapefile(tPath);
-        SimpleFeatureCollection puFC = ShapefileFeatureReader.readShapefile(puPath);
-        SimpleFeatureCollection piFC = ShapefileFeatureReader.readShapefile(piPath);
-        SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
-        SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
+        jFC = ShapefileFeatureReader.readShapefile(jPath);
+        tFC = ShapefileFeatureReader.readShapefile(tPath);
+        puFC = ShapefileFeatureReader.readShapefile(puPath);
+        piFC = ShapefileFeatureReader.readShapefile(piPath);
+        vFC = ShapefileFeatureReader.readShapefile(vPath);
+        rFC = ShapefileFeatureReader.readShapefile(rPath);
+    }
+
+    public void testEpanetSynchronizer() throws Exception {
 
         EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
         sync.pm = pm;
@@ -60,6 +69,42 @@ public class TestEpanetSynchronizer extends HMTestCase {
         assertEquals(vFC.size(), outV.size());
         assertEquals(rFC.size(), outR.size());
 
+    }
+
+    public void testEpanetSynchronizerPartial() throws Exception {
+
+        EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
+        sync.pm = pm;
+        sync.inJunctions = jFC;
+        sync.inPipes = piFC;
+        sync.inValves = vFC;
+        sync.inReservoirs = rFC;
+        sync.process();
+
+        SimpleFeatureCollection outJ = sync.inJunctions;
+        SimpleFeatureCollection outPi = sync.inPipes;
+        SimpleFeatureCollection outV = sync.inValves;
+        SimpleFeatureCollection outR = sync.inReservoirs;
+
+        assertEquals(jFC.size(), outJ.size());
+        assertEquals(piFC.size(), outPi.size());
+        assertEquals(vFC.size(), outV.size());
+        assertEquals(rFC.size(), outR.size());
+    }
+
+    public void testEpanetSynchronizerBasic() throws Exception {
+
+        EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
+        sync.pm = pm;
+        sync.inJunctions = jFC;
+        sync.inPipes = piFC;
+        sync.process();
+
+        SimpleFeatureCollection outJ = sync.inJunctions;
+        SimpleFeatureCollection outPi = sync.inPipes;
+
+        assertEquals(jFC.size(), outJ.size());
+        assertEquals(piFC.size(), outPi.size());
     }
 
 }

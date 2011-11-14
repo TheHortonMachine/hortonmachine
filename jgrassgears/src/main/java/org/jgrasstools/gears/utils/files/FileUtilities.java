@@ -272,7 +272,7 @@ public class FileUtilities {
      * Substitute the extention of a file.
      * 
      * @param file the file.
-     * @param newExtention the new extention.
+     * @param newExtention the new extention (without the dot).
      * @return the file with the new extention.
      */
     public static File substituteExtention( File file, String newExtention ) {

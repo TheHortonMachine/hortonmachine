@@ -132,11 +132,20 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         checkNull(inJunctions, inPipes);
 
         List<SimpleFeature> junctionsList = toList(inJunctions);
-        List<SimpleFeature> tanksList = toList(inTanks);
-        List<SimpleFeature> reservoirsList = toList(inReservoirs);
         List<SimpleFeature> pipesList = toList(inPipes);
-        List<SimpleFeature> pumpsList = toList(inPumps);
-        List<SimpleFeature> valvesList = toList(inValves);
+
+        List<SimpleFeature> tanksList = new ArrayList<SimpleFeature>();
+        if (inTanks != null)
+            tanksList = toList(inTanks);
+        List<SimpleFeature> reservoirsList = new ArrayList<SimpleFeature>();
+        if (inReservoirs != null)
+            reservoirsList = toList(inReservoirs);
+        List<SimpleFeature> pumpsList = new ArrayList<SimpleFeature>();
+        if (inPumps != null)
+            pumpsList = toList(inPumps);
+        List<SimpleFeature> valvesList = new ArrayList<SimpleFeature>();
+        if (inValves != null)
+            valvesList = toList(inValves);
 
         /*
          * check field names
@@ -145,44 +154,61 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 Junctions.ELEVATION.getAttributeName());
         String junctionIDAttributeName = FeatureUtilities.findAttributeName(inJunctions.getSchema(),
                 Junctions.ID.getAttributeName());
-        tanksElevationAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(),
-                Tanks.BOTTOM_ELEVATION.getAttributeName());
-        String tanksIDAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(), Tanks.ID.getAttributeName());
-        reservoirHeadAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
-                Reservoirs.HEAD.getAttributeName());
-        String reservoirIDAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
-                Reservoirs.ID.getAttributeName());
         pipesStartNodeAttributeName = FeatureUtilities
                 .findAttributeName(inPipes.getSchema(), Pipes.START_NODE.getAttributeName());
         pipesEndNodeAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.END_NODE.getAttributeName());
         pipesIdAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.ID.getAttributeName());
         lengthAttributeName = FeatureUtilities.findAttributeName(inPipes.getSchema(), Pipes.LENGTH.getAttributeName());
-        pumpsStartNodeAttributeName = FeatureUtilities
-                .findAttributeName(inPumps.getSchema(), Pumps.START_NODE.getAttributeName());
-        pumpsEndNodeAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.END_NODE.getAttributeName());
-        pumpsIdAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.ID.getAttributeName());
-        valvesStartNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(),
-                Valves.START_NODE.getAttributeName());
-        valvesEndNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.END_NODE.getAttributeName());
-        valvesIdAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.ID.getAttributeName());
+
+        String tanksIDAttributeName = null;
+        if (inTanks != null) {
+            tanksElevationAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(),
+                    Tanks.BOTTOM_ELEVATION.getAttributeName());
+            tanksIDAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(), Tanks.ID.getAttributeName());
+        }
+        String reservoirIDAttributeName = null;
+        if (inTanks != null) {
+            reservoirHeadAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
+                    Reservoirs.HEAD.getAttributeName());
+            reservoirIDAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
+                    Reservoirs.ID.getAttributeName());
+        }
+        if (inPumps != null) {
+            pumpsStartNodeAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(),
+                    Pumps.START_NODE.getAttributeName());
+            pumpsEndNodeAttributeName = FeatureUtilities
+                    .findAttributeName(inPumps.getSchema(), Pumps.END_NODE.getAttributeName());
+            pumpsIdAttributeName = FeatureUtilities.findAttributeName(inPumps.getSchema(), Pumps.ID.getAttributeName());
+        }
+        if (inValves != null) {
+            valvesStartNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(),
+                    Valves.START_NODE.getAttributeName());
+            valvesEndNodeAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(),
+                    Valves.END_NODE.getAttributeName());
+            valvesIdAttributeName = FeatureUtilities.findAttributeName(inValves.getSchema(), Valves.ID.getAttributeName());
+        }
 
         /*
          * check that no ids are double
          */
         checkIds(junctionsList, junctionIDAttributeName, "Found two junctions with the same ID. Check your data.");
         checkIds(pipesList, pipesIdAttributeName, "Found two pipes with the same ID. Check your data.");
-        checkIds(pumpsList, pumpsIdAttributeName, "Found two pumpes with the same ID. Check your data.");
-        checkIds(tanksList, tanksIDAttributeName, "Found two tanks with the same ID. Check your data.");
-        checkIds(valvesList, valvesIdAttributeName, "Found two valves with the same ID. Check your data.");
-        checkIds(reservoirsList, reservoirIDAttributeName, "Found two reservoirs with the same ID. Check your data.");
+        if (inPumps != null)
+            checkIds(pumpsList, pumpsIdAttributeName, "Found two pumpes with the same ID. Check your data.");
+        if (inTanks != null)
+            checkIds(tanksList, tanksIDAttributeName, "Found two tanks with the same ID. Check your data.");
+        if (inValves != null)
+            checkIds(valvesList, valvesIdAttributeName, "Found two valves with the same ID. Check your data.");
+        if (inReservoirs != null)
+            checkIds(reservoirsList, reservoirIDAttributeName, "Found two reservoirs with the same ID. Check your data.");
 
         /*
          * elevations for junctions and tanks on dem
          */
         if (inElev != null) {
-            inJunctions = FeatureCollections.newCollection();
             pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size() + reservoirsList.size());
 
+            inJunctions = FeatureCollections.newCollection();
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -197,8 +223,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 inJunctions.add(junction);
                 pm.worked(1);
             }
-            inTanks = FeatureCollections.newCollection();
 
+            inTanks = FeatureCollections.newCollection();
             for( SimpleFeature tank : tanksList ) {
                 Geometry geometry = (Geometry) tank.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -212,8 +238,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                 inTanks.add(tank);
                 pm.worked(1);
             }
-            inReservoirs = FeatureCollections.newCollection();
 
+            inReservoirs = FeatureCollections.newCollection();
             for( SimpleFeature reservoir : reservoirsList ) {
                 Geometry geometry = (Geometry) reservoir.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
