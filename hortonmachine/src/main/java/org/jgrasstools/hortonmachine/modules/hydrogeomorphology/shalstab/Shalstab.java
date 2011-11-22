@@ -127,7 +127,7 @@ public class Shalstab extends JGTModel {
     @In
     public double pRho = -1.0;
 
-    @Description("A value for slope for rock.")
+    @Description("A value for the slope for rock.")
     @In
     public double pRock = -9999.0;
 
