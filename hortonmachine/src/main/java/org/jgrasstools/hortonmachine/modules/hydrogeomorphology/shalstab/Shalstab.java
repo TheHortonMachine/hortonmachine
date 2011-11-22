@@ -299,7 +299,7 @@ public class Shalstab extends JGTModel {
         for( int j = 0; j < rows; j++ ) {
             pm.worked(1);
             for( int i = 0; i < cols; i++ ) {
-                Tq = trasmissivityRI.getSampleDouble(i, j, 0) / effectiveRI.getSampleDouble(i, j, 0) / 1000.0;
+                Tq = trasmissivityRI.getSampleDouble(i, j, 0) / (effectiveRI.getSampleDouble(i, j, 0) / 1000.0);
                 double slopeValue = slopeRI.getSampleDouble(i, j, 0);
                 double abValue = abRI.getSampleDouble(i, j, 0);
                 double tangPhiValue = frictionRI.getSampleDouble(i, j, 0);
