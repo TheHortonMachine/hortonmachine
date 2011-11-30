@@ -49,6 +49,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.ConstantRandomIter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -126,7 +127,7 @@ public class Shalstab extends JGTModel {
     @In
     public double pRho = -1.0;
 
-    @Description("A value for slope for rock.")
+    @Description("A value for the slope for rock.")
     @In
     public double pRock = -9999.0;
 
@@ -217,7 +218,7 @@ public class Shalstab extends JGTModel {
      * Calculates the trasmissivity in every pixel of the map.
      */
     private void qcrit( RenderedImage slope, RenderedImage ab, RandomIter trasmissivityRI, RandomIter frictionRI,
-            RandomIter cohesionRI, RandomIter soildRI, RandomIter effectiveRI, RandomIter densityRI ) {
+            RandomIter cohesionRI, RandomIter hsIter, RandomIter effectiveRI, RandomIter densityRI ) {
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inSlope);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
@@ -238,8 +239,10 @@ public class Shalstab extends JGTModel {
                 double tanPhiValue = frictionRI.getSampleDouble(i, j, 0);
                 double cohValue = cohesionRI.getSampleDouble(i, j, 0);
                 double rhoValue = densityRI.getSampleDouble(i, j, 0);
-                double hsValue = soildRI.getSampleDouble(i, j, 0);
-                if (!isNovalue(slopeValue) && !isNovalue(tanPhiValue) && !isNovalue(cohValue) && !isNovalue(rhoValue)) {
+                double hsValue = hsIter.getSampleDouble(i, j, 0);
+
+                if (!isNovalue(slopeValue) && !isNovalue(tanPhiValue) && !isNovalue(cohValue) && !isNovalue(rhoValue)
+                        && !isNovalue(hsValue)) {
                     if (hsValue <= EPS || slopeValue > pRock) {
                         qcritIter.setSample(i, j, 0, ROCK);
                     } else {
@@ -305,10 +308,10 @@ public class Shalstab extends JGTModel {
                 double tangPhiValue = frictionRI.getSampleDouble(i, j, 0);
                 double cohValue = cohesionRI.getSampleDouble(i, j, 0);
                 double rhoValue = densityRI.getSampleDouble(i, j, 0);
-                double hsValue = soildRI.getSampleDouble(i, j, 0);
+                double hsValue = hsIter.getSampleDouble(i, j, 0);
 
                 if (!isNovalue(slopeValue) && !isNovalue(abValue) && !isNovalue(tangPhiValue) && !isNovalue(cohValue)
-                        && !isNovalue(rhoValue)) {
+                        && !isNovalue(rhoValue) && !isNovalue(hsValue)) {
                     if (hsValue <= EPS || slopeValue > pRock) {
                         classiIter.setSample(i, j, 0, ROCK);
                     } else {
