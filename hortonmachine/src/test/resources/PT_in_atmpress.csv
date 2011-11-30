@@ -1,0 +1,9 @@
+@T,table
+Created,2010-09-23 12:35
+Author,HortonMachine library
+@H,timestamp,value_1221
+ID,,1221
+Type,Date,Double
+Format,yyyy-MM-dd HH:mm,
+,2005-05-02 00:00,-9999
+
