@@ -51,7 +51,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
 @Description("Polygonizes a layer of lines.")
-@Author(name = "Antonio Falciano, Andrea Antonello", contact = "www.hydrologis.com")
+@Author(name = "Antonio Falciano, Andrea Antonello", contact = "afalciano@yahoo.it, http://blog.spaziogis.it/, http://www.hydrologis.com")
 @Keywords("Vector, Polygonize")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
