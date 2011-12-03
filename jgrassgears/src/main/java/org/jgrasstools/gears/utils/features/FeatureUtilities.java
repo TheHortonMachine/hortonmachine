@@ -474,9 +474,13 @@ public class FeatureUtilities {
      * Extracts features from a {@link FeatureCollection} into an {@link ArrayList} of its geometries.
      * 
      * @param collection the feature collection.
+     * @param doSubGeoms split the geometries in single geometries (ex. MultiLines in Lines).
+     * @param userDataField if not <code>null</code>, the data in the field are put in the userData
+     *                  field of the geometry.
      * @return the list with the geometries or an empty list if no features present.
      */
-    public static List<Geometry> featureCollectionToGeometriesList( SimpleFeatureCollection collection ) {
+    public static List<Geometry> featureCollectionToGeometriesList( SimpleFeatureCollection collection, boolean doSubGeoms,
+            String userDataField ) {
         List<Geometry> geometriesList = new ArrayList<Geometry>();
         if (collection == null) {
             return geometriesList;
@@ -485,7 +489,23 @@ public class FeatureUtilities {
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            geometriesList.add(geometry);
+            if (doSubGeoms) {
+                int numGeometries = geometry.getNumGeometries();
+                for( int i = 0; i < numGeometries; i++ ) {
+                    Geometry geometryN = geometry.getGeometryN(i);
+                    geometriesList.add(geometryN);
+                    if (userDataField != null) {
+                        Object attribute = feature.getAttribute(userDataField);
+                        geometryN.setUserData(attribute);
+                    }
+                }
+            } else {
+                geometriesList.add(geometry);
+                if (userDataField != null) {
+                    Object attribute = feature.getAttribute(userDataField);
+                    geometry.setUserData(attribute);
+                }
+            }
         }
         featureIterator.close();
         return geometriesList;

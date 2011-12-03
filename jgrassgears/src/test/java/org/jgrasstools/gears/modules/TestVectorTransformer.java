@@ -62,7 +62,7 @@ public class TestVectorTransformer extends HMTestCase {
         transformer.process();
         SimpleFeatureCollection outFeatures = transformer.outVector;
 
-        Geometry g = FeatureUtilities.featureCollectionToGeometriesList(outFeatures).get(0);
+        Geometry g = FeatureUtilities.featureCollectionToGeometriesList(outFeatures, false, null).get(0);
         Coordinate coord = g.getCoordinate();
 
         assertEquals(coord.x, 1.0, 0.00001);

@@ -23,6 +23,7 @@ import java.io.File;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,6 +57,7 @@ import com.vividsolutions.jts.geom.LineString;
 @Author(name = "Daniele Andreis")
 @Keywords("TrentoP")
 @Status(Status.DRAFT)
+@Documentation("TrentoPProjectFilesGenerator.html")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TrentoPProjectFilesGenerator extends JGTModel {
 

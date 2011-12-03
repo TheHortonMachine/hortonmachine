@@ -66,7 +66,7 @@ public class TestLineSmootherMcMaster extends HMTestCase {
         smoother.process();
         SimpleFeatureCollection outFeatures = smoother.outVector;
 
-        List<Geometry> geomList = FeatureUtilities.featureCollectionToGeometriesList(outFeatures);
+        List<Geometry> geomList = FeatureUtilities.featureCollectionToGeometriesList(outFeatures, false, null);
         Geometry geometry = geomList.get(0);
 
         int newLength = geometry.getCoordinates().length;
