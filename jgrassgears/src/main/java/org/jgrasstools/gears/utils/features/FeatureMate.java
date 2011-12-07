@@ -58,6 +58,16 @@ public class FeatureMate {
     public SimpleFeature getFeature() {
         return feature;
     }
+    
+    /**
+     * Apply a buffer to the geometry and use that as new {@link Geometry}.
+     * 
+     * @param buffer the buffer to apply.
+     */
+    public void useBuffer(double buffer){
+        Geometry tmpGeometry = getGeometry();
+        geometry = tmpGeometry.buffer(buffer);
+    }
 
     /**
      * Getter for the geometry.
