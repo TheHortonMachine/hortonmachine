@@ -202,7 +202,7 @@ public class ScanLineRasterizer extends JGTModel {
             // extract the value to put into the raster.
             double tmpValue = -1.0;
             if (pValue == null) {
-                tmpValue = (Double) feature.getAttribute(fCat);
+                tmpValue = ((Number) feature.getAttribute(fCat)).doubleValue();
             } else {
                 tmpValue = pValue;
             }
