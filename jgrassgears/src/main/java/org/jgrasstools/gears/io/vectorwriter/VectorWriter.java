@@ -77,7 +77,7 @@ public class VectorWriter extends JGTModel {
             return;
         }
         String name = vectorFile.getName();
-        if (name.toLowerCase().endsWith("shp") || pType.equals(JGTConstants.SHP)) {
+        if (name.toLowerCase().endsWith("shp") || (pType != null && pType.equals(JGTConstants.SHP))) {
             ShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
