@@ -24,11 +24,13 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -48,6 +50,8 @@ import org.joda.time.format.DateTimeFormatter;
 @Keywords("Evapotranspiration, Hydrologic")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @UI(JGTConstants.ITERATOR_UI_HINT)
+@Name("ptetp")
+@Documentation("PresteyTaylorEtpModel.html")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class PresteyTaylorEtpModel extends JGTModel {
