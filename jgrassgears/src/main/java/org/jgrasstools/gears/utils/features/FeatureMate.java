@@ -135,6 +135,8 @@ public class FeatureMate {
                 return adaptee.cast(num.floatValue());
             } else if (adaptee.isAssignableFrom(Integer.class)) {
                 return adaptee.cast(num.intValue());
+            } else if (adaptee.isAssignableFrom(Long.class)) {
+                return adaptee.cast(num.longValue());
             } else if (adaptee.isAssignableFrom(String.class)) {
                 return adaptee.cast(num.toString());
             } else {
