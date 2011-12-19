@@ -30,6 +30,7 @@ import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -46,6 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Keywords("Iterator, File")
 @Label(JGTConstants.LIST_READER)
 @Status(Status.DRAFT)
+@Name("fileiterator")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class FileIterator extends JGTModel {
 
