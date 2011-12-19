@@ -17,11 +17,21 @@
  */
 package org.jgrasstools.gears.utils;
 
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
+
 import java.util.HashMap;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * Map containing a region definition, having utility methods to get the values.
@@ -134,5 +144,75 @@ public class RegionMap extends HashMap<String, Double> {
             return yres;
         }
         return JGTConstants.doubleNovalue;
+    }
+
+    /**
+     * Snaps a geographic point to be on the region grid.
+     * 
+     * <p>
+     * Moves the point given by X and Y to be on the grid of the supplied
+     * region.
+     * </p>
+     * 
+     * @param x the easting of the arbitrary point.
+     * @param y the northing of the arbitrary point.
+     * @return the snapped coordinate.
+     */
+    public Coordinate snapToNextHigherInRegionResolution( double x, double y ) {
+
+        double minx = getWest();
+        double ewres = getXres();
+        double xsnap = minx + (Math.ceil((x - minx) / ewres) * ewres);
+
+        double miny = getSouth();
+        double nsres = getYres();
+        double ysnap = miny + (Math.ceil((y - miny) / nsres) * nsres);
+
+        return new Coordinate(xsnap, ysnap);
+    }
+
+    /**
+     * Creates a new {@link RegionMap} cropped on the new bounds and snapped on the original grid.
+     * 
+     * @param n the new north.
+     * @param s the new south.
+     * @param w the new west.
+     * @param e the new east.
+     * @return the new {@link RegionMap}.
+     */
+    public RegionMap toSubRegion( double n, double s, double w, double e ) {
+        double originalXres = getXres();
+        double originalYres = getYres();
+        double originalWest = getWest();
+        double originalSouth = getSouth();
+
+        double envWest = w;
+        double deltaX = (envWest - originalWest) % originalXres;
+        double newWest = envWest - deltaX;
+
+        double envSouth = s;
+        double deltaY = (envSouth - originalSouth) % originalYres;
+        double newSouth = envSouth - deltaY;
+
+        double newWidth = e - w;
+        double deltaW = newWidth % originalXres;
+        newWidth = newWidth - deltaW + originalXres;
+
+        double newHeight = n - s;
+        double deltaH = newHeight % originalYres;
+        newHeight = newHeight - deltaH + originalYres;
+
+        double newNorth = newSouth + newHeight;
+        double newEast = newWest + newWidth;
+
+        int rows = (int) ((newHeight) / originalYres);
+        int cols = (int) ((newWidth) / originalXres);
+
+        double newXres = (newWidth) / cols;
+        double newYres = (newHeight) / rows;
+
+        RegionMap regionMap = CoverageUtilities.makeRegionParamsMap(newNorth, newSouth, newWest, newEast, newXres, newYres, cols,
+                rows);
+        return regionMap;
     }
 }
