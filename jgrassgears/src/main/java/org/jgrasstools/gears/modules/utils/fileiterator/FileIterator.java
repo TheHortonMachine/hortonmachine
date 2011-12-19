@@ -114,10 +114,12 @@ public class FileIterator extends JGTModel {
             if (prjWkt != null) {
                 for( File file : filesList ) {
                     String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
-                    File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj"); //$NON-NLS-1$
-                    if (!prjFile.exists()) {
-                        // create it
-                        FileUtilities.writeFile(prjWkt, prjFile);
+                    if (nameWithoutExtention != null) {
+                        File prjFile = new File(file.getParentFile(), nameWithoutExtention + ".prj"); //$NON-NLS-1$
+                        if (!prjFile.exists()) {
+                            // create it
+                            FileUtilities.writeFile(prjWkt, prjFile);
+                        }
                     }
                 }
             }
