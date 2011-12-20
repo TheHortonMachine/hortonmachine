@@ -58,13 +58,13 @@ public class FeatureMate {
     public SimpleFeature getFeature() {
         return feature;
     }
-    
+
     /**
      * Apply a buffer to the geometry and use that as new {@link Geometry}.
      * 
      * @param buffer the buffer to apply.
      */
-    public void useBuffer(double buffer){
+    public void useBuffer( double buffer ) {
         Geometry tmpGeometry = getGeometry();
         geometry = tmpGeometry.buffer(buffer);
     }
@@ -289,6 +289,16 @@ public class FeatureMate {
     public void resetGeometry() {
         geometry = null;
         preparedGeometry = null;
+    }
+
+    public String toString() {
+        List<String> attributesNames = getAttributesNames();
+        StringBuilder sb = new StringBuilder();
+        for( String name : attributesNames ) {
+            String attribute = getAttribute(name, String.class);
+            sb.append(name).append(" = ").append(attribute).append("\n");
+        }
+        return sb.toString();
     }
 
 }
