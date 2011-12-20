@@ -781,18 +781,36 @@ public class CoverageUtilities {
      */
     public static List<ProfilePoint> doProfile( GridCoverage2D coverage, Coordinate... coordinates ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+
+        GridGeometry2D gridGeometry = coverage.getGridGeometry();
+        RenderedImage renderedImage = coverage.getRenderedImage();
+        RandomIter iter = RandomIterFactory.create(renderedImage, null);
+
+        List<ProfilePoint> profilePointsList = doProfile(iter, regionMap, gridGeometry, coordinates);
+
+        iter.done();
+        return profilePointsList;
+    }
+
+    /**
+     * Calculates the profile of a raster map between given {@link Coordinate coordinates}.
+     * 
+     * @param mapIter the {@link RandomIter map iterator}.
+     * @param regionMap the region map.
+     * @param gridGeometry the gridgeometry of the map.
+     * @param coordinates the {@link Coordinate}s to create the profile on.
+     * @return the list of {@link ProfilePoint}s.
+     * @throws TransformException
+     */
+    public static List<ProfilePoint> doProfile( RandomIter mapIter, RegionMap regionMap, GridGeometry2D gridGeometry,
+            Coordinate... coordinates ) throws TransformException {
+        List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
+        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
         double xres = regionMap.getXres();
         double yres = regionMap.getYres();
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double step = Math.min(xres, yres);
-
-        GridGeometry2D gridGeometry = coverage.getGridGeometry();
-        RenderedImage renderedImage = coverage.getRenderedImage();
-        RandomIter iter = RandomIterFactory.create(renderedImage, null);
-        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
-
-        List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
 
         LineString line = GeometryUtilities.gf().createLineString(coordinates);
         double lineLength = line.getLength();
@@ -806,14 +824,12 @@ public class CoverageUtilities {
             gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
             double value = JGTConstants.doubleNovalue;
             if (envelope2d.contains(c.x, c.y) && isInside(cols, rows, gridCoords)) {
-                value = iter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
+                value = mapIter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
             }
             ProfilePoint profilePoint = new ProfilePoint(progressive, value, c.x, c.y);
             profilePointsList.add(profilePoint);
             progressive = progressive + step;
         }
-
-        iter.done();
         return profilePointsList;
     }
 
@@ -1093,8 +1109,7 @@ public class CoverageUtilities {
 
         return hypso;
     }
-    
-    
+
     /**
      * Simple method to get a value from a single band raster.
      * 
@@ -1103,10 +1118,9 @@ public class CoverageUtilities {
      * @param row the row.
      * @return the value in the [col, row] of the first band.
      */
-    public static double getValue(GridCoverage2D raster, int col, int row){
-    	double[] values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
-    	return values[0];
+    public static double getValue( GridCoverage2D raster, int col, int row ) {
+        double[] values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
+        return values[0];
     }
-    
 
 }
