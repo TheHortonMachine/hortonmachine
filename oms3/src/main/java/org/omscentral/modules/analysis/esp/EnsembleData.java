@@ -41,7 +41,7 @@ public class EnsembleData {
             EnsembleListLabel ts = (stats.get(j));
             ESPTimeSeries trace = (output.get(j));
             double[] trace_data = trace.getVals();
-//            double[] trace_dates = trace.getDates();
+            double[] trace_dates = trace.getDates();
             
             ts.setTraceVolume(0.0);
             ts.setTracePeak(0.0);
@@ -57,7 +57,7 @@ public class EnsembleData {
                 ts.setTraceVolume(tmp + ts.getTraceVolume());
                 if (ts.getTracePeak() < tmp) {
                     ts.setTracePeak(tmp);
-                    ts.setTimeToPeak(tmp);
+                    ts.setTimeToPeak(trace_dates[k + offset]);
                 }
             }
         }

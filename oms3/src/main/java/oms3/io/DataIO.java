@@ -22,17 +22,17 @@
  */
 package oms3.io;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.lang.reflect.Array;
+import java.net.URL;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Arrays;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
@@ -98,31 +99,270 @@ public class DataIO {
     public static final String KEY_HIST_YEAR = "historical_year";
     public static final String KEY_DIGEST = "digest";
     public static final String VAL_DATE = "Date";
+    //TimeStep Enumerations
+    public static final int DAILY = 0;
+    public static final int MEAN_MONTHLY = 1;
+    public static final int MONTHLY_MEAN = 2;
+    public static final int ANNUAL_MEAN = 3;
+    public static final int PERIOD_MEAN = 4;
+    public static final int PERIOD_MEDIAN = 5;
+    public static final int PERIOD_STANDARD_DEVIATION = 6;
+    public static final int PERIOD_MIN = 7;
+    public static final int PERIOD_MAX = 8;
 
-    //
-    public static double[] getColumnDoubleValuesInterval(Date start, Date end, CSTable t, String columnName) {
+    public static double[] getColumnDoubleValuesInterval(Date start, Date end, CSTable t, String columnName, int timeStep) {
 
-        int col = findColumnByName(t, columnName);
+        int col = columnIndex(t, columnName);
         if (col == -1) {
             throw new IllegalArgumentException("No such column: " + columnName);
         }
+
         DateFormat fmt = lookupDateFormat(t, 1);
-        List<Double> l = new ArrayList<Double>();
-        for (String[] row : t.rows()) {
-            try {
-                Date d = fmt.parse(row[1]);
-                if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
-                    l.add(new Double(row[col]));
+
+        boolean useOrigDaily = false;
+        switch (timeStep) {
+            case DAILY:
+                if (useOrigDaily) {
+                    List<Double> l = new ArrayList<Double>();
+                    for (String[] row : t.rows()) {
+                        try {
+                            Date d = fmt.parse(row[1]);
+                            if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                                l.add(new Double(row[col]));
+                            }
+                        } catch (ParseException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }
+                    double[] arr = new double[l.size()];
+                    for (int i = 0; i < arr.length; i++) {
+                        arr[i] = l.get(i);
+                    }
+                    return arr;
                 }
-            } catch (ParseException ex) {
-                throw new RuntimeException(ex);
+
+            case ANNUAL_MEAN:
+            case MONTHLY_MEAN:
+            case PERIOD_MEAN: {
+
+
+                int previousMonth = -1;
+                int previousYear = -1;
+                int previousDay = -1;
+                boolean previousValid = false;
+                boolean lastRow = false;
+
+                boolean useYear = (timeStep == DAILY) || (timeStep == MONTHLY_MEAN) || (timeStep == ANNUAL_MEAN);
+                boolean useMonth = (timeStep == DAILY) || (timeStep == MONTHLY_MEAN);
+                boolean useDay = (timeStep == DAILY);
+
+                List<Double> l = new ArrayList<Double>();
+                double sum = 0;
+                int count = 0;
+
+
+                for (String[] row : t.rows()) {
+                    try {
+                        Date d = fmt.parse(row[1]);
+                        if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                            int month = d.getMonth();
+                            int year = d.getYear();
+                            int day = d.getDay();
+                            double data = Double.parseDouble(row[col]);
+
+
+
+                            boolean newEntry = (previousValid && ((useYear && (year != previousYear))
+                                    || (useMonth && (month != previousMonth))
+                                    || (useDay && (day != previousDay))));
+
+
+
+                            if (newEntry) {
+                                l.add(sum / count);
+                                sum = 0;
+                                count = 0;
+                            }
+
+                            sum += data;
+                            count++;
+
+                            previousValid = true;
+                            previousDay = day;
+                            previousMonth = month;
+                            previousYear = year;
+                        }
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+                }
+                l.add(sum / count); // add the final entry which wasn't yet added
+                // since it never hit a newEntry.
+
+                // Copy the List to the output array.
+                double[] arr = new double[l.size()];
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = l.get(i);
+                }
+
+                return arr;
+                // break;
+            }
+
+            case MEAN_MONTHLY: {
+                double[] arr = new double[12]; // 1 per month
+
+                int[] count = new int[12];
+
+                for (int i = 0; i < 12; i++) {
+                    arr[i] = 0; // initialize data to 0
+                    count[i] = 0;
+                }
+
+
+                for (String[] row : t.rows()) {
+                    try {
+                        Date d = fmt.parse(row[1]);
+                        if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                            int month = d.getMonth();
+                            double data = Double.parseDouble(row[col]);
+                            arr[month] = arr[month] + data;
+                            count[month] = count[month] + 1;
+                            if (month > 11) {
+                                throw new RuntimeException("Month > 11 = " + month);
+                            }
+                        }
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                for (int i = 0; i < 12; i++) {
+                    arr[i] = arr[i] / count[i];
+                }
+
+                return arr;
+                // break;
+            }
+
+            case PERIOD_MIN:
+            case PERIOD_MAX: {
+                double min = -1;
+                double max = -1;
+                boolean previousValid = false;
+
+
+                for (String[] row : t.rows()) {
+                    try {
+                        Date d = fmt.parse(row[1]);
+                        if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                            double data = Double.parseDouble(row[col]);
+                            if (!previousValid) {
+                                min = data;
+                                max = data;
+                            } else if ((timeStep == PERIOD_MIN) && (data < min)) {
+                                min = data;
+                            } else if ((timeStep == PERIOD_MAX) && (data > max)) {
+                                max = data;
+                            }
+                            previousValid = true;
+                        }
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                double[] arr = new double[1];
+                arr[0] = (timeStep == PERIOD_MIN) ? min : max;
+                return arr;
+                // break;
+            }
+
+            case PERIOD_MEDIAN: {
+                // Put entire table into ArrayList
+                List<Double> l = new ArrayList<Double>();
+                for (String[] row : t.rows()) {
+                    try {
+                        Date d = fmt.parse(row[1]);
+                        if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                            l.add(new Double(row[col]));
+                        }
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                //Copy to array of double
+                int lSize = l.size();
+                if (lSize == 0) {
+                    throw new RuntimeException("No data in file matched the specified period " + start + " to " + end);
+                }
+                double[] arr = new double[lSize];
+                for (int i = 0; i < arr.length; i++) {
+                    arr[i] = l.get(i);
+                }
+
+                l.clear();  // Don't need l anymore so clear it.
+
+                // Sort the Array
+                Arrays.sort(arr);
+                double median;
+
+                // Pull out the Median
+                if (lSize % 2 == 1) {
+                    median = arr[(lSize + 1) / 2 - 1];
+                } else {
+                    double lower = arr[(lSize / 2) - 1];
+                    double upper = arr[lSize / 2];
+                    median = (lower + upper) / 2.0;
+                }
+
+                // return as an array with 1 entry. 
+                double[] arr2 = new double[1];
+                arr2[0] = median;
+                return arr2;
+
+                //break;
+            }
+
+            case PERIOD_STANDARD_DEVIATION: {
+                // kmolson TODO- is it better to read the file twice, or read
+                //   it once and store the data for the 2nd pass while
+                //   computing the mean?
+
+                // Read file to get mean.
+                double sum = 0;
+                double sq_sum = 0;
+                double data = 0;
+                int count = 0;
+                for (String[] row : t.rows()) {
+                    try {
+                        Date d = fmt.parse(row[1]);
+                        if ((d.equals(start) || d.after(start)) && (d.equals(end) || d.before(end))) {
+                            data = Double.parseDouble(row[col]);
+                            sum += data;
+                            sq_sum += (data * data);
+                            count++;
+                        }
+
+                    } catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                double mean = sum / count;
+                double variance = sq_sum / count - (mean * mean);
+                double standardDeviation = Math.sqrt(variance);
+
+                double[] arr = new double[1];
+                arr[0] = standardDeviation;
+                return arr;
+            }
+
+            default: {
+                throw new IllegalArgumentException("timeStep " + timeStep + "not supported.");
             }
         }
-        double[] arr = new double[l.size()];
-        for (int i = 0; i < arr.length; i++) {
-            arr[i] = l.get(i);
-        }
-        return arr;
     }
 
     public static SimpleDateFormat lookupDateFormat(CSTable table, int col) {
@@ -145,13 +385,11 @@ public class DataIO {
             throw new IllegalArgumentException();
         }
 
-       
         DateFormat fmt = lookupDateFormat(table, dateColumn);
-        
+
         int rowNo = 0;
         for (String[] row : table.rows()) {
             try {
-                // System.out.println("Date : " + row[dateColumn]);
                 Date d = fmt.parse(row[dateColumn]);
                 if (d.equals(date)) {
                     return rowNo;
@@ -167,7 +405,7 @@ public class DataIO {
     public static CSTable synthESPInput(CSTable table, Date iniStart, Date iniEnd, int fcDays, int year) {
 
         int dateColumn = 1;
-        
+
         DateFormat hfmt = lookupDateFormat(table, dateColumn);
 
         // Forecast start = end of initialzation + 1 day
@@ -398,7 +636,6 @@ public class DataIO {
                 String[][] d = Conversions.convert(p.get(pname), String[][].class);
                 d[rowIndex][columnIndex] = aValue.toString().trim();
                 String s = toArrayString(d);
-//                System.out.println(s);
                 p.put(pname, s);
             }
 
@@ -432,6 +669,14 @@ public class DataIO {
             return true;
         }
         return false;
+    }
+
+    public static CSTable getTable(final CSProperties p, String boundName) {
+        MemoryTable m = new MemoryTable();
+        List<String> arr = keysByMeta(p, "bound", boundName);
+        for (String a : arr) {
+        }
+        return m;
     }
 
     // 1D arrays
@@ -471,7 +716,6 @@ public class DataIO {
                 String[] d = Conversions.convert(p.get(colname), String[].class);
                 d[rowIndex] = aValue.toString().trim();
                 String s = toArrayString(d);
-//                System.out.println(s);
                 p.put(colname, s);
             }
 
@@ -512,25 +756,16 @@ public class DataIO {
                 } else {
                     return p.get(arr.get(rowIndex));
                 }
-
-//                String colname = arr.get(columnIndex);
-//                String[] d = Conversions.convert(p.get(colname), String[].class);
-//                return d[rowIndex].trim();
             }
 
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return true;
+                return columnIndex == 1;
             }
 
             @Override
             public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-//                String colname = arr.get(columnIndex);
-//                String[] d = Conversions.convert(p.get(colname), String[].class);
-//                d[rowIndex] = aValue.toString().trim();
-//                String s = toArrayString(d);
-//                System.out.println(s);
-//                p.put(colname, s);
+                p.put(arr.get(rowIndex), aValue.toString());
             }
 
             @Override
@@ -552,7 +787,7 @@ public class DataIO {
      * @return an array String.
      */
     public static String toArrayString(String[] arr) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append('{');
         for (int i = 0; i < arr.length; i++) {
             b.append(arr[i]);
@@ -565,7 +800,7 @@ public class DataIO {
     }
 
     public static String toArrayString(String[][] arr) {
-        StringBuffer b = new StringBuffer();
+        StringBuilder b = new StringBuilder();
         b.append('{');
         for (int i = 0; i < arr.length; i++) {
             b.append('{');
@@ -592,7 +827,7 @@ public class DataIO {
      */
     public static TableModel fromCSP(CSProperties p, final int dim) {
         List<String> dims = keysByMeta(p, "role", "dimension");
-        if (dims.size() == 0) {
+        if (dims.isEmpty()) {
             return null;
         }
         for (String d : dims) {
@@ -679,23 +914,13 @@ public class DataIO {
         return l;
     }
 
-    public static int findColumnByName(CSTable t, String columnName) {
-        int col = -1;
-        for (int i = 1; i <= t.getColumnCount(); i++) {
-            if (t.getColumnName(i).equals(columnName)) {
-                col = i;
-                break;
-            }
-        }
-        return col;
-    }
-
+    
     public static Date[] getColumnDateValues(CSTable t, String columnName) {
-        int col = findColumnByName(t, columnName);
+        int col = columnIndex(t, columnName);
         if (col == -1) {
             throw new IllegalArgumentException("No such column: " + columnName);
         }
-       
+
         Conversions.Params p = new Conversions.Params();
         p.add(String.class, Date.class, lookupDateFormat(t, col));
 
@@ -714,7 +939,7 @@ public class DataIO {
      * @return the column data as doubles.
      */
     public static Double[] getColumnDoubleValues(CSTable t, String columnName) {
-        int col = findColumnByName(t, columnName);
+        int col = columnIndex(t, columnName);
         if (col == -1) {
             throw new IllegalArgumentException("No such column: " + columnName);
         }
@@ -744,7 +969,7 @@ public class DataIO {
     }
 
     /**
-     * Get a value as int.
+     * Get a value as integer.
      * @param p
      * @param key
      * @return a property value as integer.
@@ -780,7 +1005,7 @@ public class DataIO {
     /** 
      * Print CSProperties.
      * @param props the Properties to print
-     * @param out the outputwriter to print to.
+     * @param out the output writer to print to.
      */
     public static void print(CSProperties props, PrintWriter out) {
         out.println(PROPERTIES + "," + CSVParser.printLine(props.getName()));
@@ -809,17 +1034,11 @@ public class DataIO {
         out.flush();
     }
 
-    public static void print(CSTable table, File f) throws IOException {
-        PrintWriter w = new PrintWriter(f);
-        print(table, w);
-        w.close();
-    }
-
     /**
-     * Print a CSTable
+     * Print a CSTable to a PrintWriter
      * 
-     * @param table
-     * @param out
+     * @param table the table to print
+     * @param out the writer to write to
      */
     public static void print(CSTable table, PrintWriter out) {
         out.println(TABLE + "," + CSVParser.printLine(table.getName()));
@@ -831,15 +1050,15 @@ public class DataIO {
             return;
         }
         out.print(HEADER);
-        for (int i = 0; i < table.getColumnCount(); i++) {
+        for (int i = 1; i <= table.getColumnCount(); i++) {
             out.print("," + table.getColumnName(i));
         }
         out.println();
         Map<String, String> m = table.getColumnInfo(1);
         for (String key : m.keySet()) {
             out.print(key);
-            for (int i = 0; i < table.getColumnCount(); i++) {
-                out.print("," + table.getColumnInfo(i + 1).get(key));
+            for (int i = 1; i <= table.getColumnCount(); i++) {
+                out.print("," + table.getColumnInfo(i).get(key));
             }
             out.println();
         }
@@ -851,6 +1070,18 @@ public class DataIO {
         }
         out.println();
         out.flush();
+    }
+
+    /** Saves a table to a file.
+     * 
+     * @param table the table to save
+     * @param file the file to store it in (overwritten, if exists)
+     * @throws IOException 
+     */
+    public static void save(CSTable table, File file) throws IOException {
+        PrintWriter w = new PrintWriter(file);
+        print(table, w);
+        w.close();
     }
 
     /**
@@ -869,7 +1100,7 @@ public class DataIO {
      * Create a CSProperty from an array of reader.
      * @param r
      * @param name
-     * @return mergesd properties.
+     * @return merged properties.
      * @throws java.io.IOException
      */
     public static CSProperties properties(Reader[] r, String name) throws IOException {
@@ -911,40 +1142,347 @@ public class DataIO {
     }
 
     /** 
-     * Convert Properties to CSProperties
-     * @param p
-     * @return CVSProperties
+     * Convert Properties to CSProperties.
+     * @param p the Properties
+     * @return CSProperties
      */
     public static CSProperties properties(Properties p) {
         return new BasicCSProperties(p);
     }
 
+    /** Convert from a Map to properties.
+     * 
+     * @param p the source map
+     * @return  CSProperties
+     */
     public static CSProperties properties(Map<String, Object> p) {
         return new BasicCSProperties(p);
     }
 
-    /**
-     * Create Empty properties
+    /** Create Empty properties
      * @return get some empty properties.
      */
     public static CSProperties properties() {
         return new BasicCSProperties();
     }
 
-    /**
-     * Parse a table from a fiven File
-     * @param r
+    /** Parse the first table from a file
+     * 
+     * @param file the file to parse
+     * @return the CSTable
+     * @throws IOException 
+     */
+    public static CSTable table(File file) throws IOException {
+        return table(file, null);
+    }
+
+    /** Parse a table from a given File.
+     * @param file
      * @param name
      * @return a CSTable.
      * @throws java.io.IOException
      */
-    public static CSTable table(File r, String name) throws IOException {
-        return new CSVTable(r, name);
+    public static CSTable table(File file, String name) throws IOException {
+        return new FileTable(file, name);
     }
 
-//////////////////////
-// private
-//////////////////////   
+    /** Parse a table from a Reader. Find the first table
+     * 
+     * @param s the Reader to read from
+     * @return the CSTable
+     * @throws IOException 
+     */
+    public static CSTable table(String s) throws IOException {
+        return table(s, null);
+    }
+
+    /** Parse a table from a Reader.
+     * 
+     * @param s the Reader to read from
+     * @param name the name of the table
+     * @return the CSTable
+     * @throws IOException 
+     */
+    public static CSTable table(String s, String name) throws IOException {
+        return new StringTable(s, name);
+    }
+
+    /** Opens the first table found at the URL
+     * 
+     * @param url the URL
+     * @return the CSTable
+     * @throws IOException 
+     */
+    public static CSTable table(URL url) throws IOException {
+        return table(url, null);
+    }
+
+    /** Create a CSTable from a URL source.
+     * 
+     * @param url the table URL
+     * @param name the name of the table
+     * @return a new CSTable
+     * @throws IOException 
+     */
+    public static CSTable table(URL url, String name) throws IOException {
+        return new URLTable(url, name);
+    }
+
+    /** Check if a column exist in table.
+     * 
+     * @param table the table to check
+     * @param name the name of the column
+     * @return 
+     */
+    public static boolean columnExist(CSTable table, String name) {
+        for (int i = 1; i <= table.getColumnCount(); i++) {
+            if (table.getColumnName(i).startsWith(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Gets a column index by name
+     * 
+     * @param table The table to check
+     * @param name the column name
+     * @return the index of the column
+     */
+    public static int columnIndex(CSTable table, String name) {
+        for (int i = 1; i <= table.getColumnCount(); i++) {
+            if (table.getColumnName(i).equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+
+    /** Get the column indexes for a given column name.
+     *  (e.g. use tmin to fetch tmin[0], tmin[1]...)
+     * @param table
+     * @param name
+     * @return 
+     */
+    public static int[] columnIndexes(CSTable table, String name) {
+        List<Integer> l = new ArrayList<Integer>();
+        for (int i = 1; i <= table.getColumnCount(); i++) {
+            if (table.getColumnName(i).startsWith(name)) {
+                l.add(i);
+            }
+        }
+        if (l.isEmpty()) {
+            return null;
+        }
+        int[] idx = new int[l.size()];
+        for (int i = 0; i < idx.length; i++) {
+            idx[i] = l.get(i);
+        }
+        return idx;
+    }
+
+    public static List<String> columnNames(CSTable table, String name) {
+        List<String> l = new ArrayList<String>();
+        for (int i = 1; i <= table.getColumnCount(); i++) {
+            if (table.getColumnName(i).startsWith(name)) {
+                l.add(table.getColumnName(i));
+            }
+        }
+        if (l.isEmpty()) {
+            throw new IllegalArgumentException("No column(s) '" + name + "' in table: " + table.getName());
+        }
+
+        return l;
+    }
+
+    public static void rowStringValues(String row[], int[] idx, String[] vals) {
+        for (int i = 0; i < vals.length; i++) {
+            vals[i] = row[idx[i]];
+        }
+    }
+
+    public static double[] rowDoubleValues(String row[], int[] idx, double[] vals) {
+        for (int i = 0; i < vals.length; i++) {
+            vals[i] = Double.parseDouble(row[idx[i]]);
+        }
+        return vals;
+    }
+
+    public static double[] rowDoubleValues(String row[], int[] idx) {
+        double[] vals = new double[idx.length];
+        return rowDoubleValues(row, idx, vals);
+    }
+
+    /** Extract the columns and create another table.
+     * 
+     * @param table the table 
+     * @param colName the names of the columns to extract.
+     * @return A new Table with the Columns.
+     */
+    public static CSTable extractColumns(CSTable table, String... colNames) {
+        int[] idx = {};
+
+        for (String name : colNames) {
+            idx = add(idx, columnIndexes(table, name));
+        }
+
+        if (idx.length == 0) {
+            throw new IllegalArgumentException("No such column names: " + Arrays.toString(colNames));
+        }
+
+        List<String> cols = new ArrayList<String>();
+        for (String name : colNames) {
+            cols.addAll(columnNames(table, name));
+        }
+
+        MemoryTable t = new MemoryTable();
+        t.setName(table.getName());
+        t.getInfo().putAll(table.getInfo());
+
+        // header
+        t.setColumns(cols.toArray(new String[0]));
+        for (int i = 0; i < idx.length; i++) {
+            t.getColumnInfo(i + 1).putAll(table.getColumnInfo(idx[i]));
+        }
+
+        String[] r = new String[idx.length];
+        for (String[] row : table.rows()) {
+            rowStringValues(row, idx, r);
+            t.addRow((Object[]) r);
+        }
+
+        return t;
+    }
+
+    public static String diff(double[] o, double[] p) {
+        String status = "ok.";
+        if (o.length != p.length) {
+            status = "o.length != p.length";
+        } else {
+            for (int i = 0; i < o.length; i++) {
+                if (o[i] != p[i]) {
+                    status += "error";
+                }
+            }
+        }
+        return status;
+    }
+
+    public static CSTable asTable(CSProperties p, String dim) {
+        List<String> arrays = DataIO.keysByMeta(p, "bound", dim);
+        if (arrays.isEmpty()) {
+            // nothing is bound to this
+            return null;
+        }
+        int len = 0;
+        List<String[]> m = new ArrayList<String[]>();
+        for (String arr : arrays) {
+            String[] d = Conversions.convert(p.get(arr), String[].class);
+            len = d.length;
+            m.add(d);
+        }
+        MemoryTable table = new MemoryTable();
+        table.getInfo().put("info", "Parameter bound by " + dim);
+        table.setName(dim);
+        table.setColumns(arrays.toArray(new String[m.size()]));
+        String row[] = new String[m.size()];
+        for (int i = 0; i < len; i++) {
+            for (int j = 0; j < m.size(); j++) {
+                row[j] = m.get(j)[i].trim();
+            }
+            table.addRow((Object[]) row);
+        }
+        return table;
+    }
+
+    public static CSProperties fromTable(CSTable t) {
+        BasicCSProperties p = new BasicCSProperties();
+
+        Map<Integer, List<String>> table = new HashMap<Integer, List<String>>();
+        for (int i = 1; i <= t.getColumnCount(); i++) {
+            table.put(i, new ArrayList<String>());
+        }
+
+        for (String[] row : t.rows()) {
+            for (int i = 1; i < row.length; i++) {
+                table.get(i).add(row[i]);
+            }
+        }
+
+        Map<String, String> m = new HashMap<String, String>();
+        m.put("bound", t.getName());
+
+        for (int i = 1; i <= t.getColumnCount(); i++) {
+            String name = t.getColumnName(i);
+            p.put(name, table.get(i).toString().replace('[', '{').replace(']', '}'));
+            p.setInfo(name, m);
+        }
+        return p;
+    }
+
+    /** Find all table names in a file.
+     * 
+     * @param f the file to search in
+     * @return a list of table names found in that file.
+     */
+    public static List<String> tables(File f) throws IOException {
+        return findCSVElements(f, "@T");
+    }
+
+    /** Find all properties section names in a file.
+     * 
+     * @param f the file to search in
+     * @return a list of section names found in that file.
+     */
+    public static List<String> properties(File f) throws IOException {
+        return findCSVElements(f, "@S");
+    }
+
+    static List<String> findCSVElements(File f, String tag) throws IOException {
+        List<String> l = new ArrayList<String>();
+        Reader r = new FileReader(f);
+        CSVParser csv = new CSVParser(r, CSVStrategy.DEFAULT_STRATEGY);
+        String[] line = null;
+        while ((line = csv.getLine()) != null) {
+            if (line.length == 2 && line[0].equals(tag)) {
+                l.add(line[1]);
+            }
+        }
+        r.close();
+        return l;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////
+    /// private 
+    private static int[] add(int[] a, int[] b) {
+        int[] c = new int[a.length + b.length];
+        System.arraycopy(a, 0, c, 0, a.length);
+        System.arraycopy(b, 0, c, a.length, b.length);
+        return c;
+    }
+
+    private static String locate(CSVParser csv, String name, String... type) throws IOException {
+        if (name == null) {
+            // match anything
+            name = ".+";
+        }
+        Pattern p = Pattern.compile(name);
+        String[] line = null;
+        while ((line = csv.getLine()) != null) {
+            if (line[0].startsWith(COMMENT) || !line[0].startsWith(P)) {
+//            if (line.length != 2 || line[0].startsWith(COMMENT) || !line[0].startsWith(P)) {
+                continue;
+            }
+            for (String s : type) {
+                if (line[0].equalsIgnoreCase(s) && p.matcher(line[1].trim()).matches()) {
+                    return line[1];
+                }
+            }
+        }
+        throw new IllegalArgumentException("Not found : " + type + ", " + name);
+    }
+
     @SuppressWarnings("serial")
     private static class BasicCSProperties extends LinkedHashMap<String, Object> implements CSProperties {
 
@@ -969,6 +1507,7 @@ public class DataIO {
             info.put(ROOT_ANN, new HashMap<String, String>());
         }
 
+        @Override
         public void putAll(CSProperties p) {
             super.putAll(p);
             for (String s : p.keySet()) {
@@ -1041,7 +1580,7 @@ public class DataIO {
     }
 
     /**
-     * Note: to keep the order of properties, it is subclassed from
+     * Note: to keep the order of properties, it is sub-classed from
      * LinkedHashMap
      */
     @SuppressWarnings("serial")
@@ -1055,7 +1594,7 @@ public class DataIO {
             reader.close();
         }
 
-        void readProps(CSVParser csv) throws IOException {
+        private void readProps(CSVParser csv) throws IOException {
             Map<String, String> propInfo = null;
             String[] line = null;
             String propKey = ROOT_ANN;
@@ -1085,53 +1624,41 @@ public class DataIO {
         }
     }
 
-    private static String locate(CSVParser r, String name, String... type) throws IOException {
-        if (name == null) {
-            // match anything
-            name = ".+";
-        }
-        Pattern p = Pattern.compile(name);
-        String[] line = null;
-        while ((line = r.getLine()) != null) {
-            if (line[0].startsWith(COMMENT) || !line[0].startsWith(P)) {
-//            if (line.length != 2 || line[0].startsWith(COMMENT) || !line[0].startsWith(P)) {
-                continue;
-            }
-            for (String s : type) {
-                if (line[0].equalsIgnoreCase(s) && p.matcher(line[1].trim()).matches()) {
-                    return line[1];
-                }
-            }
-        }
-        throw new IllegalArgumentException("Not found : " + type + ", " + name);
-    }
+    /**
+     * CSVTable implementation
+     */
+    private static abstract class CSVTable implements CSTable {
 
-    public static void dispose(Iterator i) {
-        if (i instanceof TableIterator) {
-            ((TableIterator) i).close();
-        }
-    }
-
-    private static class CSVTable implements CSTable {
-
-        Map<Integer, Map<String, String>> info;
+        Map<Integer, Map<String, String>> info = new HashMap<Integer, Map<String, String>>();
         String name;
         int colCount;
-        int firstLine;
         String columnNames[];
-        File file;
+        int firstline;
+        CSVStrategy strategy = CSVStrategy.DEFAULT_STRATEGY;
 
-        private CSVTable(File file, String name) throws IOException {
-            Reader r = new FileReader(file);
-            CSVParser csv = new CSVParser(r, CSVStrategy.DEFAULT_STRATEGY);
-            this.name = locate(csv, name, TABLE, TABLE1);
-            this.info = new HashMap<Integer, Map<String, String>>();
-            this.file = file;
-            this.firstLine = readTableHeader(csv);
-            if (firstLine < 2) {
-                throw new IllegalArgumentException("invalid First row line: " + firstLine);
+        protected abstract Reader newReader();
+
+        protected void init(String tableName) throws IOException {
+            CSVParser csv = new CSVParser(newReader(), strategy);
+            name = locate(csv, tableName, TABLE, TABLE1);
+            firstline = readTableHeader(csv);
+        }
+
+        private void skip0(CSVParser csv, int lines) {
+            try {
+                csv.skipLines(lines);
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
             }
-            r.close();
+        }
+
+        private String[] readRow(CSVParser csv) {
+            try {
+                String[] r = csv.getLine();
+                return r;
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         /**
@@ -1142,30 +1669,6 @@ public class DataIO {
         public Iterable<String[]> rows() {
             return rows(0);
         }
-
-        private static void skip0(BufferedReader r, int lines) throws IOException {
-            while (lines-- > 0) {
-                r.readLine();
-            }
-        }
-
-        private static String[] readRow(BufferedReader r, int cols) throws IOException {
-            String line = r.readLine();
-            if (line == null || line.isEmpty() || line.indexOf(',') == -1) {
-                return null;
-            }
-
-            String[] t = new String[cols];
-            int start = 0;
-            for (int i = 0; i < cols; i++) {
-                int end = line.indexOf(',', start);
-                t[i] = line.substring(start, end != -1 ? end : line.length()).trim();
-                start = end + 1;
-            }
-            return t;
-        }
-        static final int BUFF_16K = 2 * 8192;
-        static final int BUFF_32K = 2 * BUFF_16K;
 
         /**
          * Gets a row iterator that starts at a give row.
@@ -1182,150 +1685,58 @@ public class DataIO {
 
                 @Override
                 public Iterator<String[]> iterator() {
-                    try {
-                        final BufferedReader p = new BufferedReader(new FileReader(file), BUFF_32K);
-                        skip0(p, firstLine);
-                        skip0(p, startRow);
+                    final Reader r = newReader();
+                    final CSVParser csv = new CSVParser(r, strategy);
 
-                        return new TableIterator<String[]>() {
+                    skip0(csv, firstline);
+                    skip0(csv, startRow);
 
-                            String[] line = readLine();
-                            int row = startRow;
+                    return new TableIterator<String[]>() {
 
-                            private String[] readLine() {
+                        String[] line = readRow(csv);
+                        int row = startRow;
+                        
+                        public void close() throws IOException {
+                                r.close();
+                        }
+
+                        @Override
+                        public boolean hasNext() {
+                            boolean hn = (line != null && line.length > 1 && line[0].isEmpty());
+                            if (!hn) {
                                 try {
-                                    String[] l = readRow(p, columnNames.length);
-                                    if (l == null) {
-                                        close();
-                                    }
-                                    return l;
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            }
-
-                            @Override
-                            public boolean hasNext() {
-                                return line != null && line.length > 1 && line[0].isEmpty();
-                            }
-
-                            @Override
-                            public String[] next() {
-                                String[] s = line;
-                                s[0] = Integer.toString(++row);
-                                line = readLine();
-                                return s;
-                            }
-
-                            @Override
-                            public void remove() {
-                                throw new UnsupportedOperationException();
-                            }
-
-                            @Override
-                            public void skip(int n) {
-                                if (n < 1) {
-                                    throw new IllegalArgumentException("n<1");
-                                }
-                                try {
-                                    skip0(p, n - 1);
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                                line = readLine();
-                                row += n;
-                            }
-
-                            @Override
-                            public void close() {
-                                try {
-                                    if (p != null) {
-                                        p.close();
-                                    }
+                                    r.close();
                                 } catch (IOException E) {
                                 }
                             }
-                        };
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                            return hn;
+                        }
+
+                        @Override
+                        public String[] next() {
+                            String[] s = line;
+                            s[0] = Integer.toString(++row);
+                            line = readRow(csv);
+                            return s;
+                        }
+
+                        @Override
+                        public void remove() {
+                            throw new UnsupportedOperationException();
+                        }
+
+                        @Override
+                        public void skip(int n) {
+                            if (n < 1) {
+                                throw new IllegalArgumentException("n<1 : " + n);
+                            }
+                            skip0(csv, n - 1);
+                            line = readRow(csv);
+                            row += n;
+                        }
+                    };
                 }
             };
-
-//            return new Iterable<String[]>() {
-//
-//                @Override
-//                public Iterator<String[]> iterator() {
-//                    try {
-//                        final FileReader r = new FileReader(file);
-//                        final CSVParser p = new CSVParser(r, CSVStrategy.DEFAULT_STRATEGY, BUF_SZ);
-//                        p.skipLines(firstLine);
-//                        p.skipLines(startRow);
-//
-//                        return new TableIterator<String[]>() {
-//
-//                            String[] line = readLine();
-//                            int row = startRow;
-//
-//                            private String[] readLine() {
-//                                try {
-//                                    String[] l = p.getLine();
-//                                    if (l == null) {
-//                                        close();
-//                                    }
-//                                    return l;
-//                                } catch (IOException ex) {
-//                                    throw new RuntimeException(ex);
-//                                }
-//                            }
-//
-//                            @Override
-//                            public boolean hasNext() {
-//                                return line != null && line.length > 1 && line[0].isEmpty();
-//                            }
-//
-//                            @Override
-//                            public String[] next() {
-//                                String[] s = line;
-//                                s[0] = Integer.toString(++row);
-//                                line = readLine();
-//                                return s;
-//                            }
-//
-//                            @Override
-//                            public void remove() {
-//                                throw new UnsupportedOperationException();
-//                            }
-//
-//                            @Override
-//                            public void skip(int n) {
-//                                if (n < 1) {
-//                                    throw new IllegalArgumentException("n<1");
-//                                }
-//                                try {
-//                                    p.skipLines(n - 1);
-//                                } catch (IOException ex) {
-//                                    throw new RuntimeException(ex);
-//                                }
-//                                line = readLine();
-//                                row += n;
-//                            }
-//
-//                            @Override
-//                            public void close() {
-//                                try {
-//                                    if (r != null) {
-//                                        r.close();
-//                                    }
-//                                } catch (IOException E) {
-//                                }
-//                            }
-//                        };
-//                    } catch (IOException ex) {
-//                        throw new RuntimeException(ex);
-//                    }
-//                }
-//            };
         }
 
         private int readTableHeader(CSVParser csv) throws IOException {
@@ -1384,5 +1795,76 @@ public class DataIO {
         public String getColumnName(int column) {
             return columnNames[column];
         }
+    }
+
+    private static class FileTable extends CSVTable {
+
+        File f;
+
+        FileTable(File f, String name) throws IOException {
+            this.f = f;
+            init(name);
+        }
+
+        @Override
+        protected Reader newReader() {
+            try {
+                return new FileReader(f);
+            } catch (FileNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    private static class StringTable extends CSVTable {
+
+        String s;
+
+        StringTable(String s, String name) throws IOException {
+            this.s = s;
+            init(name);
+        }
+
+        @Override
+        protected Reader newReader() {
+            return new StringReader(s);
+        }
+    }
+
+    private static class URLTable extends CSVTable {
+
+        URL s;
+
+        URLTable(URL s, String name) throws IOException {
+            this.s = s;
+            init(name);
+        }
+
+        @Override
+        protected Reader newReader() {
+            try {
+                return new InputStreamReader(s.openStream());
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+//        String table = "@T, nhru\n"
+//                + "createdby, od\n"
+//                + "date, today\n"
+//                + "@H, hru_coeff, area, me\n"
+//                + "type, Double, Double, Double\n"
+//                + ",1.3,3.5,5.6\n"
+//                + ",1.3,3.5,5.6\n"
+//                + ",1.3,3.5,5.6\n"
+//                + "\n";
+//
+//        CSTable t = table(table, "nhru");
+//        print(t, new PrintWriter(System.out));
+//
+//        CSProperties csp = fromTable(t);
+//        print(csp, new PrintWriter(System.out));
     }
 }

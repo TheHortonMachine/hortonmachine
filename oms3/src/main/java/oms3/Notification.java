@@ -1,5 +1,5 @@
 /*
- * $Id: Notification.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -32,14 +32,24 @@ import javax.swing.event.EventListenerList;
  *  Allows the 
  *
  * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: Notification.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public class Notification {
 
     EventListenerList ll = new EventListenerList();
+    
     Controller c;
     /* avoid Event object creation and fire(..) calls if no listeners. */
     boolean shouldFire = false;
+    
+//    private static Notification instance;
+//    
+//    public static final Notification instance() {
+//        if (instance == null) {
+//            instance = new Notification();
+//        }
+//        return instance;
+//    }
 
     protected static final Logger log = Logger.getLogger("oms3.sim");
 
@@ -196,6 +206,7 @@ public class Notification {
          * @param t event type
          * @param E the event
          */
+        // stateChanged(Type t, EventObject E);
         void notice(Type t, EventObject E);
     }
 
@@ -216,7 +227,7 @@ public class Notification {
 
         /**
          * Get the source of the connect event
-         * @return the fieldaccess object being the connect source
+         * @return the field access object being the connect source
          */
         public Access getFrom() {
             return from;
@@ -225,7 +236,7 @@ public class Notification {
         /**
          * Get the destination for the connect event.
          *
-         * @return the target Fieldaccess component.
+         * @return the target Field access component.
          */
         public Access getTo() {
             return to;

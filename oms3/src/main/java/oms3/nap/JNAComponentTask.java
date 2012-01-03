@@ -14,7 +14,7 @@
 //import org.apache.tools.ant.types.FileSet;
 //
 ///**
-// * NGMF-APR task.
+// * NAP task.
 // * 
 // * @author od
 // */
@@ -23,6 +23,9 @@
 //    List<FileSet> filesets = new ArrayList<FileSet>();
 //    File destdir;
 //    String dllName;
+//    boolean genlogging;
+//    boolean gensingleton;
+//    boolean genprotected;
 //
 //    public void addFileset(FileSet fileset) {
 //        filesets.add(fileset);
@@ -34,6 +37,19 @@
 //
 //    public void setDllName(String dllName) {
 //        this.dllName = dllName;
+//    }
+//    
+//
+//    public void setGenlogging(boolean genlogging) {
+//        this.genlogging = genlogging;
+//    }
+//
+//    public void setGensingleton(boolean gensingleton) {
+//        this.gensingleton = gensingleton;
+//    }
+//
+//    public void setGenprotected(boolean genprotected) {
+//        this.genprotected = genprotected;
 //    }
 //
 //    @Override
@@ -53,19 +69,42 @@
 //                    if (needsRebuild(baseDir, destdir, incFile)) {
 //                        File genFile = new File(destdir, incFile.substring(0, incFile.lastIndexOf('.')) + ".java");
 //                        File srcFile = new File(baseDir, incFile);
-//                        JNAFortran ah = new JNAFortran() {
-//                             @Override
-//                             public void log(String msg) {
-//                                 JNAComponentTask.this.log(msg, Project.MSG_VERBOSE);
-//                             }
-//                        };
-//                        ah.setLibname(dllName);
-//                        ah.setGenFile(genFile);
-//                        ah.setSrcFile(srcFile);
-//                        ah.setRelativeFile(incFile);
-//                        AnnotationParser.handle(srcFile, ah);
-//                        if (genFile.exists())
-//                            log(" Generated: " + genFile, Project.MSG_INFO);
+//
+//                        AnnotationHandler a = null;
+//
+//                        if (incFile.endsWith("nlogo")) {
+//                            // netlogo
+//                            NetLogo nl = new NetLogo() {
+//
+//                                @Override
+//                                public void log(String msg) {
+//                                    JNAComponentTask.this.log(msg, Project.MSG_VERBOSE);
+//                                }
+//                            };
+//                            nl.setGenFile(genFile);
+//                            nl.setSrcFile(srcFile);
+//                            nl.setRelativeFile(incFile);
+//                            a = nl;
+//                        } else {
+//                            // fortran
+//                            JNAFortran ah = new JNAFortran(this) {
+//
+//                                @Override
+//                                public void log(String msg) {
+//                                    JNAComponentTask.this.log(msg, Project.MSG_VERBOSE);
+//                                }
+//                            };
+//                            ah.setLibname(dllName);
+//                            ah.setGenFile(genFile);
+//                            ah.setSrcFile(srcFile);
+//                            ah.setRelativeFile(incFile);
+//                            a = ah;
+//                        }
+//
+//                        AnnotationParser.handle(srcFile, a);
+//                        if (genFile.exists()) {
+//                            log("Generating source: " + genFile, Project.MSG_INFO);
+//                        }
 //                    }
 //                }
 //            }
@@ -75,18 +114,15 @@
 //    }
 //
 //    private boolean needsRebuild(File srcDir, File genSrcDir, String src) {
-//        return true;
+////        if (true) return true;
+//        File genFile = new File(genSrcDir, src.substring(0, src.lastIndexOf('.')) + ".java");
+//        if (!genFile.exists()) {
+//            return true;
+//        }
+//        File srcFile = new File(srcDir, src);
+//        if (srcFile.lastModified() > genFile.lastModified()) {
+//            return true;
+//        }
+//        return false;
 //    }
-//
-////    private boolean needsRebuild(File srcDir, File genSrcDir, String src) {
-////        File genFile = new File(genSrcDir, src.substring(0, src.lastIndexOf('.')) + ".java");
-////        log(" Checking rebuild for: " + genFile, Project.MSG_VERBOSE);
-////        if (!genFile.exists())
-////             return true;
-////        File srcFile = new File(srcDir, src);
-////        if (srcFile.lastModified() > genFile.lastModified()) {
-////            return true;
-////        }
-////        return false;
-////    }
 //}

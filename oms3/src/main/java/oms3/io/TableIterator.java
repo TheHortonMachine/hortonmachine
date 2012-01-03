@@ -4,6 +4,7 @@
  */
 package oms3.io;
 
+import java.io.IOException;
 import java.util.Iterator;
 
 /** An iterator that allows skipping rows in a table.
@@ -17,5 +18,6 @@ public interface TableIterator<T> extends Iterator<T> {
      */
     public void skip(int n);
 
-    public void close();
+    public void close() throws IOException;
+
 }

@@ -30,8 +30,8 @@ public class SimBuilder extends GenericBuilderSupport {
             cl = "oms3.dsl.cosu.DDS";
         } else if (name.equals("glue")) {
             cl = "oms3.dsl.cosu.Glue";
-        } else if (name.equals("test")) {
-            cl = "oms3.dsl.Test";
+        } else if (name.equals("tests")) {
+            cl = "oms3.dsl.Tests";
         } else if (name.equals("chart")) {
             cl = "oms3.dsl.analysis.Chart";
         } else {

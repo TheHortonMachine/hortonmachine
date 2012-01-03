@@ -14,7 +14,7 @@ import java.util.Map;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 
-/** Table, that can be managed.
+/** Table, that can be *fully* managed in Memory.
  *
  * @author Olaf David
  */
@@ -66,7 +66,7 @@ public class MemoryTable implements CSTable, TableModel {
 
     @Override
     public String getColumnName(int column) {
-        return columnNames.get(column);
+        return columnNames.get(column-1);
     }
 
     public void setColumns(String ... columns) {
@@ -121,7 +121,7 @@ public class MemoryTable implements CSTable, TableModel {
 
     public void addRow(Object... row) {
         if (row.length != columnNames.size()) {
-            throw new IllegalArgumentException("row data != column count");
+            throw new IllegalArgumentException("row data != column count : " + row.length + "!=" + columnNames.size());
         }
         String[] s = new String[columnNames.size() + 1];
         s[0] = Integer.toString(rows.size());
@@ -167,4 +167,5 @@ public class MemoryTable implements CSTable, TableModel {
     public Iterable<String[]> rows(int skipRow) {
         return rows.subList(skipRow, rows.size()-1);
     }
+
 }

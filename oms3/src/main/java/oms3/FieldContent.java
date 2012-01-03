@@ -1,5 +1,5 @@
 /*
- * $Id: FieldContent.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ import java.lang.reflect.Field;
  * Generic Data Object for exchange
  * 
  * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: FieldContent.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public class FieldContent {
 
@@ -98,7 +98,7 @@ public class FieldContent {
     }
 
     /**
-     * Unsynchonized setValue
+     * Unsynchronized setValue
      * @param value
      */
     void setValue0(Object value) {
@@ -123,7 +123,7 @@ public class FieldContent {
     }
 
     /**
-     * Unsynchonized getValue
+     * Unsynchronized getValue
      * 
      * @return
      */

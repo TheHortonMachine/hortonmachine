@@ -6,6 +6,7 @@ package oms3.dsl.cosu;
 
 import oms3.dsl.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -20,8 +21,6 @@ import oms3.Conversions;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.Initialize;
-import oms3.io.CSTable;
-import oms3.io.DataIO;
 
 /**
  *
@@ -32,16 +31,19 @@ public class Fast extends AbstractSimulation {
     int samples = 2000;
     int terms = 4;
     Params params = new Params();
-    Opt opt = new Opt();
     Date sens_start;
     Date sens_end;
 
+    List<ObjFunc> ofs = new ArrayList<ObjFunc>();
+    
     @Override
     public Buildable create(Object name, Object value) {
         if (name.equals("parameter")) {
             return params;
         } else if (name.equals("objfunc")) {
-            return opt;
+            ObjFunc of = new ObjFunc();
+            ofs.add(of);
+            return of;
         } else if (name.equals("samples")) {
             samples = (Integer) value;
 //            if (samples<2000) {
@@ -71,7 +73,7 @@ public class Fast extends AbstractSimulation {
         }
         lastFolder.mkdirs();
         Logger.getLogger("oms3.model").setLevel(Level.WARNING);
-        opt.adjustWeights();
+        ObjFunc.adjustWeights(ofs);
         run(getModel(), getOut(), lastFolder, getName());
 
         // setting the input data;
@@ -181,7 +183,7 @@ public class Fast extends AbstractSimulation {
 
         System.out.println();
 
-        StringBuffer b = new StringBuffer("Sensitivity");
+        StringBuilder b = new StringBuilder("Sensitivity");
         //print out S values
         for (int i = 0; i < pList.size(); i++) {
             b.append(String.format(Locale.US, "%15s ", pList.get(i).getName()));
@@ -237,22 +239,8 @@ public class Fast extends AbstractSimulation {
         for (Output e : out) {
             e.done();
         }
-
-        String[] obs = opt.getObserved().split("\\s*\\|\\s*");
-        if (obs.length != 3) {
-            throw new IllegalArgumentException("Invalid column spec: " + opt.getObserved());
-        }
-        CSTable tobs = DataIO.table(Step.resolve(obs[0], folder), obs[1]);
-        double[] obsval = DataIO.getColumnDoubleValuesInterval(sens_start, sens_end, tobs, obs[2]);
-
-        String[] sim = opt.getSimulated().split("\\s*\\|\\s*");
-        if (sim.length != 3) {
-            throw new IllegalArgumentException("Invalid column spec: " + opt.getSimulated());
-        }
-        CSTable tsim = DataIO.table(Step.resolve(sim[0], folder), sim[1]);
-        double[] simval = DataIO.getColumnDoubleValuesInterval(sens_start, sens_end, tsim, sim[2]);
-
-        return opt.getMultiOFValue(obsval, simval);
+        
+        return ObjFunc.calculateObjectiveFunctionValue(ofs, sens_start, sens_end, folder);
     }
 
     private Object toValue(String name, double[] vals, Map<String, Object> parameter) {

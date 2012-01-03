@@ -4,8 +4,11 @@
  */
 package oms3.nap;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
@@ -16,6 +19,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import oms3.ComponentException;
 
 /** Annotation Processor.
  *
@@ -122,7 +126,7 @@ public class AnnotationParser {
         return val;
     }
 
-     /**
+    /**
      * Annotation map back to String.
      * @param ann
      * @return
@@ -134,13 +138,13 @@ public class AnnotationParser {
             Map<String, String> v = ann.get(decl);
             String value = v.get(AnnotationHandler.VALUE);
             if (value != null) {
-                b.append("(" + value + ")");
+                b.append(" (" + value + ")");
             } else if (v.size() > 0) {
-                b.append("(");
+                b.append(" (");
                 int i = -1;
                 for (String string : v.keySet()) {
                     i++;
-                    b.append(string + "=\"" + v.get(string) + "\"");
+                    b.append(string + "=" + v.get(string));
                     if (i < v.size() - 1) {
                         b.append(", ");
                     }
@@ -163,7 +167,6 @@ public class AnnotationParser {
 //        }
 //        return map;
 //    }
-    
 //    /**
 //     * Derives a new File name from an existing one in the same parent
 //     * folder

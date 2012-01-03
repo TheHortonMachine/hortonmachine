@@ -1,5 +1,5 @@
 /*
- * $Id: Compound.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -29,7 +29,7 @@ import oms3.annotations.*;
  * Abstract Compound Command.
  * 
  * @author od
- * @version $Id: Compound.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public  class Compound {
 

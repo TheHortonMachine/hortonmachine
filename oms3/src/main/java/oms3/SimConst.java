@@ -23,11 +23,22 @@ public class SimConst {
     private SimConst() {
     }
 
-    /** Calibration type: inidividual paramever values are used for calibration */
-    public static final String INDIVIDUAL = "invividual";
+    /** Calibration type: individual parameter values are used for calibration */
+    public static final String INDIVIDUAL = "individual";
     /** Calibration type: parameter values are binary */
     public final static String BINARY = "binary";
 
+    // TimeSteps
+    public static final String DAILY_MEAN = "daily_mean";
+    public static final String MONTHLY_MEAN = "monthly_mean";
+    public static final String MEAN_MONTHLY = "mean_monthly";  
+    public static final String ANNUAL_MEAN = "annual_mean";
+    public static final String PERIOD_MEAN = "period_mean";
+    public static final String PERIOD_MEDIAN = "period_median";
+    public static final String PERIOD_STANDARD_DEVIATION = "period_standard_deviation";
+    public static final String PERIOD_MININUM = "period_mininum";
+    public static final String PERIOD_MAXIMUM = "period_maximum";
+       
 // Summary
     public static final String DAILY = "daily";
     public static final String WEEKLY = "weekly";

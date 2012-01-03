@@ -1,5 +1,5 @@
 /*
- * $Id: Initialize.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
 /** Initialize tag for methods
  *
  * @author Olaf David 
- * @version $Id: Initialize.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -451,25 +451,25 @@ public class Components {
         return null;
     }
 
-    public static void main(String[] args) throws Exception {
-        double start = System.currentTimeMillis();
-        System.out.println(getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar")));
-        double end = System.currentTimeMillis();
-        System.out.println("time " + (end - start));
-
-        List<Class<?>> comps = getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar"));
-
-        Class<?> basin = null;
-        for (Class<?> c : comps) {
-            if (c.getName().equals("prms2008.Basin")) {
-                basin = c;
-                break;
-            }
-        }
-
-        System.out.println(getDocumentation(basin, Locale.getDefault()));
-
-        System.out.println(getDescription(basin, Locale.getDefault()));
-
-    }
+//    public static void main(String[] args) throws Exception {
+//        double start = System.currentTimeMillis();
+//        System.out.println(getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar")));
+//        double end = System.currentTimeMillis();
+//        System.out.println("time " + (end - start));
+//
+//        List<Class<?>> comps = getComponentClasses(new File("/od/projects/oms3.prj.prms2008/dist/oms3.prj.prms2008.jar"));
+//
+//        Class<?> basin = null;
+//        for (Class<?> c : comps) {
+//            if (c.getName().equals("prms2008.Basin")) {
+//                basin = c;
+//                break;
+//            }
+//        }
+//
+//        System.out.println(getDocumentation(basin, Locale.getDefault()));
+//
+//        System.out.println(getDescription(basin, Locale.getDefault()));
+//
+//    }
 }

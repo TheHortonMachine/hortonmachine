@@ -1,5 +1,6 @@
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
 import oms3.dsl.*;
 
 /**

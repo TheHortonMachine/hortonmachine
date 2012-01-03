@@ -95,7 +95,9 @@ public class SCE {
         this.data = data;
 
         // get values
-        numOfParams = stepData.params().getCount();
+        numOfParams = data.getParamValues().length;
+        //numOfParams = stepData.params().getCount();
+        
         initNumOfComplexes = stepData.getInitComplexes();
         numOfPointsInComplex = stepData.getPointsPerComplex();
         numOfPointsInSubComplex = stepData.getPointsPerSubcomplex();
@@ -108,7 +110,7 @@ public class SCE {
         upperBound = data.getUpperBound();
         lowerBound = data.getLowerBound();
         initialParameterSet = data.getParamValues();
-
+        
 //        System.out.println(maxNumOfTrials + " " + initNumOfComplexes + " " + numOfPointsInComplex + " " + numOfPointsInSubComplex + " " + numOfEvolutionSteps
 //                + " " + minNumOfComplexes + " " + numOfShufflingLoops + " " + percentage);
 
@@ -426,7 +428,7 @@ public class SCE {
 //            out.println("Objective Function value of worst point: " + objFuncValueOfWorstPoint);
 //            out.println("Normal Distribution of best point: " + distribution);
 
-        out.print(" %r   " + icall + ": " + of + " [" + data.getObjFuncValueOfBestPoint() + "/" + objFuncValueOfWorstPoint+"]" + " c:" + currentNumOfComplexes + " d:" + distribution);
+        out.print("\n    " + icall + ": " + of + " [" + data.getObjFuncValueOfBestPoint() + "/" + objFuncValueOfWorstPoint+"]" + " c:" + currentNumOfComplexes + " d:" + distribution);
         return of;
     }
 

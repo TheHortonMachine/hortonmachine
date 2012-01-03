@@ -5,6 +5,8 @@
 package oms3.dsl;
 
 import groovy.util.BuilderSupport;
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -22,14 +24,15 @@ import oms3.ComponentException;
  */
 public abstract class GenericBuilderSupport extends BuilderSupport {
 
-    Buildable current;
     private static final Logger log = Logger.getLogger("oms3.sim");
     private static final Logger model_log = Logger.getLogger("oms3.model");
     //
     static final ConsoleHandler conHandler = new ConsoleHandler();
+    //
+    Buildable current;
 
-    static class LR extends Formatter {
-        
+    static public class LR extends Formatter {
+
         @Override
         public String format(LogRecord r) {
             return String.format("%1$tm/%1$td %1$tT %2$-7s %3$s\n",
@@ -37,14 +40,20 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
         }
     }
 
+    static public class CompLR extends Formatter {
+
+        @Override
+        public String format(LogRecord r) {
+            return String.format("%1$tm/%1$td %1$tT %2$-7s [%3$s] %4$s\n",
+                    new Date(r.getMillis()), r.getLevel(), r.getLoggerName(), r.getMessage());
+        }
+    }
+
     static {
         log.setUseParentHandlers(false);
-        model_log.setUseParentHandlers(false);
-
         log.addHandler(conHandler);
-        model_log.addHandler(conHandler);
-        
-        conHandler.setLevel(Level.ALL);
+
+        conHandler.setLevel(Level.ALL);   // otherwise it blocks on CONFIG and below.
         conHandler.setFormatter(new LR());
     }
 
@@ -122,7 +131,11 @@ public abstract class GenericBuilderSupport extends BuilderSupport {
             try {
                 BeanBuilder b = new BeanBuilder(current.getClass());
                 b.setProperties(current, props);
-            } catch (Exception ex) {
+            } catch (IllegalAccessException ex) {
+                throw new ComponentException(ex.getMessage());
+            } catch (InvocationTargetException ex) {
+                throw new ComponentException(ex.getTargetException().getMessage());
+            } catch (IntrospectionException ex) {
                 throw new ComponentException(ex.getMessage());
             }
         }

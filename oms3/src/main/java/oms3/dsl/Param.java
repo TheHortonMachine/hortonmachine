@@ -1,7 +1,7 @@
 package oms3.dsl;
 
 import oms3.SimConst;
-
+import oms3.dsl.cosu.Calibration;
 
 /**
  * 
@@ -17,6 +17,8 @@ public class Param implements Buildable {
 
     String strategy = SimConst.MEAN;
 
+    Calibration calibration;
+     
     public Param(String name, Object value) {
         this.name = name;
         this.value = value;
@@ -27,12 +29,14 @@ public class Param implements Buildable {
     }
 
     public void setStrategy(String strategy) {
-        if (!strategy.equals(SimConst.MEAN)) {
-            throw new IllegalArgumentException("MEAN only supported.");
+        if ((!strategy.equals(SimConst.MEAN)) && 
+            (!strategy.equals(SimConst.INDIVIDUAL)) &&
+            (!strategy.equals(SimConst.BINARY)) ) {
+            throw new IllegalArgumentException(strategy + "strategy not supported.");
         }
         this.strategy = strategy;
     }
-
+    
     public double getLower() {
         return lower;
     }
@@ -40,6 +44,13 @@ public class Param implements Buildable {
         return upper;
     }
 
+    public Calibration getCalibration () {
+         if (calibration == null) {
+            throw new IllegalArgumentException("Missing calibration argument");
+        }
+        return calibration;
+    }
+    
     public void setLower(double lower) {
         this.lower = lower;
     }
@@ -65,8 +76,18 @@ public class Param implements Buildable {
         this.value = value;
     }
 
+   
+        
     @Override
     public Buildable create(Object name, Object value) {
-        return LEAF;
+        if (name.equals("calibration")) {
+            this.calibration = new Calibration();
+            return calibration;
+        }
+        else {
+            throw new IllegalArgumentException(name.toString());
+        }
     }
 }
+
+

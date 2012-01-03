@@ -261,64 +261,59 @@ public class ParameterData {
         }
     }
 
-    private void calculateMean() {
+   
+        private void calculateMean() {
+        
         double sum = 0;
-        for (int i = 0; i < data.length; i++) {
-            sum += data[i];
-        }
-        mean = sum / ((double) data.length);
-    }
-
-    private void findMax() {
-        if (calibrationType == MEAN) {
-            max = data[0];
-            for (int i = 1; i < data.length; i++) {
-                if (data[i] > max) {
-                    max = data[i];
-                }
+        Integer count = 0;
+        
+        for(int i=0; i<data.length; i++) {
+            if (calibrationFlag[i]) {
+                sum += data[i];
+                count++;
             }
-        } else if (calibrationDataSize > 0) {
+        }
+        mean = sum / count.doubleValue();
+        
+    }
+    
+  
+    private void findMax() {
+        
+        if(calibrationDataSize > 0) {
             int index = 0;
-            while (!calibrationFlag[index]) {
+            while(!calibrationFlag[index]) {
                 index++;
             }
             max = data[index];
             index++;
-            for (int i = index; i < data.length; i++) {
-                if (!calibrationFlag[i]) {
-                    continue;
-                } else if (data[i] > max) {
+            for(int i=index; i<data.length; i++) {
+                if(calibrationFlag[i] && data[i] > max) {
                     max = data[i];
                 }
             }
         }
+        
     }
-
+    
     private void findMin() {
-        if (calibrationType == MEAN) {
-            min = data[0];
-            for (int i = 1; i < data.length; i++) {
-                if (data[i] < min) {
-                    min = data[i];
-                }
-            }
-        } else if (calibrationDataSize > 0) {
+        
+        if(calibrationDataSize > 0)  {
             int index = 0;
-            while (!calibrationFlag[index]) {
+            while(!calibrationFlag[index]) {
                 index++;
             }
             min = data[index];
             index++;
-            for (int i = index; i < data.length; i++) {
-                if (!calibrationFlag[i]) {
-                    continue;
-                }
-                if (data[i] < min) {
+            for(int i=index; i<data.length; i++) {
+                if(calibrationFlag[i] && data[i] < min) {
                     min = data[i];
                 }
             }
         }
+        
     }
+  
 
     ////////////////////////////////////////////////////////////////////////////////////
     //  Methods the conversion from/to values used in SCE to/from the values in statvar file
@@ -362,9 +357,9 @@ public class ParameterData {
                     data[i] = values[index];
                     index++;
                 }
-            }
+            }      
             calculateMean();
-        } else {
+        } else { // Binary
             int index = 0;
             for (int i = 0; i < data.length; i++) {
                 if (calibrationFlag[i]) {

@@ -1,5 +1,5 @@
 /*
- * $Id: Grid.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ import java.util.Iterator;
  * Grid datastaructure.
  * 
  * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: Grid.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public class Grid extends ArrayList<Compound> {
     

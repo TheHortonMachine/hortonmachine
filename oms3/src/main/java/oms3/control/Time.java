@@ -1,5 +1,5 @@
 /*
- * $Id: Time.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -31,9 +31,9 @@ import java.util.GregorianCalendar;
  * Time Control Component
  *  
  * @author od
- * @version $Id: Time.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
-public class Time extends Iteration {
+public class Time extends While {
     
     @In  public GregorianCalendar start;
     @In  public GregorianCalendar end;

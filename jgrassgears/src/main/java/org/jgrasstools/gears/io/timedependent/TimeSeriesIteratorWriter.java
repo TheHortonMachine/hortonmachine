@@ -19,6 +19,7 @@ package org.jgrasstools.gears.io.timedependent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -210,6 +211,6 @@ public class TimeSeriesIteratorWriter {
 
     @Finalize
     public void close() throws IOException {
-        DataIO.print(memoryTable, new File(file));
+        DataIO.print(memoryTable, new PrintWriter(new File(file)));
     }
 }

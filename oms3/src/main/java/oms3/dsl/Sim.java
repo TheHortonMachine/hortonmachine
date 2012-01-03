@@ -1,20 +1,15 @@
 package oms3.dsl;
 
-import java.awt.Image;
-import java.awt.Toolkit;
+import groovy.lang.Closure;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
-import javax.swing.JFrame;
 
 import oms3.ComponentAccess;
 import oms3.annotations.*;
-import oms3.io.CSProperties;
-import oms3.io.DataIO;
 import oms3.Compound;
 import oms3.Notification.*;
 
-import ngmf.ui.PEditor;
 import oms3.doc.Documents;
 import ngmf.util.OutputStragegy;
 import ngmf.util.Validation;
@@ -36,6 +31,9 @@ public class Sim extends AbstractSimulation {
     // Simulation resources.
     boolean digest = false;
     boolean sanitychecks = true;
+    
+    Closure pre;     
+    Closure post;    
 
     /**
      * perform sanity checks for the model, default is true.
@@ -47,6 +45,14 @@ public class Sim extends AbstractSimulation {
 
     public void setDigest(boolean digest) {
         this.digest = digest;
+    }
+
+    public void setPre(Closure pre) {
+        this.pre = pre;
+    }
+
+    public void setPost(Closure post) {
+        this.post = post;
     }
 
     @Override
@@ -70,6 +76,8 @@ public class Sim extends AbstractSimulation {
         if (getModel() == null) {
             throw new ComponentException("missing 'model' element.");
         }
+        
+        Compound.reload();
 
         if (!sanitychecks) {
             System.setProperty("oms.skipCheck", "true");
@@ -87,19 +95,6 @@ public class Sim extends AbstractSimulation {
             }
         }
 
-        // setup component logging
-        Logging l = model.getComponentLogging();
-        Logger.getLogger("oms3.model").setLevel(Level.parse(l.getAll()));
-        Map<String, String> cl = l.getCompLevels();
-        for (String comp : cl.keySet()) {
-            String cll = cl.get(comp);
-            Level level = Level.parse(cll);
-            Logger.getLogger("oms3.model." + comp).setLevel(level);
-        }
-
-        // call the prerun scripts
-        doPreRuns();
-
         // Path
         String libPath = model.getLibpath();
         if (libPath != null) {
@@ -113,6 +108,28 @@ public class Sim extends AbstractSimulation {
         if (log.isLoggable(Level.CONFIG)) {
             log.config("TL component " + comp);
         }
+
+        // setup component logging
+        Logger.getLogger("oms3.model").setLevel(Level.OFF);
+        Logging l = model.getComponentLogging();
+        Map<String, String> cl = l.getCompLevels();
+        for (String compname : cl.keySet()) {
+            String cll = cl.get(compname);
+            Level level = Level.parse(cll);
+            Logger logger = Logger.getLogger("oms3.model." + compname);
+            logger.setUseParentHandlers(false);
+            logger.setLevel(level);
+            ConsoleHandler ch = new ConsoleHandler();
+            ch.setLevel(level);
+            ch.setFormatter(new GenericBuilderSupport.CompLR());
+            logger.addHandler(ch);
+        }
+        
+        // call the prerun scripts
+        if (pre != null) {
+            pre.call(comp);
+        }
+        
         if (log.isLoggable(Level.INFO)) {
             log.info("Init ...");
         }
@@ -131,7 +148,7 @@ public class Sim extends AbstractSimulation {
         if (log.isLoggable(Level.CONFIG)) {
             log.config("Simulation output folder: " + lastFolder);
         }
-
+        
         boolean adjusted = ComponentAccess.adjustOutputPath(lastFolder, comp, log);
         // only create this folder if there is a need.
         if (adjusted) {
@@ -165,19 +182,21 @@ public class Sim extends AbstractSimulation {
                     }
                 });
 
-                c.addListener(new Listener() {
+                if (log.isLoggable(Level.FINE)) {
+                    c.addListener(new Listener() {
 
-                    @Override
-                    public void notice(Type arg0, EventObject arg1) {
-                        if (arg0 == Type.OUT) {
-                            DataflowEvent e = (DataflowEvent) arg1;
-                            Object v = e.getValue();
-                            if (v == null) {
-                                log.severe("Null out -> " + e.getAccess().toString());
+                        @Override
+                        public void notice(Type arg0, EventObject arg1) {
+                            if (arg0 == Type.OUT) {
+                                DataflowEvent e = (DataflowEvent) arg1;
+                                Object v = e.getValue();
+                                if (v == null) {
+                                    log.fine("'null' output from " + e.getAccess().toString());
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 
@@ -209,6 +228,8 @@ public class Sim extends AbstractSimulation {
             Compound c = (Compound) comp;
             c.shutdown();
         }
+        
+        
         for (Efficiency e : eff) {
             e.printEff(lastFolder);
         }
@@ -219,57 +240,15 @@ public class Sim extends AbstractSimulation {
             e.done();
         }
 
-
         if (log.isLoggable(Level.INFO)) {
-            log.info(" Execution time: " + (t3 - t2) + " [ms]");
+            log.info("Finished [" + (t3 - t2) + " ms]");
         }
-
-        doPostRuns();
+        
+        if (post != null) {
+            post.call(comp);
+        }
+        
         return comp;
-    }
-
-    /** Edit parameter file content. Edit only the 
-     * 
-     * @throws Exception
-     */
-    @Override
-    public void edit() throws Exception {
-        List<File> l = new ArrayList<File>();
-        for (Params p : model.getParams()) {
-            if (p.getFile() != null) {
-                l.add(new File(p.getFile()));
-            }
-        }
-        if (l.isEmpty()) {
-            throw new ComponentException("No parameter files to edit.");
-        }
-
-        // initial Parameter set generation
-        if (l.size() == 1) {
-            File f = l.get(0);
-            if (!f.exists()) {
-                // create the default parameter and fill it.
-                CSProperties p = DataIO.properties(ComponentAccess.createDefault(model.getComponent()));
-                DataIO.save(p, f, "Parameter");
-            }
-        }
-
-        //
-        nativeLF();
-        PEditor p = new PEditor(l);
-        // the frame
-        Image im = Toolkit.getDefaultToolkit().getImage(
-                getClass().getResource("/ngmf/ui/table.png"));
-        JFrame f = new JFrame();
-        f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.getContentPane().add(p);
-        f.setIconImage(im);
-        f.setTitle("Parameter " + getName());
-        f.setSize(800, 600);
-        f.setLocation(500, 200);
-        f.setVisible(true);
-        f.toFront();
-        System.out.flush();
     }
 
     /**

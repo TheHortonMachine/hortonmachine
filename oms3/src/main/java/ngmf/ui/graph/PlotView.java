@@ -6,7 +6,6 @@ package ngmf.ui.graph;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,16 +20,17 @@ import oms3.io.CSTable;
 import oms3.io.DataIO;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.general.SeriesException;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -59,7 +59,8 @@ public class PlotView {
             TimeSeries series = new TimeSeries(n, Millisecond.class);
             for (int j = 0; j < v.length; j++) {
                 try {
-                    series.add(new Millisecond(date[j]), v[j]);
+//                    series.add(new Millisecond(date[j]), v[j]);
+                     series.add(new Millisecond(date[j]), v[j] == -9999 ? null : v[j]);
                 } catch (SeriesException E) {
                     System.err.println("Error adding to series " + date[j] + " " + v[j]);
                 }
@@ -77,7 +78,8 @@ public class PlotView {
             TimeSeries series = new TimeSeries(n, Millisecond.class);
             for (int j = 0; j < v.length; j++) {
                 try {
-                    series.add(new Millisecond(date[j]), v[j]);
+//                    series.add(new Millisecond(date[j]), v[j]);
+                     series.add(new Millisecond(date[j]), v[j] == -9999 ? null : v[j]);
                 } catch (SeriesException E) {
                     System.err.println("Error adding to series " + date[j] + " " + v[j]);
                 }
@@ -97,7 +99,8 @@ public class PlotView {
             TimeSeries series = new TimeSeries(n, Millisecond.class);
             for (int j = 0; j < v.length; j++) {
                 try {
-                    series.add(new Millisecond(date[j]), v[j]);
+//                    series.add(new Millisecond(date[j]), v[j]);
+                    series.add(new Millisecond(date[j]), v[j] == -9999 ? null : v[j]);
                 } catch (SeriesException E) {
                     System.err.println("Error adding to series " + date[j] + " " + v[j]);
                 }
@@ -115,7 +118,8 @@ public class PlotView {
             XYSeries series = new XYSeries(n);
             for (int j = 0; j < v.length; j++) {
                 try {
-                    series.add(x[j], v[j]);
+//                    series.add(x[j], v[j]);
+                     series.add(x[j], v[j] == -9999 ? null : v[j]);
                 } catch (SeriesException E) {
                     System.err.println("Error adding to series " + x[j] + " " + v[j]);
                 }
@@ -130,7 +134,8 @@ public class PlotView {
         XYSeries series = new XYSeries("");
         for (int j = 0; j < x.length; j++) {
             try {
-                series.add(x[j], y[j]);
+//                series.add(x[j], y[j]);
+                     series.add(x[j], y[j] == -9999 ? null : y[j]);
             } catch (SeriesException E) {
                 System.err.println("Error adding to series " + x[j] + " " + y[j]);
             }
@@ -149,42 +154,73 @@ public class PlotView {
     }
 
     public static JComponent createTSChart(String title, Date[] date, List<String> label,
-            List<Double[]> vals, int view) {
+            List<Double[]> vals, int view, List<ValueSet> y) {
+        
         XYDataset[] dataset = createDatasets(date, label, vals);
-        if (view == 0) {  // see in Chart for value code.
+
+        if (view == 0) {  // stacked
             DateAxis timeAxis = new DateAxis(label.get(0));
             CombinedDomainXYPlot plot = new CombinedDomainXYPlot(timeAxis);
             plot.setGap(10.0);
             for (int i = 0; i < dataset.length; i++) {
                 NumberAxis valueAxis = new NumberAxis(label.get(i));
-                XYPlot subplot = new XYPlot(dataset[i], timeAxis, valueAxis, new StandardXYItemRenderer());
+                XYPlot subplot = new XYPlot(dataset[i], timeAxis, valueAxis, null);
                 subplot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
+                
+                XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+                renderer.setSeriesLinesVisible(0, y.get(i).isLine());
+                renderer.setSeriesShapesVisible(0, y.get(i).isShape());
+                renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+                subplot.setRenderer(renderer);
                 plot.add(subplot, 1);
             }
             plot.setOrientation(PlotOrientation.VERTICAL);
             JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, plot, true);
             return comp(chart);
-        } else if (view == 1) {
+        } else if (view == 1) {  // multi
             JFreeChart chart = ChartFactory.createTimeSeriesChart(title, "Date", label.get(0), dataset[0], true, true, false);
             XYPlot plot = (XYPlot) chart.getPlot();
+            
             plot.setOrientation(PlotOrientation.VERTICAL);
             plot.getRangeAxis().setFixedDimension(15.0);
             plot.getRangeAxis().setLabelPaint(col[0]);
-            for (int i = 1; i < dataset.length; i++) {
+
+
+            for (int i = 0; i < dataset.length; i++) {
                 NumberAxis axis = new NumberAxis(label.get(i));
                 axis.setLabelPaint(col[i % col.length]);
                 plot.setRangeAxis(i, axis);
                 plot.setRangeAxisLocation(i, AxisLocation.BOTTOM_OR_LEFT);
                 plot.setDataset(i, dataset[i]);
                 plot.mapDatasetToRangeAxis(i, i);
-                XYItemRenderer rend = new StandardXYItemRenderer();
-                rend.setSeriesPaint(0, col[i % col.length]);
-                plot.setRenderer(i, rend);
+//                XYItemRenderer rend = new StandardXYItemRenderer();
+//                rend.setSeriesPaint(0, col[i % col.length]);
+//                plot.setRenderer(i, rend);
+
+                XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+//                renderer.setSeriesPaint(i, col[i % col.length]);
+//                renderer.setSeriesLinesVisible(i, y.get(i).isLine());
+//                renderer.setSeriesShapesVisible(i, y.get(i).isShape());
+                renderer.setSeriesPaint(0, col[i % col.length]);
+                renderer.setSeriesLinesVisible(0, y.get(i).isLine());
+                renderer.setSeriesShapesVisible(0, y.get(i).isShape());
+                renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+                plot.setRenderer(i, renderer);
             }
+            
             return comp(chart);
-        } else if (view == 2) {
+        } else if (view == 2) {  // combined
             XYDataset dataset1 = createDatasetCombined(date, label, vals);
             JFreeChart chart = ChartFactory.createTimeSeriesChart(title, "Date", null, dataset1, true, false, false);
+            XYPlot plot = (XYPlot) chart.getPlot();
+            XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+            for (int i = 0; i < dataset.length; i++) {
+                renderer.setSeriesLinesVisible(i, y.get(i).isLine());
+                renderer.setSeriesShapesVisible(i, y.get(i).isShape());
+            }
+            renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator());
+            plot.setRenderer(renderer);
+
             return comp(chart);
         } else {
             throw new IllegalArgumentException("Illegal view type");
@@ -196,7 +232,6 @@ public class PlotView {
 //        JFreeChart chart = ChartFactory.createTimeSeriesChart(title, "Date", null, dataset, true, true, false);
 //        return comp(chart);
 //    }
-    
     public static JComponent createLineChart(String title, Integer[] date, List<String> label, List<Double[]> vals) {
         XYDataset dataset = createXYDataset(date, label, vals);
         JFreeChart chart = ChartFactory.createXYLineChart(title, "%", null, dataset, PlotOrientation.VERTICAL, true, true, false);
@@ -260,7 +295,7 @@ public class PlotView {
         File filename = new File(file);
         CSTable table = DataIO.table(filename, "efc");
 
-        double[] values = DataIO.getColumnDoubleValuesInterval(info.initstart, info.initend, table, var);
+        double[] values = DataIO.getColumnDoubleValuesInterval(info.initstart, info.initend, table, var, DataIO.DAILY);
         double dates[] = new double[values.length];
 
         ModelDateTime start = new ModelDateTime();
@@ -322,7 +357,7 @@ public class PlotView {
         cal.setTime(info.initend);
         cal.add(Calendar.DATE, 1);
 
-        double[] values = DataIO.getColumnDoubleValuesInterval(cal.getTime(), info.forecastend, table, var);
+        double[] values = DataIO.getColumnDoubleValuesInterval(cal.getTime(), info.forecastend, table, var, DataIO.DAILY);
         double dates[] = new double[values.length];
 
         ModelDateTime start = new ModelDateTime();

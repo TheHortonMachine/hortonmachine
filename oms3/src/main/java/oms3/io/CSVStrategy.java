@@ -53,6 +53,9 @@ class CSVStrategy implements Cloneable, Serializable {
     public static CSVStrategy TDF_STRATEGY = new CSVStrategy('\t', '"', COMMENTS_DISABLED, ESCAPE_DISABLED, true,
             true, false, true);
 
+    public static CSVStrategy OMS_STRATEGY = new CSVStrategy(',', '"', COMMENTS_DISABLED, ESCAPE_DISABLED, true,
+            true, false, true);
+
     /**
      * Customized CSV strategy setter.
      * 

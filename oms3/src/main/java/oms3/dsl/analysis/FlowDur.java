@@ -1,5 +1,7 @@
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
+import java.io.File;
 import oms3.dsl.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,7 +46,7 @@ public class FlowDur implements Buildable {
         }
 
         @Override
-        public Double[] getDoubles(OutputStragegy st, String simName) throws IOException {
+        public Double[] getDoubles(File st, String simName) throws IOException {
             Double[] duration = new Double[100];
             Double[] y = v.getDoubles(st, simName);
             Arrays.sort(y);
@@ -58,6 +60,16 @@ public class FlowDur implements Buildable {
         @Override
         public String getName() {
             return v.getName();
+        }
+
+        @Override
+        public boolean isLine() {
+            return true;
+        }
+
+        @Override
+        public boolean isShape() {
+            return false;
         }
     }
 

@@ -13,15 +13,23 @@ public class EspTrace implements Buildable {
     String title = "ESP Traces";
     String dir;
     String var;
-
     String report;
 
     public void setReport(String report) {
         this.report = report;
     }
 
-    public String getReport() {
-        return report;
+    public String getReport(OutputStragegy st) {
+        if (report == null) {
+            return null;
+        }
+        File f = new File(report);
+        if (report.startsWith("%")) {
+            f = OutputStragegy.resolve(new File(st.baseFolder(), report));
+        } else {
+            f = OutputStragegy.resolve(report);
+        }
+        return f.toString();
     }
 
     public String getTitle() {
@@ -34,10 +42,6 @@ public class EspTrace implements Buildable {
 
     public void setDir(String dir) {
         this.dir = dir;
-    }
-
-    public String getDir() {
-        return dir;
     }
 
     public void setVar(String var) {
@@ -59,7 +63,6 @@ public class EspTrace implements Buildable {
         }
         return f.toString();
     }
- 
 
     @Override
     public Buildable create(Object name, Object value) {

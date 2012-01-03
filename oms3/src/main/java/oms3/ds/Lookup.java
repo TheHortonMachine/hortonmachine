@@ -1,5 +1,5 @@
 /*
- * $Id: Lookup.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -28,7 +28,7 @@ import java.util.HashMap;
 /** Lookup storage of Compounds.
  * 
  * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: Lookup.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public class Lookup extends HashMap<Object, Compound> {
     private static final long serialVersionUID = 8955106752919862261L;

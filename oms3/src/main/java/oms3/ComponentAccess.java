@@ -1,5 +1,5 @@
 /*
- * $Id: ComponentProxy.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -24,14 +24,13 @@ package oms3;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,7 +39,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 import oms3.annotations.Bound;
 import oms3.annotations.Execute;
@@ -58,7 +56,7 @@ import oms3.util.Annotations;
  * purpose of their integration into a model.
  * 
  * @author od (odavid@colostate.edu)
- * @version $Id: ComponentProxy.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public class ComponentAccess {
 
@@ -81,6 +79,7 @@ public class ComponentAccess {
 //            counter++;
 //        }
 //    }
+    
     public ComponentAccess(Object cmd) {
         this(cmd, null);
     }
@@ -88,7 +87,7 @@ public class ComponentAccess {
     ComponentAccess(Object comp, Notification ens) {
         this.comp = comp;
         this.ens = ens;
-
+        
         Method execute = getMethodOfInterest(comp, Execute.class);
         exec = Utils.reflective(comp, execute);
 //        exec = Utils.compiled(comp, execute);
@@ -217,7 +216,7 @@ public class ComponentAccess {
                     throw new IllegalArgumentException("Invalid Method signature: " + m);
                 }
                 try {
-                    return cmpClass.getMethod(m.getName(), m.getParameterTypes());
+                    return cmpClass.getMethod(m.getName());
                 } catch (Exception ex) {
                     throw new ComponentException("Cannot find/access method: " + m);
                 }
@@ -267,19 +266,20 @@ public class ComponentAccess {
         }
     }
 
+   
     /**
      * Get the info class for a component object 
      * @param cmp
      * @return the class that contains the annotations.
      */
     public static Class infoClass(Class cmp) {
-        Class infoClass = null;
+        Class info = null;
         try {
-            infoClass = Class.forName(cmp.getName() + "CompInfo");
+            info = Class.forName(cmp.getName() + "CompInfo");
         } catch (ClassNotFoundException E) {        // there is no info class,
-            infoClass = cmp;
+            info = cmp;
         }
-        return infoClass;
+        return info;
     }
 
     /**
@@ -389,7 +389,7 @@ public class ComponentAccess {
                 try {
                     inpValue = conv(inpValue, fieldType);
                     // check the range if possible.
-                    if (Number.class.isAssignableFrom(fieldType) || fieldType == double.class || fieldType == float.class) {
+                    if (Number.class.isAssignableFrom(fieldType) || fieldType == double.class || fieldType == float.class || fieldType == int.class) {
                         Range range = in.getField().getAnnotation(Range.class);
                         if (range != null) {
                             double v = ((Number) inpValue).doubleValue();
@@ -405,11 +405,11 @@ public class ComponentAccess {
                         log.config("@In " + comp.getClass().getName() + "@" + fieldName + " <- '" + inpValue + "'");
                     }
                 } catch (Exception ex) {
-                    throw new ComponentException("Failed setting '" + fieldName + "' type " + in.getField().getType() + " <- " + ex.getMessage());
+                    throw new ComponentException("Failed setting '" + fieldName + "' type " + in.getField().getType().getCanonicalName() + " <- " + ex.getMessage());
                 }
                 continue;
             } else {
-                if (System.getProperty("oms3.check_params") != null) {
+                if (System.getProperty("oms.check_params") != null) {
                     try {
                         if (w == null) {
                             file = new File(System.getProperty("oms3.work", System.getProperty("user.dir")), "missing_params.csv");
@@ -462,20 +462,52 @@ public class ComponentAccess {
 
     public static String dump(Object comp) throws Exception {
         StringBuilder b = new StringBuilder();
+        b.append("//" + comp.toString() + ":\n");
         b.append("// In\n");
         ComponentAccess cp = new ComponentAccess(comp);
         for (Access in : cp.inputs()) {
             String name = in.getField().getName();
             Object val = in.getFieldValue();
-            b.append("  " + name + ": " + Conversions.convert(val, String.class) + "\n");
+            b.append("    " + name + ": " + Conversions.convert(val, String.class) + "\n");
         }
         b.append("// Out\n");
         for (Access in : cp.outputs()) {
             String name = in.getField().getName();
             Object val = in.getFieldValue();
-            b.append("  " + name + ": " + Conversions.convert(val, String.class) + "\n");
+            b.append("    " + name + ": " + Conversions.convert(val, String.class) + "\n");
         }
         b.append("\n");
         return b.toString();
+    }
+
+    public static void rangeCheck(Object comp, boolean in, boolean out) throws Exception {
+        ComponentAccess cp = new ComponentAccess(comp);
+        Collection<Access> acc = new ArrayList<Access>();
+        if (in) {
+            acc.addAll(cp.inputs());
+        }
+        if (out) {
+            acc.addAll(cp.outputs());
+        }
+        for (Access a : acc) {
+            String name = a.getField().getName();
+            Object val = a.getFieldValue();
+            Range range = a.getField().getAnnotation(Range.class);
+            if (range != null) {
+                if (val instanceof Number) {
+                    double v = ((Number) val).doubleValue();
+                    if (!Annotations.inRange(range, v)) {
+                        throw new ComponentException(name + " not in range " + v);
+                    }
+                } else if (val instanceof double[]) {
+                    double[] v = (double[]) val;
+                    for (int i = 0; i < v.length; i++) {
+                        if (!Annotations.inRange(range, v[i])) {
+                            throw new ComponentException(name + " not in range " + v[i]);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

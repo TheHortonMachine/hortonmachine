@@ -17,7 +17,7 @@ import javax.tools.ToolProvider;
 /**
  * 
  */
-public final class Compiler {
+ public final class Compiler {
 
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     MemoryOutputJavaFileManager fileManager;
@@ -90,7 +90,7 @@ public final class Compiler {
      * Compiles multiple sources file and loads the classes.
      *
      * @param sourceFiles the source files to compile.
-     * @param parentLoader the parent classloader to use when loading classes.
+     * @param parentLoader the parent class loader to use when loading classes.
      *
      * @return a map of compiled classes.  This maps class names to
      * 			Class objects.

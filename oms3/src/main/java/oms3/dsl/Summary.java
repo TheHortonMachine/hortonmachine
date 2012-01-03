@@ -33,7 +33,7 @@ public class Summary implements Buildable {
     int idx[];
     Calendar cal;
     StringBuffer out;
-    List<Double> var_l = new ArrayList<Double>();
+    List<Number> var_l = new ArrayList<Number>();
     int field = Calendar.DAY_OF_MONTH;
     String moments = MEAN;
     // output file optional
@@ -97,16 +97,16 @@ public class Summary implements Buildable {
                             }
                         } else if (e.getAccess().getField().getName().equals(var)) {
                             if (idx == null) {
-                                var_l.add((Double) e.getValue());
+                                var_l.add((Number) e.getValue());
                             } else {
-                                var_l.add((Double) Util.accessArray(var, e.getValue(), idx));
+                                var_l.add((Number) Util.accessArray(var, e.getValue(), idx));
                             }
                             if (cal == null) {
                                 // TODO dangerous
                                 return;
                             }
                             if (cal.get(field) == 1) {
-                                double[] d = Util.convert(var_l);
+                                double[] d = Util.convertNumber(var_l);
                                 double eff = 0;
                                 out.append(Conversions.formatISO(cal.getTime()));
                                 out.append("  ");

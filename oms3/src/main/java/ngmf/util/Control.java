@@ -4,7 +4,6 @@
  */
 package ngmf.util;
 
-import oms3.util.Processes;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -149,16 +148,16 @@ public class Control {
                 @Override
                 public void run() {
                     try {
-                        Processes p = new Processes(rcmd.file());
-                                p.setArguments((Object)rcmd.args(node));
-                        p.setVerbose(verbose);
-                        OutputStream out = getOutputStream(node);
-                        p.redirectOutput(out);
-                        p.setWorkingDirectory(userDir);
-                        int exitValue = p.exec();
-                        synchronized (conf) {
-                            System.out.printf("DONE on %s, exit code %d.\n", node, exitValue);
-                        }
+//                        MyProcesses p = new MyProcesses(rcmd.file());
+//                                p.setArguments((Object)rcmd.args(node));
+//                        p.setVerbose(verbose);
+//                        OutputStream out = getOutputStream(node);
+//                        p.redirectOutput(out);
+//                        p.setWorkingDirectory(userDir);
+//                        int exitValue = p.exec();
+//                        synchronized (conf) {
+//                            System.out.printf("DONE on %s, exit code %d.\n", node, exitValue);
+//                        }
                     } catch (Throwable E) {
                         E.printStackTrace();
                     }

@@ -1,5 +1,5 @@
 /*
- * $Id: package-info.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
  * Component Annotations.
  * 
  * @author Olaf David 
- * @version $Id: package-info.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 package oms3.annotations;
 

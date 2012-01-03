@@ -10,13 +10,16 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.EventObject;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 import java.util.logging.Logger;
 import oms3.*;
 import oms3.Notification.*;
@@ -30,7 +33,7 @@ public class Output implements Buildable {
 
     protected static final Logger log = Logger.getLogger("oms3.sim");
 
-    class V {
+    private class V {
 
         String token;
         String name;
@@ -68,7 +71,7 @@ public class Output implements Buildable {
             if (v.getClass() == Double.class) {
                 return String.format(Locale.US, fformat, v);
             } else if (v instanceof Calendar) {
-                return Conversions.formatISO(cal.getTime());
+                return dfmt.format(((Calendar) v).getTime());
             } else if (v instanceof double[]) {
                 return dblfmt((double[]) v);
             }
@@ -96,35 +99,34 @@ public class Output implements Buildable {
                 b.append(t);
                 return b.toString();
             }
+            if (val != null && value() instanceof Calendar) {
+                return "Date";
+            }
             return val == null ? "null" : value().getClass().getSimpleName();
         }
     }
-    String file;
-    String time;
-    final Map<String, V> vars = new LinkedHashMap<String, V>();
+    final List<V> vars = new ArrayList<V>();
+    Set<String> d = new TreeSet<String>();
     //
-    Calendar cal;
+    String file;
+    //
     PrintWriter w;
-    long lasttime = 0;
-    boolean printTypes = true;
     boolean printHeader = true;
-    String fformat = "%10.3f";
+    //
+    String fformat = "%7.3f";
     String dformat = "%10d";
+    SimpleDateFormat dfmt = Conversions.ISO();
 
-    public void setFformat(String format) {
-        if (!format.startsWith("%")) {
-            fformat = '%' + format;
-        } else {
-            fformat = format;
-        }
+    public void setDateformat(String dateformat) {
+        dfmt = new SimpleDateFormat(dateformat);
     }
 
-    public void setDformat(String format) {
-        if (!format.startsWith("%")) {
-            dformat = '%' + format;
-        } else {
-            dformat = format;
-        }
+    public void setFloatformat(String format) {
+        fformat = (!format.startsWith("%")) ? ('%' + format) : format;
+    }
+
+    public void setDecimalformat(String format) {
+        dformat = (!format.startsWith("%")) ? ('%' + format) : format;
     }
 
     public void setFile(String file) {
@@ -136,12 +138,9 @@ public class Output implements Buildable {
         while (t.hasMoreTokens()) {
             String var = t.nextToken().trim();
             String[] l = Conversions.parseArrayElement(var);
-            vars.put(l[0], new V(var, l[0], Util.arraysDims(l)));
+            vars.add(new V(var, l[0], Util.arraysDims(l)));
+            d.add(l[0]);
         }
-    }
-
-    public void setTime(String time) {
-        this.time = time;
     }
 
     @Override
@@ -150,27 +149,19 @@ public class Output implements Buildable {
     }
 
     public void setup(Object comp, File dir, final String header) throws IOException {
-        lasttime = 0;
-        printTypes = true;
         printHeader = true;
-        cal = null;
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        if (time == null) {
-            throw new IllegalArgumentException("property 'time' not set.");
-        }
-        if (vars.size() == 0) {
-            throw new IllegalArgumentException("property 'vars' not set.");
+
+        if (vars.isEmpty()) {
+            throw new IllegalArgumentException("no variables to output.");
         }
 
         if (comp instanceof Compound) {
             Compound c = (Compound) comp;
 
             if (file != null) {
-//                if (new File(dir, file).exists()) {
-//                    throw new IllegalArgumentException("Duplicate: " + file);
-//                }
                 w = new PrintWriter(new FileWriter(new File(dir, file), false));
             } else {
                 w = new PrintWriter(new OutputStreamWriter(System.out));
@@ -178,32 +169,29 @@ public class Output implements Buildable {
 
             c.addListener(new Listener() {
 
+                int count = 0;
+                int vars_size = vars.size();
+
                 @Override
                 public void notice(Type T, EventObject E) {
                     if (T == Type.OUT) {
                         DataflowEvent e = (DataflowEvent) E;
                         String fieldName = e.getAccess().getField().getName();
-                        if (fieldName.equals(time)) {
-                            if (cal == null) {
-                                cal = (Calendar) e.getValue();
-                                lasttime = cal.getTimeInMillis();
-                            }
-                            return;
-                        } else if (vars.containsKey(fieldName)) {
+                        if (d.contains(fieldName)) {
                             synchronized (vars) {
-//                                System.out.println(fieldName + " " + cal.getTimeInMillis() + " " + e.getValue());
-                                if (cal != null && cal.getTimeInMillis() > lasttime) {
+                                for (V v : vars) {
+                                    if (v.name.equals(fieldName)) {
+                                        v.val = e.getValue();
+                                        count++;
+                                    }
+                                }
+                                if (count == vars_size) {
                                     if (printHeader) {
                                         printHeader(header);
                                     }
-                                    if (printTypes) {
-                                        printTypes();
-                                    }
-                                    lasttime = cal.getTimeInMillis();
                                     printRow();
+                                    count = 0;
                                 }
-                                V v = vars.get(fieldName);
-                                v.val = e.getValue();
                             }
                         }
                     }
@@ -215,39 +203,32 @@ public class Output implements Buildable {
     void printHeader(String header) {
         w.println("@T, \"" + header + "\"");
         w.println(" " + DataIO.KEY_CREATED_AT + ", \"" + new Date() + "\"");
-        w.println(" " + DataIO.DATE_FORMAT + ", " + Conversions.ISO().toPattern());
+        w.println(" " + DataIO.DATE_FORMAT + ", " + dfmt.toPattern());
         String dig = System.getProperty("oms3.digest");
         if (dig != null) {
             w.println(" " + DataIO.KEY_DIGEST + "," + dig);
         }
-        w.print("@H, " + time);
-        for (V v : vars.values()) {
+        w.print("@H");
+        for (V v : vars) {
             w.print(", " + v.token());
+        }
+        w.println();
+        w.print(" " + DataIO.KEY_TYPE);
+        for (V v : vars) {
+            w.print(", " + v.type());
         }
         w.println();
         printHeader = false;
     }
 
-    void printTypes() {
-        w.print(" " + DataIO.KEY_TYPE + ", " + DataIO.VAL_DATE);
-        for (V v : vars.values()) {
-            w.print(", " + v.type());
-        }
-        w.println();
-        printTypes = false;
-    }
-
     void printRow() {
-        w.print("," + Conversions.formatISO(new Date(lasttime)));
-        for (V v : vars.values()) {
+        for (V v : vars) {
             w.print(", " + v.valueString());
-            v.val = null;
         }
         w.println();
     }
 
     public void done() throws IOException {
-        printRow();
         w.flush();
         if (file != null) {
             w.close();

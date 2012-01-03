@@ -24,14 +24,24 @@ package oms3;
 
 import java.lang.reflect.Field;
 
-/** Access Interface for Fiels.
+/** Access Interface for Fields.
  *
  * @author od
  */
 public interface Access {
 
+    /**
+     * Reading (in) access.
+     * 
+     * @throws Exception 
+     */
     void in() throws Exception;
 
+    /**
+     * Writing (out) access
+     * 
+     * @throws Exception 
+     */
     void out() throws Exception;
 
     Field getField();
@@ -51,4 +61,5 @@ public interface Access {
     FieldContent getData();
 
     void setData(FieldContent data);
+    
 }

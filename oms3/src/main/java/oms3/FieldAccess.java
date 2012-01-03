@@ -1,25 +1,3 @@
-/*
- * $Id: FieldAccess.java 20 2008-07-25 22:31:07Z od $
- * 
- * This software is provided 'as-is', without any express or implied
- * warranty. In no event will the authors be held liable for any damages
- * arising from the use of this software.
- * 
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
- * 
- *  1. The origin of this software must not be misrepresented; you must not
- *     claim that you wrote the original software. If you use this software
- *     in a product, an acknowledgment in the product documentation would be
- *     appreciated but is not required.
- * 
- *  2. Altered source versions must be plainly marked as such, and must not be
- *     misrepresented as being the original software.
- * 
- *  3. This notice may not be removed or altered from any source
- *     distribution.
- */
 package oms3;
 
 import java.lang.reflect.Field;
@@ -30,8 +8,8 @@ import oms3.Notification.DataflowEvent;
 
 /** Field Access.
  * 
- * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: FieldAccess.java 20 2008-07-25 22:31:07Z od $ 
+ * @author od
+ * @version $Id$ 
  */
 class FieldAccess implements Access {
 
@@ -42,6 +20,7 @@ class FieldAccess implements Access {
     private static final Logger log = Logger.getLogger("oms3.sim");
 
 //    Access access;
+    
     FieldAccess(Object target, Field field, Notification ens) {
         this.field = field;
         this.comp = target;
@@ -89,7 +68,7 @@ class FieldAccess implements Access {
         if (data == null) {
 //             throw new ComponentException("Not connected: " + toString());
             if (log.isLoggable(Level.WARNING)) {
-                log.warning("In not connected : " + toString() + ", using default.");
+                log.warning("@In not connected : " + toString() + ", using default value.");
             }
             return;
         }
@@ -101,6 +80,14 @@ class FieldAccess implements Access {
             ens.fireIn(e);
             // the value might be altered
             val = e.getValue();
+        }
+        
+        // type conversion
+        
+        if (val != null && field.getType() != val.getClass() && !field.getType().isAssignableFrom(val.getClass())) {
+//            // default type conversion fails, we need to convert.
+//            // this will use the Conversions SPI.
+            val = Conversions.convert(val, field.getType());
         }
 
 //        access.pass((Access) val);
@@ -173,6 +160,11 @@ class FieldAccess implements Access {
 
     @Override
     public String toString() {
-        return comp + "%" + field.getName() + " - " + data;
+        return comp + "%" + field.getName() + " - " + (data == null ? null : data.getValue());
     }
+
+//    public static void main(String[] args) {
+//        System.out.println(Number.class.isAssignableFrom(Double.class));
+//        System.out.println(int.class.isAssignableFrom(double.class));
+//    }
 }

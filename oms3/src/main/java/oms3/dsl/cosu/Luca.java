@@ -24,6 +24,7 @@ import oms3.annotations.Finalize;
 import oms3.annotations.Initialize;
 import oms3.dsl.cosu.Step.Data;
 import oms3.io.DataIO;
+import ngmf.util.cosu.luca.ParameterData;
 
 // initial parameter settings (reading)
 // calibration date/time settings.
@@ -115,6 +116,16 @@ public class Luca extends AbstractSimulation {
 
         @Override
         public void execute(Step.Data step) throws Exception {
+
+            // Path
+            String libPath = getModel().getLibpath();
+            if (libPath != null) {
+                System.setProperty("jna.library.path", libPath);
+                if (log.isLoggable(Level.CONFIG)) {
+                    log.config("Setting jna.library.path to " + libPath);
+                }
+            }
+
             Object comp = getModel().getComponent();
 
             writeParameterFile(step);
@@ -144,14 +155,27 @@ public class Luca extends AbstractSimulation {
         }
 
         @Override
-        public void writeParameterFile(Step.Data step)  {
+        public void writeParameterFile(Step.Data step) {
             ParameterData[] paramData = step.paramData;
             for (int i = 0; i < paramData.length; i++) {
                 String name = paramData[i].getName();
+                int calibType = paramData[i].getCalibrationType();
+               // System.out.println("****** " + name + " is ctype " + calibType);
                 double[] val = paramData[i].getDataValue();
-                parameter.put(name, toValue(name, val));
+                if (calibType == ParameterData.BINARY) {
+                  int [] ival = new int[val.length];
+                  
+                    for (int j=0; j< val.length; j++) {
+                        ival[j] = (int) val[j];
+                    }
+                    parameter.put(name, toValueI(name,ival));
+                }
+                else {      
+                    parameter.put(name, toValue(name, val));
+                }
             }
         }
+        
 
         public void writeParameterCopy(Step step, int round) throws FileNotFoundException {
             File params = new File(lastFolder, "round-" + (round + 1) + "_step-" + step.getName() + ".csv");
@@ -170,5 +194,16 @@ public class Luca extends AbstractSimulation {
                 return Double.toString(vals[0]);
             }
         }
+        
+        private Object toValueI(String name, int[] vals) {
+            Object orig = parameter.get(name);
+            if (orig.toString().indexOf('{') > -1) {
+                // this is an array (hopefully 1dim)
+                return Conversions.convert(vals, String.class);
+            } else {
+                return Integer.toString(vals[0]);
+            }
+        }
+        
     }
 }

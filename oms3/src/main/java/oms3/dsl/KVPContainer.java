@@ -16,6 +16,11 @@ public class KVPContainer implements Buildable {
 
     List<KVP> entries = new ArrayList<KVP>();
 
+    public List<KVP> getEntries() {
+        return entries;
+    }
+    
+
     @Override
     public Buildable create(Object name, Object value) {
         entries.add(new KVP(name.toString(), value));

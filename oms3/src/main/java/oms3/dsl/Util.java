@@ -41,6 +41,14 @@ public class Util {
         return d;
     }
 
+    public static double[] convertNumber(List<Number> l) {
+        double[] d = new double[l.size()];
+        for (int i = 0; i < d.length; i++) {
+            d[i] = l.get(i).doubleValue();
+        }
+        return d;
+    }
+
     static Object accessArray(String name, Object val, int idx[]) {
         if (!val.getClass().isArray()) {
             throw new IllegalArgumentException("Not an array : " + name + " " + val);

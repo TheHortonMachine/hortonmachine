@@ -20,19 +20,19 @@ import static oms3.SimConst.*;
 public class OutputDescriptor implements Buildable {
 
     int scheme = SIMPLE;
-    String dir = System.getProperty("user.dir");
+    File dir = new File(System.getProperty("user.dir"));
 
-    public void setDir(String dir) {
-        if (!new File(dir).exists()) {
-            throw new ComponentException("File does not exists " + dir);
+    public void setDir(String d) {
+        dir = new File(d);
+        if (!dir.exists()) {
+            dir.mkdirs();
         }
-        if (!new File(dir).isDirectory()) {
-            throw new ComponentException("Not a directory " + dir);
+        if (!dir.isDirectory()) {
+            throw new IllegalArgumentException("Not a directory " + dir);
         }
-        this.dir = dir;
     }
 
-    public String getDir() {
+    File getDir() {
         return dir;
     }
 
@@ -40,18 +40,18 @@ public class OutputDescriptor implements Buildable {
         if ((scheme == SIMPLE) || (scheme == NUMBERED) || (scheme == TIME)) {
             this.scheme = scheme;
         } else {
-            throw new ComponentException("Invalid output strategy scheme.");
+            throw new IllegalArgumentException("Invalid output strategy scheme.");
         }
     }
 
     public OutputStragegy getOutputStrategy(String simName) {
         OutputStragegy st = null;
         if (scheme == SIMPLE) {
-            st = new SimpleDirectoryOutput(new File(getDir()), simName);
+            st = new SimpleDirectoryOutput(getDir(), simName);
         } else if (scheme == NUMBERED) {
-            st = new NumDirectoryOutput(new File(getDir()), simName);
+            st = new NumDirectoryOutput(getDir(), simName);
         } else if (scheme == TIME) {
-            st = new DateDirectoryOutput(new File(getDir()));
+            st = new DateDirectoryOutput(getDir());
         }
         return st;
     }

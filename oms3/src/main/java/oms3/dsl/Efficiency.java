@@ -32,9 +32,9 @@ public class Efficiency implements Buildable {
     int[] obs_idx;
     String sim;
     String precip;
-    List<Double> obs_l = new ArrayList<Double>();
-    List<Double> sim_l = new ArrayList<Double>();
-    List<Double> precip_l = new ArrayList<Double>();
+    List<Number> obs_l = new ArrayList<Number>();
+    List<Number> sim_l = new ArrayList<Number>();
+    List<Number> precip_l = new ArrayList<Number>();
 
     // output file optional
     String file;
@@ -80,15 +80,15 @@ public class Efficiency implements Buildable {
                         DataflowEvent e = (DataflowEvent) E;
                         if (e.getAccess().getField().getName().equals(obs)) {
                             if (obs_idx == null) {
-                                obs_l.add((Double) e.getValue());
+                                obs_l.add((Number) e.getValue());
                             } else {
-                                obs_l.add((Double) Util.accessArray(obs, e.getValue(), obs_idx));
+                                obs_l.add((Number) Util.accessArray(obs, e.getValue(), obs_idx));
                             }
                         } else if (e.getAccess().getField().getName().equals(sim)) {
-                            sim_l.add((Double) e.getValue()); //TODO use arrays here too.
+                            sim_l.add((Number) e.getValue()); //TODO use arrays here too.
                         }
                         if (e.getAccess().getField().getName().equals(precip)) {
-                            precip_l.add((Double)e.getValue());
+                            precip_l.add((Number)e.getValue());
                         }
 //                    System.err.println(E.getAccess().getField().getName() + "/" +
 //                    E.getComponent().getClass().getName() + E.getValue());
@@ -113,8 +113,8 @@ public class Efficiency implements Buildable {
         b.append('\n');
         b.append(String.format(Locale.US, "%15s ", obs + "/" + sim));
 
-        double[] obsarr = Util.convert(obs_l);
-        double[] simarr = Util.convert(sim_l);
+        double[] obsarr = Util.convertNumber(obs_l);
+        double[] simarr = Util.convertNumber(sim_l);
 
         double eff = 0;
         for (String m : methods.split(" ")) {
@@ -163,7 +163,7 @@ public class Efficiency implements Buildable {
                 if (precip_l.size() == 0) {
                     throw new ComponentException("missing precip for computing ROCE");
                 }
-                double[] precarr = Util.convert(precip_l);
+                double[] precarr = Util.convertNumber(precip_l);
                 eff = Efficiencies.runoffCoefficientError(obsarr, simarr, precarr);
             } else {
                 throw new ComponentException("Unknown Efficiency'"+ m + '"');

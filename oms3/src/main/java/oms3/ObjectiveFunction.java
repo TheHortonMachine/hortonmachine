@@ -6,7 +6,7 @@
 package oms3;
 
 /**
- * Objecttive Function.
+ * Objective Function.
  * 
  * Interface for providing a objective function implementation.
  * 

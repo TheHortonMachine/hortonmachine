@@ -1,5 +1,6 @@
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
 import oms3.dsl.*;
 import java.awt.BorderLayout;
 import java.util.ArrayList;
@@ -62,7 +63,7 @@ public class Chart implements Buildable {
                     }
                     List<Double[]> vals = new ArrayList<Double[]>();
                     for (ValueSet axis : p.getY()) {
-                        vals.add(axis.getDoubles(st, name));
+                        vals.add(axis.getDoubles(st.baseFolder(), name));
                     }
                     String view = p.getView();
                     int type = 1;
@@ -73,8 +74,9 @@ public class Chart implements Buildable {
                     } else if (view.equals(SimConst.COMBINED)) {
                         type = 2;
                     }
-                    tabs.addTab(p.getTitle(),
-                            PlotView.createTSChart(p.getTitle(), p.getX().getDates(st, name), names, vals, type));
+                    tabs.addTab(p.getTitle(), PlotView.createTSChart(p.getTitle(), p.getX().
+                            getDates(st.baseFolder(), name), names, vals, type, p.getY()));
+//                    tabs.addTab(p.getTitle(), PlotView.createTSChart(p.getTitle(), p.getX().getDates(st.baseFolder(), name), names, vals, type));
                 } else if (b instanceof FlowDur) {
                     FlowDur p = (FlowDur) b;
                     List<String> names = new ArrayList<String>();
@@ -83,28 +85,26 @@ public class Chart implements Buildable {
                     }
                     List<Double[]> vals = new ArrayList<Double[]>();
                     for (ValueSet axis : p.getY()) {
-                        vals.add(axis.getDoubles(st, name));
+                        vals.add(axis.getDoubles(st.baseFolder(), name));
                     }
                     Integer[] i = new Integer[100];
                     for (int j = 0; j < i.length; j++) {
                         i[j] = j;
                     }
-                    tabs.addTab(p.getTitle(),
-                            PlotView.createLineChart(p.getTitle(), i, names, vals));
+                    tabs.addTab(p.getTitle(), PlotView.createLineChart(p.getTitle(), i, names, vals));
                 } else if (b instanceof Scatter) {
                     Scatter p = (Scatter) b;
                     tabs.addTab(p.getTitle(), PlotView.createScatterChart(p.getTitle(),
                             p.getX().getName(), p.getY().getName(),
-                            p.getX().getDoubles(st, name), p.getY().getDoubles(st, name)));
+                            p.getX().getDoubles(st.baseFolder(), name), p.getY().getDoubles(st.baseFolder(), name)));
                 } else if (b instanceof EspTrace) {
                     EspTrace p = (EspTrace) b;
                     ESPToolPanel pa = PlotView.createESPTraces(p.getTitle(), p.getDir(st), p.getVar());
-                    String report = p.getReport();
+                    String report = p.getReport(st);
                     if (report != null) {
                         pa.writeReport(report);
-                    } else {
-                        tabs.addTab(p.getTitle(), pa);
                     }
+                    tabs.addTab(p.getTitle(), pa);
                 }
             }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: Conditional.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ import oms3.annotations.In;
  *  Conditional Compound.
  * 
  * @author Olaf David (olaf.david@ars.usda.gov)
- * @version $Id: Conditional.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 public abstract class Conditional extends Compound {
 
@@ -45,7 +45,7 @@ public abstract class Conditional extends Compound {
     
     protected Cond cond = new Cond();
 
-    public void conditional(Object cmd, String bool) {
+    protected  void conditional(Object cmd, String bool) {
         out2in(cmd, bool, cond, "alive");
     }
 }

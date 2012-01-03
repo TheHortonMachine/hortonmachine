@@ -1,5 +1,6 @@
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
 import oms3.dsl.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class Plot implements Buildable {
     List<ValueSet> y = new ArrayList<ValueSet>();
     String title;
     String view = SimConst.MULTI;
-
+    
     public void setView(String view) {
         this.view = view;
     }

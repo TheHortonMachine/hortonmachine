@@ -30,7 +30,7 @@ public class CLI {
     protected static final Logger log = Logger.getLogger("oms3.sim");
     //
     static final List<String> simExt = Arrays.asList(".sim", ".luca", ".esp", ".fast");
-    static final List<String> flags = Arrays.asList("-r", "-e", "-d", "-o", "-a", "-s");
+    static final List<String> flags = Arrays.asList("-r", "-e", "-d", "-o", "-a", "-s", "-b");
 
     static {
         if (System.getProperty("java.version").compareTo("1.6") < 0) {
@@ -49,10 +49,10 @@ public class CLI {
      * @param cmd the command to call (e.g. run)
      * @throws Exception
      */
-    public static Object sim(String file, String ll, String cmd) throws Throwable {
-        String f = CLI.readFile(file);
-        Object o = CLI.createSim(f, false, ll, file);
-        return CLI.invoke(o, cmd);
+    public static Object sim(String file, String ll, String cmd) throws Exception {
+        String f = readFile(file);
+        Object o = createSim(f, false, ll, file);
+        return invoke(o, cmd);
     }
 
     /**
@@ -64,8 +64,8 @@ public class CLI {
      * @throws Exception
      */
     public static void groovy(String file, String ll, String cmd) throws Exception {
-        String f = CLI.readFile(file);
-        Object o = CLI.createSim(f, true, ll, file);
+        String f = readFile(file);
+        Object o = createSim(f, true, ll, file);
     }
 
     /**
@@ -101,6 +101,10 @@ public class CLI {
         return b.toString();
     }
 
+    public static Object createSim(String script, boolean groovy, String ll) {
+        return createSim(script, groovy, ll, null);
+    }
+
     /**
      * Create a simulation object.
      * 
@@ -110,6 +114,7 @@ public class CLI {
      * @return the simulation object.
      */
     public static Object createSim(String script, boolean groovy, String ll, String file) {
+        file = (file == null) ? "unknown" : file;
         setOMSProperties();
         Level.parse(ll);                            // may throw IAE
         String prefix = groovy ? ""
@@ -130,19 +135,19 @@ public class CLI {
             if (n > 0) {
                 SyntaxException syn = E.getErrorCollector().getSyntaxError(0);
                 int line = syn.getLine() + (groovy ? 0 : -2);
-                throw new ComponentException(new File(file).getName() + " [line:" +
-                        line + " column:" + syn.getStartColumn() + "]  " + syn.getOriginalMessage());
+                throw new ComponentException(new File(file).getName() + " [line:"
+                        + line + " column:" + syn.getStartColumn() + "]  " + syn.getOriginalMessage());
             } else {
                 throw E;
             }
         } catch (MissingPropertyException E) {
-            throw new ComponentException("Cannot handle property '" + E.getProperty()  + "' in " + file);
+            throw new ComponentException("Cannot handle property '" + E.getProperty() + "' in " + file);
         } catch (GroovyRuntimeException E) {
-            throw new ComponentException(E.getMessage()  + " in '" + file + "'");
+            throw new ComponentException(E.getMessage() + " in '" + file + "'");
         }
     }
 
-    public static Object evaluateGroovyScript(String file) throws Exception {
+    public static Object evaluateGroovyScript(String file) {
         String content = readFile(file);
         return createSim(content, true, "OFF", file);
     }
@@ -177,7 +182,7 @@ public class CLI {
         return simExt.contains(file.substring(file.lastIndexOf('.')));
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
         String ll = "OFF";
         String cmd = null;
         String file = null;
@@ -207,11 +212,14 @@ public class CLI {
 
             boolean isgroovy = !isSim(file);
             Object target = createSim(readFile(file), isgroovy, ll, file);
+            
+            // ignore all 
+            if (isgroovy) {
+                return;
+            }
 
             if (cmd.equals("-r")) {
-                if (!isgroovy) {
-                    invoke(target, "run");
-                }
+                invoke(target, "run");
             } else if (cmd.equals("-e")) {
                 invoke(target, "edit");
             } else if (cmd.equals("-d")) {
@@ -222,6 +230,8 @@ public class CLI {
                 invoke(target, "graph");
             } else if (cmd.equals("-s")) {
                 invoke(target, "dig");
+            } else if (cmd.equals("-b")) {
+                invoke(target, "build");
             }
         } catch (Throwable E) {
             Throwable origE = E;

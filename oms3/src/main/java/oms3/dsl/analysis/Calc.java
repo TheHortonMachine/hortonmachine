@@ -4,11 +4,13 @@
  */
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
 import oms3.dsl.*;
 import gnu.jel.CompilationException;
 import gnu.jel.CompiledExpression;
 import gnu.jel.Evaluator;
 import gnu.jel.Library;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +36,9 @@ public class Calc implements Buildable, ValueSet {
     boolean acc = false;
     String title;
 
+    boolean shape = false;
+    boolean line = true;
+    
     Calc() {
         try {
             lib.markStateDependent("random", null);
@@ -43,6 +48,24 @@ public class Calc implements Buildable, ValueSet {
         } catch (CompilationException ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void setLine(boolean line) {
+        this.line = line;
+    }
+
+    public void setShape(boolean shape) {
+        this.shape = shape;
+    }
+
+    @Override
+    public boolean isLine() {
+        return line;
+    }
+    
+    @Override
+    public boolean isShape() {
+        return shape;
     }
 
     public void setTitle(String title) {
@@ -86,7 +109,7 @@ public class Calc implements Buildable, ValueSet {
     }
 
     @Override
-    public Double[] getDoubles(OutputStragegy st, String simName) throws IOException {
+    public Double[] getDoubles(File st, String simName) throws IOException {
         if (eq == null) {
             throw new IllegalArgumentException("missing equation in 'eq'");
         }

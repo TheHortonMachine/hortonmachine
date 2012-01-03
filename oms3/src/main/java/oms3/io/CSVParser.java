@@ -72,7 +72,7 @@ class CSVParser {
     private static final String[][] EMPTY_DOUBLE_STRING_ARRAY = new String[0][0];
     
     // the input stream
-    private final ExtendedBufferedReader in;    // TODO: this can be made final if setStrategy is removed
+    private final ExtendedBufferedReader in;    
     private CSVStrategy strategy;
     // the following objects are shared to reduce garbage 
     /** A record buffer for getLine(). Grows as necessary and is reused. */

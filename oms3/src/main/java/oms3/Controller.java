@@ -1,5 +1,5 @@
 /*
- * $Id: Controller.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@ import oms3.util.Threads;
 /** Execution Controller.
  *
  * @author Olaf David odavid@colostate.edu
- * @version $Id: Controller.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
 class Controller {
 
@@ -311,7 +311,12 @@ class Controller {
     }
 
     private static boolean canConnect(Access me, Access other) {
-        return other.getField().getType().isAssignableFrom(me.getField().getType());
+        // first check for plain type compatibility
+        if (other.getField().getType().isAssignableFrom(me.getField().getType())) {
+            return true;
+        }
+        // if this fails, let Conversions kick in.
+        return Conversions.canConvert(me.getField().getType(), other.getField().getType());
     }
 
     private static void checkFA(Object fa, Object o, String field) {

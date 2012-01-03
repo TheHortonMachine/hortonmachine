@@ -4,6 +4,7 @@
  */
 package oms3.dsl.analysis;
 
+import ngmf.ui.graph.ValueSet;
 import oms3.dsl.*;
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,28 @@ public class Axis implements Buildable, ValueSet {
     String column;
 
     String name;
+    
+    boolean shape = false;
+    boolean line = true;
 
+    public void setLine(boolean line) {
+        this.line = line;
+    }
+
+    public void setShape(boolean shape) {
+        this.shape = shape;
+    }
+
+    @Override
+    public boolean isLine() {
+        return line;
+    }
+
+    @Override
+    public boolean isShape() {
+        return shape;
+    }
+    
     public void setName(String name) {
         this.name = name;
     }
@@ -46,22 +68,22 @@ public class Axis implements Buildable, ValueSet {
     }
 
     // for xaxis
-    Date[] getDates(OutputStragegy st, String simName) throws IOException {
+    Date[] getDates(File st, String simName) throws IOException {
         CSTable t = table(st);
         return DataIO.getColumnDateValues(t, column);
     }
 
     @Override
-    public Double[] getDoubles(OutputStragegy st, String simName) throws IOException {
+    public Double[] getDoubles(File st, String simName) throws IOException {
         CSTable ty = table(st);
         return DataIO.getColumnDoubleValues(ty, column);
     }
 
-    private CSTable table(OutputStragegy st) throws IOException {
+    private CSTable table(File st) throws IOException {
         File f = new File(file);
         if (!(f.isAbsolute() && f.exists())) {
             if (file.startsWith("%")) {
-                f = OutputStragegy.resolve(new File(st.baseFolder(), file));
+                f = OutputStragegy.resolve(new File(st, file));
             } else {
                 f = OutputStragegy.resolve(file);
             }

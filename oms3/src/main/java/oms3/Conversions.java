@@ -43,12 +43,14 @@ import java.util.regex.Pattern;
  */
 public class Conversions {
 
+    /** Conversion SPI */
     static private ServiceLoader<ConversionProvider> convServices = ServiceLoader.load(ConversionProvider.class);
+    //
     static final char LB = '{';
     static final char RB = '}';
     static final char SEP = ',';
-    final static Pattern pattern = Pattern.compile("(\\w+)\\s*(\\[[0-9]+\\])*?");
-    final static Pattern splitP = Pattern.compile(Character.toString(SEP));
+    static final Pattern pattern = Pattern.compile("(\\w+)\\s*(\\[[0-9]+\\])*?");
+    static final Pattern splitP = Pattern.compile(Character.toString(SEP));
     public static boolean debug = false;
     /** Some common date patters */
     static private final String[] fmt = {
@@ -76,6 +78,22 @@ public class Conversions {
             return arg.get(key(from, to));
         }
     }
+    
+    public static boolean canConvert(Class<?> from, Class<?> to) {
+        if (from == String.class && to.isArray()) {
+            return true;
+        }
+        // get it from the internal cache.new ArrayConverter((String) from).getArrayForType(to);
+        Converter<Object, ?> c = co.get(key(from, to));
+        if (c == null) {
+            // service provider lookup
+            c = lookupConversionService(from, to);
+            if (c == null) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 //    public static Params createDefault() {
 //        Params p = new Params();
@@ -86,7 +104,7 @@ public class Conversions {
      *
      * @param to the type to convert to
      * @param from the value to convert
-     * @param arg conversion argument (e.g. Dateformat)
+     * @param arg conversion argument (e.g. Date format)
      * @return the object of a certain type.
      */
     public static <T> T convert(Object from, Class<? extends T> to, Params arg) {
@@ -555,6 +573,17 @@ public class Conversions {
                     return s.toString();
                 }
             });
+            put(key(Float.class, String.class), new Converter<Float, String>() {    // Double
+
+                @Override
+                public String convert(Float s, Object arg) {
+                    if (arg instanceof NumberFormat) {
+                        NumberFormat nf = (NumberFormat) arg;
+                        return nf.format(s);
+                    }
+                    return s.toString();
+                }
+            });
             put(key(Integer.class, String.class), new Converter<Integer, String>() {    // Integer
 
                 @Override
@@ -641,11 +670,43 @@ public class Conversions {
                 }
             });
             put(key(String.class, Character.class), get(key(String.class, char.class)));
+            put(key(Integer.class, int.class), new Converter<Integer, Integer>() {         // byte
+
+                @Override
+                public Integer convert(Integer s, Object arg) {
+                    return s;
+                }
+            });
+            put(key(Double.class, double.class), new Converter<Double, Double>() {         // double
+
+                @Override
+                public Double convert(Double s, Object arg) {
+                    return s;
+                }
+            });
+            put(key(Float.class, float.class), new Converter<Float, Float>() {         // double
+
+                @Override
+                public Float convert(Float s, Object arg) {
+                    return s;
+                }
+            });
+            put(key(Boolean.class, boolean.class), new Converter<Boolean, Boolean>() {         // byte
+
+                @Override
+                public Boolean convert(Boolean s, Object arg) {
+                    return s;
+                }
+            });
             // add more
         }
     };
 
     public static void main(String[] args) throws ParseException {
+        
+        String t = "t[10]";
+        
+        System.out.println(Arrays.toString(Conversions.parseArrayElement(t)));
 
 
         double a = 1231.2345672828288284;

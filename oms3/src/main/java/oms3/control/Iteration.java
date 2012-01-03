@@ -1,5 +1,5 @@
 /*
- * $Id: While.java 20 2008-07-25 22:31:07Z od $
+ * $Id$
  * 
  * This software is provided 'as-is', without any express or implied
  * warranty. In no event will the authors be held liable for any damages
@@ -22,33 +22,13 @@
  */
 package oms3.control;
 
-import oms3.ComponentException;
-import oms3.annotations.Execute;
-
 /**
  *  While Component.
  * 
  * @author od
- * @version $Id: While.java 20 2008-07-25 22:31:07Z od $ 
+ * @version $Id$ 
  */
-public class Iteration extends Conditional {
-
-    @Override
-    @Execute 
-    public void execute() throws ComponentException {
-        check();
-        while (cond.alive) {
-           preExec();
-           internalExec();
-           postExec();  //TODO remove this later.
-        }
-    }
-
-    protected void postExec() {
-    }
-
-    protected void preExec() {
-    }
-
-
+@Deprecated
+public class Iteration extends While {
+    
 }

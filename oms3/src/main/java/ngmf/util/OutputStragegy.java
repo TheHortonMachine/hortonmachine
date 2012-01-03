@@ -46,7 +46,6 @@ public abstract class OutputStragegy {
         if (!f.contains("%")) {
             return new File(f);
         }
-
         String fi = f.replace('\\', '/');
         String[] d = fi.split("/");
         File file = new File(d[0]);
@@ -72,9 +71,9 @@ public abstract class OutputStragegy {
                 }
             }
             file = new File(file, fi);
-            if (!file.exists()) {
-                throw new IllegalArgumentException(f);
-            }
+//            if (!file.exists()) {
+//                throw new IllegalArgumentException(f);
+//            }
         }
         return file;
     }

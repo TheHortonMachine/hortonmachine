@@ -32,7 +32,7 @@ import java.io.Serializable;
  * class to compare filenames.
  *
  * @author Stephen Colebourne
- * @version $Id: IOCase.java 606345 2007-12-21 23:43:01Z ggregory $
+ * @version $Id$
  * @since Commons IO 1.3
  */
 public final class IOCase implements Serializable {

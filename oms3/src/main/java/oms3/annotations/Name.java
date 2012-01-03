@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  *
  * @see Label
  * @author Olaf David
- * @version $Id: Name.java 20 2008-07-25 22:31:07Z od $
+ * @version $Id$
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
