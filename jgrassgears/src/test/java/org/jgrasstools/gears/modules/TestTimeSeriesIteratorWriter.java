@@ -94,7 +94,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         reader.close();
 
-        assertTrue(tempFile.delete());
+        tempFile.delete();
 
     }
 
@@ -163,7 +163,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         reader.close();
 
-        assertTrue(tempFile.delete());
+        tempFile.delete();
 
     }
 
