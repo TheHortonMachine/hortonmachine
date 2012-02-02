@@ -174,7 +174,7 @@ public interface EpanetNativeFunctions extends Library {
     int ENgetlinknodes( int int1, int[] intPtr1, int[] intPtr2 );
     // int ENgetlinknodes(int int1, IntBuffer intPtr1, IntBuffer intPtr2);
     int ENgetlinkvalue( int index, int paramcode, float[] value );
-    int ENgetversion( IntBuffer intPtr1 );
+    int ENgetversion( int[] version );
     int ENsetcontrol( int int1, int int2, int int3, float float1, int int4, float float2 );
     int ENsetnodevalue( int int1, int int2, float float1 );
     int ENsetlinkvalue( int int1, int int2, float float1 );

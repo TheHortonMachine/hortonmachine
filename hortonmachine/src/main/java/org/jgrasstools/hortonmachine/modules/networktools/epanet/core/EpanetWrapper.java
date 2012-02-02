@@ -573,19 +573,25 @@ public class EpanetWrapper {
      * @return the value.
      * @throws EpanetException
      */
-    public float ENgetlinkvalue( int index, LinkParameters param ) throws EpanetException {
-        float[] value = new float[1];
+    public float[] ENgetlinkvalue( int index, LinkParameters param ) throws EpanetException {
+        float[] value = new float[2];
         int errcode = epanet.ENgetlinkvalue(index, param.getCode(), value);
         checkError(errcode);
 
-        return value[0];
+        return value;
     }
 
     /**
-    * @deprecated not implemented yet
-    */
-    public int ENgetversion( IntBuffer intPtr1 ) {
-        return -1;
+     * Get the version of Epanet.
+     *
+     * @return the version of epanet.
+     * @throws EpanetException
+     */
+    public int ENgetversion() throws EpanetException {
+        int[] version = new int[0];
+        int errcode = epanet.ENgetversion(version);
+        checkError(errcode);
+        return version[0];
     }
     /**
      * @deprecated not implemented yet
@@ -687,7 +693,7 @@ public class EpanetWrapper {
             throw e;
         }
     }
-    
+
     public String getWarningMessage() {
         return warningMessage;
     }

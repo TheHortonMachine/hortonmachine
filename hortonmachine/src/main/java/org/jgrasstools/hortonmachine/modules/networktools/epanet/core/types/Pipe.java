@@ -33,9 +33,9 @@ public class Pipe {
 
     public String id;
 
-    public float flow;
+    public float[] flow = new float[2];
 
-    public float velocity;
+    public float[] velocity = new float[2];
 
     public float headloss;
 
@@ -44,7 +44,7 @@ public class Pipe {
     @SuppressWarnings("nls")
     @Override
     public String toString() {
-        return id + "\t" + flow + "\t" + velocity + "\t" + headloss + "\t" + status;
+        return id + "\t" + flow[0] + "\t" + flow[1] + "\t" + velocity[0] + "\t" + velocity[1] + "\t" + headloss + "\t" + status;
     }
 
 }

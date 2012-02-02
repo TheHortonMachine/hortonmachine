@@ -133,8 +133,11 @@ public class Epanet extends JGTModel {
             } else {
                 File dllFile = new File(inDll);
                 String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dllFile);
-                ep = new EpanetWrapper(nameWithoutExtention, dllFile.getParentFile().getAbsolutePath());
+                String path = dllFile.getParentFile().getAbsolutePath();
+                ep = new EpanetWrapper(nameWithoutExtention, path);
             }
+            
+//            int version = ep.ENgetversion();
 
             current = formatter.parseDateTime(tStart);
             tCurrent = tStart;
@@ -206,10 +209,10 @@ public class Epanet extends JGTModel {
                 Valve v = new Valve();
                 v.id = ep.ENgetlinkid(i);
                 v.time = current;
-                v.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
-                v.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
-                v.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
-                v.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+                v.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW)[0];
+                v.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY)[0];
+                v.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS)[0];
+                v.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS)[0];
                 valvesList.add(v);
                 break;
             }
@@ -220,19 +223,19 @@ public class Epanet extends JGTModel {
                 p.time = current;
                 p.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
                 p.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
-                p.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
-                p.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
+                p.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS)[0];
+                p.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS)[0];
                 pipesList.add(p);
                 break;
             case EN_PUMP:
                 Pump pu = new Pump();
                 pu.id = ep.ENgetlinkid(i);
                 pu.time = current;
-                pu.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW);
-                pu.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY);
-                pu.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS);
-                pu.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS);
-                pu.energy = ep.ENgetlinkvalue(i, LinkParameters.EN_ENERGY);
+                pu.flow = ep.ENgetlinkvalue(i, LinkParameters.EN_FLOW)[0];
+                pu.velocity = ep.ENgetlinkvalue(i, LinkParameters.EN_VELOCITY)[0];
+                pu.headloss = ep.ENgetlinkvalue(i, LinkParameters.EN_HEADLOSS)[0];
+                pu.status = ep.ENgetlinkvalue(i, LinkParameters.EN_STATUS)[0];
+                pu.energy = ep.ENgetlinkvalue(i, LinkParameters.EN_ENERGY)[0];
                 pumpsList.add(pu);
                 break;
             default:
