@@ -383,7 +383,13 @@ public class EpanetFeatureTypes {
         /**
          * Minor loss coefficient.
          */
-        MINORLOSS(MINORLOSS_STR, Double.class);
+        MINORLOSS(MINORLOSS_STR, Double.class),
+        /**
+         * Status.
+         * 
+         * <p>Status can be: OPEN, CLOSED.
+         */
+        STATUS(STATUS_STR, String.class);
 
         private Class< ? > clazz;
         private String attributeName;
