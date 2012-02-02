@@ -418,6 +418,13 @@ public class EpanetInpGenerator extends JGTModel {
         sbPipes.append("MINORLOSS").append(SPACER);
         sbPipes.append("STATUS").append(NL);
 
+        StringBuilder sbPipesdemand = new StringBuilder();
+        sbPipesdemand.append("\n\n[PDEMAND]\n");
+        sbPipesdemand.append(";ID").append(SPACER);
+        sbPipesdemand.append("PDEMAND").append(SPACER);
+        sbPipesdemand.append("LEAKCOEFF").append(SPACER);
+        sbPipesdemand.append("PATTERN").append(NL);
+
         for( SimpleFeature pipe : pipesList ) {
             // [PIPES]
             Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
@@ -429,6 +436,9 @@ public class EpanetInpGenerator extends JGTModel {
             }
             sbPipes.append(idString);
             sbPipes.append(SPACER);
+            sbPipesdemand.append(idString);
+            sbPipesdemand.append(SPACER);
+
             Object node1 = getAttribute(pipe, Pipes.START_NODE.getAttributeName());
             if (node1 == null) {
                 throwError(idString, "pipe", "startnode");
@@ -469,8 +479,36 @@ public class EpanetInpGenerator extends JGTModel {
                 sbPipes.append(status.toString());
             }
             sbPipes.append(NL);
+
+            /*
+             * demand part for other block
+             */
+            Object demand = getAttribute(pipe, Pipes.DEMAND.getAttributeName());
+            if (demand == null) {
+                sbPipesdemand.append("0");
+            } else {
+                sbPipesdemand.append(demand.toString());
+            }
+            sbPipesdemand.append(SPACER);
+
+            Object leakCoeff = getAttribute(pipe, Pipes.LEAKCOEFF.getAttributeName());
+            if (leakCoeff == null) {
+                sbPipesdemand.append("0");
+            } else {
+                sbPipesdemand.append(leakCoeff.toString());
+            }
+            sbPipesdemand.append(SPACER);
+
+            Object pattern = getAttribute(pipe, Pipes.PATTERN.getAttributeName());
+            if (pattern == null) {
+                sbPipesdemand.append("\t");
+            } else {
+                sbPipesdemand.append(pattern.toString());
+            }
+            sbPipesdemand.append(NL);
         }
 
+        sbPipes.append(sbPipesdemand.toString());
         sbPipes.append("\n\n");
         return sbPipes.toString();
     }
