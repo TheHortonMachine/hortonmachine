@@ -26,8 +26,8 @@
 //    public void testEpanet() throws Exception {
 //        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 //
-//        String folder = "D:\\TMP\\epanet-tests\\test2\\";
-////        String extraFolder = folder + File.separator + "extra";
+//        String folder = "D:\\TMP\\epanet-tests\\rehydromatesprogettopertestsync\\test_sync\\output\\";
+//        String extraFolder = folder + File.separator + "extra";
 //
 //        String inpFilePath = folder + File.separator + "aaaaa.inp";
 //
@@ -68,7 +68,7 @@
 //        gen.inReservoirs = rFC;
 //        gen.inTime = time;
 //        gen.inOptions = options;
-////        gen.inExtras = extraFolder;
+//        gen.inExtras = extraFolder;
 //        gen.outFile = inpFilePath;
 //
 //        gen.process();
