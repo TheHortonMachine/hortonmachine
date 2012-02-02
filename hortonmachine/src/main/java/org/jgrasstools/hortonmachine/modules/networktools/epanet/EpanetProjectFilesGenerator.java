@@ -35,25 +35,24 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.IEpanetType;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Reservoirs;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Tanks;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Valves;
-import org.opengis.feature.simple.SimpleFeature;
+import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.IEpanetType;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -130,8 +129,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
         newDataStore.createSchema(tanksType);
         Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource();
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
             featureStore.addFeatures(FeatureCollections.newCollection());
@@ -163,8 +161,7 @@ public class EpanetProjectFilesGenerator extends JGTModel {
         ShapefileDataStore newDataStore = (ShapefileDataStore) factory.createNewDataStore(create);
         newDataStore.createSchema(tanksType);
         Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource();
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
             featureStore.addFeatures(FeatureCollections.newCollection());

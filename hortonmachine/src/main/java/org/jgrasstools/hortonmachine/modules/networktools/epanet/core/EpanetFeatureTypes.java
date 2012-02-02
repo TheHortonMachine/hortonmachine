@@ -52,6 +52,7 @@ public class EpanetFeatureTypes {
     private static final String VOLUME_CURVE_ID_STR = "vol_cur_id";
     private static final String MINIMUM_VOLUME_STR = "min_vol";
     private static final String DIAMETER_STR = "diam";
+    private static final String LEAKCOEFF_STR = "leakcoeff";
     private static final String MAXIMUM_WATER_LEVEL_STR = "max_lev";
     private static final String MINIMUM_WATER_LEVEL_STR = "min_lev";
     private static final String INITIAL_WATER_LEVEL_STR = "init_lev";
@@ -441,6 +442,22 @@ public class EpanetFeatureTypes {
          * Roughness coefficient.
          */
         ROUGHNESS(ROUGHNESS_STR, Double.class), //
+
+        /**
+         * Demand.
+         */
+        DEMAND(DEMAND_STR, Double.class), //
+
+        /**
+         * Id of Pattern.
+         */
+        PATTERN(PATTERN_STR, String.class), //
+
+        /**
+         * Leak Coefficient.
+         */
+        LEAKCOEFF(LEAKCOEFF_STR, Double.class), //
+
         /**
          * Minor loss coefficient.
          */

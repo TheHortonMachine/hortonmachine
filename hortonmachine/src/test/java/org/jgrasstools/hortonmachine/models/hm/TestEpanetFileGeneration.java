@@ -1,12 +1,10 @@
-package org.jgrasstools.hortonmachine.models.hm;
-//package org.jgrasstools.hortonmachine.models.externals;
+//package org.jgrasstools.hortonmachine.models.hm;
 //
 //import java.io.File;
 //
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.gears.utils.files.FileUtilities;
-//import org.jgrasstools.hortonmachine.externals.epanet.EpanetProjectFilesGenerator;
-//import org.jgrasstools.hortonmachine.externals.epanet.core.EpanetFeatureTypes.Junctions;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetProjectFilesGenerator;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
 // * Test Epanet file creation.
@@ -22,7 +20,7 @@ package org.jgrasstools.hortonmachine.models.hm;
 //        gen.pm = pm;
 //        gen.pCode = "EPSG:32632";
 //
-//        File here = new File("C:\\TMP\\epanettests\\");
+//        File here = new File("D:\\TMP\\epanet-tests\\");
 //        File folder = new File(here.getAbsolutePath() + File.separator + "test");
 //        if (!folder.exists())
 //            assertTrue(folder.mkdir());
