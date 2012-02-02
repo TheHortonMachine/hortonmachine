@@ -431,7 +431,7 @@ public class EpanetInpGenerator extends JGTModel {
             if (id == null)
                 throw new IOException("Found a pipe without ID. Please check your data!");
             String idString = id.toString();
-            if (idString.equalsIgnoreCase(EpanetConstants.DUMMYPIPE.toString())) {
+            if (idString.toUpperCase().startsWith(EpanetConstants.DUMMYPIPE.toString())) {
                 continue;
             }
             sbPipes.append(idString);
@@ -861,7 +861,7 @@ public class EpanetInpGenerator extends JGTModel {
             // [PIPES]
             Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
             String idString = id.toString();
-            if (idString.equalsIgnoreCase(EpanetConstants.DUMMYPIPE.toString())) {
+            if (idString.toUpperCase().startsWith(EpanetConstants.DUMMYPIPE.toString())) {
                 continue;
             }
 

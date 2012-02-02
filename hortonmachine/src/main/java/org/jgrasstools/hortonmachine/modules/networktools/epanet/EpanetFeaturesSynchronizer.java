@@ -309,6 +309,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
         }
         pm.done();
 
+        int dummyIndex = 0;
+
         /*
          * handle pumps
          */
@@ -328,7 +330,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                     Object endNode = pipe.getAttribute(pipesEndNodeAttributeName);
                     pump.setAttribute(pumpsEndNodeAttributeName, endNode);
 
-                    pipe.setAttribute(pipesIdAttributeName, EpanetConstants.DUMMYPIPE);
+                    String dummy = EpanetConstants.DUMMYPIPE.toString() + dummyIndex++;
+                    pipe.setAttribute(pipesIdAttributeName, dummy);
                     gotIt = true;
                 }
             }
@@ -359,7 +362,8 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
                     Object endNode = pipe.getAttribute(pipesEndNodeAttributeName);
                     valve.setAttribute(valvesEndNodeAttributeName, endNode);
                     // mark pipe as dummy
-                    pipe.setAttribute(pipesIdAttributeName, EpanetConstants.DUMMYPIPE);
+                    String dummy = EpanetConstants.DUMMYPIPE.toString() + dummyIndex++;
+                    pipe.setAttribute(pipesIdAttributeName, dummy);
                     gotIt = true;
                 }
             }
