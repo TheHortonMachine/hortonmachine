@@ -16,7 +16,7 @@
     <version>0.7.4-SNAPSHOT</version>
 
     <packaging>pom</packaging>
-    <name>JGrasstools - the engine that backs up JGrass</name>
+    <name>JGrasstools - uDig's geospatial toolbox (but not only)</name>
     <url>http://www.jgrasstools.org</url>
 
     <modules>
