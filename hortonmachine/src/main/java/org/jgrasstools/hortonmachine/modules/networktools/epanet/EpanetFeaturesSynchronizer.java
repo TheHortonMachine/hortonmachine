@@ -98,9 +98,9 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The tolerance in meters for putting a node on a coordinate.")
+    @Description("The tolerance in meters for putting a node on a coordinate (default = 0.0001 meters).")
     @In
-    public double pTol = 1;
+    public double pTol = 0.0001;
 
     @Description("The progress monitor.")
     @In
