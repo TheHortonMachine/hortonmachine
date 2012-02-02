@@ -764,6 +764,11 @@ public class EpanetInpGenerator extends JGTModel {
         sbValves.append("SETTING").append(SPACER);
         sbValves.append("MINORLOSS").append(NL);
 
+        StringBuilder sbValvesStatus = new StringBuilder();
+        sbValvesStatus.append("\n\n[STATUS]\n");
+        sbValvesStatus.append(";ID").append(SPACER);
+        sbValvesStatus.append("Status/Setting").append(NL);
+
         for( SimpleFeature valve : valvesList ) {
             // [VALVES]
             // ;ID Node1 Node2 Diameter Type Setting MinorLoss
@@ -773,6 +778,8 @@ public class EpanetInpGenerator extends JGTModel {
             String idString = dc_id.toString();
             sbValves.append(idString);
             sbValves.append(SPACER);
+            sbValvesStatus.append(idString);
+            sbValvesStatus.append(SPACER);
             Object node1 = getAttribute(valve, Valves.START_NODE.getAttributeName());
             if (node1 == null) {
                 throwError(idString, "valve", "startnode");
@@ -811,8 +818,19 @@ public class EpanetInpGenerator extends JGTModel {
                 sbValves.append("0");
             }
             sbValves.append(NL);
+
+            // STATUS PART
+            Object status = getAttribute(valve, Valves.STATUS.getAttributeName());
+            if (status == null) {
+                sbValvesStatus.append("open");
+            } else {
+                sbValvesStatus.append(status.toString());
+            }
+            sbValvesStatus.append(NL);
         }
 
+        sbValves.append(sbValvesStatus.toString());
+        sbValves.append("\n\n");
         return sbValves.toString();
     }
 
