@@ -131,6 +131,9 @@ public class EpanetInpGenerator extends JGTModel {
     private List<String> curvesFilesList = new ArrayList<String>();
     private List<String> patternsFilesList = new ArrayList<String>();
 
+    private BufferedWriter bwInp = null;
+    private BufferedWriter bwEpanetInp = null;
+
     @Execute
     public void process() throws Exception {
         checkNull(inJunctions, inPipes, outFile);
@@ -158,39 +161,45 @@ public class EpanetInpGenerator extends JGTModel {
         List<SimpleFeature> valvesList = FeatureUtilities.featureCollectionToList(inValves);
 
         File outputFile = new File(outFile);
+        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(outputFile);
+        File outputEpanetFile = new File(outputFile.getParentFile(), nameWithoutExtention + "_epanet.inp");
 
-        BufferedWriter bw = null;
         try {
-            pm.beginTask("Generating inp file...", 14);
-            bw = new BufferedWriter(new FileWriter(outputFile));
-            bw.write("[TITLE]");
+            pm.beginTask("Generating inp file...", 15);
+            bwInp = new BufferedWriter(new FileWriter(outputFile));
+            bwEpanetInp = new BufferedWriter(new FileWriter(outputEpanetFile));
+
+            write("[TITLE]", false);
             pm.worked(1);
             String junctionsText = handleJunctions(junctionsList);
-            bw.write(junctionsText);
+            write(junctionsText);
             pm.worked(1);
             String reservoirsText = handleReservoirs(reservoirsList);
-            bw.write(reservoirsText);
+            write(reservoirsText);
             pm.worked(1);
             String tanksText = handleTanks(tanksList);
-            bw.write(tanksText);
+            write(tanksText);
             pm.worked(1);
             String pumpsText = handlePumps(pumpsList);
-            bw.write(pumpsText);
+            write(pumpsText);
             pm.worked(1);
             String valvesText = handleValves(valvesList);
-            bw.write(valvesText);
+            write(valvesText);
             pm.worked(1);
             String pipesText = handlePipes(pipesList);
-            bw.write(pipesText);
+            write(pipesText);
+            pm.worked(1);
+            String pipeDemandsText = handlePipedemands(pipesList);
+            write(pipeDemandsText, true);
 
             /*
              * the demands section
              */
             pm.worked(1);
             if (inDemand != null) {
-                bw.write("\n\n[DEMANDS]\n");
+                write("\n\n[DEMANDS]\n");
                 String demandSection = FileUtilities.readFile(new File(inDemand));
-                bw.write(demandSection);
+                write(demandSection);
             }
 
             /*
@@ -198,9 +207,9 @@ public class EpanetInpGenerator extends JGTModel {
              */
             pm.worked(1);
             if (inControl != null) {
-                bw.write("\n\n[CONTROLS]\n");
+                write("\n\n[CONTROLS]\n");
                 String demandSection = FileUtilities.readFile(new File(inControl));
-                bw.write(demandSection);
+                write(demandSection);
             }
 
             /*
@@ -208,43 +217,43 @@ public class EpanetInpGenerator extends JGTModel {
              */
             pm.worked(1);
             if (inRules != null) {
-                bw.write("\n\n[RULES]\n");
+                write("\n\n[RULES]\n");
                 String demandSection = FileUtilities.readFile(new File(inRules));
-                bw.write(demandSection);
+                write(demandSection);
             }
 
             /*
              * the patterns section
              */
             pm.worked(1);
-            bw.write("\n\n[PATTERNS]\n");
+            write("\n\n[PATTERNS]\n");
             for( String patternsFilePath : patternsFilesList ) {
                 String patternString = FileUtilities.readFile(new File(patternsFilePath));
-                bw.write(patternString);
+                write(patternString);
             }
 
             /*
              * the curves section
              */
             pm.worked(1);
-            bw.write("\n\n[CURVES]\n");
+            write("\n\n[CURVES]\n");
             for( String curveFilePath : curvesFilesList ) {
                 String curveString = FileUtilities.readFile(new File(curveFilePath));
-                bw.write(curveString);
+                write(curveString);
             }
 
             /*
              * the time section
              */
             pm.worked(1);
-            bw.write("\n\n" + EpanetParametersTime.TIMESECTION + "\n");
+            write("\n\n" + EpanetParametersTime.TIMESECTION + "\n");
             Properties timeParameters = inTime.outProperties;
             Set<Entry<Object, Object>> entrySet = timeParameters.entrySet();
             for( Entry<Object, Object> entry : entrySet ) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
                 if (value.toString().length() > 0) {
-                    bw.write(key + "\t" + value + "\n");
+                    write(key + "\t" + value + "\n");
                 }
             }
 
@@ -252,14 +261,14 @@ public class EpanetInpGenerator extends JGTModel {
              * the options section
              */
             pm.worked(1);
-            bw.write("\n\n" + EpanetParametersOptions.OPTIONSSECTION + "\n");
+            write("\n\n" + EpanetParametersOptions.OPTIONSSECTION + "\n");
             Properties optionsParameters = inOptions.outProperties;
             Set<Entry<Object, Object>> optionsEntrySet = optionsParameters.entrySet();
             for( Entry<Object, Object> entry : optionsEntrySet ) {
                 Object key = entry.getKey();
                 Object value = entry.getValue();
                 if (value.toString().length() > 0) {
-                    bw.write(key + "\t" + value + "\n");
+                    write(key + "\t" + value + "\n");
                 }
             }
 
@@ -268,15 +277,21 @@ public class EpanetInpGenerator extends JGTModel {
              */
             pm.worked(1);
             String coordsText = handleCoordinates(junctionsList, reservoirsList, tanksList);
-            bw.write(coordsText);
+            write(coordsText);
             pm.worked(1);
             String vertexText = handleVertices(pipesList);
-            bw.write(vertexText);
+            write(vertexText);
 
         } finally {
             pm.done();
-            bw.close();
+            bwInp.close();
         }
+    }
+
+    private void write( String string, boolean... onlyCustom ) throws IOException {
+        bwInp.write(string);
+        if (onlyCustom.length != 0 && !onlyCustom[0])
+            bwEpanetInp.write(string);
     }
 
     private void handleCurves() {
@@ -418,13 +433,6 @@ public class EpanetInpGenerator extends JGTModel {
         sbPipes.append("MINORLOSS").append(SPACER);
         sbPipes.append("STATUS").append(NL);
 
-        StringBuilder sbPipesdemand = new StringBuilder();
-        sbPipesdemand.append("\n\n[PDEMAND]\n");
-        sbPipesdemand.append(";ID").append(SPACER);
-        sbPipesdemand.append("PDEMAND").append(SPACER);
-        sbPipesdemand.append("LEAKCOEFF").append(SPACER);
-        sbPipesdemand.append("PATTERN").append(NL);
-
         for( SimpleFeature pipe : pipesList ) {
             // [PIPES]
             Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
@@ -436,8 +444,6 @@ public class EpanetInpGenerator extends JGTModel {
             }
             sbPipes.append(idString);
             sbPipes.append(SPACER);
-            sbPipesdemand.append(idString);
-            sbPipesdemand.append(SPACER);
 
             Object node1 = getAttribute(pipe, Pipes.START_NODE.getAttributeName());
             if (node1 == null) {
@@ -479,10 +485,32 @@ public class EpanetInpGenerator extends JGTModel {
                 sbPipes.append(status.toString());
             }
             sbPipes.append(NL);
+        }
 
-            /*
-             * demand part for other block
-             */
+        sbPipes.append("\n\n");
+        return sbPipes.toString();
+    }
+
+    private String handlePipedemands( List<SimpleFeature> pipesList ) throws IOException {
+        StringBuilder sbPipesdemand = new StringBuilder();
+        sbPipesdemand.append("\n\n[PDEMAND]\n");
+        sbPipesdemand.append(";ID").append(SPACER);
+        sbPipesdemand.append("PDEMAND").append(SPACER);
+        sbPipesdemand.append("LEAKCOEFF").append(SPACER);
+        sbPipesdemand.append("PATTERN").append(NL);
+
+        for( SimpleFeature pipe : pipesList ) {
+            // [PIPES]
+            Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
+            if (id == null)
+                throw new IOException("Found a pipe without ID. Please check your data!");
+            String idString = id.toString();
+            if (idString.toUpperCase().startsWith(EpanetConstants.DUMMYPIPE.toString())) {
+                continue;
+            }
+            sbPipesdemand.append(idString);
+            sbPipesdemand.append(SPACER);
+
             Object demand = getAttribute(pipe, Pipes.DEMAND.getAttributeName());
             if (demand == null) {
                 sbPipesdemand.append("0");
@@ -503,14 +531,18 @@ public class EpanetInpGenerator extends JGTModel {
             if (pattern == null) {
                 sbPipesdemand.append("\t");
             } else {
-                sbPipesdemand.append(pattern.toString());
+                String patternId = pattern.toString();
+                sbPipesdemand.append(patternId);
+                String path = patternId2Path.get(patternId);
+                if (path != null) {
+                    if (!patternsFilesList.contains(path))
+                        patternsFilesList.add(path);
+                }
             }
             sbPipesdemand.append(NL);
         }
-
-        sbPipes.append(sbPipesdemand.toString());
-        sbPipes.append("\n\n");
-        return sbPipes.toString();
+        sbPipesdemand.append("\n\n");
+        return sbPipesdemand.toString();
     }
 
     private void throwError( String idString, String who, String what ) throws IOException {
