@@ -821,7 +821,7 @@ public class EpanetInpGenerator extends JGTModel {
 
             // STATUS PART
             Object status = getAttribute(valve, Valves.STATUS.getAttributeName());
-            if (status == null) {
+            if (status == null || status.toString().trim().length() == 0) {
                 sbValvesStatus.append("open");
             } else {
                 sbValvesStatus.append(status.toString());
