@@ -161,8 +161,11 @@ public class EpanetInpGenerator extends JGTModel {
         List<SimpleFeature> valvesList = FeatureUtilities.featureCollectionToList(inValves);
 
         File outputFile = new File(outFile);
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(outputFile);
-        File outputEpanetFile = new File(outputFile.getParentFile(), nameWithoutExtention + "_epanet.inp");
+        String name = outputFile.getName();
+        if (name.indexOf('.') != -1) {
+            name = FileUtilities.getNameWithoutExtention(outputFile);
+        }
+        File outputEpanetFile = new File(outputFile.getParentFile(), name + "_epanet.inp");
 
         try {
             pm.beginTask("Generating inp file...", 15);
