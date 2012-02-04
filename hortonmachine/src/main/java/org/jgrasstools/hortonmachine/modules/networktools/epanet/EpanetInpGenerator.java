@@ -825,6 +825,7 @@ public class EpanetInpGenerator extends JGTModel {
         sbValvesStatus.append("\n\n[STATUS]\n");
         sbValvesStatus.append(";ID").append(SPACER);
         sbValvesStatus.append("Status/Setting").append(NL);
+        boolean hasStatus = false;
 
         for( SimpleFeature valve : valvesList ) {
             // [VALVES]
@@ -878,15 +879,15 @@ public class EpanetInpGenerator extends JGTModel {
 
             // STATUS PART
             Object status = getAttribute(valve, Valves.STATUS.getAttributeName());
-            if (status == null || status.toString().trim().length() == 0) {
-                sbValvesStatus.append("open");
-            } else {
+            if (status != null && status.toString().trim().length() == 0) {
                 sbValvesStatus.append(status.toString());
+                hasStatus = true;
             }
             sbValvesStatus.append(NL);
         }
 
-        sbValves.append(sbValvesStatus.toString());
+        if (hasStatus)
+            sbValves.append(sbValvesStatus.toString());
         sbValves.append("\n\n");
         return sbValves.toString();
     }
