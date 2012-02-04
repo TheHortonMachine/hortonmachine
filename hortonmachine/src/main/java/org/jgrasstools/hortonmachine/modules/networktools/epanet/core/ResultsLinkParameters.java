@@ -20,10 +20,8 @@ package org.jgrasstools.hortonmachine.modules.networktools.epanet.core;
 
 @SuppressWarnings("nls")
 public enum ResultsLinkParameters {
-    FLOW1("FLOW1", "Flow rate in start node"), //
-    FLOW2("FLOW2", "Flow rate in end node"), //
-    VELOCITY1("VELOCITY1", "Flow velocity in start node"), //
-    VELOCITY2("VELOCITY2", "Flow velocity in end node"), //
+    FLOW("FLOW", "Flow rate"), //
+    VELOCITY("VELOCITY", "Flow velocity"), //
     HEADLOSS("HEADLOSS", "Head loss "), //
     STATUS("STATUS", "Actual link status (0 = closed, 1 = open) "), //
     ENERGY("ENERGY", "Energy expended in kwatts  ");

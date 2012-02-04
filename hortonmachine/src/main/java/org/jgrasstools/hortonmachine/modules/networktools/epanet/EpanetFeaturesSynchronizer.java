@@ -167,7 +167,7 @@ public class EpanetFeaturesSynchronizer extends JGTModel {
             tanksIDAttributeName = FeatureUtilities.findAttributeName(inTanks.getSchema(), Tanks.ID.getAttributeName());
         }
         String reservoirIDAttributeName = null;
-        if (inTanks != null) {
+        if (inReservoirs != null) {
             reservoirHeadAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),
                     Reservoirs.HEAD.getAttributeName());
             reservoirIDAttributeName = FeatureUtilities.findAttributeName(inReservoirs.getSchema(),

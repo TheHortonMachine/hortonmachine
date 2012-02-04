@@ -39,6 +39,7 @@ import oms3.annotations.License;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
@@ -138,9 +139,19 @@ public class EpanetInpGenerator extends JGTModel {
     public void process() throws Exception {
         checkNull(inJunctions, inPipes, outFile);
 
-        if (inReservoirs == null && inTanks == null) {
-            throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this);
+        if (inReservoirs == null) {
+            inReservoirs = FeatureCollections.newCollection();
         }
+        if (inTanks == null) {
+            inTanks = FeatureCollections.newCollection();
+        }
+        if (inPumps == null) {
+            inPumps = FeatureCollections.newCollection();
+        }
+        if (inValves == null) {
+            inValves = FeatureCollections.newCollection();
+        }
+
         int resSize = inReservoirs.size();
         int tanksSize = inTanks.size();
         if (resSize + tanksSize < 1) {
@@ -174,26 +185,37 @@ public class EpanetInpGenerator extends JGTModel {
 
             write("[TITLE]", false);
             pm.worked(1);
-            String junctionsText = handleJunctions(junctionsList);
-            write(junctionsText);
+            if (junctionsList.size() > 0) {
+                String junctionsText = handleJunctions(junctionsList);
+                write(junctionsText);
+            }
             pm.worked(1);
-            String reservoirsText = handleReservoirs(reservoirsList);
-            write(reservoirsText);
+            if (reservoirsList.size() > 0) {
+                String reservoirsText = handleReservoirs(reservoirsList);
+                write(reservoirsText);
+            }
             pm.worked(1);
-            String tanksText = handleTanks(tanksList);
-            write(tanksText);
+            if (tanksList.size() > 0) {
+                String tanksText = handleTanks(tanksList);
+                write(tanksText);
+            }
             pm.worked(1);
-            String pumpsText = handlePumps(pumpsList);
-            write(pumpsText);
+            if (pumpsList.size() > 0) {
+                String pumpsText = handlePumps(pumpsList);
+                write(pumpsText);
+            }
             pm.worked(1);
-            String valvesText = handleValves(valvesList);
-            write(valvesText);
-            pm.worked(1);
-            String pipesText = handlePipes(pipesList);
-            write(pipesText);
-            pm.worked(1);
-            String pipeDemandsText = handlePipedemands(pipesList);
-            write(pipeDemandsText, true);
+            if (valvesList.size() > 0) {
+                String valvesText = handleValves(valvesList);
+                write(valvesText);
+            }
+            pm.worked(2);
+            if (pipesList.size() > 0) {
+                String pipesText = handlePipes(pipesList);
+                write(pipesText);
+                String pipeDemandsText = handlePipedemands(pipesList);
+                write(pipeDemandsText, true);
+            }
 
             /*
              * the demands section
