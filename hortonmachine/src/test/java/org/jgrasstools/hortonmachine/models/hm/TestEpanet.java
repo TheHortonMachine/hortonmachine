@@ -17,7 +17,7 @@
 //    public void testEpanet() throws Exception {
 //        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 //
-//        String inp = "D:\\development\\epanet-hydromates-hg\\testdata\\prova.inp";
+//        String inp = "D:\\TMP\\epanet-tests\\test4\\fail.inp";
 //        // String inp =
 //        // "D:\\development\\epanet-hydromates-hg\\testdata\\Davide_2011_03_21\\prova.inp";
 //        // String inp = "D:\\TMP\\epanet-tests\\esempio_ravina\\test.inp";
@@ -29,9 +29,8 @@
 //        // "D:\\development\\hydrologis-hg\\hydrologis\\epanet\\eu.hydrologis.jgrass.epanet\\nativelibs\\epanet2_64bit.dll";
 //        // gen.inDll =
 //        // "D:\\development\\nettools-hg\\eu.hydrologis.jgrass.epanet\\nativelibs\\epanet2.dll";
-//        gen.inDll = "D:\\development\\epanet-hydromates-hg\\EN2source\\epanet2\\epanet2.dll";
-//        // gen.inDll =
-//        // "D:\\development\\epanet-hydromates-hg\\EN2source\\hydromates_dll\\epanet2mates.dll";
+//        // gen.inDll = "\D:\\development\\epanet-hydromates-hg\\EN2source\\epanet2\\epanet2.dll";
+//        gen.inDll = "D:\\development\\epanet-hydromates-hg\\EN2source\\epanet2\\epanet2_64bit.dll";
 //
 //        gen.initProcess();
 //        while( gen.doProcess ) {
@@ -71,6 +70,7 @@
 //
 //    public static void main( String[] args ) {
 //        try {
+//            new TestEpanet().testEpanet();
 //            new TestEpanet().testEpanet();
 //        } catch (Exception e) {
 //            e.printStackTrace();
