@@ -22,35 +22,38 @@
 //import org.jgrasstools.gears.io.rasterreader.RasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.DebrisFlow;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.DebrisTriggerCnr;
 ///**
-// * Test for the {@link DebrisFlow} module.
+// * Test for the {@link DebrisTriggerCnr} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
-//public class TestDebrisFlow extends HMTestCase {
+//public class TestDebrisTriggerCnr extends HMTestCase {
 //    public void testDebrisTrigger() throws Exception {
 //
-//        int m = 200;
-//        int c = 50;
-//        for( int i = 0; i < 10; i++ ) {
-//            String inRasterPath = "";
-//            String flowPath = "";
-//            String depoPath = "";
-//            GridCoverage2D elev = RasterReader.readRaster(inRasterPath);
-//            DebrisFlow dt = new DebrisFlow();
-//            dt.inElev = elev;
-//            dt.pMontecarlo = m;
-//            dt.pMcoeff = c;
-//            dt.pVolume = 25000;
-//            dt.pEasting = 624826.2537;
-//            dt.pNorthing = 5133433.7523;
-//            dt.pm = pm;
-//            dt.process();
-//            GridCoverage2D outMcs = dt.outMcs;
-//            GridCoverage2D outDepo = dt.outDepo;
-//            RasterWriter.writeRaster(flowPath, outMcs);
-//            RasterWriter.writeRaster(depoPath, outDepo);
-//        }
+//        String baseFolder = "";
+//        String baseFolder1 = "";
+//        String inRasterPath1 = baseFolder + "pit";
+//        String inRasterPath2 = baseFolder1 + "netspi100";
+//        String inRasterPath3 = baseFolder + "netshp2fl";
+//        String outRasterPath = baseFolder + "triggers100";
+//
+//        GridCoverage2D elev = RasterReader.readRaster(inRasterPath1);
+//        GridCoverage2D net = RasterReader.readRaster(inRasterPath2);
+//        GridCoverage2D tca = RasterReader.readRaster(inRasterPath3);
+//
+//        DebrisTriggerCnr dt = new DebrisTriggerCnr();
+//        dt.inElev = elev;
+//        dt.inNet = net;
+//        dt.inTca = tca;
+//        // dt.pGradthres = 38;
+//        // dt.pTcathres = 10;
+//        dt.pm = pm;
+//        dt.process();
+//
+//        GridCoverage2D triggers = dt.outTriggers;
+//
+//        RasterWriter.writeRaster(outRasterPath, triggers);
+//
 //    }
 //}
