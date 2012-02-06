@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.shapefile;
+package org.jgrasstools.gears.io.properties;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,24 +31,30 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.shapefile.indexed.IndexedShapefileDataStore;
+import org.geotools.data.FeatureReader;
+import org.geotools.data.Query;
+import org.geotools.data.Transaction;
+import org.geotools.data.property.PropertyDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
-@Description("Utility class for reading shapefiles to geotools featurecollections.")
+@Description("Utility class for reading properties files to geotools featurecollections.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
+@Keywords("IO, Properties, Feature, Vector, Reading")
 @Label(JGTConstants.FEATUREREADER)
 @Status(Status.CERTIFIED)
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class ShapefileFeatureReader extends JGTModel {
-    @Description("The shapefile.")
+public class PropertiesFeatureReader extends JGTModel {
+    @Description("The properties file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
@@ -67,35 +73,42 @@ public class ShapefileFeatureReader extends JGTModel {
             return;
         }
 
+        FeatureReader<SimpleFeatureType, SimpleFeature> reader = null;
         try {
-            File shapeFile = new File(file);
-            pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
-            IndexedShapefileDataStore   store = new IndexedShapefileDataStore(shapeFile.toURI().toURL());
-            SimpleFeatureSource featureSource = store.getFeatureSource();
-            geodata = featureSource.getFeatures();
+            File propertiesFile = new File(file);
+            pm.beginTask("Reading features from properties file: " + propertiesFile.getName(), -1);
+            PropertyDataStore store = new PropertyDataStore(propertiesFile.getParentFile());
+
+            String name = FileUtilities.getNameWithoutExtention(propertiesFile);
+
+            geodata = FeatureCollections.newCollection();
+            Query query = new Query(name);
+            reader = store.getFeatureReader(query, Transaction.AUTO_COMMIT);
+            while( reader.hasNext() ) {
+                SimpleFeature feature = reader.next();
+                geodata.add(feature);
+            }
         } finally {
             pm.done();
+            if (reader != null)
+                reader.close();
         }
     }
 
     /**
      * Fast read access mode. 
      * 
-     * @param path the shapefile path.
+     * @param path the properties file path.
      * @return the read {@link FeatureCollection}.
      * @throws IOException
      */
-    public static SimpleFeatureCollection readShapefile( String path ) throws IOException {
+    public static SimpleFeatureCollection readPropertiesfile( String path ) throws IOException {
 
-        ShapefileFeatureReader reader = new ShapefileFeatureReader();
+        PropertiesFeatureReader reader = new PropertiesFeatureReader();
         reader.file = path;
         reader.readFeatureCollection();
 
         return reader.geodata;
     }
 
-    
-  
-    
-    
 }

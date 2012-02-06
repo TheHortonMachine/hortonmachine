@@ -35,6 +35,7 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
+import org.jgrasstools.gears.io.properties.PropertiesFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -50,7 +51,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class VectorReader extends JGTModel {
-    @Description("The vector type to read (Supported is: shp).")
+    @Description("The vector type to read (Supported is: shp, properties).")
     @In
     // currently not used, for future compatibility
     public String pType = null;
@@ -59,7 +60,6 @@ public class VectorReader extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
-    
 
     @Description("The progress monitor.")
     @In
@@ -81,6 +81,8 @@ public class VectorReader extends JGTModel {
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp")) {
             outVector = ShapefileFeatureReader.readShapefile(vectorFile.getAbsolutePath());
+        } else if (name.toLowerCase().endsWith("properties")) {
+            outVector = PropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
