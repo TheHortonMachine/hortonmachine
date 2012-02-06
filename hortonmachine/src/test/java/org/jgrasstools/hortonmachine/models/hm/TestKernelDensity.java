@@ -21,8 +21,8 @@ package org.jgrasstools.hortonmachine.models.hm;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.modules.statistics.kerneldensity.KernelDensity;
+import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
  * Test for the {@link KernelDensity} module.
  * 
