@@ -183,7 +183,7 @@ public class EpanetInpGenerator extends JGTModel {
             bwInp = new BufferedWriter(new FileWriter(outputFile));
             bwEpanetInp = new BufferedWriter(new FileWriter(outputEpanetFile));
 
-            write("[TITLE]", false);
+            write("[TITLE]");
             pm.worked(1);
             if (junctionsList.size() > 0) {
                 String junctionsText = handleJunctions(junctionsList);
@@ -309,13 +309,16 @@ public class EpanetInpGenerator extends JGTModel {
 
         } finally {
             pm.done();
-            bwInp.close();
+            if (bwInp != null)
+                bwInp.close();
+            if (bwEpanetInp != null)
+                bwEpanetInp.close();
         }
     }
 
     private void write( String string, boolean... onlyCustom ) throws IOException {
         bwInp.write(string);
-        if (onlyCustom.length != 0 && !onlyCustom[0])
+        if (onlyCustom.length == 0 || !onlyCustom[0])
             bwEpanetInp.write(string);
     }
 
