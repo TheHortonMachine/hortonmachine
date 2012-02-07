@@ -853,8 +853,7 @@ public class EpanetInpGenerator extends JGTModel {
             String idString = dc_id.toString();
             sbValves.append(idString);
             sbValves.append(SPACER);
-            sbValvesStatus.append(idString);
-            sbValvesStatus.append(SPACER);
+
             Object node1 = getAttribute(valve, Valves.START_NODE.getAttributeName());
             if (node1 == null) {
                 throwError(idString, "valve", "startnode");
@@ -896,11 +895,13 @@ public class EpanetInpGenerator extends JGTModel {
 
             // STATUS PART
             Object status = getAttribute(valve, Valves.STATUS.getAttributeName());
-            if (status != null && status.toString().trim().length() == 0) {
+            if (status != null && status.toString().trim().length() != 0) {
+                sbValvesStatus.append(idString);
+                sbValvesStatus.append(SPACER);
                 sbValvesStatus.append(status.toString());
+                sbValvesStatus.append(NL);
                 hasStatus = true;
             }
-            sbValvesStatus.append(NL);
         }
 
         if (hasStatus)
