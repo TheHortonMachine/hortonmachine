@@ -213,7 +213,7 @@ public class EpanetInpGenerator extends JGTModel {
             if (pipesList.size() > 0) {
                 String pipesText = handlePipes(pipesList);
                 write(pipesText);
-                String pipeDemandsText = handlePipedemands(pipesList);
+                String pipeDemandsText = handlePipedemands(pipesList, valvesList, pumpsList);
                 write(pipeDemandsText, true);
             }
 
@@ -519,7 +519,8 @@ public class EpanetInpGenerator extends JGTModel {
         return sbPipes.toString();
     }
 
-    private String handlePipedemands( List<SimpleFeature> pipesList ) throws IOException {
+    private String handlePipedemands( List<SimpleFeature> pipesList, List<SimpleFeature> valvesList, List<SimpleFeature> pumpsList )
+            throws IOException {
         StringBuilder sbPipesdemand = new StringBuilder();
         sbPipesdemand.append("\n\n[PDEMAND]\n");
         sbPipesdemand.append(";ID").append(SPACER);
@@ -527,6 +528,19 @@ public class EpanetInpGenerator extends JGTModel {
         sbPipesdemand.append("LEAKCOEFF").append(SPACER);
         sbPipesdemand.append("PATTERN").append(NL);
 
+        // valves and pumps (virtual pipes for epanet) need a placeholder
+        int dummyNum = valvesList.size() + pumpsList.size();
+        for( int i = 0; i < dummyNum; i++ ) {
+            sbPipesdemand.append("DUMMY").append(i).append(SPACER);
+            sbPipesdemand.append("0");
+            sbPipesdemand.append(SPACER);
+            sbPipesdemand.append("0");
+            sbPipesdemand.append(SPACER);
+            sbPipesdemand.append("\t");
+            sbPipesdemand.append(NL);
+        }
+
+        // normal pipes now
         for( SimpleFeature pipe : pipesList ) {
             // [PIPES]
             Object id = getAttribute(pipe, Pipes.ID.getAttributeName());
