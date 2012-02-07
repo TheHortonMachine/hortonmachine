@@ -68,7 +68,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License("General Public License Version 3 (GPLv3)")
 public class Mosaic extends JGTModel {
 
-    @Description("The list of maps that have to be patched (used if inGeodata is null).")
+    @Description("The list of maps that have to be patched.")
     @In
     public List<File> inFiles;
 
