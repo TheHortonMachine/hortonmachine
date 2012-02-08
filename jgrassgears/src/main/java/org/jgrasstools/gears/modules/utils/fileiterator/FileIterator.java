@@ -126,7 +126,8 @@ public class FileIterator extends JGTModel {
 
         }
 
-        outCurrentfile = filesList.get(fileIndex).getAbsolutePath();
+        if (filesList.size() > fileIndex)
+            outCurrentfile = filesList.get(fileIndex).getAbsolutePath();
 
         if (fileIndex == filesList.size() - 1) {
             doProcess = false;
