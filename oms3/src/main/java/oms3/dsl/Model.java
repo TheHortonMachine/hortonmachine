@@ -245,7 +245,11 @@ public class Model implements Buildable {
             nameClassMap = new HashMap<String, String>();
             for (URL url : getClassLoader().getURLs()) {
                 try {
-                    for (Class<?> class1 : Components.getComponentClasses(url)) {
+                	if(url.toString().startsWith("file:null")) 
+                		continue;
+                	List<Class<?>> componentClasses = Components.getComponentClasses(url);
+                    
+					for (Class<?> class1 : componentClasses) {
                         Name name = class1.getAnnotation(Name.class);
                         if (name != null && !name.value().isEmpty()) {
                             if (name.value().indexOf(".") > -1) {
@@ -272,6 +276,7 @@ public class Model implements Buildable {
     private String getComponentClassName(String id) {
         if (id.indexOf('.') == -1) {
             String cn = getName_ClassMap().get(id);
+            
             if (cn == null) {
                 throw new ComponentException("Unknown component name: " + id);
             }
