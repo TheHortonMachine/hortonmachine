@@ -22,3 +22,10 @@ Examples:
 500 mega: -Xmx500m
 4 giga: -Xmx4g
 
+
+RUN ON TESTDATASET
+==================
+
+To run jgrasstools on the example dataset, simply run:
+
+.\jgrasstools.bat .\testdataset\test.oms
