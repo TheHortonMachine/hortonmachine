@@ -20,4 +20,11 @@ if [%2]==[] (
     set cmdArgs=-r %1
 )
 
-java %MEM% -Doms.sim.resources="%CD%/modules/jgt-jgrassgears-0.7.0.jar;%CD%/modules/jgt-hortonmachine-0.7.0.jar" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %cmdArgs%
+@echo off
+for /f "delims=" %%a in ('dir /b modules') do (
+   call set MODULESJARS=%%MODULESJARS%%;%CD%/modules/%%a
+)
+set MODULESJARS=%MODULESJARS:~1%
+echo %MODULESJARS%
+
+java %MEM% -Doms.sim.resources="%MODULESJARS%" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %cmdArgs%

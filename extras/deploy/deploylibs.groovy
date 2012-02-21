@@ -20,7 +20,7 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
-def VERSION = "0.7.0";
+def VERSION = "0.7.4-SNAPSHOT";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
@@ -111,10 +111,14 @@ def lines = output.split("\n");
 def depsList = [];
 def startIndex = -1;
 def endIndex = -1;
+/*
+
+// uncomment the following for maven 2
 for (int i = 0; i < lines.size(); i++){
     def line = lines[i];
 	
-    if(line.startsWith("[INFO] [dependency:tree")){
+    //if(line.startsWith("[INFO] [dependency:tree")){
+    if(line.startsWith("[INFO] --- maven-dependency-plugin")){
 		println "...found start line: " + line;
         startIndex = i + 1;
         continue;
@@ -129,9 +133,18 @@ for (int i = 0; i < lines.size(); i++){
     }
 
     lista << line;
-}
-println "...parsing maven outputs (done)";
+} // end maven 2
+*/
 
+// with maven 3
+for (int i = 0; i < lines.size(); i++){
+    def line = lines[i];
+
+    if(line.startsWith("[INFO] org.jgrasstools") || line.endsWith(":compile")){
+    	lista << line;
+    }
+} // end maven 3
+println "...parsing maven outputs (done)";
 println "Search for:"
 lista.each{
     println it
