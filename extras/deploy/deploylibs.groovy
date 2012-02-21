@@ -214,7 +214,9 @@ if(copyPath){
             def name = it.getName();
             def path = it.getAbsolutePath();
             def newPath = new File(copyPath, name).getAbsolutePath();
-            new AntBuilder().copy ( file : path , tofile : newPath )
+
+            if(!name.startsWith("jgt-jgrassgears-") && !name.startsWith("jgt-hortonmachine-"))
+                new AntBuilder().copy ( file : path , tofile : newPath )
         }
     }
 
