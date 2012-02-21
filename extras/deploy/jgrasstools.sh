@@ -24,7 +24,14 @@ then
 	CMDARGS="-r $1"
 fi
 
+MODULESJARS=""
+for i in `ls modules/jgt*.jar`
+do
+    MODULESJARS=$MODULESJARS:$CURRENT/$i
+done
+MODULESJARS=${MODULESJARS:1}
+
 java $MEM \
--Doms.sim.resources="$CURRENT/modules/jgt-jgrassgears-0.7.0.jar:$CURRENT/modules/jgt-hortonmachine-0.7.0.jar" \
+-Doms.sim.resources="$MODULESJARS" \
 -cp "./modules/*:./libs/*" \
 org.jgrasstools.hortonmachine.utils.oms.CLI $CMDARGS

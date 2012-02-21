@@ -28,4 +28,6 @@ RUN ON TESTDATASET
 
 To run jgrasstools on the example dataset, simply run:
 
-.\jgrasstools.bat .\testdataset\test.oms
+./jgrasstools.sh .\testdataset\test_linux.oms
+or
+.\jgrasstools.bat .\testdataset\test_win.oms
