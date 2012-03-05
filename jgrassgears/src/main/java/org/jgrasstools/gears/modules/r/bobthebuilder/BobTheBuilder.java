@@ -21,6 +21,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.isBetween;
 
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
@@ -53,6 +54,7 @@ import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.coverage.ProfilePoint;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.opengis.geometry.DirectPosition;
@@ -83,6 +85,10 @@ public class BobTheBuilder extends JGTModel {
     @In
     public SimpleFeatureCollection inElevations = null;
 
+    @Description("The maximum radius to use for interpolation.")
+    @In
+    public double pMaxbuffer = -1;
+
     @Description("The field of the elevations map that contain the elevation of the point.")
     @In
     public String fElevation = null;
@@ -90,6 +96,10 @@ public class BobTheBuilder extends JGTModel {
     @Description("Switch that defines if the module should erode in places the actual raster is higher (default is false).")
     @In
     public boolean doErode = false;
+
+    @Description("Switch that defines if the module should add the border of the polygon as elevation point to aid connection between new and old (default is false).")
+    @In
+    public boolean doPolygonborder = false;
 
     @Description("The progress monitor.")
     @In
@@ -117,20 +127,48 @@ public class BobTheBuilder extends JGTModel {
             throw new ModelsIllegalargumentException("The vector map has to be within the raster map boundaries.", this);
         }
 
+        List<FeatureMate> polygonMates = FeatureUtilities.featureCollectionToMatesList(inArea);
+        String polygonMessage = "This operation can be applied only to a single polygon.";
+        if (polygonMates.size() != 1) {
+            throw new ModelsIllegalargumentException(polygonMessage, this);
+        }
+        FeatureMate polygonMate = polygonMates.get(0);
+        Geometry polygon = polygonMate.getGeometry();
+        if (polygon instanceof MultiPolygon) {
+            polygon = polygon.getGeometryN(0);
+        }
+        if (!(polygon instanceof Polygon)) {
+            throw new ModelsIllegalargumentException(polygonMessage, this);
+        }
+
         List<FeatureMate> pointsMates = FeatureUtilities.featureCollectionToMatesList(inElevations);
         if (pointsMates.size() < 4) {
             throw new ModelsIllegalargumentException(
                     "You need at least 4 elevation points (the more, the better) to gain a decent interpolation.", this);
         }
 
-        Coordinate[] controlPoints = new Coordinate[pointsMates.size()];
-        for( int i = 0; i < controlPoints.length; i++ ) {
-            FeatureMate pointsMate = pointsMates.get(i);
+        List<Coordinate> controlPointsList = new ArrayList<Coordinate>();
+        if (doPolygonborder) {
+            pm.beginTask("Extract polygon border...", IJGTProgressMonitor.UNKNOWN);
+            Coordinate[] polygonCoordinates = polygon.getCoordinates();
+            List<ProfilePoint> profile = CoverageUtilities.doProfile(inRaster, polygonCoordinates);
+            for( ProfilePoint profilePoint : profile ) {
+                Coordinate position = profilePoint.getPosition();
+                double elevation = profilePoint.getElevation();
+                Coordinate coord = new Coordinate(position.x, position.y, elevation);
+                controlPointsList.add(coord);
+            }
+            pm.done();
+        }
+
+        for( FeatureMate pointsMate : pointsMates ) {
             Coordinate coordinate = pointsMate.getGeometry().getCoordinate();
             double elev = pointsMate.getAttribute(fElevation, Double.class);
-
-            controlPoints[i] = new Coordinate(coordinate.x, coordinate.y, elev);
+            Coordinate coord = new Coordinate(coordinate.x, coordinate.y, elev);
+            controlPointsList.add(coord);
         }
+
+        Coordinate[] controlPoints = controlPointsList.toArray(new Coordinate[0]);
 
         GridGeometry2D gridGeometry = inRaster.getGridGeometry();
         RandomIter elevIter = CoverageUtilities.getRandomIterator(inRaster);
@@ -139,19 +177,6 @@ public class BobTheBuilder extends JGTModel {
                 .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
-        List<FeatureMate> polygonMates = FeatureUtilities.featureCollectionToMatesList(inArea);
-        String polygonMessage = "This operation can be applied only to a single polygon.";
-        if (polygonMates.size() != 1) {
-            throw new ModelsIllegalargumentException(polygonMessage, this);
-        }
-        FeatureMate polygonMate = polygonMates.get(0);
-        Geometry geometry = polygonMate.getGeometry();
-        if (geometry instanceof MultiPolygon) {
-            geometry = geometry.getGeometryN(0);
-        }
-        if (!(geometry instanceof Polygon)) {
-            throw new ModelsIllegalargumentException(polygonMessage, this);
-        }
         SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         newCollection.add(polygonMate.getFeature());
         ScanLineRasterizer slRasterizer = new ScanLineRasterizer();
@@ -166,9 +191,10 @@ public class BobTheBuilder extends JGTModel {
         slRasterizer.process();
         GridCoverage2D outRasterized = slRasterizer.outRaster;
 
-        double maxBuffer = Math.max(vectorBounds.getWidth(), vectorBounds.getHeight());
+        if (pMaxbuffer < 0)
+            pMaxbuffer = Math.max(vectorBounds.getWidth(), vectorBounds.getHeight());
 
-        IDWInterpolator interpolator = new IDWInterpolator(maxBuffer);
+        IDWInterpolator interpolator = new IDWInterpolator(pMaxbuffer);
         final GridCoordinates2D gridCoord = new GridCoordinates2D();
         RandomIter rasterizedIter = CoverageUtilities.getRandomIterator(outRasterized);
         pm.beginTask("Interpolating...", cols);
