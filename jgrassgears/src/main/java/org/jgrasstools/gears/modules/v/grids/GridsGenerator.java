@@ -28,6 +28,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -71,6 +72,7 @@ import com.vividsolutions.jts.geom.Point;
 @Keywords("Vector, Grid")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
+@Name("gridgenerator")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GridsGenerator extends JGTModel {
 
