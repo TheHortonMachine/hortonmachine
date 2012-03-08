@@ -28,6 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -290,16 +291,16 @@ public class FileUtilities {
      * @param fileName the file name to "encode".
      * @return the safe filename.
      */
-    public static String getSafeFileName(String fileName){
+    public static String getSafeFileName( String fileName ) {
         char fileSep = '/'; // ... or do this portably.
         char escape = '%'; // ... or some other legal char.
         int len = fileName.length();
         StringBuilder sb = new StringBuilder(len);
-        for (int i = 0; i < len; i++) {
+        for( int i = 0; i < len; i++ ) {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
-                || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
-                || ch == escape) {
+                    || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
+                    || ch == escape) {
                 sb.append(escape);
                 if (ch < 0x10) {
                     sb.append('0');
@@ -310,5 +311,51 @@ public class FileUtilities {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Method to read a properties file into a {@link HashMap}.
+     * 
+     * <p>Empty lines are ignored, as well as lines that do not contain the
+     * separator.</p>
+     * 
+     * @param filePath the path to the file to read.
+     * @param separator the separator or <code>null</code>. Defaults to '='.
+     * @param valueFirst if <code>true</code>, the second part of the string is used as key. 
+     * @return the read map.
+     * @throws IOException 
+     */
+    public static HashMap<String, String> readFileToHasMap( String filePath, String separator, boolean valueFirst )
+            throws IOException {
+        if (separator == null) {
+            separator = "=";
+        }
+        List<String> lines = readFileToLinesList(filePath);
+        HashMap<String, String> propertiesMap = new HashMap<String, String>();
+        for( String line : lines ) {
+            line = line.trim();
+            if (line.length() == 0) {
+                continue;
+            }
+            if (!line.contains(separator)) {
+                continue;
+            }
+            String[] lineSplit = line.split(separator);
+            if (!valueFirst) {
+                String key = lineSplit[0].trim();
+                String value = "";
+                if (lineSplit.length > 1) {
+                    value = lineSplit[1].trim();
+                }
+                propertiesMap.put(key, value);
+            } else {
+                if (lineSplit.length > 1) {
+                    String key = lineSplit[0].trim();
+                    String value = lineSplit[1].trim();
+                    propertiesMap.put(value, key);
+                }
+            }
+        }
+        return propertiesMap;
     }
 }
