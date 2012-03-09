@@ -63,6 +63,8 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description("Builds rasterized artifacts on a raster.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -96,6 +98,10 @@ public class BobTheBuilder extends JGTModel {
     @Description("Switch that defines if the module should erode in places the actual raster is higher (default is false).")
     @In
     public boolean doErode = false;
+
+    @Description("Switch that defines if the module should use only points contained in the polygon for the interpolation (default is false. i.e. use all).")
+    @In
+    public boolean doUseOnlyInternal = false;
 
     @Description("Switch that defines if the module should add the border of the polygon as elevation point to aid connection between new and old (default is false).")
     @In
@@ -142,6 +148,17 @@ public class BobTheBuilder extends JGTModel {
         }
 
         List<FeatureMate> pointsMates = FeatureUtilities.featureCollectionToMatesList(inElevations);
+        if (doUseOnlyInternal) {
+            PreparedGeometry preparedPolygon = PreparedGeometryFactory.prepare(polygon);
+            List<FeatureMate> tmpPointsMates = new ArrayList<FeatureMate>();
+            for( FeatureMate pointMate : pointsMates ) {
+                Geometry geometry = pointMate.getGeometry();
+                if (preparedPolygon.covers(geometry)) {
+                    tmpPointsMates.add(pointMate);
+                }
+            }
+            pointsMates = tmpPointsMates;
+        }
         if (pointsMates.size() < 4) {
             throw new ModelsIllegalargumentException(
                     "You need at least 4 elevation points (the more, the better) to gain a decent interpolation.", this);
