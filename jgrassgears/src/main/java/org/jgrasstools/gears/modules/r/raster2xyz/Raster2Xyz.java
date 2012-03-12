@@ -60,6 +60,10 @@ public class Raster2Xyz extends JGTModel {
     @In
     public String inFile;
 
+    @Description("Flag to remove novalues.")
+    @In
+    public boolean doRemovenv = true;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -82,6 +86,9 @@ public class Raster2Xyz extends JGTModel {
             for( int r = 0; r < rows; r++ ) {
                 for( int c = 0; c < cols; c++ ) {
                     double elevation = rasterIter.getSampleDouble(c, r, 0);
+                    if (doRemovenv && JGTConstants.isNovalue(elevation)) {
+                        continue;
+                    }
                     DirectPosition position = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
                     double[] coordinate = position.getCoordinate();
 

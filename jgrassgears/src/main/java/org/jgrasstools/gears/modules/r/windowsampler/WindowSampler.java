@@ -98,8 +98,8 @@ public class WindowSampler extends JGTModel {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        int xstep = cols; 
-        int ystep = rows;
+        int xstep = pCols; 
+        int ystep = pRows;
         if (pXstep!=null) {
             xstep = pXstep;
         }
