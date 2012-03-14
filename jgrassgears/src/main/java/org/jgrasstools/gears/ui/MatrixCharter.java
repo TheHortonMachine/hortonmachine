@@ -40,6 +40,7 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.XYBarDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -101,13 +102,13 @@ public class MatrixCharter extends JGTModel {
     @In
     public boolean doLegend;
 
-    @Description("Chart image width (in case of doDump=true, defaults to 500 px).")
+    @Description("Chart image width (in case of doDump=true, defaults to 800 px).")
     @In
-    public int pWidth = 500;
+    public int pWidth = 800;
 
-    @Description("Chart image height (in case of doDump=true, defaults to 300 px).")
+    @Description("Chart image height (in case of doDump=true, defaults to 600 px).")
     @In
-    public int pHeight = 300;
+    public int pHeight = 600;
 
     @Description("Chart dump path (in case of doDump=true).")
     @In
@@ -129,6 +130,10 @@ public class MatrixCharter extends JGTModel {
             chart = doLineChart();
         } else {
             chart = doBarChart();
+        }
+        if (inSubTitle != null) {
+            TextTitle subTitle = new TextTitle(inSubTitle);
+            chart.addSubtitle(subTitle);
         }
         chart.setTextAntiAlias(true);
 
@@ -183,7 +188,8 @@ public class MatrixCharter extends JGTModel {
         plot.setForegroundAlpha(0.85f);
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
-        yAxis.setRange(0, 1);
+        double delta = (max - min) * 0.1;
+        yAxis.setRange(min - delta, max + delta);
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
 
