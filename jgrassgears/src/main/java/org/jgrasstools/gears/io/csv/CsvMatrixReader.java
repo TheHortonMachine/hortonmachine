@@ -131,7 +131,8 @@ public class CsvMatrixReader extends JGTModel {
 
             for( int i = 1; i <= columnCount; i++ ) {
                 String columnName = table.getColumnName(i);
-                outIdsList.add(columnName);
+                if (i > 1)
+                    outIdsList.add(columnName);
 
                 Map<String, String> columnInfo = table.getColumnInfo(i);
                 Set<Entry<String, String>> entrySet1 = columnInfo.entrySet();
@@ -181,9 +182,7 @@ public class CsvMatrixReader extends JGTModel {
         ensureOpen();
         while( rowsIterator.hasNext() ) {
             String[] row = rowsIterator.next();
-
             double[] record = new double[columnCount];
-
             for( int i = 1; i <= columnCount; i++ ) {
                 if (i == 0 && outTypes[i].equals("date") && outFormats.length > i) {
                     if (dateFormatter == null)
@@ -210,17 +209,4 @@ public class CsvMatrixReader extends JGTModel {
         rowsIterator.close();
     }
 
-    public static void main( String[] args ) throws Exception {
-        String path = "/home/moovida/Dropbox/hydrologis/lavori/2011_01_carta_pericolo_valsole/parteB/idrologico/grafici_portata/portata_meledrio_tr.csv";
-
-        CsvMatrixReader csvReader = new CsvMatrixReader();
-        csvReader.file = path;
-        csvReader.read();
-        csvReader.close();
-
-        double[][] outData2 = csvReader.outData;
-
-        PrintUtilities.printMatrixData(outData2);
-
-    }
 }
