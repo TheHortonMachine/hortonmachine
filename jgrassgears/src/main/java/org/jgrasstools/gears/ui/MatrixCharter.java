@@ -150,7 +150,6 @@ public class MatrixCharter extends JGTModel {
             ChartPanel cp = new ChartPanel(chart);
             cp.setDomainZoomable(true);
             cp.setRangeZoomable(true);
-            cp.setRangeZoomable(true);
 
             ApplicationFrame af = new ApplicationFrame("");
             af.setContentPane(cp);
@@ -181,7 +180,7 @@ public class MatrixCharter extends JGTModel {
 
         XYBarDataset xyBarDataset = new XYBarDataset(collection, minInterval);
         chart = ChartFactory.createHistogram(inTitle, inLabels[0], inLabels[1], xyBarDataset, PlotOrientation.VERTICAL, doLegend,
-                false, false);
+                true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
         // plot.setDomainPannable(true);
         // plot.setRangePannable(true);
@@ -201,6 +200,13 @@ public class MatrixCharter extends JGTModel {
         // flat bars look best...
         renderer.setBarPainter(new StandardXYBarPainter());
         renderer.setShadowVisible(false);
+
+        // XYItemRenderer renderer = plot.getRenderer();
+        // renderer.setDrawBarOutline(false);
+        // // flat bars look best...
+        // renderer.setBarPainter(new StandardXYBarPainter());
+        // renderer.setShadowVisible(false);
+
         return chart;
     }
 
@@ -231,14 +237,6 @@ public class MatrixCharter extends JGTModel {
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
 
-        // ValueAxis xAxis = plot.getDomainAxis();
-        // xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits(Locale.US));
-
-        // XYItemRenderer renderer = plot.getRenderer();
-        // renderer.setDrawBarOutline(false);
-        // // flat bars look best...
-        // renderer.setBarPainter(new StandardXYBarPainter());
-        // renderer.setShadowVisible(false);
         return chart;
     }
 
