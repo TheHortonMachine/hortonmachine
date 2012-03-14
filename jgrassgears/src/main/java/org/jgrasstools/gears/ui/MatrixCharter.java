@@ -40,6 +40,8 @@ import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.TextTitle;
 import org.jfree.data.xy.XYBarDataset;
 import org.jfree.data.xy.XYSeries;
@@ -102,6 +104,14 @@ public class MatrixCharter extends JGTModel {
     @In
     public boolean doLegend;
 
+    @Description("Show shapes in line charts.")
+    @In
+    public boolean doPoints;
+
+    @Description("Cumulate data.")
+    @In
+    public boolean doCumulate;
+
     @Description("Chart image width (in case of doDump=true, defaults to 800 px).")
     @In
     public int pWidth = 800;
@@ -116,6 +126,7 @@ public class MatrixCharter extends JGTModel {
 
     private double max = Double.NEGATIVE_INFINITY;
     private double min = Double.POSITIVE_INFINITY;
+    private double minInterval = 1000;
 
     @Execute
     public void chart() throws Exception {
@@ -157,12 +168,9 @@ public class MatrixCharter extends JGTModel {
             af.setVisible(true);
             RefineryUtilities.centerFrameOnScreen(af);
         }
-
     }
 
-    private JFreeChart doBarChart() {
-        JFreeChart chart;
-        double minInterval = 1000;
+    private XYSeriesCollection getSeriesCollection() {
         XYSeriesCollection collection = new XYSeriesCollection();
         for( int i = 0; i < inSeries.length; i++ ) {
             String seriesName = inSeries[i];
@@ -177,63 +185,49 @@ public class MatrixCharter extends JGTModel {
                 minInterval = Math.min(minInterval, inData[i + 1][0] - inData[i][0]);
             }
         }
+        return collection;
+    }
 
+    private JFreeChart doBarChart() {
+        XYSeriesCollection collection = getSeriesCollection();
         XYBarDataset xyBarDataset = new XYBarDataset(collection, minInterval);
-        chart = ChartFactory.createHistogram(inTitle, inLabels[0], inLabels[1], xyBarDataset, PlotOrientation.VERTICAL, doLegend,
-                true, false);
+        JFreeChart chart = ChartFactory.createHistogram(inTitle, inLabels[0], inLabels[1], xyBarDataset,
+                PlotOrientation.VERTICAL, doLegend, true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
-        // plot.setDomainPannable(true);
-        // plot.setRangePannable(true);
         plot.setForegroundAlpha(0.85f);
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
         double delta = (max - min) * 0.1;
-        yAxis.setRange(min - delta, max + delta);
+        yAxis.setRange(min, max + delta);
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
 
-        // ValueAxis xAxis = plot.getDomainAxis();
-        // xAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits(Locale.US));
-
         XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setDrawBarOutline(false);
-        // flat bars look best...
         renderer.setBarPainter(new StandardXYBarPainter());
         renderer.setShadowVisible(false);
-
-        // XYItemRenderer renderer = plot.getRenderer();
-        // renderer.setDrawBarOutline(false);
-        // // flat bars look best...
-        // renderer.setBarPainter(new StandardXYBarPainter());
-        // renderer.setShadowVisible(false);
 
         return chart;
     }
 
+    @SuppressWarnings("deprecation")
     private JFreeChart doLineChart() {
-        JFreeChart chart;
-        XYSeriesCollection collection = new XYSeriesCollection();
-        for( int i = 0; i < inSeries.length; i++ ) {
-            String seriesName = inSeries[i];
-            XYSeries series = new XYSeries(seriesName);
-            for( int j = 0; j < inData.length; j++ ) {
-                max = Math.max(max, inData[j][i + 1]);
-                min = Math.min(min, inData[j][i + 1]);
-                series.add(inData[j][0], inData[j][i + 1]);
-            }
-            collection.addSeries(series);
+        XYSeriesCollection collection = getSeriesCollection();
+        JFreeChart chart = ChartFactory.createXYLineChart(inTitle, inLabels[0], inLabels[1], collection,
+                PlotOrientation.VERTICAL, doLegend, true, false);
+        XYPlot plot = (XYPlot) chart.getPlot();
+
+        XYItemRenderer r = plot.getRenderer();
+        if (r instanceof XYLineAndShapeRenderer && doPoints) {
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
+            renderer.setShapesVisible(true);
+            renderer.setShapesFilled(true);
         }
 
-        chart = ChartFactory.createXYLineChart(inTitle, inLabels[0], inLabels[1], collection, PlotOrientation.VERTICAL, doLegend,
-                true, false);
-        XYPlot plot = (XYPlot) chart.getPlot();
-        // plot.setDomainPannable(true);
-        // plot.setRangePannable(true);
-        // plot.setForegroundAlpha(0.85f);
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
         yAxis.setStandardTickUnits(NumberAxis.createStandardTickUnits());
         double delta = (max - min) * 0.1;
-        yAxis.setRange(min - delta, max + delta);
+        yAxis.setRange(min, max + delta);
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
 
