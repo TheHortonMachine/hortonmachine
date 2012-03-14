@@ -229,6 +229,7 @@ public class JGTConstants {
      * modules categories
      */
     // IO
+    public static final String MATRIXREADER = "Matrix Reader";
     public static final String GENERICREADER = "Generic Reader";
     public static final String GENERICWRITER = "Generic Writer";
     public static final String HASHMAP_READER = "HashMap Data Reader";
