@@ -20,6 +20,7 @@ package org.jgrasstools.gears.ui;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.DecimalFormat;
 
 import javax.imageio.ImageIO;
 
@@ -37,6 +38,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
@@ -206,6 +208,9 @@ public class MatrixCharter extends JGTModel {
         yAxis.setRange(min, max + delta);
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
+        if (inFormats != null && inFormats.length > 0 && inFormats[1].trim().length() > 0) {
+            yAxis.setNumberFormatOverride(new DecimalFormat(inFormats[1]));
+        }
 
         XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setDrawBarOutline(false);
@@ -259,7 +264,17 @@ public class MatrixCharter extends JGTModel {
         yAxis.setRange(min, max + delta);
         yAxis.setMinorTickCount(4);
         yAxis.setMinorTickMarksVisible(true);
+        if (inFormats != null && inFormats.length > 1 && inFormats[1].trim().length() > 0) {
+            yAxis.setNumberFormatOverride(new DecimalFormat(inFormats[1]));
+        }
 
+        if (inFormats != null && inFormats.length > 0 && inFormats[0].trim().length() > 0) {
+            ValueAxis domainAxis = plot.getDomainAxis();
+            if (domainAxis instanceof NumberAxis) {
+                NumberAxis xAxis = (NumberAxis) domainAxis;
+                xAxis.setNumberFormatOverride(new DecimalFormat(inFormats[0]));
+            }
+        }
         return chart;
     }
 
