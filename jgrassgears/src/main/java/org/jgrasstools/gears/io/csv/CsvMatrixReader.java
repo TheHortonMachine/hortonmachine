@@ -43,7 +43,6 @@ import oms3.io.TableIterator;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -52,7 +51,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Reading, csv")
 @Label(JGTConstants.MATRIXREADER)
-@Name("tsreader")
+@Name("csvmatrixreader")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class CsvMatrixReader extends JGTModel {
