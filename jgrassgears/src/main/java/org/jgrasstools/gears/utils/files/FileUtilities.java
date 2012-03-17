@@ -279,7 +279,11 @@ public class FileUtilities {
     public static File substituteExtention( File file, String newExtention ) {
         String path = file.getAbsolutePath();
         int lastDot = path.lastIndexOf("."); //$NON-NLS-1$
-        path = path.substring(0, lastDot) + "." + newExtention; //$NON-NLS-1$
+        if (lastDot == -1) {
+            path = path + "." + newExtention; //$NON-NLS-1$
+        } else {
+            path = path.substring(0, lastDot) + "." + newExtention; //$NON-NLS-1$
+        }
         return new File(path);
     }
 
