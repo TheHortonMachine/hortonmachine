@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.ui;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -75,6 +76,10 @@ public class MatrixCharter extends JGTModel {
     @Description("The data series names.")
     @In
     public String[] inSeries;
+
+    @Description("The optional data series colors. Format is rbg triplets delimited by semicolon: ex. 0,0,255;0,255,0;255,0,0. The colors have to be the same number as the series.")
+    @In
+    public String inColors;
 
     @Description("The axis labels (x, y1, y2, ...).")
     @In
@@ -207,6 +212,17 @@ public class MatrixCharter extends JGTModel {
         renderer.setBarPainter(new StandardXYBarPainter());
         renderer.setShadowVisible(false);
 
+        if (inColors != null) {
+            String[] colorSplit = inColors.split(";");
+            for( int i = 0; i < colorSplit.length; i++ ) {
+                String[] split = colorSplit[i].split(",");
+                int r = (int) Double.parseDouble(split[0]);
+                int g = (int) Double.parseDouble(split[1]);
+                int b = (int) Double.parseDouble(split[2]);
+                renderer.setSeriesPaint(i, new Color(r, g, b));
+            }
+        }
+
         return chart;
     }
 
@@ -217,11 +233,24 @@ public class MatrixCharter extends JGTModel {
                 PlotOrientation.VERTICAL, doLegend, true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
 
-        XYItemRenderer r = plot.getRenderer();
-        if (r instanceof XYLineAndShapeRenderer && doPoints) {
-            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) r;
-            renderer.setShapesVisible(true);
-            renderer.setShapesFilled(true);
+        XYItemRenderer plotRenderer = plot.getRenderer();
+        if (plotRenderer instanceof XYLineAndShapeRenderer) {
+            XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plotRenderer;
+            if (doPoints) {
+                renderer.setShapesVisible(true);
+                renderer.setShapesFilled(true);
+            }
+
+            if (inColors != null) {
+                String[] colorSplit = inColors.split(";");
+                for( int i = 0; i < colorSplit.length; i++ ) {
+                    String[] split = colorSplit[i].split(",");
+                    int r = (int) Double.parseDouble(split[0]);
+                    int g = (int) Double.parseDouble(split[1]);
+                    int b = (int) Double.parseDouble(split[2]);
+                    renderer.setSeriesPaint(i, new Color(r, g, b));
+                }
+            }
         }
 
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
