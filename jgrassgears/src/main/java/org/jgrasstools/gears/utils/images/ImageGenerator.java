@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
@@ -42,6 +43,7 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.GTRenderer;
@@ -55,6 +57,7 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorRule;
 import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -136,18 +139,22 @@ public class ImageGenerator {
 
         // coverages first
         for( String coveragePath : coveragePaths ) {
-            AbstractGridFormat format = GridFormatFinder.findFormat(coveragePath);
-            AbstractGridCoverage2DReader reader = format.getReader(coveragePath);
+            File file = new File(coveragePath);
+            GridCoverage2D raster = RasterReader.readRaster(coveragePath);
             if (crs == null)
-                crs = reader.getCrs();
+                crs = raster.getCoordinateReferenceSystem();
 
-            File styleFile = FileUtilities.substituteExtention(new File(coveragePath), "sld");
+            File styleFile = FileUtilities.substituteExtention(file, "sld");
             Style style;
             if (styleFile.exists()) {
                 style = SldUtilities.getStyleFromFile(styleFile);
             } else {
                 if (CoverageUtilities.isGrass(coveragePath)) {
                     style = getGrassStyle(coveragePath);
+
+                    // RasterSymbolizer rasterSymbolizer =
+                    // CommonFactoryFinder.getStyleFactory(null).createRasterSymbolizer();
+                    // style = SLD.wrapSymbolizers(rasterSymbolizer);
                 } else {
 
                     RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
@@ -156,7 +163,7 @@ public class ImageGenerator {
 
             }
 
-            GridReaderLayer layer = new GridReaderLayer(reader, style);
+            GridCoverageLayer layer = new GridCoverageLayer(raster, style);
             content.addLayer(layer);
         }
 
@@ -229,20 +236,43 @@ public class ImageGenerator {
 
         ColorMap colorMap = sf.createColorMap();
 
-        for( int i = 0; i < valuesList.size() - 1; i++ ) {
-            String fromValueStr = valuesList.get(i);
-            String toValueStr = valuesList.get(i + 1);
-            Color fromColor = colorsList.get(i);
-            Color toColor = colorsList.get(i + 1);
-            double[] values = {Double.parseDouble(fromValueStr), Double.parseDouble(toValueStr)};
+        if (valuesList.size() > 1) {
+            for( int i = 0; i < valuesList.size() - 1; i++ ) {
+                String fromValueStr = valuesList.get(i);
+                String toValueStr = valuesList.get(i + 1);
+                Color fromColor = colorsList.get(i);
+                Color toColor = colorsList.get(i + 1);
+                double[] values = {Double.parseDouble(fromValueStr), Double.parseDouble(toValueStr)};
+                // double opacity = 1.0;
+
+                Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(),
+                        fromColor.getBlue(), 255));
+                Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor
+                        .getBlue(), 255));
+                Expression fromExpr = sB.literalExpression(values[0]);
+                Expression toExpr = sB.literalExpression(values[1]);
+                // Expression opacityExpr = sB.literalExpression(opacity);
+
+                ColorMapEntry entry = sf.createColorMapEntry();
+                entry.setQuantity(fromExpr);
+                entry.setColor(fromColorExpr);
+                // entry.setOpacity(opacityExpr);
+                colorMap.addColorMapEntry(entry);
+
+                entry = sf.createColorMapEntry();
+                entry.setQuantity(toExpr);
+                // entry.setOpacity(opacityExpr);
+                entry.setColor(toColorExpr);
+                colorMap.addColorMapEntry(entry);
+            }
+        } else if (valuesList.size() == 1) {
+            String fromValueStr = valuesList.get(0);
+            Color fromColor = colorsList.get(0);
             // double opacity = 1.0;
 
             Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
                     .getBlue(), 255));
-            Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor
-                    .getBlue(), 255));
-            Expression fromExpr = sB.literalExpression(values[0]);
-            Expression toExpr = sB.literalExpression(values[1]);
+            Expression fromExpr = sB.literalExpression(Double.parseDouble(fromValueStr));
             // Expression opacityExpr = sB.literalExpression(opacity);
 
             ColorMapEntry entry = sf.createColorMapEntry();
@@ -251,11 +281,9 @@ public class ImageGenerator {
             // entry.setOpacity(opacityExpr);
             colorMap.addColorMapEntry(entry);
 
-            entry = sf.createColorMapEntry();
-            entry.setQuantity(toExpr);
-            // entry.setOpacity(opacityExpr);
-            entry.setColor(toColorExpr);
             colorMap.addColorMapEntry(entry);
+        } else {
+            throw new IllegalArgumentException();
         }
 
         rasterSym.setColorMap(colorMap);
@@ -263,7 +291,8 @@ public class ImageGenerator {
         /*
          * set global transparency for the map
          */
-        rasterSym.setOpacity(sB.literalExpression(ctable.getAlpha() / 100.0));
+        int alpha = ctable.getAlpha();
+        rasterSym.setOpacity(sB.literalExpression(alpha / 255.0));
 
         Style newStyle = SLD.wrapSymbolizers(rasterSym);
         return newStyle;
