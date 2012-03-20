@@ -238,6 +238,14 @@ public class MatrixCharter extends JGTModel {
             yAxis.setNumberFormatOverride(new DecimalFormat(inFormats[1]));
         }
 
+        if (inFormats != null && inFormats.length > 0 && inFormats[0].trim().length() > 0) {
+            ValueAxis domainAxis = plot.getDomainAxis();
+            if (domainAxis instanceof NumberAxis) {
+                NumberAxis xAxis = (NumberAxis) domainAxis;
+                xAxis.setNumberFormatOverride(new DecimalFormat(inFormats[0]));
+            }
+        }
+
         XYBarRenderer renderer = (XYBarRenderer) plot.getRenderer();
         renderer.setDrawBarOutline(false);
         renderer.setBarPainter(new StandardXYBarPainter());
