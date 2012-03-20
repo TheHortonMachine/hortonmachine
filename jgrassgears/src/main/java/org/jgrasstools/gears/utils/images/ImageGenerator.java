@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.utils.images;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -25,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -44,12 +46,19 @@ import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
+import org.geotools.styling.ColorMap;
+import org.geotools.styling.ColorMapEntry;
 import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
+import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
+import org.jgrasstools.gears.io.grasslegacy.map.color.ColorRule;
+import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.opengis.filter.expression.Expression;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -137,8 +146,14 @@ public class ImageGenerator {
             if (styleFile.exists()) {
                 style = SldUtilities.getStyleFromFile(styleFile);
             } else {
-                RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
-                style = SLD.wrapSymbolizers(sym);
+                if (CoverageUtilities.isGrass(coveragePath)) {
+                    style = getGrassStyle(coveragePath);
+                } else {
+
+                    RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
+                    style = SLD.wrapSymbolizers(sym);
+                }
+
             }
 
             GridReaderLayer layer = new GridReaderLayer(reader, style);
@@ -172,7 +187,86 @@ public class ImageGenerator {
         }
 
         renderer = new StreamingRenderer();
-        renderer.setMapContent(content );
+        renderer.setMapContent(content);
+    }
+
+    private Style getGrassStyle( String path ) throws Exception {
+        List<String> valuesList = new ArrayList<String>();
+        List<Color> colorsList = new ArrayList<Color>();
+
+        StyleBuilder sB = new StyleBuilder(sf);
+        RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
+
+        File grassFile = new File(path);
+        String mapName = grassFile.getName();
+        String mapsetPath = grassFile.getParentFile().getParent();
+
+        GrassColorTable ctable = new GrassColorTable(mapsetPath, mapName, null);
+        Enumeration<ColorRule> rules = ctable.getColorRules();
+
+        while( rules.hasMoreElements() ) {
+            ColorRule element = (ColorRule) rules.nextElement();
+
+            float fromValue = element.getLowCategoryValue();
+            float toValue = element.getLowCategoryValue() + element.getCategoryRange();
+            byte[] lowcatcol = element.getColor(fromValue);
+            byte[] highcatcol = element.getColor(toValue);
+            Color fromColor = new Color((int) (lowcatcol[0] & 0xff), (int) (lowcatcol[1] & 0xff), (int) (lowcatcol[2] & 0xff));
+            Color toColor = new Color((int) (highcatcol[0] & 0xff), (int) (highcatcol[1] & 0xff), (int) (highcatcol[2] & 0xff));
+
+            String from = String.valueOf(fromValue);
+            if (!valuesList.contains(from)) {
+                valuesList.add(from);
+                colorsList.add(fromColor);
+            }
+
+            String to = String.valueOf(toValue);
+            if (!valuesList.contains(to)) {
+                valuesList.add(to);
+                colorsList.add(toColor);
+            }
+        }
+
+        ColorMap colorMap = sf.createColorMap();
+
+        for( int i = 0; i < valuesList.size() - 1; i++ ) {
+            String fromValueStr = valuesList.get(i);
+            String toValueStr = valuesList.get(i + 1);
+            Color fromColor = colorsList.get(i);
+            Color toColor = colorsList.get(i + 1);
+            double[] values = {Double.parseDouble(fromValueStr), Double.parseDouble(toValueStr)};
+            // double opacity = 1.0;
+
+            Expression fromColorExpr = sB.colorExpression(new java.awt.Color(fromColor.getRed(), fromColor.getGreen(), fromColor
+                    .getBlue(), 255));
+            Expression toColorExpr = sB.colorExpression(new java.awt.Color(toColor.getRed(), toColor.getGreen(), toColor
+                    .getBlue(), 255));
+            Expression fromExpr = sB.literalExpression(values[0]);
+            Expression toExpr = sB.literalExpression(values[1]);
+            // Expression opacityExpr = sB.literalExpression(opacity);
+
+            ColorMapEntry entry = sf.createColorMapEntry();
+            entry.setQuantity(fromExpr);
+            entry.setColor(fromColorExpr);
+            // entry.setOpacity(opacityExpr);
+            colorMap.addColorMapEntry(entry);
+
+            entry = sf.createColorMapEntry();
+            entry.setQuantity(toExpr);
+            // entry.setOpacity(opacityExpr);
+            entry.setColor(toColorExpr);
+            colorMap.addColorMapEntry(entry);
+        }
+
+        rasterSym.setColorMap(colorMap);
+
+        /*
+         * set global transparency for the map
+         */
+        rasterSym.setOpacity(sB.literalExpression(ctable.getAlpha() / 100.0));
+
+        Style newStyle = SLD.wrapSymbolizers(rasterSym);
+        return newStyle;
     }
 
     /**
@@ -224,8 +318,8 @@ public class ImageGenerator {
 
         ImageIO.write(dumpImage, "png", new File(imagePath));
     }
-    
-    public void dispose(){
+
+    public void dispose() {
         content.dispose();
     }
 
