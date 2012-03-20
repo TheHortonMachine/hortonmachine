@@ -119,6 +119,10 @@ public class MatrixCharter extends JGTModel {
     @In
     public boolean doCumulate;
 
+    @Description("Normalize data.")
+    @In
+    public boolean doNormalize;
+
     @Description("Chart image width (in case of doDump=true, defaults to 800 px).")
     @In
     public int pWidth = 800;
@@ -182,15 +186,37 @@ public class MatrixCharter extends JGTModel {
         for( int i = 0; i < inSeries.length; i++ ) {
             String seriesName = inSeries[i];
             XYSeries series = new XYSeries(seriesName);
+
+            double previous = 0;
+            double[] x = new double[inData.length];
+            double[] y = new double[inData.length];
             for( int j = 0; j < inData.length; j++ ) {
-                max = Math.max(max, inData[j][i + 1]);
-                min = Math.min(min, inData[j][i + 1]);
-                series.add(inData[j][0], inData[j][i + 1]);
+                double value;
+                if (!doCumulate) {
+                    value = inData[j][i + 1];
+                } else {
+                    value = previous + inData[j][i + 1];
+                }
+                x[j] = inData[j][0];
+                y[j] = value;
+                max = Math.max(max, value);
+                min = Math.min(min, value);
+                previous = value;
+                if (j > 1) {
+                    minInterval = Math.min(minInterval, inData[j - 1][0] - inData[j][0]);
+                }
+            }
+            if (doNormalize) {
+                for( int k = 0; k < y.length; k++ ) {
+                    y[k] = y[k] / max;
+                }
+                max = 1.0;
+                min = 0.0;
+            }
+            for( int k = 0; k < y.length; k++ ) {
+                series.add(x[k], y[k]);
             }
             collection.addSeries(series);
-            if (i > 1) {
-                minInterval = Math.min(minInterval, inData[i + 1][0] - inData[i][0]);
-            }
         }
         return collection;
     }
