@@ -32,9 +32,6 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -44,7 +41,6 @@ import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
-import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
@@ -58,6 +54,8 @@ import org.geotools.styling.StyleFactory;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorRule;
 import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -94,6 +92,13 @@ public class ImageGenerator {
     private MapContent content;
     private GTRenderer renderer;
     private CoordinateReferenceSystem crs;
+
+    private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+
+    public ImageGenerator( IJGTProgressMonitor monitor ) {
+        if (monitor != null)
+            this.monitor = monitor;
+    }
 
     /**
      * Add a new coverage file path.
@@ -138,6 +143,7 @@ public class ImageGenerator {
         crs = null;
 
         // coverages first
+        monitor.beginTask("Reading raster maps...", coveragePaths.size());
         for( String coveragePath : coveragePaths ) {
             File file = new File(coveragePath);
             GridCoverage2D raster = RasterReader.readRaster(coveragePath);
@@ -151,12 +157,7 @@ public class ImageGenerator {
             } else {
                 if (CoverageUtilities.isGrass(coveragePath)) {
                     style = getGrassStyle(coveragePath);
-
-                    // RasterSymbolizer rasterSymbolizer =
-                    // CommonFactoryFinder.getStyleFactory(null).createRasterSymbolizer();
-                    // style = SLD.wrapSymbolizers(rasterSymbolizer);
                 } else {
-
                     RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
                     style = SLD.wrapSymbolizers(sym);
                 }
@@ -165,8 +166,12 @@ public class ImageGenerator {
 
             GridCoverageLayer layer = new GridCoverageLayer(raster, style);
             content.addLayer(layer);
-        }
 
+            monitor.worked(1);
+        }
+        monitor.done();
+
+        monitor.beginTask("Reading vector maps...", featurePaths.size());
         for( int i = 0; i < featurePaths.size(); i++ ) {
             String featurePath = featurePaths.get(i);
             String filter = featureFilter.get(i);
@@ -191,7 +196,10 @@ public class ImageGenerator {
 
             FeatureLayer layer = new FeatureLayer(featureCollection, style);
             content.addLayer(layer);
+
+            monitor.worked(1);
         }
+        monitor.done();
 
         renderer = new StreamingRenderer();
         renderer.setMapContent(content);
@@ -344,7 +352,6 @@ public class ImageGenerator {
     public void dumpPngImage( String imagePath, Envelope bounds, int imageWidth, int imageHeight, double buffer )
             throws IOException {
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
-
         ImageIO.write(dumpImage, "png", new File(imagePath));
     }
 
@@ -354,20 +361,17 @@ public class ImageGenerator {
 
     private void setTransforms( final ReferencedEnvelope envelope, int width, int height ) {
 
-        double xscale = width / envelope.getWidth();
-        double yscale = height / envelope.getHeight();
+        double envWidth = envelope.getWidth();
+        double xscale = width / envWidth;
+        double envHeight = envelope.getHeight();
+        double yscale = height / envHeight;
 
-        double scale = Math.min(xscale, yscale);
+        double median0 = envelope.getMedian(0);
+        double xoff = median0 * xscale - width / 2.0;
+        double median1 = envelope.getMedian(1);
+        double yoff = median1 * yscale + height / 2.0;
 
-        double xoff = envelope.getMedian(0) * scale - width / 2;
-        double yoff = envelope.getMedian(1) * scale + height / 2;
-
-        worldToScreen = new AffineTransform(scale, 0, 0, -scale, -xoff, yoff);
-        // try {
-        // screenToWorld = worldToScreen.createInverse();
-        // } catch (NoninvertibleTransformException ex) {
-        // ex.printStackTrace();
-        // }
+        worldToScreen = new AffineTransform(xscale, 0, 0, -yscale, -xoff, yoff);
     }
 
 }
