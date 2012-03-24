@@ -41,8 +41,8 @@ import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
-import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -84,16 +84,16 @@ public class ImageGenerator {
     private List<String> featurePaths = new ArrayList<String>();
     private List<String> featureFilter = new ArrayList<String>();
     private List<String> coveragePaths = new ArrayList<String>();
-    private AffineTransform worldToScreen;
+    // private AffineTransform worldToScreen;
     // private AffineTransform screenToWorld;
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
-    private MapContent content;
-    private GTRenderer renderer;
     private CoordinateReferenceSystem crs;
 
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
+
+    private List<Layer> layers = new ArrayList<Layer>();
 
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
@@ -130,6 +130,26 @@ public class ImageGenerator {
         }
     }
 
+    // private void setTransforms( final ReferencedEnvelope envelope, int width, int height ) {
+    //
+    // double envWidth = envelope.getWidth();
+    // double envHeight = envelope.getHeight();
+    // double envValue = envWidth;
+    // if (envHeight > envWidth) {
+    // envValue = envHeight;
+    // }
+    //
+    // double xscale = width / envValue;
+    // double yscale = height / envValue;
+    //
+    // double median0 = envelope.getMedian(0);
+    // double xoff = median0 * xscale - width / 2.0;
+    // double median1 = envelope.getMedian(1);
+    // double yoff = median1 * yscale + height / 2.0;
+    //
+    // worldToScreen = new AffineTransform(xscale, 0, 0, -yscale, -xoff, yoff);
+    // }
+
     /**
      * Set the layers that have to be drawn.
      * 
@@ -137,8 +157,6 @@ public class ImageGenerator {
      * @throws Exception 
      */
     public void setLayers() throws Exception {
-        content = new MapContent();
-        content.setTitle("dump");
 
         crs = null;
 
@@ -147,8 +165,9 @@ public class ImageGenerator {
         for( String coveragePath : coveragePaths ) {
             File file = new File(coveragePath);
             GridCoverage2D raster = RasterReader.readRaster(coveragePath);
-            if (crs == null)
+            if (crs == null) {
                 crs = raster.getCoordinateReferenceSystem();
+            }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
             Style style;
@@ -165,8 +184,7 @@ public class ImageGenerator {
             }
 
             GridCoverageLayer layer = new GridCoverageLayer(raster, style);
-            content.addLayer(layer);
-
+            layers.add(layer);
             monitor.worked(1);
         }
         monitor.done();
@@ -183,8 +201,9 @@ public class ImageGenerator {
             } else {
                 featureCollection = featureSource.getFeatures(ECQL.toFilter(filter));
             }
-            if (crs == null)
+            if (crs == null) {
                 crs = featureSource.getSchema().getCoordinateReferenceSystem();
+            }
 
             File styleFile = FileUtilities.substituteExtention(new File(featurePath), "sld");
             Style style;
@@ -195,14 +214,77 @@ public class ImageGenerator {
             }
 
             FeatureLayer layer = new FeatureLayer(featureCollection, style);
-            content.addLayer(layer);
-
+            layers.add(layer);
             monitor.worked(1);
         }
         monitor.done();
+    }
 
-        renderer = new StreamingRenderer();
-        renderer.setMapContent(content);
+    /**
+     * Draw the map on an image.
+     * 
+     * @param bounds the area of interest.
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units. 
+     * @return the image.
+     */
+    public BufferedImage drawImage( Envelope bounds, int imageWidth, int imageHeight, double buffer ) {
+
+        MapContent content = null;
+        try {
+            content = new MapContent();
+            content.setTitle("dump");
+
+            bounds.expandBy(buffer, buffer);
+            ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
+
+            double envW = ref.getWidth();
+            double envH = ref.getHeight();
+            for( Layer layer : layers ) {
+                content.addLayer(layer);
+            }
+
+            if (envW < envH) {
+                double newEnvW = envH * (double) imageWidth / (double) imageHeight;
+                double delta = newEnvW - envW;
+                ref.expandBy(delta / 2, 0);
+            } else {
+                double newEnvH = envW * (double) imageHeight / (double) imageWidth;
+                double delta = newEnvH - envH;
+                ref.expandBy(0, delta / 2.0);
+            }
+
+            Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+            BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d = dumpImage.createGraphics();
+            g2d.fillRect(0, 0, imageWidth, imageHeight);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            StreamingRenderer renderer = new StreamingRenderer();
+            renderer.setMapContent(content);
+            renderer.paint(g2d, imageBounds, ref);
+
+            return dumpImage;
+        } finally {
+            content.dispose();
+        }
+    }
+
+    /**
+     * Writes an image of maps drawn to file. 
+     * 
+     * @param imagePath the path to which to write the image.
+     * @param bounds the area of interest.
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units. 
+     * @throws IOException
+     */
+    public void dumpPngImage( String imagePath, Envelope bounds, int imageWidth, int imageHeight, double buffer )
+            throws IOException {
+        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        ImageIO.write(dumpImage, "png", new File(imagePath));
     }
 
     private Style getGrassStyle( String path ) throws Exception {
@@ -307,73 +389,4 @@ public class ImageGenerator {
 
         return newStyle;
     }
-
-    /**
-     * Draw the map on an image.
-     * 
-     * @param bounds the area of interest.
-     * @param imageWidth the width of the image to produce.
-     * @param imageHeight the height of the image to produce.
-     * @param buffer the buffer to add around the map bounds in map units. 
-     * @return the image.
-     */
-    public BufferedImage drawImage( Envelope bounds, int imageWidth, int imageHeight, double buffer ) {
-        if (renderer == null) {
-            throw new IllegalArgumentException("MapContent is not available. Did you call setLayers first?");
-        }
-
-        // now we have point and polygon
-        // create bounds
-        bounds.expandBy(buffer, buffer);
-        ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
-
-        content.getViewport().setBounds(ref);
-        setTransforms(ref, imageWidth, imageHeight);
-
-        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2d = dumpImage.createGraphics();
-        g2d.fillRect(0, 0, imageWidth, imageHeight);
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        Rectangle imgRec = new Rectangle(imageWidth, imageHeight);
-        renderer.paint(g2d, imgRec, ref, worldToScreen);
-
-        return dumpImage;
-    }
-
-    /**
-     * Writes an image of maps drawn to file. 
-     * 
-     * @param imagePath the path to which to write the image.
-     * @param bounds the area of interest.
-     * @param imageWidth the width of the image to produce.
-     * @param imageHeight the height of the image to produce.
-     * @param buffer the buffer to add around the map bounds in map units. 
-     * @throws IOException
-     */
-    public void dumpPngImage( String imagePath, Envelope bounds, int imageWidth, int imageHeight, double buffer )
-            throws IOException {
-        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
-        ImageIO.write(dumpImage, "png", new File(imagePath));
-    }
-
-    public void dispose() {
-        content.dispose();
-    }
-
-    private void setTransforms( final ReferencedEnvelope envelope, int width, int height ) {
-
-        double envWidth = envelope.getWidth();
-        double xscale = width / envWidth;
-        double envHeight = envelope.getHeight();
-        double yscale = height / envHeight;
-
-        double median0 = envelope.getMedian(0);
-        double xoff = median0 * xscale - width / 2.0;
-        double median1 = envelope.getMedian(1);
-        double yoff = median1 * yscale + height / 2.0;
-
-        worldToScreen = new AffineTransform(xscale, 0, 0, -yscale, -xoff, yoff);
-    }
-
 }
