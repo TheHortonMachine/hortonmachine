@@ -104,7 +104,7 @@ public class CompressionUtilities {
                     File baseFile = new File(destFolder + File.separator + firstName);
                     if (baseFile.exists()) {
                         if (addTimeStamp) {
-                            newFirstName = firstName
+                            newFirstName = firstName + "_"
                                     + new DateTime().toString(JGTConstants.dateTimeFormatterYYYYMMDDHHMMSScompact);
                         } else {
                             throw new IOException("Not overwriting existing: " + baseFile);
