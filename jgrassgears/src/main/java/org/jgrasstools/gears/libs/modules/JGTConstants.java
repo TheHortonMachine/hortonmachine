@@ -126,6 +126,13 @@ public class JGTConstants {
     }
 
     /**
+     * Global formatter for joda datetime (yyyyMMddHHmmss).
+     */
+    public static String dateTimeFormatterYYYYMMDDHHMMSScompact_string = "yyyyMMddHHmmss";
+    public static DateTimeFormatter dateTimeFormatterYYYYMMDDHHMMSScompact = DateTimeFormat
+            .forPattern(dateTimeFormatterYYYYMMDDHHMMSScompact_string);
+
+    /**
      * Global formatter for joda datetime (yyyy-MM-dd HH:mm:ss).
      */
     public static String dateTimeFormatterYYYYMMDDHHMMSS_string = "yyyy-MM-dd HH:mm:ss";
