@@ -24,6 +24,10 @@ import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.geotools.referencing.GeodeticCalculator;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -358,6 +362,77 @@ public class GeometryUtilities {
             coordinates[i].x = x[i];
             coordinates[i].y = y[i];
         }
+    }
+
+    /**
+     * Joins two lines to a polygon.
+     * 
+     * @param checkValid checks if the resulting polygon is valid.
+     * @param lines the lines to use.
+     * @return the joined polygon or <code>null</code> if something ugly happened. 
+     */
+    public static Polygon lines2Polygon( boolean checkValid, LineString... lines ) {
+        List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
+
+        List<LineString> linesList = new ArrayList<LineString>();
+        for( LineString tmpLine : lines ) {
+            linesList.add(tmpLine);
+        }
+
+        LineString currentLine = linesList.get(0);
+        linesList.remove(0);
+        while( linesList.size() > 0 ) {
+            Coordinate[] coordinates = currentLine.getCoordinates();
+            List<Coordinate> tmpList = Arrays.asList(coordinates);
+            coordinatesList.addAll(tmpList);
+
+            Point thePoint = currentLine.getEndPoint();
+
+            double minDistance = Double.MAX_VALUE;
+            LineString minDistanceLine = null;
+            boolean needFlip = false;
+            for( LineString tmpLine : linesList ) {
+                Point tmpStartPoint = tmpLine.getStartPoint();
+                double distance = thePoint.distance(tmpStartPoint);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minDistanceLine = tmpLine;
+                    needFlip = false;
+                }
+
+                Point tmpEndPoint = tmpLine.getEndPoint();
+                distance = thePoint.distance(tmpEndPoint);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    minDistanceLine = tmpLine;
+                    needFlip = true;
+                }
+            }
+
+            linesList.remove(minDistanceLine);
+
+            if (needFlip) {
+                minDistanceLine = (LineString) minDistanceLine.reverse();
+            }
+
+            currentLine = minDistanceLine;
+
+        }
+        // add last
+        Coordinate[] coordinates = currentLine.getCoordinates();
+        List<Coordinate> tmpList = Arrays.asList(coordinates);
+        coordinatesList.addAll(tmpList);
+        
+        coordinatesList.add(coordinatesList.get(0));
+        LinearRing linearRing = gf().createLinearRing(coordinatesList.toArray(new Coordinate[0]));
+        Polygon polygon = gf().createPolygon(linearRing, null);
+
+        if (checkValid) {
+            if (!polygon.isValid()) {
+                return null;
+            }
+        }
+        return polygon;
     }
 
 }
