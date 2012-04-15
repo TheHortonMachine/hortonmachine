@@ -123,31 +123,14 @@ public class GeometryUtilities {
      *                  moving clockwise.
      */
     public static double angleBetween( LineSegment l1, LineSegment l2 ) {
-        double tol = 0.00001;
-        // analyze slopes
-        double s1 = (l1.p1.y - l1.p0.y) / (l1.p1.x - l1.p0.x);
-        double s2 = (l2.p1.y - l2.p0.y) / (l2.p1.x - l2.p0.x);
+        double azimuth1 = azimuth(l1.p0, l1.p1);
+        double azimuth2 = azimuth(l2.p0, l2.p1);
 
-        if (abs(s1 - s2) < tol)
-            return (0);
-        if (abs(s1 + s2) < tol)
-            return (PI);
-
-        // not of equal slope, transform lines so that they are tail to tip and
-        // use the cosine law to calculate angle between
-
-        // transform line segments tail to tail, originating at (0,0)
-        LineSegment tls1 = new LineSegment(new Coordinate(0, 0), new Coordinate(l1.p1.x - l1.p0.x, l1.p1.y - l1.p0.y));
-        LineSegment tls2 = new LineSegment(new Coordinate(0, 0), new Coordinate(l2.p1.x - l2.p0.x, l2.p1.y - l2.p0.y));
-
-        // line segment for third side of triangle
-        LineSegment ls3 = new LineSegment(tls1.p1, tls2.p1);
-
-        double c = ls3.getLength();
-        double a = tls1.getLength();
-        double b = tls2.getLength();
-
-        return toDegrees(acos((a * a + b * b - c * c) / (2 * a * b)));
+        if (azimuth1 < azimuth2) {
+            return azimuth2 - azimuth1;
+        } else {
+            return 360 - azimuth1 + azimuth2;
+        }
     }
 
     /**
@@ -422,7 +405,7 @@ public class GeometryUtilities {
         Coordinate[] coordinates = currentLine.getCoordinates();
         List<Coordinate> tmpList = Arrays.asList(coordinates);
         coordinatesList.addAll(tmpList);
-        
+
         coordinatesList.add(coordinatesList.get(0));
         LinearRing linearRing = gf().createLinearRing(coordinatesList.toArray(new Coordinate[0]));
         Polygon polygon = gf().createPolygon(linearRing, null);

@@ -33,6 +33,8 @@ import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import junit.framework.TestCase;
 
 public class HMTestCase extends TestCase {
+    protected static final double DELTA = 0.0000001;
+
     /**
      * The progress monitor to be usedd by testcases.
      */
@@ -44,16 +46,12 @@ public class HMTestCase extends TestCase {
 
     protected void printImage( RenderedImage image ) {
         RectIter rectIter = RectIterFactory.create(image, null);
-        int y = 0;
         do {
-            int x = 0;
             do {
                 double value = rectIter.getSampleDouble();
                 System.out.print(value + " ");
-                x++;
             } while( !rectIter.nextPixelDone() );
             rectIter.startPixels();
-            y++;
             System.out.println();
         } while( !rectIter.nextLineDone() );
     }
