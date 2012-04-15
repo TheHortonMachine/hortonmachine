@@ -71,14 +71,14 @@ public class GeometryUtilities {
 
     public static GeometryFactory gf() {
         if (geomFactory == null) {
-            geomFactory = new GeometryFactory();
+            geomFactory = new GeometryFactory(pm());
         }
         return (geomFactory);
     }
 
     public static PrecisionModel pm() {
         if (precModel == null) {
-            precModel = new PrecisionModel();
+            precModel = new PrecisionModel(PrecisionModel.FLOATING);
         }
         return (precModel);
     }
