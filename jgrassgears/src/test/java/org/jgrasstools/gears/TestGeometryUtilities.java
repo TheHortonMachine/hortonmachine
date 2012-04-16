@@ -1,5 +1,8 @@
 package org.jgrasstools.gears;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 
@@ -69,5 +72,33 @@ public class TestGeometryUtilities extends HMTestCase {
         LinearRing linearRing = gf.createLinearRing(polygonCoord);
         Polygon expectedPolygon = gf.createPolygon(linearRing, null);
         assertTrue(lines2Polygon.equalsExact(expectedPolygon));
+    }
+
+    public void testGetCoordinatesAtInterval() throws Exception {
+        GeometryFactory gf = GeometryUtilities.gf();
+
+        LineString l1 = gf.createLineString(new Coordinate[]{ll, ul, ur, lr});
+        List<Coordinate> coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5);
+
+        List<Coordinate> expectedCoordinates = new ArrayList<Coordinate>();
+        Coordinate c = new Coordinate(0.0, 0.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.0, 0.5);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.5, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.5);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.0);
+        expectedCoordinates.add(c);
+
+        for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
+            assertEquals(coordinatesAtInterval.get(i), expectedCoordinates.get(i));
+        }
+
     }
 }

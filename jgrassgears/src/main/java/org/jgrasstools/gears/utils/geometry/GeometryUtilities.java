@@ -47,6 +47,7 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.linearref.LengthIndexedLine;
 
 /**
  * Utilities related to {@link Geometry}.
@@ -418,4 +419,36 @@ public class GeometryUtilities {
         return polygon;
     }
 
+    /**
+     * Returns the coordinates at a given interval along the line.
+     * 
+     * <p>
+     * Note that first and last coordinate are also added, making it
+     * likely that the interval between the last two coordinates is less 
+     * than the supplied interval.
+     * </p>
+     * 
+     * 
+     * @param line the line to use.
+     * @param interval the interval to use as distance between coordinates. Has to be > 0.
+     * @return the list of coordinates.
+     */
+    public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval ) {
+        if (interval <= 0) {
+            throw new IllegalArgumentException("Interval needs to be > 0.");
+        }
+        List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
+
+        LengthIndexedLine indexedLine = new LengthIndexedLine(line);
+        double length = line.getLength();
+        double runningLength = 0.0;
+        while( runningLength < length ) {
+            Coordinate extractedPoint = indexedLine.extractPoint(runningLength);
+            coordinatesList.add(extractedPoint);
+            runningLength = runningLength + interval;
+        }
+        coordinatesList.add(line.getEndPoint().getCoordinate());
+
+        return coordinatesList;
+    }
 }
