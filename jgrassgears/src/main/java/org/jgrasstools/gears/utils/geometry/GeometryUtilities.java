@@ -432,22 +432,33 @@ public class GeometryUtilities {
      * @param line the line to use.
      * @param interval the interval to use as distance between coordinates. Has to be > 0.
      * @return the list of coordinates.
+     * @param startFrom if > 0, it defines the initial distance to jump.
+     * @param endAt if > 0, it defines where to end, even if the line is longer.
+     * @return
      */
-    public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval ) {
+    public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval, double startFrom, double endAt ) {
         if (interval <= 0) {
             throw new IllegalArgumentException("Interval needs to be > 0.");
         }
+        double length = line.getLength();
+        if (startFrom < 0) {
+            startFrom = 0.0;
+        }
+        if (endAt < 0) {
+            endAt = length;
+        }
+
         List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
 
         LengthIndexedLine indexedLine = new LengthIndexedLine(line);
-        double length = line.getLength();
-        double runningLength = 0.0;
-        while( runningLength < length ) {
+        double runningLength = startFrom;
+        while( runningLength < endAt ) {
             Coordinate extractedPoint = indexedLine.extractPoint(runningLength);
             coordinatesList.add(extractedPoint);
             runningLength = runningLength + interval;
         }
-        coordinatesList.add(line.getEndPoint().getCoordinate());
+        Coordinate extractedPoint = indexedLine.extractPoint(endAt);
+        coordinatesList.add(extractedPoint);
 
         return coordinatesList;
     }

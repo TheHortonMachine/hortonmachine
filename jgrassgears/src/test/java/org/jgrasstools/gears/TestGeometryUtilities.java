@@ -78,7 +78,7 @@ public class TestGeometryUtilities extends HMTestCase {
         GeometryFactory gf = GeometryUtilities.gf();
 
         LineString l1 = gf.createLineString(new Coordinate[]{ll, ul, ur, lr});
-        List<Coordinate> coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5);
+        List<Coordinate> coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, -1, -1);
 
         List<Coordinate> expectedCoordinates = new ArrayList<Coordinate>();
         Coordinate c = new Coordinate(0.0, 0.0);
@@ -94,6 +94,24 @@ public class TestGeometryUtilities extends HMTestCase {
         c = new Coordinate(1.0, 0.5);
         expectedCoordinates.add(c);
         c = new Coordinate(1.0, 0.0);
+        expectedCoordinates.add(c);
+
+        for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
+            assertEquals(coordinatesAtInterval.get(i), expectedCoordinates.get(i));
+        }
+
+        coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, 0.5, 2.5);
+
+        expectedCoordinates = new ArrayList<Coordinate>();
+        c = new Coordinate(0.0, 0.5);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.5, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.5);
         expectedCoordinates.add(c);
 
         for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
