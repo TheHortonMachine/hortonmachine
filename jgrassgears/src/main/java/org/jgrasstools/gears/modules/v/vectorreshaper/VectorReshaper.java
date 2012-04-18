@@ -79,7 +79,7 @@ public class VectorReshaper extends JGTModel {
     public SimpleFeatureCollection inVector;
 
     @Description("The ECQL reshape function.")
-    @UI(JGTConstants.MULTILINE_UI_HINT + "10," + JGTConstants.MAPCALC_UI_HINT)
+    @UI(JGTConstants.MULTILINE_UI_HINT + "5")
     @In
     public String pCql = null;
 
