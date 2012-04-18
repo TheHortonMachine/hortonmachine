@@ -833,7 +833,7 @@ public class ModelsEngine {
      * @throws InvalidGridGeometryException 
      */
     public static WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
+            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,String reteId,
             IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
@@ -852,9 +852,9 @@ public class ModelsEngine {
             for( int i = 0; i < pointV.getNumGeometries(); i++ ) {
                 GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointV.getCoordinates()[0].x,
                         pointV.getCoordinates()[0].y));
-                nodoId = (Number) attributePoints.get(numGeometry).get("RETE_ID");
+                nodoId = (Number) attributePoints.get(numGeometry).get(reteId);
                 if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field RETE_ID not found", "");
+                    throw new ModelsIllegalargumentException("Field "+reteId+" not found", "");
                 }
                 if (nodoId.intValue() != -1
                         && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {

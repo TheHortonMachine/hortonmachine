@@ -88,6 +88,12 @@ public class NetNumbering extends JGTModel {
     @Description("Threshold value on tca map.")
     @In
     public double pThres = 0;
+    
+    @Description("The name of the node id field in mode 2.")
+    @In
+    public String fPointId = null;
+    
+    
 
     @Description("The progress monitor.")
     @In
@@ -172,8 +178,11 @@ public class NetNumbering extends JGTModel {
             if (attributeVect == null || geomVect == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
             }
+            if(fPointId==null){
+            	throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this);
+            }
             netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
-                    inFlow.getGridGeometry(), pm);
+                    inFlow.getGridGeometry(),fPointId, pm);
         } else {
             // if (attributeVect == null || geomVect == null || tcaIter == null) {
             // throw new ModelsIllegalargumentException(
