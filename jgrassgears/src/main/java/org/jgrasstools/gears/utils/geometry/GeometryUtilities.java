@@ -18,9 +18,6 @@
  */
 package org.jgrasstools.gears.utils.geometry;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.toDegrees;
 
@@ -434,7 +431,7 @@ public class GeometryUtilities {
      * @return the list of coordinates.
      * @param startFrom if > 0, it defines the initial distance to jump.
      * @param endAt if > 0, it defines where to end, even if the line is longer.
-     * @return
+     * @return the list of extracted coordinates.
      */
     public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval, double startFrom, double endAt ) {
         if (interval <= 0) {
@@ -461,5 +458,61 @@ public class GeometryUtilities {
         coordinatesList.add(extractedPoint);
 
         return coordinatesList;
+    }
+
+    /**
+     * Returns the section line at a given interval along the line.
+     * 
+     * <p>
+     * The returned lines are digitized from left to right and contain also the 
+     * center point.
+     * </p>
+     * <p>
+     * Note that first and last coordinate's section are also added, making it
+     * likely that the interval between the last two coordinates is less 
+     * than the supplied interval.
+     * </p>
+     * 
+     * 
+     * @param line the line to use.
+     * @param interval the interval to use as distance between coordinates. Has to be > 0.
+     * @param width the total width of the section.
+     * @return the list of coordinates.
+     * @param startFrom if > 0, it defines the initial distance to jump.
+     * @param endAt if > 0, it defines where to end, even if the line is longer.
+     * @return the list of sections lines at a given interval.
+     */
+    public static List<LineString> getSectionsAtInterval( LineString line, double interval, double width, double startFrom, double endAt ) {
+        if (interval <= 0) {
+            throw new IllegalArgumentException("Interval needs to be > 0.");
+        }
+        double length = line.getLength();
+        if (startFrom < 0) {
+            startFrom = 0.0;
+        }
+        if (endAt < 0) {
+            endAt = length;
+        }
+        
+        double halfWidth = width/2.0;
+        List<LineString> linesList = new ArrayList<LineString>();
+        
+        LengthIndexedLine indexedLine = new LengthIndexedLine(line);
+        double runningLength = startFrom;
+        while( runningLength < endAt ) {
+            Coordinate centerCoordinate = indexedLine.extractPoint(runningLength);
+            Coordinate leftCoordinate = indexedLine.extractPoint(runningLength, -halfWidth);
+            Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
+            LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
+            linesList.add(lineString);
+            runningLength = runningLength + interval;
+        }
+        Coordinate centerCoordinate = indexedLine.extractPoint(runningLength);
+        Coordinate leftCoordinate = indexedLine.extractPoint(runningLength, -halfWidth);
+        Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
+        LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
+        linesList.add(lineString);
+        
+        return linesList;
     }
 }
