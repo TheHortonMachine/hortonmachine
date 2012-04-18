@@ -21,7 +21,6 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +31,9 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -41,6 +43,7 @@ import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.lite.StreamingRenderer;
@@ -164,9 +167,21 @@ public class ImageGenerator {
         monitor.beginTask("Reading raster maps...", coveragePaths.size());
         for( String coveragePath : coveragePaths ) {
             File file = new File(coveragePath);
-            GridCoverage2D raster = RasterReader.readRaster(coveragePath);
-            if (crs == null) {
-                crs = raster.getCoordinateReferenceSystem();
+            GridCoverage2D raster = null;
+            AbstractGridCoverage2DReader reader = null;
+            try {
+                raster = RasterReader.readRaster(coveragePath);
+                if (crs == null) {
+                    crs = raster.getCoordinateReferenceSystem();
+                }
+            } catch (Exception e) {
+                // try with available readers
+                File coverageFile = new File(coveragePath);
+                AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
+                reader = format.getReader(coverageFile);
+                if (crs == null) {
+                    crs = reader.getCrs();
+                }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
@@ -183,8 +198,14 @@ public class ImageGenerator {
 
             }
 
-            GridCoverageLayer layer = new GridCoverageLayer(raster, style);
-            layers.add(layer);
+            if (raster != null) {
+                GridCoverageLayer layer = new GridCoverageLayer(raster, style);
+                layers.add(layer);
+            }
+            if (reader != null) {
+                GridReaderLayer layer = new GridReaderLayer(reader, style);
+                layers.add(layer);
+            }
             monitor.worked(1);
         }
         monitor.done();
@@ -219,7 +240,6 @@ public class ImageGenerator {
         }
         monitor.done();
     }
-
     /**
      * Draw the map on an image.
      * 
