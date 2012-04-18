@@ -47,7 +47,7 @@ public class TestVectorReshaper extends HMTestCase {
 
         VectorReshaper reshaper = new VectorReshaper();
         reshaper.inVector = testFC;
-        reshaper.pCql = "newcat=cat*2";
+        reshaper.pCql = "newcat=cat*2 \n newcat2=cat*4";
         reshaper.process();
         SimpleFeatureCollection outFC = reshaper.outVector;
 
@@ -57,7 +57,9 @@ public class TestVectorReshaper extends HMTestCase {
 
         Integer attribute = (Integer) feature.getAttribute("cat");
         Double newAttribute = (Double) feature.getAttribute("newcat");
+        Double newAttribute2 = (Double) feature.getAttribute("newcat2");
         assertEquals(attribute.intValue() * 2, newAttribute.intValue());
+        assertEquals(attribute.intValue() * 4, newAttribute2.intValue());
         featureIterator.close();
 
     }
