@@ -50,6 +50,7 @@ public class HMTestMaps {
     public static SimpleFeatureCollection testLeftFC;
 
     public static Coordinate westNorth;
+    public static Coordinate eastNorth;
     public static Coordinate eastSouth;
     public static Coordinate centerCoord;
 
@@ -83,6 +84,7 @@ public class HMTestMaps {
         GeometryFactory gf = GeometryUtilities.gf();
 
         westNorth = new Coordinate(w, n);
+        eastNorth = new Coordinate(e, n);
         eastSouth = new Coordinate(e, s);
         centerCoord = new Coordinate(w + (e - w) / 2, s + (n - s) / 2);
 

@@ -18,19 +18,23 @@
 package org.jgrasstools.gears.modules.v.vectorreshaper;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -44,6 +48,8 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -73,12 +79,17 @@ public class VectorReshaper extends JGTModel {
     public SimpleFeatureCollection inVector;
 
     @Description("The ECQL reshape function.")
+    @UI(JGTConstants.MULTILINE_UI_HINT + "10," + JGTConstants.MAPCALC_UI_HINT)
     @In
     public String pCql = null;
 
     @Description("The list of fields to remove, comma separated.")
     @In
     public String pRemove = null;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The new reshaped vector.")
     @Out
@@ -91,7 +102,7 @@ public class VectorReshaper extends JGTModel {
         if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        checkNull(inVector);
+        checkNull(inVector, pCql);
 
         List<String> removeNames = new ArrayList<String>();
         if (pRemove != null) {
@@ -102,31 +113,47 @@ public class VectorReshaper extends JGTModel {
         }
 
         final SimpleFeatureType originalFeatureType = inVector.getSchema();
-        List<AttributeDescriptor> attributeDescriptors = originalFeatureType
-                .getAttributeDescriptors();
-        StringBuilder sB = new StringBuilder();
+        List<AttributeDescriptor> attributeDescriptors = originalFeatureType.getAttributeDescriptors();
+
+        LinkedHashMap<String, String> functionMap = new LinkedHashMap<String, String>();
         for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
             String name = attributeDescriptor.getLocalName();
             if (removeNames.contains(name.trim())) {
                 continue;
             }
-            sB.append(name);
-            sB.append("=");
-            sB.append(name);
-            sB.append("\n");
+            functionMap.put(name, name);
         }
         if (pCql != null && pCql.length() > 0) {
-            sB.append(pCql);
+            String[] split = pCql.trim().split("\n");
+            if (split != null && split.length > 0) {
+                for( String line : split ) {
+                    int indexOfEquals = line.indexOf('=');
+                    if (indexOfEquals != -1) {
+                        String key = line.substring(0, indexOfEquals);
+                        String value = line.substring(indexOfEquals + 1);
+
+                        functionMap.put(key.trim(), value.trim());
+                    } else {
+                        pm.errorMessage("Ignoring expression: " + line);
+                    }
+                }
+            }
+        } else {
+            throw new ModelsIllegalargumentException("No CQL function has been provided.", this);
         }
+        StringBuilder sB = new StringBuilder();
+        Set<Entry<String, String>> entrySet = functionMap.entrySet();
+        for( Entry<String, String> entry : entrySet ) {
+            sB.append("\n").append(entry.getKey()).append("=").append(entry.getValue());
+        }
+
+        String expressionString = sB.substring(1);
 
         sample = getSample();
 
-        String expressionString = sB.toString();
-
         List<String> names = createNameList(expressionString);
         final List<Expression> expressions = createExpressionList(expressionString);
-        SimpleFeatureType newFeatureType = createFeatureType(expressionString, originalFeatureType,
-                names, expressions);
+        SimpleFeatureType newFeatureType = createFeatureType(expressionString, originalFeatureType, names, expressions);
 
         outVector = FeatureCollections.newCollection();
 
@@ -148,8 +175,7 @@ public class VectorReshaper extends JGTModel {
         FeatureIterator<SimpleFeature> iterator = inVector.features();
         try {
             if (!iterator.hasNext()) {
-                throw new ModelsRuntimeException("Input featurecollection is empty.", this
-                        .getClass().getSimpleName());
+                throw new ModelsRuntimeException("Input featurecollection is empty.", this.getClass().getSimpleName());
             }
             return iterator.next();
         } finally {
@@ -164,9 +190,8 @@ public class VectorReshaper extends JGTModel {
      * @param names 
      * @return a SimpleFeatureType created based on the contents of Text
      */
-    private SimpleFeatureType createFeatureType( String expressionString,
-            SimpleFeatureType originalFeatureType, List<String> names, List<Expression> expressions )
-            throws SchemaException {
+    private SimpleFeatureType createFeatureType( String expressionString, SimpleFeatureType originalFeatureType,
+            List<String> names, List<Expression> expressions ) throws SchemaException {
 
         SimpleFeatureTypeBuilder build = new SimpleFeatureTypeBuilder();
 
@@ -185,8 +210,7 @@ public class VectorReshaper extends JGTModel {
                     String path = ((PropertyName) expression).getPropertyName();
                     AttributeType attributeType = sample.getFeatureType().getType(path);
                     if (attributeType == null) {
-                        throw new ModelsIllegalargumentException("Attribute type is null", this
-                                .getClass().getSimpleName());
+                        throw new ModelsIllegalargumentException("Attribute type is null", this.getClass().getSimpleName());
                     }
                     binding = attributeType.getClass();
                 }
@@ -195,8 +219,7 @@ public class VectorReshaper extends JGTModel {
             }
 
             if (binding == null) {
-                throw new ModelsIllegalargumentException("Binding is null", this.getClass()
-                        .getSimpleName());
+                throw new ModelsIllegalargumentException("Binding is null", this.getClass().getSimpleName());
             }
 
             if (Geometry.class.isAssignableFrom(binding)) {
@@ -228,8 +251,7 @@ public class VectorReshaper extends JGTModel {
     private List<String> createNameList( String expressionString ) {
         List<String> list = new ArrayList<String>();
 
-        String definition = expressionString.replaceAll("\r", "\n")
-                .replaceAll("[\n\r][\n\r]", "\n");
+        String definition = expressionString.replaceAll("\r", "\n").replaceAll("[\n\r][\n\r]", "\n");
         for( String line : definition.split("\n") ) {
             int mark = line.indexOf("=");
             if (mark != -1) {
@@ -247,8 +269,7 @@ public class VectorReshaper extends JGTModel {
     private List<Expression> createExpressionList( String expressionString ) {
         List<Expression> list = new ArrayList<Expression>();
 
-        String definition = expressionString.replaceAll("\r", "\n")
-                .replaceAll("[\n\r][\n\r]", "\n");
+        String definition = expressionString.replaceAll("\r", "\n").replaceAll("[\n\r][\n\r]", "\n");
         for( String line : definition.split("\n") ) {
             int mark = line.indexOf("=");
             if (mark != -1) {
