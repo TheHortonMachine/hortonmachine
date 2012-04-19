@@ -15,6 +15,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
@@ -35,6 +36,11 @@ public class CLI {
     static {
         if (System.getProperty("java.version").compareTo("1.6") < 0) {
             throw new RuntimeException("Java 1.6+ required.");
+        }
+        Logger l0 = Logger.getLogger("");
+        Handler[] handlers = l0.getHandlers();
+        for( Handler handler : handlers ) {
+            l0.removeHandler(handler);
         }
     }
 
