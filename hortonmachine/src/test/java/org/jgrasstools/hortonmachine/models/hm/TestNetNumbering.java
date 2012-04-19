@@ -105,6 +105,7 @@ public class TestNetNumbering extends HMTestCase {
         NetNumbering netNumbering = new NetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
+        netNumbering.fPointId = "RETE_ID";
         netNumbering.pMode = 2;
         netNumbering.inPoints = pointsFC;
         netNumbering.pm = pm;
