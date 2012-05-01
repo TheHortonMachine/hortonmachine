@@ -334,8 +334,8 @@ public class ImageGenerator {
         Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
         bounds = new Envelope(ll, ur);
 
-        int imageWidth = (int) (paperFormat.width() * 25.4 * dpi);
-        int imageHeight = (int) (paperFormat.height() * 25.4 * dpi);
+        int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);
+        int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);
 
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
         ImageIO.write(dumpImage, "png", new File(imagePath));
