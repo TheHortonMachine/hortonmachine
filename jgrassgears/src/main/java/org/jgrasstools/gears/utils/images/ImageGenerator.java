@@ -317,6 +317,7 @@ public class ImageGenerator {
      * @param paperFormat the paper format to use.
      * @param dpi the wanted dpi. If <code>null</code>, 72dpi is used as default.
      * @throws IOException
+     * @since 0.7.6
      */
     public void dumpPngImageForScaleAndPaper( String imagePath, Envelope bounds, double scale, PaperFormat paperFormat, Double dpi )
             throws IOException {
