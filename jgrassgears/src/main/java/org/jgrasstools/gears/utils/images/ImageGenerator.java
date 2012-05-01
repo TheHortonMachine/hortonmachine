@@ -65,6 +65,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.expression.Expression;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
@@ -76,7 +77,6 @@ import com.vividsolutions.jts.geom.Envelope;
  * imgGen.addFeaturePath(reticolo, null);
  * imgGen.setLayers();
  * imgGen.dumpPngImage(imagePath, bounds, 300, 300, 100);
- * imgGen.dispose();
  * </pre>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
@@ -305,6 +305,41 @@ public class ImageGenerator {
             throws IOException {
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
         ImageIO.write(dumpImage, "png", new File(imagePath));
+    }
+
+    /**
+     * Create an image for a given paper size and scale.
+     * 
+     * @param imagePath the path to which to write the image.
+     * @param bounds the area of interest. In this case only the center is considered. The bounds
+     *              are recalculated based in paper size and scale.
+     * @param scale the scale wanted for the map.
+     * @param paperFormat the paper format to use.
+     * @param dpi the wanted dpi. If <code>null</code>, 72dpi is used as default.
+     * @throws IOException
+     */
+    public void dumpPngImageForScaleAndPaper( String imagePath, Envelope bounds, double scale, PaperFormat paperFormat, Double dpi )
+            throws IOException {
+        if (dpi == null) {
+            dpi = 72.0;
+        }
+
+        // we use the bounds top find the center
+        Coordinate centre = bounds.centre();
+
+        double boundsXExtension = paperFormat.width() / 1000.0 * scale;
+        double boundsYExtension = paperFormat.height() / 1000.0 * scale;
+
+        Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
+        Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
+        bounds = new Envelope(ll, ur);
+
+        int imageWidth = (int) (paperFormat.width() * 25.4 * dpi);
+        int imageHeight = (int) (paperFormat.height() * 25.4 * dpi);
+
+        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
+        ImageIO.write(dumpImage, "png", new File(imagePath));
+
     }
 
     private Style getGrassStyle( String path ) throws Exception {
