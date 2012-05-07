@@ -33,10 +33,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection.")
 @Documentation("RasterConverter.html")
@@ -52,6 +56,36 @@ public class RasterReprojector extends JGTModel {
     @In
     public GridCoverage2D inRaster;
 
+    @Description("The north bound of the region to consider")
+    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
+    @In
+    public Double pNorth = null;
+
+    @Description("The south bound of the region to consider")
+    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
+    @In
+    public Double pSouth = null;
+
+    @Description("The west bound of the region to consider")
+    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
+    @In
+    public Double pWest = null;
+
+    @Description("The east bound of the region to consider")
+    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
+    @In
+    public Double pEast = null;
+
+    @Description("The rows of the region to consider")
+    @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
+    @In
+    public Integer pRows = null;
+
+    @Description("The cols of the region to consider")
+    @UI(JGTConstants.PROCESS_COLS_UI_HINT)
+    @In
+    public Integer pCols = null;
+
     @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
@@ -60,6 +94,10 @@ public class RasterReprojector extends JGTModel {
     @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
     @In
     public int pInterpolation = 0;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The reprojected output raster.")
     @Out
@@ -80,16 +118,24 @@ public class RasterReprojector extends JGTModel {
             interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
         } else if (pInterpolation == 3) {
             interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC_2);
-        }else{
+        } else {
             // default to nearest neighbour
             interpolationType = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         }
 
-        outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null,
-                interpolationType);
+        GridGeometry2D gridGeometry = null;
+        if (pNorth != null && pSouth != null && pWest != null && pEast != null && pRows != null && pCols != null) {
+            gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, targetCrs);
+            pm.message("Using supplied gridgeometry: " + gridGeometry);
+        }
+        pm.beginTask("Reprojecting...", IJGTProgressMonitor.UNKNOWN);
+        if (gridGeometry == null) {
+            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolationType);
+        } else {
+            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolationType);
+        }
+        pm.done();
 
     }
 
 }
-
-
