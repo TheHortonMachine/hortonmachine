@@ -145,7 +145,11 @@
 			<artifactId>gt-grid</artifactId>
 			<version>${gt.version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-imagemosaic</artifactId>
+			<version>${gt.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.jaitools</groupId>
 			<artifactId>jt-all</artifactId>
