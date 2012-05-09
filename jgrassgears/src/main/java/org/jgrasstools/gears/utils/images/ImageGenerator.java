@@ -46,6 +46,7 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
+import org.geotools.map.MapViewport;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -97,8 +98,10 @@ public class ImageGenerator {
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
     private List<Layer> layers = new ArrayList<Layer>();
+    private final ReferencedEnvelope totalBounds;
 
-    public ImageGenerator( IJGTProgressMonitor monitor ) {
+    public ImageGenerator( IJGTProgressMonitor monitor, ReferencedEnvelope totalBounds ) {
+        this.totalBounds = totalBounds;
         if (monitor != null)
             this.monitor = monitor;
     }
@@ -255,8 +258,11 @@ public class ImageGenerator {
         try {
             content = new MapContent();
             content.setTitle("dump");
+            if (totalBounds != null)
+                content.setViewport(new MapViewport(totalBounds));
 
-            bounds.expandBy(buffer, buffer);
+            if (buffer > 0.0)
+                bounds.expandBy(buffer, buffer);
             ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
 
             double envW = ref.getWidth();

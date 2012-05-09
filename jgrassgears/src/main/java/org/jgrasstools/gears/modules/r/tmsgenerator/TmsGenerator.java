@@ -18,6 +18,8 @@
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -31,13 +33,16 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.io.vectorreader.VectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -102,7 +107,7 @@ public class TmsGenerator extends JGTModel {
     @In
     public String inPath;
 
-    private static final String EPSG_900913 = "EPSG:900913";
+    private static final String EPSG_900913 = "EPSG:3857";
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
@@ -111,11 +116,13 @@ public class TmsGenerator extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inPath, inRasters, inVectors, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+        CoordinateReferenceSystem crs = CRS.decode(EPSG_900913);
+        ReferencedEnvelope totalBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, crs);
 
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
 
-        ImageGenerator imgGen = new ImageGenerator(null);
+        ImageGenerator imgGen = new ImageGenerator(null, totalBounds);
         for( String rasterPath : inRasters ) {
             imgGen.addCoveragePath(rasterPath);
         }
@@ -123,9 +130,6 @@ public class TmsGenerator extends JGTModel {
             imgGen.addFeaturePath(vectorPath, null);
         }
         imgGen.setLayers();
-
-        CoordinateReferenceSystem crs = CRS.decode(EPSG_900913);
-        // ReferencedEnvelope bounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, crs);
 
         GlobalMercator mercator = new GlobalMercator();
 
@@ -169,7 +173,50 @@ public class TmsGenerator extends JGTModel {
 
     }
 
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws Exception {
 
+        String base = "D:/My Dropbox/hydrologis/lavori/2011_01_carta_pericolo_valsole/parteC/pericolo_ftf_2012_05_01/";
+        String ctpFile = "D:/data-mega/ctp/ctp.shp";
+//        String ctpFile = "/home/moovida/data/ctp/ctp.shp";
+
+        String[] shpNames = {//
+        // "pericolo_ftf_almazzago.shp", //
+                "pericolo_ftf_corda_filled.shp", //
+                // "pericolo_ftf_fazzon_filled.shp", //
+                // "pericolo_ftf_meledrio_filled.shp", //
+                // "pericolo_ftf_piano_filled.shp", //
+                // "pericolo_ftf_rotiano_filled.shp", //
+                // "pericolo_ftf_spona_filled.shp", //
+                // "pericolo_ftf_valdelduc_filled.shp", //
+                // "pericolo_ftf_vallone_filled.shp", //
+                // "pericolo_ftf_valpanciana_filled.shp", //
+                "sintesi_geo_conoide_reticolo.shp", //
+                "pericolo_ftf_reticolo.shp", // main layer
+        };
+
+        List<String> inVectors = new ArrayList<String>();
+        for( String name : shpNames ) {
+            inVectors.add(base + name);
+        }
+        List<String> inRasters = new ArrayList<String>();
+        inRasters.add(ctpFile);
+
+        SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(0));
+        ReferencedEnvelope bounds = boundsVector.getBounds();
+
+        TmsGenerator gen = new TmsGenerator();
+        gen.inVectors = inVectors;
+        gen.inRasters = inRasters;
+        gen.pMinzoom = 16;
+        gen.pMaxzoom = 19;
+        gen.pName = "corda";
+        gen.inPath = "D:/TMP/AAAACORDA/tiles";
+        gen.pWest = bounds.getMinX();
+        gen.pEast = bounds.getMaxX();
+        gen.pNorth = bounds.getMaxY();
+        gen.pSouth = bounds.getMaxX();
+        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+        gen.pm = pm;
+        gen.process();
     }
 }
