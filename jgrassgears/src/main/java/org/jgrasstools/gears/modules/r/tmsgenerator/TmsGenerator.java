@@ -17,6 +17,9 @@
  */
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -139,10 +142,10 @@ public class TmsGenerator extends JGTModel {
             int[] ulTileNumber = mercator.MetersToTile(pWest, pNorth, z);
             int[] lrTileNumber = mercator.MetersToTile(pEast, pSouth, z);
 
-            int startXTile = ulTileNumber[0];
-            int startYTile = ulTileNumber[1];
-            int endXTile = lrTileNumber[0];
-            int endYTile = lrTileNumber[1];
+            int startXTile = min(ulTileNumber[0], lrTileNumber[0]);
+            int startYTile = min(ulTileNumber[1], lrTileNumber[1]);
+            int endXTile = max(ulTileNumber[0], lrTileNumber[0]);
+            int endYTile = max(ulTileNumber[1], lrTileNumber[1]);
 
             pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
@@ -163,7 +166,12 @@ public class TmsGenerator extends JGTModel {
                         }
                     }
                     File imageFile = new File(imageFolder, j + ".png");
-                    imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
+                    try {
+                        imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
                 }
                 pm.worked(1);
             }
@@ -177,7 +185,7 @@ public class TmsGenerator extends JGTModel {
 
         String base = "D:/My Dropbox/hydrologis/lavori/2011_01_carta_pericolo_valsole/parteC/pericolo_ftf_2012_05_01/";
         String ctpFile = "D:/data-mega/ctp/ctp.shp";
-//        String ctpFile = "/home/moovida/data/ctp/ctp.shp";
+        // String ctpFile = "/home/moovida/data/ctp/ctp.shp";
 
         String[] shpNames = {//
         // "pericolo_ftf_almazzago.shp", //
