@@ -86,12 +86,12 @@ public class RasterVectorIntersector extends JGTModel {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         ScanLineRasterizer raster = new ScanLineRasterizer();
         raster.inVector = inVector;
-        raster.cols = regionMap.getCols();
-        raster.rows = regionMap.getRows();
-        raster.north = regionMap.getNorth();
-        raster.south = regionMap.getSouth();
-        raster.east = regionMap.getEast();
-        raster.west = regionMap.getWest();
+        raster.pCols = regionMap.getCols();
+        raster.pRows = regionMap.getRows();
+        raster.pNorth = regionMap.getNorth();
+        raster.pSouth = regionMap.getSouth();
+        raster.pEast = regionMap.getEast();
+        raster.pWest = regionMap.getWest();
         raster.pValue = 1.0;
         raster.process();
         GridCoverage2D rasterizedVector = raster.outRaster;

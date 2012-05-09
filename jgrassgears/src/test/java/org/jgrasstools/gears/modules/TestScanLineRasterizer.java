@@ -48,12 +48,12 @@ public class TestScanLineRasterizer extends HMTestCase {
 
         ScanLineRasterizer raster = new ScanLineRasterizer();
         raster.inVector = newCollection;
-        raster.cols = ep.getCols();
-        raster.rows = ep.getRows();
-        raster.north = ep.getNorth();
-        raster.south = ep.getSouth();
-        raster.east = ep.getEast();
-        raster.west = ep.getWest();
+        raster.pCols = ep.getCols();
+        raster.pRows = ep.getRows();
+        raster.pNorth = ep.getNorth();
+        raster.pSouth = ep.getSouth();
+        raster.pEast = ep.getEast();
+        raster.pWest = ep.getWest();
         raster.pValue = 2.0;
         raster.process();
 
@@ -62,12 +62,12 @@ public class TestScanLineRasterizer extends HMTestCase {
 
         raster = new ScanLineRasterizer();
         raster.inVector = newCollection;
-        raster.cols = ep.getCols();
-        raster.rows = ep.getRows();
-        raster.north = ep.getNorth();
-        raster.south = ep.getSouth();
-        raster.east = ep.getEast();
-        raster.west = ep.getWest();
+        raster.pCols = ep.getCols();
+        raster.pRows = ep.getRows();
+        raster.pNorth = ep.getNorth();
+        raster.pSouth = ep.getSouth();
+        raster.pEast = ep.getEast();
+        raster.pWest = ep.getWest();
         raster.fCat = "cat";
         raster.process();
 
