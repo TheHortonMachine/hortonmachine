@@ -46,6 +46,7 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
+import org.geotools.map.MapContext;
 import org.geotools.map.MapViewport;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
@@ -92,8 +93,6 @@ public class ImageGenerator {
     // private AffineTransform screenToWorld;
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
-
-    private CoordinateReferenceSystem crs;
 
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
@@ -165,8 +164,6 @@ public class ImageGenerator {
      */
     public void setLayers() throws Exception {
 
-        crs = null;
-
         // coverages first
         monitor.beginTask("Reading raster maps...", coveragePaths.size());
         for( String coveragePath : coveragePaths ) {
@@ -175,17 +172,17 @@ public class ImageGenerator {
             AbstractGridCoverage2DReader reader = null;
             try {
                 raster = RasterReader.readRaster(coveragePath);
-                if (crs == null) {
-                    crs = raster.getCoordinateReferenceSystem();
-                }
+//                if (crs == null) {
+//                    crs = raster.getCoordinateReferenceSystem();
+//                }
             } catch (Exception e) {
                 // try with available readers
                 File coverageFile = new File(coveragePath);
                 AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
                 reader = format.getReader(coverageFile);
-                if (crs == null) {
-                    crs = reader.getCrs();
-                }
+//                if (crs == null) {
+//                    crs = reader.getCrs();
+//                }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
@@ -227,9 +224,9 @@ public class ImageGenerator {
             } else {
                 featureCollection = featureSource.getFeatures(ECQL.toFilter(filter));
             }
-            if (crs == null) {
-                crs = featureSource.getSchema().getCoordinateReferenceSystem();
-            }
+//            if (crs == null) {
+//                crs = featureSource.getSchema().getCoordinateReferenceSystem();
+//            }
 
             File styleFile = FileUtilities.substituteExtention(new File(featurePath), "sld");
             Style style;
@@ -254,16 +251,15 @@ public class ImageGenerator {
      * @param buffer the buffer to add around the map bounds in map units. 
      * @return the image.
      */
-    public BufferedImage drawImage( Envelope bounds, int imageWidth, int imageHeight, double buffer ) {
+    public BufferedImage drawImage( ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
 
         content = new MapContent();
         content.setTitle("dump");
-        if (totalBounds != null)
-            content.setViewport(new MapViewport(totalBounds));
+        // if (totalBounds != null)
+        // content.getViewport().setBounds(totalBounds);
 
         if (buffer > 0.0)
-            bounds.expandBy(buffer, buffer);
-        ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
+            ref.expandBy(buffer, buffer);
 
         double envW = ref.getWidth();
         double envH = ref.getHeight();
@@ -309,7 +305,7 @@ public class ImageGenerator {
      * @param buffer the buffer to add around the map bounds in map units. 
      * @throws IOException
      */
-    public void dumpPngImage( String imagePath, Envelope bounds, int imageWidth, int imageHeight, double buffer )
+    public void dumpPngImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer )
             throws IOException {
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
         ImageIO.write(dumpImage, "png", new File(imagePath));
@@ -327,8 +323,8 @@ public class ImageGenerator {
      * @throws IOException
      * @since 0.7.6
      */
-    public void dumpPngImageForScaleAndPaper( String imagePath, Envelope bounds, double scale, PaperFormat paperFormat, Double dpi )
-            throws IOException {
+    public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
+            Double dpi ) throws IOException {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -341,7 +337,8 @@ public class ImageGenerator {
 
         Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
         Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
-        bounds = new Envelope(ll, ur);
+        Envelope tmpEnv = new Envelope(ll, ur);
+        bounds = new ReferencedEnvelope(tmpEnv, bounds.getCoordinateReferenceSystem());
 
         int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);
         int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);

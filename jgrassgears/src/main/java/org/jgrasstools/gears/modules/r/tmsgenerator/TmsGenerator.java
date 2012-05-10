@@ -89,22 +89,22 @@ public class TmsGenerator extends JGTModel {
     @In
     public Integer pMaxzoom = null;
 
-    @Description("The north bound of the region to consider (needs to be EPSG:900913)")
+    @Description("The north bound of the region to consider (needs to be mercator)")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider (needs to be EPSG:900913)")
+    @Description("The south bound of the region to consider (needs to be mercator)")
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider (needs to be EPSG:900913)")
+    @Description("The west bound of the region to consider (needs to be mercator)")
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider (needs to be EPSG:900913)")
+    @Description("The east bound of the region to consider (needs to be mercator)")
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
@@ -129,8 +129,8 @@ public class TmsGenerator extends JGTModel {
         CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
         ReferencedEnvelope totalBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, mercatorCrs);
         MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-        Envelope newBounds = JTS.transform(totalBounds, transform);
-        Coordinate latLongCentre = newBounds.centre();
+        Envelope latLongBounds = JTS.transform(totalBounds, transform);
+        Coordinate latLongCentre = latLongBounds.centre();
 
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
@@ -212,16 +212,16 @@ public class TmsGenerator extends JGTModel {
         // String ctpFile = "/home/moovida/data/ctp/ctp.shp";
 
         String[] shpNames = {//
-        // "pericolo_ftf_almazzago.shp", //
+        "pericolo_ftf_almazzago.shp", //
                 "pericolo_ftf_corda_filled.shp", //
-                // "pericolo_ftf_fazzon_filled.shp", //
-                // "pericolo_ftf_meledrio_filled.shp", //
-                // "pericolo_ftf_piano_filled.shp", //
-                // "pericolo_ftf_rotiano_filled.shp", //
-                // "pericolo_ftf_spona_filled.shp", //
-                // "pericolo_ftf_valdelduc_filled.shp", //
-                // "pericolo_ftf_vallone_filled.shp", //
-                // "pericolo_ftf_valpanciana_filled.shp", //
+                "pericolo_ftf_fazzon_filled.shp", //
+                "pericolo_ftf_meledrio_filled.shp", //
+                "pericolo_ftf_piano_filled.shp", //
+                "pericolo_ftf_rotiano_filled.shp", //
+                "pericolo_ftf_spona_filled.shp", //
+                "pericolo_ftf_valdelduc_filled.shp", //
+                "pericolo_ftf_vallone_filled.shp", //
+                "pericolo_ftf_valpanciana_filled.shp", //
                 "sintesi_geo_conoide_reticolo.shp", //
                 "pericolo_ftf_reticolo.shp", // main layer
         };
@@ -241,7 +241,7 @@ public class TmsGenerator extends JGTModel {
         TmsGenerator gen = new TmsGenerator();
         gen.inVectors = inVectors;
         gen.inRasters = inRasters;
-        gen.pMinzoom = 14;
+        gen.pMinzoom = 10;
         gen.pMaxzoom = 18;
         gen.pName = "corda";
         gen.inPath = "D:/TMP/AAAACORDA/tiles";
