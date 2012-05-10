@@ -125,7 +125,7 @@ public class TmsGenerator extends JGTModel {
     @Description("The folder inside which to create the tiles.")
     @In
     public String inPath;
-
+    
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
@@ -162,23 +162,49 @@ public class TmsGenerator extends JGTModel {
             }
         imgGen.setLayers();
 
+        double w = mercatorBounds.getMinX();
+        double s = mercatorBounds.getMinY();
+        double e = mercatorBounds.getMaxX();
+        double n = mercatorBounds.getMaxY();
+
         GlobalMercator mercator = new GlobalMercator();
 
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
             // get ul and lr tile number
-            int[] ulTileNumber = mercator.MetersToTile(mercatorBounds.getMinX(), mercatorBounds.getMaxY(), z);
-            int[] lrTileNumber = mercator.MetersToTile(mercatorBounds.getMaxX(), mercatorBounds.getMinY(), z);
+            int[] llTileNumber = mercator.MetersToTile(w, s, z);
+            int[] urTileNumber = mercator.MetersToTile(e, n, z);
 
-            int startXTile = min(ulTileNumber[0], lrTileNumber[0]);
-            int startYTile = min(ulTileNumber[1], lrTileNumber[1]);
-            int endXTile = max(ulTileNumber[0], lrTileNumber[0]);
-            int endYTile = max(ulTileNumber[1], lrTileNumber[1]);
+            int startXTile = llTileNumber[0];
+            int startYTile = llTileNumber[1];
+            int endXTile = urTileNumber[0];
+            int endYTile = urTileNumber[1];
+
+            // minx, miny, maxx, maxy
+            while( mercator.TileBounds(startXTile, startYTile, z)[0] > w ) {
+                startXTile--;
+            }
+            while( mercator.TileBounds(startXTile, startYTile, z)[1] > s ) {
+                startYTile--;
+            }
+            while( mercator.TileBounds(endXTile, endYTile, z)[2] < e ) {
+                startXTile++;
+            }
+            while( mercator.TileBounds(endXTile, endYTile, z)[3] < n ) {
+                startYTile++;
+            }
+            double[] firstTileBounds = mercator.TileBounds(startXTile, startYTile, z);
+            double[] lastTileBounds = mercator.TileBounds(endXTile, endYTile, z);
+
+            int tileNum = 0;
+
+            ReferencedEnvelope levelBounds = new ReferencedEnvelope();
 
             pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
 
                 for( int j = startYTile; j <= endYTile; j++ ) {
+                    tileNum++;
                     double[] bounds = mercator.TileBounds(i, j, z);
                     double west = bounds[0];
                     double south = bounds[1];
@@ -186,6 +212,7 @@ public class TmsGenerator extends JGTModel {
                     double north = bounds[3];
 
                     ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
+                    levelBounds.expandToInclude(tmpBounds);
 
                     File imageFolder = new File(baseFolder, z + "/" + i);
                     if (!imageFolder.exists()) {
@@ -199,14 +226,18 @@ public class TmsGenerator extends JGTModel {
                     }
                     try {
                         imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
                         System.exit(1);
                     }
                 }
                 pm.worked(1);
             }
             pm.done();
+
+            pm.message("Zoom level: " + z + " has " + tileNum + " tiles.");
+            pm.message("Boundary covered at Zoom level: " + z + ": " + levelBounds);
+            pm.message("Total boundary wanted: " + mercatorBounds);
 
         }
 
@@ -228,16 +259,16 @@ public class TmsGenerator extends JGTModel {
         // String ctpFile = "/home/moovida/data/ctp/ctp.shp";
 
         String[] shpNames = {//
-        // "pericolo_ftf_almazzago.shp", //
-        "pericolo_ftf_corda_filled.shp", //
-                // "pericolo_ftf_fazzon_filled.shp", //
-                // "pericolo_ftf_meledrio_filled.shp", //
-                // "pericolo_ftf_piano_filled.shp", //
-                // "pericolo_ftf_rotiano_filled.shp", //
-                // "pericolo_ftf_spona_filled.shp", //
-                // "pericolo_ftf_valdelduc_filled.shp", //
-                // "pericolo_ftf_vallone_filled.shp", //
-                // "pericolo_ftf_valpanciana_filled.shp", //
+        "pericolo_ftf_almazzago.shp", //
+                "pericolo_ftf_corda_filled.shp", //
+                "pericolo_ftf_fazzon_filled.shp", //
+                "pericolo_ftf_meledrio_filled.shp", //
+                "pericolo_ftf_piano_filled.shp", //
+                "pericolo_ftf_rotiano_filled.shp", //
+                "pericolo_ftf_spona_filled.shp", //
+                "pericolo_ftf_valdelduc_filled.shp", //
+                "pericolo_ftf_vallone_filled.shp", //
+                "pericolo_ftf_valpanciana_filled.shp", //
                 "sintesi_geo_conoide_reticolo.shp", //
                 "pericolo_ftf_reticolo.shp", // main layer
         };
@@ -249,15 +280,15 @@ public class TmsGenerator extends JGTModel {
         List<String> inRasters = new ArrayList<String>();
         inRasters.add(ctpFile);
 
-        SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(0));
+        SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(inVectors.size() - 1));
         ReferencedEnvelope bounds = boundsVector.getBounds();
 
         TmsGenerator gen = new TmsGenerator();
         gen.inVectors = inVectors;
         gen.inRasters = inRasters;
-        gen.pMinzoom = 14;
-        gen.pMaxzoom = 18;
-        gen.pName = "corda";
+        gen.pMinzoom = 13;
+        gen.pMaxzoom = 17;
+        gen.pName = "valdisole_tiles";
         gen.inPath = "D:/TMP/AAAACORDA/tiles";
         gen.pWest = bounds.getMinX();
         gen.pEast = bounds.getMaxX();

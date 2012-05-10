@@ -215,6 +215,42 @@ public class GlobalMercator {
         return PixelsToTile(p[0], p[1]);
     }
 
+    public int[] metersToTileUp( double mx, double my, int zoom ) {
+        int[] p = metersToPixelsUp(mx, my, zoom);
+        return pixelsToTileUp(p[0], p[1]);
+    }
+    
+    public int[] metersToPixelsUp( double mx, double my, int zoom ) {
+        double res = Resolution(zoom);
+        int px = (int) Math.ceil((mx + originShift) / res);
+        int py = (int) Math.ceil((my + originShift) / res);
+        return new int[]{px, py};
+    }
+    
+    public int[] pixelsToTileUp( int px, int py ) {
+        int tx = (int) Math.ceil(px / ((double) tileSize) - 1);
+        int ty = (int) Math.ceil(py / ((double) tileSize) - 1);
+        return new int[]{tx, ty};
+    }
+
+    public int[] metersToTileDown( double mx, double my, int zoom ) {
+        int[] p = metersToPixelsDown(mx, my, zoom);
+        return pixelsToTileDown(p[0], p[1]);
+    }
+    
+    public int[] metersToPixelsDown( double mx, double my, int zoom ) {
+        double res = Resolution(zoom);
+        int px = (int) Math.floor((mx + originShift) / res);
+        int py = (int) Math.floor((my + originShift) / res);
+        return new int[]{px, py};
+    }
+    
+    public int[] pixelsToTileDown( int px, int py ) {
+        int tx = (int) Math.floor(px / ((double) tileSize) - 1);
+        int ty = (int) Math.floor(py / ((double) tileSize) - 1);
+        return new int[]{tx, ty};
+    }
+
     /**
      * Returns bounds of the given tile in EPSG:900913 coordinates
      * 
