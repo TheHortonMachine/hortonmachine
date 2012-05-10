@@ -125,7 +125,7 @@ public class TmsGenerator extends JGTModel {
     @Description("The folder inside which to create the tiles.")
     @In
     public String inPath;
-    
+
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
@@ -181,20 +181,20 @@ public class TmsGenerator extends JGTModel {
             int endYTile = urTileNumber[1];
 
             // minx, miny, maxx, maxy
-            while( mercator.TileBounds(startXTile, startYTile, z)[0] > w ) {
-                startXTile--;
-            }
-            while( mercator.TileBounds(startXTile, startYTile, z)[1] > s ) {
-                startYTile--;
-            }
-            while( mercator.TileBounds(endXTile, endYTile, z)[2] < e ) {
-                startXTile++;
-            }
-            while( mercator.TileBounds(endXTile, endYTile, z)[3] < n ) {
-                startYTile++;
-            }
-            double[] firstTileBounds = mercator.TileBounds(startXTile, startYTile, z);
-            double[] lastTileBounds = mercator.TileBounds(endXTile, endYTile, z);
+            // while( mercator.TileBounds(startXTile, startYTile, z)[0] > w ) {
+            // startXTile--;
+            // }
+            // while( mercator.TileBounds(startXTile, startYTile, z)[1] > s ) {
+            // startYTile--;
+            // }
+            // while( mercator.TileBounds(endXTile, endYTile, z)[2] < e ) {
+            // startXTile++;
+            // }
+            // while( mercator.TileBounds(endXTile, endYTile, z)[3] < n ) {
+            // startYTile++;
+            // }
+            // double[] firstTileBounds = mercator.TileBounds(startXTile, startYTile, z);
+            // double[] lastTileBounds = mercator.TileBounds(endXTile, endYTile, z);
 
             int tileNum = 0;
 
@@ -250,53 +250,5 @@ public class TmsGenerator extends JGTModel {
 
         File propFile = new File(inFolder, pName + ".mapurl");
         FileUtilities.writeFile(properties.toString(), propFile);
-    }
-
-    public static void main( String[] args ) throws Exception {
-
-        String base = "D:/My Dropbox/hydrologis/lavori/2011_01_carta_pericolo_valsole/parteC/pericolo_ftf_2012_05_01/";
-        String ctpFile = "D:/data-mega/ctp/ctp.shp";
-        // String ctpFile = "/home/moovida/data/ctp/ctp.shp";
-
-        String[] shpNames = {//
-        "pericolo_ftf_almazzago.shp", //
-                "pericolo_ftf_corda_filled.shp", //
-                "pericolo_ftf_fazzon_filled.shp", //
-                "pericolo_ftf_meledrio_filled.shp", //
-                "pericolo_ftf_piano_filled.shp", //
-                "pericolo_ftf_rotiano_filled.shp", //
-                "pericolo_ftf_spona_filled.shp", //
-                "pericolo_ftf_valdelduc_filled.shp", //
-                "pericolo_ftf_vallone_filled.shp", //
-                "pericolo_ftf_valpanciana_filled.shp", //
-                "sintesi_geo_conoide_reticolo.shp", //
-                "pericolo_ftf_reticolo.shp", // main layer
-        };
-
-        List<String> inVectors = new ArrayList<String>();
-        for( String name : shpNames ) {
-            inVectors.add(base + name);
-        }
-        List<String> inRasters = new ArrayList<String>();
-        inRasters.add(ctpFile);
-
-        SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(inVectors.size() - 1));
-        ReferencedEnvelope bounds = boundsVector.getBounds();
-
-        TmsGenerator gen = new TmsGenerator();
-        gen.inVectors = inVectors;
-        gen.inRasters = inRasters;
-        gen.pMinzoom = 13;
-        gen.pMaxzoom = 17;
-        gen.pName = "valdisole_tiles";
-        gen.inPath = "D:/TMP/AAAACORDA/tiles";
-        gen.pWest = bounds.getMinX();
-        gen.pEast = bounds.getMaxX();
-        gen.pNorth = bounds.getMaxY();
-        gen.pSouth = bounds.getMinY();
-        gen.pEpsg = "EPSG:32632";
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        gen.pm = pm;
-        gen.process();
     }
 }
