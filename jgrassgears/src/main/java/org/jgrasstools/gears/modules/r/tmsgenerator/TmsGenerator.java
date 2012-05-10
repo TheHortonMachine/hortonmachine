@@ -89,25 +89,34 @@ public class TmsGenerator extends JGTModel {
     @In
     public Integer pMaxzoom = null;
 
-    @Description("The north bound of the region to consider (needs to be mercator)")
+    @Description("The north bound of the region to consider.")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider (needs to be mercator)")
+    @Description("The south bound of the region to consider.")
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider (needs to be mercator)")
+    @Description("The west bound of the region to consider.")
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider (needs to be mercator)")
+    @Description("The east bound of the region to consider.")
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
+
+    @Description("The coordinate reference system of the bound coordinates (ex. EPSG:4328).")
+    @UI(JGTConstants.CRS_UI_HINT)
+    @In
+    public String pEpsg;
+
+    @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
+    @In
+    public boolean doLenient = true;
 
     @Description("The progress monitor.")
     @In
@@ -124,18 +133,25 @@ public class TmsGenerator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+        checkNull(inPath, pEpsg, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+
+        CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
+
         CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
         CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
-        ReferencedEnvelope totalBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, mercatorCrs);
+        ReferencedEnvelope inBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, boundsCrs);
+        MathTransform in2MercatorTransform = CRS.findMathTransform(boundsCrs, mercatorCrs);
+        Envelope mercatorEnvelope = JTS.transform(inBounds, in2MercatorTransform);
+        ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
+
         MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-        Envelope latLongBounds = JTS.transform(totalBounds, transform);
+        Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
         Coordinate latLongCentre = latLongBounds.centre();
 
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
 
-        ImageGenerator imgGen = new ImageGenerator(null, totalBounds);
+        ImageGenerator imgGen = new ImageGenerator(null);
         if (inRasters != null)
             for( String rasterPath : inRasters ) {
                 imgGen.addCoveragePath(rasterPath);
@@ -151,8 +167,8 @@ public class TmsGenerator extends JGTModel {
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
             // get ul and lr tile number
-            int[] ulTileNumber = mercator.MetersToTile(pWest, pNorth, z);
-            int[] lrTileNumber = mercator.MetersToTile(pEast, pSouth, z);
+            int[] ulTileNumber = mercator.MetersToTile(mercatorBounds.getMinX(), mercatorBounds.getMaxY(), z);
+            int[] lrTileNumber = mercator.MetersToTile(mercatorBounds.getMaxX(), mercatorBounds.getMinY(), z);
 
             int startXTile = min(ulTileNumber[0], lrTileNumber[0]);
             int startYTile = min(ulTileNumber[1], lrTileNumber[1]);
@@ -212,16 +228,16 @@ public class TmsGenerator extends JGTModel {
         // String ctpFile = "/home/moovida/data/ctp/ctp.shp";
 
         String[] shpNames = {//
-        "pericolo_ftf_almazzago.shp", //
-                "pericolo_ftf_corda_filled.shp", //
-                "pericolo_ftf_fazzon_filled.shp", //
-                "pericolo_ftf_meledrio_filled.shp", //
-                "pericolo_ftf_piano_filled.shp", //
-                "pericolo_ftf_rotiano_filled.shp", //
-                "pericolo_ftf_spona_filled.shp", //
-                "pericolo_ftf_valdelduc_filled.shp", //
-                "pericolo_ftf_vallone_filled.shp", //
-                "pericolo_ftf_valpanciana_filled.shp", //
+        // "pericolo_ftf_almazzago.shp", //
+        "pericolo_ftf_corda_filled.shp", //
+                // "pericolo_ftf_fazzon_filled.shp", //
+                // "pericolo_ftf_meledrio_filled.shp", //
+                // "pericolo_ftf_piano_filled.shp", //
+                // "pericolo_ftf_rotiano_filled.shp", //
+                // "pericolo_ftf_spona_filled.shp", //
+                // "pericolo_ftf_valdelduc_filled.shp", //
+                // "pericolo_ftf_vallone_filled.shp", //
+                // "pericolo_ftf_valpanciana_filled.shp", //
                 "sintesi_geo_conoide_reticolo.shp", //
                 "pericolo_ftf_reticolo.shp", // main layer
         };
@@ -235,20 +251,19 @@ public class TmsGenerator extends JGTModel {
 
         SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(0));
         ReferencedEnvelope bounds = boundsVector.getBounds();
-        MathTransform transform = CRS.findMathTransform(bounds.getCoordinateReferenceSystem(), CRS.decode(EPSG_MERCATOR));
-        Envelope newBounds = JTS.transform(bounds, transform);
 
         TmsGenerator gen = new TmsGenerator();
         gen.inVectors = inVectors;
         gen.inRasters = inRasters;
-        gen.pMinzoom = 10;
+        gen.pMinzoom = 14;
         gen.pMaxzoom = 18;
         gen.pName = "corda";
         gen.inPath = "D:/TMP/AAAACORDA/tiles";
-        gen.pWest = newBounds.getMinX();
-        gen.pEast = newBounds.getMaxX();
-        gen.pNorth = newBounds.getMaxY();
-        gen.pSouth = newBounds.getMinY();
+        gen.pWest = bounds.getMinX();
+        gen.pEast = bounds.getMaxX();
+        gen.pNorth = bounds.getMaxY();
+        gen.pSouth = bounds.getMinY();
+        gen.pEpsg = "EPSG:32632";
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
         gen.pm = pm;
         gen.process();

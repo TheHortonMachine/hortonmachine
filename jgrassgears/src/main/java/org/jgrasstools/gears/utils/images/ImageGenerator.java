@@ -46,8 +46,6 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
-import org.geotools.map.MapContext;
-import org.geotools.map.MapViewport;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -65,7 +63,6 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.expression.Expression;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -97,11 +94,9 @@ public class ImageGenerator {
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
     private List<Layer> layers = new ArrayList<Layer>();
-    private final ReferencedEnvelope totalBounds;
     private MapContent content;
 
-    public ImageGenerator( IJGTProgressMonitor monitor, ReferencedEnvelope totalBounds ) {
-        this.totalBounds = totalBounds;
+    public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
     }
@@ -172,17 +167,17 @@ public class ImageGenerator {
             AbstractGridCoverage2DReader reader = null;
             try {
                 raster = RasterReader.readRaster(coveragePath);
-//                if (crs == null) {
-//                    crs = raster.getCoordinateReferenceSystem();
-//                }
+                // if (crs == null) {
+                // crs = raster.getCoordinateReferenceSystem();
+                // }
             } catch (Exception e) {
                 // try with available readers
                 File coverageFile = new File(coveragePath);
                 AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
                 reader = format.getReader(coverageFile);
-//                if (crs == null) {
-//                    crs = reader.getCrs();
-//                }
+                // if (crs == null) {
+                // crs = reader.getCrs();
+                // }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
@@ -224,9 +219,9 @@ public class ImageGenerator {
             } else {
                 featureCollection = featureSource.getFeatures(ECQL.toFilter(filter));
             }
-//            if (crs == null) {
-//                crs = featureSource.getSchema().getCoordinateReferenceSystem();
-//            }
+            // if (crs == null) {
+            // crs = featureSource.getSchema().getCoordinateReferenceSystem();
+            // }
 
             File styleFile = FileUtilities.substituteExtention(new File(featurePath), "sld");
             Style style;
