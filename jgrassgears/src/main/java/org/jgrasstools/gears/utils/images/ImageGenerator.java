@@ -99,6 +99,7 @@ public class ImageGenerator {
 
     private List<Layer> layers = new ArrayList<Layer>();
     private final ReferencedEnvelope totalBounds;
+    private MapContent content;
 
     public ImageGenerator( IJGTProgressMonitor monitor, ReferencedEnvelope totalBounds ) {
         this.totalBounds = totalBounds;
@@ -207,6 +208,7 @@ public class ImageGenerator {
             }
             if (reader != null) {
                 GridReaderLayer layer = new GridReaderLayer(reader, style);
+                // SimpleFeatureSource featureSource = layer.getFeatureSource();
                 layers.add(layer);
             }
             monitor.worked(1);
@@ -254,47 +256,47 @@ public class ImageGenerator {
      */
     public BufferedImage drawImage( Envelope bounds, int imageWidth, int imageHeight, double buffer ) {
 
-        MapContent content = null;
-        try {
-            content = new MapContent();
-            content.setTitle("dump");
-            if (totalBounds != null)
-                content.setViewport(new MapViewport(totalBounds));
+        content = new MapContent();
+        content.setTitle("dump");
+        if (totalBounds != null)
+            content.setViewport(new MapViewport(totalBounds));
 
-            if (buffer > 0.0)
-                bounds.expandBy(buffer, buffer);
-            ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
+        if (buffer > 0.0)
+            bounds.expandBy(buffer, buffer);
+        ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
 
-            double envW = ref.getWidth();
-            double envH = ref.getHeight();
-            for( Layer layer : layers ) {
-                content.addLayer(layer);
-            }
-
-            if (envW < envH) {
-                double newEnvW = envH * (double) imageWidth / (double) imageHeight;
-                double delta = newEnvW - envW;
-                ref.expandBy(delta / 2, 0);
-            } else {
-                double newEnvH = envW * (double) imageHeight / (double) imageWidth;
-                double delta = newEnvH - envH;
-                ref.expandBy(0, delta / 2.0);
-            }
-
-            Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-            BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = dumpImage.createGraphics();
-            g2d.fillRect(0, 0, imageWidth, imageHeight);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            StreamingRenderer renderer = new StreamingRenderer();
-            renderer.setMapContent(content);
-            renderer.paint(g2d, imageBounds, ref);
-
-            return dumpImage;
-        } finally {
-            content.dispose();
+        double envW = ref.getWidth();
+        double envH = ref.getHeight();
+        for( Layer layer : layers ) {
+            content.addLayer(layer);
         }
+
+        if (envW < envH) {
+            double newEnvW = envH * (double) imageWidth / (double) imageHeight;
+            double delta = newEnvW - envW;
+            ref.expandBy(delta / 2, 0);
+        } else {
+            double newEnvH = envW * (double) imageHeight / (double) imageWidth;
+            double delta = newEnvH - envH;
+            ref.expandBy(0, delta / 2.0);
+        }
+
+        Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = dumpImage.createGraphics();
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        StreamingRenderer renderer = new StreamingRenderer();
+        renderer.setMapContent(content);
+        renderer.paint(g2d, imageBounds, ref);
+
+        return dumpImage;
+    }
+
+    public void dispose() {
+        if (content != null)
+            content.dispose();
     }
 
     /**

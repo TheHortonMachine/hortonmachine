@@ -37,8 +37,10 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.VectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -46,10 +48,15 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.operation.MathTransform;
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
 @Description("Module for the generation of map tiles.")
@@ -110,28 +117,33 @@ public class TmsGenerator extends JGTModel {
     @In
     public String inPath;
 
-    private static final String EPSG_900913 = "EPSG:3857";
-
-    private GeometryFactory gf = GeometryUtilities.gf();
+    private static final String EPSG_MERCATOR = "EPSG:3857";
+    private static final String EPSG_LATLONG = "EPSG:4326";
 
     private int TILESIZE = 256;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inPath, inRasters, inVectors, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
-        CoordinateReferenceSystem crs = CRS.decode(EPSG_900913);
-        ReferencedEnvelope totalBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, crs);
+        checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+        CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
+        CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+        ReferencedEnvelope totalBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, mercatorCrs);
+        MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
+        Envelope newBounds = JTS.transform(totalBounds, transform);
+        Coordinate latLongCentre = newBounds.centre();
 
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
 
         ImageGenerator imgGen = new ImageGenerator(null, totalBounds);
-        for( String rasterPath : inRasters ) {
-            imgGen.addCoveragePath(rasterPath);
-        }
-        for( String vectorPath : inVectors ) {
-            imgGen.addFeaturePath(vectorPath, null);
-        }
+        if (inRasters != null)
+            for( String rasterPath : inRasters ) {
+                imgGen.addCoveragePath(rasterPath);
+            }
+        if (inVectors != null)
+            for( String vectorPath : inVectors ) {
+                imgGen.addFeaturePath(vectorPath, null);
+            }
         imgGen.setLayers();
 
         GlobalMercator mercator = new GlobalMercator();
@@ -157,7 +169,7 @@ public class TmsGenerator extends JGTModel {
                     double east = bounds[2];
                     double north = bounds[3];
 
-                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, crs);
+                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
 
                     File imageFolder = new File(baseFolder, z + "/" + i);
                     if (!imageFolder.exists()) {
@@ -166,6 +178,9 @@ public class TmsGenerator extends JGTModel {
                         }
                     }
                     File imageFile = new File(imageFolder, j + ".png");
+                    if (imageFile.exists()) {
+                        continue;
+                    }
                     try {
                         imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
                     } catch (Exception e) {
@@ -179,6 +194,15 @@ public class TmsGenerator extends JGTModel {
 
         }
 
+        StringBuilder properties = new StringBuilder();
+        properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.png\n");
+        properties.append("minzoom=").append(pMinzoom).append("\n");
+        properties.append("maxzoom=").append(pMaxzoom).append("\n");
+        properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
+        properties.append("type=tms").append("\n");
+
+        File propFile = new File(inFolder, pName + ".mapurl");
+        FileUtilities.writeFile(properties.toString(), propFile);
     }
 
     public static void main( String[] args ) throws Exception {
@@ -211,18 +235,20 @@ public class TmsGenerator extends JGTModel {
 
         SimpleFeatureCollection boundsVector = VectorReader.readVector(inVectors.get(0));
         ReferencedEnvelope bounds = boundsVector.getBounds();
+        MathTransform transform = CRS.findMathTransform(bounds.getCoordinateReferenceSystem(), CRS.decode(EPSG_MERCATOR));
+        Envelope newBounds = JTS.transform(bounds, transform);
 
         TmsGenerator gen = new TmsGenerator();
         gen.inVectors = inVectors;
         gen.inRasters = inRasters;
-        gen.pMinzoom = 16;
-        gen.pMaxzoom = 19;
+        gen.pMinzoom = 14;
+        gen.pMaxzoom = 18;
         gen.pName = "corda";
         gen.inPath = "D:/TMP/AAAACORDA/tiles";
-        gen.pWest = bounds.getMinX();
-        gen.pEast = bounds.getMaxX();
-        gen.pNorth = bounds.getMaxY();
-        gen.pSouth = bounds.getMaxX();
+        gen.pWest = newBounds.getMinX();
+        gen.pEast = newBounds.getMaxX();
+        gen.pNorth = newBounds.getMaxY();
+        gen.pSouth = newBounds.getMinY();
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
         gen.pm = pm;
         gen.process();
