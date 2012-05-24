@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import java.awt.geom.AffineTransform;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 
@@ -39,6 +40,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operation2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -46,17 +49,26 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.PrintUtilities;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 @Description("Module for raster tranforms.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -86,16 +98,16 @@ public class RasterTransformer extends JGTModel {
     @Description("The northern coordinate of the rotation point.")
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
-    public Double pNorth = -1.0;
+    public Double pNorth;
 
     @Description("The eastern coordinate of the rotation point.")
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
-    public Double pEast = -1.0;
+    public Double pEast;
 
     @Description("The rotation angle in degree.")
     @In
-    public Double pAngle = 0.0;
+    public Double pAngle;
 
     @Description("The progress monitor.")
     @In
@@ -140,20 +152,48 @@ public class RasterTransformer extends JGTModel {
             } else {
                 centerX = pEast.floatValue();
             }
-            if (pNorth != null) {
-                centerX = (float) envelope2d.getCenterY();
+            if (pNorth == null) {
+                centerY = (float) envelope2d.getCenterY();
             } else {
-                centerX = pNorth.floatValue();
+                centerY = pNorth.floatValue();
             }
             double radiansAngle = Math.toRadians(pAngle);
             finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) radiansAngle, interpolation, null, null);
+
+            AffineTransform affineTransform = new AffineTransform();
+            affineTransform.translate(centerX, centerY);
+            affineTransform.rotate(radiansAngle);
+            affineTransform.translate(-centerX, -centerY);
+            MathTransform transform = new AffineTransform2D(affineTransform);
+
+            Envelope jtsEnv = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
+            Envelope targetEnvelope = JTS.transform(jtsEnv, transform);
+
+            // GeometryFactory gf = GeometryUtilities.gf();
+            // Geometry rotGeometry = gf.toGeometry(jtsEnv);
+            // Geometry targetGeom = JTS.transform(rotGeometry, transform);
+
+            RegionMap sourceRegion = CoverageUtilities.gridGeometry2RegionParamsMap(inRaster.getGridGeometry());
+
+            RegionMap targetRegion = new RegionMap();
+            targetRegion.put(NORTH, targetEnvelope.getMaxY());
+            targetRegion.put(SOUTH, targetEnvelope.getMinY());
+            targetRegion.put(WEST, targetEnvelope.getMinX());
+            targetRegion.put(EAST, targetEnvelope.getMaxX());
+            targetRegion.put(XRES, sourceRegion.getXres());
+            targetRegion.put(YRES, sourceRegion.getYres());
+            // targetRegion.put(ROWS, (double) height);
+            // targetRegion.put(COLS, (double) width);
+
+            outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, inRaster.getCoordinateReferenceSystem());
+
+            System.out.println(PrintUtilities.toString(inRaster));
+            System.out.println(PrintUtilities.toString(outRaster));
+
         }
 
         if (finalImg != null) {
-            Raster inData = inRasterRI.getData();
-            Raster data = finalImg.getData();
-            System.out.println(inData.getWidth() + " - " + inData.getHeight());
-            System.out.println(data.getWidth() + " - " + data.getHeight());
+
         }
 
         pm.done();
