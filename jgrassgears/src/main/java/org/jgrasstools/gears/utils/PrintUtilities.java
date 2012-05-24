@@ -25,7 +25,13 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * Utility class to print data out.
@@ -108,4 +114,33 @@ public class PrintUtilities {
         }
     }
 
+    /**
+     * Print the envelope as WKT.
+     * 
+     * @param env the {@link com.vividsolutions.jts.geom.Envelope}.
+     * @return the WKT string.
+     */
+    public static String envelope2WKT( com.vividsolutions.jts.geom.Envelope env ) {
+        GeometryFactory gf = GeometryUtilities.gf();
+        Geometry geometry = gf.toGeometry(env);
+        return geometry.toText();
+    }
+
+    public static com.vividsolutions.jts.geom.Envelope envelope2D2Envelope( Envelope2D envelope2d ) {
+        com.vividsolutions.jts.geom.Envelope jtsEnv = new com.vividsolutions.jts.geom.Envelope(envelope2d.getMinX(),
+                envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
+        return jtsEnv;
+    }
+
+    public static String toString( GridCoverage2D coverage ) {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        StringBuilder sb = new StringBuilder();
+        sb.append(regionMap.toStringJGT()).append("\n");
+        Envelope2D envelope2d = coverage.getEnvelope2D();
+        Envelope jtsEnvelope = envelope2D2Envelope(envelope2d);
+        String envelope2wkt = envelope2WKT(jtsEnvelope);
+        sb.append("WKT bounds: \n");
+        sb.append(envelope2wkt);
+        return sb.toString();
+    }
 }
