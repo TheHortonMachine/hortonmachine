@@ -184,6 +184,8 @@ public class RasterTransformer extends JGTModel {
             targetRegion.put(YRES, sourceRegion.getYres());
             // targetRegion.put(ROWS, (double) height);
             // targetRegion.put(COLS, (double) width);
+            
+            finalImg.getData();
 
             outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, inRaster.getCoordinateReferenceSystem());
 
@@ -193,7 +195,7 @@ public class RasterTransformer extends JGTModel {
         }
 
         if (finalImg != null) {
-
+            
         }
 
         pm.done();

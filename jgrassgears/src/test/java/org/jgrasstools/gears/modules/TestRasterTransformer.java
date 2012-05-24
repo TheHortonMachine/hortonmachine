@@ -20,9 +20,12 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.modules.r.transformer.RasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
@@ -34,10 +37,16 @@ public class TestRasterTransformer extends HMTestCase {
 
     public void testRasterTransformer() throws Exception {
 
-        double[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        // double[][] flowData = HMTestMaps.flowData;
+        // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        // CoordinateReferenceSystem crs = HMTestMaps.crs;
+        // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
+        // envelopeParams, crs, true);
+
+        String rasterPath = "/home/moovida/data/dtm_fazzon_caesar_02.asc";
+        GridCoverage2D flowCoverage = RasterReader.readRaster(rasterPath);
+
+//        PrintUtilities.printCoverageData(flowCoverage);
 
         RasterTransformer transformer = new RasterTransformer();
         transformer.inRaster = flowCoverage;
@@ -47,5 +56,8 @@ public class TestRasterTransformer extends HMTestCase {
         transformer.process();
         GridCoverage2D outCoverage = transformer.outRaster;
 
+//        PrintUtilities.printCoverageData(outCoverage);
+        String outRasterPath = "/home/moovida/data/dtm_fazzon_caesar_out45.asc";
+        RasterWriter.writeRaster(outRasterPath, outCoverage);
     }
 }
