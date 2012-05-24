@@ -54,8 +54,8 @@ public class TestRasterTransformer extends HMTestCase {
         transformer.inRaster = flowCoverage;
         transformer.pInterpolation = 2;
         transformer.pAngle = 45.0;
-//        transformer.pTransX = 100.0;
-//        transformer.pTransY = 100.0;
+        transformer.pTransX = 100.0;
+        transformer.pTransY = 100.0;
         transformer.process();
         GridCoverage2D outCoverage = transformer.outRaster;
         SimpleFeatureCollection outBounds = transformer.outBounds;

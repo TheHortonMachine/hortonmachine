@@ -182,7 +182,12 @@ public class RasterTransformer extends JGTModel {
         }
 
         if (pTransX != null && pTransY != null) {
-            finalImg = TranslateDescriptor.create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+            if (finalImg != null) {
+                finalImg = TranslateDescriptor.create(finalImg, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+            } else {
+                finalImg = TranslateDescriptor
+                        .create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+            }
 
             // also keep track of the transforming envelope
             AffineTransform translationAT = new AffineTransform();
