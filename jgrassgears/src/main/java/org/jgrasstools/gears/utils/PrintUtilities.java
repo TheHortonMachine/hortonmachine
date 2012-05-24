@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.utils;
 
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.PrintStream;
@@ -80,14 +81,14 @@ public class PrintUtilities {
     }
 
     /**
-     * Print data from a {@link WritableRaster}.
+     * Print data from a {@link Raster}.
      * 
-     * @param writableRaster the image.
+     * @param raster the image.
      */
-    public static void printWritableRasterData( WritableRaster writableRaster ) {
-        RandomIter netIter = RandomIterFactory.create(writableRaster, null);
-        int cols = writableRaster.getWidth();
-        int rows = writableRaster.getHeight();
+    public static void printWritableRasterData( Raster raster ) {
+        RandomIter netIter = RandomIterFactory.create(raster, null);
+        int cols = raster.getWidth();
+        int rows = raster.getHeight();
         for( int c = 0; c < cols; c++ ) {
             for( int r = 0; r < rows; r++ ) {
                 printer.print(netIter.getSampleDouble(c, r, 0));

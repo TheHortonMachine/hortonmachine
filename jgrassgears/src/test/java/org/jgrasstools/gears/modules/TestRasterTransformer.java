@@ -17,10 +17,13 @@
  */
 package org.jgrasstools.gears.modules;
 
+import java.awt.image.Raster;
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
@@ -29,7 +32,12 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
 /**
  * Test {@link RasterTransformer}.
  * 
@@ -39,31 +47,24 @@ public class TestRasterTransformer extends HMTestCase {
 
     public void testRasterTransformer() throws Exception {
 
-        // double[][] flowData = HMTestMaps.flowData;
-        // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        // CoordinateReferenceSystem crs = HMTestMaps.crs;
-        // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-        // envelopeParams, crs, true);
-
-        String rasterPath = "/home/moovida/data/dtm_fazzon_caesar_02.asc";
-        GridCoverage2D flowCoverage = RasterReader.readRaster(rasterPath);
-
-        // PrintUtilities.printCoverageData(flowCoverage);
+        double[][] flowData = HMTestMaps.flowData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         RasterTransformer transformer = new RasterTransformer();
         transformer.inRaster = flowCoverage;
         transformer.pInterpolation = 2;
-        transformer.pAngle = 45.0;
+        transformer.pAngle = 90.0;
         transformer.pTransX = 100.0;
         transformer.pTransY = 100.0;
         transformer.process();
-        GridCoverage2D outCoverage = transformer.outRaster;
+        // GridCoverage2D outCoverage = transformer.outRaster;
         SimpleFeatureCollection outBounds = transformer.outBounds;
+        Geometry bound = FeatureUtilities.featureCollectionToGeometriesList(outBounds, false, null).get(0);
 
-        // PrintUtilities.printCoverageData(outCoverage);
-        String outRasterPath = "/home/moovida/data/dtm_fazzon_caesar_out45_100bc.asc";
-        RasterWriter.writeRaster(outRasterPath, outCoverage);
-        String outVectorPath = "/home/moovida/data/dtm_fazzon_caesar_out45_100bc.shp";
-        VectorWriter.writeVector(outVectorPath, outBounds);
+        String expected = "POLYGON ((1640780 5140150, 1641020 5140150, 1641020 5139850, 1640780 5139850, 1640780 5140150))";
+        assertEquals(expected, bound.toText());
+
     }
 }
