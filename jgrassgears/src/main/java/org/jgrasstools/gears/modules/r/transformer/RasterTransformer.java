@@ -125,11 +125,11 @@ public class RasterTransformer extends JGTModel {
 
         pm.beginTask("Transforming raster...", IJGTProgressMonitor.UNKNOWN);
 
-        RenderedImage renderedImage = inRaster.getRenderedImage();
+        RenderedImage inRasterRI = inRaster.getRenderedImage();
 
         RenderedOp finalImg = null;
         if (pTransX != null && pTransY != null)
-            finalImg = TranslateDescriptor.create(renderedImage, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+            finalImg = TranslateDescriptor.create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
         // RotateDescriptor rDescr = new RotateDescriptor();
         if (pAngle != null) {
             float centerX = 0f;
@@ -145,12 +145,15 @@ public class RasterTransformer extends JGTModel {
             } else {
                 centerX = pNorth.floatValue();
             }
-            finalImg = RotateDescriptor.create(renderedImage, centerX, centerY, pAngle.floatValue(), interpolation, null, null);
+            double radiansAngle = Math.toRadians(pAngle);
+            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) radiansAngle, interpolation, null, null);
         }
 
         if (finalImg != null) {
-            Raster raster = finalImg.getData();
-            System.out.println(raster.getWidth() + " - " + raster.getHeight());
+            Raster inData = inRasterRI.getData();
+            Raster data = finalImg.getData();
+            System.out.println(inData.getWidth() + " - " + inData.getHeight());
+            System.out.println(data.getWidth() + " - " + data.getHeight());
         }
 
         pm.done();
