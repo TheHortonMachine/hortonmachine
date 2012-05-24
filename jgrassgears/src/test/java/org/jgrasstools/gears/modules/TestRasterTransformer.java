@@ -20,8 +20,10 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 import org.jgrasstools.gears.modules.r.transformer.RasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -46,18 +48,22 @@ public class TestRasterTransformer extends HMTestCase {
         String rasterPath = "/home/moovida/data/dtm_fazzon_caesar_02.asc";
         GridCoverage2D flowCoverage = RasterReader.readRaster(rasterPath);
 
-//        PrintUtilities.printCoverageData(flowCoverage);
+        // PrintUtilities.printCoverageData(flowCoverage);
 
         RasterTransformer transformer = new RasterTransformer();
         transformer.inRaster = flowCoverage;
+        transformer.pInterpolation = 2;
         transformer.pAngle = 45.0;
-        // transformer.pTransX = 1.0;
-        // transformer.pTransY = -1.0;
+//        transformer.pTransX = 100.0;
+//        transformer.pTransY = 100.0;
         transformer.process();
         GridCoverage2D outCoverage = transformer.outRaster;
+        SimpleFeatureCollection outBounds = transformer.outBounds;
 
-//        PrintUtilities.printCoverageData(outCoverage);
-        String outRasterPath = "/home/moovida/data/dtm_fazzon_caesar_out45.asc";
+        // PrintUtilities.printCoverageData(outCoverage);
+        String outRasterPath = "/home/moovida/data/dtm_fazzon_caesar_out45_100bc.asc";
         RasterWriter.writeRaster(outRasterPath, outCoverage);
+        String outVectorPath = "/home/moovida/data/dtm_fazzon_caesar_out45_100bc.shp";
+        VectorWriter.writeVector(outVectorPath, outBounds);
     }
 }

@@ -59,10 +59,12 @@ import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
@@ -105,7 +107,7 @@ public class RasterTransformer extends JGTModel {
     @In
     public Double pEast;
 
-    @Description("The rotation angle in degree.")
+    @Description("The rotation angle in degree (rotation is performed before translation).")
     @In
     public Double pAngle;
 
@@ -116,6 +118,10 @@ public class RasterTransformer extends JGTModel {
     @Description("The transformed raster.")
     @Out
     public GridCoverage2D outRaster = null;
+
+    @Description("The new raster geometry.")
+    @Out
+    public SimpleFeatureCollection outBounds = null;
 
     @Execute
     public void process() throws Exception {
@@ -138,15 +144,16 @@ public class RasterTransformer extends JGTModel {
         pm.beginTask("Transforming raster...", IJGTProgressMonitor.UNKNOWN);
 
         RenderedImage inRasterRI = inRaster.getRenderedImage();
+        RegionMap sourceRegion = CoverageUtilities.gridGeometry2RegionParamsMap(inRaster.getGridGeometry());
+        Envelope2D envelope2d = inRaster.getEnvelope2D();
+        Envelope targetEnvelope = null;
+        Geometry targetGeometry = null;
+        GeometryFactory gf = GeometryUtilities.gf();
 
         RenderedOp finalImg = null;
-        if (pTransX != null && pTransY != null)
-            finalImg = TranslateDescriptor.create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
-        // RotateDescriptor rDescr = new RotateDescriptor();
         if (pAngle != null) {
             float centerX = 0f;
             float centerY = 0f;
-            Envelope2D envelope2d = inRaster.getEnvelope2D();
             if (pEast == null) {
                 centerX = (float) envelope2d.getCenterX();
             } else {
@@ -157,24 +164,44 @@ public class RasterTransformer extends JGTModel {
             } else {
                 centerY = pNorth.floatValue();
             }
-            double radiansAngle = Math.toRadians(pAngle);
-            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) radiansAngle, interpolation, null, null);
+            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) Math.toRadians(pAngle), interpolation, null,
+                    null);
 
-            AffineTransform affineTransform = new AffineTransform();
-            affineTransform.translate(centerX, centerY);
-            affineTransform.rotate(radiansAngle);
-            affineTransform.translate(-centerX, -centerY);
-            MathTransform transform = new AffineTransform2D(affineTransform);
+            // also keep track of the transforming envelope
+            AffineTransform rotationAT = new AffineTransform();
+            rotationAT.translate(centerX, centerY);
+            rotationAT.rotate(Math.toRadians(-pAngle));
+            rotationAT.translate(-centerX, -centerY);
+            MathTransform rotationTransform = new AffineTransform2D(rotationAT);
 
             Envelope jtsEnv = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
-            Envelope targetEnvelope = JTS.transform(jtsEnv, transform);
+            targetEnvelope = JTS.transform(jtsEnv, rotationTransform);
 
-            // GeometryFactory gf = GeometryUtilities.gf();
-            // Geometry rotGeometry = gf.toGeometry(jtsEnv);
-            // Geometry targetGeom = JTS.transform(rotGeometry, transform);
+            Geometry rotGeometry = gf.toGeometry(jtsEnv);
+            targetGeometry = JTS.transform(rotGeometry, rotationTransform);
+        }
 
-            RegionMap sourceRegion = CoverageUtilities.gridGeometry2RegionParamsMap(inRaster.getGridGeometry());
+        if (pTransX != null && pTransY != null) {
+            finalImg = TranslateDescriptor.create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
 
+            // also keep track of the transforming envelope
+            AffineTransform translationAT = new AffineTransform();
+            translationAT.translate(pTransX.floatValue(), pTransY.floatValue());
+            MathTransform translateTransform = new AffineTransform2D(translationAT);
+
+            if (targetEnvelope == null) {
+                targetEnvelope = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(),
+                        envelope2d.getMaxY());
+            }
+            if (targetGeometry == null) {
+                targetGeometry = gf.toGeometry(targetEnvelope);
+            }
+
+            targetEnvelope = JTS.transform(targetEnvelope, translateTransform);
+            targetGeometry = JTS.transform(targetGeometry, translateTransform);
+        }
+
+        if (finalImg != null) {
             RegionMap targetRegion = new RegionMap();
             targetRegion.put(NORTH, targetEnvelope.getMaxY());
             targetRegion.put(SOUTH, targetEnvelope.getMinY());
@@ -184,18 +211,11 @@ public class RasterTransformer extends JGTModel {
             targetRegion.put(YRES, sourceRegion.getYres());
             // targetRegion.put(ROWS, (double) height);
             // targetRegion.put(COLS, (double) width);
-            
-            finalImg.getData();
 
-            outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, inRaster.getCoordinateReferenceSystem());
+            CoordinateReferenceSystem crs = inRaster.getCoordinateReferenceSystem();
+            outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, crs);
 
-            System.out.println(PrintUtilities.toString(inRaster));
-            System.out.println(PrintUtilities.toString(outRaster));
-
-        }
-
-        if (finalImg != null) {
-            
+            outBounds = FeatureUtilities.featureCollectionFromGeometry(crs, targetGeometry);
         }
 
         pm.done();
