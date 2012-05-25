@@ -43,7 +43,7 @@ import org.opengis.feature.simple.SimpleFeature;
 @Description("Module that rounds a defined field attribute.")
 @Documentation("VectorFieldRounder.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Join, VectorTableJoiner")
+@Keywords("Round, VectorFieldJoiner")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vround")
