@@ -48,6 +48,7 @@ import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -58,7 +59,11 @@ import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.MultiPoint;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -509,6 +514,56 @@ public class FeatureUtilities {
         }
         featureIterator.close();
         return geometriesList;
+    }
+
+    /**
+     * Make a {@link SimpleFeatureCollection} from a set of {@link Geometry}.
+     * 
+     * <p>This is a fast utility and adds no attributes.</p>
+     * 
+     * @param crs The {@link CoordinateReferenceSystem}.
+     * @param geometries the set of {@link Geometry} to add.
+     * @return the features wrapping the geoms.
+     */
+    public static SimpleFeatureCollection featureCollectionFromGeometry( CoordinateReferenceSystem crs, Geometry... geometries ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("simplegeom");
+        b.setCRS(crs);
+
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+
+        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(geometries[0]);
+        switch( geometryType ) {
+        case LINE:
+            b.add("the_geom", LineString.class);
+            break;
+        case MULTILINE:
+            b.add("the_geom", MultiLineString.class);
+            break;
+        case POINT:
+            b.add("the_geom", Point.class);
+            break;
+        case MULTIPOINT:
+            b.add("the_geom", MultiPoint.class);
+            break;
+        case POLYGON:
+            b.add("the_geom", Polygon.class);
+            break;
+        case MULTIPOLYGON:
+            b.add("the_geom", MultiPolygon.class);
+            break;
+        default:
+            break;
+        }
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        for( Geometry g : geometries ) {
+            Object[] values = new Object[]{g};
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            newCollection.add(feature);
+        }
+        return newCollection;
     }
 
     /**
