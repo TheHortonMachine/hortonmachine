@@ -315,11 +315,14 @@ public class ImageGenerator {
      * @param scale the scale wanted for the map.
      * @param paperFormat the paper format to use.
      * @param dpi the wanted dpi. If <code>null</code>, 72dpi is used as default.
+     * @param legend an optional legend {@link BufferedImage image}.
+     * @param legendX the X position of the legend in the final image.
+     * @param legendY the Y position of the legend in the final image.
      * @throws IOException
      * @since 0.7.6
      */
     public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
-            Double dpi ) throws IOException {
+            Double dpi, BufferedImage legend, int legendX, int legendY ) throws IOException {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -339,6 +342,12 @@ public class ImageGenerator {
         int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);
 
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, 0);
+
+        if (legend != null) {
+            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
+            graphics.drawImage(legend, null, legendX, legendY);
+        }
+
         ImageIO.write(dumpImage, "png", new File(imagePath));
 
     }
