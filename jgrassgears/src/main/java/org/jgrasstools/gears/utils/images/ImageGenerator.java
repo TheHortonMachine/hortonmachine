@@ -63,7 +63,6 @@ import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.expression.Expression;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
@@ -92,11 +91,10 @@ public class ImageGenerator {
 
     private StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
-    private CoordinateReferenceSystem crs;
-
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
     private List<Layer> layers = new ArrayList<Layer>();
+    private MapContent content;
 
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
@@ -161,8 +159,6 @@ public class ImageGenerator {
      */
     public void setLayers() throws Exception {
 
-        crs = null;
-
         // coverages first
         monitor.beginTask("Reading raster maps...", coveragePaths.size());
         for( String coveragePath : coveragePaths ) {
@@ -171,17 +167,17 @@ public class ImageGenerator {
             AbstractGridCoverage2DReader reader = null;
             try {
                 raster = RasterReader.readRaster(coveragePath);
-                if (crs == null) {
-                    crs = raster.getCoordinateReferenceSystem();
-                }
+                // if (crs == null) {
+                // crs = raster.getCoordinateReferenceSystem();
+                // }
             } catch (Exception e) {
                 // try with available readers
                 File coverageFile = new File(coveragePath);
                 AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
                 reader = format.getReader(coverageFile);
-                if (crs == null) {
-                    crs = reader.getCrs();
-                }
+                // if (crs == null) {
+                // crs = reader.getCrs();
+                // }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
@@ -204,6 +200,7 @@ public class ImageGenerator {
             }
             if (reader != null) {
                 GridReaderLayer layer = new GridReaderLayer(reader, style);
+                // SimpleFeatureSource featureSource = layer.getFeatureSource();
                 layers.add(layer);
             }
             monitor.worked(1);
@@ -222,9 +219,9 @@ public class ImageGenerator {
             } else {
                 featureCollection = featureSource.getFeatures(ECQL.toFilter(filter));
             }
-            if (crs == null) {
-                crs = featureSource.getSchema().getCoordinateReferenceSystem();
-            }
+            // if (crs == null) {
+            // crs = featureSource.getSchema().getCoordinateReferenceSystem();
+            // }
 
             File styleFile = FileUtilities.substituteExtention(new File(featurePath), "sld");
             Style style;
@@ -249,46 +246,48 @@ public class ImageGenerator {
      * @param buffer the buffer to add around the map bounds in map units. 
      * @return the image.
      */
-    public BufferedImage drawImage( Envelope bounds, int imageWidth, int imageHeight, double buffer ) {
+    public BufferedImage drawImage( ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
 
-        MapContent content = null;
-        try {
-            content = new MapContent();
-            content.setTitle("dump");
+        content = new MapContent();
+        content.setTitle("dump");
+        // if (totalBounds != null)
+        // content.getViewport().setBounds(totalBounds);
 
-            bounds.expandBy(buffer, buffer);
-            ReferencedEnvelope ref = new ReferencedEnvelope(bounds, crs);
+        if (buffer > 0.0)
+            ref.expandBy(buffer, buffer);
 
-            double envW = ref.getWidth();
-            double envH = ref.getHeight();
-            for( Layer layer : layers ) {
-                content.addLayer(layer);
-            }
-
-            if (envW < envH) {
-                double newEnvW = envH * (double) imageWidth / (double) imageHeight;
-                double delta = newEnvW - envW;
-                ref.expandBy(delta / 2, 0);
-            } else {
-                double newEnvH = envW * (double) imageHeight / (double) imageWidth;
-                double delta = newEnvH - envH;
-                ref.expandBy(0, delta / 2.0);
-            }
-
-            Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
-            BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d = dumpImage.createGraphics();
-            g2d.fillRect(0, 0, imageWidth, imageHeight);
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            StreamingRenderer renderer = new StreamingRenderer();
-            renderer.setMapContent(content);
-            renderer.paint(g2d, imageBounds, ref);
-
-            return dumpImage;
-        } finally {
-            content.dispose();
+        double envW = ref.getWidth();
+        double envH = ref.getHeight();
+        for( Layer layer : layers ) {
+            content.addLayer(layer);
         }
+
+        if (envW < envH) {
+            double newEnvW = envH * (double) imageWidth / (double) imageHeight;
+            double delta = newEnvW - envW;
+            ref.expandBy(delta / 2, 0);
+        } else {
+            double newEnvH = envW * (double) imageHeight / (double) imageWidth;
+            double delta = newEnvH - envH;
+            ref.expandBy(0, delta / 2.0);
+        }
+
+        Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = dumpImage.createGraphics();
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        StreamingRenderer renderer = new StreamingRenderer();
+        renderer.setMapContent(content);
+        renderer.paint(g2d, imageBounds, ref);
+
+        return dumpImage;
+    }
+
+    public void dispose() {
+        if (content != null)
+            content.dispose();
     }
 
     /**
@@ -301,7 +300,7 @@ public class ImageGenerator {
      * @param buffer the buffer to add around the map bounds in map units. 
      * @throws IOException
      */
-    public void dumpPngImage( String imagePath, Envelope bounds, int imageWidth, int imageHeight, double buffer )
+    public void dumpPngImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer )
             throws IOException {
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
         ImageIO.write(dumpImage, "png", new File(imagePath));
@@ -319,8 +318,8 @@ public class ImageGenerator {
      * @throws IOException
      * @since 0.7.6
      */
-    public void dumpPngImageForScaleAndPaper( String imagePath, Envelope bounds, double scale, PaperFormat paperFormat, Double dpi )
-            throws IOException {
+    public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
+            Double dpi ) throws IOException {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -333,7 +332,8 @@ public class ImageGenerator {
 
         Coordinate ll = new Coordinate(centre.x - boundsXExtension / 2.0, centre.y - boundsYExtension / 2.0);
         Coordinate ur = new Coordinate(centre.x + boundsXExtension / 2.0, centre.y + boundsYExtension / 2.0);
-        bounds = new Envelope(ll, ur);
+        Envelope tmpEnv = new Envelope(ll, ur);
+        bounds = new ReferencedEnvelope(tmpEnv, bounds.getCoordinateReferenceSystem());
 
         int imageWidth = (int) (paperFormat.width() / 25.4 * dpi);
         int imageHeight = (int) (paperFormat.height() / 25.4 * dpi);

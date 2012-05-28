@@ -114,12 +114,12 @@ public class MeltonNumber extends JGTModel {
 
             ScanLineRasterizer rasterizer = new ScanLineRasterizer();
             rasterizer.inVector = newCollection;
-            rasterizer.cols = cols;
-            rasterizer.rows = rows;
-            rasterizer.north = north;
-            rasterizer.south = south;
-            rasterizer.east = east;
-            rasterizer.west = west;
+            rasterizer.pCols = cols;
+            rasterizer.pRows = rows;
+            rasterizer.pNorth = north;
+            rasterizer.pSouth = south;
+            rasterizer.pEast = east;
+            rasterizer.pWest = west;
             rasterizer.pValue = 1.0;
             rasterizer.pm = new DummyProgressMonitor();
             rasterizer.process();

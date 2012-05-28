@@ -102,32 +102,32 @@ public class ScanLineRasterizer extends JGTModel {
     @Description("The north bound of the region to consider")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
-    public Double north = null;
+    public Double pNorth = null;
 
     @Description("The south bound of the region to consider")
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
-    public Double south = null;
+    public Double pSouth = null;
 
     @Description("The west bound of the region to consider")
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
-    public Double west = null;
+    public Double pWest = null;
 
     @Description("The east bound of the region to consider")
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
-    public Double east = null;
+    public Double pEast = null;
 
     @Description("The rows of the region to consider")
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
-    public Integer rows = null;
+    public Integer pRows = null;
 
     @Description("The cols of the region to consider")
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
-    public Integer cols = null;
+    public Integer pCols = null;
 
     @Description("Max threads to use (default 15)")
     @In
@@ -162,7 +162,7 @@ public class ScanLineRasterizer extends JGTModel {
 
         SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        GridGeometry2D pGrid = gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
+        GridGeometry2D pGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
         if (outWR == null) {
             paramsMap = gridGeometry2RegionParamsMap(pGrid);
             height = paramsMap.getRows();

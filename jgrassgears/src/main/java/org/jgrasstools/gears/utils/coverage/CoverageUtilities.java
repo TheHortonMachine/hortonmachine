@@ -81,6 +81,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
@@ -1122,5 +1123,6 @@ public class CoverageUtilities {
         double[] values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
         return values[0];
     }
+
 
 }

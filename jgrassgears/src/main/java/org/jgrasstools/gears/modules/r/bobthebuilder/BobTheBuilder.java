@@ -198,12 +198,12 @@ public class BobTheBuilder extends JGTModel {
         newCollection.add(polygonMate.getFeature());
         ScanLineRasterizer slRasterizer = new ScanLineRasterizer();
         slRasterizer.inVector = newCollection;
-        slRasterizer.cols = cols;
-        slRasterizer.rows = rows;
-        slRasterizer.north = north;
-        slRasterizer.south = south;
-        slRasterizer.east = east;
-        slRasterizer.west = west;
+        slRasterizer.pCols = cols;
+        slRasterizer.pRows = rows;
+        slRasterizer.pNorth = north;
+        slRasterizer.pSouth = south;
+        slRasterizer.pEast = east;
+        slRasterizer.pWest = west;
         slRasterizer.pValue = 1.0;
         slRasterizer.process();
         GridCoverage2D outRasterized = slRasterizer.outRaster;

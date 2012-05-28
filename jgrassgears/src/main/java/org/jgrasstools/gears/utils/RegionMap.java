@@ -215,4 +215,18 @@ public class RegionMap extends HashMap<String, Double> {
                 rows);
         return regionMap;
     }
+
+    public String toStringJGT() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("North = ").append(getNorth()).append("\n");
+        sb.append("South = ").append(getSouth()).append("\n");
+        sb.append("East = ").append(getEast()).append("\n");
+        sb.append("West = ").append(getWest()).append("\n");
+        sb.append("Rows = ").append(getRows()).append("\n");
+        sb.append("Cols = ").append(getCols()).append("\n");
+        sb.append("Xres = ").append(getXres()).append("\n");
+        sb.append("Yres = ").append(getYres());
+
+        return sb.toString();
+    }
 }
