@@ -387,7 +387,7 @@ public class FileUtilities {
      * @return the created file.
      * @throws Exception
      */
-    public static File listAsTmpFile( List<String> list ) throws Exception {
+    public static File stringListAsTmpFile( List<String> list ) throws Exception {
         File tempFile = File.createTempFile("jgt-", "txt");
         writeFile(list, tempFile);
         return tempFile;
