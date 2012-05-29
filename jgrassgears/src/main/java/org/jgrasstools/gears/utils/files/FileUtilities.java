@@ -362,4 +362,34 @@ public class FileUtilities {
         }
         return propertiesMap;
     }
+
+    /**
+     * "Converts" a string to a temporary file.
+     * 
+     * <p>Useful for those modules that want a file in input and one wants to use the parameters.</p>
+     * 
+     * @param string the string to write to the file.
+     * @return the created file.
+     * @throws Exception
+     */
+    public static File stringAsTmpFile( String string ) throws Exception {
+        File tempFile = File.createTempFile("jgt-", "txt");
+        writeFile(string, tempFile);
+        return tempFile;
+    }
+
+    /**
+     * "Converts" a List of strings to a temporary file.
+     * 
+     * <p>Useful for those modules that want a file in input and one wants to use the parameters.</p>
+     * 
+     * @param list the list of strings to write to the file (one per row).
+     * @return the created file.
+     * @throws Exception
+     */
+    public static File listAsTmpFile( List<String> list ) throws Exception {
+        File tempFile = File.createTempFile("jgt-", "txt");
+        writeFile(list, tempFile);
+        return tempFile;
+    }
 }
