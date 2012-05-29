@@ -18,7 +18,6 @@
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -32,17 +31,15 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -53,7 +50,7 @@ import com.vividsolutions.jts.geom.Envelope;
 
 @Description("Module for the generation of map tiles.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, TMS, tiles")
+@Keywords("Raster, Vector, TMS, Tiles")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.DRAFT)
 @Name("tmsgenerator")
@@ -61,23 +58,25 @@ import com.vividsolutions.jts.geom.Envelope;
 @SuppressWarnings("nls")
 public class TmsGenerator extends JGTModel {
 
-    @Description("Raster layers to consider (the order is relevant, first layers are placed below others).")
+    @Description("A file containing the list of raster map paths to consider (the order is relevant, first layers are placed below others).")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public List<String> inRasters = null;
+    public String inRasterFile = null;
 
-    @Description("Vector layers to consider (the order is relevant, first layers are placed below others).")
+    @Description("A file containing the list of vector map paths to consider (the order is relevant, first layers are placed below others).")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public List<String> inVectors = null;
+    public String inVectorFile = null;
 
     @Description("A name of the tile source.")
     @In
     public String pName = "tmstiles";
 
-    @Description("Min zoom.")
+    @Description("The min zoom for which to generate tiles.")
     @In
     public Integer pMinzoom = null;
 
-    @Description("Max zoom.")
+    @Description("The max zoom for which to generate tiles.")
     @In
     public Integer pMaxzoom = null;
 
@@ -127,6 +126,18 @@ public class TmsGenerator extends JGTModel {
     public void process() throws Exception {
         checkNull(inPath, pEpsg, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
+        List<String> inVectors = null;
+        if (inVectorFile != null && new File(inVectorFile).exists())
+            inVectors = FileUtilities.readFileToLinesList(new File(inVectorFile));
+
+        List<String> inRasters = null;
+        if (inRasterFile != null && new File(inRasterFile).exists())
+            inRasters = FileUtilities.readFileToLinesList(new File(inRasterFile));
+
+        if (inRasters == null && inVectors == null) {
+            throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this);
+        }
+
         CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
 
         CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
@@ -143,14 +154,25 @@ public class TmsGenerator extends JGTModel {
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
 
-        ImageGenerator imgGen = new ImageGenerator(null);
+        ImageGenerator imgGen = new ImageGenerator(pm);
+        String notLoading = "Not loading non-existing file: ";
         if (inRasters != null)
             for( String rasterPath : inRasters ) {
-                imgGen.addCoveragePath(rasterPath);
+                File file = new File(rasterPath);
+                if (file.exists()) {
+                    imgGen.addCoveragePath(rasterPath);
+                } else {
+                    pm.errorMessage(notLoading + rasterPath);
+                }
             }
         if (inVectors != null)
             for( String vectorPath : inVectors ) {
-                imgGen.addFeaturePath(vectorPath, null);
+                File file = new File(vectorPath);
+                if (file.exists()) {
+                    imgGen.addFeaturePath(vectorPath, null);
+                } else {
+                    pm.errorMessage(notLoading + vectorPath);
+                }
             }
         imgGen.setLayers();
 
@@ -171,22 +193,6 @@ public class TmsGenerator extends JGTModel {
             int startYTile = llTileNumber[1];
             int endXTile = urTileNumber[0];
             int endYTile = urTileNumber[1];
-
-            // minx, miny, maxx, maxy
-            // while( mercator.TileBounds(startXTile, startYTile, z)[0] > w ) {
-            // startXTile--;
-            // }
-            // while( mercator.TileBounds(startXTile, startYTile, z)[1] > s ) {
-            // startYTile--;
-            // }
-            // while( mercator.TileBounds(endXTile, endYTile, z)[2] < e ) {
-            // startXTile++;
-            // }
-            // while( mercator.TileBounds(endXTile, endYTile, z)[3] < n ) {
-            // startYTile++;
-            // }
-            // double[] firstTileBounds = mercator.TileBounds(startXTile, startYTile, z);
-            // double[] lastTileBounds = mercator.TileBounds(endXTile, endYTile, z);
 
             int tileNum = 0;
 
