@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.utils.files;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 
 /**
@@ -34,10 +35,24 @@ import java.io.IOException;
  * </pre>
  */
 public class FileTraversal {
+    private FileFilter filter;
+
+    public FileTraversal() {
+    }
+    
+    public FileTraversal( FileFilter filter ) {
+        this.filter = filter;
+    }
+
     public final void traverse( final File f ) throws IOException {
         if (f.isDirectory()) {
             onDirectory(f);
-            final File[] childs = f.listFiles();
+            final File[] childs;
+            if (filter != null) {
+                childs = f.listFiles(filter);
+            } else {
+                childs = f.listFiles();
+            }
             for( File child : childs ) {
                 traverse(child);
             }

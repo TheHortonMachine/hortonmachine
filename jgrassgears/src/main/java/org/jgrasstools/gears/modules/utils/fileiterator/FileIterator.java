@@ -19,6 +19,7 @@
 package org.jgrasstools.gears.modules.utils.fileiterator;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,6 +66,10 @@ public class FileIterator extends JGTModel {
     @In
     public String pCode;
 
+    @Description("An optional file filter (used when developing).")
+    @In
+    public FileFilter fileFilter = null;
+
     @Description("The current file of the list of files in the folder.")
     @Out
     public String outCurrentfile = null;
@@ -97,7 +102,7 @@ public class FileIterator extends JGTModel {
             filesList = new ArrayList<File>();
             pathsList = new ArrayList<String>();
 
-            new FileTraversal(){
+            new FileTraversal(fileFilter){
                 public void onFile( final File f ) {
                     if (pRegex == null) {
                         filesList.add(f);
