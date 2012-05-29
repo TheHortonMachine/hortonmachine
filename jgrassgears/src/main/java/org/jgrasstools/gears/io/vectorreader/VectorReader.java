@@ -35,6 +35,7 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.properties.PropertiesFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -96,12 +97,36 @@ public class VectorReader extends JGTModel {
      * @throws IOException
      */
     public static SimpleFeatureCollection readVector( String path ) throws IOException {
+        SimpleFeatureCollection fc = getFC(path);
+        return fc;
+    }
 
+    private static SimpleFeatureCollection getFC( String path ) throws IOException {
         VectorReader reader = new VectorReader();
         reader.file = path;
         reader.process();
+        SimpleFeatureCollection fc = reader.outVector;
+        return fc;
+    }
 
-        return reader.outVector;
+    /**
+     * Fast reading of the bounds of a vector dataset.
+     * 
+     * @param path the vector file path.
+     * @return the array containing the bounds as [n, s, e, w].
+     * @throws IOException
+     */
+    public static double[] readBounds( String path ) throws IOException {
+        SimpleFeatureCollection fc = getFC(path);
+        ReferencedEnvelope bounds = fc.getBounds();
+
+        double[] nsew = {//
+        bounds.getMaxY(), //
+                bounds.getMinY(), //
+                bounds.getMaxX(), //
+                bounds.getMinX() //
+        };
+        return nsew;
     }
 
 }
