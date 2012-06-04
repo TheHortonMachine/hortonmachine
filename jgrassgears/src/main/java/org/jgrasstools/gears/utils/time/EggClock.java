@@ -38,6 +38,7 @@ public class EggClock {
 
     public void start() {
         startTimeMillis = System.currentTimeMillis();
+        startSubTimeMillis = startTimeMillis;
     }
 
     /**
