@@ -11,6 +11,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
@@ -120,7 +121,6 @@ public class TestGeometryUtilities extends HMTestCase {
         }
 
         coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.7, true, -1, -1);
-        LineString l = gf.createLineString(coordinatesAtInterval.toArray(new Coordinate[0]));
 
         expectedCoordinates = new ArrayList<Coordinate>();
         c = new Coordinate(0.0, 0.0);
@@ -143,6 +143,12 @@ public class TestGeometryUtilities extends HMTestCase {
         for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
             assertTrue(coordinatesAtInterval.get(i).distance(expectedCoordinates.get(i)) < DELTA);
         }
+
+        // List<LineString> sectionsFromCoordinates =
+        // GeometryUtilities.getSectionsFromCoordinates(coordinatesAtInterval, 0.4);
+        // MultiLineString createMultiLineString =
+        // gf.createMultiLineString(sectionsFromCoordinates.toArray(new LineString[0]));
+        // System.out.println(createMultiLineString);
 
     }
 }

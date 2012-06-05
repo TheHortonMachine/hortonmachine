@@ -19,12 +19,16 @@
 package org.jgrasstools.gears.utils.geometry;
 
 import static java.lang.Math.atan;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.GeodeticCalculator;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -44,7 +48,9 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
+import com.vividsolutions.jts.math.Vector2D;
 
 /**
  * Utilities related to {@link Geometry}.
@@ -429,6 +435,7 @@ public class GeometryUtilities {
      * @param line the line to use.
      * @param interval the interval to use as distance between coordinates. Has to be > 0.
      * @param keepExisting if <code>true</code>, keeps the existing coordinates in the generated list.
+     *          Aslo in this case the interval around the existing points will not reflect the asked interval.
      * @param startFrom if > 0, it defines the initial distance to jump.
      * @param endAt if > 0, it defines where to end, even if the line is longer.
      * @return the list of extracted coordinates.
@@ -481,6 +488,61 @@ public class GeometryUtilities {
         coordinatesList.add(extractedPoint);
 
         return coordinatesList;
+    }
+
+    /**
+     * Extracts traversal sections of a given with from the supplied {@link Coordinate}s.
+     * 
+     * @param coordinates the list of coordinates.
+     * @param width the total with of the sections.
+     * @return the list of {@link LineString sections}. 
+     */
+    public static List<LineString> getSectionsFromCoordinates( List<Coordinate> coordinates, double width ) {
+
+        if (coordinates.size() < 3) {
+            throw new IllegalArgumentException("This method works only on lines with at least 3 coordinates.");
+        }
+        double halfWidth = width / 2.0;
+        List<LineString> linesList = new ArrayList<LineString>();
+        // first section
+        Coordinate centerCoordinate = coordinates.get(0);
+        LineSegment l1 = new LineSegment(centerCoordinate, coordinates.get(1));
+        Coordinate leftCoordinate = l1.pointAlongOffset(0.0, halfWidth);
+        Coordinate rightCoordinate = l1.pointAlongOffset(0.0, -halfWidth);
+        LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
+        linesList.add(lineString);
+
+        for( int i = 1; i < coordinates.size() - 1; i++ ) {
+            Coordinate previous = coordinates.get(i - 1);
+            Coordinate current = coordinates.get(i);
+            Coordinate after = coordinates.get(i + 1);
+
+            double firstAngle = azimuth(current, previous);
+            double secondAngle = azimuth(current, after);
+
+            double a1 = min(firstAngle, secondAngle);
+            double a2 = max(firstAngle, secondAngle);
+
+            double centerAngle = a1 + (a2 - a1) / 2.0;
+
+            AffineTransformation rotationInstance = AffineTransformation.rotationInstance(-toRadians(centerAngle), current.x,
+                    current.y);
+
+            LineString vertical = geomFactory.createLineString(new Coordinate[]{new Coordinate(current.x, current.y + halfWidth),
+                    current, new Coordinate(current.x, current.y - halfWidth)});
+            Geometry transformed = rotationInstance.transform(vertical);
+            linesList.add((LineString) transformed);
+        }
+
+        // last section
+        centerCoordinate = coordinates.get(coordinates.size() - 1);
+        LineSegment l2 = new LineSegment(centerCoordinate, coordinates.get(coordinates.size() - 2));
+        leftCoordinate = l2.pointAlongOffset(0.0, halfWidth);
+        rightCoordinate = l2.pointAlongOffset(0.0, -halfWidth);
+        lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
+        linesList.add(lineString);
+
+        return linesList;
     }
 
     /**
