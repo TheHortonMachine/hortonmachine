@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.utils.time;
 
 import java.io.PrintStream;
+import java.util.Date;
 
 /**
  * A simple time print utility.
@@ -31,14 +32,27 @@ public class EggClock {
     private final String preFix;
     private final String postFix;
 
+    private boolean started = false;
+
     public EggClock( String preFix, String postFix ) {
         this.preFix = preFix;
         this.postFix = postFix;
+        started = true;
     }
 
     public void start() {
         startTimeMillis = System.currentTimeMillis();
         startSubTimeMillis = startTimeMillis;
+    }
+
+    public void startAndPrint( PrintStream pm ) {
+        if (!started) {
+            start();
+            pm.println(new Date(startTimeMillis));
+        } else {
+            pm.println("Clock already started before, ignoring call.");
+        }
+
     }
 
     /**

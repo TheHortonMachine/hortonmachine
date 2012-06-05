@@ -20,6 +20,7 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class TestGeometryUtilities extends HMTestCase {
 
+    private static final double DELTA = 0.0000001;
     private Coordinate ll;
     private Coordinate ul;
     private Coordinate ur;
@@ -78,7 +79,7 @@ public class TestGeometryUtilities extends HMTestCase {
         GeometryFactory gf = GeometryUtilities.gf();
 
         LineString l1 = gf.createLineString(new Coordinate[]{ll, ul, ur, lr});
-        List<Coordinate> coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, -1, -1);
+        List<Coordinate> coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, false, -1, -1);
 
         List<Coordinate> expectedCoordinates = new ArrayList<Coordinate>();
         Coordinate c = new Coordinate(0.0, 0.0);
@@ -97,10 +98,10 @@ public class TestGeometryUtilities extends HMTestCase {
         expectedCoordinates.add(c);
 
         for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
-            assertEquals(coordinatesAtInterval.get(i), expectedCoordinates.get(i));
+            assertTrue(coordinatesAtInterval.get(i).distance(expectedCoordinates.get(i)) < DELTA);
         }
 
-        coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, 0.5, 2.5);
+        coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.5, false, 0.5, 2.5);
 
         expectedCoordinates = new ArrayList<Coordinate>();
         c = new Coordinate(0.0, 0.5);
@@ -115,7 +116,32 @@ public class TestGeometryUtilities extends HMTestCase {
         expectedCoordinates.add(c);
 
         for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
-            assertEquals(coordinatesAtInterval.get(i), expectedCoordinates.get(i));
+            assertTrue(coordinatesAtInterval.get(i).distance(expectedCoordinates.get(i)) < DELTA);
+        }
+
+        coordinatesAtInterval = GeometryUtilities.getCoordinatesAtInterval(l1, 0.7, true, -1, -1);
+        LineString l = gf.createLineString(coordinatesAtInterval.toArray(new Coordinate[0]));
+
+        expectedCoordinates = new ArrayList<Coordinate>();
+        c = new Coordinate(0.0, 0.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.0, 0.7);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(0.4, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 1.0);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.9);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.2);
+        expectedCoordinates.add(c);
+        c = new Coordinate(1.0, 0.0);
+        expectedCoordinates.add(c);
+
+        for( int i = 0; i < coordinatesAtInterval.size(); i++ ) {
+            assertTrue(coordinatesAtInterval.get(i).distance(expectedCoordinates.get(i)) < DELTA);
         }
 
     }

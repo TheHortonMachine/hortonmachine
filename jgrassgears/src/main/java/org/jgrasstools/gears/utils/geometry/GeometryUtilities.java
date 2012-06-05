@@ -428,12 +428,13 @@ public class GeometryUtilities {
      * 
      * @param line the line to use.
      * @param interval the interval to use as distance between coordinates. Has to be > 0.
-     * @return the list of coordinates.
+     * @param keepExisting if <code>true</code>, keeps the existing coordinates in the generated list.
      * @param startFrom if > 0, it defines the initial distance to jump.
      * @param endAt if > 0, it defines where to end, even if the line is longer.
      * @return the list of extracted coordinates.
      */
-    public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval, double startFrom, double endAt ) {
+    public static List<Coordinate> getCoordinatesAtInterval( LineString line, double interval, boolean keepExisting,
+            double startFrom, double endAt ) {
         if (interval <= 0) {
             throw new IllegalArgumentException("Interval needs to be > 0.");
         }
@@ -448,8 +449,30 @@ public class GeometryUtilities {
         List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
 
         LengthIndexedLine indexedLine = new LengthIndexedLine(line);
+        Coordinate[] existingCoordinates = null;
+        double[] indexOfExisting = null;
+        if (keepExisting) {
+            existingCoordinates = line.getCoordinates();
+            indexOfExisting = new double[existingCoordinates.length];
+            int i = 0;
+            for( Coordinate coordinate : existingCoordinates ) {
+                double indexOf = indexedLine.indexOf(coordinate);
+                indexOfExisting[i] = indexOf;
+                i++;
+            }
+        }
+
         double runningLength = startFrom;
+        int currentIndexOfexisting = 1; // jump first
         while( runningLength < endAt ) {
+            if (keepExisting && currentIndexOfexisting < indexOfExisting.length - 1
+                    && runningLength > indexOfExisting[currentIndexOfexisting]) {
+                // add the existing
+                coordinatesList.add(existingCoordinates[currentIndexOfexisting]);
+                currentIndexOfexisting++;
+                continue;
+            }
+
             Coordinate extractedPoint = indexedLine.extractPoint(runningLength);
             coordinatesList.add(extractedPoint);
             runningLength = runningLength + interval;
@@ -482,7 +505,8 @@ public class GeometryUtilities {
      * @param endAt if > 0, it defines where to end, even if the line is longer.
      * @return the list of sections lines at a given interval.
      */
-    public static List<LineString> getSectionsAtInterval( LineString line, double interval, double width, double startFrom, double endAt ) {
+    public static List<LineString> getSectionsAtInterval( LineString line, double interval, double width, double startFrom,
+            double endAt ) {
         if (interval <= 0) {
             throw new IllegalArgumentException("Interval needs to be > 0.");
         }
@@ -493,17 +517,18 @@ public class GeometryUtilities {
         if (endAt < 0) {
             endAt = length;
         }
-        
-        double halfWidth = width/2.0;
+
+        double halfWidth = width / 2.0;
         List<LineString> linesList = new ArrayList<LineString>();
-        
+
         LengthIndexedLine indexedLine = new LengthIndexedLine(line);
         double runningLength = startFrom;
         while( runningLength < endAt ) {
             Coordinate centerCoordinate = indexedLine.extractPoint(runningLength);
             Coordinate leftCoordinate = indexedLine.extractPoint(runningLength, -halfWidth);
             Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
-            LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
+            LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate,
+                    rightCoordinate});
             linesList.add(lineString);
             runningLength = runningLength + interval;
         }
@@ -512,7 +537,7 @@ public class GeometryUtilities {
         Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
         LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
         linesList.add(lineString);
-        
+
         return linesList;
     }
 }
