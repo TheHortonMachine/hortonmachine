@@ -54,6 +54,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Keywords("Raster, Vector, TMS, Tiles")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.DRAFT)
+@UI(JGTConstants.HIDE_UI_HINT)
 @Name("tmsdownloader")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
@@ -116,6 +117,8 @@ public class OnlineTilesDownloader extends JGTModel {
     @In
     public String inPath;
 
+    private boolean doDryrun = false;
+
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
@@ -126,35 +129,37 @@ public class OnlineTilesDownloader extends JGTModel {
         CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
         CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
         CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+
         ReferencedEnvelope inBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, boundsCrs);
+
         MathTransform in2MercatorTransform = CRS.findMathTransform(boundsCrs, mercatorCrs);
         Envelope mercatorEnvelope = JTS.transform(inBounds, in2MercatorTransform);
         ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
-        MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-        Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
+        MathTransform transform = CRS.findMathTransform(boundsCrs, latLongCrs);
+        Envelope latLongBounds = JTS.transform(inBounds, transform);
         Coordinate latLongCentre = latLongBounds.centre();
 
         File inFolder = new File(inPath);
         File baseFolder = new File(inFolder, pName);
 
-        double w = mercatorBounds.getMinX();
-        double s = mercatorBounds.getMinY();
-        double e = mercatorBounds.getMaxX();
-        double n = mercatorBounds.getMaxY();
+        double w = latLongBounds.getMinX();
+        double s = latLongBounds.getMinY();
+        double e = latLongBounds.getMaxX();
+        double n = latLongBounds.getMaxY();
 
         GlobalMercator mercator = new GlobalMercator();
 
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
             // get ul and lr tile number
-            int[] llTileNumber = mercator.MetersToTile(w, s, z);
-            int[] urTileNumber = mercator.MetersToTile(e, n, z);
+            int[] llTileXY = mercator.GoogleTile(s, w, z);
+            int[] urTileXY = mercator.GoogleTile(n, e, z);
 
-            int startXTile = llTileNumber[0];
-            int startYTile = llTileNumber[1];
-            int endXTile = urTileNumber[0];
-            int endYTile = urTileNumber[1];
+            int startXTile = Math.min(llTileXY[0], urTileXY[0]);
+            int endXTile = Math.max(llTileXY[0], urTileXY[0]);
+            int startYTile = Math.min(llTileXY[1], urTileXY[1]);
+            int endYTile = Math.max(llTileXY[1], urTileXY[1]);
 
             int tileNum = 0;
 
@@ -166,38 +171,61 @@ public class OnlineTilesDownloader extends JGTModel {
                 for( int j = startYTile; j <= endYTile; j++ ) {
                     tileNum++;
 
-                    File imageFolder = new File(baseFolder, z + "/" + i);
-                    if (!imageFolder.exists()) {
-                        if (!imageFolder.mkdirs()) {
-                            throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
-                        }
-                    }
-                    File imageFile = new File(imageFolder, j + ".png");
-                    if (imageFile.exists()) {
-                        continue;
-                    }
+                    double[] bounds = mercator.TileLatLonBounds(i, j, z);
+                    double west = bounds[0];
+                    double south = bounds[1];
+                    double east = bounds[2];
+                    double north = bounds[3];
 
-                    String tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(z));
-                    tmp = tmp.replaceFirst("XXX", String.valueOf(i));
-                    tmp = tmp.replaceFirst("YYY", String.valueOf(j));
+                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, latLongCrs);
+                    levelBounds.expandToInclude(tmpBounds);
 
-                    URL url = new URL(tmp);
-                    InputStream imgStream = null;
-                    OutputStream out = null;
-                    try {
-                        imgStream = url.openStream();
-                        out = new FileOutputStream(imageFile);
-                        int read = 0;
-                        byte[] bytes = new byte[1024];
-                        while( (read = imgStream.read(bytes)) != -1 ) {
-                            out.write(bytes, 0, read);
+                    if (!doDryrun) {
+                        File imageFolder = new File(baseFolder, z + "/" + i);
+                        if (!imageFolder.exists()) {
+                            if (!imageFolder.mkdirs()) {
+                                throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
+                            }
                         }
-                    } catch (Exception ex) {
-                        pm.errorMessage("Unable to get image: " + tmp);
-                    } finally {
-                        imgStream.close();
-                        out.flush();
-                        out.close();
+                        File imageFile = new File(imageFolder, j + ".png");
+                        if (imageFile.exists()) {
+                            continue;
+                        }
+
+                        int[] tile = {i, j};
+                        switch( pType ) {
+                        case 0:
+                            // need to convert in TMS format
+                            tile = mercator.TMSTileFromGoogleTile(i, j, z);
+                            break;
+                        case 1:
+                        default:
+                            break;
+                        }
+
+                        String tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(z));
+                        tmp = tmp.replaceFirst("XXX", String.valueOf(tile[0]));
+                        tmp = tmp.replaceFirst("YYY", String.valueOf(tile[1]));
+                        System.out.println(tmp);
+
+                        URL url = new URL(tmp);
+                        InputStream imgStream = null;
+                        OutputStream out = null;
+                        try {
+                            imgStream = url.openStream();
+                            out = new FileOutputStream(imageFile);
+                            int read = 0;
+                            byte[] bytes = new byte[1024];
+                            while( (read = imgStream.read(bytes)) != -1 ) {
+                                out.write(bytes, 0, read);
+                            }
+                        } catch (Exception ex) {
+                            pm.errorMessage("Unable to get image: " + tmp);
+                        } finally {
+                            imgStream.close();
+                            out.flush();
+                            out.close();
+                        }
                     }
                 }
                 pm.worked(1);
