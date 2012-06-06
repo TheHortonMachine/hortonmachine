@@ -181,31 +181,32 @@ public class OnlineTilesDownloader extends JGTModel {
                     levelBounds.expandToInclude(tmpBounds);
 
                     if (!doDryrun) {
-                        File imageFolder = new File(baseFolder, z + "/" + i);
+                        int[] onlineTileNumbers = {i, j};
+                        int[] fileNameTileNumbers = {i, j};
+                        // switch( pType ) {
+                        // case 1:
+                        // need to convert in TMS format
+                        fileNameTileNumbers = mercator.TMSTileFromGoogleTile(i, j, z);
+                        // break;
+                        // case 0:
+                        // default:
+                        // break;
+                        // }
+
+                        File imageFolder = new File(baseFolder, z + "/" + fileNameTileNumbers[0]);
                         if (!imageFolder.exists()) {
                             if (!imageFolder.mkdirs()) {
                                 throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
                             }
                         }
-                        File imageFile = new File(imageFolder, j + ".png");
+                        File imageFile = new File(imageFolder, fileNameTileNumbers[1] + ".png");
                         if (imageFile.exists()) {
                             continue;
                         }
 
-                        int[] tile = {i, j};
-                        switch( pType ) {
-                        case 0:
-                            // need to convert in TMS format
-                            tile = mercator.TMSTileFromGoogleTile(i, j, z);
-                            break;
-                        case 1:
-                        default:
-                            break;
-                        }
-
                         String tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(z));
-                        tmp = tmp.replaceFirst("XXX", String.valueOf(tile[0]));
-                        tmp = tmp.replaceFirst("YYY", String.valueOf(tile[1]));
+                        tmp = tmp.replaceFirst("XXX", String.valueOf(onlineTileNumbers[0]));
+                        tmp = tmp.replaceFirst("YYY", String.valueOf(onlineTileNumbers[1]));
                         System.out.println(tmp);
 
                         URL url = new URL(tmp);
