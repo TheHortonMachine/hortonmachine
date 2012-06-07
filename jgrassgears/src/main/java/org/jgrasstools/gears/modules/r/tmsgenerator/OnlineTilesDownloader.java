@@ -152,7 +152,7 @@ public class OnlineTilesDownloader extends JGTModel {
 
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
-            // get ul and lr tile number
+            // get ul and lr tile number in GOOGLE tiles
             int[] llTileXY = mercator.GoogleTile(s, w, z);
             int[] urTileXY = mercator.GoogleTile(n, e, z);
 
@@ -186,7 +186,9 @@ public class OnlineTilesDownloader extends JGTModel {
                         // switch( pType ) {
                         // case 1:
                         // need to convert in TMS format
-                        fileNameTileNumbers = mercator.TMSTileFromGoogleTile(i, j, z);
+                        int[] tmsNUms = mercator.TMSTileFromGoogleTile(i, j, z);
+                        fileNameTileNumbers = tmsNUms;
+
                         // break;
                         // case 0:
                         // default:
@@ -207,7 +209,7 @@ public class OnlineTilesDownloader extends JGTModel {
                         String tmp = inServiceUrl.replaceFirst("ZZZ", String.valueOf(z));
                         tmp = tmp.replaceFirst("XXX", String.valueOf(onlineTileNumbers[0]));
                         tmp = tmp.replaceFirst("YYY", String.valueOf(onlineTileNumbers[1]));
-                        System.out.println(tmp);
+                        // System.out.println(tmp);
 
                         URL url = new URL(tmp);
                         InputStream imgStream = null;
@@ -223,9 +225,12 @@ public class OnlineTilesDownloader extends JGTModel {
                         } catch (Exception ex) {
                             pm.errorMessage("Unable to get image: " + tmp);
                         } finally {
-                            imgStream.close();
-                            out.flush();
-                            out.close();
+                            if (imgStream != null)
+                                imgStream.close();
+                            if (out != null) {
+                                out.flush();
+                                out.close();
+                            }
                         }
                     }
                 }
@@ -242,7 +247,7 @@ public class OnlineTilesDownloader extends JGTModel {
         properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.png\n");
         properties.append("minzoom=").append(pMinzoom).append("\n");
         properties.append("maxzoom=").append(pMaxzoom).append("\n");
-        properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
+        properties.append("center=").append(latLongCentre.x).append(" ").append(latLongCentre.y).append("\n");
         properties.append("type=tms").append("\n");
 
         File propFile = new File(inFolder, pName + ".mapurl");
