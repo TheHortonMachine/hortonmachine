@@ -218,6 +218,10 @@ public class TmsGenerator extends JGTModel {
                             throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
                         }
                     }
+                    
+                    File ignoreMediaFile = new File(imageFolder, ".nomedia");
+                    ignoreMediaFile.createNewFile();
+                    
                     File imageFile = new File(imageFolder, j + ".png");
                     if (imageFile.exists()) {
                         continue;
