@@ -68,6 +68,10 @@ public class TmsGenerator extends JGTModel {
     @In
     public String inVectorFile = null;
 
+    @Description("An optional WMS url and layer name in the format: http://wmsurl#layername")
+    @In
+    public String inWMS = null;
+
     @Description("A name of the tile source.")
     @In
     public String pName = "tmstiles";
@@ -155,6 +159,10 @@ public class TmsGenerator extends JGTModel {
         File baseFolder = new File(inFolder, pName);
 
         ImageGenerator imgGen = new ImageGenerator(pm);
+        if (inWMS != null) {
+            imgGen.setWMS(inWMS);
+        }
+
         String notLoading = "Not loading non-existing file: ";
         if (inRasters != null)
             for( String rasterPath : inRasters ) {
@@ -218,10 +226,10 @@ public class TmsGenerator extends JGTModel {
                             throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
                         }
                     }
-                    
+
                     File ignoreMediaFile = new File(imageFolder, ".nomedia");
                     ignoreMediaFile.createNewFile();
-                    
+
                     File imageFile = new File(imageFolder, j + ".png");
                     if (imageFile.exists()) {
                         continue;

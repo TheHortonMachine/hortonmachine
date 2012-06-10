@@ -24,6 +24,7 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.wms.WebMapServer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -46,6 +48,7 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
+import org.geotools.map.WMSLayer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.ColorMap;
 import org.geotools.styling.ColorMapEntry;
@@ -83,6 +86,7 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class ImageGenerator {
 
+    private String wmsURL = null;
     private List<String> featurePaths = new ArrayList<String>();
     private List<String> featureFilter = new ArrayList<String>();
     private List<String> coveragePaths = new ArrayList<String>();
@@ -112,6 +116,15 @@ public class ImageGenerator {
         if (!coveragePaths.contains(coveragePath)) {
             coveragePaths.add(coveragePath);
         }
+    }
+
+    /**
+     * Set a WMS service to handle as raster layer.
+     * 
+     * @param wmsURL the WMS url and layer name in the format: http://wmsurl#layername
+     */
+    public void setWMS( String wmsURL ) {
+        this.wmsURL = wmsURL;
     }
 
     /**
@@ -159,7 +172,19 @@ public class ImageGenerator {
      */
     public void setLayers() throws Exception {
 
-        // coverages first
+        // wms first
+        if (wmsURL != null) {
+            String[] split = wmsURL.split("#");
+            // setup the reader
+            WebMapServer server = new WebMapServer(new URL(split[0]));
+            AbstractGridCoverage2DReader reader = new WMSLayer(server, getWMSLayer(server, split[1])).getReader();
+            RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
+            Style style = SLD.wrapSymbolizers(sym);
+            GridReaderLayer layer = new GridReaderLayer(reader, style);
+            layers.add(layer);
+        }
+
+        // coverages
         monitor.beginTask("Reading raster maps...", coveragePaths.size());
         for( String coveragePath : coveragePaths ) {
             File file = new File(coveragePath);
@@ -237,6 +262,16 @@ public class ImageGenerator {
         }
         monitor.done();
     }
+
+    private org.geotools.data.ows.Layer getWMSLayer( WebMapServer server, String layerName ) {
+        for( org.geotools.data.ows.Layer layer : server.getCapabilities().getLayerList() ) {
+            if (layerName.equals(layer.getName())) {
+                return layer;
+            }
+        }
+        throw new IllegalArgumentException("Could not find layer " + layerName);
+    }
+
     /**
      * Draw the map on an image.
      * 
