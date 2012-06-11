@@ -36,6 +36,7 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -52,6 +53,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Label(JGTConstants.NETWORK)
 @Documentation("Magnitudo.html")
 @Status(Status.CERTIFIED)
+@Name("magnitudo")
 @License("GPL3")
 public class Magnitudo extends JGTModel {
 
