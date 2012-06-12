@@ -228,7 +228,7 @@ public class TmsGenerator extends JGTModel {
 
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
 
-            pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1));
+            pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1)*(endYTile - startYTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
 
                 for( int j = startYTile; j <= endYTile; j++ ) {
@@ -254,6 +254,7 @@ public class TmsGenerator extends JGTModel {
 
                     final File imageFile = new File(imageFolder, j + "." + ext);
                     if (imageFile.exists()) {
+                        pm.worked(1);
                         continue;
                     }
 
@@ -267,6 +268,7 @@ public class TmsGenerator extends JGTModel {
                                     imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0,
                                             pCheckcolor);
                                 }
+                                pm.worked(1);
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                                 System.exit(1);
@@ -276,7 +278,6 @@ public class TmsGenerator extends JGTModel {
                     fixedThreadPool.execute(runner);
 
                 }
-                pm.worked(1);
             }
             try {
                 fixedThreadPool.shutdown();
