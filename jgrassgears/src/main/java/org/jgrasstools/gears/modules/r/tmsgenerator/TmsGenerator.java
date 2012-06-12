@@ -19,6 +19,9 @@ package org.jgrasstools.gears.modules.r.tmsgenerator;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -121,6 +124,10 @@ public class TmsGenerator extends JGTModel {
     @In
     public String inPath;
 
+    @Description("Max threads to use (default 1)")
+    @In
+    public Integer pMaxThreads = 1;
+
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
@@ -144,7 +151,7 @@ public class TmsGenerator extends JGTModel {
 
         CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
 
-        CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
+        final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
         CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
         ReferencedEnvelope inBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, boundsCrs);
         MathTransform in2MercatorTransform = CRS.findMathTransform(boundsCrs, mercatorCrs);
@@ -156,9 +163,9 @@ public class TmsGenerator extends JGTModel {
         Coordinate latLongCentre = latLongBounds.centre();
 
         File inFolder = new File(inPath);
-        File baseFolder = new File(inFolder, pName);
+        final File baseFolder = new File(inFolder, pName);
 
-        ImageGenerator imgGen = new ImageGenerator(pm);
+        final ImageGenerator imgGen = new ImageGenerator(pm);
         if (inWMS != null) {
             imgGen.setWMS(inWMS);
         }
@@ -189,7 +196,7 @@ public class TmsGenerator extends JGTModel {
         double e = mercatorBounds.getMaxX();
         double n = mercatorBounds.getMaxY();
 
-        GlobalMercator mercator = new GlobalMercator();
+        final GlobalMercator mercator = new GlobalMercator();
 
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
@@ -204,7 +211,9 @@ public class TmsGenerator extends JGTModel {
 
             int tileNum = 0;
 
-            ReferencedEnvelope levelBounds = new ReferencedEnvelope();
+            final ReferencedEnvelope levelBounds = new ReferencedEnvelope();
+
+            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
 
             pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
@@ -217,7 +226,7 @@ public class TmsGenerator extends JGTModel {
                     double east = bounds[2];
                     double north = bounds[3];
 
-                    ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
+                    final ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
                     levelBounds.expandToInclude(tmpBounds);
 
                     File imageFolder = new File(baseFolder, z + "/" + i);
@@ -230,18 +239,32 @@ public class TmsGenerator extends JGTModel {
                     File ignoreMediaFile = new File(imageFolder, ".nomedia");
                     ignoreMediaFile.createNewFile();
 
-                    File imageFile = new File(imageFolder, j + ".png");
+                    final File imageFile = new File(imageFolder, j + ".png");
                     if (imageFile.exists()) {
                         continue;
                     }
-                    try {
-                        imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        System.exit(1);
-                    }
+
+                    Runnable runner = new Runnable(){
+                        public void run() {
+                            try {
+                                imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                System.exit(1);
+                            }
+                        }
+                    };
+                    fixedThreadPool.execute(runner);
+
                 }
                 pm.worked(1);
+            }
+            try {
+                fixedThreadPool.shutdown();
+                fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
+                fixedThreadPool.shutdownNow();
+            } catch (InterruptedException exx) {
+                exx.printStackTrace();
             }
             pm.done();
 
