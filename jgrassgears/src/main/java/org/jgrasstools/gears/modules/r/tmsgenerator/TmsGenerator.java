@@ -116,6 +116,14 @@ public class TmsGenerator extends JGTModel {
     @In
     public boolean doLenient = true;
 
+    @Description("The image type to generate (0 = png = default, 1 = jpg).")
+    @In
+    public int pImagetype = 0;
+
+    @Description("A color rgb tripled. if it is not null and a tiles is made only of that color, then the tiles is not generated. Usefull to avoid generation of empty tiles.")
+    @In
+    public int[] pCheckcolor = new int[]{255, 255, 255};
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -136,6 +144,11 @@ public class TmsGenerator extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inPath, pEpsg, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+
+        String ext = "png";
+        if (pImagetype == 1) {
+            ext = "jpg";
+        }
 
         List<String> inVectors = null;
         if (inVectorFile != null && new File(inVectorFile).exists())
@@ -239,7 +252,7 @@ public class TmsGenerator extends JGTModel {
                     File ignoreMediaFile = new File(imageFolder, ".nomedia");
                     ignoreMediaFile.createNewFile();
 
-                    final File imageFile = new File(imageFolder, j + ".png");
+                    final File imageFile = new File(imageFolder, j + "." + ext);
                     if (imageFile.exists()) {
                         continue;
                     }
@@ -247,7 +260,13 @@ public class TmsGenerator extends JGTModel {
                     Runnable runner = new Runnable(){
                         public void run() {
                             try {
-                                imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0);
+                                if (pImagetype == 1) {
+                                    imgGen.dumpJpgImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0,
+                                            pCheckcolor);
+                                } else {
+                                    imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0,
+                                            pCheckcolor);
+                                }
                             } catch (Exception ex) {
                                 ex.printStackTrace();
                                 System.exit(1);
@@ -275,7 +294,8 @@ public class TmsGenerator extends JGTModel {
         }
 
         StringBuilder properties = new StringBuilder();
-        properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.png\n");
+
+        properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.").append(ext).append("\n");
         properties.append("minzoom=").append(pMinzoom).append("\n");
         properties.append("maxzoom=").append(pMaxzoom).append("\n");
         properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");

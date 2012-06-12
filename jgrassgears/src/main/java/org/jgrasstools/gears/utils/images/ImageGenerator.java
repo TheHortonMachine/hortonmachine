@@ -22,6 +22,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -326,19 +327,62 @@ public class ImageGenerator {
     }
 
     /**
-     * Writes an image of maps drawn to file. 
+     * Writes an image of maps drawn to a png file. 
+     * 
+     * @param imagePath the path to which to write the image.
+     * @param bounds the area of interest.
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units.
+     * @param rgbCheck an rgb tripled. If not <code>null</code> and the image generated is 
+     *                  composed only of that color, then the tile is not generated.
+     *                  This can be useful to avoid generation of empty tiles. 
+     * @throws IOException
+     */
+    public void dumpPngImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
+            int[] rgbCheck ) throws IOException {
+        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        boolean dumpIt = true;
+        if (rgbCheck != null)
+            dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
+        if (dumpIt)
+            ImageIO.write(dumpImage, "png", new File(imagePath));
+    }
+
+    /**
+     * Writes an image of maps drawn to a jpg file. 
      * 
      * @param imagePath the path to which to write the image.
      * @param bounds the area of interest.
      * @param imageWidth the width of the image to produce.
      * @param imageHeight the height of the image to produce.
      * @param buffer the buffer to add around the map bounds in map units. 
+     * @param rgbCheck an rgb tripled. If not <code>null</code> and the image generated is 
+     *                  composed only of that color, then the tile is not generated.
+     *                  This can be useful to avoid generation of empty tiles.
      * @throws IOException
      */
-    public void dumpPngImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer )
-            throws IOException {
+    public void dumpJpgImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
+            int[] rgbCheck ) throws IOException {
         BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
-        ImageIO.write(dumpImage, "png", new File(imagePath));
+        boolean dumpIt = true;
+        if (rgbCheck != null)
+            dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
+        if (dumpIt)
+            ImageIO.write(dumpImage, "jpg", new File(imagePath));
+    }
+
+    private boolean isAllOfCheckColor( int[] rgbCheck, BufferedImage dumpImage ) {
+        WritableRaster raster = dumpImage.getRaster();
+        for( int i = 0; i < raster.getWidth(); i++ ) {
+            for( int j = 0; j < raster.getHeight(); j++ ) {
+                int[] value = raster.getPixel(i, j, (int[]) null);
+                if (value[0] != rgbCheck[0] || value[1] != rgbCheck[1] || value[2] != rgbCheck[2]) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /**
