@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.utils;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -122,5 +123,26 @@ public class SldUtilities {
             featureTypeStyle.featureTypeNames().clear();
             featureTypeStyle.featureTypeNames().add(new NameImpl(GENERIC_FEATURE_TYPENAME));
         }
+    }
+
+    /**
+     * REmoves the alpha channel from a color.
+     * 
+     * @param color the color.
+     * @return the color without alpha.
+     */
+    public static Color colorWithoutAlpha( Color color ) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue());
+    }
+
+    /**
+     * Creates a color with the given alpha.
+     *  
+     * @param color the color to use.
+     * @param alpha an alpha value between 0 and 255.
+     * @return the color with alpha.
+     */
+    public static Color colorWithAlpha( Color color, int alpha ) {
+        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 }
