@@ -64,7 +64,11 @@ public class ShapefileFeatureWriter extends JGTModel {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
-    
+
+    @Description("Create also the spatial index for the file.")
+    @In
+    public boolean doIndex = true;
+
     @Description("The feature type. It's mandatory only if you want to write down an empty FeatureCollection")
     @In
     public SimpleFeatureType pType = null;
@@ -90,7 +94,12 @@ public class ShapefileFeatureWriter extends JGTModel {
         DataStoreFactorySpi dataStoreFactory = new ShapefileDataStoreFactory();
         Map<String, Serializable> params = new HashMap<String, Serializable>();
         params.put("url", shapeFile.toURI().toURL());
-        // params.put("create spatial index", Boolean.TRUE);
+        String key = "create spatial index";
+        if (doIndex) {
+            params.put(key, Boolean.TRUE);
+        }else{
+            params.put(key, Boolean.FALSE);
+        }
         if (geodata != null && geodata.size() != 0) {
             pType = geodata.getSchema();
         }
