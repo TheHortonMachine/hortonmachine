@@ -18,9 +18,12 @@
 package org.jgrasstools.gears.utils.images;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -397,11 +400,17 @@ public class ImageGenerator {
      * @param legend an optional legend {@link BufferedImage image}.
      * @param legendX the X position of the legend in the final image.
      * @param legendY the Y position of the legend in the final image.
+     * @param scalePrefix if not <code>null</code>, this string will be added before the scale definition.
+     *                      If <code>null</code>, no scale definition will be added.
+     * @param scaleSize a size for the scale.
+     * @param scaleX the X position of the scale in the final image.
+     * @param scaleY the X position of the scale in the final image.
      * @throws IOException
      * @since 0.7.6
      */
     public void dumpPngImageForScaleAndPaper( String imagePath, ReferencedEnvelope bounds, double scale, PaperFormat paperFormat,
-            Double dpi, BufferedImage legend, int legendX, int legendY ) throws IOException {
+            Double dpi, BufferedImage legend, int legendX, int legendY, String scalePrefix, float scaleSize, int scaleX,
+            int scaleY ) throws IOException {
         if (dpi == null) {
             dpi = 72.0;
         }
@@ -425,6 +434,28 @@ public class ImageGenerator {
         if (legend != null) {
             Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
             graphics.drawImage(legend, null, legendX, legendY);
+        }
+
+        if (scalePrefix != null) {
+            Graphics2D graphics = (Graphics2D) dumpImage.getGraphics();
+
+            Font scaleFont = graphics.getFont().deriveFont(scaleSize);
+            graphics.setFont(scaleFont);
+
+            FontMetrics fontMetrics = graphics.getFontMetrics(scaleFont);
+            String scaleString = scalePrefix + "1:" + (int) scale;
+            Rectangle2D stringBounds = fontMetrics.getStringBounds(scaleString, graphics);
+
+            double width = stringBounds.getWidth();
+            double height = stringBounds.getHeight();
+            graphics.setColor(Color.white);
+            double border = 5;
+            graphics.fillRect((int) scaleX, (int) (scaleY - height + 2 * border), (int) (width + 3 * border),
+                    (int) (height + 2 * border));
+
+            graphics.setColor(Color.black);
+            graphics.drawString(scaleString, (int) scaleX + 5, (int) scaleY);
+
         }
 
         ImageIO.write(dumpImage, "png", new File(imagePath));
