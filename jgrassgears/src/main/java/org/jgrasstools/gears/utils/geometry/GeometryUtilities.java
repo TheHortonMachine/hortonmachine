@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.GeodeticCalculator;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -50,7 +49,6 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
-import com.vividsolutions.jts.math.Vector2D;
 
 /**
  * Utilities related to {@link Geometry}.
@@ -116,6 +114,16 @@ public class GeometryUtilities {
                 new Coordinate(env.getMaxX(), env.getMinY()), new Coordinate(env.getMinX(), env.getMinY())};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
+    }
+
+    public static List<Geometry> extractSubGeometries( Geometry geometry ) {
+        List<Geometry> geometriesList = new ArrayList<Geometry>();
+        int numGeometries = geometry.getNumGeometries();
+        for( int i = 0; i < numGeometries; i++ ) {
+            Geometry geometryN = geometry.getGeometryN(i);
+            geometriesList.add(geometryN);
+        }
+        return geometriesList;
     }
 
     /**
