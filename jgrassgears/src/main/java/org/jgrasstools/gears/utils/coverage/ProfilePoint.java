@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.utils.coverage;
 
+import java.util.List;
+
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -67,6 +69,30 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
         return position;
     }
 
+    /**
+     * Calculates the mean slope of a given set of profilepoints.
+     * 
+     * @param points the points of the profile.
+     * @return the mean slope.
+     */
+    public static double getMeanSlope( List<ProfilePoint> points ) {
+        double meanSlope = 0;
+
+        int num = 0;
+        for( int i = 0; i < points.size() - 1; i++ ) {
+            ProfilePoint p1 = points.get(i);
+            ProfilePoint p2 = points.get(i + 1);
+
+            double dx = p2.progressive - p1.progressive;
+            double dy = p2.elevation - p1.elevation;
+            double tmpSlope = dy / dx;
+            meanSlope = meanSlope + tmpSlope;
+            num++;
+        }
+        meanSlope = meanSlope / num;
+        return meanSlope;
+    }
+
     public int compareTo( ProfilePoint o ) {
         if (NumericsUtilities.dEq(progressive, o.progressive)) {
             return 0;
@@ -76,8 +102,6 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
             return -1;
         }
     }
-    
-
 
     @Override
     public String toString() {
@@ -112,8 +136,7 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
          * This can be is used to find intersecting profiles.
          */
         Coordinate otherPosition = other.position;
-        if (NumericsUtilities.dEq(elevation, other.elevation)
-                && NumericsUtilities.dEq(position.x, otherPosition.x)
+        if (NumericsUtilities.dEq(elevation, other.elevation) && NumericsUtilities.dEq(position.x, otherPosition.x)
                 && NumericsUtilities.dEq(position.y, otherPosition.y)) {
             return true;
         } else {
