@@ -82,7 +82,7 @@ public class Profile extends JGTModel {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The output profile.")
+    @Description("The output profile for the last line read (contains progressive, elevation, x, y).")
     @Out
     public double[][] outProfile;
 
