@@ -148,6 +148,14 @@ public class Profile extends JGTModel {
                     sb.append(progressive).append(", ").append(elev).append("\n");
                 }
                 FileUtilities.writeFile(sb.toString(), profileFile);
+
+                double meanSlope = ProfilePoint.getMeanSlope(profilePoints);
+                StringBuilder sbSlope = new StringBuilder();
+                sbSlope.append("Mean slope for id = ");
+                sbSlope.append(id);
+                sbSlope.append(" is ");
+                sbSlope.append(meanSlope);
+                pm.message(sbSlope.toString());
             } else {
                 pm.errorMessage("Evaluating only first feature when writing to console. If you need the profile of all features, define an output folder.");
                 break;
@@ -185,6 +193,10 @@ public class Profile extends JGTModel {
             outProfile[i][3] = coord.y;
         }
 
+        double meanSlope = ProfilePoint.getMeanSlope(profilePoints);
+        StringBuilder sbSlope = new StringBuilder();
+        sbSlope.append("Mean slope profile is ");
+        sbSlope.append(meanSlope);
+        pm.message(sbSlope.toString());
     }
-
 }
