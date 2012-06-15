@@ -34,7 +34,9 @@ public enum PaperFormat {
     A3Landscape(420, 297), //
     A3Portrait(297, 420), //
     A4Landscape(297, 210), //
-    A4Portrait(210, 297); //
+    A4Portrait(210, 297), //
+    A5Landscape(210, 148), //
+    A5Portrait(148, 210); //
 
     private final int width;
     private final int height;
