@@ -73,6 +73,16 @@ public class PropertiesFeatureReader extends JGTModel {
             return;
         }
 
+        /*
+         * Works on types:
+         * 
+         * _=id:Integer,name:String,geom:Point
+         * fid1=1|jody garnett|POINT(0 0)
+         * fid2=2|brent|POINT(10 10)
+         * fid3=3|dave|POINT(20 20)
+         * fid4=4|justin deolivera|POINT(30 30)
+         */
+
         FeatureReader<SimpleFeatureType, SimpleFeature> reader = null;
         try {
             File propertiesFile = new File(file);
