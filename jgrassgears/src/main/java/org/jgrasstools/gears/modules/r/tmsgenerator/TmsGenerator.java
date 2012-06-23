@@ -34,6 +34,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -65,6 +66,10 @@ public class TmsGenerator extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRasterFile = null;
+
+    @Description("Optional regions for reading the rasters.")
+    @In
+    public List<GridGeometry2D> inRasterBounds = null;
 
     @Description("A file containing the list of vector map paths to consider (the order is relevant, first layers are placed below others).")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -193,6 +198,10 @@ public class TmsGenerator extends JGTModel {
                     pm.errorMessage(notLoading + rasterPath);
                 }
             }
+        if (inRasterBounds != null)
+            for( GridGeometry2D rasterBounds : inRasterBounds ) {
+                imgGen.addCoverageRegion(rasterBounds);
+            }
         if (inVectors != null)
             for( String vectorPath : inVectors ) {
                 File file = new File(vectorPath);
@@ -228,7 +237,7 @@ public class TmsGenerator extends JGTModel {
 
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
 
-            pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1)*(endYTile - startYTile + 1));
+            pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1) * (endYTile - startYTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
 
                 for( int j = startYTile; j <= endYTile; j++ ) {

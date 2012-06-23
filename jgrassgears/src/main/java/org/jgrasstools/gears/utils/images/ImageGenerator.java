@@ -36,6 +36,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
@@ -66,11 +67,13 @@ import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.expression.Expression;
 
+import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -94,6 +97,7 @@ public class ImageGenerator {
     private List<String> featurePaths = new ArrayList<String>();
     private List<String> featureFilter = new ArrayList<String>();
     private List<String> coveragePaths = new ArrayList<String>();
+    private List<GridGeometry2D> coverageRegions = new ArrayList<GridGeometry2D>();
     // private AffineTransform worldToScreen;
     // private AffineTransform screenToWorld;
 
@@ -119,6 +123,17 @@ public class ImageGenerator {
     public void addCoveragePath( String coveragePath ) {
         if (!coveragePaths.contains(coveragePath)) {
             coveragePaths.add(coveragePath);
+        }
+    }
+
+    /**
+     * Add a coverage read region (this has to have same index as addCoveragePath.
+     * 
+     * @param coverageRegion the region to read.
+     */
+    public void addCoverageRegion( GridGeometry2D coverageRegion ) {
+        if (!coverageRegions.contains(coverageRegion)) {
+            coverageRegions.add(coverageRegion);
         }
     }
 
@@ -190,12 +205,38 @@ public class ImageGenerator {
 
         // coverages
         monitor.beginTask("Reading raster maps...", coveragePaths.size());
-        for( String coveragePath : coveragePaths ) {
+        for( int r = 0; r < coveragePaths.size(); r++ ) {
+            String coveragePath = coveragePaths.get(r);
+            GridGeometry2D region = null;
+            if (coverageRegions != null && coverageRegions.size() == coveragePaths.size()) {
+                region = coverageRegions.get(r);
+            }
+
             File file = new File(coveragePath);
             GridCoverage2D raster = null;
             AbstractGridCoverage2DReader reader = null;
             try {
-                raster = RasterReader.readRaster(coveragePath);
+                if (region == null) {
+                    raster = RasterReader.readRaster(coveragePath);
+                } else {
+                    RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(region);
+                    double n = regionMap.getNorth();
+                    double s = regionMap.getSouth();
+                    double w = regionMap.getWest();
+                    double e = regionMap.getEast();
+                    double xres = regionMap.getXres();
+                    double yres = regionMap.getYres();
+                    RasterReader rreader = new RasterReader();
+                    rreader.file = coveragePath;
+                    rreader.pNorth = n;
+                    rreader.pSouth = s;
+                    rreader.pWest = w;
+                    rreader.pEast = e;
+                    rreader.pXres = xres;
+                    rreader.pYres = yres;
+                    rreader.process();
+                    raster = rreader.outRaster;
+                }
                 // if (crs == null) {
                 // crs = raster.getCoordinateReferenceSystem();
                 // }
