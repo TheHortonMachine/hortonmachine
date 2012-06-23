@@ -33,11 +33,13 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.grid.DefaultGridFeatureBuilder;
 import org.geotools.grid.GridFeatureBuilder;
@@ -76,6 +78,14 @@ import com.vividsolutions.jts.geom.Point;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class GridsGenerator extends JGTModel {
 
+    @Description("Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.")
+    @In
+    public SimpleFeatureCollection inVector = null;
+
+    @Description("Optional raster map from which to take the bounds (if supplied, all other bounds related parameter are ignored. This needs pRows and pCols to be defined.")
+    @In
+    public GridCoverage2D inRaster = null;
+
     @Description("The lower left longitude.")
     @In
     public double pLon = 0.0;
@@ -90,7 +100,7 @@ public class GridsGenerator extends JGTModel {
 
     @Description("The grid cell height.")
     @In
-    public double pHeight = 0.0;
+    public double pHeight = 1.0;
 
     @Description("The number of rows.")
     @In
@@ -123,17 +133,43 @@ public class GridsGenerator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(pCode);
+
+        boolean isSquare;
+        double s;
+        double n;
+        double w;
+        double e;
+        CoordinateReferenceSystem crs;
+        if (inVector != null) {
+            ReferencedEnvelope bounds = inVector.getBounds();
+            crs = inVector.getSchema().getCoordinateReferenceSystem();
+            s = bounds.getMinY();
+            n = bounds.getMaxY();
+            w = bounds.getMinX();
+            e = bounds.getMaxX();
+            pWidth = bounds.getWidth() / pCols;
+            pHeight = bounds.getHeight() / pRows;
+        } else if (inRaster != null) {
+            Envelope2D bounds = inRaster.getGridGeometry().getEnvelope2D();
+            crs = inRaster.getCoordinateReferenceSystem();
+            s = bounds.getMinY();
+            n = bounds.getMaxY();
+            w = bounds.getMinX();
+            e = bounds.getMaxX();
+            pWidth = bounds.getWidth() / pCols;
+            pHeight = bounds.getHeight() / pRows;
+        } else {
+            checkNull(pCode);
+            s = pLat;
+            n = pLat + pRows * pHeight;
+            w = pLon;
+            e = pLon + pCols * pWidth;
+            crs = CRS.decode(pCode);
+        }
+        isSquare = NumericsUtilities.dEq(pWidth, pHeight) ? true : false;
 
         outMap = FeatureCollections.newCollection();
 
-        boolean isSquare = NumericsUtilities.dEq(pWidth, pHeight) ? true : false;
-
-        double s = pLat;
-        double n = pLat + pRows * pHeight;
-        double w = pLon;
-        double e = pLon + pCols * pWidth;
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
         ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, crs);
 
         pm.beginTask("Generating grid...", IJGTProgressMonitor.UNKNOWN);

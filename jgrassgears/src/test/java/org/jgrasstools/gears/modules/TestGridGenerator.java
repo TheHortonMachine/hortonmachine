@@ -18,6 +18,7 @@
 // */
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
+//import org.jgrasstools.gears.io.vectorreader.VectorReader;
 //import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 //import org.jgrasstools.gears.modules.v.grids.GridsGenerator;
 //import org.jgrasstools.gears.utils.HMTestCase;
@@ -30,26 +31,40 @@
 //public class TestGridGenerator extends HMTestCase {
 //
 //    public void testGridGenerator() throws Exception {
-//        String outdtm = "D:\\TMP\\arpa\\grid_points_rect20x10_spacing5.shp";
+//        String inVector = "/home/moovida/geologico2012/geologico_2012_data/THEBIG_PROCESSING/pl_10714_bosco.shp";
+//        String outVector = "/home/moovida/geologico2012/geologico_2012_data/THEBIG_PROCESSING/divisione5x5.shp";
+//
+//        SimpleFeatureCollection inFC = VectorReader.readVector(inVector);
 //
 //        GridsGenerator grid = new GridsGenerator();
 //        grid.pm = pm;
-//        grid.pCode = "EPSG:32632";
+//        grid.inVector = inFC;
 //
-//        double w = 653000.0;
-//        double s = 5100000.0;
-//        grid.pLon = w;
-//        grid.pLat = s;
-//        grid.pWidth = 20.0;
-//        grid.pHeight = 10.0;
-//        grid.pCols = 50;
-//        grid.pRows = 100;
-//        grid.pSpacing = 5.0;
-//        grid.pType = 2;
+//        grid.pCols = 5;
+//        grid.pRows = 5;
+//
+//        grid.pType = 0;
 //        grid.process();
 //        SimpleFeatureCollection outMap = grid.outMap;
+//        VectorWriter.writeVector(outVector, outMap);
 //
-//        VectorWriter.writeVector(outdtm, outMap);
+//        // GridsGenerator grid = new GridsGenerator();
+//        // grid.pm = pm;
+//        // grid.pCode = "EPSG:32632";
+//        //
+//        // double w = 653000.0;
+//        // double s = 5100000.0;
+//        // grid.pLon = w;
+//        // grid.pLat = s;
+//        // grid.pWidth = 20.0;
+//        // grid.pHeight = 10.0;
+//        // grid.pCols = 50;
+//        // grid.pRows = 100;
+//        // grid.pSpacing = 5.0;
+//        // grid.pType = 2;
+//        // grid.process();
+//        // SimpleFeatureCollection outMap = grid.outMap;
+//
 //    }
 //
 //}
