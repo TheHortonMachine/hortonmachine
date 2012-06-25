@@ -241,19 +241,19 @@ public class ImageGenerator {
                 // crs = raster.getCoordinateReferenceSystem();
                 // }
             } catch (Exception e) {
-                monitor.errorMessage(e.getLocalizedMessage());
-                monitor.errorMessage("Trying to find other coverage source...");
-                // try with available readers
-                try {
-                    File coverageFile = new File(coveragePath);
-                    AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
-                    reader = format.getReader(coverageFile);
-                    // if (crs == null) {
-                    // crs = reader.getCrs();
-                    // }
-                } catch (Exception ex) {
-                    throw ex;
-                }
+//                monitor.errorMessage(e.getLocalizedMessage());
+//                monitor.errorMessage("Trying to find other coverage source...");
+//                // try with available readers
+//                try {
+//                    File coverageFile = new File(coveragePath);
+//                    AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
+//                    reader = format.getReader(coverageFile);
+//                    // if (crs == null) {
+//                    // crs = reader.getCrs();
+//                    // }
+//                } catch (Exception ex) {
+                    throw e;
+//                }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
