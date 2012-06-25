@@ -128,6 +128,10 @@ public class TmsGenerator extends JGTModel {
     @Description("A color rgb tripled. if it is not null and a tiles is made only of that color, then the tiles is not generated. Usefull to avoid generation of empty tiles.")
     @In
     public int[] pCheckcolor = new int[]{255, 255, 255};
+    
+    @Description("Optional flag to force a legacy GRASS driver usage.")
+    @In
+    public Boolean doLegacyGrass = false;
 
     @Description("The progress monitor.")
     @In
@@ -187,6 +191,7 @@ public class TmsGenerator extends JGTModel {
         if (inWMS != null) {
             imgGen.setWMS(inWMS);
         }
+        imgGen.doLegacyGrass = doLegacyGrass;
 
         String notLoading = "Not loading non-existing file: ";
         if (inRasters != null)

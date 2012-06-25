@@ -35,6 +35,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import oms3.annotations.Description;
+import oms3.annotations.In;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
@@ -92,6 +95,8 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 0.7.3
  */
 public class ImageGenerator {
+    
+    public boolean doLegacyGrass = false;
 
     private String wmsURL = null;
     private List<String> featurePaths = new ArrayList<String>();
@@ -111,6 +116,10 @@ public class ImageGenerator {
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
+    }
+    
+    public void setDoLegacyGrass( boolean doLegacyGrass ) {
+        this.doLegacyGrass = doLegacyGrass;
     }
 
     /**
@@ -234,6 +243,7 @@ public class ImageGenerator {
                     rreader.pEast = e;
                     rreader.pXres = xres;
                     rreader.pYres = yres;
+                    rreader.doLegacyGrass = doLegacyGrass;
                     rreader.process();
                     raster = rreader.outRaster;
                 }
