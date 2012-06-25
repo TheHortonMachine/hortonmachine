@@ -158,6 +158,10 @@ public class RasterReader extends JGTModel {
     @In
     public Integer pCols = null;
 
+    @Description("Optional flag to force a legacy GRASS driver usage.")
+    @In
+    public Boolean doLegacyGrass = false;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -268,7 +272,7 @@ public class RasterReader extends JGTModel {
         if (!doEnvelope) {
             int r = readRegion.getRows();
             int c = readRegion.getCols();
-            if (!JGTConstants.doesOverFlow(r, c)) {
+            if (!JGTConstants.doesOverFlow(r, c) && !doLegacyGrass) {
                 if (generalParameter == null) {
                     generalParameter = createGridGeometryGeneralParameter(readRegion.getCols(), readRegion.getRows(),
                             readRegion.getNorth(), readRegion.getSouth(), readRegion.getEast(), readRegion.getWest(), crs);
