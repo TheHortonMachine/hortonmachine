@@ -81,7 +81,11 @@ public class VectorReader extends JGTModel {
         File vectorFile = new File(file);
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp")) {
-            outVector = ShapefileFeatureReader.readShapefile(vectorFile.getAbsolutePath());
+            ShapefileFeatureReader reader = new ShapefileFeatureReader();
+            reader.file = vectorFile.getAbsolutePath();
+            reader.pm = pm;
+            reader.readFeatureCollection();
+            outVector = reader.geodata;
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = PropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else {
