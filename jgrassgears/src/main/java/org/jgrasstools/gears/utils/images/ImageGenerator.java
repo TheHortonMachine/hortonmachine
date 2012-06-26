@@ -384,6 +384,54 @@ public class ImageGenerator {
         return dumpImage;
     }
 
+    /**
+     * Draw the map on an image creating a new MapContent.
+     * 
+     * @param bounds the area of interest.
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units. 
+     * @return the image.
+     */
+    public BufferedImage drawImageWithNewMapContent( ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
+        MapContent content = new MapContent();
+        content.setTitle("dump");
+
+        for( Layer layer : layers ) {
+            content.addLayer(layer);
+        }
+
+        StreamingRenderer renderer = new StreamingRenderer();
+        renderer.setMapContent(content);
+
+        if (buffer > 0.0)
+            ref.expandBy(buffer, buffer);
+
+        double envW = ref.getWidth();
+        double envH = ref.getHeight();
+
+        if (envW < envH) {
+            double newEnvW = envH * (double) imageWidth / (double) imageHeight;
+            double delta = newEnvW - envW;
+            ref.expandBy(delta / 2, 0);
+        } else {
+            double newEnvH = envW * (double) imageHeight / (double) imageWidth;
+            double delta = newEnvH - envH;
+            ref.expandBy(0, delta / 2.0);
+        }
+
+        Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
+        BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = dumpImage.createGraphics();
+        g2d.fillRect(0, 0, imageWidth, imageHeight);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        renderer.paint(g2d, imageBounds, ref);
+
+        content.dispose();
+        return dumpImage;
+    }
+
     public void dispose() {
         if (content != null)
             content.dispose();
@@ -409,7 +457,7 @@ public class ImageGenerator {
         if (rgbCheck != null)
             dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
         if (dumpIt)
-            ImageIO.write(dumpImage, "png", new File(imagePath));
+            ImageIO.write(dumpImage, "png", new File(imagePath)); //$NON-NLS-1$
     }
 
     /**
