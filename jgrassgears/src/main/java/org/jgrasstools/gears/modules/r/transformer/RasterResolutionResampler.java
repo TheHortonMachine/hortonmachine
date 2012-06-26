@@ -26,6 +26,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -42,6 +43,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Convert")
 @Label(JGTConstants.RASTERPROCESSING)
+@Name("rresolresampler")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RasterResolutionResampler extends JGTModel {
