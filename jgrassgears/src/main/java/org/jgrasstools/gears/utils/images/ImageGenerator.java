@@ -35,14 +35,9 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import oms3.annotations.Description;
-import oms3.annotations.In;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -76,7 +71,6 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.filter.expression.Expression;
 
-import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -95,7 +89,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * @since 0.7.3
  */
 public class ImageGenerator {
-    
+
     public boolean doLegacyGrass = false;
 
     private String wmsURL = null;
@@ -113,11 +107,13 @@ public class ImageGenerator {
     private List<Layer> layers = new ArrayList<Layer>();
     private MapContent content;
 
+    private StreamingRenderer renderer;
+
     public ImageGenerator( IJGTProgressMonitor monitor ) {
         if (monitor != null)
             this.monitor = monitor;
     }
-    
+
     public void setDoLegacyGrass( boolean doLegacyGrass ) {
         this.doLegacyGrass = doLegacyGrass;
     }
@@ -251,19 +247,19 @@ public class ImageGenerator {
                 // crs = raster.getCoordinateReferenceSystem();
                 // }
             } catch (Exception e) {
-//                monitor.errorMessage(e.getLocalizedMessage());
-//                monitor.errorMessage("Trying to find other coverage source...");
-//                // try with available readers
-//                try {
-//                    File coverageFile = new File(coveragePath);
-//                    AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
-//                    reader = format.getReader(coverageFile);
-//                    // if (crs == null) {
-//                    // crs = reader.getCrs();
-//                    // }
-//                } catch (Exception ex) {
-                    throw e;
-//                }
+                // monitor.errorMessage(e.getLocalizedMessage());
+                // monitor.errorMessage("Trying to find other coverage source...");
+                // // try with available readers
+                // try {
+                // File coverageFile = new File(coveragePath);
+                // AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
+                // reader = format.getReader(coverageFile);
+                // // if (crs == null) {
+                // // crs = reader.getCrs();
+                // // }
+                // } catch (Exception ex) {
+                throw e;
+                // }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
@@ -333,6 +329,20 @@ public class ImageGenerator {
         throw new IllegalArgumentException("Could not find layer " + layerName);
     }
 
+    private synchronized void checkMapContent() {
+        if (content == null) {
+            content = new MapContent();
+            content.setTitle("dump");
+
+            for( Layer layer : layers ) {
+                content.addLayer(layer);
+            }
+
+            renderer = new StreamingRenderer();
+            renderer.setMapContent(content);
+        }
+    }
+
     /**
      * Draw the map on an image.
      * 
@@ -343,20 +353,13 @@ public class ImageGenerator {
      * @return the image.
      */
     public BufferedImage drawImage( ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
-
-        content = new MapContent();
-        content.setTitle("dump");
-        // if (totalBounds != null)
-        // content.getViewport().setBounds(totalBounds);
+        checkMapContent();
 
         if (buffer > 0.0)
             ref.expandBy(buffer, buffer);
 
         double envW = ref.getWidth();
         double envH = ref.getHeight();
-        for( Layer layer : layers ) {
-            content.addLayer(layer);
-        }
 
         if (envW < envH) {
             double newEnvW = envH * (double) imageWidth / (double) imageHeight;
@@ -374,9 +377,9 @@ public class ImageGenerator {
         g2d.fillRect(0, 0, imageWidth, imageHeight);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        StreamingRenderer renderer = new StreamingRenderer();
-        renderer.setMapContent(content);
-        renderer.paint(g2d, imageBounds, ref);
+        synchronized (renderer) {
+            renderer.paint(g2d, imageBounds, ref);
+        }
 
         return dumpImage;
     }
