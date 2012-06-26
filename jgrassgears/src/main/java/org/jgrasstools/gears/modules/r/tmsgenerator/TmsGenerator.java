@@ -272,7 +272,7 @@ public class TmsGenerator extends JGTModel {
                         continue;
                     }
                     final String imagePath = imageFile.getAbsolutePath();
-                    final ReferencedEnvelope finalBounds = levelBounds;
+                    final ReferencedEnvelope finalBounds = tmpBounds;
                     Runnable runner = new Runnable(){
                         public void run() {
                             try {
@@ -294,8 +294,9 @@ public class TmsGenerator extends JGTModel {
             }
             try {
                 fixedThreadPool.shutdown();
-                fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
-                fixedThreadPool.shutdownNow();
+                while (!fixedThreadPool.isTerminated()) {
+                    Thread.sleep(100);
+                }
             } catch (InterruptedException exx) {
                 exx.printStackTrace();
             }

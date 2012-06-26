@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -105,6 +106,7 @@ public class ImageGenerator {
     private IJGTProgressMonitor monitor = new DummyProgressMonitor();
 
     private List<Layer> layers = new ArrayList<Layer>();
+    private List<Layer> synchronizedLayers = null;
     private MapContent content;
 
     private StreamingRenderer renderer;
@@ -317,6 +319,9 @@ public class ImageGenerator {
             layers.add(layer);
             monitor.worked(1);
         }
+
+        synchronizedLayers = Collections.synchronizedList(layers);
+
         monitor.done();
     }
 
@@ -397,8 +402,10 @@ public class ImageGenerator {
         MapContent content = new MapContent();
         content.setTitle("dump");
 
-        for( Layer layer : layers ) {
-            content.addLayer(layer);
+        synchronized (synchronizedLayers) {
+            for( Layer layer : synchronizedLayers ) {
+                content.addLayer(layer);
+            }
         }
 
         StreamingRenderer renderer = new StreamingRenderer();
@@ -428,7 +435,7 @@ public class ImageGenerator {
 
         renderer.paint(g2d, imageBounds, ref);
 
-        content.dispose();
+        // content.dispose();
         return dumpImage;
     }
 
@@ -452,7 +459,7 @@ public class ImageGenerator {
      */
     public void dumpPngImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
             int[] rgbCheck ) throws IOException {
-        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        BufferedImage dumpImage = drawImageWithNewMapContent(bounds, imageWidth, imageHeight, buffer);
         boolean dumpIt = true;
         if (rgbCheck != null)
             dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
