@@ -128,7 +128,7 @@ public class TmsGenerator extends JGTModel {
     @Description("A color rgb tripled. if it is not null and a tiles is made only of that color, then the tiles is not generated. Usefull to avoid generation of empty tiles.")
     @In
     public int[] pCheckcolor = new int[]{255, 255, 255};
-    
+
     @Description("Optional flag to force a legacy GRASS driver usage.")
     @In
     public Boolean doLegacyGrass = false;
@@ -271,16 +271,15 @@ public class TmsGenerator extends JGTModel {
                         pm.worked(1);
                         continue;
                     }
-
+                    final String imagePath = imageFile.getAbsolutePath();
+                    final ReferencedEnvelope finalBounds = levelBounds;
                     Runnable runner = new Runnable(){
                         public void run() {
                             try {
                                 if (pImagetype == 1) {
-                                    imgGen.dumpJpgImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0,
-                                            pCheckcolor);
+                                    imgGen.dumpJpgImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
                                 } else {
-                                    imgGen.dumpPngImage(imageFile.getAbsolutePath(), tmpBounds, TILESIZE, TILESIZE, 0.0,
-                                            pCheckcolor);
+                                    imgGen.dumpPngImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
                                 }
                                 pm.worked(1);
                             } catch (Exception ex) {
@@ -303,8 +302,8 @@ public class TmsGenerator extends JGTModel {
             pm.done();
 
             pm.message("Zoom level: " + z + " has " + tileNum + " tiles.");
-            pm.message("Boundary covered at Zoom level: " + z + ": " + levelBounds);
-            pm.message("Total boundary wanted: " + mercatorBounds);
+            // pm.message("Boundary covered at Zoom level: " + z + ": " + levelBounds);
+            // pm.message("Total boundary wanted: " + mercatorBounds);
 
         }
 
