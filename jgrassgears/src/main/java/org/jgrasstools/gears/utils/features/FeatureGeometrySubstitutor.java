@@ -61,6 +61,10 @@ public class FeatureGeometrySubstitutor {
      * @return the new created feature, as merged from the old feature plus the new attributes.
      */
     public SimpleFeature substituteGeometry( SimpleFeature oldFeature, Geometry newGeometry ) {
+        return substituteGeometry(oldFeature, newGeometry, null);
+    }
+
+    public SimpleFeature substituteGeometry( SimpleFeature oldFeature, Geometry newGeometry, String id ) {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
@@ -68,7 +72,7 @@ public class FeatureGeometrySubstitutor {
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
         builder.addAll(newAttributes);
-        SimpleFeature f = builder.buildFeature(null);
+        SimpleFeature f = builder.buildFeature(id);
         return f;
     }
 
