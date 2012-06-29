@@ -494,23 +494,24 @@ public class FeatureUtilities {
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            if (doSubGeoms) {
-                int numGeometries = geometry.getNumGeometries();
-                for( int i = 0; i < numGeometries; i++ ) {
-                    Geometry geometryN = geometry.getGeometryN(i);
-                    geometriesList.add(geometryN);
+            if (geometry != null)
+                if (doSubGeoms) {
+                    int numGeometries = geometry.getNumGeometries();
+                    for( int i = 0; i < numGeometries; i++ ) {
+                        Geometry geometryN = geometry.getGeometryN(i);
+                        geometriesList.add(geometryN);
+                        if (userDataField != null) {
+                            Object attribute = feature.getAttribute(userDataField);
+                            geometryN.setUserData(attribute);
+                        }
+                    }
+                } else {
+                    geometriesList.add(geometry);
                     if (userDataField != null) {
                         Object attribute = feature.getAttribute(userDataField);
-                        geometryN.setUserData(attribute);
+                        geometry.setUserData(attribute);
                     }
                 }
-            } else {
-                geometriesList.add(geometry);
-                if (userDataField != null) {
-                    Object attribute = feature.getAttribute(userDataField);
-                    geometry.setUserData(attribute);
-                }
-            }
         }
         featureIterator.close();
         return geometriesList;
