@@ -57,6 +57,13 @@ import com.vividsolutions.jts.linearref.LengthIndexedLine;
  */
 public class GeometryUtilities {
 
+    public static Polygon[] TYPE_POLYGON = new Polygon[0];
+    public static MultiPolygon[] TYPE_MULTIPOLYGON = new MultiPolygon[0];
+    public static LineString[] TYPE_LINESTRING = new LineString[0];
+    public static MultiLineString[] TYPE_MULTILINESTRING = new MultiLineString[0];
+    public static Point[] TYPE_POINT = new Point[0];
+    public static MultiPoint[] TYPE_MULTIPOINT = new MultiPoint[0];
+
     /**
      * Geometry types used by the utility.
      */
