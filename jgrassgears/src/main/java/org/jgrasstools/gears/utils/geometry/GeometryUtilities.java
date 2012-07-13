@@ -48,6 +48,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 
 /**
@@ -616,5 +617,21 @@ public class GeometryUtilities {
         linesList.add(lineString);
 
         return linesList;
+    }
+
+    /**
+     * Pack a list of geometries in a {@link STRtree}.
+     * 
+     * <p>Note that the tree can't be modified once the query method has been called first.</p>
+     * 
+     * @param geometries the list of geometries.
+     * @return the {@link STRtree}.
+     */
+    public static STRtree geometriesToSRTree( List<Geometry> geometries ) {
+        STRtree tree = new STRtree(geometries.size());
+        for( Geometry geometry : geometries ) {
+            tree.insert(geometry.getEnvelopeInternal(), geometry);
+        }
+        return tree;
     }
 }
