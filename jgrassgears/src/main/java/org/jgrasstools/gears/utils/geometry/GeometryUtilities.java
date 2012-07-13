@@ -609,9 +609,9 @@ public class GeometryUtilities {
             linesList.add(lineString);
             runningLength = runningLength + interval;
         }
-        Coordinate centerCoordinate = indexedLine.extractPoint(runningLength);
-        Coordinate leftCoordinate = indexedLine.extractPoint(runningLength, -halfWidth);
-        Coordinate rightCoordinate = indexedLine.extractPoint(runningLength, halfWidth);
+        Coordinate centerCoordinate = indexedLine.extractPoint(endAt);
+        Coordinate leftCoordinate = indexedLine.extractPoint(endAt, -halfWidth);
+        Coordinate rightCoordinate = indexedLine.extractPoint(endAt, halfWidth);
         LineString lineString = geomFactory.createLineString(new Coordinate[]{leftCoordinate, centerCoordinate, rightCoordinate});
         linesList.add(lineString);
 
