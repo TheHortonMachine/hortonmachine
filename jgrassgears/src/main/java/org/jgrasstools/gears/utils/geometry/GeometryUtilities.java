@@ -26,6 +26,7 @@ import static java.lang.Math.toRadians;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.geotools.referencing.GeodeticCalculator;
@@ -34,6 +35,8 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.opengis.feature.type.GeometryType;
 
+import com.vividsolutions.jts.algorithm.PointLocator;
+import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -41,6 +44,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Location;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
@@ -48,8 +52,13 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.index.chain.MonotoneChain;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
+import com.vividsolutions.jts.noding.IntersectionAdder;
+import com.vividsolutions.jts.noding.MCIndexNoder;
+import com.vividsolutions.jts.noding.NodedSegmentString;
+import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 
 /**
  * Utilities related to {@link Geometry}.
@@ -633,5 +642,54 @@ public class GeometryUtilities {
             tree.insert(geometry.getEnvelopeInternal(), geometry);
         }
         return tree;
+    }
+
+    /**
+     * {@link Polygon} by {@link LineString} split.
+     * 
+     * <p>From JTS ml: http://lists.refractions.net/pipermail/jts-devel/2008-September/002666.html</p> 
+     * 
+     * @param polygon the input polygon.
+     * @param line the input line to use to split.
+     * @return the list of split polygons.
+     */
+    public static List<Polygon> splitPolygon( Polygon polygon, LineString line ) {
+        /*
+         * Use MCIndexNoder to node the polygon and linestring together, 
+         * Polygonizer to polygonize the noded edges, and then PointLocater 
+         * to determine which of the resultant polygons correspond to 
+         * the input polygon. 
+         */
+        IntersectionAdder _intersector = new IntersectionAdder(new RobustLineIntersector());
+        MCIndexNoder mci = new MCIndexNoder();
+        mci.setSegmentIntersector(_intersector);
+        NodedSegmentString pSeg = new NodedSegmentString(polygon.getCoordinates(), null);
+        NodedSegmentString lSeg = new NodedSegmentString(line.getCoordinates(), null);
+        List<NodedSegmentString> nodesSegmentStringList = new ArrayList<NodedSegmentString>();
+        nodesSegmentStringList.add(pSeg);
+        nodesSegmentStringList.add(lSeg);
+        mci.computeNodes(nodesSegmentStringList);
+        Polygonizer polygonizer = new Polygonizer();
+        List<LineString> lsList = new ArrayList<LineString>();
+        for( Object o : mci.getMonotoneChains() ) {
+            MonotoneChain mtc = (MonotoneChain) o;
+            LineString l = gf().createLineString(mtc.getCoordinates());
+            lsList.add(l);
+        }
+        Geometry nodedLineStrings = lsList.get(0);
+        for( int i = 1; i < lsList.size(); i++ ) {
+            nodedLineStrings = nodedLineStrings.union(lsList.get(i));
+        }
+        polygonizer.add(nodedLineStrings);
+        @SuppressWarnings("unchecked")
+        Collection<Polygon> polygons = polygonizer.getPolygons();
+        List<Polygon> newPolygons = new ArrayList<Polygon>();
+        PointLocator pl = new PointLocator();
+        for( Polygon p : polygons ) {
+            if (pl.locate(p.getInteriorPoint().getCoordinate(), p) == Location.INTERIOR) {
+                newPolygons.add(p);
+            }
+        }
+        return newPolygons;
     }
 }
