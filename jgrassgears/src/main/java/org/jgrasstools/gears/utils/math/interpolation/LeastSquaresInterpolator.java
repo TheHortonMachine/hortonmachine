@@ -36,9 +36,9 @@ public class LeastSquaresInterpolator implements Interpolator {
     private int n;
     private double[][] data;
     /** line coefficient a0 */
-    private float a0;
+    private double a0;
     /** line coefficient a1 */
-    private float a1;
+    private double a1;
     private double sumX;
     private double sumY;
     private double sumXX;
@@ -93,13 +93,13 @@ public class LeastSquaresInterpolator implements Interpolator {
             return;
 
         if (n >= 2) {
-            float xBar = (float) sumX / n;
-            float yBar = (float) sumY / n;
+            double xBar = (double) sumX / n;
+            double yBar = (double) sumY / n;
 
-            a1 = (float) ((n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX));
-            a0 = (float) (yBar - a1 * xBar);
+            a1 = (double) ((n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX));
+            a0 = (double) (yBar - a1 * xBar);
         } else {
-            a0 = a1 = Float.NaN;
+            a0 = a1 = Double.NaN;
         }
 
         coefsValid = true;
@@ -109,7 +109,7 @@ public class LeastSquaresInterpolator implements Interpolator {
      * Return the coefficient a0.
      * @return the value of a0
      */
-    public float getA0() {
+    public double getA0() {
         validateCoefficients();
         return a0;
     }
@@ -118,7 +118,7 @@ public class LeastSquaresInterpolator implements Interpolator {
      * Return the coefficient a1.
      * @return the value of a1
      */
-    public float getA1() {
+    public double getA1() {
         validateCoefficients();
         return a1;
     }
