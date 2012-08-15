@@ -227,6 +227,8 @@ public class JGTConstants {
      */
     public static final String AIG = "adf";
     public static final String ESRIGRID = "asc";
+    public static final String JPG = "jpg";
+    public static final String JPEG = "jpeg";
     public static final String GEOTIFF = "tiff";
     public static final String GEOTIF = "tif";
     public static final String GRASS = "grass";

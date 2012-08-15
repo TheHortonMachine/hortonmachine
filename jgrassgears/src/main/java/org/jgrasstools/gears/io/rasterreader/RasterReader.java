@@ -22,6 +22,8 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASS;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.JPEG;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.JPG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -80,6 +82,7 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.geotools.gce.image.WorldImageReader;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
@@ -214,6 +217,8 @@ public class RasterReader extends JGTModel {
             pType = AIG;
         } else if (file.toLowerCase().endsWith(GEOTIFF) || file.toLowerCase().endsWith(GEOTIF)) {
             pType = GEOTIFF;
+        } else if (file.toLowerCase().endsWith(JPEG) || file.toLowerCase().endsWith(JPG)) {
+            pType = JPG;
         } else if (CoverageUtilities.isGrass(file)) {
             pType = GRASS;
         } else
@@ -228,6 +233,8 @@ public class RasterReader extends JGTModel {
                 readArcGrid(mapFile);
             } else if (pType.equals(GEOTIFF)) {
                 readGeotiff(mapFile);
+            } else if (pType.equals(JPG)) {
+                readJpg(mapFile);
             } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
                 readAig(mapFile);
             } else if (pType.equals(GRASS)) {
@@ -333,6 +340,18 @@ public class RasterReader extends JGTModel {
 
             resample();
             checkNovalues();
+        }
+    }
+
+    private void readJpg( File mapFile ) throws IllegalArgumentException, IOException {
+        WorldImageReader worldImageReader = new WorldImageReader(mapFile);
+        originalEnvelope = worldImageReader.getOriginalEnvelope();
+        if (!doEnvelope) {
+            GridCoverage2D coverage = worldImageReader.read(generalParameter);
+            outRaster = coverage.view(ViewType.RENDERED);
+
+            resample();
+            // checkNovalues();
         }
     }
 
