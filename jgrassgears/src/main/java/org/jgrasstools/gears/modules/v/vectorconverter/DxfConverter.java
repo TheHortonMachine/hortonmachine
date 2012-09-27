@@ -88,10 +88,16 @@ public class DxfConverter extends JGTModel {
         String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dxfFile);
         File prjFile = new File(parentFolder, nameWithoutExtention + ".prj");
         if (prjFile.exists()) {
-            FileInputStream instream = new FileInputStream(prjFile);
-            final FileChannel channel = instream.getChannel();
-            PrjFileReader reader = new PrjFileReader(channel);
-            crs = reader.getCoordinateReferenceSystem();
+            FileInputStream instream = null;
+            try {
+                instream = new FileInputStream(prjFile);
+                final FileChannel channel = instream.getChannel();
+                PrjFileReader reader = new PrjFileReader(channel);
+                crs = reader.getCoordinateReferenceSystem();
+            } finally {
+                if (instream != null)
+                    instream.close();
+            }
         }
         if (crs == null) {
             if (pCode != null) {
