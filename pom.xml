@@ -4,8 +4,7 @@
 
 
     <properties>
-		<gt.version>8.0-RC1</gt.version>
-		<gt.version.exp>8-SNAPSHOT</gt.version.exp>
+		<gt.version>8.1</gt.version>
 		<jaitools.version>1.2.0</jaitools.version>
 		<jiffle.version>0.2.0</jiffle.version>
 		<performRelease>false</performRelease>
@@ -20,7 +19,7 @@
     <url>http://www.jgrasstools.org</url>
 
     <modules>
-		<module>oms3</module>
+	<module>oms3</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>grass</module>
@@ -71,7 +70,7 @@
             <id>moovida</id>
             <name>Andrea Antonello</name>
             <email>andrea.antonello@gmail.com</email>
-			<organization>HydroloGIS</organization>
+	    <organization>HydroloGIS</organization>
             <organizationUrl>http://www.hydrologis.eu/</organizationUrl>
         </developer>
     </developers>
@@ -161,8 +160,8 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-         
-			  <!--
+  
+ <!--
 		    <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <executions>
