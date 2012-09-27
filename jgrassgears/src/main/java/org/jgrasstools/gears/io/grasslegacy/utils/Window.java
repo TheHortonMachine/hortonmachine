@@ -571,7 +571,8 @@ public class Window extends Object {
                         Integer.parseInt(store.get("cols"))); //$NON-NLS-1$
                 store.remove("cols");
                 store.remove("rows");
-
+            } else {
+                throw new RuntimeException();
             }
             store.remove("north");
             store.remove("south");

@@ -66,7 +66,8 @@ public class CrsUtilities {
             bufferedWriter = new BufferedWriter(new FileWriter(prjPath));
             bufferedWriter.write(crs.toWKT());
         } finally {
-            bufferedWriter.close();
+            if (bufferedWriter != null)
+                bufferedWriter.close();
         }
     }
 

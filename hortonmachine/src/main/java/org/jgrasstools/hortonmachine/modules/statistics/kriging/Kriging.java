@@ -347,6 +347,8 @@ public class Kriging extends JGTModel {
         } else if (pMode == 1) {
             pointsToInterpolateId2Coordinates = getCoordinate(inInterpolationGrid);
             numPointToInterpolate = pointsToInterpolateId2Coordinates.size();
+        } else {
+            throw new ModelsIllegalargumentException("The parameter pMode can only be 0 or 1.", this);
         }
 
         Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();

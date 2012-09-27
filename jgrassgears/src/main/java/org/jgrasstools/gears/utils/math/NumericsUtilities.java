@@ -170,16 +170,21 @@ public class NumericsUtilities {
 
     /**
      * Checks if a string is a number (currently Double, Float, Integer).
+     * @param <T>
      * 
      * @param value the string to check. 
      * @param adaptee the class to check against. If null, the more permissive {@link Double} will be used.
      * @return the number or <code>null</code>, if the parsing fails.
      */
+    @SuppressWarnings("unchecked")
     public static <T extends Number> T isNumber( String value, Class<T> adaptee ) {
         if (value == null) {
             return null;
         }
-        if (adaptee == null || adaptee.isAssignableFrom(Double.class)) {
+        if (adaptee == null) {
+            adaptee = (Class<T>) Double.class;
+        }
+        if (adaptee.isAssignableFrom(Double.class)) {
             try {
                 Double parsed = Double.parseDouble(value);
                 return adaptee.cast(parsed);

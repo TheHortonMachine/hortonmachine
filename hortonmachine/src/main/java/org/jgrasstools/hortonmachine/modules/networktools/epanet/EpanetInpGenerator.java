@@ -699,12 +699,12 @@ public class EpanetInpGenerator extends JGTModel {
             }
             sbTanks.append(SPACER);
             Object volCurve = getAttribute(tank, Tanks.VOLUME_CURVE_ID.getAttributeName());
+            String volCurveId;
             if (volCurve != null) {
-                sbTanks.append(volCurve.toString());
+                volCurveId = volCurve.toString();
             } else {
-                sbTanks.append("0");
+                volCurveId = "0";
             }
-            String volCurveId = volCurve.toString();
             sbTanks.append(volCurveId);
             sbTanks.append(NL);
 

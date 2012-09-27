@@ -33,7 +33,6 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.math.functions.MinimumFillDegreeFunction;
 import org.jgrasstools.gears.utils.math.rootfinding.RootFindingFunctions;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Pipe;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.opengis.feature.simple.SimpleFeature;
@@ -157,6 +156,9 @@ public class Utility {
      */
     public static SimpleFeatureCollection createFeatureCollections( SimpleFeatureCollection inPipesFC, Pipe[] networkPipes )
             throws IOException {
+        if (inPipesFC == null) {
+            throw new RuntimeException();
+        }
 
         /*
          * Create a Type
@@ -183,7 +185,7 @@ public class Utility {
         String searchedField = PipesTrentoP.PER_AREA.getAttributeName();
         String attributeName = findAttributeName(inPipesFC.getSchema(), searchedField);
         try {
-            int t=0;
+            int t = 0;
             while( stationsIter.hasNext() ) {
                 SimpleFeature feature = stationsIter.next();
                 try {

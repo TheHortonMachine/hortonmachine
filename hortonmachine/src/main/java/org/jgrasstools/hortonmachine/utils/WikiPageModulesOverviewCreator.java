@@ -91,7 +91,7 @@ public class WikiPageModulesOverviewCreator {
         for( String moduleName : modulesNamesArray ) {
             List<ClassField> fieldsList = modulesMap.get(moduleName);
             if (fieldsList == null) {
-                System.out.println(moduleName);
+                throw new RuntimeException("fieldsList == null in module: " + moduleName);
             }
             if (fieldsList.size() > 0) {
                 ClassField tmp = fieldsList.get(0);

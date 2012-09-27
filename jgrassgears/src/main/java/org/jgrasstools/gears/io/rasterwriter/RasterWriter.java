@@ -56,8 +56,8 @@ import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -77,7 +77,7 @@ public class RasterWriter extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The file to write the raster to with extension (supported are: asc, tiff, grass).")
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -107,8 +107,8 @@ public class RasterWriter extends JGTModel {
         } else if (CoverageUtilities.isGrass(file)) {
             pType = GRASS;
         } else
-            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.",
-                    this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.", this
+                    .getClass().getSimpleName());
 
         File mapFile = new File(file);
         try {
@@ -181,6 +181,8 @@ public class RasterWriter extends JGTModel {
             GrassLegacyWriter writer = new GrassLegacyWriter();
             writer.geodata = gd2.getData();
             writer.file = file;
+            if (jGrassRegion == null)
+                jGrassRegion = mapEnvironment.getActiveRegion();
             writer.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(jGrassRegion);
             writer.writeRaster();
         }

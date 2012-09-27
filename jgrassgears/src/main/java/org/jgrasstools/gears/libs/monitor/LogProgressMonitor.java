@@ -35,6 +35,13 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
     protected int lastPercentage = -1;
     private String prefix = null;
 
+    public LogProgressMonitor() {
+        this.prefix = "";
+    }
+    public LogProgressMonitor( String prefix ) {
+        this.prefix = prefix;
+    }
+
     public void beginTask( String name, int totalWork ) {
         this.taskName = name;
         this.totalWork = totalWork;

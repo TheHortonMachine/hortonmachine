@@ -87,11 +87,13 @@ public class DbfTableReader extends JGTModel {
                     list.add(field);
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            dbfReader.close();
-            fis.close();
+            if (dbfReader != null)
+                dbfReader.close();
+            if (fis != null)
+                fis.close();
         }
     }
 

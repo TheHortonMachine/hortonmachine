@@ -45,7 +45,7 @@ public class TmsShpGenerator {
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
             SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-            List<Geometry> g = new ArrayList<Geometry>();
+            // List<Geometry> g = new ArrayList<Geometry>();
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("typename");
             b.setCRS(mercatorCrs);

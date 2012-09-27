@@ -298,12 +298,11 @@ public class Pipe {
      * Variance of lengths of upstream net [ m ^ 2 ]
      */
     public double varianceLengthSubNet;
-    public static IJGTProgressMonitor pm;
     private static HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    public Pipe( SimpleFeature feature, int verify, boolean isAreaNotAllDry ) throws Exception {
+    private IJGTProgressMonitor pm;
+    public Pipe( SimpleFeature feature, int verify, boolean isAreaNotAllDry, IJGTProgressMonitor pm ) throws Exception {
+        this.pm = pm;
         setKnowNetworkValue(feature, verify, isAreaNotAllDry);
-
     }
 
     public void setK( double defaultEsp1, double defaultExponent, double defaultGamma ) {
@@ -538,8 +537,7 @@ public class Pipe {
             if (verify == 1) {
                 /* Pipe diameter [cm] */
 
-                this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName())
-                        .doubleValue();
+                this.diameterToVerify = setFeatureField(pipeFeature, PipesTrentoP.DIAMETER.getAttributeName()).doubleValue();
                 /* Pipe slope [%] */
 
                 this.verifyPipeSlope = 100.0 * Math.abs(this.initialElevation - this.finalElevation) / this.lenght;
@@ -553,7 +551,7 @@ public class Pipe {
                     this.pipeSectionType = sectionTmp;
                 } else {
                     pm.errorMessage(msg.message("trentoP.error.section") + this.id);
-                    throw new IllegalArgumentException(msg.message("trentoP.error.section" )+ this.id);
+                    throw new IllegalArgumentException(msg.message("trentoP.error.section") + this.id);
                 }
 
             }
@@ -579,7 +577,7 @@ public class Pipe {
         Number field = ((Number) pipe.getAttribute(key));
         if (field == null) {
             pm.errorMessage(msg.message("trentoP.error.number") + key);
-            throw new IllegalArgumentException(msg.message("trentoP.error.number" )+ key);
+            throw new IllegalArgumentException(msg.message("trentoP.error.number") + key);
         }
 
         // return the Number

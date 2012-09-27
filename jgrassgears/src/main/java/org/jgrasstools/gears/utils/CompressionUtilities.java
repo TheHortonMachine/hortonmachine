@@ -112,6 +112,9 @@ public class CompressionUtilities {
                     }
                 }
             }
+            if (firstName == null) {
+                throw new IOException();
+            }
             itemName = itemName.replaceFirst(firstName, newFirstName);
 
             if (item.isDirectory()) {

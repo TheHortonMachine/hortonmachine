@@ -335,7 +335,6 @@ public class TrentoP extends JGTModel {
          * verify the parameter in input (these method, when the OMS annotation
          * work well, can be deleted).
          */
-        Pipe.pm = pm;
         // begin the process.
         pm.message(msg.message("trentoP.firstMessage"));
         /*
@@ -396,8 +395,8 @@ public class TrentoP extends JGTModel {
 
             NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
                     strBuilder);
-            network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent).pGamma(
-                    pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
+            network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
+                    .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
             network.geoSewer();
             outPipes = Utility.createFeatureCollections(inPipes, networkPipes);
 
@@ -457,7 +456,7 @@ public class TrentoP extends JGTModel {
          * La precisione con cui si cercano alcune soluzioni non puo' essere
          * negativa
          */
-        if (pAccuracy <= 0 || pAccuracy == null) {
+        if (pAccuracy == null || pAccuracy <= 0) {
             pm.errorMessage(msg.message("trentoP.error.accuracy"));
             throw new IllegalArgumentException();
         }
@@ -507,20 +506,20 @@ public class TrentoP extends JGTModel {
 
             isAreaAllDry = Utility.verifyProjectType(schema, pm);
 
-            if (pA <= 0 || pA == null) {
+            if (pA == null || pA <= 0) {
                 pm.errorMessage(msg.message("trentoP.error.a"));
                 throw new IllegalArgumentException(msg.message("trentoP.error.a"));
             }
-            if (pN < 0.05 || pN > 0.95 || pN == null) {
+            if (pN == null || pN < 0.05 || pN > 0.95) {
                 pm.errorMessage(msg.message("trentoP.error.n"));
                 throw new IllegalArgumentException(msg.message("trentoP.error.n"));
             }
-            if (pTau <= 0 || pTau == null) {
+            if (pTau == null || pTau <= 0) {
                 pm.errorMessage(msg.message("trentoP.error.tau"));
                 throw new IllegalArgumentException(msg.message("trentoP.error.tau"));
             }
 
-            if (pG <= 0 || pG > 0.99 || pG == null) {
+            if (pG == null || pG <= 0 || pG > 0.99) {
                 pm.errorMessage(msg.message("trentoP.error.g"));
 
                 throw new IllegalArgumentException(msg.message("trentoP.error.g"));
@@ -681,7 +680,7 @@ public class TrentoP extends JGTModel {
                         tmpOutIndex = t;
                         existOut = true;
                     }
-                    networkPipes[t] = new Pipe(feature, pMode, isAreaNotAllDry);
+                    networkPipes[t] = new Pipe(feature, pMode, isAreaNotAllDry, pm);
                     t++;
 
                 } catch (NullPointerException e) {

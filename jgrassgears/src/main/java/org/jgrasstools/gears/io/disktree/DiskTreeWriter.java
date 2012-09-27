@@ -120,7 +120,8 @@ public class DiskTreeWriter implements IDiskTree {
 
         } finally {
             System.out.println("close");
-            raf.close();
+            if (raf != null)
+                raf.close();
         }
     }
 

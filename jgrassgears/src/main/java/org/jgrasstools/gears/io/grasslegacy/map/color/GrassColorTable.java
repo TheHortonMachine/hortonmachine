@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.gears.io.grasslegacy.map.color;
 
-
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -50,18 +49,15 @@ public class GrassColorTable extends ColorTable {
 
     private int alpha = 255;
 
-    public GrassColorTable( String mapsetPath, String mapName, double[] dataRange )
-            throws IOException {
-        this(mapsetPath + File.separator + GrassLegacyConstans.COLR + File.separator + mapName,
-                dataRange);
+    public GrassColorTable( String mapsetPath, String mapName, double[] dataRange ) throws IOException {
+        this(mapsetPath + File.separator + GrassLegacyConstans.COLR + File.separator + mapName, dataRange);
     }
 
     /** Creates a new instance of ColorTable */
     public GrassColorTable( String colorFilePath, double[] dataRange ) throws IOException {
         colrFile = new File(colorFilePath);
         if (colrFile.exists()) {
-            BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(
-                    colrFile)));
+            BufferedReader rdr = new BufferedReader(new InputStreamReader(new FileInputStream(colrFile)));
             String line = rdr.readLine();
             if (line == null) {
                 colorTableEmpty = true;
@@ -139,11 +135,9 @@ public class GrassColorTable extends ColorTable {
                     if (tk.hasMoreTokens())
                         b = tk.nextToken();
                     if (r.indexOf('.') == -1)
-                        setBackgroundColor(new Color(Integer.parseInt(r), Integer.parseInt(g),
-                                Integer.parseInt(b)));
+                        setBackgroundColor(new Color(Integer.parseInt(r), Integer.parseInt(g), Integer.parseInt(b)));
                     else
-                        setBackgroundColor(new Color(Float.parseFloat(r), Float.parseFloat(g),
-                                Float.parseFloat(b)));
+                        setBackgroundColor(new Color(Float.parseFloat(r), Float.parseFloat(g), Float.parseFloat(b)));
                 }
             } else {
                 r = g = b = tk.nextToken();
@@ -152,11 +146,10 @@ public class GrassColorTable extends ColorTable {
                 if (tk.hasMoreTokens())
                     b = tk.nextToken();
                 if (r.indexOf('.') == -1)
-                    addColorRule(lineNumber, Integer.parseInt(r), Integer.parseInt(g), Integer
-                            .parseInt(b));
+                    addColorRule(lineNumber, Integer.parseInt(r), Integer.parseInt(g), Integer.parseInt(b));
                 else
-                    addColorRule(lineNumber, (int) (Float.parseFloat(r) * 255f), (int) (Float
-                            .parseFloat(g) * 255f), (int) (Float.parseFloat(b) * 255));
+                    addColorRule(lineNumber, (int) (Float.parseFloat(r) * 255f), (int) (Float.parseFloat(g) * 255f),
+                            (int) (Float.parseFloat(b) * 255));
             }
         } catch (NumberFormatException ex) {
             ex.printStackTrace();
@@ -225,22 +218,19 @@ public class GrassColorTable extends ColorTable {
         // calculate the color increment
         float rinc = (float) (dataRange[1] - dataRange[0]) / 5;
         for( int i = 0; i < 4; i++ ) {
-            addColorRule((float) (dataRange[0] + (i * rinc)), rainbow[i][0], rainbow[i][1],
-                    rainbow[i][2], (float) (dataRange[0] + ((i + 1) * rinc)), rainbow[i + 1][0],
-                    rainbow[i + 1][1], rainbow[i + 1][2]);
+            addColorRule((float) (dataRange[0] + (i * rinc)), rainbow[i][0], rainbow[i][1], rainbow[i][2],
+                    (float) (dataRange[0] + ((i + 1) * rinc)), rainbow[i + 1][0], rainbow[i + 1][1], rainbow[i + 1][2]);
 
             StringBuffer rule = new StringBuffer();
             rule.append((dataRange[0] + (i * rinc)) + ":");
             rule.append(rainbow[i][0] + ":" + rainbow[i][1] + ":" + rainbow[i][2] + " ");
             rule.append((dataRange[0] + ((i + 1) * rinc)) + ":");
-            rule
-                    .append(rainbow[i + 1][0] + ":" + rainbow[i + 1][1] + ":" + rainbow[i + 1][2]
-                            + " ");
+            rule.append(rainbow[i + 1][0] + ":" + rainbow[i + 1][1] + ":" + rainbow[i + 1][2] + " ");
             rules.add(rule.toString());
         }
 
-        addColorRule((float) (dataRange[1] - rinc), rainbow[4][0], rainbow[4][1], rainbow[4][2],
-                (float) (dataRange[1]), rainbow[5][0], rainbow[5][1], rainbow[5][2]);
+        addColorRule((float) (dataRange[1] - rinc), rainbow[4][0], rainbow[4][1], rainbow[4][2], (float) (dataRange[1]),
+                rainbow[5][0], rainbow[5][1], rainbow[5][2]);
         StringBuffer rule = new StringBuffer();
         rule.append((dataRange[1] - rinc) + ":");
         rule.append(rainbow[4][0] + ":" + rainbow[4][1] + ":" + rainbow[4][2] + " ");
@@ -257,29 +247,20 @@ public class GrassColorTable extends ColorTable {
                     colFolder.mkdirs();
                 }
                 bw = new BufferedWriter(new FileWriter(colrFile));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            String header = "% " + dataRange[0] + "   " + dataRange[1] + "   255";
-            try {
+                String header = "% " + dataRange[0] + "   " + dataRange[1] + "   255";
                 bw.write(header + "\n");
-
                 for( String string : rules ) {
                     bw.write(string + "\n");
                 }
-
                 bw.close();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
-
         }
 
     }
 
-    public static String setColorTableFromRules( File colrFile, double[] dataRange,
-            int[][] colorRules ) throws IOException {
+    public static String setColorTableFromRules( File colrFile, double[] dataRange, int[][] colorRules ) throws IOException {
         if (dataRange == null) {
             dataRange = new double[2];
 
@@ -292,8 +273,8 @@ public class GrassColorTable extends ColorTable {
             String activeWindowPath = mapsetPath + File.separator + GrassLegacyConstans.WIND;
 
             // first try to read the range file
-            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC
-                    + File.separator + name + File.separator + "f_range";
+            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name
+                    + File.separator + "f_range";
             File ds = new File(rangePath);
             boolean fileok = true;
             int testread = 0;
@@ -328,8 +309,8 @@ public class GrassColorTable extends ColorTable {
 
             if (!fileok) {
                 // something went wrong. read the map and get the range (timeconsuming)
-                JGrassRasterMapReader jGrassMapReader = new JGrassRasterMapReader.BuilderFromPathAndNames(
-                        new Window(activeWindowPath), name, mapsetName, locationPath).build();
+                JGrassRasterMapReader jGrassMapReader = new JGrassRasterMapReader.BuilderFromPathAndNames(new Window(
+                        activeWindowPath), name, mapsetName, locationPath).build();
                 // read the map to get the range
                 if (!jGrassMapReader.open())
                     throw new IOException("An error occurred while reading the map."); // test file
@@ -353,18 +334,15 @@ public class GrassColorTable extends ColorTable {
             rule.append((dataRange[0] + (i * rinc)) + ":");
             rule.append(colorRules[i][0] + ":" + colorRules[i][1] + ":" + colorRules[i][2] + " ");
             rule.append((dataRange[0] + ((i + 1) * rinc)) + ":");
-            rule.append(colorRules[i + 1][0] + ":" + colorRules[i + 1][1] + ":"
-                    + colorRules[i + 1][2] + "\n");
+            rule.append(colorRules[i + 1][0] + ":" + colorRules[i + 1][1] + ":" + colorRules[i + 1][2] + "\n");
         }
 
         rule.append((dataRange[1] - rinc) + ":");
-        rule.append(colorRules[colorRules.length - 2][0] + ":"
-                + colorRules[colorRules.length - 2][1] + ":" + colorRules[colorRules.length - 2][2]
-                + " ");
+        rule.append(colorRules[colorRules.length - 2][0] + ":" + colorRules[colorRules.length - 2][1] + ":"
+                + colorRules[colorRules.length - 2][2] + " ");
         rule.append((dataRange[1]) + ":");
-        rule.append(colorRules[colorRules.length - 1][0] + ":"
-                + colorRules[colorRules.length - 1][1] + ":" + colorRules[colorRules.length - 1][2]
-                + "\n");
+        rule.append(colorRules[colorRules.length - 1][0] + ":" + colorRules[colorRules.length - 1][1] + ":"
+                + colorRules[colorRules.length - 1][2] + "\n");
 
         BufferedWriter bw = new BufferedWriter(new FileWriter(colrFile));
         bw.write(rule.toString());
@@ -381,8 +359,7 @@ public class GrassColorTable extends ColorTable {
      * @throws Exception 
      */
     @SuppressWarnings("nls")
-    public String createDefaultColorRulesString( double[] dataRange, boolean writeToDisk )
-            throws Exception {
+    public String createDefaultColorRulesString( double[] dataRange, boolean writeToDisk ) throws Exception {
         int[][] rainbow = PredefinedColorRules.rainbow;
         if (dataRange == null) {
             dataRange = new double[2];
@@ -396,8 +373,8 @@ public class GrassColorTable extends ColorTable {
             String activeWindowPath = mapsetPath + File.separator + GrassLegacyConstans.WIND;
 
             // first try to read the range file
-            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC
-                    + File.separator + name + File.separator + "f_range";
+            String rangePath = mapsetPath + File.separator + GrassLegacyConstans.CELL_MISC + File.separator + name
+                    + File.separator + "f_range";
             File ds = new File(rangePath);
             boolean fileok = true;
             int testread = 0;
@@ -436,8 +413,8 @@ public class GrassColorTable extends ColorTable {
 
             if (!fileok) {
                 // something went wrong. read the map and get the range (timeconsuming)
-                JGrassRasterMapReader jGrassMapReader = new JGrassRasterMapReader.BuilderFromPathAndNames(
-                        new Window(activeWindowPath), name, mapsetName, locationPath).build();
+                JGrassRasterMapReader jGrassMapReader = new JGrassRasterMapReader.BuilderFromPathAndNames(new Window(
+                        activeWindowPath), name, mapsetName, locationPath).build();
                 // read the map to get the range
                 if (!jGrassMapReader.open())
                     return null; // test file
@@ -462,8 +439,7 @@ public class GrassColorTable extends ColorTable {
             rule.append((dataRange[0] + (i * rinc)) + ":");
             rule.append(rainbow[i][0] + ":" + rainbow[i][1] + ":" + rainbow[i][2] + " ");
             rule.append((dataRange[0] + ((i + 1) * rinc)) + ":");
-            rule.append(rainbow[i + 1][0] + ":" + rainbow[i + 1][1] + ":" + rainbow[i + 1][2]
-                    + "\n");
+            rule.append(rainbow[i + 1][0] + ":" + rainbow[i + 1][1] + ":" + rainbow[i + 1][2] + "\n");
         }
 
         rule.append((dataRange[1] - rinc) + ":");

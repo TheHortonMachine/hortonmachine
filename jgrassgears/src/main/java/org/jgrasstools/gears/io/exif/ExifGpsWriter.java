@@ -241,7 +241,7 @@ public class ExifGpsWriter extends JGTModel {
             }
         }
         if (tiffReader == null) {
-            System.out.println("Cannot find core TIFF reader!");
+            throw new RuntimeException("Cannot find core TIFF reader!");
         }
 
         ArrayList<IIOMetadata> out = new ArrayList<IIOMetadata>(1);

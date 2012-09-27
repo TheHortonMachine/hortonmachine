@@ -92,14 +92,18 @@ public class DxfFile {
     private final CoordinateReferenceSystem crs;
     private static int fid = 0;
 
-    public static int getNextFid() {
+    public static synchronized int getNextFid() {
         fid = fid + 1;
         return fid;
     }
 
-    public DxfFile( CoordinateReferenceSystem crs ) {
+    public static synchronized void resetFid() {
         fid = 0;
+    }
+
+    public DxfFile( CoordinateReferenceSystem crs ) {
         this.crs = crs;
+        resetFid();
         initializeDXF_SCHEMA(crs);
     }
 
@@ -108,7 +112,7 @@ public class DxfFile {
      * attributes.
      */
 
-    public static void initializeDXF_SCHEMA( CoordinateReferenceSystem crs ) {
+    public static synchronized void initializeDXF_SCHEMA( CoordinateReferenceSystem crs ) {
         if (DXF_POINTSCHEMA != null && DXF_POINTSCHEMA.getAttributeCount() != 0)
             return;
 
@@ -163,14 +167,12 @@ public class DxfFile {
         this.coordinatePrecision = coordinatePrecision;
     }
 
-    public static DxfFile createFromFile( File file, CoordinateReferenceSystem crs )
-            throws IOException {
+    public static DxfFile createFromFile( File file, CoordinateReferenceSystem crs ) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(file, "r");
         return createFromFile(raf, crs);
     }
 
-    public static DxfFile createFromFile( RandomAccessFile raf, CoordinateReferenceSystem crs )
-            throws IOException {
+    public static DxfFile createFromFile( RandomAccessFile raf, CoordinateReferenceSystem crs ) throws IOException {
         DxfFile dxfFile = new DxfFile(crs);
         initializeDXF_SCHEMA(crs);
 
@@ -207,8 +209,7 @@ public class DxfFile {
                 } else if (group.getCode() == 999) {
                     System.out.println("Jump 999: " + group.getValue());
                 } else {
-                     System.out.println("Group " + group.getCode() + " " + group.getValue() +
-                     " UNKNOWN");
+                    System.out.println("Group " + group.getCode() + " " + group.getValue() + " UNKNOWN");
                 }
             } else if (group.getCode() == 999) {
                 // System.out.println("Commentaire : " + group.getValue());
