@@ -22,6 +22,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.util.Locale;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -34,6 +35,10 @@ import junit.framework.TestCase;
 
 public class HMTestCase extends TestCase {
     protected static final double DELTA = 0.0000001;
+
+    static {
+        Locale.setDefault(Locale.ENGLISH);
+    }
 
     /**
      * The progress monitor to be usedd by testcases.
