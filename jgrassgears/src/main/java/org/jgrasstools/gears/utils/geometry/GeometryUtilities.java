@@ -67,6 +67,7 @@ import com.vividsolutions.jts.operation.polygonize.Polygonizer;
  */
 public class GeometryUtilities {
 
+    public static Geometry[] TYPE_GEOMETRY = new Geometry[0];
     public static Polygon[] TYPE_POLYGON = new Polygon[0];
     public static MultiPolygon[] TYPE_MULTIPOLYGON = new MultiPolygon[0];
     public static LineString[] TYPE_LINESTRING = new LineString[0];

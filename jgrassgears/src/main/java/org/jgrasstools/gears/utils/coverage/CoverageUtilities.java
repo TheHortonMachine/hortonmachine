@@ -81,7 +81,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
@@ -1124,5 +1123,13 @@ public class CoverageUtilities {
         return values[0];
     }
 
+    public static double getValue( GridCoverage2D raster, double easting, double northing ) {
+        double[] values = raster.evaluate(new Point2D.Double(easting, northing), (double[]) null);
+        return values[0];
+    }
+
+    public static double getValue( GridCoverage2D raster, Coordinate coordinate ) {
+        return getValue(raster, coordinate.x, coordinate.y);
+    }
 
 }
