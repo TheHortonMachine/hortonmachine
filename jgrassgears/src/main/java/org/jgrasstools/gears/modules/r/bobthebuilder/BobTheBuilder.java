@@ -48,6 +48,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
@@ -109,7 +110,7 @@ public class BobTheBuilder extends JGTModel {
 
     @Description("The progress monitor.")
     @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
+    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The modified raster map.")
     @Out
@@ -197,6 +198,7 @@ public class BobTheBuilder extends JGTModel {
         SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         newCollection.add(polygonMate.getFeature());
         ScanLineRasterizer slRasterizer = new ScanLineRasterizer();
+        slRasterizer.pm = pm;
         slRasterizer.inVector = newCollection;
         slRasterizer.pCols = cols;
         slRasterizer.pRows = rows;
