@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.modules.r.interpolation2d;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.Variables.*;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
@@ -36,6 +37,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -45,6 +47,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
@@ -61,47 +64,78 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description("Thin Plate Spline Interpolator")
+@Description(//
+en = "Surface Interpolator module",//
+it = "Interpolazione di superfici"//
+)
 @Author(name = "Jan Jezek, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Interpolation, Raster, Spline")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class SurfaceInterpolator extends JGTModel {
 
-    @Description("The input vector map of points.")
+    @Description(//
+    en = "The input vector map of points.",//
+    it = "La mappa vettoriale di punti."//
+    )
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The grid on which to interpolate.")
+    @Description(//
+    en = "The grid on which to interpolate.",//
+    it = "La griglia sulla quale interpolare."//
+    )
     @In
     public GridGeometry2D inGrid = null;
 
-    @Description("A mask raster map. Values will be computed only where the mask has values.")
+    @Description(//
+    en = "An optional mask raster map. Values will be computed only where the mask has values.",//
+    it = "Una mappa raster opzionale da usare come maschera per il calcolo."//
+    )
     @In
     public GridCoverage2D inMask = null;
 
-    @Description("Field from which to take the category value.")
+    @Description(//
+    en = "Field from which to take the category value.",//
+    it = "Campo dal quale prendere il valore della categoria."//
+    )
     @In
     public String fCat;
 
-    @Description("Interpolation mode (0 = TPS, 1 = IDW).")
+    @Description(//
+    en = "Interpolation mode (default is TPS).",//
+    it = "Metodo di interpolazione (default e' TPS)."//
+    )
+    @UI("combo:" + TPS + "," + IDW)
     @In
-    public int pMode = 0;
+    public String pMode = "TPS";
 
-    @Description("The buffer to use for interpolation (default is 4).")
+    @Description(//
+    en = "The buffer to use for interpolation (default is 4).",//
+    it = "Il buffer da usare per l'interpolazione (default e' 4)."//
+    )
     @Unit("m")
     @In
     public double pBuffer = 4.0;
 
-    @Description("Max threads to use (default 5).")
+    @Description(//
+    en = "Max threads to use (default 1).",//
+    it = "Numero massimo di thread da usare (default 1)."//
+    )
     @In
-    public Integer pMaxThreads = 5;
+    public int pMaxThreads = 1;
 
-    @Description("The progress monitor.")
+    @Description(//
+    en = PROGRESS_MONITOR_EN,//
+    it = PROGRESS_MONITOR_EN//
+    )
     @In
     public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
-    @Description("The interpolated raster.")
+    @Description(//
+    en = "The interpolated raster.",//
+    it = "Il raster interpolato."//
+    )
     @Out
     public GridCoverage2D outRaster = null;
 
@@ -138,7 +172,7 @@ public class SurfaceInterpolator extends JGTModel {
 
         pm.message("Indexed control points: " + coordinates.length);
 
-        if (pMode == 1) {
+        if (pMode.equals(IDW)) {
             interpolator = new IDWInterpolator(pBuffer);
         } else {
             interpolator = new TPSInterpolator(pBuffer);
@@ -148,71 +182,87 @@ public class SurfaceInterpolator extends JGTModel {
                 JGTConstants.doubleNovalue);
         final WritableRandomIter interpolatedIter = RandomIterFactory.createWritable(interpolatedWR, null);
 
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
+        boolean doMultiThread = pMaxThreads > 1;
+
+        ExecutorService fixedThreadPool = null;
+        if (doMultiThread)
+            fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
 
         pm.beginTask("Performing interpolation...", rows);
 
         final double[] eval = new double[1];
         for( int r = 0; r < rows; r++ ) {
             final int row = r;
-            Runnable runner = new Runnable(){
-                public void run() {
-                    try {
-                        for( int c = 0; c < cols; c++ ) {
-                            final DirectPosition gridToWorld = inGrid.gridToWorld(new GridCoordinates2D(c, row));
-                            // System.out.println(row + "/" + c);
-                            boolean doProcess = true;
-                            if (inMask != null) {
-                                inMask.evaluate(gridToWorld, eval);
-                                if (isNovalue(eval[0])) {
-                                    doProcess = false;
-                                }
-                            }
-
-                            final Coordinate currentCoord = new Coordinate();
-                            if (doProcess) {
-                                final double[] coord = gridToWorld.getCoordinate();
-                                currentCoord.x = coord[0];
-                                currentCoord.y = coord[1];
-
-                                final Envelope env = new Envelope(currentCoord.x - pBuffer, currentCoord.x + pBuffer,
-                                        currentCoord.y - pBuffer, currentCoord.y + pBuffer);
-
-                                @SuppressWarnings("unchecked")
-                                final List<Coordinate> result = tree.query(env);
-                                // System.out.println(row + "/" + c + "  = " + result.size());
-
-                                // we need at least 3 points
-                                if (result.size() < 4) {
-                                    continue;
-                                }
-
-                                final double value = interpolator.getValue(result.toArray(new Coordinate[0]), currentCoord);
-                                synchronized (interpolatedIter) {
-                                    interpolatedIter.setSample(c, row, 0, value);
-                                }
-                            }
-
-                        }
-                        pm.worked(1);
-                    } catch (TransformException e) {
-                        e.printStackTrace();
+            if (doMultiThread) {
+                Runnable runner = new Runnable(){
+                    public void run() {
+                        processing(cols, tree, interpolatedIter, eval, row);
                     }
-                }
-            };
-            fixedThreadPool.execute(runner);
+                };
+                fixedThreadPool.execute(runner);
+            } else {
+                processing(cols, tree, interpolatedIter, eval, row);
+            }
         }
-        try {
-            fixedThreadPool.shutdown();
-            fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
-            fixedThreadPool.shutdownNow();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+
+        if (doMultiThread) {
+            try {
+                fixedThreadPool.shutdown();
+                fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
+                fixedThreadPool.shutdownNow();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         pm.done();
 
         outRaster = CoverageUtilities.buildCoverage("interpolatedraster", interpolatedWR, regionMap, inVector.getSchema()
                 .getCoordinateReferenceSystem());
 
+    }
+
+    private void processing( final int cols, final STRtree tree, final WritableRandomIter interpolatedIter, final double[] eval,
+            final int row ) {
+        try {
+            for( int c = 0; c < cols; c++ ) {
+                final DirectPosition gridToWorld = inGrid.gridToWorld(new GridCoordinates2D(c, row));
+                // System.out.println(row + "/" + c);
+                boolean doProcess = true;
+                if (inMask != null) {
+                    inMask.evaluate(gridToWorld, eval);
+                    if (isNovalue(eval[0])) {
+                        doProcess = false;
+                    }
+                }
+
+                if (doProcess) {
+                    final Coordinate currentCoord = new Coordinate();
+                    final double[] coord = gridToWorld.getCoordinate();
+                    currentCoord.x = coord[0];
+                    currentCoord.y = coord[1];
+
+                    final Envelope env = new Envelope(currentCoord.x - pBuffer, currentCoord.x + pBuffer, currentCoord.y
+                            - pBuffer, currentCoord.y + pBuffer);
+
+                    @SuppressWarnings("unchecked")
+                    final List<Coordinate> result = tree.query(env);
+                    // System.out.println(row + "/" + c + "  = " + result.size());
+
+                    // we need at least 3 points
+                    if (result.size() < 4) {
+                        continue;
+                    }
+
+                    final double value = interpolator.getValue(result.toArray(new Coordinate[0]), currentCoord);
+                    synchronized (interpolatedIter) {
+                        interpolatedIter.setSample(c, row, 0, value);
+                    }
+                }
+
+            }
+            pm.worked(1);
+        } catch (TransformException e) {
+            e.printStackTrace();
+        }
     }
 }
