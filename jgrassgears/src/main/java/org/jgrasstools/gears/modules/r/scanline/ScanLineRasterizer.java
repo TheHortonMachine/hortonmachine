@@ -153,6 +153,11 @@ public class ScanLineRasterizer extends JGTModel {
         if (pValue == null && fCat == null) {
             throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
         }
+        if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
+            throw new ModelsIllegalargumentException(
+                    "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
+                    this);
+        }
 
         SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();

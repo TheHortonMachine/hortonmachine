@@ -240,7 +240,8 @@ public class CLI {
         } catch (Throwable E) {
             // Throwable origE = E;
             System.err.println();
-            System.err.print(">>>> Error: ");
+            System.err.println("ERROR");
+            System.err.println("---------------------------------------------");
             Level level = log.getLevel();
             if (level != Level.OFF) {
                 // print the whole stack
