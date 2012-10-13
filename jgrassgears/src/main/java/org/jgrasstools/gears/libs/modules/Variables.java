@@ -27,4 +27,8 @@ public interface Variables {
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
     public String TPS = "TPS";
     public String IDW = "IDW";
+
+    public String NEAREST_NEIGHTBOUR = "nearest neightbour";
+    public String BILINEAR = "bilinear";
+    public String BICUBIC = "bicubic";
 }

@@ -18,14 +18,26 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
+import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
+import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
+
 import java.awt.geom.AffineTransform;
-import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.RotateDescriptor;
+import javax.media.jai.operator.ScaleDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
+import javax.media.jai.operator.TransposeDescriptor;
+import javax.media.jai.operator.TransposeType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,36 +50,24 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.processing.Operation2D;
-import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -85,17 +85,36 @@ public class RasterTransformer extends JGTModel {
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
+    @Description("The interpolation type to use")
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
-    public int pInterpolation = 0;
+    public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The translation along the X axis.")
+    @Unit("m")
     @In
     public Double pTransX;
 
     @Description("The translation along the Y axis.")
+    @Unit("m")
     @In
     public Double pTransY;
+
+    @Description("The scale factor along X axis.")
+    @In
+    public Double pScaleX;
+
+    @Description("The scale factor along the Y axis.")
+    @In
+    public Double pScaleY;
+
+    @Description("Flip horizontally.")
+    @In
+    public boolean doFlipHorizontal;
+
+    @Description("Flip vertically.")
+    @In
+    public boolean doFlipVertical;
 
     @Description("The northern coordinate of the rotation point.")
     @UI(JGTConstants.NORTHING_UI_HINT)
@@ -108,6 +127,7 @@ public class RasterTransformer extends JGTModel {
     public Double pEast;
 
     @Description("The rotation angle in degree (rotation is performed before translation).")
+    @Unit("degrees")
     @In
     public Double pAngle;
 
@@ -130,28 +150,24 @@ public class RasterTransformer extends JGTModel {
         }
 
         Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        switch( pInterpolation ) {
-        case Interpolation.INTERP_BILINEAR:
+        if (pInterpolation.equals(BILINEAR)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-            break;
-        case Interpolation.INTERP_BICUBIC:
+        } else if (pInterpolation.equals(BICUBIC)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-            break;
-        default:
-            break;
         }
-
-        pm.beginTask("Transforming raster...", IJGTProgressMonitor.UNKNOWN);
 
         RenderedImage inRasterRI = inRaster.getRenderedImage();
         RegionMap sourceRegion = CoverageUtilities.gridGeometry2RegionParamsMap(inRaster.getGridGeometry());
         Envelope2D envelope2d = inRaster.getEnvelope2D();
-        Envelope targetEnvelope = null;
+        Envelope targetEnvelope = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(),
+                envelope2d.getMaxY());
         Geometry targetGeometry = null;
         GeometryFactory gf = GeometryUtilities.gf();
 
         RenderedOp finalImg = null;
         if (pAngle != null) {
+            pm.beginTask("Rotate raster by angle: " + pAngle, IJGTProgressMonitor.UNKNOWN);
+
             float centerX = 0f;
             float centerY = 0f;
             if (pEast == null) {
@@ -174,36 +190,119 @@ public class RasterTransformer extends JGTModel {
             rotationAT.translate(-centerX, -centerY);
             MathTransform rotationTransform = new AffineTransform2D(rotationAT);
 
-            Envelope jtsEnv = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
+            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
+                    targetEnvelope.getMaxY());
             targetEnvelope = JTS.transform(jtsEnv, rotationTransform);
 
             Geometry rotGeometry = gf.toGeometry(jtsEnv);
             targetGeometry = JTS.transform(rotGeometry, rotationTransform);
+
+            pm.done();
         }
 
-        if (pTransX != null && pTransY != null) {
+        if (doFlipHorizontal) {
+            pm.beginTask("Flip horizontally...", IJGTProgressMonitor.UNKNOWN);
+
             if (finalImg != null) {
-                finalImg = TranslateDescriptor.create(finalImg, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+                finalImg = TransposeDescriptor.create(finalImg, TransposeDescriptor.FLIP_HORIZONTAL, null);
             } else {
-                finalImg = TranslateDescriptor
-                        .create(inRasterRI, pTransX.floatValue(), pTransY.floatValue(), interpolation, null);
+                finalImg = TransposeDescriptor.create(inRasterRI, TransposeDescriptor.FLIP_HORIZONTAL, null);
+            }
+
+            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
+                    targetEnvelope.getMaxY());
+            targetGeometry = gf.toGeometry(jtsEnv);
+            pm.done();
+        }
+        if (doFlipVertical) {
+            pm.beginTask("Flip vertically...", IJGTProgressMonitor.UNKNOWN);
+
+            if (finalImg != null) {
+                finalImg = TransposeDescriptor.create(finalImg, TransposeDescriptor.FLIP_VERTICAL, null);
+            } else {
+                finalImg = TransposeDescriptor.create(inRasterRI, TransposeDescriptor.FLIP_VERTICAL, null);
+            }
+
+            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
+                    targetEnvelope.getMaxY());
+            targetGeometry = gf.toGeometry(jtsEnv);
+            pm.done();
+        }
+
+        if (pScaleX != null || pScaleY != null) {
+            float scaleX = 1f;
+            float scaleY = 1f;
+            if (pScaleX == null) {
+                scaleX = 1f;
+            } else {
+                scaleX = pScaleX.floatValue();
+            }
+            if (pScaleY == null) {
+                scaleY = 1f;
+            } else {
+                scaleY = pScaleY.floatValue();
+            }
+            pm.beginTask("Scale raster by: " + scaleX + " and " + scaleY, IJGTProgressMonitor.UNKNOWN);
+
+            // float centerX = (float) envelope2d.getCenterX();
+            // float centerY = (float) envelope2d.getCenterY();
+            if (finalImg != null) {
+                finalImg = ScaleDescriptor.create(finalImg, new Float(scaleX), new Float(scaleY), new Float(0.0f),
+                        new Float(0.0f), interpolation, null);
+            } else {
+                finalImg = ScaleDescriptor.create(inRasterRI, new Float(scaleX), new Float(scaleY), new Float(0.0f), new Float(
+                        0.0f), interpolation, null);
+            }
+            // also keep track of the transforming envelope
+            AffineTransform scaleAT = new AffineTransform();
+            // scaleAT.translate(centerX, centerY);
+            scaleAT.scale(scaleX, scaleY);
+            // scaleAT.translate(-centerX, -centerY);
+            MathTransform scaleTransform = new AffineTransform2D(scaleAT);
+
+            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
+                    targetEnvelope.getMaxY());
+            targetEnvelope = JTS.transform(jtsEnv, scaleTransform);
+
+            Geometry scaledGeometry = gf.toGeometry(jtsEnv);
+            targetGeometry = JTS.transform(scaledGeometry, scaleTransform);
+            pm.done();
+        }
+
+        if (pTransX != null || pTransY != null) {
+            float transX = 1f;
+            float transY = 1f;
+            if (pTransX == null) {
+                transX = 1f;
+            } else {
+                transX = pTransX.floatValue();
+            }
+            if (pTransY == null) {
+                transY = 1f;
+            } else {
+                transY = pTransY.floatValue();
+            }
+            pm.beginTask("Translate raster by: " + transX + " and " + transY, IJGTProgressMonitor.UNKNOWN);
+
+            if (finalImg != null) {
+                finalImg = TranslateDescriptor.create(finalImg, transX, transY, interpolation, null);
+            } else {
+                finalImg = TranslateDescriptor.create(inRasterRI, transX, transY, interpolation, null);
             }
 
             // also keep track of the transforming envelope
             AffineTransform translationAT = new AffineTransform();
-            translationAT.translate(pTransX.floatValue(), pTransY.floatValue());
+            translationAT.translate(transX, transY);
             MathTransform translateTransform = new AffineTransform2D(translationAT);
 
-            if (targetEnvelope == null) {
-                targetEnvelope = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(),
-                        envelope2d.getMaxY());
-            }
             if (targetGeometry == null) {
                 targetGeometry = gf.toGeometry(targetEnvelope);
             }
 
             targetEnvelope = JTS.transform(targetEnvelope, translateTransform);
             targetGeometry = JTS.transform(targetGeometry, translateTransform);
+
+            pm.done();
         }
 
         if (finalImg != null) {

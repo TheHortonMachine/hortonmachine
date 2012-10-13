@@ -17,26 +17,18 @@
  */
 package org.jgrasstools.gears.modules;
 
-import java.awt.image.Raster;
 import java.util.HashMap;
-import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.Envelope2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.transformer.RasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 /**
  * Test {@link RasterTransformer}.
@@ -54,7 +46,7 @@ public class TestRasterTransformer extends HMTestCase {
 
         RasterTransformer transformer = new RasterTransformer();
         transformer.inRaster = flowCoverage;
-        transformer.pInterpolation = 2;
+        transformer.pInterpolation = Variables.BICUBIC;
         transformer.pAngle = 90.0;
         transformer.pTransX = 100.0;
         transformer.pTransY = 100.0;
