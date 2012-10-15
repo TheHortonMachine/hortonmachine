@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.modules.r.linesrasterizer;
 
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
@@ -35,12 +36,14 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -55,6 +58,7 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -73,13 +77,39 @@ public class LinesRasterizer extends JGTModel {
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The grid on which to place the values.")
-    @In
-    public GridGeometry2D inGrid;
-
     @Description("The field of the vector to take the category from.")
     @In
     public String fCat;
+    
+    @Description("The north bound of the region to consider")
+    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
+    @In
+    public Double pNorth = null;
+
+    @Description("The south bound of the region to consider")
+    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
+    @In
+    public Double pSouth = null;
+
+    @Description("The west bound of the region to consider")
+    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
+    @In
+    public Double pWest = null;
+
+    @Description("The east bound of the region to consider")
+    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
+    @In
+    public Double pEast = null;
+
+    @Description("The rows of the region to consider")
+    @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
+    @In
+    public Integer pRows = null;
+
+    @Description("The cols of the region to consider")
+    @UI(JGTConstants.PROCESS_COLS_UI_HINT)
+    @In
+    public Integer pCols = null;
 
     @Description("The progress monitor.")
     @In
@@ -91,9 +121,17 @@ public class LinesRasterizer extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inGrid, inVector, fCat);
-
+        checkNull(inVector, fCat);
+        
+        if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
+            throw new ModelsIllegalargumentException(
+                    "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
+                    this);
+        }
         SimpleFeatureType schema = inVector.getSchema();
+        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
+        GridGeometry2D inGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
+        
         GeometryType type = schema.getGeometryDescriptor().getType();
         if (getGeometryType(type) != GEOMETRYTYPE.LINE && getGeometryType(type) != GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("The module works only with line vectors.", this);
