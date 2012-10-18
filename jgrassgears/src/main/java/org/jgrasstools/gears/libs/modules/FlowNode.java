@@ -86,6 +86,11 @@ public class FlowNode {
         }
     }
 
+    /**
+     * Get the node's elevation.
+     * 
+     * @return the node's elevation.
+     */
     public double getElevation() {
         return elevation;
     }
