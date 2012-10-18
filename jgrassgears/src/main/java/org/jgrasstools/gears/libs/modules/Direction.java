@@ -63,8 +63,8 @@ public enum Direction {
     S(-1, 0, 7, 3, 1), //
     SE(1, 1, 8, 4, sqrt(2.0));
 
-    private int col;
-    private int row;
+    public int col;
+    public int row;
     private int exiting;
     private int entering;
     private double dirFactor;
@@ -82,7 +82,7 @@ public enum Direction {
      * @param row row of the current direction inside the schema.
      * @param exiting value of the flow, in normal (or exiting from the center/flow to) mode.
      * @param entering value of the flow in entering mode.
-     * @param dirFactor the directionfactor based on distance, normalized to 1.
+     * @param dirFactor the direction factor based on distance, normalized to 1.
      */
     private Direction( int col, int row, int exiting, int entering, double dirFactor ) {
         this.col = col;
@@ -97,7 +97,7 @@ public enum Direction {
     }
 
     public int getEnteringFlow() {
-        return exiting;
+        return entering;
     }
 
     /**
@@ -110,4 +110,12 @@ public enum Direction {
     public static Direction getDir( int col, int row ) {
         return dirs[col][row];
     }
+
+    /**
+     * @return the array of directions, starting from the most eastern, going counterclockwise.
+     */
+    public static Direction[] getOrderedDirs() {
+        return new Direction[]{E, EN, N, NW, W, WS, S, SE};
+    }
+
 }

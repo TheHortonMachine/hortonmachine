@@ -17,7 +17,11 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import static java.lang.Math.*;
+import java.util.ArrayList;
 import java.util.List;
+
+import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 
@@ -30,20 +34,49 @@ public class FlowNode {
 
     private int row;
     private int col;
-    private GridCoverage2D raster;
+    private RandomIter elevationIter;
+    private int cols;
+    private int rows;
+    private double elevation;
+    private double xRes;
+    private double yRes;
 
-    public FlowNode( GridCoverage2D raster, int col, int row ) {
-        this.raster = raster;
+    /**
+     * @param elevationIter the raster iter.
+     * @param cols the cols of the raster.
+     * @param rows the rows of the raster.
+     * @param xRes the x resolution of the raster.
+     * @param yRes the y resolution of the raster.
+     * @param col the col of the current {@link FlowNode node}.
+     * @param row the row of the current {@link FlowNode node}.
+     */
+    public FlowNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row ) {
+        this.elevationIter = elevationIter;
+        this.cols = cols;
+        this.rows = rows;
+        this.xRes = xRes;
+        this.yRes = yRes;
         this.col = col;
         this.row = row;
+
+        if (!isInRaster(col, row)) {
+            throw new IllegalArgumentException("Point not inside raster");
+        }
+
+        elevation = elevationIter.getSampleDouble(col, row, 0);
+    }
+
+    public double getElevation() {
+        return elevation;
     }
 
     /**
-     * Get next downstream {@link FlowNode node}.
+     * Get next downstream {@link FlowNode node} following the steepest path.
      * 
-     * @return the next downstream node.
+     * @return the next downstream node or <code>null</code> if it is an outlet.
      */
     public FlowNode goDownstream() {
+
         return null;
     }
 
@@ -53,19 +86,32 @@ public class FlowNode {
      * @return the next least cost, upstream node.
      */
     public FlowNode goLeastCostUpstream() {
+
         return null;
     }
 
     /**
-     * Gets all surrounding {@link FlowNode nodes}.
+     * Gets all surrounding {@link FlowNode nodes}, starting from the most eastern.
+     * 
+     * Note that the list contains all 8 directions, but some might be null, if outside a boundary 
      * 
      * @return the nodes surrounding the current node. 
      */
     public List<FlowNode> getSurroundingNodes() {
-
-        return null;
+        List<FlowNode> nodes = new ArrayList<FlowNode>();
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        for( int i = 0; i < orderedDirs.length; i++ ) {
+            int newCol = col + orderedDirs[i].col;
+            int newRow = row + orderedDirs[i].row;
+            if (isInRaster(newCol, newRow)) {
+                FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                nodes.add(node);
+            } else {
+                nodes.add(null);
+            }
+        }
+        return nodes;
     }
-
     /**
      * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node.
      * 
@@ -84,6 +130,25 @@ public class FlowNode {
     public List<FlowNode> getNonEnteringNodes() {
 
         return null;
+    }
+
+    private boolean isInRaster( int col, int row ) {
+        if (col < 0 || col >= cols || row < 0 || row >= rows) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Calculates the slope from the current to the supplied point. 
+     * 
+     * @param node the node to which to calculate the slope to.
+     * @return the slope.
+     */
+    public double getSlopeTo( FlowNode node ) {
+        double slope = (node.elevation - elevation)
+                / (sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0)));
+        return slope;
     }
 
 }
