@@ -26,11 +26,11 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIter;
 
 /**
- * A node in the flow environment of a digital elevation model. 
+ * A node in the grid environment of a digital elevation model. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FlowNode {
+public class GridNode {
 
     public final int row;
     public final int col;
@@ -43,15 +43,17 @@ public class FlowNode {
     private boolean isOutlet = false;
 
     /**
-     * @param elevationIter the raster iter.
+     * The constructor.
+     * 
+     * @param elevationIter the elevation model raster iter.
      * @param cols the cols of the raster.
      * @param rows the rows of the raster.
      * @param xRes the x resolution of the raster.
      * @param yRes the y resolution of the raster.
-     * @param col the col of the current {@link FlowNode node}.
-     * @param row the row of the current {@link FlowNode node}.
+     * @param col the col of the current {@link GridNode node}.
+     * @param row the row of the current {@link GridNode node}.
      */
-    public FlowNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row ) {
+    public GridNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row ) {
         this.elevationIter = elevationIter;
         this.cols = cols;
         this.rows = rows;
@@ -101,20 +103,20 @@ public class FlowNode {
     }
 
     /**
-     * Get next downstream {@link FlowNode node} following the steepest path.
+     * Get next downstream {@link GridNode node} following the steepest path.
      * 
      * @return the next downstream node or <code>null</code> if it is an outlet.
      */
-    public FlowNode goDownstreamSP() {
+    public GridNode goDownstreamSP() {
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxSlope = Double.NEGATIVE_INFINITY;
-        FlowNode nextNode = null;
+        GridNode nextNode = null;
         for( int i = 0; i < orderedDirs.length; i++ ) {
             Direction direction = orderedDirs[i];
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
                 if (node.isValid()) {
                     double slopeTo = getSlopeTo(node);
                     if (slopeTo > 0 && slopeTo > maxSlope) {
@@ -131,31 +133,31 @@ public class FlowNode {
     }
 
     /**
-     * Get next upstream {@link FlowNode node}, based on least cost.
+     * Get next upstream {@link GridNode node}, based on least cost.
      * 
      * @return the next least cost, upstream node.
      */
-    public FlowNode goLeastCostUpstream() {
+    public GridNode goLeastCostUpstream() {
 
         return null;
     }
 
     /**
-     * Gets all surrounding {@link FlowNode nodes}, starting from the most eastern.
+     * Gets all surrounding {@link GridNode nodes}, starting from the most eastern.
      * 
      * Note that the list contains all 8 directions, but some might be null, if outside a boundary 
      * 
      * @return the nodes surrounding the current node. 
      */
-    public List<FlowNode> getSurroundingNodes() {
-        List<FlowNode> nodes = new ArrayList<FlowNode>();
+    public List<GridNode> getSurroundingNodes() {
+        List<GridNode> nodes = new ArrayList<GridNode>();
         Direction[] orderedDirs = Direction.getOrderedDirs();
         for( int i = 0; i < orderedDirs.length; i++ ) {
             Direction direction = orderedDirs[i];
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
                 if (node.isValid()) {
                     nodes.add(node);
                 } else {
@@ -168,16 +170,16 @@ public class FlowNode {
         return nodes;
     }
     /**
-     * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node by steepest path rule.
+     * Gets all surrounding {@link GridNode nodes} that <b>DO</b> flow into this node by steepest path rule.
      * 
      * @return the nodes that flow into this node.
      */
-    public List<FlowNode> getEnteringNodesSP() {
-        List<FlowNode> nodes = new ArrayList<FlowNode>();
-        List<FlowNode> surroundingNodes = getSurroundingNodes();
-        for( FlowNode flowNode : surroundingNodes ) {
+    public List<GridNode> getEnteringNodesSP() {
+        List<GridNode> nodes = new ArrayList<GridNode>();
+        List<GridNode> surroundingNodes = getSurroundingNodes();
+        for( GridNode flowNode : surroundingNodes ) {
             if (flowNode != null) {
-                FlowNode downstream = flowNode.goDownstreamSP();
+                GridNode downstream = flowNode.goDownstreamSP();
                 if (downstream.isValid() && this.equals(downstream)) {
                     nodes.add(flowNode);
                 }
@@ -187,16 +189,16 @@ public class FlowNode {
     }
 
     /**
-     * Gets all surrounding {@link FlowNode nodes} that do <b>NOT</b> flow into this node by steepest path rule.
+     * Gets all surrounding {@link GridNode nodes} that do <b>NOT</b> flow into this node by steepest path rule.
      * 
      * @return the nodes that flow into this node.
      */
-    public List<FlowNode> getNonEnteringNodesSP() {
-        List<FlowNode> nodes = new ArrayList<FlowNode>();
-        List<FlowNode> surroundingNodes = getSurroundingNodes();
-        for( FlowNode flowNode : surroundingNodes ) {
+    public List<GridNode> getNonEnteringNodesSP() {
+        List<GridNode> nodes = new ArrayList<GridNode>();
+        List<GridNode> surroundingNodes = getSurroundingNodes();
+        for( GridNode flowNode : surroundingNodes ) {
             if (flowNode != null) {
-                FlowNode downstream = flowNode.goDownstreamSP();
+                GridNode downstream = flowNode.goDownstreamSP();
                 if (!downstream.isValid() || !this.equals(downstream)) {
                     nodes.add(flowNode);
                 }
@@ -218,7 +220,7 @@ public class FlowNode {
      * @param node the node to which to calculate the slope to.
      * @return the slope.
      */
-    public double getSlopeTo( FlowNode node ) {
+    public double getSlopeTo( GridNode node ) {
         double slope = (elevation - node.elevation)
                 / (sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0)));
         return slope;
@@ -244,7 +246,7 @@ public class FlowNode {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        FlowNode other = (FlowNode) obj;
+        GridNode other = (GridNode) obj;
         if (col != other.col || row != other.row)
             return false;
         if (Double.doubleToLongBits(elevation) != Double.doubleToLongBits(other.elevation))
