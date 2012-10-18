@@ -22,7 +22,7 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 
 /**
- * A node in the flow enviroment of a digital elevation model. 
+ * A node in the flow environment of a digital elevation model. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */

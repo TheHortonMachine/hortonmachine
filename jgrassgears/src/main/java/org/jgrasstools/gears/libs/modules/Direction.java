@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import static java.lang.Math.*;
+
 /**
  * The possible flowdirections.
  *
@@ -52,19 +54,26 @@ package org.jgrasstools.gears.libs.modules;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public enum Direction {
-    E(1, 0, 1, 5), //
-    EN(1, -1, 2, 6), //
-    N(0, -1, 3, 7), //
-    NW(-1, -1, 4, 8), //
-    W(-1, 0, 5, 1), //
-    WS(-1, 1, 6, 2), //
-    S(-1, 0, 7, 3), //
-    SE(1, 1, 8, 4);
+    E(1, 0, 1, 5, 1), //
+    EN(1, -1, 2, 6, sqrt(2.0)), //
+    N(0, -1, 3, 7, 1), //
+    NW(-1, -1, 4, 8, sqrt(2.0)), //
+    W(-1, 0, 5, 1, 1), //
+    WS(-1, 1, 6, 2, sqrt(2.0)), //
+    S(-1, 0, 7, 3, 1), //
+    SE(1, 1, 8, 4, sqrt(2.0));
 
     private int col;
     private int row;
     private int exiting;
     private int entering;
+    private double dirFactor;
+
+    private static Direction[][] dirs = {//
+    {NW, N, EN},//
+            {W, null, E},//
+            {WS, S, SE}//
+    };
 
     /**
      * Constructor.
@@ -73,14 +82,16 @@ public enum Direction {
      * @param row row of the current direction inside the schema.
      * @param exiting value of the flow, in normal (or exiting from the center/flow to) mode.
      * @param entering value of the flow in entering mode.
+     * @param dirFactor the directionfactor based on distance, normalized to 1.
      */
-    private Direction( int col, int row, int exiting, int entering ) {
+    private Direction( int col, int row, int exiting, int entering, double dirFactor ) {
         this.col = col;
         this.row = row;
         this.exiting = exiting;
         this.entering = entering;
+        this.dirFactor = dirFactor;
     }
-    
+
     public int getFlow() {
         return exiting;
     }
@@ -88,5 +99,15 @@ public enum Direction {
     public int getEnteringFlow() {
         return exiting;
     }
-    
+
+    /**
+     * Get the dir for a particular col/row of the directions schema.
+     * 
+     * @param col the col [-1, 1].
+     * @param row the row [1, 1].
+     * @return the direction or <code>null</code> for illegal values.
+     */
+    public static Direction getDir( int col, int row ) {
+        return dirs[col][row];
+    }
 }
