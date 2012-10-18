@@ -17,13 +17,13 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.*;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
-
-import org.geotools.coverage.grid.GridCoverage2D;
 
 /**
  * A node in the flow environment of a digital elevation model. 
@@ -59,11 +59,31 @@ public class FlowNode {
         this.col = col;
         this.row = row;
 
-        if (!isInRaster(col, row)) {
-            throw new IllegalArgumentException("Point not inside raster");
+        if (isInRaster(col, row)) {
+            elevation = elevationIter.getSampleDouble(col, row, 0);
         }
 
-        elevation = elevationIter.getSampleDouble(col, row, 0);
+    }
+
+    /**
+     * Checks if the node is valid.
+     * 
+     * <p>A node is valid if</p>
+     * <ul>
+     *  <li>it is placed inside the raster bounds</li>
+     *  <li>its elevation value is not novalue</li>
+     * </ul>
+     * 
+     * @return <code>true</code> if the node is valid.
+     */
+    public boolean isValid() {
+        if (JGTConstants.isNovalue(elevation)) {
+            return false;
+        } else if (!isInRaster(col, row)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public double getElevation() {
@@ -106,7 +126,11 @@ public class FlowNode {
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
                 FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
-                nodes.add(node);
+                if (node.isValid()) {
+                    nodes.add(node);
+                } else {
+                    nodes.add(null);
+                }
             } else {
                 nodes.add(null);
             }

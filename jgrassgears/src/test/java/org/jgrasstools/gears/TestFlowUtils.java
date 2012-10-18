@@ -59,7 +59,7 @@ public class TestFlowUtils extends HMTestCase {
                 count++;
             }
         }
-        assertEquals(3, count);
+        assertEquals(2, count);
     }
 
 }
