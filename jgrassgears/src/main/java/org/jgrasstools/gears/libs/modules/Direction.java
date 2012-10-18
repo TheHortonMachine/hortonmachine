@@ -60,7 +60,7 @@ public enum Direction {
     NW(-1, -1, 4, 8, sqrt(2.0)), //
     W(-1, 0, 5, 1, 1), //
     WS(-1, 1, 6, 2, sqrt(2.0)), //
-    S(-1, 0, 7, 3, 1), //
+    S(0, 1, 7, 3, 1), //
     SE(1, 1, 8, 4, sqrt(2.0));
 
     public int col;

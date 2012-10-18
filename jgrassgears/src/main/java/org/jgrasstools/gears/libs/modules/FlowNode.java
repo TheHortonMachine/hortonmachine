@@ -101,8 +101,9 @@ public class FlowNode {
         List<FlowNode> nodes = new ArrayList<FlowNode>();
         Direction[] orderedDirs = Direction.getOrderedDirs();
         for( int i = 0; i < orderedDirs.length; i++ ) {
-            int newCol = col + orderedDirs[i].col;
-            int newRow = row + orderedDirs[i].row;
+            Direction direction = orderedDirs[i];
+            int newCol = col + direction.col;
+            int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
                 FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
                 nodes.add(node);
