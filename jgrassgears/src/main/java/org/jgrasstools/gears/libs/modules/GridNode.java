@@ -41,6 +41,7 @@ public class GridNode {
     private double xRes;
     private double yRes;
     private boolean isOutlet = false;
+    private boolean touchesBound = false;
 
     /**
      * The constructor.
@@ -66,6 +67,22 @@ public class GridNode {
             elevation = elevationIter.getSampleDouble(col, row, 0);
         } else {
             elevation = JGTConstants.doubleNovalue;
+        }
+
+        for( int c = -1; c <= 1; c++ ) {
+            for( int r = -1; r <= 1; r++ ) {
+                int newC = col + c;
+                int newR = row + r;
+                if (!isInRaster(newC, newR)) {
+                    touchesBound = true;
+                    return;
+                }
+                double tmp = elevationIter.getSampleDouble(newC, newR, 0);
+                if (JGTConstants.isNovalue(tmp)) {
+                    touchesBound = true;
+                    return;
+                }
+            }
         }
     }
 
@@ -100,6 +117,13 @@ public class GridNode {
      */
     public boolean isOutlet() {
         return isOutlet;
+    }
+
+    /**
+     * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
+     */
+    public boolean touchesBound() {
+        return touchesBound;
     }
 
     /**

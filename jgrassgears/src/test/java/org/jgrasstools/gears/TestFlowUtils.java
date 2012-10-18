@@ -98,4 +98,12 @@ public class TestFlowUtils extends HMTestCase {
         assertEquals(node.row, 2);
     }
 
+    public void testTouchesBound() throws Exception {
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        assertTrue(node1.touchesBound());
+
+        node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
+        assertFalse(node1.touchesBound());
+    }
+
 }
