@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -32,14 +33,15 @@ import javax.media.jai.iterator.RandomIter;
  */
 public class FlowNode {
 
-    private int row;
-    private int col;
+    public final int row;
+    public final int col;
+    public final double elevation;
     private RandomIter elevationIter;
     private int cols;
     private int rows;
-    private double elevation;
     private double xRes;
     private double yRes;
+    private boolean isOutlet = false;
 
     /**
      * @param elevationIter the raster iter.
@@ -61,8 +63,14 @@ public class FlowNode {
 
         if (isInRaster(col, row)) {
             elevation = elevationIter.getSampleDouble(col, row, 0);
+        } else {
+            elevation = JGTConstants.doubleNovalue;
         }
+    }
 
+    @Override
+    public String toString() {
+        return "FlowNode [\n\trow=" + row + ", \n\tcol=" + col + ", \n\televation=" + elevation + "\n]";
     }
 
     /**
@@ -87,12 +95,10 @@ public class FlowNode {
     }
 
     /**
-     * Get the node's elevation.
-     * 
-     * @return the node's elevation.
+     * @return <code>true</code> if this node can't flow anywhere following the steepest path downstream. 
      */
-    public double getElevation() {
-        return elevation;
+    public boolean isOutlet() {
+        return isOutlet;
     }
 
     /**
@@ -101,8 +107,28 @@ public class FlowNode {
      * @return the next downstream node or <code>null</code> if it is an outlet.
      */
     public FlowNode goDownstream() {
-
-        return null;
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        double maxSlope = Double.NEGATIVE_INFINITY;
+        FlowNode nextNode = null;
+        for( int i = 0; i < orderedDirs.length; i++ ) {
+            Direction direction = orderedDirs[i];
+            int newCol = col + direction.col;
+            int newRow = row + direction.row;
+            if (isInRaster(newCol, newRow)) {
+                FlowNode node = new FlowNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                if (node.isValid()) {
+                    double slopeTo = getSlopeTo(node);
+                    if (slopeTo > 0 && slopeTo > maxSlope) {
+                        nextNode = node;
+                        maxSlope = slopeTo;
+                    }
+                }
+            }
+        }
+        if (nextNode == null) {
+            isOutlet = true;
+        }
+        return nextNode;
     }
 
     /**
@@ -176,7 +202,7 @@ public class FlowNode {
      * @return the slope.
      */
     public double getSlopeTo( FlowNode node ) {
-        double slope = (node.elevation - elevation)
+        double slope = (elevation - node.elevation)
                 / (sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0)));
         return slope;
     }

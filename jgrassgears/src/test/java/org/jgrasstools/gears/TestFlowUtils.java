@@ -20,6 +20,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {
 
+    private static final double delta = 0.000000001;
     private int nCols;
     private int nRows;
     private double xRes;
@@ -45,7 +46,7 @@ public class TestFlowUtils extends HMTestCase {
         FlowNode node1 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
         FlowNode node2 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 0, 1);
         double slopeTo = node1.getSlopeTo(node2);
-        assertEquals(slopeTo, -6.666666666666667, 0.000000001);
+        assertEquals(slopeTo, 6.666666666666667, delta);
     }
 
     public void testSurroundingCells() throws Exception {
@@ -60,6 +61,20 @@ public class TestFlowUtils extends HMTestCase {
             }
         }
         assertEquals(2, count);
+    }
+
+    public void testNextSteepestNode() throws Exception {
+        FlowNode node1 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+        FlowNode nextDownstreamNode = node1.goDownstream();
+        assertEquals(nextDownstreamNode.col, 1);
+        assertEquals(nextDownstreamNode.row, 3);
+        while( nextDownstreamNode != null ) {
+            FlowNode tmpNode = nextDownstreamNode.goDownstream();
+            if (tmpNode == null) {
+                assertTrue(nextDownstreamNode.isOutlet());
+            }
+            nextDownstreamNode = tmpNode;
+        }
     }
 
 }
