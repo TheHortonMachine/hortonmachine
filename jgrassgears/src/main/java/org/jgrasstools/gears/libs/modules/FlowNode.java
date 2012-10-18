@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 
@@ -106,7 +105,7 @@ public class FlowNode {
      * 
      * @return the next downstream node or <code>null</code> if it is an outlet.
      */
-    public FlowNode goDownstream() {
+    public FlowNode goDownstreamSP() {
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxSlope = Double.NEGATIVE_INFINITY;
         FlowNode nextNode = null;
@@ -169,23 +168,41 @@ public class FlowNode {
         return nodes;
     }
     /**
-     * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node.
+     * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node by steepest path rule.
      * 
      * @return the nodes that flow into this node.
      */
-    public List<FlowNode> getEnteringNodes() {
-
-        return null;
+    public List<FlowNode> getEnteringNodesSP() {
+        List<FlowNode> nodes = new ArrayList<FlowNode>();
+        List<FlowNode> surroundingNodes = getSurroundingNodes();
+        for( FlowNode flowNode : surroundingNodes ) {
+            if (flowNode != null) {
+                FlowNode downstream = flowNode.goDownstreamSP();
+                if (downstream.isValid() && this.equals(downstream)) {
+                    nodes.add(flowNode);
+                }
+            }
+        }
+        return nodes;
     }
 
     /**
-     * Gets all surrounding {@link FlowNode nodes} that do <b>NOT</b> flow into this node.
+     * Gets all surrounding {@link FlowNode nodes} that do <b>NOT</b> flow into this node by steepest path rule.
      * 
      * @return the nodes that flow into this node.
      */
-    public List<FlowNode> getNonEnteringNodes() {
-
-        return null;
+    public List<FlowNode> getNonEnteringNodesSP() {
+        List<FlowNode> nodes = new ArrayList<FlowNode>();
+        List<FlowNode> surroundingNodes = getSurroundingNodes();
+        for( FlowNode flowNode : surroundingNodes ) {
+            if (flowNode != null) {
+                FlowNode downstream = flowNode.goDownstreamSP();
+                if (!downstream.isValid() || !this.equals(downstream)) {
+                    nodes.add(flowNode);
+                }
+            }
+        }
+        return nodes;
     }
 
     private boolean isInRaster( int col, int row ) {
@@ -205,6 +222,34 @@ public class FlowNode {
         double slope = (elevation - node.elevation)
                 / (sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0)));
         return slope;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + col;
+        long temp;
+        temp = Double.doubleToLongBits(elevation);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + row;
+        return result;
+    }
+
+    @Override
+    public boolean equals( Object obj ) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        FlowNode other = (FlowNode) obj;
+        if (col != other.col || row != other.row)
+            return false;
+        if (Double.doubleToLongBits(elevation) != Double.doubleToLongBits(other.elevation))
+            return false;
+        return true;
     }
 
 }

@@ -65,16 +65,37 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testNextSteepestNode() throws Exception {
         FlowNode node1 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
-        FlowNode nextDownstreamNode = node1.goDownstream();
+        FlowNode nextDownstreamNode = node1.goDownstreamSP();
         assertEquals(nextDownstreamNode.col, 1);
         assertEquals(nextDownstreamNode.row, 3);
         while( nextDownstreamNode != null ) {
-            FlowNode tmpNode = nextDownstreamNode.goDownstream();
+            FlowNode tmpNode = nextDownstreamNode.goDownstreamSP();
             if (tmpNode == null) {
                 assertTrue(nextDownstreamNode.isOutlet());
             }
             nextDownstreamNode = tmpNode;
         }
+    }
+
+    public void testEnteringCells() throws Exception {
+        FlowNode node1 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+
+        List<FlowNode> enteringNodes = node1.getEnteringNodesSP();
+        for( FlowNode flowNode : enteringNodes ) {
+            assertEquals(flowNode.col, 3);
+            assertEquals(flowNode.row, 1);
+        }
+    }
+
+    public void testNonEnteringCells() throws Exception {
+        FlowNode node1 = new FlowNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+
+        List<FlowNode> nonEnteringNodes = node1.getNonEnteringNodesSP();
+        assertEquals(6, nonEnteringNodes.size());
+
+        FlowNode node = nonEnteringNodes.get(0);
+        assertEquals(node.col, 3);
+        assertEquals(node.row, 2);
     }
 
 }
