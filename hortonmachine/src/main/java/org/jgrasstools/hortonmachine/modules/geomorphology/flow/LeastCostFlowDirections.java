@@ -17,9 +17,8 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.flow;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
-import java.awt.image.WritableRaster;
 import java.util.TreeSet;
 
 import javax.media.jai.iterator.RandomIter;
@@ -37,10 +36,12 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -78,25 +79,35 @@ public class LeastCostFlowDirections extends JGTModel {
         double yRes = regionMap.getYres();
 
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
-        
-        TreeSet<GridNode> orderedNodes = new TreeSet<GridNode>(null);
 
+        TreeSet<GridNode> orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
+        BitMatrix processedMap = new BitMatrix(cols, rows);
+
+        pm.beginTask("Check for potential outlets...", cols);
         for( int c = 0; c < cols; c++ ) {
             if (isCanceled(pm)) {
                 return;
             }
             for( int r = 0; r < rows; r++ ) {
                 GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
-                
-                
-                double value = elevationIter.getSampleDouble( c,r, 0);
-                if (!isNovalue(value)) {
-                    pitIter.setSample(r, c, 0, value);
-                } else {
-                    pitIter.setSample(r, c, 0, PITNOVALUE);
+                if (!node.isValid()) {
+                    processedMap.mark(c, r);
+                    continue;
+                }
+                if (node.touchesBound()) {
+                    orderedNodes.add(node);
+                    processedMap.mark(c, r);
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
+
+        for( GridNode gridNode : orderedNodes ) {
+            System.out.println(gridNode);
+        }
+
+        System.out.println(orderedNodes.size());
 
         // outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
         // inDem.getCoordinateReferenceSystem(), true);
