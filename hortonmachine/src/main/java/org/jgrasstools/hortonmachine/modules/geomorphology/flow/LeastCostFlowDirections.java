@@ -92,6 +92,10 @@ public class LeastCostFlowDirections extends JGTModel {
 
     private WritableRandomIter tcaIter;
 
+    private int cols;
+
+    private int rows;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFlow == null, doReset)) {
@@ -99,8 +103,8 @@ public class LeastCostFlowDirections extends JGTModel {
         }
         checkNull(inElev);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
+        cols = regionMap.getCols();
+        rows = regionMap.getRows();
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
 
@@ -145,6 +149,7 @@ public class LeastCostFlowDirections extends JGTModel {
         }
         pm.done();
 
+        pm.beginTask("Extract flowdirections...", cols * rows);
         GridNode lowestNode = null;
         while( (lowestNode = orderedNodes.pollFirst()) != null ) {
             /*
@@ -201,7 +206,9 @@ public class LeastCostFlowDirections extends JGTModel {
             if (nodeOk(se) && assignFlowDirection(lowestNode, se, s, e)) {
                 setNodeValues(se, SE.getEnteringFlow());
             }
+            pm.worked(1);
         }
+        pm.done();
 
         outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, inElev.getCoordinateReferenceSystem());
         if (doTca)
@@ -218,9 +225,35 @@ public class LeastCostFlowDirections extends JGTModel {
          * the flow has to be followed downstream adding the contributing cell.
          */
         if (doTca) {
-            double tmpFlow = flowIter.getSampleDouble(node.col, node.row, 0);
-
+            int runningCol = node.col;
+            int runningRow = node.row;
+            while( isInRaster(runningCol, runningRow) ) {
+                double tmpFlow = flowIter.getSampleDouble(runningCol, runningRow, 0);
+                if (!isNovalue(tmpFlow)) {
+                    double tmpTca = tcaIter.getSampleDouble(runningCol, runningRow, 0);
+                    if (isNovalue(tmpTca)) {
+                        tmpTca = 0.0;
+                    }
+                    tcaIter.setSample(runningCol, runningRow, 0, tmpTca + 1.0);
+                    Direction flowDir = Direction.forFlow((int) tmpFlow);
+                    if (flowDir != null) {
+                        runningCol = runningCol + flowDir.col;
+                        runningRow = runningRow + flowDir.row;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
         }
+    }
+
+    private boolean isInRaster( int col, int row ) {
+        if (col < 0 || col >= cols || row < 0 || row >= rows) {
+            return false;
+        }
+        return true;
     }
 
     /**

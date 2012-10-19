@@ -17,7 +17,7 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.*;
+import static java.lang.Math.sqrt;
 
 /**
  * The possible flowdirections.
@@ -120,6 +120,37 @@ public enum Direction {
      */
     public static Direction[] getOrderedDirs() {
         return new Direction[]{E, EN, N, NW, W, WS, S, SE};
+    }
+
+    /**
+     * Get the {@link Direction} by its exiting flow.
+     * 
+     * @param flowValue the value of the (exiting) flow.
+     * @return the direction.
+     */
+    public static Direction forFlow( int flowValue ) {
+        switch( flowValue ) {
+        case 1:
+            return E;
+        case 2:
+            return EN;
+        case 3:
+            return N;
+        case 4:
+            return NW;
+        case 5:
+            return W;
+        case 6:
+            return WS;
+        case 7:
+            return S;
+        case 8:
+            return SE;
+        case 10:
+            return null;
+        default:
+            throw new IllegalArgumentException("Can't understand flow direction: " + flowValue);
+        }
     }
 
 }
