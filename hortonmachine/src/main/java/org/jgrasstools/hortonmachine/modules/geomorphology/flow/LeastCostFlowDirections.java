@@ -74,6 +74,8 @@ public class LeastCostFlowDirections extends JGTModel {
 
     private BitMatrix processedMap;
 
+    private boolean excludeBorder = false;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outFlow == null, doReset)) {
@@ -108,9 +110,12 @@ public class LeastCostFlowDirections extends JGTModel {
                 }
                 if (node.touchesBound()) {
                     orderedNodes.add(node);
-                    processedMap.mark(c, r);
-                    // mark them all as outlets
-                    flowIter.setSample(c, r, 0, doubleNovalue);// Direction.getOutletValue());
+                    if (excludeBorder) {
+                        processedMap.mark(c, r);
+                        flowIter.setSample(c, r, 0, doubleNovalue);
+                    } else {
+                        flowIter.setSample(c, r, 0, Direction.getOutletValue());
+                    }
                 }
             }
             pm.worked(1);

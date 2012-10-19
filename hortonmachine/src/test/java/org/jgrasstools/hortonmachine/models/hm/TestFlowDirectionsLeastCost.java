@@ -40,8 +40,10 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("elev", mapData, envelopeParams, crs, true);
 
+        // RasterWriter.writeRaster("/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/testdem.asc",
+        // mapCoverage);
         PrintUtilities.printCoverageData(mapCoverage);
-        
+
         LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
         flowDirections.pm = pm;
