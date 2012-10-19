@@ -76,7 +76,7 @@ public class LeastCostFlowDirections extends JGTModel {
     @Out
     public GridCoverage2D outFlow = null;
 
-    private BitMatrix processedMap;
+    private BitMatrix assignedFlowsMap;
 
     @Execute
     public void process() throws Exception {
@@ -96,7 +96,7 @@ public class LeastCostFlowDirections extends JGTModel {
         WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowWR);
 
         TreeSet<GridNode> orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
-        processedMap = new BitMatrix(cols, rows);
+        assignedFlowsMap = new BitMatrix(cols, rows);
 
         pm.beginTask("Check for potential outlets...", cols);
         for( int c = 0; c < cols; c++ ) {
@@ -106,14 +106,14 @@ public class LeastCostFlowDirections extends JGTModel {
             for( int r = 0; r < rows; r++ ) {
                 GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                 if (!node.isValid()) {
-                    processedMap.mark(c, r);
+                    assignedFlowsMap.mark(c, r);
                     flowIter.setSample(c, r, 0, doubleNovalue);
                     continue;
                 }
                 if (node.touchesBound()) {
                     orderedNodes.add(node);
                     if (doExcludeBorder) {
-                        processedMap.mark(c, r);
+                        assignedFlowsMap.mark(c, r);
                         flowIter.setSample(c, r, 0, doubleNovalue);
                     } else {
                         flowIter.setSample(c, r, 0, Direction.getOutletValue());
@@ -126,6 +126,14 @@ public class LeastCostFlowDirections extends JGTModel {
 
         GridNode lowestNode = null;
         while( (lowestNode = orderedNodes.pollFirst()) != null ) {
+            /*
+             * set the current cell as marked. If it is an alone one,
+             * it will stay put as an outlet (if we do not mark it, it 
+             * might get overwritten. Else il will be redundantly set 
+             * later again.
+             */
+            assignedFlowsMap.mark(lowestNode.col, lowestNode.row);
+            
             List<GridNode> surroundingNodes = lowestNode.getSurroundingNodes();
 
             /*
@@ -139,21 +147,25 @@ public class LeastCostFlowDirections extends JGTModel {
                 // order
                 flowIter.setSample(e.col, e.row, 0, E.getEnteringFlow());
                 orderedNodes.add(e);
+                assignedFlowsMap.mark(e.col, e.row);
             }
             GridNode n = surroundingNodes.get(2);
             if (nodeOk(n)) {
                 flowIter.setSample(n.col, n.row, 0, N.getEnteringFlow());
                 orderedNodes.add(n);
+                assignedFlowsMap.mark(n.col, n.row);
             }
             GridNode w = surroundingNodes.get(4);
             if (nodeOk(w)) {
                 flowIter.setSample(w.col, w.row, 0, W.getEnteringFlow());
                 orderedNodes.add(w);
+                assignedFlowsMap.mark(w.col, w.row);
             }
             GridNode s = surroundingNodes.get(6);
             if (nodeOk(s)) {
                 flowIter.setSample(s.col, s.row, 0, S.getEnteringFlow());
                 orderedNodes.add(s);
+                assignedFlowsMap.mark(s.col, s.row);
             }
 
             /*
@@ -161,28 +173,29 @@ public class LeastCostFlowDirections extends JGTModel {
              * they are not steeper than their attached vertical and horiz cells.
              */
             GridNode en = surroundingNodes.get(1);
-            if (nodeOk(en) && !isSteeperThan(lowestNode, en, e, n)) {
+            if (nodeOk(en) && assignFlowDirection(lowestNode, en, e, n)) {
                 flowIter.setSample(en.col, en.row, 0, EN.getEnteringFlow());
                 orderedNodes.add(en);
+                assignedFlowsMap.mark(en.col, en.row);
             }
             GridNode nw = surroundingNodes.get(3);
-            if (nodeOk(nw) && !isSteeperThan(lowestNode, nw, n, w)) {
+            if (nodeOk(nw) && assignFlowDirection(lowestNode, nw, n, w)) {
                 flowIter.setSample(nw.col, nw.row, 0, NW.getEnteringFlow());
                 orderedNodes.add(nw);
+                assignedFlowsMap.mark(nw.col, nw.row);
             }
             GridNode ws = surroundingNodes.get(5);
-            if (nodeOk(ws) && !isSteeperThan(lowestNode, ws, w, s)) {
+            if (nodeOk(ws) && assignFlowDirection(lowestNode, ws, w, s)) {
                 flowIter.setSample(ws.col, ws.row, 0, WS.getEnteringFlow());
                 orderedNodes.add(ws);
+                assignedFlowsMap.mark(ws.col, ws.row);
             }
             GridNode se = surroundingNodes.get(7);
-            if (nodeOk(se) && !isSteeperThan(lowestNode, se, s, e)) {
+            if (nodeOk(se) && assignFlowDirection(lowestNode, se, s, e)) {
                 flowIter.setSample(se.col, se.row, 0, SE.getEnteringFlow());
                 orderedNodes.add(se);
+                assignedFlowsMap.mark(se.col, se.row);
             }
-
-            // mark the current node as processed
-            processedMap.mark(lowestNode.col, lowestNode.row);
         }
 
         outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, inElev.getCoordinateReferenceSystem());
@@ -192,23 +205,23 @@ public class LeastCostFlowDirections extends JGTModel {
      * Checks if the path from the current to the first node is steeper than to the others.
      * 
      * @param current the current node.
-     * @param diagonal the diagonale node to check.
+     * @param diagonal the diagonal node to check.
      * @param node1 the first other node to check.
      * @param node2 the second other node to check.
      * @return <code>true</code> if the path to the first node is steeper in module than 
      *         that to the others.
      */
-    private boolean isSteeperThan( GridNode current, GridNode diagonal, GridNode node1, GridNode node2 ) {
-        double maxSlope = abs(current.getSlopeTo(diagonal));
+    private boolean assignFlowDirection( GridNode current, GridNode diagonal, GridNode node1, GridNode node2 ) {
+        double diagonalSlope = abs(current.getSlopeTo(diagonal));
         if (node1 != null) {
-            double tmpSlope = abs(current.getSlopeTo(node1));
-            if (tmpSlope > maxSlope) {
+            double tmpSlope = abs(diagonal.getSlopeTo(node1));
+            if (diagonalSlope < tmpSlope) {
                 return false;
             }
         }
         if (node2 != null) {
-            double tmpSlope = abs(current.getSlopeTo(node2));
-            if (tmpSlope > maxSlope) {
+            double tmpSlope = abs(diagonal.getSlopeTo(node2));
+            if (diagonalSlope < tmpSlope) {
                 return false;
             }
         }
@@ -224,7 +237,7 @@ public class LeastCostFlowDirections extends JGTModel {
      * </ul> 
      */
     private boolean nodeOk( GridNode node ) {
-        return node != null && !processedMap.isMarked(node.col, node.row);
+        return node != null && !assignedFlowsMap.isMarked(node.col, node.row);
     }
 
 }
