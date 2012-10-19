@@ -64,6 +64,10 @@ public class LeastCostFlowDirections extends JGTModel {
     @In
     public GridCoverage2D inElev = null;
 
+    @Description("Flag to consider or ignore boundary pixels.")
+    @In
+    public boolean doExcludeBorder = false;
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
@@ -73,8 +77,6 @@ public class LeastCostFlowDirections extends JGTModel {
     public GridCoverage2D outFlow = null;
 
     private BitMatrix processedMap;
-
-    private boolean excludeBorder = false;
 
     @Execute
     public void process() throws Exception {
@@ -110,7 +112,7 @@ public class LeastCostFlowDirections extends JGTModel {
                 }
                 if (node.touchesBound()) {
                     orderedNodes.add(node);
-                    if (excludeBorder) {
+                    if (doExcludeBorder) {
                         processedMap.mark(c, r);
                         flowIter.setSample(c, r, 0, doubleNovalue);
                     } else {
@@ -133,7 +135,8 @@ public class LeastCostFlowDirections extends JGTModel {
              */
             GridNode e = surroundingNodes.get(0);
             if (nodeOk(e)) {
-                // flow in current and get added to the list of nodes to process by elevation order
+                // flow in current and get added to the list of nodes to process by elevation
+                // order
                 flowIter.setSample(e.col, e.row, 0, E.getEnteringFlow());
                 orderedNodes.add(e);
             }
@@ -214,11 +217,14 @@ public class LeastCostFlowDirections extends JGTModel {
     /**
      * Checks if the node is ok.
      * 
-     * - if the node is valid (!=null in surrounding)
-     * - if the node has not been processed already (!.isMarked)
+     * <p>A node is ok if:</p>
+     * <ul>
+     *  <li>if the node is valid (!= null in surrounding)</li>
+     *  <li>if the node has not been processed already (!.isMarked)</li>
+     * </ul> 
      */
-    private boolean nodeOk( GridNode e ) {
-        return e != null && !processedMap.isMarked(e.col, e.row);
+    private boolean nodeOk( GridNode node ) {
+        return node != null && !processedMap.isMarked(node.col, node.row);
     }
 
 }
