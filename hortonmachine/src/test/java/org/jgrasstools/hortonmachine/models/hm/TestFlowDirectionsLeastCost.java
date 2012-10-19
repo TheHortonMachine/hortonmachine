@@ -55,30 +55,34 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         GridCoverage2D flowCoverage = flowDirections.outFlow;
         PrintUtilities.printCoverageData(flowCoverage);
+        System.out.println();
         GridCoverage2D tcaCoverage = flowDirections.outTca;
         PrintUtilities.printCoverageData(tcaCoverage);
 
         // checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
     }
 
-//    public void testFlowDirectionsLeastCost2() throws Exception {
-//        String dem = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/dtm_caved";
-//        String flow = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/flowlc";
-//        String tca = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/tcalc";
-//
-//        GridCoverage2D mapCoverage = RasterReader.readRaster(dem);
-//
-//        LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
-//        flowDirections.inElev = mapCoverage;
-//        flowDirections.pm = pm;
-//
-//        flowDirections.process();
-//
-//        GridCoverage2D flowCoverage = flowDirections.outFlow;
-//        RasterWriter.writeRaster(flow, flowCoverage);
-//        GridCoverage2D tcaCoverage = flowDirections.outTca;
-//        RasterWriter.writeRaster(tca, tcaCoverage);
-//
-//    }
+    // public void testFlowDirectionsLeastCost2() throws Exception {
+    // String dem =
+    // "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/dtm_caved";
+    // String flow =
+    // "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/flowlc";
+    // String tca =
+    // "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/tcalc";
+    //
+    // GridCoverage2D mapCoverage = RasterReader.readRaster(dem);
+    //
+    // LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
+    // flowDirections.inElev = mapCoverage;
+    // flowDirections.pm = pm;
+    //
+    // flowDirections.process();
+    //
+    // GridCoverage2D flowCoverage = flowDirections.outFlow;
+    // RasterWriter.writeRaster(flow, flowCoverage);
+    // GridCoverage2D tcaCoverage = flowDirections.outTca;
+    // RasterWriter.writeRaster(tca, tcaCoverage);
+    //
+    // }
 
 }
