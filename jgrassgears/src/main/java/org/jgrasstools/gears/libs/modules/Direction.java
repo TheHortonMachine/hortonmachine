@@ -100,6 +100,10 @@ public enum Direction {
         return entering;
     }
 
+    public static int getOutletValue() {
+        return 10;
+    }
+
     /**
      * Get the dir for a particular col/row of the directions schema.
      * 

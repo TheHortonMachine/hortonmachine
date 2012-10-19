@@ -20,6 +20,7 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.LeastCostFlowDirections;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -37,15 +38,19 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
         double[][] mapData = HMTestMaps.mapData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("pit", mapData, envelopeParams, crs, true);
+        GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("elev", mapData, envelopeParams, crs, true);
 
+        PrintUtilities.printCoverageData(mapCoverage);
+        
         LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
         flowDirections.pm = pm;
 
         flowDirections.process();
 
-        // GridCoverage2D flowCoverage = flowDirections.outFlow;
+        GridCoverage2D flowCoverage = flowDirections.outFlow;
+
+        PrintUtilities.printCoverageData(flowCoverage);
 
         // checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
     }
