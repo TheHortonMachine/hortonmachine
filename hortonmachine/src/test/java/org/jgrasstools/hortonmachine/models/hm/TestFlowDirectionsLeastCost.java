@@ -20,6 +20,8 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.LeastCostFlowDirections;
@@ -46,6 +48,7 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
+        flowDirections.doExcludeBorder = true;
         flowDirections.pm = pm;
 
         flowDirections.process();
@@ -56,5 +59,23 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         // checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
     }
+
+//    public void testFlowDirectionsLeastCost2() throws Exception {
+//        String dem = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/dtm_caved";
+//        String flow = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testgrass/cell/flowlc";
+//
+//        GridCoverage2D mapCoverage = RasterReader.readRaster(dem);
+//
+//        LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
+//        flowDirections.inElev = mapCoverage;
+//        flowDirections.pm = pm;
+//
+//        flowDirections.process();
+//
+//        GridCoverage2D flowCoverage = flowDirections.outFlow;
+//
+//        RasterWriter.writeRaster(flow, flowCoverage);
+//
+//    }
 
 }

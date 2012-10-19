@@ -60,13 +60,17 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class LeastCostFlowDirections extends JGTModel {
-    @Description("The depitted elevation map.")
+    @Description("The elevation map.")
     @In
     public GridCoverage2D inElev = null;
 
     @Description("Flag to consider or ignore boundary pixels.")
     @In
     public boolean doExcludeBorder = false;
+
+    @Description("Flag to toggle tca calculation.")
+    @In
+    public boolean doTca = true;
 
     @Description("The progress monitor.")
     @In
@@ -76,7 +80,17 @@ public class LeastCostFlowDirections extends JGTModel {
     @Out
     public GridCoverage2D outFlow = null;
 
+    @Description("The map of tca (optional).")
+    @Out
+    public GridCoverage2D outTca = null;
+
     private BitMatrix assignedFlowsMap;
+
+    private WritableRandomIter flowIter;
+
+    private TreeSet<GridNode> orderedNodes;
+
+    private WritableRandomIter tcaIter;
 
     @Execute
     public void process() throws Exception {
@@ -93,9 +107,15 @@ public class LeastCostFlowDirections extends JGTModel {
         RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         WritableRaster flowWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
-        WritableRandomIter flowIter = CoverageUtilities.getWritableRandomIterator(flowWR);
+        flowIter = CoverageUtilities.getWritableRandomIterator(flowWR);
 
-        TreeSet<GridNode> orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
+        WritableRaster tcaWR = null;
+        if (doTca) {
+            tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            tcaIter = CoverageUtilities.getWritableRandomIterator(tcaWR);
+        }
+
+        orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
         assignedFlowsMap = new BitMatrix(cols, rows);
 
         pm.beginTask("Check for potential outlets...", cols);
@@ -107,16 +127,17 @@ public class LeastCostFlowDirections extends JGTModel {
                 GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                 if (!node.isValid()) {
                     assignedFlowsMap.mark(c, r);
-                    flowIter.setSample(c, r, 0, doubleNovalue);
                     continue;
                 }
                 if (node.touchesBound()) {
                     orderedNodes.add(node);
                     if (doExcludeBorder) {
                         assignedFlowsMap.mark(c, r);
-                        flowIter.setSample(c, r, 0, doubleNovalue);
                     } else {
                         flowIter.setSample(c, r, 0, Direction.getOutletValue());
+                        if (doTca) {
+                            tcaIter.setSample(c, r, 0, 1.0);
+                        }
                     }
                 }
             }
@@ -133,7 +154,7 @@ public class LeastCostFlowDirections extends JGTModel {
              * later again.
              */
             assignedFlowsMap.mark(lowestNode.col, lowestNode.row);
-            
+
             List<GridNode> surroundingNodes = lowestNode.getSurroundingNodes();
 
             /*
@@ -145,27 +166,19 @@ public class LeastCostFlowDirections extends JGTModel {
             if (nodeOk(e)) {
                 // flow in current and get added to the list of nodes to process by elevation
                 // order
-                flowIter.setSample(e.col, e.row, 0, E.getEnteringFlow());
-                orderedNodes.add(e);
-                assignedFlowsMap.mark(e.col, e.row);
+                setNodeValues(e, E.getEnteringFlow());
             }
             GridNode n = surroundingNodes.get(2);
             if (nodeOk(n)) {
-                flowIter.setSample(n.col, n.row, 0, N.getEnteringFlow());
-                orderedNodes.add(n);
-                assignedFlowsMap.mark(n.col, n.row);
+                setNodeValues(n, N.getEnteringFlow());
             }
             GridNode w = surroundingNodes.get(4);
             if (nodeOk(w)) {
-                flowIter.setSample(w.col, w.row, 0, W.getEnteringFlow());
-                orderedNodes.add(w);
-                assignedFlowsMap.mark(w.col, w.row);
+                setNodeValues(w, W.getEnteringFlow());
             }
             GridNode s = surroundingNodes.get(6);
             if (nodeOk(s)) {
-                flowIter.setSample(s.col, s.row, 0, S.getEnteringFlow());
-                orderedNodes.add(s);
-                assignedFlowsMap.mark(s.col, s.row);
+                setNodeValues(s, S.getEnteringFlow());
             }
 
             /*
@@ -174,31 +187,40 @@ public class LeastCostFlowDirections extends JGTModel {
              */
             GridNode en = surroundingNodes.get(1);
             if (nodeOk(en) && assignFlowDirection(lowestNode, en, e, n)) {
-                flowIter.setSample(en.col, en.row, 0, EN.getEnteringFlow());
-                orderedNodes.add(en);
-                assignedFlowsMap.mark(en.col, en.row);
+                setNodeValues(en, EN.getEnteringFlow());
             }
             GridNode nw = surroundingNodes.get(3);
             if (nodeOk(nw) && assignFlowDirection(lowestNode, nw, n, w)) {
-                flowIter.setSample(nw.col, nw.row, 0, NW.getEnteringFlow());
-                orderedNodes.add(nw);
-                assignedFlowsMap.mark(nw.col, nw.row);
+                setNodeValues(nw, NW.getEnteringFlow());
             }
             GridNode ws = surroundingNodes.get(5);
             if (nodeOk(ws) && assignFlowDirection(lowestNode, ws, w, s)) {
-                flowIter.setSample(ws.col, ws.row, 0, WS.getEnteringFlow());
-                orderedNodes.add(ws);
-                assignedFlowsMap.mark(ws.col, ws.row);
+                setNodeValues(ws, WS.getEnteringFlow());
             }
             GridNode se = surroundingNodes.get(7);
             if (nodeOk(se) && assignFlowDirection(lowestNode, se, s, e)) {
-                flowIter.setSample(se.col, se.row, 0, SE.getEnteringFlow());
-                orderedNodes.add(se);
-                assignedFlowsMap.mark(se.col, se.row);
+                setNodeValues(se, SE.getEnteringFlow());
             }
         }
 
         outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, inElev.getCoordinateReferenceSystem());
+        if (doTca)
+            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inElev.getCoordinateReferenceSystem());
+    }
+
+    private void setNodeValues( GridNode node, int enteringFlow ) {
+        flowIter.setSample(node.col, node.row, 0, enteringFlow);
+        orderedNodes.add(node);
+        assignedFlowsMap.mark(node.col, node.row);
+
+        /*
+         * once a flow value is set, if tca is meant to be calculated,
+         * the flow has to be followed downstream adding the contributing cell.
+         */
+        if (doTca) {
+            double tmpFlow = flowIter.getSampleDouble(node.col, node.row, 0);
+
+        }
     }
 
     /**
@@ -227,6 +249,7 @@ public class LeastCostFlowDirections extends JGTModel {
         }
         return true;
     }
+
     /**
      * Checks if the node is ok.
      * 
