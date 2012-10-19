@@ -2,11 +2,13 @@ package org.jgrasstools.gears;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.GridNode;
+import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -104,6 +106,25 @@ public class TestFlowUtils extends HMTestCase {
 
         node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
         assertFalse(node1.touchesBound());
+    }
+
+    public void testElevationSort() throws Exception {
+        TreeSet<GridNode> set = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
+        for( int c = 0; c < nCols; c++ ) {
+            for( int r = 0; r < nRows; r++ ) {
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                if (node.isValid()) {
+                    boolean added = set.add(node);
+                    assertTrue(added);
+                }
+            }
+        }
+
+        GridNode first = set.first();
+        System.out.println(first);
+        GridNode last = set.last();
+        System.out.println(last);
+
     }
 
 }

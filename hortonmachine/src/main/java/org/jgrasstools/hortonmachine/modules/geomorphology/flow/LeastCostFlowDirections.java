@@ -17,7 +17,12 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.flow;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
+import java.awt.image.WritableRaster;
 import java.util.TreeSet;
+
+import javax.media.jai.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -31,6 +36,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -49,7 +55,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class LeastCostFlowDirections extends JGTModel {
     @Description("The depitted elevation map.")
     @In
-    public GridCoverage2D inDem = null;
+    public GridCoverage2D inElev = null;
 
     @Description("The progress monitor.")
     @In
@@ -64,12 +70,34 @@ public class LeastCostFlowDirections extends JGTModel {
         if (!concatOr(outFlow == null, doReset)) {
             return;
         }
-        checkNull(inDem);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDem);
+        checkNull(inElev);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
+
+        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
         
-        
-        
-        
+        TreeSet<GridNode> orderedNodes = new TreeSet<GridNode>(null);
+
+        for( int c = 0; c < cols; c++ ) {
+            if (isCanceled(pm)) {
+                return;
+            }
+            for( int r = 0; r < rows; r++ ) {
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
+                
+                
+                double value = elevationIter.getSampleDouble( c,r, 0);
+                if (!isNovalue(value)) {
+                    pitIter.setSample(r, c, 0, value);
+                } else {
+                    pitIter.setSample(r, c, 0, PITNOVALUE);
+                }
+            }
+        }
+
         // outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
         // inDem.getCoordinateReferenceSystem(), true);
     }

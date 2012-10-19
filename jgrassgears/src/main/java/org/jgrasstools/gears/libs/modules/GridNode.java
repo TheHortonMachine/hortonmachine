@@ -88,7 +88,7 @@ public class GridNode {
 
     @Override
     public String toString() {
-        return "FlowNode [\n\trow=" + row + ", \n\tcol=" + col + ", \n\televation=" + elevation + "\n]";
+        return "GridNode [\n\tcol=" + col + ", \n\trow=" + row + ", \n\televation=" + elevation + "\n]";
     }
 
     /**
