@@ -17,6 +17,10 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
+import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
+import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+
 import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
@@ -29,6 +33,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -51,9 +56,10 @@ public class RasterResolutionResampler extends JGTModel {
     @In
     public GridCoverage2D inGeodata;
 
-    @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
+    @Description("The interpolation type to use")
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
-    public int pInterpolation = 0;
+    public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The new resolution in X")
     @In
@@ -85,15 +91,10 @@ public class RasterResolutionResampler extends JGTModel {
         GridGeometry2D newGridGeometry = region.getGridGeometry(inGeodata.getCoordinateReferenceSystem());
 
         Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        switch( pInterpolation ) {
-        case Interpolation.INTERP_BILINEAR:
+        if (pInterpolation.equals(BILINEAR)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-            break;
-        case Interpolation.INTERP_BICUBIC:
+        } else if (pInterpolation.equals(BICUBIC)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-            break;
-        default:
-            break;
         }
 
         pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);

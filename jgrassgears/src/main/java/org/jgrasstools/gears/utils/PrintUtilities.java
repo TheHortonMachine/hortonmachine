@@ -19,7 +19,6 @@ package org.jgrasstools.gears.utils;
 
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.PrintStream;
 
 import javax.media.jai.iterator.RandomIter;
@@ -53,8 +52,8 @@ public class PrintUtilities {
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter renderedImageIterator = RandomIterFactory.create(renderedImage, null);
         int[] colsRows = CoverageUtilities.getRegionColsRows(coverage);
-        for( int c = 0; c < colsRows[0]; c++ ) {
-            for( int r = 0; r < colsRows[1]; r++ ) {
+        for( int r = 0; r < colsRows[1]; r++ ) {
+            for( int c = 0; c < colsRows[0]; c++ ) {
                 printer.print(renderedImageIterator.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
@@ -71,8 +70,8 @@ public class PrintUtilities {
         RandomIter netIter = RandomIterFactory.create(renderedImage, null);
         int cols = renderedImage.getWidth();
         int rows = renderedImage.getHeight();
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 printer.print(netIter.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }
@@ -89,8 +88,8 @@ public class PrintUtilities {
         RandomIter netIter = RandomIterFactory.create(raster, null);
         int cols = raster.getWidth();
         int rows = raster.getHeight();
-        for( int c = 0; c < cols; c++ ) {
-            for( int r = 0; r < rows; r++ ) {
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
                 printer.print(netIter.getSampleDouble(c, r, 0));
                 printer.print(separator);
             }

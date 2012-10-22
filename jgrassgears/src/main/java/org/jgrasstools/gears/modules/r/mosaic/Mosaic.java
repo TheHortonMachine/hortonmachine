@@ -17,6 +17,9 @@
  */
 package org.jgrasstools.gears.modules.r.mosaic;
 
+import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
+import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
+import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
@@ -43,6 +46,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -72,9 +76,10 @@ public class Mosaic extends JGTModel {
     @In
     public List<File> inFiles;
 
-    @Description("The interpolation type to use: nearest neightbour (0-default), bilinear (1), bicubic (2)")
+    @Description("The interpolation type to use")
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
-    public int pInterpolation = 0;
+    public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The progress monitor.")
     @In
