@@ -20,6 +20,7 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.transformer.RasterResolutionResampler;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -42,7 +43,7 @@ public class TestRasterResolutionResampler extends HMTestCase {
 
         RasterResolutionResampler transformer = new RasterResolutionResampler();
         transformer.inGeodata = flowCoverage;
-        transformer.pInterpolation = 0;
+        transformer.pInterpolation = Variables.NEAREST_NEIGHTBOUR;
         transformer.pXres = 60.0;
         transformer.pYres = 60.0;
         transformer.process();
