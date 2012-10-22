@@ -45,10 +45,10 @@ import org.jgrasstools.hortonmachine.HortonMachine;
 @SuppressWarnings("nls")
 public class WikiModulesCreator {
 
-    private static final String outputWikiFolder = "/home/moovida/development/jgrasstools-hg/jgrasstools-wiki/";
+    private static final String outputWikiFolder = "/home/moovida/development/jgrasstools-wiki-git/";
 
     private static final String NEWLINE = "\n";
-    private static final String IMAGES_HM_BASEURL = "http://wiki.jgrasstools.googlecode.com/hg/images/hortonmachine/";
+    private static final String IMAGES_HM_BASEURL = "http://wiki.jgrasstools.googlecode.com/git/images/hortonmachine/";
     private static final String TESTCASES_HM_BASEURL = "http://code.google.com/p/jgrasstools/source/browse/hortonmachine/src/test/java/org/jgrasstools/hortonmachine/models/hm/";
     private static final String TESTCASES_HM_BASEPACKAGE = "org.jgrasstools.hortonmachine.models.hm.";
 

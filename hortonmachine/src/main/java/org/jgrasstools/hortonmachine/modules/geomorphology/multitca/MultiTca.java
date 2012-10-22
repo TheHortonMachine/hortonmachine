@@ -32,7 +32,7 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 
 @Description("It calculates the contributing areas differently in convex and concave areas")
 @Documentation("MultiTca.html")
-@Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, PisoniSilvano, Rigon Riccardo")
+@Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
 @Keywords("Geomorphology, DrainDir, Pitfiller, Ab")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("multitca")
@@ -42,15 +42,19 @@ public class MultiTca extends JGTModel {
     @Description("The map of depitted elevation.")
     @In
     public GridCoverage2D inPit = null;
+    
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
-    @Description("The map of depitted elevation.")
+    
+    @Description("The map with the Thopological classes cp9.")
     @In
     public GridCoverage2D inCp9 = null;
+    
     @Description("The map of total contributing areas.")
     @Out
     public GridCoverage2D outMultiTca = null;
+    
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
