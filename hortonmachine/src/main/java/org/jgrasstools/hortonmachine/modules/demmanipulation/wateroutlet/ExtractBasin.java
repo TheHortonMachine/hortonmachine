@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Keywords("Dem manipulation, Basin, FlowDirections")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("extractbasin")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class ExtractBasin extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
