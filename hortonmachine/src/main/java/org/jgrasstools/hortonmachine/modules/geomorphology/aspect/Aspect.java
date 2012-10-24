@@ -50,6 +50,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -109,18 +110,11 @@ public class Aspect extends JGTModel {
         pm.beginTask(msg.message("aspect.calculating"), rows);
 
         // Cycling into the valid region.
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
-                // calculate the y derivative
-                double centralValue = elevationIter.getSampleDouble(c, r, 0);
-                double nValue = elevationIter.getSampleDouble(c, r + 1, 0);
-                double sValue = elevationIter.getSampleDouble(c, r - 1, 0);
-                double wValue = elevationIter.getSampleDouble(c - 1, r, 0);
-                double eValue = elevationIter.getSampleDouble(c + 1, r, 0);
-
-                double aspect = calculateAspect(xRes, yRes, centralValue, nValue, sValue, wValue, eValue, radtodeg);
-                aspectIter.setSample(c, r, 0, aspect);
-
+        for( int y = 1; y < rows - 1; y++ ) {
+            for( int x = 1; x < cols - 1; x++ ) {
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, x, y);
+                double aspect = calculateAspect(node, radtodeg, doRound);
+                aspectIter.setSample(x, y, 0, aspect);
             }
             pm.worked(1);
         }
@@ -131,33 +125,35 @@ public class Aspect extends JGTModel {
     }
 
     /**
-     * Calculates the aspect given an elevation and the elevation of its surrounding cells.
+     * Calculates the aspect in a given {@link GridNode}.
      * 
-     * @param xRes the X resolution of the raster.
-     * @param yRes the Y resolution of the raster.
-     * @param centralValue the current elevation value, for which to calculate the aspect.
-     * @param nValue the northern value.
-     * @param sValue the southern value.
-     * @param wValue the western value.
-     * @param eValue the eastern value.
+     * @param node the current grid node.
      * @param radtodeg radiants to degrees conversion factor. Use {@link NumericsUtilities#RADTODEG} if you 
      *                 want degrees, use 1 if you want radiants. 
+     * @param doRound if <code>true</code>, values are round to integer.
      * @return the value of aspect.
      */
-    public double calculateAspect( double xRes, double yRes, double centralValue, double nValue, double sValue, double wValue,
-            double eValue, double radtodeg ) {
+    public double calculateAspect( GridNode node, double radtodeg, boolean doRound ) {
         double aspect = doubleNovalue;
         // the value of the x and y derivative
         double aData = 0.0;
         double bData = 0.0;
+        double xRes = node.xRes;
+        double yRes = node.yRes;
+        double centralValue = node.elevation;
+        double nValue = node.getNorthElev();
+        double sValue = node.getSouthElev();
+        double wValue = node.getWestElev();
+        double eValue = node.getEastElev();
+
         if (!isNovalue(centralValue)) {
-            if (!isNovalue(nValue) && !isNovalue(sValue)) {
-                aData = atan((sValue - nValue) / (2 * yRes));
-            } else if (isNovalue(sValue) && (!isNovalue(nValue))) {
-                aData = atan((centralValue - nValue) / (yRes));
-            } else if (!isNovalue(sValue) && isNovalue(nValue)) {
-                aData = atan((sValue - centralValue) / (yRes));
-            } else if (isNovalue(sValue) && isNovalue(nValue)) {
+            if (!isNovalue(sValue) && !isNovalue(nValue)) {
+                aData = atan((nValue - sValue) / (2 * yRes));
+            } else if (isNovalue(nValue) && (!isNovalue(sValue))) {
+                aData = atan((centralValue - sValue) / (yRes));
+            } else if (!isNovalue(nValue) && isNovalue(sValue)) {
+                aData = atan((nValue - centralValue) / (yRes));
+            } else if (isNovalue(nValue) && isNovalue(sValue)) {
                 aData = doubleNovalue;
             } else {
                 // can't happen

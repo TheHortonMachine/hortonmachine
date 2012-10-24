@@ -331,6 +331,38 @@ public class GridNode {
         return slope;
     }
 
+    public double getEastElev() {
+        return eElev;
+    }
+
+    public double getENElev() {
+        return enElev;
+    }
+
+    public double getNorthElev() {
+        return nElev;
+    }
+
+    public double getNWElev() {
+        return nwElev;
+    }
+
+    public double getWestElev() {
+        return wElev;
+    }
+
+    public double getWSElev() {
+        return wsElev;
+    }
+
+    public double getSouthElev() {
+        return sElev;
+    }
+
+    public double getSEElev() {
+        return seElev;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
