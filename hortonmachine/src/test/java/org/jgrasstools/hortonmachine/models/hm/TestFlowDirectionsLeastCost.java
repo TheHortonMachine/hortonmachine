@@ -48,8 +48,10 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
-        flowDirections.doExcludeBorder = false;
+        flowDirections.doExcludeBorder = true;
         flowDirections.pm = pm;
+        flowDirections.doAspect = true;
+        flowDirections.doSlope = true;
 
         flowDirections.process();
 
@@ -58,6 +60,12 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
         System.out.println();
         GridCoverage2D tcaCoverage = flowDirections.outTca;
         PrintUtilities.printCoverageData(tcaCoverage);
+        System.out.println();
+        GridCoverage2D slopeCoverage = flowDirections.outSlope;
+        PrintUtilities.printCoverageData(slopeCoverage);
+        System.out.println();
+        GridCoverage2D aspectCoverage = flowDirections.outAspect;
+        PrintUtilities.printCoverageData(aspectCoverage);
 
         // checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
     }
