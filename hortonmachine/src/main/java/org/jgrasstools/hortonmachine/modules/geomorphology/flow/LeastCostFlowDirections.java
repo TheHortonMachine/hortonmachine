@@ -56,6 +56,9 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.Aspect;
+import org.jgrasstools.hortonmachine.modules.geomorphology.slope.Slope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Calculates the drainage directions following the least cost method.")
 // @Documentation("FlowDirections.html")
@@ -78,6 +81,14 @@ public class LeastCostFlowDirections extends JGTModel {
     @In
     public boolean doTca = true;
 
+    @Description("Flag to toggle slope calculation.")
+    @In
+    public boolean doSlope = true;
+
+    @Description("Flag to toggle aspect calculation.")
+    @In
+    public boolean doAspect = true;
+
     @Description("The map of flowdirections.")
     @Out
     public GridCoverage2D outFlow = null;
@@ -86,6 +97,14 @@ public class LeastCostFlowDirections extends JGTModel {
     @Out
     public GridCoverage2D outTca = null;
 
+    @Description("The map of aspect (optional).")
+    @Out
+    public GridCoverage2D outAspect = null;
+
+    @Description("The map of slope (optional).")
+    @Out
+    public GridCoverage2D outSlope = null;
+
     private BitMatrix assignedFlowsMap;
 
     private WritableRandomIter flowIter;
@@ -93,6 +112,8 @@ public class LeastCostFlowDirections extends JGTModel {
     private TreeSet<GridNode> orderedNodes;
 
     private WritableRandomIter tcaIter;
+    private WritableRandomIter slopeIter;
+    private WritableRandomIter aspectIter;
 
     private int cols;
 
@@ -121,6 +142,18 @@ public class LeastCostFlowDirections extends JGTModel {
             tcaIter = CoverageUtilities.getWritableRandomIterator(tcaWR);
         }
 
+        WritableRaster slopeWR = null;
+        if (doSlope) {
+            slopeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            slopeIter = CoverageUtilities.getWritableRandomIterator(slopeWR);
+        }
+
+        WritableRaster aspectWR = null;
+        if (doAspect) {
+            aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+            aspectIter = CoverageUtilities.getWritableRandomIterator(aspectWR);
+        }
+
         orderedNodes = new TreeSet<GridNode>(new GridNodeElevationToLeastComparator());
         assignedFlowsMap = new BitMatrix(cols, rows);
 
@@ -141,9 +174,6 @@ public class LeastCostFlowDirections extends JGTModel {
                         assignedFlowsMap.mark(c, r);
                     } else {
                         flowIter.setSample(c, r, 0, Direction.getOutletValue());
-                        if (doTca) {
-                            tcaIter.setSample(c, r, 0, 1.0);
-                        }
                     }
                 }
             }
@@ -212,23 +242,39 @@ public class LeastCostFlowDirections extends JGTModel {
         }
         pm.done();
 
-        outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, inElev.getCoordinateReferenceSystem());
+        CoordinateReferenceSystem crs = inElev.getCoordinateReferenceSystem();
+        outFlow = CoverageUtilities.buildCoverage("flowdirections", flowWR, regionMap, crs);
         if (doTca)
-            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inElev.getCoordinateReferenceSystem());
+            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, crs);
+        if (doSlope)
+            outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, crs);
+        if (doAspect)
+            outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, crs);
     }
 
     private void setNodeValues( GridNode node, int enteringFlow ) {
-        flowIter.setSample(node.col, node.row, 0, enteringFlow);
+        int col = node.col;
+        int row = node.row;
+        flowIter.setSample(col, row, 0, enteringFlow);
         orderedNodes.add(node);
-        assignedFlowsMap.mark(node.col, node.row);
+        assignedFlowsMap.mark(col, row);
+
+        if (doSlope) {
+            double slope = Slope.calculateSlope(node, enteringFlow);
+            slopeIter.setSample(col, row, 0, slope);
+        }
+        if (doAspect) {
+            double aspect = Aspect.calculateAspect(node, 1.0, false);
+            aspectIter.setSample(col, row, 0, aspect);
+        }
 
         /*
          * once a flow value is set, if tca is meant to be calculated,
          * the flow has to be followed downstream adding the contributing cell.
          */
         if (doTca) {
-            int runningCol = node.col;
-            int runningRow = node.row;
+            int runningCol = col;
+            int runningRow = row;
             while( isInRaster(runningCol, runningRow) ) {
                 double tmpFlow = flowIter.getSampleDouble(runningCol, runningRow, 0);
                 if (!isNovalue(tmpFlow)) {
@@ -250,7 +296,6 @@ public class LeastCostFlowDirections extends JGTModel {
             }
         }
     }
-
     private boolean isInRaster( int col, int row ) {
         if (col < 0 || col >= cols || row < 0 || row >= rows) {
             return false;

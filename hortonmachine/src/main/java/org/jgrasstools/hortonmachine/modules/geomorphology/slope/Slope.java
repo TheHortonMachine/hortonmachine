@@ -111,7 +111,7 @@ public class Slope extends JGTModel {
      * @param flowValue the value of the flowdirection.
      * @return
      */
-    public double calculateSlope( GridNode node, double flowValue ) {
+    public static double calculateSlope( GridNode node, double flowValue ) {
         double value = doubleNovalue;
         if (!isNovalue(flowValue)) {
             int flowDir = (int) flowValue;

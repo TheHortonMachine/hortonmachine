@@ -133,7 +133,7 @@ public class Aspect extends JGTModel {
      * @param doRound if <code>true</code>, values are round to integer.
      * @return the value of aspect.
      */
-    public double calculateAspect( GridNode node, double radtodeg, boolean doRound ) {
+    public static double calculateAspect( GridNode node, double radtodeg, boolean doRound ) {
         double aspect = doubleNovalue;
         // the value of the x and y derivative
         double aData = 0.0;
