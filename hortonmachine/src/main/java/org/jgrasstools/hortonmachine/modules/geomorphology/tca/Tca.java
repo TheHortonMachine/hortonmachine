@@ -55,8 +55,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.CheckPoint;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -81,10 +79,6 @@ public class Tca extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of total contributing areas.")
     @Out

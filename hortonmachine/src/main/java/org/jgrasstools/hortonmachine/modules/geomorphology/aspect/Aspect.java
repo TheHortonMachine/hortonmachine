@@ -52,8 +52,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -69,10 +67,6 @@ public class Aspect extends JGTModel {
     @Description("The map of the digital elevation model (DEM).")
     @In
     public GridCoverage2D inElev = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Switch to define whether create the output map in degrees (default) or radiants.")
     @In

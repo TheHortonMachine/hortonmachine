@@ -42,8 +42,6 @@ import oms3.annotations.Unit;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
@@ -78,10 +76,6 @@ public class DebrisTriggerCnr extends JGTModel {
     @Unit("degree")
     @In
     public double pGradthres = 38;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The trigger map.")
     @Out

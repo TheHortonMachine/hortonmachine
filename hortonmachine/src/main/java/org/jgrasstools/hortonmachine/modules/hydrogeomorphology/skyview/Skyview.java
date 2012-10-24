@@ -19,7 +19,8 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview;
 
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
@@ -47,8 +48,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -71,10 +70,6 @@ public class Skyview extends JGTModel {
     @Description("The map of skyview factor.")
     @Out
     public GridCoverage2D outSky;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

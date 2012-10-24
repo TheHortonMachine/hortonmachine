@@ -44,8 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -71,10 +69,6 @@ public class SplitSubbasins extends JGTModel {
     @Description("The maximum hack order to consider for basin split.")
     @In
     public Double pHackorder = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of numbered network.")
     @Out

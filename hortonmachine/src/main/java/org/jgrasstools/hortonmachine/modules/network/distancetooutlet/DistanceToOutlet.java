@@ -41,8 +41,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -59,18 +57,18 @@ public class DistanceToOutlet extends JGTModel {
     @Description("The map of depitted elevation, if it's null the models work in 2d mode.")
     @In
     public GridCoverage2D inPit = null;
+    
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
+    
     @Description("Processing mode, 0= simple mode in meter, 1 = topological distance.")
     @In
     public int pMode;
+    
     @Description("The map of the distance to the outlet.")
     @Out
     public GridCoverage2D outDistance = null;
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
     HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

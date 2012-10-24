@@ -25,8 +25,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 
@@ -55,10 +53,6 @@ public class MultiTca extends JGTModel {
     @Out
     public GridCoverage2D outMultiTca = null;
     
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-
     // the flow direction.
     private int[][] dir = ModelsSupporter.DIR_WITHFLOW_EXITING;
     // the incoming flow direction.

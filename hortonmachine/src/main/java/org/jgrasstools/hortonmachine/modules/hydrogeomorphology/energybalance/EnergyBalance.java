@@ -196,10 +196,6 @@ public class EnergyBalance extends JGTModel {
     @In
     public String pEndsafepoint;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
     @Description("Net precipitation.")
     @Out
     public HashMap<Integer, double[]> outPnet;

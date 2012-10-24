@@ -59,8 +59,6 @@ import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.referencing.operation.MathTransform;
@@ -99,10 +97,6 @@ public class EnergyIndexCalculator extends JGTModel {
     @Description("The map of slope in radiants.")
     @In
     public GridCoverage2D inSlope = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Number of altimetric bands.")
     @In

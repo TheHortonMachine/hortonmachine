@@ -17,10 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
-import java.util.HashMap;
-import java.util.Set;
-import java.util.Map.Entry;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -38,8 +39,6 @@ import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -117,10 +116,6 @@ public class PresteyTaylorEtpModel extends JGTModel {
     @Description("Station id field.")
     @In
     public String fId = "ID";
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The reference evapotranspiration.")
     @Unit("mm hour-1")

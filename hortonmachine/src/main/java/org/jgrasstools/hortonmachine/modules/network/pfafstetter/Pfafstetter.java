@@ -35,13 +35,13 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -60,8 +60,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
@@ -120,10 +118,6 @@ public class Pfafstetter extends JGTModel {
     @Description("The map of channel features.")
     @In
     public SimpleFeatureCollection inChannelfeatures = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The processing mode (0 = normal, 1 = with channel and channelfeatures map.")
     @In

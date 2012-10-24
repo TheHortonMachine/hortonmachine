@@ -182,10 +182,6 @@ public class Adige extends JGTModel {
     @In
     public HymodInputs inHymodInput = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
     @Description("The superficial discharge for every basin id.")
     @Out
     public HashMap<Integer, double[]> outDischarge;

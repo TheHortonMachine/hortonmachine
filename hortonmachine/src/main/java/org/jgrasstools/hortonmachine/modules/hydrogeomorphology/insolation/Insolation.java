@@ -49,8 +49,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -88,10 +86,6 @@ public class Insolation extends JGTModel {
     @Description("The last day of the simulation.")
     @In
     public String tEndDate = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of total insolation.")
     @Out

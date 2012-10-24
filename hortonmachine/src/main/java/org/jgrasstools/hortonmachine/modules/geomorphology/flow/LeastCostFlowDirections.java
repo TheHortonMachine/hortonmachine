@@ -17,9 +17,17 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.flow;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
-import static org.jgrasstools.gears.libs.modules.Direction.*;
 import static java.lang.Math.abs;
+import static org.jgrasstools.gears.libs.modules.Direction.E;
+import static org.jgrasstools.gears.libs.modules.Direction.EN;
+import static org.jgrasstools.gears.libs.modules.Direction.N;
+import static org.jgrasstools.gears.libs.modules.Direction.NW;
+import static org.jgrasstools.gears.libs.modules.Direction.S;
+import static org.jgrasstools.gears.libs.modules.Direction.SE;
+import static org.jgrasstools.gears.libs.modules.Direction.W;
+import static org.jgrasstools.gears.libs.modules.Direction.WS;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
@@ -45,8 +53,6 @@ import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -71,10 +77,6 @@ public class LeastCostFlowDirections extends JGTModel {
     @Description("Flag to toggle tca calculation.")
     @In
     public boolean doTca = true;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of flowdirections.")
     @Out

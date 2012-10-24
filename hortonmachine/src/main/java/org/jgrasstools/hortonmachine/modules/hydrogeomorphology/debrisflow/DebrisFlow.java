@@ -54,8 +54,6 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -102,10 +100,6 @@ public class DebrisFlow extends JGTModel {
     @Description("The Montecarlo number.")
     @In
     public int pMontecarlo = 50;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output inundation map.")
     @Out

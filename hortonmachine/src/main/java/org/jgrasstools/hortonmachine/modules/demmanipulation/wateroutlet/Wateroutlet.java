@@ -72,10 +72,6 @@ public class Wateroutlet extends JGTModel {
     @In
     public GridCoverage2D inFlow;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
     @Description("The extracted basin mask.")
     @Out
     public GridCoverage2D outBasin = null;

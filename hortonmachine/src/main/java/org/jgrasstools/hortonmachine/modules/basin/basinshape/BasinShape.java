@@ -54,8 +54,6 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -84,10 +82,6 @@ public class BasinShape extends JGTModel {
     @Description("The map of the numbered basins.")
     @In
     public GridCoverage2D inBasins = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The extracted basins vector map.")
     @Out

@@ -29,12 +29,12 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -53,8 +53,6 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -106,10 +104,6 @@ public class Netshape2Flow extends JGTModel {
     @Description("The problems features points.")
     @Out
     public SimpleFeatureCollection outProblems = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private List<Coordinate> problemPointsList = new ArrayList<Coordinate>();
 
