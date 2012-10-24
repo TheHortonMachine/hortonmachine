@@ -108,10 +108,6 @@ public class BobTheBuilder extends JGTModel {
     @In
     public boolean doPolygonborder = false;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-
     @Description("The modified raster map.")
     @Out
     public GridCoverage2D outRaster = null;
