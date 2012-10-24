@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
 /**
  * A node in the grid environment of a digital elevation model. 
@@ -319,6 +320,10 @@ public class FlowNode {
         if (Double.doubleToLongBits(flow) != Double.doubleToLongBits(other.flow))
             return false;
         return true;
+    }
+
+    public void mark( WritableRandomIter basinIter, double value ) {
+        basinIter.setSample(col, row, 0, value);
     }
 
 }

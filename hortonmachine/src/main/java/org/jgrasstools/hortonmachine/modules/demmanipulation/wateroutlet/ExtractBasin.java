@@ -17,11 +17,12 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
@@ -40,7 +41,7 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.Direction;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -67,17 +68,21 @@ public class ExtractBasin extends JGTModel {
     @In
     public double pEast = -1.0;
 
+    @Description("The value for the map (defaults to 1).")
+    @In
+    public double pValue = 1.0;
+
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow;
 
-    @Description("The extracted basin mask.")
-    @Out
-    public GridCoverage2D outBasin = null;
-
     @Description("The area of the extracted basin.")
     @Out
     public double outArea = 0;
+
+    @Description("The extracted basin mask.")
+    @Out
+    public GridCoverage2D outBasin = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -112,7 +117,7 @@ public class ExtractBasin extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, null);
+        WritableRaster basinWR = CoverageUtilities.createDoubleWritableRaster(ncols, nrows, null, null, doubleNovalue);
         WritableRandomIter basinIter = RandomIterFactory.createWritable(basinWR, null);
 
         Coordinate outlet = new Coordinate(pEast, pNorth);
@@ -123,19 +128,25 @@ public class ExtractBasin extends JGTModel {
         if (isNovalue(outletFlow)) {
             throw new IllegalArgumentException("The chosen outlet point doesn't have a valid value.");
         }
-        
-        
-        
 
-        pm.beginTask(msg.message("wateroutlet.extracting"), 2 * nrows);
-        for( int r = 0; r < nrows; r++ ) {
+        FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
+        List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
+
+        pm.beginTask(msg.message("wateroutlet.extracting"), -1);
+        while( enteringNodes.size() > 0 ) {
             if (pm.isCanceled()) {
                 return;
             }
-            for( int c = 0; c < ncols; c++ ) {
+            List<FlowNode> newEnteringNodes = new ArrayList<FlowNode>();
+            for( FlowNode flowNode : enteringNodes ) {
+                flowNode.mark(basinIter, pValue);
+                outArea++;
 
+                List<FlowNode> newEntering = flowNode.getEnteringNodes();
+                if (newEntering.size() > 0)
+                    newEnteringNodes.addAll(newEntering);
             }
-            pm.worked(1);
+            enteringNodes = newEnteringNodes;
         }
         pm.done();
 

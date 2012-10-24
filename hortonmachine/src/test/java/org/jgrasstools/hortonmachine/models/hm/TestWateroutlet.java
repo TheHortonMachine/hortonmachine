@@ -20,7 +20,9 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.ExtractBasin;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
@@ -37,8 +39,7 @@ public class TestWateroutlet extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-                envelopeParams, crs, true);
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         Wateroutlet wateroutlet = new Wateroutlet();
         wateroutlet.pm = pm;
@@ -49,6 +50,32 @@ public class TestWateroutlet extends HMTestCase {
         wateroutlet.process();
 
         GridCoverage2D basinCoverage = wateroutlet.outBasin;
+
+        System.out.println(wateroutlet.outArea);
+        PrintUtilities.printCoverageData(basinCoverage);
+
+        checkMatrixEqual(basinCoverage.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
+    }
+
+    public void testExtractBasin() throws Exception {
+
+        double[][] flowData = HMTestMaps.flowData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+
+        ExtractBasin extractBasin = new ExtractBasin();
+        extractBasin.pm = pm;
+        extractBasin.inFlow = flowCoverage;
+        extractBasin.pNorth = 5139885.0;
+        extractBasin.pEast = 1640724.0;
+
+        extractBasin.process();
+
+        GridCoverage2D basinCoverage = extractBasin.outBasin;
+
+        System.out.println(extractBasin.outArea);
+        PrintUtilities.printCoverageData(basinCoverage);
 
         checkMatrixEqual(basinCoverage.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
     }
