@@ -17,8 +17,8 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
+import static java.lang.Math.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +35,23 @@ public class GridNode {
     public final int row;
     public final int col;
     public final double elevation;
+    public final double xRes;
+    public final double yRes;
+
     private RandomIter elevationIter;
     private int cols;
     private int rows;
-    private double xRes;
-    private double yRes;
     private boolean isOutlet = false;
     private boolean touchesBound = false;
+
+    private double eElev;
+    private double enElev;
+    private double nElev;
+    private double nwElev;
+    private double wElev;
+    private double wsElev;
+    private double sElev;
+    private double seElev;
 
     /**
      * The constructor.
@@ -66,21 +76,58 @@ public class GridNode {
         if (isInRaster(col, row)) {
             elevation = elevationIter.getSampleDouble(col, row, 0);
         } else {
-            elevation = JGTConstants.doubleNovalue;
+            elevation = doubleNovalue;
         }
 
+        int index = -1;
         for( int c = -1; c <= 1; c++ ) {
             for( int r = -1; r <= 1; r++ ) {
+                index++;
+                if (c == 0 && r == 0) {
+                    continue;
+                }
                 int newC = col + c;
                 int newR = row + r;
+                double tmp = doubleNovalue;
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
-                    return;
+                } else {
+                    tmp = elevationIter.getSampleDouble(newC, newR, 0);
                 }
-                double tmp = elevationIter.getSampleDouble(newC, newR, 0);
+
+                switch( index ) {
+                case 0:
+                    nwElev = tmp;
+                    break;
+                case 1:
+                    wElev = tmp;
+                    break;
+                case 2:
+                    wsElev = tmp;
+                    break;
+                case 3:
+                    nElev = tmp;
+                    break;
+                case 4:
+                    throw new RuntimeException();
+                case 5:
+                    sElev = tmp;
+                    break;
+                case 6:
+                    enElev = tmp;
+                    break;
+                case 7:
+                    eElev = tmp;
+                    break;
+                case 8:
+                    seElev = tmp;
+                    break;
+                default:
+                    throw new RuntimeException();
+                }
+
                 if (JGTConstants.isNovalue(tmp)) {
                     touchesBound = true;
-                    return;
                 }
             }
         }
@@ -129,6 +176,35 @@ public class GridNode {
      */
     public boolean touchesBound() {
         return touchesBound;
+    }
+
+    /**
+     * Get the value of the elevation in one of the surrounding direction.
+     * 
+     * @param direction the {@link Direction}.
+     * @return the elevation value.
+     */
+    public double getElevationAt( Direction direction ) {
+        switch( direction ) {
+        case E:
+            return eElev;
+        case W:
+            return wElev;
+        case N:
+            return nElev;
+        case S:
+            return sElev;
+        case EN:
+            return enElev;
+        case NW:
+            return nwElev;
+        case WS:
+            return wsElev;
+        case SE:
+            return seElev;
+        default:
+            throw new IllegalArgumentException();
+        }
     }
 
     /**

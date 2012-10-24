@@ -7,8 +7,10 @@ import java.util.TreeSet;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -22,7 +24,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {
 
-    private static final double delta = 0.000000001;
     private int nCols;
     private int nRows;
     private double xRes;
@@ -48,7 +49,7 @@ public class TestFlowUtils extends HMTestCase {
         GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
         GridNode node2 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 1);
         double slopeTo = node1.getSlopeTo(node2);
-        assertEquals(slopeTo, 6.666666666666667, delta);
+        assertEquals(slopeTo, 6.666666666666667, DELTA);
     }
 
     public void testSurroundingCells() throws Exception {
@@ -87,6 +88,19 @@ public class TestFlowUtils extends HMTestCase {
             assertEquals(flowNode.col, 3);
             assertEquals(flowNode.row, 1);
         }
+    }
+
+    public void testSurroundingCellValues() throws Exception {
+        GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
+
+        assertEquals(node1.getElevationAt(Direction.E), 750, DELTA);
+        assertEquals(node1.getElevationAt(Direction.EN), 850, DELTA);
+        assertEquals(node1.getElevationAt(Direction.N), 750, DELTA);
+        assertTrue(JGTConstants.isNovalue(node1.getElevationAt(Direction.NW)));
+        assertEquals(node1.getElevationAt(Direction.W), 550, DELTA);
+        assertEquals(node1.getElevationAt(Direction.WS), 410, DELTA);
+        assertEquals(node1.getElevationAt(Direction.S), 650, DELTA);
+        assertEquals(node1.getElevationAt(Direction.SE), 700, DELTA);
     }
 
     public void testNonEnteringCells() throws Exception {

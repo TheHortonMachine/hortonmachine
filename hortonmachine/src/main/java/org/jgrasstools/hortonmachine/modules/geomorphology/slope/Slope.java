@@ -41,6 +41,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -92,7 +93,8 @@ public class Slope extends JGTModel {
         for( int c = 0; c < nCols; c++ ) {
             for( int r = 0; r < nRows; r++ ) {
                 double flowValue = flowIter.getSampleDouble(c, r, 0);
-                double value = calculateSlope(elevationIter, xRes, yRes, flowValue, c, r);
+                GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
+                double value = calculateSlope(node, flowValue);
                 slopeWR.setSample(c, r, 0, value);
             }
             pm.worked(1);
@@ -105,26 +107,19 @@ public class Slope extends JGTModel {
     /**
      * Calculates the slope of a given flowdirection value in currentCol and currentRow.
      * 
-     * @param elevationIter the elevation raster.
-     * @param xRes the X resolution of the raster.
-     * @param yRes the Y resolution of the raster.
+     * @param node the current {@link GridNode}.
      * @param flowValue the value of the flowdirection.
-     * @param currentCol the column of the flowdirection in the raster.
-     * @param currentrow the row of the flowdirection in the raster.
-     * @return the slope.
+     * @return
      */
-    public double calculateSlope( RandomIter elevationIter, double xRes, double yRes, double flowValue, int currentCol,
-            int currentrow ) {
+    public double calculateSlope( GridNode node, double flowValue ) {
         double value = doubleNovalue;
         if (!isNovalue(flowValue)) {
             int flowDir = (int) flowValue;
             if (flowDir != 10) {
                 Direction direction = Direction.forFlow(flowDir);
-                double distance = direction.getDistance(flowDir, xRes, yRes);
-                int nextCol = currentCol + direction.col;
-                int nextRow = currentrow + direction.row;
-                double currentElevation = elevationIter.getSampleDouble(currentCol, currentrow, 0);
-                double nextElevation = elevationIter.getSampleDouble(nextCol, nextRow, 0);
+                double distance = direction.getDistance(flowDir, node.xRes, node.yRes);
+                double currentElevation = node.elevation;
+                double nextElevation = node.getElevationAt(direction);
                 value = (currentElevation - nextElevation) / distance;
             }
         }
