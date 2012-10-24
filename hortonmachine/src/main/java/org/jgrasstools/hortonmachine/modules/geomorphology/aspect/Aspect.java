@@ -196,6 +196,8 @@ public class Aspect extends JGTModel {
                 aspect = 2.0 * PI * radtodeg;
             } else if (aData == 0 && bData == 0) {
                 aspect = 0.0;
+            } else if (isNovalue(aData) || isNovalue(bData)) {
+                aspect = doubleNovalue;
             } else {
                 // can't happen
                 throw new RuntimeException();
