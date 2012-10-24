@@ -53,6 +53,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
@@ -82,14 +83,13 @@ public class Aspect extends JGTModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    private double radtodeg = 360.0 / (2 * PI);
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outAspect == null, doReset)) {
             return;
         }
         checkNull(inElev);
+        double radtodeg = NumericsUtilities.RADTODEG;
         if (doRadiants) {
             radtodeg = 1.0;
         }
@@ -106,82 +106,20 @@ public class Aspect extends JGTModel {
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
 
-        // the value of the x and y derivative
-        double aData = 0.0;
-        double bData = 0.0;
-
         pm.beginTask(msg.message("aspect.calculating"), rows);
 
         // Cycling into the valid region.
-        for( int j = 1; j < rows - 1; j++ ) {
-            for( int i = 1; i < cols - 1; i++ ) {
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
                 // calculate the y derivative
-                double centralValue = elevationIter.getSampleDouble(i, j, 0);
+                double centralValue = elevationIter.getSampleDouble(c, r, 0);
+                double nValue = elevationIter.getSampleDouble(c, r + 1, 0);
+                double sValue = elevationIter.getSampleDouble(c, r - 1, 0);
+                double wValue = elevationIter.getSampleDouble(c - 1, r, 0);
+                double eValue = elevationIter.getSampleDouble(c + 1, r, 0);
 
-                if (!isNovalue(centralValue)) {
-                    double valuePostJ = elevationIter.getSampleDouble(i, j + 1, 0);
-                    double valuePreJ = elevationIter.getSampleDouble(i, j - 1, 0);
-                    if (!isNovalue(valuePostJ) && !isNovalue(valuePreJ)) {
-                        aData = atan((valuePreJ - valuePostJ) / (2 * yRes));
-                    }
-                    if (isNovalue(valuePreJ) && (!isNovalue(valuePreJ))) {
-                        aData = atan((centralValue - valuePostJ) / (yRes));
-                    }
-                    if (!isNovalue(valuePreJ) && isNovalue(valuePostJ)) {
-                        aData = atan((valuePreJ - centralValue) / (yRes));
-                    }
-                    if (isNovalue(valuePreJ) && isNovalue(valuePostJ)) {
-                        aData = doubleNovalue;
-                    }
-                    // calculate the x derivative
-                    double valuePreI = elevationIter.getSampleDouble(i - 1, j, 0);
-                    double valuePostI = elevationIter.getSampleDouble(i + 1, j, 0);
-                    if (!isNovalue(valuePreI) && !isNovalue(valuePostI)) {
-                        bData = atan((valuePreI - valuePostI) / (2 * xRes));
-                    }
-                    if (isNovalue(valuePreI) && !isNovalue(valuePostI)) {
-                        bData = atan((centralValue - valuePostI) / (xRes));
-                    }
-                    if (!isNovalue(valuePreI) && isNovalue(valuePostI)) {
-                        bData = atan((valuePreI - centralValue) / (xRes));
-                    }
-                    if (isNovalue(valuePreI) && isNovalue(valuePostI)) {
-                        bData = doubleNovalue;
-                    }
-
-                    double delta = 0.0;
-                    double aspect = doubleNovalue;
-                    // calculate the aspect value
-                    if (aData < 0 && bData > 0) {
-                        delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                        aspect = delta * radtodeg;
-                    } else if (aData > 0 && bData > 0) {
-                        delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                        aspect = (PI - delta) * radtodeg;
-                    } else if (aData > 0 && bData < 0) {
-                        delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                        aspect = (PI + delta) * radtodeg;
-                    } else if (aData < 0 && bData < 0) {
-                        delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                        aspect = (2 * PI - delta) * radtodeg;
-                    } else if (aData == 0 && bData > 0) {
-                        aspect = (PI / 2.) * radtodeg;
-                    } else if (aData == 0 && bData < 0) {
-                        aspect = (PI * 3. / 2.) * radtodeg;
-                    } else if (aData > 0 && bData == 0) {
-                        aspect = PI * radtodeg;
-                    } else if (aData < 0 && bData == 0) {
-                        aspect = 2.0 * PI * radtodeg;
-                    } else if (aData == 0 && bData == 0) {
-                        aspect = 0.0;
-                    }
-                    if (doRound) {
-                        aspect = round(aspect);
-                    }
-                    aspectIter.setSample(i, j, 0, aspect);
-                } else {
-                    aspectIter.setSample(i, j, 0, doubleNovalue);
-                }
+                double aspect = calculateAspect(xRes, yRes, centralValue, nValue, sValue, wValue, eValue, radtodeg);
+                aspectIter.setSample(c, r, 0, aspect);
 
             }
             pm.worked(1);
@@ -190,6 +128,87 @@ public class Aspect extends JGTModel {
 
         CoverageUtilities.setNovalueBorder(aspectWR);
         outAspect = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap, inElev.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Calculates the aspect given an elevation and the elevation of its surrounding cells.
+     * 
+     * @param xRes the X resolution of the raster.
+     * @param yRes the Y resolution of the raster.
+     * @param centralValue the current elevation value, for which to calculate the aspect.
+     * @param nValue the northern value.
+     * @param sValue the southern value.
+     * @param wValue the western value.
+     * @param eValue the eastern value.
+     * @param radtodeg radiants to degrees conversion factor. Use {@link NumericsUtilities#RADTODEG} if you 
+     *                 want degrees, use 1 if you want radiants. 
+     * @return the value of aspect.
+     */
+    private double calculateAspect( double xRes, double yRes, double centralValue, double nValue, double sValue, double wValue,
+            double eValue, double radtodeg ) {
+        double aspect = doubleNovalue;
+        // the value of the x and y derivative
+        double aData = 0.0;
+        double bData = 0.0;
+        if (!isNovalue(centralValue)) {
+            if (!isNovalue(nValue) && !isNovalue(sValue)) {
+                aData = atan((sValue - nValue) / (2 * yRes));
+            } else if (isNovalue(sValue) && (!isNovalue(nValue))) {
+                aData = atan((centralValue - nValue) / (yRes));
+            } else if (!isNovalue(sValue) && isNovalue(nValue)) {
+                aData = atan((sValue - centralValue) / (yRes));
+            } else if (isNovalue(sValue) && isNovalue(nValue)) {
+                aData = doubleNovalue;
+            } else {
+                // can't happen
+                throw new RuntimeException();
+            }
+            if (!isNovalue(wValue) && !isNovalue(eValue)) {
+                bData = atan((wValue - eValue) / (2 * xRes));
+            } else if (isNovalue(wValue) && !isNovalue(eValue)) {
+                bData = atan((centralValue - eValue) / (xRes));
+            } else if (!isNovalue(wValue) && isNovalue(eValue)) {
+                bData = atan((wValue - centralValue) / (xRes));
+            } else if (isNovalue(wValue) && isNovalue(eValue)) {
+                bData = doubleNovalue;
+            } else {
+                // can't happen
+                throw new RuntimeException();
+            }
+
+            double delta = 0.0;
+            // calculate the aspect value
+            if (aData < 0 && bData > 0) {
+                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
+                aspect = delta * radtodeg;
+            } else if (aData > 0 && bData > 0) {
+                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
+                aspect = (PI - delta) * radtodeg;
+            } else if (aData > 0 && bData < 0) {
+                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
+                aspect = (PI + delta) * radtodeg;
+            } else if (aData < 0 && bData < 0) {
+                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
+                aspect = (2 * PI - delta) * radtodeg;
+            } else if (aData == 0 && bData > 0) {
+                aspect = (PI / 2.) * radtodeg;
+            } else if (aData == 0 && bData < 0) {
+                aspect = (PI * 3. / 2.) * radtodeg;
+            } else if (aData > 0 && bData == 0) {
+                aspect = PI * radtodeg;
+            } else if (aData < 0 && bData == 0) {
+                aspect = 2.0 * PI * radtodeg;
+            } else if (aData == 0 && bData == 0) {
+                aspect = 0.0;
+            } else {
+                // can't happen
+                throw new RuntimeException();
+            }
+            if (doRound) {
+                aspect = round(aspect);
+            }
+        }
+        return aspect;
     }
 
 }

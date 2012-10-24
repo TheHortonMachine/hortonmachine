@@ -83,6 +83,11 @@ public class NumericsUtilities {
     private final static float F_TOLERANCE = MACHINE_F_EPSILON * 10f;
 
     /**
+     * Radiants to degrees conversion factor.
+     */
+    public static final double RADTODEG = 360.0 / (2.0 * PI);
+
+    /**
      * Getter for the calculated machine double epsilon.
      * 
      * @return the machine epsilon for double values.
