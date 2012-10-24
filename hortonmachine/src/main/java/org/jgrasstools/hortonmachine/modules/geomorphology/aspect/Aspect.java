@@ -144,7 +144,7 @@ public class Aspect extends JGTModel {
      *                 want degrees, use 1 if you want radiants. 
      * @return the value of aspect.
      */
-    private double calculateAspect( double xRes, double yRes, double centralValue, double nValue, double sValue, double wValue,
+    public double calculateAspect( double xRes, double yRes, double centralValue, double nValue, double sValue, double wValue,
             double eValue, double radtodeg ) {
         double aspect = doubleNovalue;
         // the value of the x and y derivative

@@ -54,20 +54,19 @@ import static java.lang.Math.sqrt;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public enum Direction {
-    E(1, 0, 1, 5, 1), //
-    EN(1, -1, 2, 6, sqrt(2.0)), //
-    N(0, -1, 3, 7, 1), //
-    NW(-1, -1, 4, 8, sqrt(2.0)), //
-    W(-1, 0, 5, 1, 1), //
-    WS(-1, 1, 6, 2, sqrt(2.0)), //
-    S(0, 1, 7, 3, 1), //
-    SE(1, 1, 8, 4, sqrt(2.0));
+    E(1, 0, 1, 5), //
+    EN(1, -1, 2, 6), //
+    N(0, -1, 3, 7), //
+    NW(-1, -1, 4, 8), //
+    W(-1, 0, 5, 1), //
+    WS(-1, 1, 6, 2), //
+    S(0, 1, 7, 3), //
+    SE(1, 1, 8, 4);
 
     public int col;
     public int row;
     private int exiting;
     private int entering;
-    private double dirFactor;
 
     private static Direction[][] dirs = {//
     {NW, N, EN},//
@@ -82,14 +81,12 @@ public enum Direction {
      * @param row row of the current direction inside the schema.
      * @param exiting value of the flow, in normal (or exiting from the center/flow to) mode.
      * @param entering value of the flow in entering mode.
-     * @param dirFactor the direction factor based on distance, normalized to 1.
      */
-    private Direction( int col, int row, int exiting, int entering, double dirFactor ) {
+    private Direction( int col, int row, int exiting, int entering ) {
         this.col = col;
         this.row = row;
         this.exiting = exiting;
         this.entering = entering;
-        this.dirFactor = dirFactor;
     }
 
     public int getFlow() {
@@ -148,6 +145,24 @@ public enum Direction {
             return SE;
         case 10:
             return null;
+        default:
+            throw new IllegalArgumentException("Can't understand flow direction: " + flowValue);
+        }
+    }
+
+    public double getDistance( int flowValue, double xRes, double yRes ) {
+        switch( this ) {
+        case E:
+        case W:
+            return xRes;
+        case N:
+        case S:
+            return yRes;
+        case EN:
+        case NW:
+        case WS:
+        case SE:
+            return sqrt(xRes * xRes + yRes * yRes);
         default:
             throw new IllegalArgumentException("Can't understand flow direction: " + flowValue);
         }

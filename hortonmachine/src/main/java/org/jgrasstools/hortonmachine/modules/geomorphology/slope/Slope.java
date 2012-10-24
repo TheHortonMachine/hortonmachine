@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.slope;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -42,9 +40,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -83,8 +81,6 @@ public class Slope extends JGTModel {
         double xRes = regionMap.get(CoverageUtilities.XRES);
         double yRes = regionMap.get(CoverageUtilities.YRES);
 
-        int[][] DIR = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-
         RenderedImage elevationRI = inPit.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
         RenderedImage flowRI = inFlow.getRenderedImage();
@@ -92,32 +88,11 @@ public class Slope extends JGTModel {
 
         WritableRaster slopeWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-        int[] point = new int[2];
-
-        // grid contains the dimension of pixels according with flow directions
-        double[] grid = new double[11];
-
-        grid[0] = grid[9] = grid[10] = 0;
-        grid[1] = grid[5] = abs(xRes);
-        grid[3] = grid[7] = abs(yRes);
-        grid[2] = grid[4] = grid[6] = grid[8] = sqrt(xRes * xRes + yRes * yRes);
-        // Calculates the slope along the flow directions of elevation field, if
-        // a pixel is on the border its value will be equal to novalue
-
         pm.beginTask(msg.message("slope.calculating"), nRows);
         for( int c = 0; c < nCols; c++ ) {
             for( int r = 0; r < nRows; r++ ) {
-                int flowDir = (int) flowIter.getSampleDouble(c, r, 0);
-                if (flowDir == 10) {
-                    pm.errorMessage(msg.message("slope.outleterror"));
-                }
-                double value = doubleNovalue;
-                if (!isNovalue(flowDir)) {
-                    point[0] = c + DIR[flowDir][1];
-                    point[1] = r + DIR[flowDir][0];
-                    value = (elevationIter.getSampleDouble(c, r, 0) - elevationIter.getSampleDouble(point[0], point[1], 0))
-                            / grid[flowDir];
-                }
+                double flowValue = flowIter.getSampleDouble(c, r, 0);
+                double value = calculateSlope(elevationIter, xRes, yRes, flowValue, c, r);
                 slopeWR.setSample(c, r, 0, value);
             }
             pm.worked(1);
@@ -125,6 +100,35 @@ public class Slope extends JGTModel {
         pm.done();
 
         outSlope = CoverageUtilities.buildCoverage("slope", slopeWR, regionMap, inPit.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Calculates the slope of a given flowdirection value in currentCol and currentRow.
+     * 
+     * @param elevationIter the elevation raster.
+     * @param xRes the X resolution of the raster.
+     * @param yRes the Y resolution of the raster.
+     * @param flowValue the value of the flowdirection.
+     * @param currentCol the column of the flowdirection in the raster.
+     * @param currentrow the row of the flowdirection in the raster.
+     * @return the slope.
+     */
+    public double calculateSlope( RandomIter elevationIter, double xRes, double yRes, double flowValue, int currentCol,
+            int currentrow ) {
+        double value = doubleNovalue;
+        if (!isNovalue(flowValue)) {
+            int flowDir = (int) flowValue;
+            if (flowDir != 10) {
+                Direction direction = Direction.forFlow(flowDir);
+                double distance = direction.getDistance(flowDir, xRes, yRes);
+                int nextCol = currentCol + direction.col;
+                int nextRow = currentrow + direction.row;
+                double currentElevation = elevationIter.getSampleDouble(currentCol, currentrow, 0);
+                double nextElevation = elevationIter.getSampleDouble(nextCol, nextRow, 0);
+                value = (currentElevation - nextElevation) / distance;
+            }
+        }
+        return value;
     }
 
 }
