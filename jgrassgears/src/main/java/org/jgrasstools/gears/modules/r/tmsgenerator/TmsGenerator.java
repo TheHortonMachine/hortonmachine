@@ -21,7 +21,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -42,8 +41,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -132,10 +129,6 @@ public class TmsGenerator extends JGTModel {
     @Description("Optional flag to force a legacy GRASS driver usage.")
     @In
     public Boolean doLegacyGrass = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The folder inside which to create the tiles.")
     @In

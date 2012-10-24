@@ -43,8 +43,6 @@ import org.jaitools.media.jai.zonalstats.ZonalStatsDescriptor;
 import org.jaitools.numeric.Statistic;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
 @Description("Calculate a summary of the map with base statistics.")
@@ -68,10 +66,6 @@ public class RasterSummary extends JGTModel {
     @Description("Flag that defines if the histogram should be done also (default = false).")
     @In
     public boolean doHistogram = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The min value.")
     @Out

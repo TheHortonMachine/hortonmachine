@@ -76,10 +76,6 @@ public class CutOut extends JGTModel {
     @In
     public boolean doInverse = false;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
     @Description("The processed map.")
     @Out
     public GridCoverage2D outRaster = null;

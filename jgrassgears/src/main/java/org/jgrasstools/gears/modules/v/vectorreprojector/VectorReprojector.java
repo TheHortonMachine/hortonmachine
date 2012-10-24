@@ -37,7 +37,6 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for vector reprojection.")
@@ -71,10 +70,6 @@ public class VectorReprojector extends JGTModel {
     @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
     @In
     public boolean doLenient = true;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output reprojected vector.")
     @Out

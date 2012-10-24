@@ -37,8 +37,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.coverage.ProfilePoint;
 import org.jgrasstools.gears.utils.features.FeatureMate;
@@ -77,10 +75,6 @@ public class Profile extends JGTModel {
     @Description("The folder in which to place the output profiles if multiple (used in case of inVector use).")
     @In
     public String outFolder;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output profile for the last line read (contains progressive, elevation, x, y).")
     @Out

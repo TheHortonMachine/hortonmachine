@@ -42,7 +42,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Module to do coverage resolution resampling.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -68,10 +67,6 @@ public class RasterResolutionResampler extends JGTModel {
     @Description("The new resolution in Y (if null taken same as pXres)")
     @In
     public Double pYres;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output coverage.")
     @Out
