@@ -130,6 +130,8 @@ public class ExtractBasin extends JGTModel {
         }
 
         FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
+        runningNode.mark(basinIter, pValue);
+        outArea++;
         List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
 
         pm.beginTask(msg.message("wateroutlet.extracting"), -1);
