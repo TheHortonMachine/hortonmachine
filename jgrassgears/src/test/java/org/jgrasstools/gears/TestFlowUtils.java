@@ -8,6 +8,7 @@ import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -29,12 +30,15 @@ public class TestFlowUtils extends HMTestCase {
     private double xRes;
     private double yRes;
     private RandomIter elevationIter;
+    private RandomIter flowIter;
 
     protected void setUp() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
+        double[][] flowData = HMTestMaps.flowData;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, envelopeParams, crs, true);
+        GridCoverage2D inFlow = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.getCols();
@@ -43,6 +47,7 @@ public class TestFlowUtils extends HMTestCase {
         yRes = regionMap.getYres();
 
         elevationIter = CoverageUtilities.getRandomIterator(inElev);
+        flowIter = CoverageUtilities.getRandomIterator(inFlow);
     }
 
     public void testSlopeTo() throws Exception {
@@ -135,10 +140,33 @@ public class TestFlowUtils extends HMTestCase {
         }
 
         GridNode first = set.first();
-        System.out.println(first);
+        assertEquals(first.col, 0);
+        assertEquals(first.row, 3);
         GridNode last = set.last();
-        System.out.println(last);
+        assertEquals(last.col, 9);
+        assertEquals(last.row, 0);
 
+    }
+
+    public void testEnteringFlowCells() throws Exception {
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2);
+
+        List<FlowNode> enteringNodes = node.getEnteringNodes();
+        FlowNode flowNode = enteringNodes.get(0);
+        assertEquals(flowNode.col, 3);
+        assertEquals(flowNode.row, 1);
+
+        node = new FlowNode(flowIter, nCols, nRows, 5, 4);
+        enteringNodes = node.getEnteringNodes();
+        flowNode = enteringNodes.get(0);
+        assertEquals(flowNode.col, 6);
+        assertEquals(flowNode.row, 4);
+        flowNode = enteringNodes.get(1);
+        assertEquals(flowNode.col, 6);
+        assertEquals(flowNode.row, 3);
+        flowNode = enteringNodes.get(2);
+        assertEquals(flowNode.col, 6);
+        assertEquals(flowNode.row, 5);
     }
 
 }
