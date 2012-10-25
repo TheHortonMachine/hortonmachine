@@ -17,6 +17,9 @@
  */
 package org.jgrasstools.gears.modules.r.mosaic;
 
+import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
+import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
+import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
@@ -33,16 +36,17 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -52,8 +56,6 @@ import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -72,13 +74,10 @@ public class Mosaic extends JGTModel {
     @In
     public List<File> inFiles;
 
-    @Description("The interpolation type to use: nearest neightbour (0-default), bilinear (1), bicubic (2)")
+    @Description("The interpolation type to use")
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
-    public int pInterpolation = 0;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
+    public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The patched map.")
     @Out

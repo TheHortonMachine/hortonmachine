@@ -25,8 +25,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Subdivides the sites of a basin in 11 topographic classes.")
@@ -53,9 +51,6 @@ public class Gc extends JGTModel {
     @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
     @In
     public int pTh = 0;
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map with the geomorphological classes")
     @Out

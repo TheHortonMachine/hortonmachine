@@ -55,12 +55,12 @@ import java.util.List;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -73,8 +73,6 @@ import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
@@ -195,10 +193,6 @@ public class EnergyBalance extends JGTModel {
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String pEndsafepoint;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Net precipitation.")
     @Out

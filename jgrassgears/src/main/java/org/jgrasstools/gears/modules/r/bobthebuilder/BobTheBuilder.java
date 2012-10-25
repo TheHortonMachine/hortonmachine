@@ -48,9 +48,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -107,10 +105,6 @@ public class BobTheBuilder extends JGTModel {
     @Description("Switch that defines if the module should add the border of the polygon as elevation point to aid connection between new and old (default is false).")
     @In
     public boolean doPolygonborder = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The modified raster map.")
     @Out

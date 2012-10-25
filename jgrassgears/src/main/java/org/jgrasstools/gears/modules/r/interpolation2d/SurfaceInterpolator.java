@@ -19,7 +19,6 @@ package org.jgrasstools.gears.modules.r.interpolation2d;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.IDW;
-import static org.jgrasstools.gears.libs.modules.Variables.PROGRESS_MONITOR_EN;
 import static org.jgrasstools.gears.libs.modules.Variables.TPS;
 
 import java.awt.image.WritableRaster;
@@ -50,8 +49,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.TPSInterpolator;
@@ -127,13 +124,6 @@ public class SurfaceInterpolator extends JGTModel {
     )
     @In
     public int pMaxThreads = 1;
-
-    @Description(//
-    en = PROGRESS_MONITOR_EN,//
-    it = PROGRESS_MONITOR_EN//
-    )
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description(//
     en = "The interpolated raster.",//

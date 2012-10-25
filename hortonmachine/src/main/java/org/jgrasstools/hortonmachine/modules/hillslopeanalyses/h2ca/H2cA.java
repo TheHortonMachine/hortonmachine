@@ -44,8 +44,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -61,18 +59,19 @@ public class H2cA extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
+    
     @Description("The map with the net.")
     @In
     public GridCoverage2D inNet = null;
+    
     @Description("The map of the attribute to estimate.")
     @In
     public GridCoverage2D inAttribute = null;
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
+
     @Description("The output map of the attribute.")
     @Out
     public GridCoverage2D outAttribute = null;
+    
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute

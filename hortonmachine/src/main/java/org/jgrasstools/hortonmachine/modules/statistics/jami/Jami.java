@@ -40,11 +40,11 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Role;
@@ -58,8 +58,6 @@ import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -163,10 +161,6 @@ public class Jami extends JGTModel {
     @Unit("hours")
     @In
     public double defaultTolltmax = 2.0;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The current time variable.")
     @In

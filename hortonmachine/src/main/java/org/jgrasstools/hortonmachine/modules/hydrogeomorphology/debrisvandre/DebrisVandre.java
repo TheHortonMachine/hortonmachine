@@ -52,8 +52,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -114,10 +112,6 @@ public class DebrisVandre extends JGTModel {
     @Description("An optional point map of obstacles on the network, that can stop the debris path.")
     @In
     public SimpleFeatureCollection inObstacles = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The criteria mode to use (0 = Burton/Bathurst = default, 1 = Tn modified Barton/Bathurst).")
     @In

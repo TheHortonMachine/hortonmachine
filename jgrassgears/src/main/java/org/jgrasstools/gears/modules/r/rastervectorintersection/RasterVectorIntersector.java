@@ -34,8 +34,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.cutout.CutOut;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -64,10 +62,6 @@ public class RasterVectorIntersector extends JGTModel {
     @Description("Flag to use to invert the result (default is false = keep data inside vector)")
     @In
     public boolean doInverse = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The output raster.")
     @Out

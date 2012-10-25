@@ -43,8 +43,6 @@ import org.jaitools.media.jai.kernel.KernelFactory;
 import org.jaitools.media.jai.kernel.KernelFactory.ValueType;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -72,10 +70,6 @@ public class KernelDensity extends JGTModel {
     @Description("Use a constant value for the existing input map values instead of the real map value (default = false).")
     @In
     public boolean doConstant = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The kernel density estimation.")
     @Out

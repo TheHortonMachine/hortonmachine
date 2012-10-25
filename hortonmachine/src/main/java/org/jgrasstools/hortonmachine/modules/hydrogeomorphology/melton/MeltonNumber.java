@@ -40,8 +40,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
 import org.jgrasstools.gears.modules.r.summary.RasterSummary;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -72,10 +70,6 @@ public class MeltonNumber extends JGTModel {
     @Description("The fields of the polygons containing the id of the polygon.")
     @In
     public String fId;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The Melton numbers per id [id, num].")
     @Out

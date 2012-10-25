@@ -25,11 +25,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -38,8 +38,6 @@ import oms3.annotations.Unit;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Calculates evapotranspiration at daily timestep.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
@@ -111,10 +109,6 @@ public class FaoEtpDaily extends JGTModel {
     public double defaultPressure = 100.0;
 
     // TODO Add the elevation value in case of missing P data
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The reference evapotranspiration.")
     @Unit("mm day-1")

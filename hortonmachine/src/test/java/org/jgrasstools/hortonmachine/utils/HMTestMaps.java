@@ -23,6 +23,7 @@ import static java.lang.Double.NaN;
 import java.util.HashMap;
 
 import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
@@ -36,7 +37,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    public static final HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
+    public static final RegionMap envelopeParams = new RegionMap();
 
     public static CoordinateReferenceSystem crs = null;
     public static CoordinateReferenceSystem crs3004 = null;

@@ -37,7 +37,6 @@ import javax.media.jai.operator.RotateDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
-import javax.media.jai.operator.TransposeType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -60,7 +59,6 @@ import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -130,10 +128,6 @@ public class RasterTransformer extends JGTModel {
     @Unit("degrees")
     @In
     public Double pAngle;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The transformed raster.")
     @Out

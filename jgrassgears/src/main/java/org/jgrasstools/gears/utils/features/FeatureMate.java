@@ -115,6 +115,7 @@ public class FeatureMate {
      * @param adaptee the class to adapt to.
      * @return the adapted value if possible.
      */
+    @SuppressWarnings("unchecked")
     public <T> T getAttribute( String attrName, Class<T> adaptee ) {
         if (attrName == null) {
             return null;
@@ -294,10 +295,16 @@ public class FeatureMate {
     public String toString() {
         List<String> attributesNames = getAttributesNames();
         StringBuilder sb = new StringBuilder();
+        sb.append("FeatureMate: [\n");
+        sb.append("\t").append("the_geom").append(" = ").append(getGeometry()).append("\n");
         for( String name : attributesNames ) {
+            if (name.equals("the_geom")) {
+                continue;
+            }
             String attribute = getAttribute(name, String.class);
-            sb.append(name).append(" = ").append(attribute).append("\n");
+            sb.append("\t").append(name).append(" = ").append(attribute).append("\n");
         }
+        sb.append("]\n");
         return sb.toString();
     }
 

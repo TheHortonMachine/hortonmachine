@@ -41,8 +41,6 @@ import org.jaitools.numeric.Range;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Module for raster rangelookup.")
@@ -66,10 +64,6 @@ public class RangeLookup extends JGTModel {
     @Description("The classes to substitute in the same order of the ranges (in the form 1,2)")
     @In
     public String pClasses;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The processed raster.")
     @Out

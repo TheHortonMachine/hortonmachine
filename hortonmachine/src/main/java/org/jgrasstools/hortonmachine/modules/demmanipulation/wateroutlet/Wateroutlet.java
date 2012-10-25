@@ -43,15 +43,13 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extract the watershed for a defined outlet.")
 @Documentation("Wateroutlet.html")
-@Author(name = "Andrea Antonello, US Army Construction Engineering Research Laboratory", contact = "http://www.hydrologis.com")
+@Author(name = "Charles Ehlschlaeger, Andrea Antonello", contact = "US Army Construction Engineering Research Laboratory, http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, FlowDirections")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("wateroutlet")
@@ -71,10 +69,6 @@ public class Wateroutlet extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The extracted basin mask.")
     @Out

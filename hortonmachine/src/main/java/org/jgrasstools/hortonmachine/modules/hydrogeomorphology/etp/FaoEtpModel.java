@@ -35,8 +35,6 @@ import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Calculates evapotranspiration.")
 @Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
@@ -101,10 +99,6 @@ public class FaoEtpModel extends JGTModel {
     @Description("Station id field.")
     @In
     public String fId = "ID";
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Description("The reference evapotranspiration.")

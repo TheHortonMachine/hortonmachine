@@ -17,15 +17,19 @@
  */
 package org.jgrasstools.gears.modules.r.rasterreprojector;
 
+import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
+import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
+import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+
 import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -39,7 +43,6 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection.")
@@ -91,13 +94,10 @@ public class RasterReprojector extends JGTModel {
     @In
     public String pCode;
 
-    @Description("The interpolation type to use: nearest neightbour (0), bilinear (1), bicubic (2)")
+    @Description("The interpolation type to use")
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
-    public int pInterpolation = 0;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
+    public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The reprojected output raster.")
     @Out
@@ -111,18 +111,13 @@ public class RasterReprojector extends JGTModel {
 
         CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
 
-        Interpolation interpolationType = null;
-        if (pInterpolation == 1) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        } else if (pInterpolation == 2) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-        } else if (pInterpolation == 3) {
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_BICUBIC_2);
-        } else {
-            // default to nearest neighbour
-            interpolationType = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
+        if (pInterpolation.equals(BILINEAR)) {
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
+        } else if (pInterpolation.equals(BICUBIC)) {
+            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
         }
-
+        
         GridGeometry2D gridGeometry = null;
         if (pNorth != null && pSouth != null && pWest != null && pEast != null && pRows != null && pCols != null) {
             gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, targetCrs);
@@ -130,9 +125,9 @@ public class RasterReprojector extends JGTModel {
         }
         pm.beginTask("Reprojecting...", IJGTProgressMonitor.UNKNOWN);
         if (gridGeometry == null) {
-            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolationType);
+            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolation);
         } else {
-            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolationType);
+            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolation);
         }
         pm.done();
 

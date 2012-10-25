@@ -59,8 +59,6 @@ import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.rangelookup.RangeLookup;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -104,10 +102,6 @@ public class Vectorizer extends JGTModel {
     @Description("Make a check on the raster first and shrink the boundaries on the region with data.")
     @In
     public boolean doRegioncheck = false;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The extracted vector.")
     @Out

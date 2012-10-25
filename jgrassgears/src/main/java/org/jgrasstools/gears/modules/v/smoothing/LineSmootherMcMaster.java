@@ -39,8 +39,6 @@ import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -88,10 +86,6 @@ public class LineSmootherMcMaster extends JGTModel {
     @Description("Simplifier tollerance.")
     @In
     public Double pSimplify = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The vector with smoothed features.")
     @Out

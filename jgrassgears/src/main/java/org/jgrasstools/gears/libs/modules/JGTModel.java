@@ -18,14 +18,18 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import static org.jgrasstools.gears.libs.modules.Variables.PROGRESS_MONITOR_EN;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import oms3.Access;
 import oms3.ComponentAccess;
+import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
+import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.UI;
 
@@ -34,6 +38,7 @@ import org.geotools.process.ProcessException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.util.ProgressListener;
 
 /**
@@ -42,6 +47,13 @@ import org.opengis.util.ProgressListener;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class JGTModel implements Process {
+
+    @Description(//
+    en = PROGRESS_MONITOR_EN,//
+    it = PROGRESS_MONITOR_EN//
+    )
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     /**
      * Variable that defines if time is still available or run out.

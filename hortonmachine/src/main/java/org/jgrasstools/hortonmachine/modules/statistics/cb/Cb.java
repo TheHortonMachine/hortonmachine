@@ -20,12 +20,12 @@ package org.jgrasstools.hortonmachine.modules.statistics.cb;
 import java.awt.image.RenderedImage;
 
 import oms3.annotations.Author;
-import oms3.annotations.Documentation;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -34,8 +34,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
 @Description("Calculates the histogram of a set of data contained in a matrix "
@@ -55,10 +53,6 @@ public class Cb extends JGTModel {
     @Description("The second raster to analyse.")
     @In
     public GridCoverage2D inRaster2 = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The number of bins into which divide the data range.")
     @In

@@ -44,8 +44,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -79,10 +77,6 @@ public class DrainDir extends JGTModel {
     @Description("Switch for the mode to use: true = LAD (default), false = LTD)).")
     @In
     public boolean doLad = true;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("The map of drainage directions.")
     @Out

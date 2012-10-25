@@ -22,11 +22,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -37,8 +37,6 @@ import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -93,10 +91,6 @@ public class PenmanEtp extends JGTModel {
     @Description("The current timestamp (format: yyyy-MM-dd HH:mm ).")
     @In
     public String tCurrent;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Description("Daily evapotranspiration.")
     @Unit("mm/day")

@@ -59,11 +59,9 @@ import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.net.Network;
@@ -87,15 +85,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Documentation("TrentoP.html")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class TrentoP extends JGTModel {
-
-    /**
-     * Message handler.
-     */
-    private final HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 
     @Description("Processing mode, 0=project, 1=verification.")
     @In
@@ -293,6 +282,11 @@ public class TrentoP extends JGTModel {
     public Integer outTpMax = null;
 
     /**
+     * Message handler.
+     */
+    private final HortonMessageHandler msg = HortonMessageHandler.getInstance();
+
+    /**
      * Is an array with all the pipe of the net.
      */
     private Pipe[] networkPipes;
@@ -303,7 +297,7 @@ public class TrentoP extends JGTModel {
      */
     private String warnings = "warnings";
 
-    public StringBuilder strBuilder = new StringBuilder(warnings);
+    public StringBuilder warningBuilder = new StringBuilder(warnings);
     /**
      * Used in calibration mode if use the generation of the rain.
      */
@@ -365,7 +359,7 @@ public class TrentoP extends JGTModel {
             outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
             // initialize the NetworkCalibration.
-            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, strBuilder,
+            network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
                     tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
             network.geoSewer();
             outTpMax = ((NetworkCalibration) network).getTpMax();
@@ -394,7 +388,7 @@ public class TrentoP extends JGTModel {
             // initialize the NetworkCalibration.
 
             NetworkBuilder.Builder builder = new NetworkBuilder.Builder(pm, networkPipes, pN, pA, inDiameters, inPipes,
-                    strBuilder);
+                    warningBuilder);
             network = builder.celerityFactor(pCelerityFactor).pEpsilon(pEpsilon).pEsp1(pEspInflux).pExponent(pExponent)
                     .pGamma(pGamma).tDTp(tDTp).tpMax(tpMax).tpMin(tpMin).build();
             network.geoSewer();
@@ -404,7 +398,7 @@ public class TrentoP extends JGTModel {
 
         // elaborate.
 
-        String w = strBuilder.toString();
+        String w = warningBuilder.toString();
         if (!w.equals(warnings)) {
             pm.message(w);
         }
