@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.File;
+import java.util.Locale;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -34,32 +35,43 @@ import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import junit.framework.TestCase;
 @SuppressWarnings("nls")
 public class HMTestCase extends TestCase {
-    
+
+    protected static final double DELTA = 0.0000001;
+
+    static {
+        Locale.setDefault(Locale.ENGLISH);
+    }
+
     /**
      * The progress monitor to be usedd by testcases.
      */
     protected PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-    
+
     public void testDummy() {
         // done to not make the maven test fail
     }
 
     protected void printImage( RenderedImage image ) {
         RectIter rectIter = RectIterFactory.create(image, null);
-        int y = 0;
         do {
-            int x = 0;
             do {
                 double value = rectIter.getSampleDouble();
                 System.out.print(value + " ");
-                x++;
             } while( !rectIter.nextPixelDone() );
             rectIter.startPixels();
-            y++;
             System.out.println();
         } while( !rectIter.nextLineDone() );
     }
-    
+
+    protected void printMatrix( double[][] matrix ) {
+        for( int j = 0; j < matrix.length; j++ ) {
+            for( int i = 0; i < matrix[0].length; i++ ) {
+                System.out.print(matrix[j][i] + " ");
+            }
+            System.out.println();
+        }
+    }
+
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix, double delta ) {
         RectIter rectIter = RectIterFactory.create(image, null);
         int y = 0;
@@ -78,7 +90,25 @@ public class HMTestCase extends TestCase {
             rectIter.startPixels();
             y++;
         } while( !rectIter.nextLineDone() );
+    }
 
+    protected void checkEqualsSinlgeValue( RenderedImage image, double expectedResult, double delta ) {
+        RectIter rectIter = RectIterFactory.create(image, null);
+        int y = 0;
+        do {
+            int x = 0;
+            do {
+                double value = rectIter.getSampleDouble();
+                if (isNovalue(value)) {
+                    assertTrue(x + " " + y, isNovalue(expectedResult));
+                } else {
+                    assertEquals(x + " " + y, expectedResult, value, delta);
+                }
+                x++;
+            } while( !rectIter.nextPixelDone() );
+            rectIter.startPixels();
+            y++;
+        } while( !rectIter.nextLineDone() );
     }
 
     protected void checkMatrixEqual( RenderedImage image, double[][] matrix ) {
@@ -125,6 +155,20 @@ public class HMTestCase extends TestCase {
 
     }
 
+    /**
+     * Method to translate resources names from class-test path to src resources.
+     * 
+     * @param classesTestFile the file to translate.
+     * @return the resource in the src test folder.
+     */
+    protected File classesTestFile2srcTestResourcesFile( File classesTestFile ) {
+        String classesTestPath = classesTestFile.getAbsolutePath();
+        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
+        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources");
+
+        File srcTestResourcesFile = new File(classesTestPath);
+        return srcTestResourcesFile;
+    }
 
     /**
      * Verifiy a Matrix result.
@@ -152,20 +196,4 @@ public class HMTestCase extends TestCase {
         }
 
     }
-
-    /**
-     * Method to translate resources names from class-test path to src resources.
-     * 
-     * @param classesTestFile the file to translate.
-     * @return the resource in the src test folder.
-     */
-    protected File classesTestFile2srcTestResourcesFile( File classesTestFile ) {
-        String classesTestPath = classesTestFile.getAbsolutePath();
-        classesTestPath = classesTestPath.replaceFirst("target", "src" + File.separator + File.separator + "test");
-        classesTestPath = classesTestPath.replaceFirst("test-classes", "resources//");
-
-        File srcTestResourcesFile = new File(classesTestPath);
-        return srcTestResourcesFile;
-    }
-
 }
