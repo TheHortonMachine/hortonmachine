@@ -303,6 +303,7 @@ public class FeatureMate {
             String attribute = getAttribute(name, String.class);
             sb.append("\t").append(name).append(" = ").append(attribute).append("\n");
         }
+        sb.append("]\n");
         return sb.toString();
     }
 

@@ -150,7 +150,7 @@ public enum Direction {
         }
     }
 
-    public double getDistance( int flowValue, double xRes, double yRes ) {
+    public double getDistance( double xRes, double yRes ) {
         switch( this ) {
         case E:
         case W:
@@ -164,7 +164,7 @@ public enum Direction {
         case SE:
             return sqrt(xRes * xRes + yRes * yRes);
         default:
-            throw new IllegalArgumentException("Can't understand flow direction: " + flowValue);
+            throw new IllegalArgumentException();
         }
     }
 

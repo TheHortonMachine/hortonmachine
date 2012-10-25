@@ -117,7 +117,7 @@ public class Slope extends JGTModel {
             int flowDir = (int) flowValue;
             if (flowDir != 10) {
                 Direction direction = Direction.forFlow(flowDir);
-                double distance = direction.getDistance(flowDir, node.xRes, node.yRes);
+                double distance = direction.getDistance(node.xRes, node.yRes);
                 double currentElevation = node.elevation;
                 double nextElevation = node.getElevationAt(direction);
                 value = (currentElevation - nextElevation) / distance;
