@@ -212,10 +212,14 @@ public class FlowNode {
      * @return the next downstream node or <code>null</code> if the end has been reached.
      */
     public FlowNode goDownstream() {
-        Direction direction = Direction.forFlow((int) flow);
-        FlowNode nextNode = new FlowNode(flowIter, cols, rows, col + direction.col, row + direction.row);
-        if (nextNode.isValid) {
-            return nextNode;
+        if (isValid) {
+            Direction direction = Direction.forFlow((int) flow);
+            if (direction != null) {
+                FlowNode nextNode = new FlowNode(flowIter, cols, rows, col + direction.col, row + direction.row);
+                if (nextNode.isValid) {
+                    return nextNode;
+                }
+            }
         }
         return null;
     }

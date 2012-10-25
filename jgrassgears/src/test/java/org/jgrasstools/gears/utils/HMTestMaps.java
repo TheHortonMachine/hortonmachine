@@ -184,7 +184,7 @@ public class HMTestMaps {
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
     public static double[][] flowData = new double[][]{//
-    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, //
             {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, //
             {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //
