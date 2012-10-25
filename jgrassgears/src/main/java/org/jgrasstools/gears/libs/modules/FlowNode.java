@@ -207,6 +207,20 @@ public class FlowNode {
     }
 
     /**
+     * Get the next downstream node.
+     * 
+     * @return the next downstream node or <code>null</code> if the end has been reached.
+     */
+    public FlowNode goDownstream() {
+        Direction direction = Direction.forFlow((int) flow);
+        FlowNode nextNode = new FlowNode(flowIter, cols, rows, col + direction.col, row + direction.row);
+        if (nextNode.isValid) {
+            return nextNode;
+        }
+        return null;
+    }
+
+    /**
      * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node.
      * 
      * @return the nodes that flow into this node.

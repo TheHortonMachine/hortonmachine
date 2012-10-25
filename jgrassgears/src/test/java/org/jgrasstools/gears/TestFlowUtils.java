@@ -169,4 +169,20 @@ public class TestFlowUtils extends HMTestCase {
         assertEquals(flowNode.row, 5);
     }
 
+    public void testDownstreamFlowCells() throws Exception {
+        FlowNode node = new FlowNode(flowIter, nCols, nRows, 4, 1);
+
+        FlowNode n = node.goDownstream();
+        assertEquals(n.col, 3);
+        assertEquals(n.row, 2);
+        n = n.goDownstream();
+        assertEquals(n.col, 2);
+        assertEquals(n.row, 3);
+        n = n.goDownstream();
+        assertEquals(n.col, 1);
+        assertEquals(n.row, 3);
+        n = n.goDownstream();
+        assertNull(n);
+    }
+
 }
