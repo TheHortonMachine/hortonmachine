@@ -39,6 +39,8 @@ import javax.imageio.ImageIO;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -249,19 +251,19 @@ public class ImageGenerator {
                 // crs = raster.getCoordinateReferenceSystem();
                 // }
             } catch (Exception e) {
-                // monitor.errorMessage(e.getLocalizedMessage());
-                // monitor.errorMessage("Trying to find other coverage source...");
-                // // try with available readers
-                // try {
-                // File coverageFile = new File(coveragePath);
-                // AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
-                // reader = format.getReader(coverageFile);
-                // // if (crs == null) {
-                // // crs = reader.getCrs();
-                // // }
-                // } catch (Exception ex) {
-                throw e;
-                // }
+                monitor.errorMessage(e.getLocalizedMessage());
+                monitor.errorMessage("Trying to find other coverage source...");
+                // try with available readers
+                try {
+                    File coverageFile = new File(coveragePath);
+                    AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
+                    reader = format.getReader(coverageFile);
+                    // if (crs == null) {
+                    // crs = reader.getCrs();
+                    // }
+                } catch (Exception ex) {
+                    throw ex;
+                }
             }
 
             File styleFile = FileUtilities.substituteExtention(file, "sld");
