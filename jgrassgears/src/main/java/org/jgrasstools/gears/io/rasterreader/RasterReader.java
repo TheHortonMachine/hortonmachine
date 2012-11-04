@@ -71,6 +71,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.ViewType;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.coverageio.gdal.BaseGDALGridCoverage2DReader;
 import org.geotools.coverageio.gdal.aig.AIGReader;
@@ -93,6 +94,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -320,7 +322,14 @@ public class RasterReader extends JGTModel {
     }
 
     private void readGeotiff( File mapFile ) throws IOException {
-        GeoTiffReader geoTiffReader = new GeoTiffReader(mapFile);
+        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(mapFile);
+        File twfFile = new File(mapFile.getParentFile(), nameWithoutExtention+ ".tfw");
+        AbstractGridCoverage2DReader geoTiffReader;
+        if (twfFile.exists()) {
+            geoTiffReader = new WorldImageReader(mapFile);
+        }else{
+            geoTiffReader = new GeoTiffReader(mapFile);
+        }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
         if (!doEnvelope) {
             GridCoverage2D coverage = geoTiffReader.read(generalParameter);
