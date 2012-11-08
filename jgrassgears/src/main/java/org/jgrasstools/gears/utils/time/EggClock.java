@@ -37,12 +37,12 @@ public class EggClock {
     public EggClock( String preFix, String postFix ) {
         this.preFix = preFix;
         this.postFix = postFix;
-        started = true;
     }
 
     public void start() {
         startTimeMillis = System.currentTimeMillis();
         startSubTimeMillis = startTimeMillis;
+        started = true;
     }
 
     public void startAndPrint( PrintStream pm ) {
