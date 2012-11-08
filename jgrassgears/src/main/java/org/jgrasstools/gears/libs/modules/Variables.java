@@ -31,4 +31,10 @@ public interface Variables {
     public String NEAREST_NEIGHTBOUR = "nearest neightbour";
     public String BILINEAR = "bilinear";
     public String BICUBIC = "bicubic";
+
+    public String INTERSECTION = "intersection";
+    public String UNION = "union";
+    public String DIFFERENCE = "difference";
+    public String SYMDIFFERENCE = "symdifference";
+
 }

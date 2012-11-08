@@ -33,6 +33,7 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
@@ -124,6 +125,27 @@ public class GeometryUtilities {
                 new Coordinate(0.0, 0.0)};
         LinearRing linearRing = gf().createLinearRing(c);
         return gf().createPolygon(linearRing, null);
+    }
+
+    /**
+     * Creates a line that may help out as placeholder.
+     * 
+     * @return a dummy {@link LineString}.
+     */
+    public static LineString createDummyLine() {
+        Coordinate[] c = new Coordinate[]{new Coordinate(0.0, 0.0), new Coordinate(1.0, 1.0), new Coordinate(1.0, 0.0)};
+        LineString lineString = gf().createLineString(c);
+        return lineString;
+    }
+
+    /**
+     * Creates a point that may help out as placeholder.
+     * 
+     * @return a dummy {@link Point}.
+     */
+    public static Point createDummyPoint() {
+        Point point = gf().createPoint(new Coordinate(0.0, 0.0));
+        return point;
     }
 
     public static Polygon createPolygonFromEnvelope( Envelope env ) {
@@ -284,6 +306,21 @@ public class GeometryUtilities {
     }
 
     /**
+     * Checks if the given {@link GeometryDescriptor} is for {@link LineString} (or {@link MultiLineString}) geometry.
+     * 
+     * @param geometryDescriptor the descriptor.
+     * @return <code>true</code> if there are points in there.
+     */
+    public static boolean isLine( GeometryDescriptor geometryDescriptor ) {
+        GeometryType type = geometryDescriptor.getType();
+        Class< ? > binding = type.getBinding();
+        if (binding == MultiLineString.class || binding == LineString.class) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks if the given geometry is a {@link Polygon} (or {@link MultiPolygon}) geometry.
      * 
      * @param geometry the geometry to check.
@@ -297,6 +334,21 @@ public class GeometryUtilities {
     }
 
     /**
+     * Checks if the given {@link GeometryDescriptor} is for {@link Polygon} (or {@link MultiPolygon}) geometry.
+     * 
+     * @param geometryDescriptor the descriptor.
+     * @return <code>true</code> if there are polygons in there.
+     */
+    public static boolean isPolygon( GeometryDescriptor geometryDescriptor ) {
+        GeometryType type = geometryDescriptor.getType();
+        Class< ? > binding = type.getBinding();
+        if (binding == MultiPolygon.class || binding == Polygon.class) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Checks if the given geometry is a {@link Point} (or {@link MultiPoint}) geometry.
      * 
      * @param geometry the geometry to check.
@@ -304,6 +356,21 @@ public class GeometryUtilities {
      */
     public static boolean isPoint( Geometry geometry ) {
         if (geometry instanceof Point || geometry instanceof MultiPoint) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the given {@link GeometryDescriptor} is for {@link Point} (or {@link MultiPoint}) geometry.
+     * 
+     * @param geometryDescriptor the descriptor.
+     * @return <code>true</code> if there are points in there.
+     */
+    public static boolean isPoint( GeometryDescriptor geometryDescriptor ) {
+        GeometryType type = geometryDescriptor.getType();
+        Class< ? > binding = type.getBinding();
+        if (binding == MultiPoint.class || binding == Point.class) {
             return true;
         }
         return false;
