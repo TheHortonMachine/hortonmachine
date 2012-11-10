@@ -17,11 +17,6 @@
  */
 package org.jgrasstools.gears.modules.v.vectorclipper;
 
-import static org.jgrasstools.gears.libs.modules.Variables.DIFFERENCE;
-import static org.jgrasstools.gears.libs.modules.Variables.INTERSECTION;
-import static org.jgrasstools.gears.libs.modules.Variables.SYMDIFFERENCE;
-import static org.jgrasstools.gears.libs.modules.Variables.UNION;
-
 import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -39,7 +34,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -55,7 +49,10 @@ import org.jgrasstools.gears.utils.time.EggClock;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
+import com.vividsolutions.jts.precision.EnhancedPrecisionOp;
 
 @Description("A vector clipping module.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -98,6 +95,8 @@ public class VectorClipper extends JGTModel {
             geomsTree.insert(geometry.getEnvelopeInternal(), feature);
         }
         pm.done();
+        // List<SimpleFeature> inData = FeatureUtilities.featureCollectionToList(inMap);
+        // int size = inData.size();
 
         ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
         final ConcurrentLinkedQueue<SimpleFeature> newFeatures = new ConcurrentLinkedQueue<SimpleFeature>();
@@ -106,32 +105,41 @@ public class VectorClipper extends JGTModel {
         int clipperCount = clipperGeoms.size();
         for( Geometry clipperGeom : clipperGeoms ) {
             pm.message("Working on geometry " + (index++) + " of " + clipperCount);
-            List< ? > result = geomsTree.query(clipperGeom.getEnvelopeInternal());
+
+            final List< ? > result = geomsTree.query(clipperGeom.getEnvelopeInternal());
 
             int size = result.size();
+
             int splitSize = (int) Math.ceil(size / (double) pMaxThreads);
             final CountDownLatch latch = new CountDownLatch(pMaxThreads);
             pm.beginTask("Clipping...", pMaxThreads);
             for( int i = 0; i < size; i = i + splitSize + 1 ) {
-                int end = i + splitSize;
-                if (end > size) {
-                    end = size - 1;
+                int endIndex = i + splitSize;
+                if (endIndex > size) {
+                    endIndex = size - 1;
                 }
-                // pm.errorMessage(i + "/" + end + "/" + size);
-                final List< ? > subList = result.subList(i, end);
-                final Geometry cGeom = clipperGeom;
+                final PreparedGeometry cGeom = PreparedGeometryFactory.prepare(clipperGeom);
+
+                final int start = i;
+                final int end = endIndex;
                 Runnable runner = new Runnable(){
                     public void run() {
-                        for( Object resultObj : subList ) {
-                            SimpleFeature feature = (SimpleFeature) resultObj;
-                            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+                        // pm.errorMessage(start + "->" +end);
+                        try {
+                            for( int j = start; j <= end; j++ ) {
+                                SimpleFeature feature = (SimpleFeature) result.get(j);
+                                Geometry geometry = (Geometry) feature.getDefaultGeometry();
 
-                            if (cGeom.intersects(geometry)) {
-                                Geometry intersectionGeom = cGeom.intersection(geometry);
-                                feature.setDefaultGeometry(intersectionGeom);
-                                newFeatures.add(feature);
+                                if (cGeom.intersects(geometry)) {
+                                    Geometry intersectionGeom = cGeom.getGeometry().intersection(geometry);
+                                    feature.setDefaultGeometry(intersectionGeom);
+                                    newFeatures.add(feature);
+                                }
                             }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
                         }
+
                         latch.countDown();
                         pm.worked(1);
                     }
@@ -152,28 +160,28 @@ public class VectorClipper extends JGTModel {
         outMap = FeatureCollections.newCollection();
         outMap.addAll(newFeatures);
     }
-
     public static void main( String[] args ) throws Exception {
         PrintStream ps = System.out;
-        EggClock c = new EggClock("", "\n");
+        EggClock c = new EggClock("Time passed: ", " seconds\n");
         c.startAndPrint(ps);
 
-        SimpleFeatureCollection clip = VectorReader
-                .readVector("D:/TMP/CLIPPING_CONTEST/ContourClipTest/StudyArea1MileBuffer.shp");
-        SimpleFeatureCollection data = VectorReader.readVector("D:/TMP/CLIPPING_CONTEST/ContourClipTest/Contours20Ft.shp");
+        String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
+
+        SimpleFeatureCollection clip = VectorReader.readVector(basePath + "StudyArea1MileBuffer.shp");
+        SimpleFeatureCollection data = VectorReader.readVector(basePath + "Contours20Ft.shp");
 
         c.printTimePassedInSeconds(ps);
 
         VectorClipper clipper = new VectorClipper();
         clipper.inMap = data;
         clipper.inClipper = clip;
-        clipper.pMaxThreads = 20;
+        clipper.pMaxThreads = 4;
         clipper.process();
         SimpleFeatureCollection outMap2 = clipper.outMap;
 
         c.printTimePassedInSeconds(ps);
 
-        VectorWriter.writeVector("D:/TMP/CLIPPING_CONTEST/ContourClipTest/clipped.shp", outMap2);
+        VectorWriter.writeVector(basePath + "clipped.shp", outMap2);
 
         c.printTimePassedInSeconds(ps);
     }
