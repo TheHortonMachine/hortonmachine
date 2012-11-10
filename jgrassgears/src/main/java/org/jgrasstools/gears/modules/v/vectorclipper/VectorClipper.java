@@ -176,7 +176,7 @@ public class VectorClipper extends JGTModel {
         VectorClipper clipper = new VectorClipper();
         clipper.inMap = data;
         clipper.inClipper = clip;
-        clipper.pMaxThreads = 4;
+        clipper.pMaxThreads = 32;
         clipper.process();
         SimpleFeatureCollection outMap2 = clipper.outMap;
 
