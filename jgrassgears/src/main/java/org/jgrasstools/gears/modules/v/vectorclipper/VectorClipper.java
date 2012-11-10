@@ -165,7 +165,8 @@ public class VectorClipper extends JGTModel {
         EggClock c = new EggClock("Time passed: ", " seconds\n");
         c.startAndPrint(ps);
 
-        String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
+//        String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
+        String basePath = "/home/ubuntu/development/ContourClipTest/";
 
         SimpleFeatureCollection clip = VectorReader.readVector(basePath + "StudyArea1MileBuffer.shp");
         SimpleFeatureCollection data = VectorReader.readVector(basePath + "Contours20Ft.shp");
