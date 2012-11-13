@@ -1,0 +1,290 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras;
+
+import java.awt.geom.Point2D;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.opengis.feature.simple.SimpleFeature;
+
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+
+@Description("Module that prepares data for Hecras.")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
+@Keywords("Hecras, Raster, Vector, Hydraulic")
+@Name("inhecras")
+@Label(JGTConstants.HYDROGEOMORPHOLOGY)
+@Status(Status.EXPERIMENTAL)
+@License("General Public License Version 3 (GPLv3)")
+public class HecrasInputBuilder extends JGTModel {
+
+    @Description("The map of elevation.")
+    @In
+    public GridCoverage2D inElev = null;
+
+    @Description("The map of the river.")
+    @In
+    public SimpleFeatureCollection inRiver = null;
+
+    @Description("The map of bridges to consider.")
+    @In
+    public SimpleFeatureCollection inBridges = null;
+
+    @Description("The map of sections to consider. If supplied, they are used instead of extracting at a given interval. The sections need to be created with this same module.")
+    @In
+    public SimpleFeatureCollection inSections = null;
+
+    @Description("The id of the river/simulation.")
+    @In
+    public String pTitle = "DEFAULTID";
+
+    @Description("")
+    @In
+    public double pSectionsIntervalDistance = 0.0D;
+
+    @Description("")
+    @In
+    public double pSectionsWidth = 0.0D;
+
+    @Description("")
+    @In
+    public double pBridgeBuffer = 0.0D;
+
+    @Description("")
+    @In
+    public String fBridgeWidth;
+
+    @Description("The path to the generated hecras.")
+    @In
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    public String inHecras = null;
+
+    @Description("The progress monitor.")
+    @In
+    public IJGTProgressMonitor pm = new LogProgressMonitor();
+
+    @Description("The extracted section lines.")
+    @Out
+    public SimpleFeatureCollection outSections = null;
+
+    @Description("The extracted section points (with the elevation in the attribute table).")
+    @Out
+    public SimpleFeatureCollection outSectionPoints = null;
+
+    private GeometryFactory gf;
+
+    @Execute
+    public void process() throws Exception {
+        checkNull(inElev, inRiver);
+
+        gf = GeometryUtilities.gf();
+
+        List<SimpleFeature> riverFeatures = FeatureUtilities.featureCollectionToList(inRiver);
+        SimpleFeature riverFeature = riverFeatures.get(0);
+
+        /*
+         * TODO support for custom sections
+         */
+        // String asciiSectionsFolder = null;
+
+        /*
+         * END: TODO support for custom sections
+         */
+
+        Geometry geometry = (Geometry) riverFeature.getDefaultGeometry();
+        Coordinate[] riverCoordinates = geometry.getCoordinates();
+
+        pm.beginTask("Building reach geometry...", riverCoordinates.length);
+        Point2D.Double point = new Point2D.Double();
+        double[] extracted = new double[1];
+        for( int i = 0; i < riverCoordinates.length; i++ ) {
+            point.setLocation(riverCoordinates[i].x, riverCoordinates[i].y);
+            inElev.evaluate(point, extracted);
+
+            riverCoordinates[i] = new Coordinate(riverCoordinates[i].x, riverCoordinates[i].y, extracted[0]);
+            pm.worked(1);
+        }
+        pm.done();
+
+        LineString riverGeometry3d = gf.createLineString(riverCoordinates);
+
+        List<FeatureMate> bridgesList = FeatureUtilities.featureCollectionToMatesList(inBridges);
+
+        HecrasSectionsExtractor sectionsExtractor;
+        if (inSections == null) {
+            sectionsExtractor = new HecrasSectionsFromDtmExtractor(riverGeometry3d, inElev, pSectionsIntervalDistance,
+                    pSectionsWidth, bridgesList, fBridgeWidth, pBridgeBuffer, pm);
+        } else {
+            List<FeatureMate> sectionsList = FeatureUtilities.featureCollectionToMatesList(inSections);
+            sectionsExtractor = new HecrasSectionsFromFeaturesExtractor(riverGeometry3d, inElev, sectionsList, pm);
+        }
+
+        List<NetworkPoint> orderedNetworkPoints = sectionsExtractor.getOrderedNetworkPoints();
+
+        StringBuilder outBuf = new StringBuilder();
+
+        outBuf.append("# Header must contain a record to identify the ");
+        outBuf.append("unit system used in the imported data set\r\n");
+        outBuf.append("BEGIN HEADER:\r\n");
+        outBuf.append("# Number of reaches\r\n");
+        outBuf.append("NUMBER OF REACHES: 1\r\n");
+        outBuf.append("# Number of cross sections\r\n");
+        int sectionsCount = sectionsExtractor.getSectionsNum();
+        outBuf.append("NUMBER OF CROSS-SECTIONS:\r\n" + sectionsCount + "\r\n");
+        outBuf.append("# Unit system used\r\n");
+        outBuf.append("UNITS: METRIC\r\n");
+        outBuf.append("END HEADER:\r\n");
+        outBuf.append("\r\n");
+
+        outBuf.append("BEGIN STREAM NETWORK:\r\n");
+        outBuf.append("# List of all endpoint of the multiline that represents the river\r\n");
+        outBuf.append("ENDPOINT:\t" + riverCoordinates[0].x + "," + riverCoordinates[0].y + "," + riverCoordinates[0].z
+                + ",\t1\r\n");
+        outBuf.append("ENDPOINT:\t" + riverCoordinates[(riverCoordinates.length - 1)].x + ","
+                + riverCoordinates[(riverCoordinates.length - 1)].y + "," + riverCoordinates[(riverCoordinates.length - 1)].z
+                + ",\t2\r\n");
+
+        outBuf.append("# Description of the river reach\r\n");
+        outBuf.append("REACH:\r\n");
+        outBuf.append("STREAM ID: " + pTitle + "\r\n");
+        outBuf.append("REACH ID: headwaters\r\n");
+
+        outBuf.append("# Upsteam endpoint\r\n");
+        outBuf.append("FROM POINT: 1\r\n");
+        outBuf.append("# Downsteam endpoint\r\n");
+        outBuf.append("TO POINT: 2\r\n");
+        outBuf.append("\r\n");
+        outBuf.append("# Coordinates and floating point station");
+        outBuf.append(" value to draw the river network:\r\n");
+        outBuf.append("\r\n");
+        outBuf.append("CENTERLINE:\r\n");
+
+        for( int i = 0; i < orderedNetworkPoints.size(); ++i ) {
+            NetworkPoint networkPoint = orderedNetworkPoints.get(i);
+            if (networkPoint.hasSection) {
+                continue;
+            }
+            Coordinate tmpCoord = networkPoint.point;
+            outBuf.append(tmpCoord.x + ",\t" + tmpCoord.y + ",\t" + tmpCoord.z + ",\t" + i + "\r\n");
+        }
+
+        outBuf.append("END:\r\n");
+        outBuf.append("\r\n");
+        outBuf.append("END STREAM NETWORK:\r\n");
+        outBuf.append("BEGIN CROSS-SECTIONS:\r\n");
+        outBuf.append("\r\n");
+
+        // get only sections with their indexes
+        List<NetworkPoint> sectionPoints = new ArrayList<NetworkPoint>();
+        List<Integer> sectionIndexes = new ArrayList<Integer>();
+        for( int i = 0; i < orderedNetworkPoints.size(); i++ ) {
+            NetworkPoint currentNetworkPoint = orderedNetworkPoints.get(i);
+            if (currentNetworkPoint.hasSection) {
+                sectionPoints.add(currentNetworkPoint);
+                sectionIndexes.add(i);
+                currentNetworkPoint.setSectionId(i);
+            }
+        }
+
+        pm.beginTask("Building cross-sections geometry...", sectionPoints.size());
+        for( int i = 0; i < sectionPoints.size() - 1; i++ ) {
+            NetworkPoint currentNetworkPoint = sectionPoints.get(i);
+            NetworkPoint nextNetworkPoint = sectionPoints.get(i + 1);
+            Integer currentNetworkPointIndex = sectionIndexes.get(i);
+
+            outBuf.append("\r\n");
+            outBuf.append("# New Cross Section\r\n");
+            outBuf.append("# Cross section must include records identifying the stream, reach and station value of cross section\r\n");
+
+            outBuf.append("CROSS-SECTION:\r\n");
+            outBuf.append("STREAM ID: " + pTitle + "\r\n");
+            outBuf.append("REACH ID: headwaters\r\n");
+
+            outBuf.append("STATION: " + currentNetworkPointIndex + "\r\n");
+
+            List<Double> bankPositions = currentNetworkPoint.bankPositions;
+            outBuf.append("BANK POSITIONS:\t" + bankPositions.get(0) + ",\t" + bankPositions.get(1) + "\r\n");
+
+            Coordinate[] coordinates = currentNetworkPoint.sectionGeometry.getCoordinates();
+            Coordinate firstCoordinateOfSection = coordinates[0];
+            Coordinate lastCoordinateOfSection = coordinates[coordinates.length - 1];
+            coordinates = nextNetworkPoint.sectionGeometry.getCoordinates();
+            Coordinate firstCoordinateOfNextSection = coordinates[0];
+            Coordinate lastCoordinateOfNextSection = coordinates[coordinates.length - 1];
+
+            outBuf.append("REACH LENGTHS: " + firstCoordinateOfSection.distance(firstCoordinateOfNextSection) + ",\t"
+                    + currentNetworkPoint.point.distance(nextNetworkPoint.point) + ",\t"
+                    + lastCoordinateOfSection.distance(lastCoordinateOfNextSection) + "\r\n");
+            outBuf.append("NVALUES: \r\n");
+            outBuf.append("0.00,\t0.0333\r\n");
+            if (bankPositions.size() == 4) {
+                outBuf.append("LEVEE POSITIONS:\r\n");
+                outBuf.append("1," + bankPositions.get(0) + "," + bankPositions.get(2) + "\r\n");
+                outBuf.append("2," + bankPositions.get(1) + "," + bankPositions.get(3) + "\r\n");
+            }
+            outBuf.append("CUT LINE: \r\n");
+            outBuf.append(firstCoordinateOfSection.x + ",\t" + firstCoordinateOfSection.y + "\r\n");
+            outBuf.append(lastCoordinateOfSection.x + ",\t" + lastCoordinateOfSection.y + "\r\n");
+
+            outBuf.append("\r\n");
+            outBuf.append("SURFACE LINE: \r\n");
+            for( int j = 0; j < coordinates.length; ++j ) {
+                outBuf.append(coordinates[j].x + ",\t" + coordinates[j].y + ",\t" + coordinates[j].z + "\r\n");
+            }
+            outBuf.append("END:\r\n");
+
+            pm.worked(1);
+        }
+        pm.done();
+        outBuf.append("\r\n");
+        outBuf.append("END CROSS-SECTIONS:\r\n");
+
+        String outString = outBuf.toString();
+        FileUtilities.writeFile(outString, new File(inHecras));
+
+        outSections = sectionsExtractor.getSectionsCollection();
+        outSectionPoints = sectionsExtractor.getSectionPointsCollection();
+    }
+}
