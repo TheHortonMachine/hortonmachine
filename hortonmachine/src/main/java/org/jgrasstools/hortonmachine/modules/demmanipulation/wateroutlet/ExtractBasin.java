@@ -24,6 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIterFactory;
@@ -48,24 +49,32 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
 import org.jaitools.jts.PolygonSmoother;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.vectorreader.VectorReader;
+import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
+import org.jgrasstools.gears.modules.v.smoothing.LineSmootherMcMaster;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureVisitor;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.index.SpatialIndex;
@@ -107,6 +116,10 @@ public class ExtractBasin extends JGTModel {
     @In
     public double pSnapbuffer = 200;
 
+    @Description("Flag to enable vector basin extraction.")
+    @In
+    public boolean doVector = true;
+
     @Description("Flag to enable vector basin smoothing.")
     @In
     public boolean doSmoothing = false;
@@ -133,12 +146,18 @@ public class ExtractBasin extends JGTModel {
 
     private int nrows;
 
+    private CoordinateReferenceSystem crs;
+
+    private GeometryFactory gf = GeometryUtilities.gf();
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outBasin == null, doReset)) {
             return;
         }
         checkNull(inFlow);
+
+        crs = inFlow.getCoordinateReferenceSystem();
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         ncols = regionMap.getCols();
@@ -156,6 +175,12 @@ public class ExtractBasin extends JGTModel {
         if (pNorth > north || pNorth < south || pEast > east || pEast < west) {
             throw new ModelsIllegalargumentException("The outlet point lies outside the map region.", this.getClass()
                     .getSimpleName());
+        }
+
+        Coordinate snapOutlet = snapOutlet();
+        if (snapOutlet != null) {
+            pEast = snapOutlet.x;
+            pNorth = snapOutlet.y;
         }
 
         RenderedImage flowRI = inFlow.getRenderedImage();
@@ -198,47 +223,74 @@ public class ExtractBasin extends JGTModel {
         pm.done();
 
         outArea = outArea * xRes * yRes;
-        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
-
-        snapOutlet();
+        outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, crs);
 
         extractVectorBasin();
-
-        smoothVectorBasin();
     }
 
     private void extractVectorBasin() throws Exception {
-        Vectorizer vectorizer = new Vectorizer();
-        vectorizer.pm = pm;
-        vectorizer.inRaster = outBasin;
-        vectorizer.pValue = 2.0;
-        vectorizer.pThres = 1;
-        vectorizer.fDefault = "rast";
-        vectorizer.process();
-        outVectorBasin = vectorizer.outVector;
+        if (!doVector) {
+            return;
+        }
+
+        Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, null);
+
+        polygons = smoothVectorBasin(polygons);
+
+        outVectorBasin = FeatureCollections.newCollection();
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("basins");
+        b.setCRS(crs);
+        b.add("the_geom", Polygon.class);
+        b.add("area", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+
+        for( Polygon polygon : polygons ) {
+            Object[] values = new Object[]{polygon, polygon.getArea()};
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            outVectorBasin.add(feature);
+        }
     }
 
-    private void smoothVectorBasin() throws IOException {
-        final PolygonSmoother polygonSmoother = new PolygonSmoother();
-        pm.beginTask("Smoothing polygons...", outVectorBasin.size());
-        outVectorBasin.accepts(new FeatureVisitor(){
-            @Override
-            public void visit( Feature feature ) {
-                SimpleFeature simpleFeature = (SimpleFeature) feature;
-                Geometry geom = (Geometry) simpleFeature.getDefaultGeometry();
-                if (geom != null) {
-                    Polygon smoothedPolygon = polygonSmoother.smooth((Polygon) geom, 0.95);
-                    simpleFeature.setDefaultGeometry(smoothedPolygon);
-                }
-                pm.worked(1);
-            }
-        }, new NullProgressListener());
+    private Collection<Polygon> smoothVectorBasin( Collection<Polygon> polygons ) throws Exception {
+        if (!doSmoothing) {
+            return polygons;
+        }
+        List<Polygon> smoothedPolygons = new ArrayList<Polygon>();
+
+        // final PolygonSmoother polygonSmoother = new PolygonSmoother();
+        pm.beginTask("Smoothing polygons...", polygons.size());
+        for( Polygon polygon : polygons ) {
+            LineString lineString = gf.createLineString(polygon.getCoordinates());
+
+            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            newCollection.add(FeatureUtilities.toDummyFeature(lineString));
+
+            LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+            smoother.inVector = newCollection;
+            smoother.pLookahead = 5;
+            smoother.pSlide = 0.9;
+            // smoother.pDensify = 0.9;
+            smoother.process();
+            SimpleFeatureCollection outFeatures = smoother.outVector;
+
+            MultiLineString newGeom = (MultiLineString) outFeatures.features().next().getDefaultGeometry();
+            Polygon newPolygon = gf.createPolygon(gf.createLinearRing(newGeom.getCoordinates()), null);
+
+            // Polygon smoothedPolygon = polygonSmoother.smooth(polygon, 0.5);
+            smoothedPolygons.add(newPolygon);
+            pm.worked(1);
+        }
         pm.done();
+
+        return smoothedPolygons;
     }
 
-    private void snapOutlet() throws IOException {
+    private Coordinate snapOutlet() throws IOException {
         if (inNetwork != null) {
-            pm.beginTask("Snapping lines...", inNetwork.size());
+            pm.beginTask("Snapping to network...", inNetwork.size());
             final SpatialIndex linesIndex = new STRtree();
             inNetwork.accepts(new FeatureVisitor(){
                 @Override
@@ -257,7 +309,6 @@ public class ExtractBasin extends JGTModel {
             }, new NullProgressListener());
             pm.done();
 
-            GeometryFactory gf = GeometryUtilities.gf();
             Coordinate userOutletCoordinate = new Coordinate(pEast, pNorth);
             Point userOutletPoint = gf.createPoint(userOutletCoordinate);
 
@@ -286,16 +337,45 @@ public class ExtractBasin extends JGTModel {
 
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("typename");
-            b.setCRS(inNetwork.getSchema().getCoordinateReferenceSystem());
+            b.setCRS(crs);
             b.add("the_geom", Point.class);
             b.add("basinarea", Double.class);
             SimpleFeatureType type = b.buildFeatureType();
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            Object[] values = new Object[]{snappedOutletPoint, outArea};
+            Object[] values = new Object[]{snappedOutletPoint, -9999.0};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(null);
             outOutlet.add(feature);
+
+            return minDistCoordinate;
         }
+        return null;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        String grassdb = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/finland/testset/cell/";
+        String shapeBase = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/GISdata/04_164/";
+
+        String inFlowPath = grassdb + "carved_flow";
+        String inNetworkPath = shapeBase + "vv_04_164.shp";
+        String outBasinPath = grassdb + "carved_eb";
+        String outOutletPath = shapeBase + "eb_outlet.shp";
+        String outVectorBasinPath = shapeBase + "eb_basin_smoothed.shp";
+
+        ExtractBasin eb = new ExtractBasin();
+        eb.pNorth = 6862353.979338094;
+        eb.pEast = 3520253.4090277995;
+        eb.pValue = 1.0;
+        eb.inFlow = RasterReader.readRaster(inFlowPath);
+        eb.inNetwork = VectorReader.readVector(inNetworkPath);
+        eb.pSnapbuffer = 200.0;
+        eb.doVector = true;
+        eb.doSmoothing = true;
+        eb.process();
+
+        RasterWriter.writeRaster(outBasinPath, eb.outBasin);
+        VectorWriter.writeVector(outVectorBasinPath, eb.outVectorBasin);
+        VectorWriter.writeVector(outOutletPath, eb.outOutlet);
     }
 
 }

@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.utils.features;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -30,7 +32,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import javax.media.jai.JAI;
+import javax.media.jai.ParameterBlockJAI;
+import javax.media.jai.RenderedOp;
+
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureStore;
@@ -46,12 +54,16 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.Envelope2D;
+import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -66,6 +78,7 @@ import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 public class FeatureUtilities {
 
@@ -638,6 +651,61 @@ public class FeatureUtilities {
         LinearRing linearRing = gf.createLinearRing(coords);
         Polygon polygon = gf.createPolygon(linearRing, null);
         return polygon;
+    }
+
+    /**
+     * Helper function to run the Vectorize operation with given parameters and
+     * retrieve the vectors.
+     * 
+     * @param src the source {@link GridCoverage2D}.
+     * @param args a {@code Map} of parameter names and values or <code>null</code>.
+     * 
+     * @return the generated vectors as JTS Polygons
+     */
+    @SuppressWarnings("unchecked")
+    public static Collection<Polygon> doVectorize( GridCoverage2D src, Map<String, Object> args ) {
+        if (args == null) {
+            args = new HashMap<String, Object>();
+        }
+
+        ParameterBlockJAI pb = new ParameterBlockJAI("Vectorize");
+        pb.setSource("source0", src.getRenderedImage());
+
+        // Set any parameters that were passed in
+        for( Entry<String, Object> e : args.entrySet() ) {
+            pb.setParameter(e.getKey(), e.getValue());
+        }
+
+        // Get the desintation image: this is the unmodified source image data
+        // plus a property for the generated vectors
+        RenderedOp dest = JAI.create("Vectorize", pb);
+
+        // Get the vectors
+        Collection<Polygon> polygons = (Collection<Polygon>) dest.getProperty(VectorizeDescriptor.VECTOR_PROPERTY_NAME);
+
+        RegionMap regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(src);
+        double xRes = regionParams.getXres();
+        double yRes = regionParams.getYres();
+        final AffineTransform mt2D = (AffineTransform) src.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
+        final AffineTransformation jtsTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
+                mt2D.getTranslateX() - xRes / 2.0, mt2D.getShearY(), mt2D.getScaleY(), mt2D.getTranslateY() + yRes / 2.0);
+        for( Polygon polygon : polygons ) {
+            polygon.apply(jtsTransformation);
+        }
+        return polygons;
+    }
+
+    public static SimpleFeature toDummyFeature( Geometry geom ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("dummy");
+        // b.setCRS(crs);
+        b.add("the_geom", Geometry.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        Object[] values = new Object[]{geom};
+        builder.addAll(values);
+        SimpleFeature feature = builder.buildFeature(null);
+        return feature;
     }
 
 }
