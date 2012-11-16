@@ -47,10 +47,12 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
+import org.jaitools.jts.PolygonSmoother;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -65,6 +67,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.index.SpatialIndex;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LinearLocation;
@@ -104,6 +107,10 @@ public class ExtractBasin extends JGTModel {
     @In
     public double pSnapbuffer = 200;
 
+    @Description("Flag to enable vector basin smoothing.")
+    @In
+    public boolean doSmoothing = false;
+
     @Description("The area of the extracted basin.")
     @Out
     public double outArea = 0;
@@ -112,9 +119,13 @@ public class ExtractBasin extends JGTModel {
     @Out
     public GridCoverage2D outBasin = null;
 
-    @Description("The outlet point vector map.")
+    @Description("The optional outlet point vector map.")
     @Out
     public SimpleFeatureCollection outOutlet = null;
+
+    @Description("The optional extracted basin vector map.")
+    @Out
+    public SimpleFeatureCollection outVectorBasin = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -190,6 +201,39 @@ public class ExtractBasin extends JGTModel {
         outBasin = CoverageUtilities.buildCoverage("basin", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
         snapOutlet();
+
+        extractVectorBasin();
+
+        smoothVectorBasin();
+    }
+
+    private void extractVectorBasin() throws Exception {
+        Vectorizer vectorizer = new Vectorizer();
+        vectorizer.pm = pm;
+        vectorizer.inRaster = outBasin;
+        vectorizer.pValue = 2.0;
+        vectorizer.pThres = 1;
+        vectorizer.fDefault = "rast";
+        vectorizer.process();
+        outVectorBasin = vectorizer.outVector;
+    }
+
+    private void smoothVectorBasin() throws IOException {
+        final PolygonSmoother polygonSmoother = new PolygonSmoother();
+        pm.beginTask("Smoothing polygons...", outVectorBasin.size());
+        outVectorBasin.accepts(new FeatureVisitor(){
+            @Override
+            public void visit( Feature feature ) {
+                SimpleFeature simpleFeature = (SimpleFeature) feature;
+                Geometry geom = (Geometry) simpleFeature.getDefaultGeometry();
+                if (geom != null) {
+                    Polygon smoothedPolygon = polygonSmoother.smooth((Polygon) geom, 0.95);
+                    simpleFeature.setDefaultGeometry(smoothedPolygon);
+                }
+                pm.worked(1);
+            }
+        }, new NullProgressListener());
+        pm.done();
     }
 
     private void snapOutlet() throws IOException {
