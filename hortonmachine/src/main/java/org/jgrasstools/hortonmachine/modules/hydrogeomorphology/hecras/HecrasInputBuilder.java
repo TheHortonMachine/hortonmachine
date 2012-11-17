@@ -201,13 +201,16 @@ public class HecrasInputBuilder extends JGTModel {
         outBuf.append("\r\n");
         outBuf.append("CENTERLINE:\r\n");
 
-        for( int i = 0; i < orderedNetworkPoints.size(); ++i ) {
+        int orderedNetworkPointsSize = orderedNetworkPoints.size();
+        for( int i = 0; i < orderedNetworkPointsSize; ++i ) {
+            // mind, the reach points and the sections need to walk in reverse order!
+            int iRev = orderedNetworkPointsSize - 1 - i;
             NetworkPoint networkPoint = orderedNetworkPoints.get(i);
             if (networkPoint.hasSection) {
                 continue;
             }
             Coordinate tmpCoord = networkPoint.point;
-            outBuf.append(tmpCoord.x + ",\t" + tmpCoord.y + ",\t" + tmpCoord.z + ",\t" + i + "\r\n");
+            outBuf.append(tmpCoord.x + ",\t" + tmpCoord.y + ",\t" + tmpCoord.z + ",\t" + iRev + "\r\n");
         }
 
         outBuf.append("END:\r\n");
@@ -219,12 +222,13 @@ public class HecrasInputBuilder extends JGTModel {
         // get only sections with their indexes
         List<NetworkPoint> sectionPoints = new ArrayList<NetworkPoint>();
         List<Integer> sectionIndexes = new ArrayList<Integer>();
-        for( int i = 0; i < orderedNetworkPoints.size(); i++ ) {
+        for( int i = 0; i < orderedNetworkPointsSize; i++ ) {
+            int iRev = orderedNetworkPointsSize - 1 - i;
             NetworkPoint currentNetworkPoint = orderedNetworkPoints.get(i);
             if (currentNetworkPoint.hasSection) {
                 sectionPoints.add(currentNetworkPoint);
-                sectionIndexes.add(i);
-                currentNetworkPoint.setSectionId(i);
+                sectionIndexes.add(iRev);
+                currentNetworkPoint.setSectionId(iRev);
             }
         }
 

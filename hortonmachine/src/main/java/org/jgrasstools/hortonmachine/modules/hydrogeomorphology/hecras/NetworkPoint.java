@@ -43,7 +43,7 @@ public class NetworkPoint implements Comparable<NetworkPoint> {
     public boolean hasSection = false;
 
     /**
-     * If section data are available, the point might have an index usefull for proper ordering.
+     * If section data are available, the point might have an index useful for proper ordering.
      */
     private int sectionId = -1;
 
