@@ -64,7 +64,7 @@ public class VectorTransformer extends JGTModel {
     @In
     public double pTransY;
 
-    @Description("The reprojected feature collection.")
+    @Description("The transformed feature collection.")
     @Out
     public SimpleFeatureCollection outVector = null;
 
