@@ -233,9 +233,13 @@ public class HecrasInputBuilder extends JGTModel {
         }
 
         pm.beginTask("Building cross-sections geometry...", sectionPoints.size());
-        for( int i = 0; i < sectionPoints.size() - 1; i++ ) {
+        for( int i = 0; i < sectionPoints.size(); i++ ) {
             NetworkPoint currentNetworkPoint = sectionPoints.get(i);
-            NetworkPoint nextNetworkPoint = sectionPoints.get(i + 1);
+            NetworkPoint nextNetworkPoint = currentNetworkPoint;
+            if (i + 1 != sectionPoints.size()) {
+                nextNetworkPoint = sectionPoints.get(i + 1);
+            }
+
             Integer currentNetworkPointIndex = sectionIndexes.get(i);
 
             outBuf.append("\r\n");
@@ -254,9 +258,9 @@ public class HecrasInputBuilder extends JGTModel {
             Coordinate[] coordinates = currentNetworkPoint.sectionGeometry.getCoordinates();
             Coordinate firstCoordinateOfSection = coordinates[0];
             Coordinate lastCoordinateOfSection = coordinates[coordinates.length - 1];
-            coordinates = nextNetworkPoint.sectionGeometry.getCoordinates();
-            Coordinate firstCoordinateOfNextSection = coordinates[0];
-            Coordinate lastCoordinateOfNextSection = coordinates[coordinates.length - 1];
+            Coordinate[] nextCoordinates = nextNetworkPoint.sectionGeometry.getCoordinates();
+            Coordinate firstCoordinateOfNextSection = nextCoordinates[0];
+            Coordinate lastCoordinateOfNextSection = nextCoordinates[nextCoordinates.length - 1];
 
             outBuf.append("REACH LENGTHS: " + firstCoordinateOfSection.distance(firstCoordinateOfNextSection) + ",\t"
                     + currentNetworkPoint.point.distance(nextNetworkPoint.point) + ",\t"
