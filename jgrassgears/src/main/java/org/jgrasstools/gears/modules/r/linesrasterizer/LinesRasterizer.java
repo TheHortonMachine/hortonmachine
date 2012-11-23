@@ -75,10 +75,14 @@ public class LinesRasterizer extends JGTModel {
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The field of the vector to take the category from.")
+    @Description("The optional field of the vector to take the category from.")
     @In
     public String fCat;
-    
+
+    @Description("The category to use if no field was set.")
+    @In
+    public double pCat = 1.0;
+
     @Description("The north bound of the region to consider")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
@@ -115,8 +119,8 @@ public class LinesRasterizer extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inVector, fCat);
-        
+        checkNull(inVector);
+
         if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
             throw new ModelsIllegalargumentException(
                     "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
@@ -125,7 +129,7 @@ public class LinesRasterizer extends JGTModel {
         SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
         GridGeometry2D inGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
-        
+
         GeometryType type = schema.getGeometryDescriptor().getType();
         if (getGeometryType(type) != GEOMETRYTYPE.LINE && getGeometryType(type) != GEOMETRYTYPE.MULTILINE) {
             throw new ModelsRuntimeException("The module works only with line vectors.", this);
@@ -152,7 +156,13 @@ public class LinesRasterizer extends JGTModel {
                 Geometry geometryN = geometry.getGeometryN(i);
                 List<Coordinate> lineCoordinatesAtStep = GeometryUtilities.getCoordinatesAtInterval((LineString) geometryN, step,
                         true, -1, -1);
-                Double cat = featureMate.getAttribute(fCat, Double.class);
+
+                double cat;
+                if (fCat == null) {
+                    cat = pCat;
+                } else {
+                    cat = featureMate.getAttribute(fCat, Double.class);
+                }
 
                 for( Coordinate lineCoordinate : lineCoordinatesAtStep ) {
                     if (!NumericsUtilities.isBetween(lineCoordinate.x, w, e)
