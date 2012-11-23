@@ -57,6 +57,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.v.smoothing.LineSmootherMcMaster;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -235,7 +236,17 @@ public class ExtractBasin extends JGTModel {
 
         Collection<Polygon> polygons = FeatureUtilities.doVectorize(outBasin, null);
 
-        polygons = smoothVectorBasin(polygons);
+        Polygon rightPolygon = null;
+        double maxArea = Double.NEGATIVE_INFINITY;
+        for( Polygon polygon : polygons ) {
+            double area = polygon.getArea();
+            if (area > maxArea) {
+                rightPolygon = polygon;
+                maxArea = area;
+            }
+        }
+
+        rightPolygon = smoothVectorBasin(rightPolygon);
 
         outVectorBasin = FeatureCollections.newCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -246,46 +257,38 @@ public class ExtractBasin extends JGTModel {
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        for( Polygon polygon : polygons ) {
-            Object[] values = new Object[]{polygon, polygon.getArea()};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-            outVectorBasin.add(feature);
-        }
+        Object[] values = new Object[]{rightPolygon, rightPolygon.getArea()};
+        builder.addAll(values);
+        SimpleFeature feature = builder.buildFeature(null);
+        outVectorBasin.add(feature);
     }
 
-    private Collection<Polygon> smoothVectorBasin( Collection<Polygon> polygons ) throws Exception {
+    private Polygon smoothVectorBasin( Polygon polygon ) throws Exception {
         if (!doSmoothing) {
-            return polygons;
+            return polygon;
         }
-        List<Polygon> smoothedPolygons = new ArrayList<Polygon>();
 
         // final PolygonSmoother polygonSmoother = new PolygonSmoother();
-        pm.beginTask("Smoothing polygons...", polygons.size());
-        for( Polygon polygon : polygons ) {
-            LineString lineString = gf.createLineString(polygon.getCoordinates());
+        pm.beginTask("Smoothing polygons...", IJGTProgressMonitor.UNKNOWN);
+        LineString lineString = gf.createLineString(polygon.getCoordinates());
 
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-            newCollection.add(FeatureUtilities.toDummyFeature(lineString));
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        newCollection.add(FeatureUtilities.toDummyFeature(lineString));
 
-            LineSmootherMcMaster smoother = new LineSmootherMcMaster();
-            smoother.inVector = newCollection;
-            smoother.pLookahead = 5;
-            smoother.pSlide = 0.9;
-            // smoother.pDensify = 0.9;
-            smoother.process();
-            SimpleFeatureCollection outFeatures = smoother.outVector;
+        LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+        smoother.inVector = newCollection;
+        smoother.pLookahead = 5;
+        smoother.pSlide = 0.9;
+        // smoother.pDensify = 0.9;
+        smoother.process();
+        SimpleFeatureCollection outFeatures = smoother.outVector;
 
-            MultiLineString newGeom = (MultiLineString) outFeatures.features().next().getDefaultGeometry();
-            Polygon newPolygon = gf.createPolygon(gf.createLinearRing(newGeom.getCoordinates()), null);
+        MultiLineString newGeom = (MultiLineString) outFeatures.features().next().getDefaultGeometry();
+        Polygon newPolygon = gf.createPolygon(gf.createLinearRing(newGeom.getCoordinates()), null);
 
-            // Polygon smoothedPolygon = polygonSmoother.smooth(polygon, 0.5);
-            smoothedPolygons.add(newPolygon);
-            pm.worked(1);
-        }
         pm.done();
 
-        return smoothedPolygons;
+        return newPolygon;
     }
 
     private Coordinate snapOutlet() throws IOException {
