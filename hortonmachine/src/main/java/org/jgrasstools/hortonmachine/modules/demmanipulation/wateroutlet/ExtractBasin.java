@@ -335,24 +335,30 @@ public class ExtractBasin extends JGTModel {
             }
 
             Point snappedOutletPoint = gf.createPoint(minDistCoordinate);
-
-            outOutlet = FeatureCollections.newCollection();
-
-            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-            b.setName("typename");
-            b.setCRS(crs);
-            b.add("the_geom", Point.class);
-            b.add("basinarea", Double.class);
-            SimpleFeatureType type = b.buildFeatureType();
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-            Object[] values = new Object[]{snappedOutletPoint, -9999.0};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-            outOutlet.add(feature);
-
+            makeOutletFC(snappedOutletPoint);
             return minDistCoordinate;
+        } else {
+            // use real outlet
+            Point snappedOutletPoint = gf.createPoint(new Coordinate(pEast, pNorth));
+            makeOutletFC(snappedOutletPoint);
         }
         return null;
+    }
+
+    private void makeOutletFC( Point snappedOutletPoint ) {
+        outOutlet = FeatureCollections.newCollection();
+
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("typename");
+        b.setCRS(crs);
+        b.add("the_geom", Point.class);
+        b.add("basinarea", Double.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        Object[] values = new Object[]{snappedOutletPoint, -9999.0};
+        builder.addAll(values);
+        SimpleFeature feature = builder.buildFeature(null);
+        outOutlet.add(feature);
     }
 
     public static void main( String[] args ) throws Exception {
