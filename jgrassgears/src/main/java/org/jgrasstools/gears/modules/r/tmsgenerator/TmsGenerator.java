@@ -109,7 +109,7 @@ public class TmsGenerator extends JGTModel {
     @In
     public Double pEast = null;
 
-    @Description("The coordinate reference system of the bound coordinates (ex. EPSG:4328).")
+    @Description("The coordinate reference system of the bound coordinates and supplied datasets (ex. EPSG:4328).")
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pEpsg;
@@ -231,7 +231,7 @@ public class TmsGenerator extends JGTModel {
 
             int tileNum = 0;
 
-            final ReferencedEnvelope levelBounds = new ReferencedEnvelope();
+            final ReferencedEnvelope levelBounds = new ReferencedEnvelope(mercatorCrs);
 
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
 
@@ -287,7 +287,7 @@ public class TmsGenerator extends JGTModel {
             }
             try {
                 fixedThreadPool.shutdown();
-                while (!fixedThreadPool.isTerminated()) {
+                while( !fixedThreadPool.isTerminated() ) {
                     Thread.sleep(100);
                 }
             } catch (InterruptedException exx) {

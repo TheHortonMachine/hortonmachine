@@ -225,27 +225,38 @@ public class ImageGenerator {
             GridCoverage2D raster = null;
             AbstractGridCoverage2DReader reader = null;
             try {
-                if (region == null) {
-                    raster = RasterReader.readRaster(coveragePath);
-                } else {
-                    RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(region);
-                    double n = regionMap.getNorth();
-                    double s = regionMap.getSouth();
-                    double w = regionMap.getWest();
-                    double e = regionMap.getEast();
-                    double xres = regionMap.getXres();
-                    double yres = regionMap.getYres();
-                    RasterReader rreader = new RasterReader();
-                    rreader.file = coveragePath;
-                    rreader.pNorth = n;
-                    rreader.pSouth = s;
-                    rreader.pWest = w;
-                    rreader.pEast = e;
-                    rreader.pXres = xres;
-                    rreader.pYres = yres;
-                    rreader.doLegacyGrass = doLegacyGrass;
-                    rreader.process();
-                    raster = rreader.outRaster;
+
+                try {
+                    // first try a format that gives back a reader
+                    AbstractGridFormat format = GridFormatFinder.findFormat(file);
+                    reader = format.getReader(file);
+                } catch (Exception e1) {
+                    // ignore and try others
+                }
+                if (reader == null) {
+
+                    if (region == null) {
+                        raster = RasterReader.readRaster(coveragePath);
+                    } else {
+                        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(region);
+                        double n = regionMap.getNorth();
+                        double s = regionMap.getSouth();
+                        double w = regionMap.getWest();
+                        double e = regionMap.getEast();
+                        double xres = regionMap.getXres();
+                        double yres = regionMap.getYres();
+                        RasterReader rreader = new RasterReader();
+                        rreader.file = coveragePath;
+                        rreader.pNorth = n;
+                        rreader.pSouth = s;
+                        rreader.pWest = w;
+                        rreader.pEast = e;
+                        rreader.pXres = xres;
+                        rreader.pYres = yres;
+                        rreader.doLegacyGrass = doLegacyGrass;
+                        rreader.process();
+                        raster = rreader.outRaster;
+                    }
                 }
                 // if (crs == null) {
                 // crs = raster.getCoordinateReferenceSystem();
@@ -255,9 +266,8 @@ public class ImageGenerator {
                 monitor.errorMessage("Trying to find other coverage source...");
                 // try with available readers
                 try {
-                    File coverageFile = new File(coveragePath);
-                    AbstractGridFormat format = GridFormatFinder.findFormat(coverageFile);
-                    reader = format.getReader(coverageFile);
+                    AbstractGridFormat format = GridFormatFinder.findFormat(file);
+                    reader = format.getReader(file);
                     // if (crs == null) {
                     // crs = reader.getCrs();
                     // }
@@ -265,7 +275,6 @@ public class ImageGenerator {
                     throw ex;
                 }
             }
-
             File styleFile = FileUtilities.substituteExtention(file, "sld");
             Style style;
             if (styleFile.exists()) {
@@ -326,7 +335,6 @@ public class ImageGenerator {
 
         monitor.done();
     }
-
     private org.geotools.data.ows.Layer getWMSLayer( WebMapServer server, String layerName ) {
         for( org.geotools.data.ows.Layer layer : server.getCapabilities().getLayerList() ) {
             if (layerName.equals(layer.getName())) {

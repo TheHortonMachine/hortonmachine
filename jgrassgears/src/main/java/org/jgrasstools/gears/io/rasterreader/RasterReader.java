@@ -20,7 +20,7 @@ package org.jgrasstools.gears.io.rasterreader;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.JPEG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.JPG;
@@ -221,11 +221,14 @@ public class RasterReader extends JGTModel {
             pType = GEOTIFF;
         } else if (file.toLowerCase().endsWith(JPEG) || file.toLowerCase().endsWith(JPG)) {
             pType = JPG;
+        } else if (file.toLowerCase().endsWith(PNG)) {
+            pType = PNG;
         } else if (CoverageUtilities.isGrass(file)) {
             pType = GRASS;
         } else
-            throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.", this
-                    .getClass().getSimpleName());
+            throw new ModelsIllegalargumentException(
+                    "Can't recognize the data format. Supported are: asc, tiff, jpg, png, grass.", this.getClass()
+                            .getSimpleName());
 
         File mapFile = new File(file);
         try {
@@ -236,7 +239,9 @@ public class RasterReader extends JGTModel {
             } else if (pType.equals(GEOTIFF)) {
                 readGeotiff(mapFile);
             } else if (pType.equals(JPG)) {
-                readJpg(mapFile);
+                readWorldImage(mapFile);
+            } else if (pType.equals(PNG)) {
+                readWorldImage(mapFile);
             } else if (pType.equals(AIG) || pType.endsWith("w001001x.adf")) {
                 readAig(mapFile);
             } else if (pType.equals(GRASS)) {
@@ -323,11 +328,11 @@ public class RasterReader extends JGTModel {
 
     private void readGeotiff( File mapFile ) throws IOException {
         String nameWithoutExtention = FileUtilities.getNameWithoutExtention(mapFile);
-        File twfFile = new File(mapFile.getParentFile(), nameWithoutExtention+ ".tfw");
+        File twfFile = new File(mapFile.getParentFile(), nameWithoutExtention + ".tfw");
         AbstractGridCoverage2DReader geoTiffReader;
         if (twfFile.exists()) {
             geoTiffReader = new WorldImageReader(mapFile);
-        }else{
+        } else {
             geoTiffReader = new GeoTiffReader(mapFile);
         }
         originalEnvelope = geoTiffReader.getOriginalEnvelope();
@@ -352,7 +357,7 @@ public class RasterReader extends JGTModel {
         }
     }
 
-    private void readJpg( File mapFile ) throws IllegalArgumentException, IOException {
+    private void readWorldImage( File mapFile ) throws IllegalArgumentException, IOException {
         WorldImageReader worldImageReader = new WorldImageReader(mapFile);
         originalEnvelope = worldImageReader.getOriginalEnvelope();
         if (!doEnvelope) {
