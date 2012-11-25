@@ -89,7 +89,7 @@ public class Slope extends JGTModel {
 
         WritableRaster slopeWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-        pm.beginTask(msg.message("slope.calculating"), nRows);
+        pm.beginTask(msg.message("slope.calculating"), nCols);
         for( int c = 0; c < nCols; c++ ) {
             for( int r = 0; r < nRows; r++ ) {
                 double flowValue = flowIter.getSampleDouble(c, r, 0);
