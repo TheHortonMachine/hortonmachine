@@ -150,6 +150,7 @@ public class LinesRasterizer extends JGTModel {
 
         List<FeatureMate> matesList = FeatureUtilities.featureCollectionToMatesList(inVector);
         pm.beginTask("Rasterizing lines...", matesList.size());
+        String fCatChecked = null;
         for( FeatureMate featureMate : matesList ) {
             Geometry geometry = featureMate.getGeometry();
             for( int i = 0; i < geometry.getNumGeometries(); i++ ) {
@@ -161,6 +162,12 @@ public class LinesRasterizer extends JGTModel {
                 if (fCat == null) {
                     cat = pCat;
                 } else {
+                    if (fCatChecked == null) {
+                        fCatChecked = FeatureUtilities.findAttributeName(featureMate.getFeature().getFeatureType(), fCat);
+                        if (fCatChecked == null) {
+                            throw new ModelsIllegalargumentException("Could not find an attribute named: " + fCat, this);
+                        }
+                    }
                     cat = featureMate.getAttribute(fCat, Double.class);
                 }
 
