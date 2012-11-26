@@ -24,6 +24,8 @@ import org.geotools.filter.text.ecql.ECQL;
 import org.opengis.filter.Filter;
 import org.opengis.geometry.BoundingBox;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
  * Helper class for simple filter constructions.
  * 
@@ -60,8 +62,8 @@ public class FilterUtilities {
      * @return the filter.
      * @throws CQLException
      */
-    public static Filter getBboxFilter( String attribute, double west, double east, double south,
-            double north ) throws CQLException {
+    public static Filter getBboxFilter( String attribute, double west, double east, double south, double north )
+            throws CQLException {
 
         if (attribute == null) {
             attribute = "the_geom";
@@ -88,6 +90,19 @@ public class FilterUtilities {
     public static Filter getCQLFilter( String expression ) throws CQLException {
         Filter cqlFilter = ECQL.toFilter(expression);
         return cqlFilter;
+    }
+
+    /**
+     * Creates an intersect filter.
+     * 
+     * @param geomName the name of the geom field to filter.
+     * @param geometry the geometry to use as filtering geom.
+     * @return the filter.
+     * @throws CQLException
+     */
+    public static Filter getIntersectsGeometryFilter( String geomName, Geometry geometry ) throws CQLException {
+        Filter result = CQL.toFilter("INTERSECTS(" + geomName + ", " + geometry.toText() + " )");
+        return result;
     }
 
 }
