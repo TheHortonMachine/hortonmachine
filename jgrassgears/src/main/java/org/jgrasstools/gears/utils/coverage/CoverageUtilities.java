@@ -920,7 +920,7 @@ public class CoverageUtilities {
                 if (isNovalue(value)) {
                     continue;
                 }
-                if (maskIter!=null) {
+                if (maskIter != null) {
                     double maskValue = maskIter.getSampleDouble(i, j, 0);
                     if (isNovalue(maskValue)) {
                         continue;
@@ -1047,6 +1047,43 @@ public class CoverageUtilities {
 
         GridCoverage2D outCoverage = buildCoverage(
                 "mapped", writableRaster, maskRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        return outCoverage;
+    }
+
+    /**
+     * Coverage merger.
+     * 
+     * <p>Values from valuesMap are placed into the onMap coverage, if they are valid.</p>
+     * 
+     * @param valuesMap the map from which to take teh valid values to place in the output map.
+     * @param onMap the base map on which to place the valuesMap values.
+     * @return the merged map of valuesMap over onMap.
+     */
+    public static GridCoverage2D mergeCoverages( GridCoverage2D valuesMap, GridCoverage2D onMap ) {
+        RegionMap valuesRegionMap = getRegionParamsFromGridCoverage(valuesMap);
+        int cs = valuesRegionMap.getCols();
+        int rs = valuesRegionMap.getRows();
+        RegionMap onRegionMap = getRegionParamsFromGridCoverage(onMap);
+        int tmpcs = onRegionMap.getCols();
+        int tmprs = onRegionMap.getRows();
+
+        if (cs != tmpcs || rs != tmprs) {
+            throw new IllegalArgumentException("The raster maps have to be of equal size to be mapped.");
+        }
+
+        RandomIter valuesIter = RandomIterFactory.create(valuesMap.getRenderedImage(), null);
+        WritableRaster outWR = renderedImage2WritableRaster(onMap.getRenderedImage(), false);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+
+        for( int c = 0; c < cs; c++ ) {
+            for( int r = 0; r < rs; r++ ) {
+                double value = valuesIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(value))
+                    outIter.setSample(c, r, 0, value);
+            }
+        }
+
+        GridCoverage2D outCoverage = buildCoverage("merged", outWR, onRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
         return outCoverage;
     }
 
