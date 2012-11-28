@@ -34,6 +34,7 @@ import oms3.annotations.UI;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Module for creating an mosaic shapefile for images.")
 @Documentation("Mosaic.html")
@@ -54,8 +55,13 @@ public class ImageMosaicCreator extends JGTModel {
     public void process() throws Exception {
         checkNull(inFolder);
 
+        pm.beginTask("Generating mosaic... this might take some time depending on the number of images...",
+                IJGTProgressMonitor.UNKNOWN);
+
         ImageMosaicFormat imageMosaicFormat = new ImageMosaicFormat();
         File imageryFolder = new File(inFolder);
         imageMosaicFormat.getReader(imageryFolder);
+
+        pm.done();
     }
 }
