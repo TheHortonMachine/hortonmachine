@@ -18,8 +18,10 @@
  */
 package org.jgrasstools.gears.utils;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * An utilities class for handling strings and similar.
@@ -116,6 +118,11 @@ public class StringUtilities {
             start = end + 1;
         }
         return list;
+    }
+
+    public static Scanner streamToString( InputStream stream, String delimiter ) {
+        java.util.Scanner s = new java.util.Scanner(stream).useDelimiter(delimiter);
+        return s;
     }
 
 }

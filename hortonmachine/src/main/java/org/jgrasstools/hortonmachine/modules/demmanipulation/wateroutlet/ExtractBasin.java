@@ -270,25 +270,30 @@ public class ExtractBasin extends JGTModel {
 
         // final PolygonSmoother polygonSmoother = new PolygonSmoother();
         pm.beginTask("Smoothing polygons...", IJGTProgressMonitor.UNKNOWN);
-        LineString lineString = gf.createLineString(polygon.getCoordinates());
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-        newCollection.add(FeatureUtilities.toDummyFeature(lineString));
+        try {
+            LineString lineString = gf.createLineString(polygon.getCoordinates());
 
-        LineSmootherMcMaster smoother = new LineSmootherMcMaster();
-        smoother.inVector = newCollection;
-        smoother.pLookahead = 5;
-        smoother.pSlide = 0.9;
-        // smoother.pDensify = 0.9;
-        smoother.process();
-        SimpleFeatureCollection outFeatures = smoother.outVector;
+            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            newCollection.add(FeatureUtilities.toDummyFeature(lineString));
 
-        MultiLineString newGeom = (MultiLineString) outFeatures.features().next().getDefaultGeometry();
-        Polygon newPolygon = gf.createPolygon(gf.createLinearRing(newGeom.getCoordinates()), null);
+            LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+            smoother.inVector = newCollection;
+            smoother.pLookahead = 5;
+            smoother.pSlide = 0.9;
+            // smoother.pDensify = 0.9;
+            smoother.process();
+            SimpleFeatureCollection outFeatures = smoother.outVector;
+
+            MultiLineString newGeom = (MultiLineString) outFeatures.features().next().getDefaultGeometry();
+            polygon = gf.createPolygon(gf.createLinearRing(newGeom.getCoordinates()), null);
+        } catch (Exception e) {
+            pm.errorMessage("Warning, unable to smooth the basin. Continue with original layer.");
+        }
 
         pm.done();
 
-        return newPolygon;
+        return polygon;
     }
 
     private Coordinate snapOutlet() throws IOException {
