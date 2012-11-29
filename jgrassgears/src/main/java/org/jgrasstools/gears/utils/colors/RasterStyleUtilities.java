@@ -91,25 +91,26 @@ public class RasterStyleUtilities {
 
             Expression opacityExpr = sB.literalExpression(opacity);
 
-            Expression fromColorExpr = sB.colorExpression(fromColor);
-            Expression fromExpr = sB.literalExpression(start);
-            ColorMapEntry entry = sf.createColorMapEntry();
-            entry.setQuantity(fromExpr);
-            entry.setColor(fromColorExpr);
-            entry.setOpacity(opacityExpr);
-            colorMap.addColorMapEntry(entry);
+            if (i == 0) {
+                Expression fromColorExpr = sB.colorExpression(fromColor);
+                Expression fromExpr = sB.literalExpression(start);
+                ColorMapEntry entry = sf.createColorMapEntry();
+                entry.setQuantity(fromExpr);
+                entry.setColor(fromColorExpr);
+                entry.setOpacity(opacityExpr);
+                colorMap.addColorMapEntry(entry);
+            }
 
             if (!NumericsUtilities.dEq(start, end)) {
                 Expression toColorExpr = sB.colorExpression(toColor);
                 Expression toExpr = sB.literalExpression(end);
-                entry = sf.createColorMapEntry();
+                ColorMapEntry entry = sf.createColorMapEntry();
                 entry.setQuantity(toExpr);
                 entry.setOpacity(opacityExpr);
                 entry.setColor(toColorExpr);
                 colorMap.addColorMapEntry(entry);
-            } else {
-                i++;
             }
+            // i++;
         }
 
         rasterSym.setColorMap(colorMap);
@@ -163,6 +164,20 @@ public class RasterStyleUtilities {
 
                 colorList.add(new Color(r2, g2, b2));
                 newValues.add(v2);
+            } else if (lineSplit.length == 4) {
+                if (newValues == null) {
+                    newValues = new ArrayList<Double>();
+                }
+
+                // also value are provided, rewrite input values
+                double v1 = Double.parseDouble(lineSplit[0]);
+                int r1 = Integer.parseInt(lineSplit[1]);
+                int g1 = Integer.parseInt(lineSplit[2]);
+                int b1 = Integer.parseInt(lineSplit[3]);
+
+                colorList.add(new Color(r1, g1, b1));
+                newValues.add(v1);
+
             }
         }
 
@@ -180,11 +195,16 @@ public class RasterStyleUtilities {
 
     public static void main( String[] args ) throws Exception {
         double[] values = {0, 360};
-        String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null, 0.5);
-        System.out.println(createStyleForColortable);
-        createStyleForColortable = createStyleForColortable("elev", 73.835, 144.889, null, 0.8);
-        System.out.println(createStyleForColortable);
-        createStyleForColortable = createStyleForColortable("flow", 0, 0, null, 1);
-        System.out.println(createStyleForColortable);
+        // String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null,
+        // 0.5);
+        // System.out.println(createStyleForColortable);
+         String createStyleForColortable = createStyleForColortable(DefaultTables.EXTRAINBOW,
+         73.835, 144.889, null, 0.8);
+         System.out.println(createStyleForColortable);
+        // String createStyleForColortable = createStyleForColortable(DefaultTables.SLOPE, 0.0,
+        // 0.9656, null, 1.0);
+        // System.out.println(createStyleForColortable);
+//        String createStyleForColortable = createStyleForColortable("flow", 0, 0, null, 1);
+//        System.out.println(createStyleForColortable);
     }
 }
