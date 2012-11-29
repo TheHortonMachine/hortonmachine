@@ -37,7 +37,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
 @Description("Module for creating an mosaic shapefile for images.")
-@Documentation("Mosaic.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Imagemosaic, Raster")
 @Label(JGTConstants.RASTERPROCESSING)

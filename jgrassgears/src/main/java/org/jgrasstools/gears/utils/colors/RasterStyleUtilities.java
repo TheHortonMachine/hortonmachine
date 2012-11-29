@@ -19,11 +19,9 @@ package org.jgrasstools.gears.utils.colors;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.TreeSet;
 
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.styling.ColorMap;
@@ -33,9 +31,10 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.SldUtilities;
-import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.filter.expression.Expression;
 
 /**
@@ -47,23 +46,30 @@ public class RasterStyleUtilities {
 
     private static StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
-    public static void dumpRasterStyle( String path, double min, double max, Color[] colors, double opacity ) throws Exception {
-        String styleStr = createRasterStyleString(min, max, colors, opacity);
+    public static void dumpRasterStyle( String path, double min, double max, double[] values, Color[] colors, double opacity )
+            throws Exception {
+        String styleStr = createRasterStyleString(min, max, values, colors, opacity);
         FileUtilities.writeFile(styleStr, new File(path));
     }
 
-    private static String createRasterStyleString( double min, double max, Color[] colors, double opacity ) throws Exception {
-        Style newStyle = createRasterStyle(min, max, colors, opacity);
+    private static String createRasterStyleString( double min, double max, double[] values, Color[] colors, double opacity )
+            throws Exception {
+        Style newStyle = createRasterStyle(min, max, values, colors, opacity);
         String styleStr = SldUtilities.styleToString(newStyle);
         return styleStr;
     }
 
-    private static Style createRasterStyle( double min, double max, Color[] colors, double opacity ) {
+    private static Style createRasterStyle( double min, double max, double[] values, Color[] colors, double opacity ) {
         StyleBuilder sB = new StyleBuilder(sf);
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
 
-        int bins = colors.length - 1;
-        double interval = (max - min) / bins;
+        int colorsNum = colors.length;
+        boolean hasAllValues = false;
+        if (values != null) {
+            // we take first and last and interpolate in the middle
+            hasAllValues = true;
+        }
+        double interval = (max - min) / (colorsNum - 1);
         double runningValue = min;
 
         ColorMap colorMap = sf.createColorMap();
@@ -72,27 +78,38 @@ public class RasterStyleUtilities {
             Color fromColor = colors[i];
             Color toColor = colors[i + 1];
 
-            double start = runningValue;
-            runningValue = runningValue + interval;
-            double end = runningValue;
+            double start;
+            double end;
+            if (hasAllValues) {
+                start = values[i];
+                end = values[i + 1];
+            } else {
+                start = runningValue;
+                runningValue = runningValue + interval;
+                end = runningValue;
+            }
 
-            Expression fromColorExpr = sB.colorExpression(fromColor);
-            Expression toColorExpr = sB.colorExpression(toColor);
-            Expression fromExpr = sB.literalExpression(start);
-            Expression toExpr = sB.literalExpression(end);
             Expression opacityExpr = sB.literalExpression(opacity);
 
+            Expression fromColorExpr = sB.colorExpression(fromColor);
+            Expression fromExpr = sB.literalExpression(start);
             ColorMapEntry entry = sf.createColorMapEntry();
             entry.setQuantity(fromExpr);
             entry.setColor(fromColorExpr);
             entry.setOpacity(opacityExpr);
             colorMap.addColorMapEntry(entry);
 
-            entry = sf.createColorMapEntry();
-            entry.setQuantity(toExpr);
-            entry.setOpacity(opacityExpr);
-            entry.setColor(toColorExpr);
-            colorMap.addColorMapEntry(entry);
+            if (!NumericsUtilities.dEq(start, end)) {
+                Expression toColorExpr = sB.colorExpression(toColor);
+                Expression toExpr = sB.literalExpression(end);
+                entry = sf.createColorMapEntry();
+                entry.setQuantity(toExpr);
+                entry.setOpacity(opacityExpr);
+                entry.setColor(toColorExpr);
+                colorMap.addColorMapEntry(entry);
+            } else {
+                i++;
+            }
         }
 
         rasterSym.setColorMap(colorMap);
@@ -106,37 +123,68 @@ public class RasterStyleUtilities {
         return newStyle;
     }
 
-    public static String createStyleForColortable( String colorTableName, double min, double max, double opacity )
+    public static String createStyleForColortable( String colorTableName, double min, double max, double[] values, double opacity )
             throws Exception {
 
-        String name = "org/jgrasstools/gears/utils/colors/" + colorTableName + ".clr";
-        URL resource2 = Thread.currentThread().getContextClassLoader().getResource(name);
-        URL resource = RasterStyleUtilities.class.getResource(name);
-        InputStream colorTableStream = resource.openStream();
-        if (colorTableStream != null) {
-            Scanner colorTableScanner = StringUtilities.streamToString(colorTableStream, "\n");
-            List<Color> colorList = new ArrayList<Color>();
-            while( colorTableScanner.hasNext() ) {
-                String line = colorTableScanner.next();
-                if (line.startsWith("#")) { //$NON-NLS-1$
-                    continue;
-                }
-                String[] lineSplit = line.trim().split("\\s+"); //$NON-NLS-1$
+        List<Color> colorList = new ArrayList<Color>();
+        String tableString = new DefaultTables().getTableString(colorTableName);
+        String[] split = tableString.split("\n");
+        List<Double> newValues = null; // if necessary
+        for( String line : split ) {
+            if (line.startsWith("#")) { //$NON-NLS-1$
+                continue;
+            }
+            String[] lineSplit = line.trim().split("\\s+"); //$NON-NLS-1$
 
+            if (lineSplit.length == 3) {
                 int r = Integer.parseInt(lineSplit[0]);
                 int g = Integer.parseInt(lineSplit[1]);
                 int b = Integer.parseInt(lineSplit[2]);
 
                 colorList.add(new Color(r, g, b));
+            } else if (lineSplit.length == 8) {
+                if (newValues == null) {
+                    newValues = new ArrayList<Double>();
+                }
+
+                // also value are provided, rewrite input values
+                double v1 = Double.parseDouble(lineSplit[0]);
+                int r1 = Integer.parseInt(lineSplit[1]);
+                int g1 = Integer.parseInt(lineSplit[2]);
+                int b1 = Integer.parseInt(lineSplit[3]);
+
+                colorList.add(new Color(r1, g1, b1));
+                newValues.add(v1);
+
+                double v2 = Double.parseDouble(lineSplit[4]);
+                int r2 = Integer.parseInt(lineSplit[5]);
+                int g2 = Integer.parseInt(lineSplit[6]);
+                int b2 = Integer.parseInt(lineSplit[7]);
+
+                colorList.add(new Color(r2, g2, b2));
+                newValues.add(v2);
             }
-            Color[] colorsArray = colorList.toArray(new Color[0]);
-            return createRasterStyleString(min, max, colorsArray, opacity);
         }
-        return null;
+
+        Color[] colorsArray = colorList.toArray(new Color[0]);
+        if (newValues != null) {
+            // redefine values
+            values = new double[newValues.size()];
+            for( int i = 0; i < newValues.size(); i++ ) {
+                values[i] = newValues.get(i);
+            }
+        }
+
+        return createRasterStyleString(min, max, values, colorsArray, opacity);
     }
 
     public static void main( String[] args ) throws Exception {
-        String createStyleForColortable = createStyleForColortable("aspect", 100, 400, 128);
+        double[] values = {0, 360};
+        String createStyleForColortable = createStyleForColortable("aspect", 0.0, 360.0, null, 0.5);
+        System.out.println(createStyleForColortable);
+        createStyleForColortable = createStyleForColortable("elev", 73.835, 144.889, null, 0.8);
+        System.out.println(createStyleForColortable);
+        createStyleForColortable = createStyleForColortable("flow", 0, 0, null, 1);
         System.out.println(createStyleForColortable);
     }
 }
