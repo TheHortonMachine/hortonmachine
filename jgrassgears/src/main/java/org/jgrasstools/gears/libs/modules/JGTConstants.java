@@ -266,6 +266,7 @@ public class JGTConstants {
     /*
      * vars ui hints
      */
+    public static final String WORKINGFOLDER = "@@@WORKINGFOLDER@@@";
     public static final String HIDE_UI_HINT = "hide";
     public static final String FILEIN_UI_HINT = "infile";
     public static final String FOLDERIN_UI_HINT = "infolder";
