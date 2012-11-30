@@ -20,6 +20,8 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets.Markoutlets;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -33,24 +35,41 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestMarkoutlets extends HMTestCase {
 
-    public void testTca() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+    public static void main( String[] args ) throws Exception {
 
-        double[][] flowData = HMTestMaps.flowData;
-        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        String base = "D:/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/tm35fin/lidar/cell/";
+        String in = base + "flow";
+        String out = base + "mflow";
 
         Markoutlets moutlet = new Markoutlets();
 
-        moutlet.inFlow = flowCoverage;
-        moutlet.pm = pm;
+        moutlet.inFlow = RasterReader.readRaster(in);
 
         moutlet.process();
 
         GridCoverage2D markoutletCoverage = moutlet.outFlow;
-
-        checkMatrixEqual(markoutletCoverage.getRenderedImage(), HMTestMaps.mflowData);
+        RasterWriter.writeRaster(out, markoutletCoverage);
 
     }
+    // public void testTca() throws Exception {
+    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+    // CoordinateReferenceSystem crs = HMTestMaps.crs;
+    //
+    // double[][] flowData = HMTestMaps.flowData;
+    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
+    // envelopeParams, crs, true);
+    //
+    // Markoutlets moutlet = new Markoutlets();
+    //
+    // moutlet.inFlow = flowCoverage;
+    // moutlet.pm = pm;
+    //
+    // moutlet.process();
+    //
+    // GridCoverage2D markoutletCoverage = moutlet.outFlow;
+    //
+    // checkMatrixEqual(markoutletCoverage.getRenderedImage(), HMTestMaps.mflowData);
+    //
+    // }
 
 }

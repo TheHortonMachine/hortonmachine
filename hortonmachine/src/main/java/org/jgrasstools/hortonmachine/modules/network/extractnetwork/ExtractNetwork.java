@@ -105,6 +105,8 @@ public class ExtractNetwork extends JGTModel {
     @Out
     public SimpleFeatureCollection outVNet = null;
 
+    private double NETVALUE = 2.0;
+
     /*
      * INTERNAL VARIABLES
      */
@@ -165,40 +167,27 @@ public class ExtractNetwork extends JGTModel {
      */
     private WritableRaster extractNetMode0( RenderedImage flowRI, RenderedImage tcaRI ) {
         // create new RasterData for the network matrix
-        RandomIter flowRandomIter = RandomIterFactory.create(flowRI, null);
-        RandomIter tcaRandomIter = RandomIterFactory.create(tcaRI, null);
-        WritableRaster netImage = CoverageUtilities
-                .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
-
-        WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
-
-        int flw[] = new int[2];
+        RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
+        WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);
 
         pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int j = 0; j < rows; j++ ) {
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return null;
             }
-            for( int i = 0; i < cols; i++ ) {
-
-                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                if (!isNovalue(tcaValue) && !isNovalue(flowRandomIter.getSampleDouble(i, j, 0))) {
+            for( int c = 0; c < cols; c++ ) {
+                double tcaValue = tcaIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(tcaValue)) {
                     if (tcaValue >= pThres) {
-                        netRandomIter.setSample(i, j, 0, 2);
-                        flw[0] = i;
-                        flw[1] = j;
-                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
-                    } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
-                        netRandomIter.setSample(i, j, 0, 2);
+                        netIter.setSample(c, r, 0, NETVALUE);
                     }
-                } else {
-                    netRandomIter.setSample(i, j, 0, doubleNovalue);
                 }
             }
             pm.worked(1);
         }
         pm.done();
-        return netImage;
+        return netWR;
     }
 
     /**

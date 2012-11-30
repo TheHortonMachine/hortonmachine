@@ -22,6 +22,9 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.jgrasstools.gears.libs.modules.Variables;
+import org.jgrasstools.gears.utils.PrintUtilities;
+import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -53,11 +56,13 @@ public class TestExtractNetwork extends HMTestCase {
         extractNetwork.pm = pm;
         extractNetwork.inFlow = flowCoverage;
         extractNetwork.inTca = tcaCoverage;
-        extractNetwork.pMode = 0;
+        extractNetwork.pMode = Variables.TCA;
         extractNetwork.pThres = 5;
         extractNetwork.process();
 
         GridCoverage2D networkCoverage = extractNetwork.outNet;
+        
+        PrintUtilities.printCoverageData(networkCoverage);
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet0Data, 0.01);
     }
 
@@ -81,7 +86,7 @@ public class TestExtractNetwork extends HMTestCase {
         extractNetwork.inFlow = flowCoverage;
         extractNetwork.inTca = tcaCoverage;
         extractNetwork.inSlope = slopeCoverage;
-        extractNetwork.pMode = 1;
+        extractNetwork.pMode = Variables.TCA_SLOPE;
         extractNetwork.pThres = 8;
         extractNetwork.doNetfc = true;
         extractNetwork.process();
