@@ -23,8 +23,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.Variables;
-import org.jgrasstools.gears.utils.PrintUtilities;
-import org.jgrasstools.gears.utils.StringUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -90,11 +88,7 @@ public class TestExtractNetwork extends HMTestCase {
         extractNetwork.process();
 
         GridCoverage2D networkCoverage = extractNetwork.outNet;
-        
 
-        PrintUtilities.printCoverageData(networkCoverage);
-        
-        
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
 
         SimpleFeatureCollection networkFC = extractNetwork.outVNet;

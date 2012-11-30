@@ -54,7 +54,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extracts the network from an elevation model.")
@@ -66,19 +65,20 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class ExtractNetwork extends JGTModel {
-    @Description("The map of flowdirections.")
-    @In
-    public GridCoverage2D inFlow = null;
 
     @Description("The map of total contributing areas.")
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The map of slope.")
+    @Description("The optional map of flowdirections (needed for case with slope or topographic classes).")
+    @In
+    public GridCoverage2D inFlow = null;
+
+    @Description("The optional map of slope.")
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map of aggregated topographic classes.")
+    @Description("The optional map of aggregated topographic classes.")
     @In
     public GridCoverage2D inTc3 = null;
 
@@ -91,7 +91,7 @@ public class ExtractNetwork extends JGTModel {
     @In
     public String pMode = TCA;
 
-    @Description("Tca exponent for the mode 1 and 2 (default = 0.5).")
+    @Description("Tca exponent for the mode with slope or topographic classes (default = 0.5).")
     @In
     public double pExp = 0.5;
 
@@ -208,8 +208,6 @@ public class ExtractNetwork extends JGTModel {
                 JGTConstants.doubleNovalue);
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(networkWR, null);
 
-        int flw[] = new int[2];
-
         pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
         for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
@@ -271,46 +269,46 @@ public class ExtractNetwork extends JGTModel {
 
         WritableRandomIter netRandomIter = RandomIterFactory.createWritable(netImage, null);
 
-        int flw[] = new int[2];
-
         pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int j = 0; j < rows; j++ ) {
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return null;
             }
-            for( int i = 0; i < cols; i++ ) {
-                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                double slopeValue = slopeRandomIter.getSampleDouble(i, j, 0);
+            for( int c = 0; c < cols; c++ ) {
+                double tcaValue = tcaRandomIter.getSampleDouble(c, r, 0);
+                double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp) * slopeValue;
-                    if (tcaValue >= pThres && classRandomIter.getSample(i, j, 0) == 15.0) {
-                        netRandomIter.setSample(i, j, 0, NETVALUE);
-                        flw[0] = i;
-                        flw[1] = j;
-
-                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
+                    if (tcaValue >= pThres && classRandomIter.getSample(c, r, 0) == 15.0) {
+                        netRandomIter.setSample(c, r, 0, NETVALUE);
+                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                        FlowNode runningNode = flowNode;
+                        while( (runningNode = runningNode.goDownstream()) != null ) {
+                            int rCol = runningNode.col;
+                            int rRow = runningNode.row;
+                            double tmpNetValue = netRandomIter.getSampleDouble(rCol, rRow, 0);
+                            if (!isNovalue(tmpNetValue)) {
+                                break;
+                            }
+                            if (runningNode.isOutlet()) {
+                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                break;
+                            } else if (runningNode.touchesBound()) {
+                                FlowNode goDownstream = runningNode.goDownstream();
+                                if (goDownstream == null || !goDownstream.isValid()) {
+                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                    break;
+                                }
+                            }
+                            netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                        }
                     }
-                } else {
-                    netRandomIter.setSample(i, j, 0, doubleNovalue);
                 }
             }
             pm.worked(1);
         }
         pm.done();
         return netImage;
-    }
-
-    private boolean walkAlongTheChannel( int[] flw, RandomIter flowRandomIter, WritableRandomIter netRandomIter ) {
-        if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-            return false;
-        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != NETVALUE
-                && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
-                && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
-            netRandomIter.setSample(flw[0], flw[1], 0, NETVALUE);
-            if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
-                return false;
-        }
-        return true;
     }
 
 }
