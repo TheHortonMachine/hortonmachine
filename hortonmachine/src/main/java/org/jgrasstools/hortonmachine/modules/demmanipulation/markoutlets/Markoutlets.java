@@ -18,7 +18,6 @@
 package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets;
 
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
@@ -39,6 +38,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -67,9 +67,9 @@ public class Markoutlets extends JGTModel {
             return;
         }
         checkNull(inFlow);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
 
         WritableRaster mflowWR = CoverageUtilities.renderedImage2WritableRaster(inFlow.getRenderedImage(), false);
         WritableRandomIter mflowIter = RandomIterFactory.createWritable(mflowWR, null);
