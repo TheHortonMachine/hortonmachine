@@ -39,6 +39,24 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestExtractNetwork extends HMTestCase {
+
+    // public static void main( String[] args ) throws Exception {
+    //
+    // String base = "";
+    // String inFlow = base + "flow";
+    // String inNet = base + "net_200";
+    // String out = "";
+    //
+    // ExtractVectorNetwork extract = new ExtractVectorNetwork();
+    // extract.inFlow = RasterReader.readRaster(inFlow);
+    // extract.inNet = RasterReader.readRaster(inNet);
+    // extract.process();
+    //
+    // SimpleFeatureCollection net = extract.outNet;
+    // VectorWriter.writeVector(out, net);
+    //
+    // }
+
     /**
      * Test module with mode=0.
      */
@@ -90,24 +108,9 @@ public class TestExtractNetwork extends HMTestCase {
         GridCoverage2D networkCoverage = extractNetwork.outNet;
 
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
-
-        // SimpleFeatureCollection networkFC = extractNetwork.outVNet;
-        //
-        // FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
-        // while( featureIterator.hasNext() ) {
-        // SimpleFeature feature = featureIterator.next();
-        // Geometry geometry = (Geometry) feature.getDefaultGeometry();
-        // Coordinate[] coordinates = geometry.getCoordinates();
-        // System.out.println("Coords of feature: " + feature.getID());
-        // for( Coordinate coordinate : coordinates ) {
-        // System.out.println(coordinate);
-        // }
-        // }
-        // featureIterator.close();
     }
 
     public void testExtractVectorNetwork() throws Exception {
-
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
@@ -127,10 +130,12 @@ public class TestExtractNetwork extends HMTestCase {
         while( featureIterator.hasNext() ) {
             SimpleFeature feature = featureIterator.next();
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            Coordinate[] coordinates = geometry.getCoordinates();
-            System.out.println("Coords of feature: " + feature.getID());
-            for( Coordinate coordinate : coordinates ) {
-                System.out.println(coordinate);
+            if (geometry.getCoordinates().length > 2) {
+                assertTrue(geometry
+                        .toText()
+                        .equals("LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)"));
+            } else {
+                assertTrue(geometry.toText().startsWith("LINESTRING (1640845 5139885, 1640875 "));
             }
         }
         featureIterator.close();

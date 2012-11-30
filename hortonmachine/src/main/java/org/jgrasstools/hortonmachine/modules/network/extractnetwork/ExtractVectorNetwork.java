@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
 @Description("Extracts the vector network based on a raster network.")
-@Author(name = "Andrea Antonello, Franceschi Silvia", contact = "http://www.hydrologis.com")
+@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
 @Label(JGTConstants.NETWORK)
 @Name("extractvectornet")
@@ -128,9 +128,12 @@ public class ExtractVectorNetwork extends JGTModel {
         /*
          * now start from every exit and run up the flowdirections
          */
+        pm.beginTask("Extract vectors...", exitsList.size());
         for( FlowNode exitNode : exitsList ) {
             handleTrail(exitNode, null);
+            pm.worked(1);
         }
+        pm.done();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("net");
@@ -218,6 +221,9 @@ public class ExtractVectorNetwork extends JGTModel {
     }
 
     private void createLine( List<Coordinate> lineCoordinatesList ) {
+        if (lineCoordinatesList.size() < 2) {
+            return;
+        }
         LineString newNetLine = gf.createLineString(lineCoordinatesList.toArray(new Coordinate[0]));
         synchronized (networkList) {
             networkList.add(newNetLine);
