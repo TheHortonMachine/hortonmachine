@@ -20,11 +20,13 @@ package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.Variables.TCA;
+import static org.jgrasstools.gears.libs.modules.Variables.TCA_CONVERGENT;
+import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
@@ -42,12 +44,14 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -80,9 +84,10 @@ public class ExtractNetwork extends JGTModel {
     @In
     public double pThres = 0;
 
-    @Description("The processing mode (0 = threshold on tca, 1 = threshold on tca and slope, 2 = threshold on tca in convergent sites).")
+    @Description("The thresholding mode (default is on tca).")
+    @UI("combo:" + TCA + "," + TCA_SLOPE + "," + TCA_CONVERGENT)
     @In
-    public int pMode = 0;
+    public String pMode = TCA;
 
     @Description("Tca exponent for the mode 1 and 2 (default = 0.5).")
     @In
@@ -110,28 +115,29 @@ public class ExtractNetwork extends JGTModel {
 
     @Execute
     public void process() throws Exception {
+        checkNull(inFlow, inTca);
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        cols = regionMap.getCols();
+        rows = regionMap.getRows();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         RenderedImage tcaRI = inTca.getRenderedImage();
 
         WritableRaster networkWR = null;
-        if (pMode == 0) {
+        if (pMode.equals(TCA)) {
             checkNull(flowRI, tcaRI);
             networkWR = extractNetMode0(flowRI, tcaRI);
-        } else if (pMode == 1) {
+        } else if (pMode.equals(TCA_SLOPE)) {
+            checkNull(inSlope);
             RenderedImage slopeRI = inSlope.getRenderedImage();
-            checkNull(flowRI, tcaRI, slopeRI);
             networkWR = extractNetMode1(flowRI, tcaRI, slopeRI);
-        } else if (pMode == 2) {
+        } else if (pMode.equals(TCA_CONVERGENT)) {
+            checkNull(inSlope, inTc3);
             RenderedImage classRI = inTc3.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
-            checkNull(flowRI, tcaRI, slopeRI, classRI);
             networkWR = extractNetMode2(flowRI, tcaRI, classRI, slopeRI);
         }
         if (isCanceled(pm)) {
