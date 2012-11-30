@@ -73,10 +73,6 @@ public class LeastCostFlowDirections extends JGTModel {
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("Flag to consider or ignore boundary pixels.")
-    @In
-    public boolean doExcludeBorder = false;
-
     @Description("Flag to toggle tca calculation.")
     @In
     public boolean doTca = true;
@@ -118,6 +114,8 @@ public class LeastCostFlowDirections extends JGTModel {
     private int cols;
 
     private int rows;
+
+    public boolean doExcludeBorder = true;
 
     @Execute
     public void process() throws Exception {
