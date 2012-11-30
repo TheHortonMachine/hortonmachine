@@ -179,7 +179,7 @@ public class ExtractNetwork extends JGTModel {
             for( int c = 0; c < cols; c++ ) {
                 double tcaValue = tcaIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue)) {
-                    if (tcaValue >= pThres) {
+                    if (tcaValue >= pThres) { // FIXME needs power here?
                         netIter.setSample(c, r, 0, NETVALUE);
                     }
                 }
@@ -219,12 +219,12 @@ public class ExtractNetwork extends JGTModel {
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp);
                     if (tcaValue * slopeValue >= pThres) {
-                        netRandomIter.setSample(i, j, 0, 2);
+                        netRandomIter.setSample(i, j, 0, NETVALUE);
                         flw[0] = i;
                         flw[1] = j;
                         walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
-                        netRandomIter.setSample(i, j, 0, 2);
+                        netRandomIter.setSample(i, j, 0, NETVALUE);
                     }
                 } else {
                     netRandomIter.setSample(i, j, 0, doubleNovalue);
@@ -265,13 +265,13 @@ public class ExtractNetwork extends JGTModel {
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp) * slopeValue;
                     if (tcaValue >= pThres && classRandomIter.getSample(i, j, 0) == 15.0) {
-                        netRandomIter.setSample(i, j, 0, 2);
+                        netRandomIter.setSample(i, j, 0, NETVALUE);
                         flw[0] = i;
                         flw[1] = j;
 
                         walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
                     } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
-                        netRandomIter.setSample(i, j, 0, 2);
+                        netRandomIter.setSample(i, j, 0, NETVALUE);
                     }
                 } else {
                     netRandomIter.setSample(i, j, 0, doubleNovalue);
@@ -286,9 +286,9 @@ public class ExtractNetwork extends JGTModel {
     private boolean walkAlongTheChannel( int[] flw, RandomIter flowRandomIter, WritableRandomIter netRandomIter ) {
         if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
             return false;
-        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != 2 && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
+        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != NETVALUE && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
                 && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
-            netRandomIter.setSample(flw[0], flw[1], 0, 2);
+            netRandomIter.setSample(flw[0], flw[1], 0, NETVALUE);
             if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
                 return false;
         }
