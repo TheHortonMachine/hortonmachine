@@ -26,8 +26,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -47,16 +45,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Extracts the network from an elevation model.")
+@Description("Extracts the raster network from an elevation model.")
 @Documentation("ExtractNetwork.html")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
@@ -95,17 +91,9 @@ public class ExtractNetwork extends JGTModel {
     @In
     public double pExp = 0.5;
 
-    @Description("Switch to create a vector of the network (default = false).")
-    @In
-    public boolean doNetfc = false;
-
     @Description("The extracted network raster.")
     @Out
     public GridCoverage2D outNet = null;
-
-    @Description("The vector of the network.")
-    @Out
-    public SimpleFeatureCollection outVNet = null;
 
     private double NETVALUE = 2.0;
 
@@ -149,19 +137,6 @@ public class ExtractNetwork extends JGTModel {
         }
         outNet = CoverageUtilities.buildCoverage("network", networkWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
-        if (doNetfc) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            List<Integer> nstream = new ArrayList<Integer>();
-            RandomIter flowIter = RandomIterFactory.create(flowRI, null);
-            RandomIter networkIter = RandomIterFactory.create(networkWR, null);
-
-            WritableRaster netNumWR = ModelsEngine.netNumbering(nstream, flowIter, networkIter, cols, rows, pm);
-            CoverageUtilities.setNovalueBorder(netNumWR);
-            // calculates the shape...
-            outVNet = ModelsEngine.net2ShapeOnly(flowRI, netNumWR, inFlow.getGridGeometry(), nstream, pm);
-        }
     }
     /**
      * this method calculates the network using a threshold value on the

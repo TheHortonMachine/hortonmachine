@@ -25,6 +25,7 @@ import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
+import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractVectorNetwork;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -45,7 +46,7 @@ public class TestExtractNetwork extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
-        double[][] flowData = HMTestMaps.mflowDataBorder;
+        double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
@@ -70,7 +71,7 @@ public class TestExtractNetwork extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
-        double[][] flowData = HMTestMaps.mflowDataBorder;
+        double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
@@ -84,14 +85,43 @@ public class TestExtractNetwork extends HMTestCase {
         extractNetwork.inSlope = slopeCoverage;
         extractNetwork.pMode = Variables.TCA_SLOPE;
         extractNetwork.pThres = 8;
-        extractNetwork.doNetfc = true;
         extractNetwork.process();
 
         GridCoverage2D networkCoverage = extractNetwork.outNet;
 
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
 
-        SimpleFeatureCollection networkFC = extractNetwork.outVNet;
+        // SimpleFeatureCollection networkFC = extractNetwork.outVNet;
+        //
+        // FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
+        // while( featureIterator.hasNext() ) {
+        // SimpleFeature feature = featureIterator.next();
+        // Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        // Coordinate[] coordinates = geometry.getCoordinates();
+        // System.out.println("Coords of feature: " + feature.getID());
+        // for( Coordinate coordinate : coordinates ) {
+        // System.out.println(coordinate);
+        // }
+        // }
+        // featureIterator.close();
+    }
+
+    public void testExtractVectorNetwork() throws Exception {
+
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+
+        double[][] flowData = HMTestMaps.flowData;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] netData = HMTestMaps.extractNet0Data;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
+
+        ExtractVectorNetwork extractNetwork = new ExtractVectorNetwork();
+        extractNetwork.pm = pm;
+        extractNetwork.inFlow = flowCoverage;
+        extractNetwork.inNet = netCoverage;
+        extractNetwork.process();
+        SimpleFeatureCollection networkFC = extractNetwork.outNet;
 
         FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
         while( featureIterator.hasNext() ) {

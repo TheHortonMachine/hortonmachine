@@ -56,6 +56,8 @@ public class FlowNode {
     private double sFlow;
     private double seFlow;
 
+    private List<FlowNode> enteringNodes;
+
     /**
      * The constructor.
      * 
@@ -234,79 +236,81 @@ public class FlowNode {
      * @return the nodes that flow into this node.
      */
     public List<FlowNode> getEnteringNodes() {
-        List<FlowNode> nodes = new ArrayList<FlowNode>();
-        Direction[] orderedDirs = Direction.getOrderedDirs();
-        for( Direction direction : orderedDirs ) {
-            switch( direction ) {
-            case E:
-                if ((int) eFlow == Direction.E.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
+        if (enteringNodes == null) {
+            enteringNodes = new ArrayList<FlowNode>();
+            Direction[] orderedDirs = Direction.getOrderedDirs();
+            for( Direction direction : orderedDirs ) {
+                switch( direction ) {
+                case E:
+                    if ((int) eFlow == Direction.E.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case N:
+                    if ((int) nFlow == Direction.N.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case W:
+                    if ((int) wFlow == Direction.W.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case S:
+                    if ((int) sFlow == Direction.S.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case EN:
+                    if ((int) enFlow == Direction.EN.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case NW:
+                    if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case WS:
+                    if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                case SE:
+                    if ((int) seFlow == Direction.SE.getEnteringFlow()) {
+                        int newCol = col + direction.col;
+                        int newRow = row + direction.row;
+                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        enteringNodes.add(node);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException();
                 }
-                break;
-            case N:
-                if ((int) nFlow == Direction.N.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case W:
-                if ((int) wFlow == Direction.W.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case S:
-                if ((int) sFlow == Direction.S.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case EN:
-                if ((int) enFlow == Direction.EN.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case NW:
-                if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case WS:
-                if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            case SE:
-                if ((int) seFlow == Direction.SE.getEnteringFlow()) {
-                    int newCol = col + direction.col;
-                    int newRow = row + direction.row;
-                    FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
-                    nodes.add(node);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException();
             }
         }
-        return nodes;
+        return enteringNodes;
     }
 
     private boolean isInRaster( int col, int row ) {
