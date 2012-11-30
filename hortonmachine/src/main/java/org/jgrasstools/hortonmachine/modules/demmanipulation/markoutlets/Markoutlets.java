@@ -17,17 +17,11 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
-import static org.jgrasstools.gears.libs.modules.ModelsEngine.isSourcePixel;
-
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -42,6 +36,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -49,7 +44,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.")
 @Documentation("Markoutlets.html")
-@Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Antonello Andrea, Franceschi Silvia", contact = "http://www.hydrologis.com")
 @Keywords("Outlets, Dem, Raster, FlowDirections, DrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("markoutlets")
@@ -76,51 +71,23 @@ public class Markoutlets extends JGTModel {
         int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
         int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
 
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        CoverageUtilities.setNovalueBorder(flowWR);
-        RandomIter flowIter = RandomIterFactory.create(flowRI, null);
+        WritableRaster mflowWR = CoverageUtilities.renderedImage2WritableRaster(inFlow.getRenderedImage(), false);
+        WritableRandomIter mflowIter = RandomIterFactory.createWritable(mflowWR, null);
 
-        WritableRaster mflowWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        pm.beginTask(msg.message("markoutlets.working"), nRows); //$NON-NLS-1$
 
-        pm.beginTask(msg.message("markoutlets.working"), 2 * nRows); //$NON-NLS-1$
-
-        int[] punto = new int[2];
-        int[] oldpunto = new int[2];
-        for( int i = 0; i < nRows; i++ ) {
-            for( int j = 0; j < nCols; j++ ) {
-                double value = flowIter.getSampleDouble(j, i, 0);
-                if (!isNovalue(value)) {
-                    mflowWR.setSample(j, i, 0, value);
-                } else {
-                    mflowWR.setSample(j, i, 0, doubleNovalue);
-                }
-            }
-            pm.worked(1);
-        }
-
-        for( int i = 0; i < nRows; i++ ) {
-            for( int j = 0; j < nCols; j++ ) {
-                punto[0] = j;
-                punto[1] = i;
-
-                double flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
-
-                if (isSourcePixel(flowIter, punto[0], punto[1])) {
-                    oldpunto[0] = punto[0];
-                    oldpunto[1] = punto[1];
-
-                    while( flowSample < 9.0 && (!isNovalue(flowSample)) ) {
-                        oldpunto[0] = punto[0];
-                        oldpunto[1] = punto[1];
-                        if (!go_downstream(punto, flowSample)) {
-                            return;
-                        }
-                        flowSample = flowIter.getSampleDouble(punto[0], punto[1], 0);
-
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                FlowNode flowNode = new FlowNode(mflowIter, nCols, nRows, c, r);
+                if (flowNode.isValid() && flowNode.touchesBound()) {
+                    // check if the flow exits
+                    FlowNode goDownstream = flowNode.goDownstream();
+                    if (goDownstream == null) {
+                        // exit
+                        int outCol = flowNode.col;
+                        int outRow = flowNode.row;
+                        mflowWR.setSample(outCol, outRow, 0, 10);
                     }
-                    if (flowSample != 10.0)
-                        mflowWR.setSample(oldpunto[0], oldpunto[1], 0, 10.0);
                 }
             }
             pm.worked(1);
