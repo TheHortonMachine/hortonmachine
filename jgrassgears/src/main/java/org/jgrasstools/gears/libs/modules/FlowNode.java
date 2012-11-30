@@ -31,6 +31,10 @@ import javax.media.jai.iterator.WritableRandomIter;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class FlowNode {
+    /**
+     * The outlet value of flow.
+     */
+    public static final double OUTLET = 10.0;
 
     public final int row;
     public final int col;
@@ -80,7 +84,7 @@ public class FlowNode {
             }
         }
 
-        if ((int) flow == 10) {
+        if ((int) flow == (int) OUTLET) {
             isOutlet = true;
         }
 
@@ -164,7 +168,7 @@ public class FlowNode {
     }
 
     /**
-     * @return <code>true</code> if this node can't flow anywhere following the steepest path downstream. 
+     * @return <code>true</code> if this node has a {@value #OUTLET} value. 
      */
     public boolean isOutlet() {
         return isOutlet;

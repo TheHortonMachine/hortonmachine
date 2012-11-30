@@ -457,7 +457,7 @@ public class HMTestMaps {
             {N, 2, N, N, N, N, N, 2, N, N}, //
             {N, N, 2, 2, 2, 2, 2, 2, N, N}, //
             {N, N, N, N, N, N, N, N, N, N}, //
-            {N, 2, N, N, N, N, N, N, N, N}, // FIXME why is in this line a 2??? tca is 1 here!
+            {N, N, N, N, N, N, N, N, N, N}, // 
             {N, N, N, N, N, N, N, N, N, N}};
 
     /**
@@ -470,7 +470,7 @@ public class HMTestMaps {
             {N, 2, 2, 2, 2, 2, N, 2, 2, N}, //
             {N, N, 2, 2, 2, 2, 2, 2, 2, N}, //
             {N, N, 2, 2, 2, N, N, 2, 2, N}, //
-            {N, 2, N, N, N, N, N, N, N, N}, //
+            {N, N, N, N, N, N, N, N, N, N}, //
             {N, N, N, N, N, N, N, N, N, N} //
     };
 

@@ -48,11 +48,13 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extracts the network from an elevation model.")
@@ -131,7 +133,7 @@ public class ExtractNetwork extends JGTModel {
         WritableRaster networkWR = null;
         if (pMode.equals(TCA)) {
             checkNull(flowRI, tcaRI);
-            networkWR = extractNetMode0(flowRI, tcaRI);
+            networkWR = extractNetTcaThreshold(flowRI, tcaRI);
         } else if (pMode.equals(TCA_SLOPE)) {
             checkNull(inSlope);
             RenderedImage slopeRI = inSlope.getRenderedImage();
@@ -165,7 +167,7 @@ public class ExtractNetwork extends JGTModel {
      * this method calculates the network using a threshold value on the
      * contributing areas or on magnitudo
      */
-    private WritableRaster extractNetMode0( RenderedImage flowRI, RenderedImage tcaRI ) {
+    private WritableRaster extractNetTcaThreshold( RenderedImage flowRI, RenderedImage tcaRI ) {
         // create new RasterData for the network matrix
         RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
         WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
@@ -209,25 +211,42 @@ public class ExtractNetwork extends JGTModel {
         int flw[] = new int[2];
 
         pm.beginTask(msg.message("extractnetwork.extracting"), rows); //$NON-NLS-1$
-        for( int j = 0; j < rows; j++ ) {
+        for( int r = 0; r < rows; r++ ) {
             if (isCanceled(pm)) {
                 return null;
             }
-            for( int i = 0; i < cols; i++ ) {
-                double tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                double slopeValue = slopeRandomIter.getSampleDouble(i, j, 0);
+            for( int c = 0; c < cols; c++ ) {
+                double tcaValue = tcaRandomIter.getSampleDouble(c, r, 0);
+                double slopeValue = slopeRandomIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(tcaValue) && !isNovalue(slopeValue)) {
                     tcaValue = pow(tcaValue, pExp);
+
                     if (tcaValue * slopeValue >= pThres) {
-                        netRandomIter.setSample(i, j, 0, NETVALUE);
-                        flw[0] = i;
-                        flw[1] = j;
-                        walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
-                    } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
-                        netRandomIter.setSample(i, j, 0, NETVALUE);
+                        netRandomIter.setSample(c, r, 0, NETVALUE);
+                        FlowNode flowNode = new FlowNode(flowRandomIter, cols, rows, c, r);
+                        FlowNode runningNode = flowNode;
+                        while( (runningNode = runningNode.goDownstream()) != null ) {
+                            int rCol = runningNode.col;
+                            int rRow = runningNode.row;
+                            double tmpNetValue = netRandomIter.getSampleDouble(rCol, rRow, 0);
+                            if (!isNovalue(tmpNetValue)) {
+                                break;
+                            }
+                            if (runningNode.isOutlet()) {
+                                netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                break;
+                            } else if (runningNode.touchesBound()) {
+                                FlowNode goDownstream = runningNode.goDownstream();
+                                if (goDownstream == null || !goDownstream.isValid()) {
+                                    netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                                    break;
+                                }
+                            }
+                            netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
+                        }
                     }
                 } else {
-                    netRandomIter.setSample(i, j, 0, doubleNovalue);
+                    netRandomIter.setSample(c, r, 0, doubleNovalue);
                 }
             }
             pm.worked(1);
@@ -270,8 +289,6 @@ public class ExtractNetwork extends JGTModel {
                         flw[1] = j;
 
                         walkAlongTheChannel(flw, flowRandomIter, netRandomIter);
-                    } else if (flowRandomIter.getSampleDouble(i, j, 0) == 10) {
-                        netRandomIter.setSample(i, j, 0, NETVALUE);
                     }
                 } else {
                     netRandomIter.setSample(i, j, 0, doubleNovalue);
@@ -286,7 +303,8 @@ public class ExtractNetwork extends JGTModel {
     private boolean walkAlongTheChannel( int[] flw, RandomIter flowRandomIter, WritableRandomIter netRandomIter ) {
         if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
             return false;
-        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != NETVALUE && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
+        while( netRandomIter.getSampleDouble(flw[0], flw[1], 0) != NETVALUE
+                && flowRandomIter.getSampleDouble(flw[0], flw[1], 0) < 9
                 && !isNovalue(flowRandomIter.getSampleDouble(flw[0], flw[1], 0)) ) {
             netRandomIter.setSample(flw[0], flw[1], 0, NETVALUE);
             if (!ModelsEngine.go_downstream(flw, flowRandomIter.getSampleDouble(flw[0], flw[1], 0)))
