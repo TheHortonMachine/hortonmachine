@@ -45,6 +45,7 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -175,7 +176,8 @@ public class HackStream extends JGTModel {
         int contr = 0;
         int count = 0, kk = 0;
 
-        int[] flow = new int[2], param = new int[2];
+        // int[] flow = new int[2];
+        int[] param = new int[2];
         int[] flow_p = new int[2];
         int[] punto = new int[2];
 
@@ -190,33 +192,45 @@ public class HackStream extends JGTModel {
             // with value equal to
             // 10 (fork) and delete the point already calculated.
             pm.beginTask(msg.message("workingiter") + iterations++, nRows);
+            FlowNode selectedNode = null;
             for( int r = 0; r < nRows; r++ ) {
                 for( int c = 0; c < nCols; c++ ) {
                     contr = 0;
-                    if (segnaIter.getSampleDouble(c, r, 0) == 10) {
-                        flow[0] = c;
-                        flow[1] = r;
+                    if (segnaIter.getSampleDouble(c, r, 0) == FlowNode.OUTLET) {
+                        FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
+
+                        // flow[0] = c;
+                        // flow[1] = r;
                         contr = 1;
                         // it s really an output point (the segna matrix can be
                         // modified into the
                         // loop).
-                        if (flowIter.getSampleDouble(c, r, 0) == 10) {
-                            // the output value is setted as 1 in the hack
-                            // matrix.
+                        // if (flowIter.getSampleDouble(c, r, 0) == 10) {
+                        if (flowNode.isMarkedAsOutlet()) {
+                            // the output value is set as 1 in the hack matrix.
                             hackstreamIter.setSample(c, r, 0, 1);
-                        } else if (flowIter.getSampleDouble(c, r, 0) != 10 || !isNovalue(flowIter.getSampleDouble(c, r, 0))) {
-                            // after the call to go_downstream the flow is the
-                            // next pixel in the channel.
-                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
+                            // } else if (flowIter.getSampleDouble(c, r, 0) != 10 ||
+                            // !isNovalue(flowIter.getSampleDouble(c, r, 0))) {
+                        } else if (!flowNode.isMarkedAsOutlet() || flowNode.isValid()) {
+                            // if (!ModelsEngine.go_downstream(flow,
+                            // flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            // throw new
+                            // ModelsRuntimeException("An error occurred in go_downstream.", this);
+                            FlowNode downstreamNode = flowNode.goDownstream();
                             // this if is true if there is a fork (segna==10 but
                             // m!=10) so add one to the hack number.
-                            if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                hackstreamIter.setSample(c, r, 0, hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
+                            if (downstreamNode != null && downstreamNode.isValid()) {
+                                hackstreamIter.setSample(c, r, 0,
+                                        hackstreamIter.getSampleDouble(downstreamNode.col, downstreamNode.row, 0) + 1);
+                            }
+                            // if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
+                            // hackstreamIter.setSample(c, r, 0,
+                            // hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
                         }
                         // memorize where the cycle was
-                        punto[0] = c;
-                        punto[1] = r;
+                        // punto[0] = c;
+                        // punto[1] = r;
+                        selectedNode = flowNode;
                         break;
                     }
                 }
@@ -225,8 +239,8 @@ public class HackStream extends JGTModel {
                     break;
             }
             pm.done();
-            flow[0] = punto[0];
-            flow[1] = punto[1];
+            // flow[0] = punto[0];
+            // flow[1] = punto[1];
             if (contr == 1) {
                 flow_p[0] = flow[0];
                 flow_p[1] = flow[1];

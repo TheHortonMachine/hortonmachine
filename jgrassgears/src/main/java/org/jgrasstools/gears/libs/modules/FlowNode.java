@@ -383,6 +383,8 @@ public class FlowNode {
      * @return the upstream node.
      */
     public FlowNode getUpstreamTcaBased( RandomIter tcaIter ) {
+        // TODO what to do if more tca are the same? use hacklength?
+        
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxTca = Double.NEGATIVE_INFINITY;
         int maxCol = 0;
