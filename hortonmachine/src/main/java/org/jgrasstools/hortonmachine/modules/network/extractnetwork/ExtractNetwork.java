@@ -204,7 +204,7 @@ public class ExtractNetwork extends JGTModel {
                             if (!isNovalue(tmpNetValue)) {
                                 break;
                             }
-                            if (runningNode.isOutlet()) {
+                            if (runningNode.isMarkedAsOutlet()) {
                                 netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                 break;
                             } else if (runningNode.touchesBound()) {
@@ -264,7 +264,7 @@ public class ExtractNetwork extends JGTModel {
                             if (!isNovalue(tmpNetValue)) {
                                 break;
                             }
-                            if (runningNode.isOutlet()) {
+                            if (runningNode.isMarkedAsOutlet()) {
                                 netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                 break;
                             } else if (runningNode.touchesBound()) {

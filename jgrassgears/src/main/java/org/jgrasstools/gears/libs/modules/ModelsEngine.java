@@ -1155,7 +1155,8 @@ public class ModelsEngine {
     /**
      * Marks a map on the hillslope with the values on the channel of an attribute map.
      * 
-     * @param flowIter map of flow direction.
+     * @param flowIter map of flow direction with the network cells 
+     *                  all marked as {@link FlowNode#NETVALUE}. This is very important!
      * @param attributeIter map of attributes.
      * @param markedIter the map to be marked.
      * @param cols region cols.
@@ -1167,8 +1168,17 @@ public class ModelsEngine {
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                if (flowNode.isHeadingOutside()) {
+                    // ignore single cells on borders that exit anyway
+                    continue;
+                }
+
+                if (flowNode.isMarkedAsOutlet()) {
+                    double attributeValue = flowNode.getValueFromMap(attributeIter);
+                    flowNode.setValueInMap(markedIter, attributeValue);
+                    continue;
+                }
                 if (flowNode.isValid() && flowNode.isSource()) {
                     /*
                      * run down to the net to find the
@@ -1177,7 +1187,7 @@ public class ModelsEngine {
                     double attributeValue = doubleNovalue;
                     FlowNode runningNode = flowNode.goDownstream();
                     while( runningNode != null && runningNode.isValid() ) {
-                        if (runningNode.isOutlet()) {
+                        if (runningNode.isMarkedAsOutlet()) {
                             attributeValue = runningNode.getValueFromMap(attributeIter);
                             break;
                         }
@@ -1185,12 +1195,12 @@ public class ModelsEngine {
                     }
                     if (!isNovalue(attributeValue)) {
                         // run down marking the hills
-                        runningNode = flowNode.goDownstream();
+                        runningNode = flowNode;
                         while( runningNode != null && runningNode.isValid() ) {
-                            if (runningNode.isOutlet()) {
+                            runningNode.setValueInMap(markedIter, attributeValue);
+                            if (runningNode.isMarkedAsOutlet()) {
                                 break;
                             }
-                            runningNode.setValueInMap(markedIter, attributeValue);
                             runningNode = runningNode.goDownstream();
                         }
                     } else {

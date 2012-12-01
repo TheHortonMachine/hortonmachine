@@ -31,11 +31,8 @@ public class TestH2cA extends HMTestCase {
         h2cA.inNet = netGC;
         h2cA.inAttribute = gradientGC;
         h2cA.process();
-        GridCoverage2D outH2cA =h2cA.outAttribute;
-        
-        PrintUtilities.printCoverageData(outH2cA);
+        GridCoverage2D outH2cA = h2cA.outAttribute;
 
-        
-         checkMatrixEqual(outH2cA.getRenderedImage(), HMTestMaps.h2caForGradient, 0.05);
+        checkMatrixEqual(outH2cA.getRenderedImage(), HMTestMaps.h2caForGradient, 0.05);
     }
 }

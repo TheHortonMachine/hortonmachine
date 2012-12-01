@@ -48,8 +48,11 @@ public class FlowNode {
     private RandomIter flowIter;
     private int cols;
     private int rows;
-    private boolean isOutlet = false;
+
     private final boolean isValid;
+    private boolean isMarkedAsOutlet = false;
+    private boolean isHeadingOutside = false;
+    private boolean wasHeadingOutsideChecked = false;
     private boolean touchesBound = false;
 
     private double eFlow;
@@ -92,7 +95,7 @@ public class FlowNode {
         }
 
         if ((int) flow == (int) OUTLET) {
-            isOutlet = true;
+            isMarkedAsOutlet = true;
         }
 
         int index = -1;
@@ -175,10 +178,30 @@ public class FlowNode {
     }
 
     /**
-     * @return <code>true</code> if this node has a {@value #OUTLET} value. 
+     * @return <code>true</code> if this node has a {@value #OUTLET} value in the flow map. 
      */
-    public boolean isOutlet() {
-        return isOutlet;
+    public boolean isMarkedAsOutlet() {
+        return isMarkedAsOutlet;
+    }
+
+    /**
+     * @return <code>true</code> if this node is a pixel that will flow outside of the valid flow map. 
+     */
+    public boolean isHeadingOutside() {
+        if (!wasHeadingOutsideChecked) {
+            if (touchesBound) {
+                FlowNode goDownstream = goDownstream();
+                if (goDownstream == null || !goDownstream.isValid()) {
+                    isHeadingOutside = true;
+                } else {
+                    isHeadingOutside = false;
+                }
+            } else {
+                isHeadingOutside = false;
+            }
+            wasHeadingOutsideChecked = true;
+        }
+        return isHeadingOutside;
     }
 
     public boolean isSource() {

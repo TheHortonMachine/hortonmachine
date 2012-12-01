@@ -110,7 +110,7 @@ public class ExtractVectorNetwork extends JGTModel {
                     continue;
                 }
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
-                if (flowNode.isOutlet()) {
+                if (flowNode.isMarkedAsOutlet()) {
                     exitsList.add(flowNode);
                 } else if (flowNode.touchesBound() && flowNode.isValid()) {
                     // check if the flow exits
