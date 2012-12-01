@@ -19,11 +19,12 @@ package org.jgrasstools.hortonmachine.modules.network.hackstream;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.Variables.DEFAULT;
+import static org.jgrasstools.gears.libs.modules.Variables.FIXED_NETWORK;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -40,6 +41,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
@@ -47,12 +49,13 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("HackStream arranges a channel net starting from the identification of the branch according to Hack.")
 @Documentation("HackStream.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Network, Hack")
 @Label(JGTConstants.NETWORK)
 @Name("hackstream")
@@ -80,9 +83,10 @@ public class HackStream extends JGTModel {
     @In
     public GridCoverage2D inNetnum = null;
 
-    @Description("The processing mode (0=default, 1=with fixed network).")
+    @Description("The processing mode.")
+    @UI("combo:" + DEFAULT + "," + FIXED_NETWORK)
     @In
-    public double pMode = 0;
+    public String pMode = DEFAULT;
 
     @Description("The map of hackstream.")
     @Out
@@ -95,7 +99,7 @@ public class HackStream extends JGTModel {
 
     private int nRows;
 
-    private HashMap<String, Double> regionMap;
+    private RegionMap regionMap;
 
     @Execute
     public void process() {
@@ -105,8 +109,8 @@ public class HackStream extends JGTModel {
 
         checkNull(inFlow);
         regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        nCols = regionMap.getCols();
+        nRows = regionMap.getRows();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
@@ -117,8 +121,9 @@ public class HackStream extends JGTModel {
         WritableRandomIter segnaIter = RandomIterFactory.createWritable(segnaWR, null);
 
         int count = 0;
-        if (pMode == 0) {
+        if (pMode.equals(DEFAULT)) {
             checkNull(inTca, inNet, inHacklength);
+
             RenderedImage tcaRI = inTca.getRenderedImage();
             RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
 
@@ -128,21 +133,22 @@ public class HackStream extends JGTModel {
             RenderedImage hacklengthRI = inHacklength.getRenderedImage();
             RandomIter hacklengthIter = RandomIterFactory.create(hacklengthRI, null);
 
-            for( int j = 0; j < nRows; j++ ) {
-                for( int i = 0; i < nCols; i++ ) {
-                    if (isNovalue(netIter.getSampleDouble(i, j, 0)))
-                        flowIter.setSample(i, j, 0, doubleNovalue);
-                    if (flowIter.getSampleDouble(i, j, 0) == 10)
+            for( int r = 0; r < nRows; r++ ) {
+                for( int c = 0; c < nCols; c++ ) {
+                    if (isNovalue(netIter.getSampleDouble(c, r, 0)))
+                        flowIter.setSample(c, r, 0, doubleNovalue);
+                    if (flowIter.getSampleDouble(c, r, 0) == 10)
                         count++;
                 }
             }
             if (count == 0) {
-                throw new ModelsRuntimeException("Please run the h.markoutlets command before.", this);
+                throw new ModelsRuntimeException(
+                        "No outlet found in the map of flowdirections. At least one outlet needs to be available.", this);
             }
 
             hackstream(flowIter, tcaIter, hacklengthIter, segnaIter);
 
-        } else if (pMode == 1) {
+        } else {
             checkNull(inNetnum);
             RenderedImage netnumRI = inNetnum.getRenderedImage();
             RandomIter netnumIter = RandomIterFactory.create(netnumRI, null);

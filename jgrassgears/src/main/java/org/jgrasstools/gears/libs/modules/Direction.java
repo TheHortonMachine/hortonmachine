@@ -63,6 +63,7 @@ public enum Direction {
     S(0, 1, 7, 3), //
     SE(1, 1, 8, 4);
 
+    private static final Direction[] orderedDirs = new Direction[]{E, EN, N, NW, W, WS, S, SE};
     public int col;
     public int row;
     private int exiting;
@@ -116,7 +117,7 @@ public enum Direction {
      * @return the array of directions, starting from the most eastern, going counterclockwise.
      */
     public static Direction[] getOrderedDirs() {
-        return new Direction[]{E, EN, N, NW, W, WS, S, SE};
+        return orderedDirs;
     }
 
     /**

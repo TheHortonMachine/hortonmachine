@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.hackstream.HackStream;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -59,6 +60,8 @@ public class TestHackStream extends HMTestCase {
         hackStream.process();
 
         GridCoverage2D hackStreamCoverage = hackStream.outHackstream;
+        PrintUtilities.printCoverageData(hackStreamCoverage);
+
         checkMatrixEqual(hackStreamCoverage.getRenderedImage(), HMTestMaps.hackstream, 0.01);
     }
 

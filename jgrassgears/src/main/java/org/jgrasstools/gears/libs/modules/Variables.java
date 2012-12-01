@@ -23,6 +23,7 @@ package org.jgrasstools.gears.libs.modules;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public interface Variables {
+    public String DEFAULT = "default";
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
     public String TPS = "TPS";
@@ -40,5 +41,7 @@ public interface Variables {
     public String TCA = "tca";
     public String TCA_SLOPE = "tca and slope";
     public String TCA_CONVERGENT = "tca in convergent sites";
+
+    public String FIXED_NETWORK = "with fixed network";
 
 }

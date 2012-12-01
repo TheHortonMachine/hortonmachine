@@ -51,8 +51,8 @@ public class TestWateroutlet extends HMTestCase {
 
         GridCoverage2D basinCoverage = wateroutlet.outBasin;
 
-        System.out.println(wateroutlet.outArea);
-        PrintUtilities.printCoverageData(basinCoverage);
+        // System.out.println(wateroutlet.outArea);
+        // PrintUtilities.printCoverageData(basinCoverage);
 
         checkMatrixEqual(basinCoverage.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
     }
@@ -74,8 +74,8 @@ public class TestWateroutlet extends HMTestCase {
 
         GridCoverage2D basinCoverage = extractBasin.outBasin;
 
-        System.out.println(extractBasin.outArea);
-        PrintUtilities.printCoverageData(basinCoverage);
+        // System.out.println(extractBasin.outArea);
+        // PrintUtilities.printCoverageData(basinCoverage);
 
         checkMatrixEqual(basinCoverage.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
     }

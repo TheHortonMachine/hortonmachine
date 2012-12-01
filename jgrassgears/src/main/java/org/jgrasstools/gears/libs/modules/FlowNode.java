@@ -376,6 +376,85 @@ public class FlowNode {
         return enteringNodes;
     }
 
+    /**
+     * Get the upstream node based on the max tca value. 
+     * 
+     * @param tcaIter the tca map.
+     * @return the upstream node.
+     */
+    public FlowNode getUpstreamTcaBased( RandomIter tcaIter ) {
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        double maxTca = Double.NEGATIVE_INFINITY;
+        int maxCol = 0;
+        int maxRow = 0;
+        for( Direction direction : orderedDirs ) {
+            int newCol = 0;
+            int newRow = 0;
+            switch( direction ) {
+            case E:
+                if ((int) eFlow == Direction.E.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case N:
+                if ((int) nFlow == Direction.N.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case W:
+                if ((int) wFlow == Direction.W.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case S:
+                if ((int) sFlow == Direction.S.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case EN:
+                if ((int) enFlow == Direction.EN.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case NW:
+                if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case WS:
+                if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            case SE:
+                if ((int) seFlow == Direction.SE.getEnteringFlow()) {
+                    newCol = col + direction.col;
+                    newRow = row + direction.row;
+                }
+                break;
+            default:
+                throw new IllegalArgumentException();
+            }
+            if (isInRaster(newCol, newRow)) {
+                double tcaValue = tcaIter.getSampleDouble(newCol, newRow, 0);
+                if (tcaValue > maxTca) {
+                    maxTca = tcaValue;
+                    maxCol = newCol;
+                    maxRow = newRow;
+                }
+            }
+        }
+        FlowNode node = new FlowNode(flowIter, cols, rows, maxCol, maxRow);
+        return node;
+    }
+
     private boolean isInRaster( int col, int row ) {
         if (col < 0 || col >= cols || row < 0 || row >= rows) {
             return false;

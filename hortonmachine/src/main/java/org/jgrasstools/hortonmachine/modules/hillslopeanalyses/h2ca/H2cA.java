@@ -18,11 +18,9 @@
 package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2ca;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -47,11 +45,10 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Select a hillslope or some of its property from the DEM")
 @Documentation("H2cA.html")
-@Author(name = "Andreis Daniele,  Erica Ghesla, Antonello Andrea, CozziniAndrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
+@Author(name = "Antonello Andrea, Franceschi Silvia, Andreis Daniele,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Geomorphology, DrainDir")
 @Label(JGTConstants.HILLSLOPE)
 @Name("H2cA")
@@ -73,8 +70,6 @@ public class H2cA extends JGTModel {
     @Description("The output map of the attribute.")
     @Out
     public GridCoverage2D outAttribute = null;
-
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
     public void process() {
