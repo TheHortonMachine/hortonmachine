@@ -41,9 +41,11 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -59,11 +61,11 @@ public class H2cA extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
-    
+
     @Description("The map with the net.")
     @In
     public GridCoverage2D inNet = null;
-    
+
     @Description("The map of the attribute to estimate.")
     @In
     public GridCoverage2D inAttribute = null;
@@ -71,7 +73,7 @@ public class H2cA extends JGTModel {
     @Description("The output map of the attribute.")
     @Out
     public GridCoverage2D outAttribute = null;
-    
+
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
@@ -80,54 +82,43 @@ public class H2cA extends JGTModel {
             return;
         }
         checkNull(inFlow, inNet, inAttribute);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        WritableRaster attributeWR = h2ca();
-        outAttribute = CoverageUtilities.buildCoverage("h2ca", attributeWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
-    }
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
 
-    /**
-     * Calculates the h2ca in every pixel of the map
-     * 
-     * @return
-     */
-    private WritableRaster h2ca() {
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        // get rows and cols from the active region
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
         RandomIter attributeIter = CoverageUtilities.getRandomIterator(inAttribute);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
-        pm.beginTask(msg.message("h2ca.workingon"), -1); //$NON-NLS-1$
 
-        // setting novalue border...
-        // FluidUtils.setNovalueBorder(netData);
-
+        pm.beginTask("Marking the network...", rows); //$NON-NLS-1$
+        /*
+         * mark network as outlet, in order to easier stop on the net 
+         * while going downstream
+         */
         for( int j = 0; j < rows; j++ ) {
             for( int i = 0; i < cols; i++ ) {
-                if (netIter.getSampleDouble(i, j, 0) == 2)
-                    flowIter.setSample(i, j, 0, 10);
+                if (netIter.getSampleDouble(i, j, 0) == FlowNode.NETVALUE)
+                    flowIter.setSample(i, j, 0, FlowNode.OUTLET);
             }
-        }
-        netIter.done();
-        // create new matrix
-        WritableRaster h2caWR = ModelsEngine.go2channel(flowIter, attributeIter, cols, rows, pm);
-        WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
-
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                if (isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                    h2caIter.setSample(i, j, 0, doubleNovalue);
-                }
-            }
+            pm.worked(1);
         }
         pm.done();
+        netIter.done();
+
+        WritableRaster h2caWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
+
+        ModelsEngine.markHillSlopeWithLinkValue(flowIter, attributeIter, h2caIter, cols, rows, pm);
+
         h2caIter.done();
         attributeIter.done();
         flowIter.done();
-        return h2caWR;
+
+        outAttribute = CoverageUtilities.buildCoverage("h2ca", h2caWR, regionMap, inFlow.getCoordinateReferenceSystem());
+
     }
+
 }

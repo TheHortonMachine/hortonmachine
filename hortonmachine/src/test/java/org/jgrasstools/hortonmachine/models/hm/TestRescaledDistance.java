@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -52,6 +53,7 @@ public class TestRescaledDistance extends HMTestCase {
         rescaledDistance.process();
 
         GridCoverage2D rescaledDistanceCoverage = rescaledDistance.outRescaled;
+
         checkMatrixEqual(rescaledDistanceCoverage.getRenderedImage(), HMTestMaps.rescaledDistanceData, 0.1);
     }
 

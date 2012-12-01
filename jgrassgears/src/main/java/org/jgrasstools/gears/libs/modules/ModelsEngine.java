@@ -833,8 +833,8 @@ public class ModelsEngine {
      * @throws InvalidGridGeometryException 
      */
     public static WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,String reteId,
-            IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
+            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
+            String reteId, IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
         WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
@@ -854,7 +854,7 @@ public class ModelsEngine {
                         pointV.getCoordinates()[0].y));
                 nodoId = (Number) attributePoints.get(numGeometry).get(reteId);
                 if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field "+reteId+" not found", "");
+                    throw new ModelsIllegalargumentException("Field " + reteId + " not found", "");
                 }
                 if (nodoId.intValue() != -1
                         && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
@@ -1128,97 +1128,80 @@ public class ModelsEngine {
             }
         }
 
-        WritableRaster subbImage = go2channel(flowIter, netNumberIter, cols, rows, pm);
+        WritableRaster subbasinWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinWR, null);
 
-        WritableRandomIter subbRandomIter = RandomIterFactory.createWritable(subbImage, null);
+        markHillSlopeWithLinkValue(flowIter, netNumberIter, subbasinIter, cols, rows, pm);
 
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
                 double netValue = netRandomIter.getSampleDouble(c, r, 0);
                 double netNumberValue = netNumberIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(netValue)) {
-                    subbRandomIter.setSample(c, r, 0, netNumberValue);
+                    subbasinIter.setSample(c, r, 0, netNumberValue);
                 }
                 if (NumericsUtilities.dEq(netNumberValue, 0)) {
                     netNumberIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
                 }
-                double subbValue = subbRandomIter.getSampleDouble(c, r, 0);
+                double subbValue = subbasinIter.getSampleDouble(c, r, 0);
                 if (NumericsUtilities.dEq(subbValue, 0))
-                    subbRandomIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
+                    subbasinIter.setSample(c, r, 0, JGTConstants.doubleNovalue);
             }
         }
 
-        return subbImage;
+        return subbasinWR;
     }
 
     /**
-     * Moves from every source pixel to the outlet.
+     * Marks a map on the hillslope with the values on the channel of an attribute map.
      * 
      * @param flowIter map of flow direction.
      * @param attributeIter map of attributes.
-     * @param cols
-     * @param rows
-     * @param pm
-     * @return the calculated distance map.
+     * @param markedIter the map to be marked.
+     * @param cols region cols.
+     * @param rows region rows.
+     * @param pm monitor.
      */
-    public static WritableRaster go2channel( RandomIter flowIter, RandomIter attributeIter, int cols, int rows,
-            IJGTProgressMonitor pm ) {
-        int[] flowColRow = new int[2];
-        double value = 0.0;
+    public static void markHillSlopeWithLinkValue( RandomIter flowIter, RandomIter attributeIter, WritableRandomIter markedIter,
+            int cols, int rows, IJGTProgressMonitor pm ) {
+        pm.beginTask("Marking the hillslopes with the channel value...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
 
-        WritableRaster dist = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter distIter = RandomIterFactory.createWritable(dist, null);
-
-        pm.beginTask("Calculating the distance along the flowstream...", rows - 2);
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
-                flowColRow[0] = c;
-                flowColRow[1] = r;
-
-                // Rectangle aroundSample = new Rectangle(i - 1, j - 1, 3, 3);
-                // Raster aroundRaster = flowImage.getData(aroundSample);
-
-                if (!isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
-                        && isSourcePixel(flowIter, flowColRow[0], flowColRow[1])) {
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                if (flowNode.isValid() && flowNode.isSource()) {
                     /*
-                     * if in a source pixel, go downstream until you get  
-                     * to a novalue or an exit.
+                     * run down to the net to find the
+                     * attribute map content on the net 
                      */
-                    while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
-                            && flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) != 10.0 ) {
-                        if (!go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
-                            return null;
+                    double attributeValue = doubleNovalue;
+                    FlowNode runningNode = flowNode.goDownstream();
+                    while( runningNode != null && runningNode.isValid() ) {
+                        if (runningNode.isOutlet()) {
+                            attributeValue = runningNode.getValueFromMap(attributeIter);
+                            break;
+                        }
+                        runningNode = runningNode.goDownstream();
                     }
-
-                    /*
-                     * get the value that the basin should have
-                     */
-                    if (isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))) {
-                        throw new ModelsIllegalargumentException("No proper outlets were found in the flow file", "ModelsEngine");
-                    } else if (flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) == 10) {
-                        value = attributeIter.getSampleDouble(flowColRow[0], flowColRow[1], 0);
+                    if (!isNovalue(attributeValue)) {
+                        // run down marking the hills
+                        runningNode = flowNode.goDownstream();
+                        while( runningNode != null && runningNode.isValid() ) {
+                            if (runningNode.isOutlet()) {
+                                break;
+                            }
+                            runningNode.setValueInMap(markedIter, attributeValue);
+                            runningNode = runningNode.goDownstream();
+                        }
                     } else {
-                        throw new ModelsIllegalargumentException("Undefined situation while go2channel", "ModelsEngine");
-                    }
-
-                    /*
-                     * and start over again, setting the whole downstream to that value == basin number
-                     */
-                    flowColRow[0] = c;
-                    flowColRow[1] = r;
-                    distIter.setSample(c, r, 0, value);
-                    while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
-                            && flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) != 10.0 ) {
-                        distIter.setSample(flowColRow[0], flowColRow[1], 0, value);
-                        if (!go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
-                            return null;
+                        throw new ModelsIllegalargumentException("Could not find a value of the attributes map in the channel.",
+                                "MODELSENGINE");
                     }
                 }
             }
             pm.worked(1);
         }
         pm.done();
-        return dist;
     }
 
     /**

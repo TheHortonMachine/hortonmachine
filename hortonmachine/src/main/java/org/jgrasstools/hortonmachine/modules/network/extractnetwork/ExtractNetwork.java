@@ -18,6 +18,7 @@
 package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
 
 import static java.lang.Math.pow;
+import static org.jgrasstools.gears.libs.modules.FlowNode.NETVALUE;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA;
@@ -94,8 +95,6 @@ public class ExtractNetwork extends JGTModel {
     @Description("The extracted network raster.")
     @Out
     public GridCoverage2D outNet = null;
-
-    private double NETVALUE = 2.0;
 
     /*
      * INTERNAL VARIABLES

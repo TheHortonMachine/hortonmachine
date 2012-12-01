@@ -29,6 +29,7 @@ import javax.media.jai.iterator.WritableRandomIter;
  * A node in the grid environment of a digital elevation model. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
+ * @since 0.7.6
  */
 public class FlowNode {
     /**
