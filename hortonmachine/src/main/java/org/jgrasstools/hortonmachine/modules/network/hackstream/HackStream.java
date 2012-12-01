@@ -55,7 +55,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("HackStream arranges a channel net starting from the identification of the branch according to Hack.")
 @Documentation("HackStream.html")
-@Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
+@Author(name = "Daniele Andreis, Antonello Andrea, Franceschi Silvia, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Network, Hack")
 @Label(JGTConstants.NETWORK)
 @Name("hackstream")
@@ -161,7 +161,7 @@ public class HackStream extends JGTModel {
 
     /**
      * gives the channel numeration of the hydrographic network according to
-     * Hack’s numeration.
+     * the Hack numeration.
      * 
      * @param m
      *            is the flow data
@@ -190,21 +190,21 @@ public class HackStream extends JGTModel {
             // with value equal to
             // 10 (fork) and delete the point already calculated.
             pm.beginTask(msg.message("workingiter") + iterations++, nRows);
-            for( int j = 0; j < nRows; j++ ) {
-                for( int i = 0; i < nCols; i++ ) {
+            for( int r = 0; r < nRows; r++ ) {
+                for( int c = 0; c < nCols; c++ ) {
                     contr = 0;
-                    if (segnaIter.getSampleDouble(i, j, 0) == 10) {
-                        flow[0] = i;
-                        flow[1] = j;
+                    if (segnaIter.getSampleDouble(c, r, 0) == 10) {
+                        flow[0] = c;
+                        flow[1] = r;
                         contr = 1;
                         // it s really an output point (the segna matrix can be
                         // modified into the
                         // loop).
-                        if (flowIter.getSampleDouble(i, j, 0) == 10) {
+                        if (flowIter.getSampleDouble(c, r, 0) == 10) {
                             // the output value is setted as 1 in the hack
                             // matrix.
-                            hackstreamIter.setSample(i, j, 0, 1);
-                        } else if (flowIter.getSampleDouble(i, j, 0) != 10 || !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
+                            hackstreamIter.setSample(c, r, 0, 1);
+                        } else if (flowIter.getSampleDouble(c, r, 0) != 10 || !isNovalue(flowIter.getSampleDouble(c, r, 0))) {
                             // after the call to go_downstream the flow is the
                             // next pixel in the channel.
                             if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -212,11 +212,11 @@ public class HackStream extends JGTModel {
                             // this if is true if there is a fork (segna==10 but
                             // m!=10) so add one to the hack number.
                             if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                hackstreamIter.setSample(i, j, 0, hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
+                                hackstreamIter.setSample(c, r, 0, hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
                         }
                         // memorize where the cycle was
-                        punto[0] = i;
-                        punto[1] = j;
+                        punto[0] = c;
+                        punto[1] = r;
                         break;
                     }
                 }
