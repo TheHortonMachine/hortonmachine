@@ -35,6 +35,10 @@ public class FlowNode {
      * The outlet value of flow.
      */
     public static final double OUTLET = 10.0;
+    /**
+     * The defaut value used for marking a network. 
+     */
+    public static double NETVALUE = 2.0;
 
     public final int row;
     public final int col;
@@ -176,6 +180,11 @@ public class FlowNode {
         return isOutlet;
     }
 
+    public boolean isSource() {
+        List<FlowNode> enteringNodes = getEnteringNodes();
+        return enteringNodes.size() == 0;
+    }
+
     /**
      * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
      */
@@ -228,6 +237,22 @@ public class FlowNode {
             }
         }
         return null;
+    }
+
+    /**
+     * Get the value of another map in the current node position.
+     * 
+     * @param map the map from which to get the value. 
+     * @return the double value or a novalue.
+     */
+    public double getValueFromMap( RandomIter map ) {
+        try {
+            double value = map.getSampleDouble(col, row, 0);
+            return value;
+        } catch (Exception e) {
+            // ignore and return novalue
+            return JGTConstants.doubleNovalue;
+        }
     }
 
     /**
