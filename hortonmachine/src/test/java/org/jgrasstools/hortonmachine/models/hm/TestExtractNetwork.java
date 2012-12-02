@@ -17,8 +17,10 @@
  */
 package org.jgrasstools.hortonmachine.models.hm;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkAttributesBuilder;
@@ -36,6 +38,7 @@ public class TestExtractNetwork extends HMTestCase {
         String inFlow = base + "flow";
         String inTca = base + "tca";
         String inNet = base + "net_200";
+        String outHack = base + "hack";
         String out = "D:/TMP/net.shp";
 
         NetworkAttributesBuilder extract = new NetworkAttributesBuilder();
@@ -46,6 +49,8 @@ public class TestExtractNetwork extends HMTestCase {
 
         SimpleFeatureCollection net = extract.outNet;
         VectorWriter.writeVector(out, net);
+        GridCoverage2D hack = extract.outHack;
+        RasterWriter.writeRaster(outHack, hack);
 
     }
 

@@ -284,10 +284,13 @@ public class FlowNode {
     /**
      * Utility method to set the value of a certain map in the current node position.
      * 
-     * @param map teh map to set the value in.
+     * @param map the map to set the value in. if <code>null</code>, it is ignored.
      * @param value the value to set.
      */
     public void setValueInMap( WritableRandomIter map, double value ) {
+        if (map == null) {
+            return;
+        }
         try {
             map.setSample(col, row, 0, value);
         } catch (Exception e) {

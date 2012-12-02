@@ -19,10 +19,12 @@ package org.jgrasstools.hortonmachine.modules.network.networkattributes;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -75,9 +77,17 @@ public class NetworkAttributesBuilder extends JGTModel {
     @In
     public GridCoverage2D inTca = null;
 
+    @Description("Flag to also create the hack map.")
+    @In
+    public boolean doHack = true;
+
     @Description("The vector of the network.")
     @Out
     public SimpleFeatureCollection outNet = null;
+
+    @Description("The map of hack numbering.")
+    @Out
+    public GridCoverage2D outHack = null;
 
     private int cols;
     private int rows;
@@ -93,6 +103,9 @@ public class NetworkAttributesBuilder extends JGTModel {
     private SimpleFeatureBuilder networkBuilder;
 
     private RandomIter tcaIter;
+    private int maxHack = 0;
+
+    private WritableRandomIter hackWIter;
 
     @Execute
     public void process() throws Exception {
@@ -110,6 +123,12 @@ public class NetworkAttributesBuilder extends JGTModel {
             tcaIter = CoverageUtilities.getRandomIterator(inTca);
         }
         netIter = CoverageUtilities.getRandomIterator(inNet);
+
+        WritableRaster hackWR = null;
+        if (doHack) {
+            hackWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+            hackWIter = CoverageUtilities.getWritableRandomIterator(hackWR);
+        }
 
         pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
         List<FlowNode> exitsList = new ArrayList<FlowNode>();
@@ -151,19 +170,29 @@ public class NetworkAttributesBuilder extends JGTModel {
          */
         pm.beginTask("Extract vectors...", exitsList.size());
         for( FlowNode exitNode : exitsList ) {
-            handleTrail(exitNode, null, 0);
+            /*
+             * - first hack order is 1
+             * 
+             */
+            handleTrail(exitNode, null, 1);
             pm.worked(1);
         }
         pm.done();
 
         outNet = FeatureCollections.newCollection();
         outNet.addAll(networkList);
+
+        if (hackWIter != null) {
+            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        }
     }
 
     private void handleTrail( FlowNode runningNode, Coordinate startCoordinate, int index ) {
         List<Coordinate> lineCoordinatesList = new ArrayList<Coordinate>();
         if (startCoordinate != null) {
             lineCoordinatesList.add(startCoordinate);
+            // write hack if needed
+            runningNode.setValueInMap(hackWIter, index);
         }
         while( runningNode.getEnteringNodes().size() > 0 ) {
             int col = runningNode.col;
@@ -174,16 +203,11 @@ public class NetworkAttributesBuilder extends JGTModel {
             if (!isNovalue(netValue)) {
                 // if a net value is available, then it needs to be vector net
                 lineCoordinatesList.add(coord);
+                // write hack if needed
+                runningNode.setValueInMap(hackWIter, index);
             } else {
                 /*
-                 * if no net value is there, there are
-                 * two possibilities:
-                 * 
-                 * 1) there has never been any net
-                 * 2) the line is finished 
-                 * 
-                 * 1 can't happen, because we start from outlets
-                 * that were on net cells
+                 * the line is finished 
                  */
                 if (lineCoordinatesList.size() < 2) {
                     throw new RuntimeException();
@@ -242,6 +266,9 @@ public class NetworkAttributesBuilder extends JGTModel {
     private void createLine( List<Coordinate> lineCoordinatesList, int hack ) {
         if (lineCoordinatesList.size() < 2) {
             return;
+        }
+        if (hack > maxHack) {
+            maxHack = hack;
         }
         LineString newNetLine = gf.createLineString(lineCoordinatesList.toArray(new Coordinate[0]));
         Object[] values = new Object[]{newNetLine, hack, 0, "-"};
