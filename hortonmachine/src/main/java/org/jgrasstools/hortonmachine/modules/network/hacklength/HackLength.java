@@ -17,15 +17,12 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.hacklength;
 
-import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
@@ -49,9 +46,9 @@ import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Assigned a point in a basin calculates"
@@ -131,19 +128,11 @@ public class HackLength extends JGTModel {
 
     private void hacklength( RandomIter flowIter, RandomIter tcaIter, RandomIter elevIter ) {
 
-        int[] flow = new int[2];
-        int[] flow_p = new int[2];
-        double oldir;
-        double runningDistance = 0.0, maxTca;
+        double runningDistance = 0.0;
+        double maxTca = 0.0;
 
         WritableRaster hacklengthWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter hacklengthIter = RandomIterFactory.createWritable(hacklengthWR, null);
-
-        double[] grid = new double[11];
-        grid[0] = grid[9] = grid[10] = 0;
-        grid[1] = grid[5] = abs(xRes);
-        grid[3] = grid[7] = abs(yRes);
-        grid[2] = grid[4] = grid[6] = grid[8] = sqrt(xRes * xRes + yRes * yRes);
 
         pm.beginTask(msg.message("hacklength.calculating"), nRows); //$NON-NLS-1$
         for( int r = 0; r < nRows; r++ ) {
@@ -153,19 +142,14 @@ public class HackLength extends JGTModel {
                     runningDistance = 0;
                     flowNode.setValueInMap(hacklengthIter, runningDistance);
 
-                    FlowNode oldNode = flowNode;
-
                     maxTca = 1;
-                    // hacklengthIter.setSample(flow[0], flow[1], 0, count);
-                    // oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
 
+                    FlowNode oldNode = flowNode;
                     FlowNode runningNode = oldNode.goDownstream();
                     while( runningNode != null && runningNode.isValid() && !runningNode.isMarkedAsOutlet() ) {
-                        flow[0] = runningNode.col;
-                        flow[1] = runningNode.row;
-                        boolean isMax = ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maxTca, runningDistance);
-                        if (isMax) {
 
+                        boolean isMax = tcaMax(runningNode, tcaIter, hacklengthIter, maxTca, runningDistance);
+                        if (isMax) {
                             double distance = Direction.forFlow((int) oldNode.flow).getDistance(xRes, yRes);
                             if (elevIter != null) {
                                 double d1 = oldNode.getValueFromMap(elevIter);
@@ -176,24 +160,15 @@ public class HackLength extends JGTModel {
                                 runningDistance += distance;
                             }
                             runningNode.setValueInMap(hacklengthIter, runningDistance);
-                            // hacklengthIter.setSample(flow[0], flow[1], 0, count);
 
                             maxTca = runningNode.getValueFromMap(tcaIter);
-                            // maz = tcaIter.getSampleDouble(flow[0], flow[1], 0);
                         }
                         oldNode = runningNode;
                         runningNode = runningNode.goDownstream();
-                        // oldir = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        // flow_p[0] = flow[0];
-                        // flow_p[1] = flow[1];
-                        // if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0],
-                        // flow[1], 0)))
-                        // return;
                     }
 
                     if (runningNode != null && runningNode.isMarkedAsOutlet()) {
-                        // flowIter.getSampleDouble(flow[0], flow[1], 0) == 10) {
-                        if (ModelsEngine.tcaMax(flowIter, tcaIter, hacklengthIter, flow, maxTca, runningDistance)) {
+                        if (tcaMax(runningNode, tcaIter, hacklengthIter, maxTca, runningDistance)) {
                             double distance = Direction.forFlow((int) oldNode.flow).getDistance(xRes, yRes);
                             if (elevIter != null) {
                                 double d1 = oldNode.getValueFromMap(elevIter);
@@ -204,7 +179,6 @@ public class HackLength extends JGTModel {
                                 runningDistance += distance;
                             }
                             runningNode.setValueInMap(hacklengthIter, runningDistance);
-                            // hacklengthIter.setSample(flow[0], flow[1], 0, count);
                         }
                     }
 
@@ -217,5 +191,36 @@ public class HackLength extends JGTModel {
         hacklengthIter.done();
         outHacklength = CoverageUtilities.buildCoverage("Hacklength", hacklengthWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Compare two value of tca and distance.
+     * 
+     * <p>
+     * It's used to evaluate some special distance (as hacklength). 
+     * In these case, the value of the distance is a property of 
+     * the path, and so when two pixel drain in a same pixel the 
+     * actual value is calculate from the pixel that have the 
+     * maximum value. So this method evaluate if the distance is 
+     * already evaluate, throghout another path, and 
+     * if the value of the old path is greater than the next path.
+     * </p>
+     */
+    public static boolean tcaMax( FlowNode flowNode, RandomIter tcaIter, RandomIter hacklengthIter, double maxTca,
+            double maxDistance ) {
+
+        List<FlowNode> enteringNodes = flowNode.getEnteringNodes();
+        for( FlowNode node : enteringNodes ) {
+            double tca = node.getValueFromMap(tcaIter);
+            if (tca >= maxTca) {
+                if (NumericsUtilities.dEq(tca, maxTca)) {
+                    if (node.getValueFromMap(hacklengthIter) > maxDistance)
+                        return false;
+                } else
+                    return false;
+            }
+
+        }
+        return true;
     }
 }

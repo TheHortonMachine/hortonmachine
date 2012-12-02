@@ -397,16 +397,13 @@ public class FlowNode {
      *                  it is used in cases with multiple equal in coming tcas.
      * @return the upstream node.
      */
-    /**
-     * @param tcaIter
-     * @return
-     */
     public FlowNode getUpstreamTcaBased( RandomIter tcaIter, RandomIter hacklengthIter ) {
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxTca = Double.NEGATIVE_INFINITY;
         double maxHacklength = Double.NEGATIVE_INFINITY;
         int maxCol = 0;
         int maxRow = 0;
+        boolean gotOne = false;
         for( Direction direction : orderedDirs ) {
             int newCol = 0;
             int newRow = 0;
@@ -415,54 +412,66 @@ public class FlowNode {
                 if ((int) eFlow == Direction.E.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case N:
                 if ((int) nFlow == Direction.N.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case W:
                 if ((int) wFlow == Direction.W.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case S:
                 if ((int) sFlow == Direction.S.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case EN:
                 if ((int) enFlow == Direction.EN.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case NW:
                 if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case WS:
                 if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             case SE:
                 if ((int) seFlow == Direction.SE.getEnteringFlow()) {
                     newCol = col + direction.col;
                     newRow = row + direction.row;
+                    gotOne = true;
                 }
                 break;
             default:
                 throw new IllegalArgumentException();
             }
             if (isInRaster(newCol, newRow)) {
+                double flowValue = flowIter.getSampleDouble(newCol, newRow, 0);
+                if (JGTConstants.isNovalue(flowValue)) {
+                    continue;
+                }
                 double tcaValue = tcaIter.getSampleDouble(newCol, newRow, 0);
                 double hacklengthValue = 0.0;
                 if (hacklengthIter != null)
@@ -487,6 +496,9 @@ public class FlowNode {
                     maxHacklength = hacklengthValue;
                 }
             }
+        }
+        if (!gotOne) {
+            return null;
         }
         FlowNode node = new FlowNode(flowIter, cols, rows, maxCol, maxRow);
         return node;

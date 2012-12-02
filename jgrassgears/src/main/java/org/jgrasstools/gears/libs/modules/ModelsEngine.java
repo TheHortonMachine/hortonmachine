@@ -1450,45 +1450,6 @@ public class ModelsEngine {
     }
 
     /**
-     * Compare two value of tca and distance.
-     * 
-     * <p>
-     * It's used to evaluate some special distance (as hacklength). 
-     * In these case, the value of the distance is a property of 
-     * the path, and so when two pixel drain in a same pixel the 
-     * actual value is calculate from the pixel that have the 
-     * maximum value. So this method evaluate if the distance is 
-     * already evaluate, throghout another path, and 
-     * if the value of the old path is greater than the next path.
-     * </p>
-     * 
-     * @param flowIterator the flow direction iterator map. 
-     * @param tcaIterator the tca direction iterator map. 
-     * @param dist the dis direction iterator map (it can be hacklength). 
-     * @param colsAndRows the position in the map (x and y value)
-     * @param maz the upper limit value, is the value of the next path pixel.
-     * @param diss the distance upper limit, is the value of the next path pixel.
-     * @return true if the value in the next path is greater  than the old one.
-     */
-    public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] colsAndRows,
-            double maz, double diss ) {
-        for( int k = 1; k <= 8; k++ ) {
-            int x = colsAndRows[0] + dirIn[k][1];
-            int y = colsAndRows[1] + dirIn[k][0];
-            if (flowIterator.getSample(x, y, 0) == dirIn[k][2]) {
-                if (tcaIterator.getSample(x, y, 0) >= maz) {
-                    if (tcaIterator.getSample(x, y, 0) == maz) {
-                        if (dist.getSample(x, y, 0) > diss)
-                            return false;
-                    } else
-                        return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    /**
      * Calculating the inverse of the sun vector.
      * 
      * @param sunVector
