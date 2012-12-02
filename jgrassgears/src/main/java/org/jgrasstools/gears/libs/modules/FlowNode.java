@@ -170,7 +170,7 @@ public class FlowNode {
      * <p>A node is valid if</p>
      * <ul>
      *  <li>it is placed inside the raster bounds</li>
-     *  <li>its elevation value is not novalue</li>
+     *  <li>its value is not novalue</li>
      * </ul>
      * 
      * @return <code>true</code> if the node is valid.
@@ -206,7 +206,15 @@ public class FlowNode {
         return isHeadingOutside;
     }
 
+    /**
+     * Checks if it is a source node, i.e. no others entering.
+     * 
+     * @return true if it is valid and a source node.
+     */
     public boolean isSource() {
+        if (!isValid()) {
+            return false;
+        }
         List<FlowNode> enteringNodes = getEnteringNodes();
         return enteringNodes.size() == 0;
     }

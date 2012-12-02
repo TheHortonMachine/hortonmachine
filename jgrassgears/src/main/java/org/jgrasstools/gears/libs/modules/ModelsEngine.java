@@ -1453,10 +1453,15 @@ public class ModelsEngine {
      * Compare two value of tca and distance.
      * 
      * <p>
-     * It's used to evaluate some special distance (as hacklength). In these case, the value of the distance is a property of the path, and so when 
-     * two pixel drain in a same pixel the actual value is calculate from the pixel that have the maximum value. So this method evaluate if the distance is already evaluate, throghout another path, and 
+     * It's used to evaluate some special distance (as hacklength). 
+     * In these case, the value of the distance is a property of 
+     * the path, and so when two pixel drain in a same pixel the 
+     * actual value is calculate from the pixel that have the 
+     * maximum value. So this method evaluate if the distance is 
+     * already evaluate, throghout another path, and 
      * if the value of the old path is greater than the next path.
      * </p>
+     * 
      * @param flowIterator the flow direction iterator map. 
      * @param tcaIterator the tca direction iterator map. 
      * @param dist the dis direction iterator map (it can be hacklength). 
@@ -1468,10 +1473,12 @@ public class ModelsEngine {
     public static boolean tcaMax( RandomIter flowIterator, RandomIter tcaIterator, RandomIter dist, int[] colsAndRows,
             double maz, double diss ) {
         for( int k = 1; k <= 8; k++ ) {
-            if (flowIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                if (tcaIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) >= maz) {
-                    if (tcaIterator.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) == maz) {
-                        if (dist.getSample(colsAndRows[0] + dirIn[k][1], colsAndRows[1] + dirIn[k][0], 0) > diss)
+            int x = colsAndRows[0] + dirIn[k][1];
+            int y = colsAndRows[1] + dirIn[k][0];
+            if (flowIterator.getSample(x, y, 0) == dirIn[k][2]) {
+                if (tcaIterator.getSample(x, y, 0) >= maz) {
+                    if (tcaIterator.getSample(x, y, 0) == maz) {
+                        if (dist.getSample(x, y, 0) > diss)
                             return false;
                     } else
                         return false;
@@ -1480,6 +1487,7 @@ public class ModelsEngine {
         }
         return true;
     }
+    
     /**
      * Calculating the inverse of the sun vector.
      * 
