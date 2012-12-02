@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.modules.network.extractnetwork;
+package org.jgrasstools.hortonmachine.modules.network.networkattributes;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -54,14 +54,14 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Extracts the vector network based on a raster network.")
+@Description("Extracts network attributes and the vector network based on a raster network.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
 @Label(JGTConstants.NETWORK)
 @Name("extractvectornet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class ExtractVectorNetwork extends JGTModel {
+public class NetworkAttributesBuilder extends JGTModel {
 
     @Description("The network raster map.")
     @In
@@ -71,6 +71,10 @@ public class ExtractVectorNetwork extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
+    @Description("The map of tca.")
+    @In
+    public GridCoverage2D inTca = null;
+
     @Description("The vector of the network.")
     @Out
     public SimpleFeatureCollection outNet = null;
@@ -78,13 +82,17 @@ public class ExtractVectorNetwork extends JGTModel {
     private int cols;
     private int rows;
 
-    private List<LineString> networkList = new ArrayList<LineString>();
+    private List<SimpleFeature> networkList = new ArrayList<SimpleFeature>();
 
     private GridGeometry2D gridGeometry;
 
     private RandomIter netIter;
 
     private GeometryFactory gf = GeometryUtilities.gf();
+
+    private SimpleFeatureBuilder networkBuilder;
+
+    private RandomIter tcaIter;
 
     @Execute
     public void process() throws Exception {
@@ -98,6 +106,9 @@ public class ExtractVectorNetwork extends JGTModel {
         gridGeometry = inFlow.getGridGeometry();
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
+        if (inTca != null) {
+            tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        }
         netIter = CoverageUtilities.getRandomIterator(inNet);
 
         pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
@@ -125,35 +136,31 @@ public class ExtractVectorNetwork extends JGTModel {
         }
         pm.done();
 
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("net");
+        b.setCRS(inFlow.getCoordinateReferenceSystem());
+        b.add("the_geom", LineString.class);
+        b.add("hack", Integer.class);
+        b.add("strahler", Integer.class);
+        b.add("pfaf", String.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        networkBuilder = new SimpleFeatureBuilder(type);
+
         /*
          * now start from every exit and run up the flowdirections
          */
         pm.beginTask("Extract vectors...", exitsList.size());
         for( FlowNode exitNode : exitsList ) {
-            handleTrail(exitNode, null);
+            handleTrail(exitNode, null, 0);
             pm.worked(1);
         }
         pm.done();
 
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("net");
-        b.setCRS(inFlow.getCoordinateReferenceSystem());
-        b.add("the_geom", LineString.class);
-        b.add("id", Integer.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-
         outNet = FeatureCollections.newCollection();
-        int index = 0;
-        for( LineString line : networkList ) {
-            Object[] values = new Object[]{line, index++};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-            outNet.add(feature);
-        }
+        outNet.addAll(networkList);
     }
 
-    private void handleTrail( FlowNode runningNode, Coordinate startCoordinate ) {
+    private void handleTrail( FlowNode runningNode, Coordinate startCoordinate, int index ) {
         List<Coordinate> lineCoordinatesList = new ArrayList<Coordinate>();
         if (startCoordinate != null) {
             lineCoordinatesList.add(startCoordinate);
@@ -182,7 +189,7 @@ public class ExtractVectorNetwork extends JGTModel {
                     throw new RuntimeException();
                 }
                 // create a line and finish this trail
-                createLine(lineCoordinatesList);
+                createLine(lineCoordinatesList, index);
                 break;
             }
 
@@ -202,31 +209,46 @@ public class ExtractVectorNetwork extends JGTModel {
                 runningNode = checkedNodes.get(0);
             } else if (checkedNodes.size() == 0) {
                 // it was an exit
-                createLine(lineCoordinatesList);
+                createLine(lineCoordinatesList, index);
                 break;
             } else if (checkedNodes.size() > 1) {
 
-                createLine(lineCoordinatesList);
+                createLine(lineCoordinatesList, index);
 
-                // multiple nodes, we need to start new lines
-                for( FlowNode flowNode : checkedNodes ) {
-                    handleTrail(flowNode, coord);
+                if (tcaIter == null) {
+                    // we just extract the vector line
+                    for( FlowNode flowNode : checkedNodes ) {
+                        handleTrail(flowNode, coord, index + 1);
+                    }
+                } else {
+                    // we want also hack numbering and friends
+                    FlowNode mainUpstream = runningNode.getUpstreamTcaBased(tcaIter, null);
+                    // the main channel keeps the same index
+                    handleTrail(mainUpstream, coord, index);
+                    // the others jump up one
+                    for( FlowNode flowNode : checkedNodes ) {
+                        if (!flowNode.equals(mainUpstream)) {
+                            handleTrail(flowNode, coord, index + 1);
+                        }
+                    }
                 }
                 break;
             } else {
                 throw new RuntimeException();
             }
-
         }
     }
 
-    private void createLine( List<Coordinate> lineCoordinatesList ) {
+    private void createLine( List<Coordinate> lineCoordinatesList, int hack ) {
         if (lineCoordinatesList.size() < 2) {
             return;
         }
         LineString newNetLine = gf.createLineString(lineCoordinatesList.toArray(new Coordinate[0]));
+        Object[] values = new Object[]{newNetLine, hack, 0, "-"};
+        networkBuilder.addAll(values);
+        SimpleFeature netFeature = networkBuilder.buildFeature(null);
         synchronized (networkList) {
-            networkList.add(newNetLine);
+            networkList.add(netFeature);
         }
     }
 

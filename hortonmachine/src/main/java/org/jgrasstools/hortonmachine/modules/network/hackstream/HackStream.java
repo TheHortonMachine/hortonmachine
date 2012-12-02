@@ -1,464 +1,457 @@
-/*
- * This file is part of JGrasstools (http://www.jgrasstools.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
- * JGrasstools is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-package org.jgrasstools.hortonmachine.modules.network.hackstream;
-
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.gears.libs.modules.Variables.DEFAULT;
-import static org.jgrasstools.gears.libs.modules.Variables.FIXED_NETWORK;
-import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
-
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-
-@Description("HackStream arranges a channel net starting from the identification of the branch according to Hack.")
-@Documentation("HackStream.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Franceschi Silvia, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
-@Keywords("Network, Hack")
-@Label(JGTConstants.NETWORK)
-@Name("hackstream")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
-public class HackStream extends JGTModel {
-
-    @Description("The map of flowdirections.")
-    @In
-    public GridCoverage2D inFlow = null;
-
-    @Description("The map of tca.")
-    @In
-    public GridCoverage2D inTca = null;
-
-    @Description("The map of hack lengths.")
-    @In
-    public GridCoverage2D inHacklength = null;
-
-    @Description("The map of the network.")
-    @In
-    public GridCoverage2D inNet = null;
-
-    @Description("The map of the netnum (in mode 1).")
-    @In
-    public GridCoverage2D inNetnum = null;
-
-    @Description("The processing mode.")
-    @UI("combo:" + DEFAULT + "," + FIXED_NETWORK)
-    @In
-    public String pMode = DEFAULT;
-
-    @Description("The map of hackstream.")
-    @Out
-    public GridCoverage2D outHackstream = null;
-
-    private int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    private int nCols;
-
-    private int nRows;
-
-    private RegionMap regionMap;
-
-    @Execute
-    public void process() {
-        if (!concatOr(outHackstream == null, doReset)) {
-            return;
-        }
-
-        checkNull(inFlow);
-        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        nCols = regionMap.getCols();
-        nRows = regionMap.getRows();
-
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-
-        // create new matrix
-        WritableRaster segnaWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
-        WritableRandomIter segnaIter = RandomIterFactory.createWritable(segnaWR, null);
-
-        int count = 0;
-        if (pMode.equals(DEFAULT)) {
-            checkNull(inTca, inNet, inHacklength);
-
-            RenderedImage tcaRI = inTca.getRenderedImage();
-            RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-
-            RenderedImage netRI = inNet.getRenderedImage();
-            RandomIter netIter = RandomIterFactory.create(netRI, null);
-
-            RenderedImage hacklengthRI = inHacklength.getRenderedImage();
-            RandomIter hacklengthIter = RandomIterFactory.create(hacklengthRI, null);
-
-            for( int r = 0; r < nRows; r++ ) {
-                for( int c = 0; c < nCols; c++ ) {
-                    if (isNovalue(netIter.getSampleDouble(c, r, 0)))
-                        flowIter.setSample(c, r, 0, doubleNovalue);
-                    if (flowIter.getSampleDouble(c, r, 0) == 10)
-                        count++;
-                }
-            }
-            if (count == 0) {
-                throw new ModelsRuntimeException(
-                        "No outlet found in the map of flowdirections. At least one outlet needs to be available.", this);
-            }
-
-            hackstream(flowIter, tcaIter, hacklengthIter, segnaIter);
-
-        } else {
-            checkNull(inNetnum);
-            RenderedImage netnumRI = inNetnum.getRenderedImage();
-            RandomIter netnumIter = RandomIterFactory.create(netnumRI, null);
-
-            hackstreamNetFixed(flowIter, netnumIter, segnaIter);
-
-        }
-
-    }
-
-    /**
-     * gives the channel numeration of the hydrographic network according to
-     * the Hack numeration.
-     * 
-     * @param m
-     *            is the flow data
-     * @param tca
-     * @param hackl
-     * @param hacks
-     * @return
-     */
-    public void hackstream( WritableRandomIter flowIter, RandomIter tcaIter, RandomIter hacklengthIter,
-            WritableRandomIter segnaIter ) {
-        int contr = 0;
-        int count = 0, kk = 0;
-
-        // int[] flow = new int[2];
-        int[] param = new int[2];
-        int[] flow_p = new int[2];
-        int[] punto = new int[2];
-
-        WritableRaster hackstreamWR = createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRandomIter hackstreamIter = RandomIterFactory.createWritable(hackstreamWR, null);
-
-        int iterations = 1;
-        do {
-            // verify if there is an output point in the segna matrix, this
-            // matrix is a copy of the
-            // flow matrix, but in the while cycle modify it, and add the point
-            // with value equal to
-            // 10 (fork) and delete the point already calculated.
-            pm.beginTask(msg.message("workingiter") + iterations++, nRows);
-            FlowNode selectedNode = null;
-            for( int r = 0; r < nRows; r++ ) {
-                for( int c = 0; c < nCols; c++ ) {
-                    contr = 0;
-                    if (segnaIter.getSampleDouble(c, r, 0) == FlowNode.OUTLET) {
-                        FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
-
-                        // flow[0] = c;
-                        // flow[1] = r;
-                        contr = 1;
-                        // it s really an output point (the segna matrix can be
-                        // modified into the
-                        // loop).
-                        // if (flowIter.getSampleDouble(c, r, 0) == 10) {
-                        if (flowNode.isMarkedAsOutlet()) {
-                            // the output value is set as 1 in the hack matrix.
-                            hackstreamIter.setSample(c, r, 0, 1);
-                            // } else if (flowIter.getSampleDouble(c, r, 0) != 10 ||
-                            // !isNovalue(flowIter.getSampleDouble(c, r, 0))) {
-                        } else if (!flowNode.isMarkedAsOutlet() || flowNode.isValid()) {
-                            // if (!ModelsEngine.go_downstream(flow,
-                            // flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            // throw new
-                            // ModelsRuntimeException("An error occurred in go_downstream.", this);
-                            FlowNode downstreamNode = flowNode.goDownstream();
-                            // this if is true if there is a fork (segna==10 but
-                            // m!=10) so add one to the hack number.
-                            if (downstreamNode != null && downstreamNode.isValid()) {
-                                hackstreamIter.setSample(c, r, 0,
-                                        hackstreamIter.getSampleDouble(downstreamNode.col, downstreamNode.row, 0) + 1);
-                            }
-                            // if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            // hackstreamIter.setSample(c, r, 0,
-                            // hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
-                        }
-                        // memorize where the cycle was
-                        // punto[0] = c;
-                        // punto[1] = r;
-                        selectedNode = flowNode;
-                        break;
-                    }
-                }
-                pm.worked(1);
-                if (contr == 1)
-                    break;
-            }
-            pm.done();
-            // flow[0] = punto[0];
-            // flow[1] = punto[1];
-            if (contr == 1) {
-                flow_p[0] = flow[0];
-                flow_p[1] = flow[1];
-                kk = 0;
-                // the flow point is changed in order to follow the drainage
-                // direction.
-                ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
-                // the direction
-                kk = param[0];
-                // number of pixel which drainage into this pixel, N.B. in a
-                // channel only one pixel
-                // drain into the next (?), otherwise there is a fork
-                count = param[1];
-
-                double tmp = 0;
-                if (count > 0) {
-                    tmp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
-                    hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
-                }
-                if (count > 1) {
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
-                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
-                        }
-                    }
-                }
-                while( count > 0 ) {
-                    /* segna altro pixel */
-                    flow_p[0] = flow[0];
-                    flow_p[1] = flow[1];
-                    kk = 0;
-                    ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
-                    kk = param[0];
-                    count = param[1];
-                    double temp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
-                    hackstreamIter.setSample(flow[0], flow[1], 0, temp);
-                    if (count > 1) {
-                        // attribuisco ai nodi che incontro direzione di
-                        // drenaggio 10
-                        for( int k = 1; k <= 8; k++ ) {
-                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
-                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
-                            }
-                        }
-                    }
-                }
-                segnaIter.setSample(punto[0], punto[1], 0, 5);
-            }
-        } while( contr == 1 );
-
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
-                inFlow.getCoordinateReferenceSystem());
-
-    }
-
-    /**
-     * Gives the channel enumeration of the hydrographic network according to
-     * Hack’s enumeration using a fixed network.
-     * 
-     * @param flowData
-     * @param netnum
-     * @param hacks
-     * @return
-     */
-    public void hackstreamNetFixed( WritableRandomIter flowIter, RandomIter netnumIter, WritableRandomIter segnaIter ) {
-        int contr = 0;
-        int count = 0, kk = 0;
-
-        int[] flow = new int[2], param = new int[2];
-        int[] flow_p = new int[2];
-        int[] punto = new int[2];
-
-        WritableRaster hackstreamWR = createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRandomIter hackstreamIter = RandomIterFactory.createWritable(hackstreamWR, null);
-
-        int iterations = 1;
-        do {
-            pm.beginTask(msg.message("workingiter") + iterations++, nRows); //$NON-NLS-1$
-            for( int j = 0; j < nRows; j++ ) {
-                for( int i = 0; i < nCols; i++ ) {
-                    contr = 0;
-                    // check of the drainage directions in the new matrix
-                    // lool for the outlet
-                    if (segnaIter.getSampleDouble(i, j, 0) == 10) {
-                        // marked outlet with its line and column
-                        flow[0] = i;
-                        flow[1] = j;
-                        contr = 1;
-                        if (flowIter.getSampleDouble(i, j, 0) == 10) {
-                            // set the hack order to 1 corresponding to the
-                            // marked outlet
-                            hackstreamIter.setSample(i, j, 0, 1);
-                            // why these checks if segnaRandomIter is a copy of
-                            // flowRandomIter?
-                        } else if (flowIter.getSampleDouble(i, j, 0) != 10 && !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
-                            double tmp = 0;
-                            if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                tmp = hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1;
-                            hackstreamIter.setSample(i, j, 0, tmp);
-                        }
-                        // set punto as flow with row and column number of the
-                        // outlet
-                        punto[0] = i;
-                        punto[1] = j;
-                        /*
-                         * if (copt != null && copt.isInterrupted()) return
-                         * false;
-                         */
-                        break;
-                    }
-                }
-                // why this check??
-                pm.worked(1);
-                if (contr == 1)
-                    break;
-            }
-            pm.done();
-
-            flow[0] = punto[0];
-            flow[1] = punto[1];
-            if (contr == 1) {
-                flow_p[0] = flow[0];
-                flow_p[1] = flow[1];
-                kk = 0;
-                ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
-                kk = param[0];
-                count = param[1];
-                double tmp = 0;
-                if (count > 0)
-                    tmp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
-                hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
-                if (count > 1) {
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2]) {
-                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
-                        }
-                    }
-                }
-                while( count > 0 && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
-                    /* segnaRandomIter altro pixel */
-                    flow_p[0] = flow[0];
-                    flow_p[1] = flow[1];
-                    kk = 0;
-                    ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
-                    kk = param[0];
-                    count = param[1];
-                    tmp = hackstreamIter.getSample(punto[0], punto[1], 0);
-                    hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
-                    if (count > 1) {
-                        // attribuisco ai nodi che incontro direzione di
-                        // drenaggio 10
-                        for( int k = 1; k <= 8; k++ ) {
-                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
-                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
-                            }
-                        }
-                    }
-                }
-                segnaIter.setSample(punto[0], punto[1], 0, 5);
-            }
-        } while( contr == 1 );
-
-        segnaIter.done();
-        int channel;
-        double hacksValue = 0;
-        int channelLength = 0;
-        pm.beginTask("Calculating map...", nRows);
-        for( int j = 0; j < nRows; j++ ) {
-            for( int i = 0; i < nCols; i++ ) {
-                if (!isNovalue(netnumIter.getSample(i, j, 0)) && hackstreamIter.getSampleDouble(i, j, 0) < 0) {
-                    channelLength = 1;
-                    channel = (int) netnumIter.getSampleDouble(i, j, 0);
-                    for( int l = 0; l < nRows; l++ ) {
-                        for( int n = 0; n < nCols; n++ ) {
-                            if (netnumIter.getSampleDouble(n, l, 0) == channel) {
-                                flow[0] = n;
-                                flow[1] = l;
-                                if (ModelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
-                                    punto[0] = flow[0];
-                                    punto[1] = flow[1];
-                                    ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                                    while( netnumIter.getSampleDouble(flow[0], flow[1], 0) == channel ) {
-                                        flow_p[0] = flow[0];
-                                        flow_p[1] = flow[1];
-                                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                                        channelLength++;
-                                    }
-                                    double tmp = 0.;
-                                    tmp = hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1;
-                                    hackstreamIter.setSample(punto[0], punto[1], 0, tmp);
-                                    hacksValue = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
-                                    flow_p[0] = punto[0];
-                                    flow_p[1] = punto[1];
-                                    int length = 1;
-                                    while( netnumIter.getSampleDouble(flow_p[0], flow_p[1], 0) == channel
-                                            && length <= channelLength ) {
-                                        flow_p[0] = punto[0];
-                                        flow_p[1] = punto[1];
-                                        hackstreamIter.setSample(punto[0], punto[1], 0, hacksValue);
-                                        ModelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
-                                        length++;
-                                    }
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
-                inFlow.getCoordinateReferenceSystem());
-
-    }
-
-}
+///*
+// * This file is part of JGrasstools (http://www.jgrasstools.org)
+// * (C) HydroloGIS - www.hydrologis.com 
+// * 
+// * JGrasstools is free software: you can redistribute it and/or modify
+// * it under the terms of the GNU General Public License as published by
+// * the Free Software Foundation, either version 3 of the License, or
+// * (at your option) any later version.
+// *
+// * This program is distributed in the hope that it will be useful,
+// * but WITHOUT ANY WARRANTY; without even the implied warranty of
+// * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// * GNU General Public License for more details.
+// *
+// * You should have received a copy of the GNU General Public License
+// * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// */
+//package org.jgrasstools.hortonmachine.modules.network.hackstream;
+//
+//import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+//import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+//import static org.jgrasstools.gears.libs.modules.Variables.DEFAULT;
+//import static org.jgrasstools.gears.libs.modules.Variables.FIXED_NETWORK;
+//import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
+//
+//import java.awt.image.RenderedImage;
+//import java.awt.image.WritableRaster;
+//
+//import javax.media.jai.iterator.RandomIter;
+//import javax.media.jai.iterator.RandomIterFactory;
+//import javax.media.jai.iterator.WritableRandomIter;
+//
+//import oms3.annotations.Author;
+//import oms3.annotations.Description;
+//import oms3.annotations.Documentation;
+//import oms3.annotations.Execute;
+//import oms3.annotations.In;
+//import oms3.annotations.Keywords;
+//import oms3.annotations.Label;
+//import oms3.annotations.License;
+//import oms3.annotations.Name;
+//import oms3.annotations.Out;
+//import oms3.annotations.Status;
+//import oms3.annotations.UI;
+//
+//import org.geotools.coverage.grid.GridCoverage2D;
+//import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+//import org.jgrasstools.gears.libs.modules.FlowNode;
+//import org.jgrasstools.gears.libs.modules.JGTConstants;
+//import org.jgrasstools.gears.libs.modules.JGTModel;
+//import org.jgrasstools.gears.libs.modules.ModelsEngine;
+//import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+//import org.jgrasstools.gears.utils.RegionMap;
+//import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+//import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+//
+//@Description("HackStream arranges a channel net starting from the identification of the branch according to Hack.")
+//@Documentation("HackStream.html")
+//@Author(name = "Daniele Andreis, Antonello Andrea, Franceschi Silvia, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
+//@Keywords("Network, Hack")
+//@Label(JGTConstants.NETWORK)
+//@Name("hackstream")
+//@Status(Status.CERTIFIED)
+//@License("General Public License Version 3 (GPLv3)")
+//public class HackStream extends JGTModel {
+//
+//    @Description("The map of flowdirections.")
+//    @In
+//    public GridCoverage2D inFlow = null;
+//
+//    @Description("The map of tca.")
+//    @In
+//    public GridCoverage2D inTca = null;
+//
+//    @Description("The map of hack lengths.")
+//    @In
+//    public GridCoverage2D inHacklength = null;
+//
+//    @Description("The map of the network.")
+//    @In
+//    public GridCoverage2D inNet = null;
+//
+//    @Description("The map of the netnum (in mode 1).")
+//    @In
+//    public GridCoverage2D inNetnum = null;
+//
+//    @Description("The processing mode.")
+//    @UI("combo:" + DEFAULT + "," + FIXED_NETWORK)
+//    @In
+//    public String pMode = DEFAULT;
+//
+//    @Description("The map of hackstream.")
+//    @Out
+//    public GridCoverage2D outHackstream = null;
+//
+//    private int[][] dir = ModelsSupporter.DIR_WITHFLOW_ENTERING;
+//    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+//
+//    private int nCols;
+//
+//    private int nRows;
+//
+//    private RegionMap regionMap;
+//
+//    @Execute
+//    public void process() {
+//        if (!concatOr(outHackstream == null, doReset)) {
+//            return;
+//        }
+//
+//        checkNull(inFlow);
+//        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+//        nCols = regionMap.getCols();
+//        nRows = regionMap.getRows();
+//
+//        RenderedImage flowRI = inFlow.getRenderedImage();
+//        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
+//        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
+//
+//        // create new matrix
+//        WritableRaster segnaWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
+//        WritableRandomIter segnaIter = RandomIterFactory.createWritable(segnaWR, null);
+//
+//        int count = 0;
+//        if (pMode.equals(DEFAULT)) {
+//            checkNull(inTca, inNet, inHacklength);
+//
+//            RenderedImage tcaRI = inTca.getRenderedImage();
+//            RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
+//
+//            RenderedImage netRI = inNet.getRenderedImage();
+//            RandomIter netIter = RandomIterFactory.create(netRI, null);
+//
+//            RenderedImage hacklengthRI = inHacklength.getRenderedImage();
+//            RandomIter hacklengthIter = RandomIterFactory.create(hacklengthRI, null);
+//
+//            for( int r = 0; r < nRows; r++ ) {
+//                for( int c = 0; c < nCols; c++ ) {
+//                    if (isNovalue(netIter.getSampleDouble(c, r, 0)))
+//                        flowIter.setSample(c, r, 0, doubleNovalue);
+//                    if (flowIter.getSampleDouble(c, r, 0) == 10)
+//                        count++;
+//                }
+//            }
+//            if (count == 0) {
+//                throw new ModelsRuntimeException(
+//                        "No outlet found in the map of flowdirections. At least one outlet needs to be available.", this);
+//            }
+//
+//            hackstream(flowIter, tcaIter, hacklengthIter, segnaIter);
+//
+//        } else {
+//            checkNull(inNetnum);
+//            RenderedImage netnumRI = inNetnum.getRenderedImage();
+//            RandomIter netnumIter = RandomIterFactory.create(netnumRI, null);
+//
+//            hackstreamNetFixed(flowIter, netnumIter, segnaIter);
+//
+//        }
+//
+//    }
+//
+//    /**
+//     * gives the channel numeration of the hydrographic network according to
+//     * the Hack numeration.
+//     * 
+//     * @param m
+//     *            is the flow data
+//     * @param tca
+//     * @param hackl
+//     * @param hacks
+//     * @return
+//     */
+//    public void hackstream( WritableRandomIter flowIter, RandomIter tcaIter, RandomIter hacklengthIter,
+//            WritableRandomIter segnaIter ) {
+//        int count = 0, kk = 0;
+//
+//        // int[] flow = new int[2];
+//        int[] param = new int[2];
+//        int[] flow_p = new int[2];
+//        int[] punto = new int[2];
+//
+//        WritableRaster hackstreamWR = createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+//        WritableRandomIter hackstreamIter = RandomIterFactory.createWritable(hackstreamWR, null);
+//
+//        int iterations = 1;
+//        do {
+//            // verify if there is an output point in the segna matrix, this
+//            // matrix is a copy of the
+//            // flow matrix, but in the while cycle modify it, and add the point
+//            // with value equal to
+//            // 10 (fork) and delete the point already calculated.
+//            pm.beginTask(msg.message("workingiter") + iterations++, nRows);
+//            FlowNode selectedNode = null;
+//            for( int r = 0; r < nRows; r++ ) {
+//                for( int c = 0; c < nCols; c++ ) {
+//                    if (segnaIter.getSampleDouble(c, r, 0) == FlowNode.OUTLET) {
+//                        FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
+//
+//                        // it s really an output point (the segna matrix can be
+//                        // modified into the
+//                        // loop).
+//                        // if (flowIter.getSampleDouble(c, r, 0) == 10) {
+//                        if (flowNode.isMarkedAsOutlet()) {
+//                            // the output value is set as 1 in the hack matrix.
+//                            hackstreamIter.setSample(c, r, 0, 1);
+//                            // } else if (flowIter.getSampleDouble(c, r, 0) != 10 ||
+//                            // !isNovalue(flowIter.getSampleDouble(c, r, 0))) {
+//                        } else if (!flowNode.isMarkedAsOutlet() || flowNode.isValid()) {
+//                            // if (!ModelsEngine.go_downstream(flow,
+//                            // flowIter.getSampleDouble(flow[0], flow[1], 0)))
+//                            // throw new
+//                            // ModelsRuntimeException("An error occurred in go_downstream.", this);
+//                            FlowNode downstreamNode = flowNode.goDownstream();
+//                            // this if is true if there is a fork (segna==10 but
+//                            // m!=10) so add one to the hack number.
+//                            if (downstreamNode != null && downstreamNode.isValid()) {
+//                                hackstreamIter.setSample(c, r, 0,
+//                                        hackstreamIter.getSampleDouble(downstreamNode.col, downstreamNode.row, 0) + 1);
+//                            }
+//                            // if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
+//                            // hackstreamIter.setSample(c, r, 0,
+//                            // hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1);
+//                        }
+//                        // memorize where the cycle was
+//                        // punto[0] = c;
+//                        // punto[1] = r;
+//                        selectedNode = flowNode;
+//                        break;
+//                    }
+//                }
+//                pm.worked(1);
+//                if (selectedNode != null)
+//                    break;
+//            }
+//            pm.done();
+//            if (selectedNode!=null) {
+//                flow_p[0] = flow[0];
+//                flow_p[1] = flow[1];
+//                kk = 0;
+//                // the flow point is changed in order to follow the drainage
+//                // direction.
+//                ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+//                // the direction
+//                kk = param[0];
+//                // number of pixel which drainage into this pixel, N.B. in a
+//                // channel only one pixel
+//                // drain into the next (?), otherwise there is a fork
+//                count = param[1];
+//
+//                double tmp = 0;
+//                if (count > 0) {
+//                    tmp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
+//                    hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
+//                }
+//                if (count > 1) {
+//                    for( int k = 1; k <= 8; k++ ) {
+//                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+//                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
+//                        }
+//                    }
+//                }
+//                while( count > 0 ) {
+//                    /* segna altro pixel */
+//                    flow_p[0] = flow[0];
+//                    flow_p[1] = flow[1];
+//                    kk = 0;
+//                    ModelsEngine.go_upstream_a(flow, flowIter, tcaIter, hacklengthIter, param);
+//                    kk = param[0];
+//                    count = param[1];
+//                    double temp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
+//                    hackstreamIter.setSample(flow[0], flow[1], 0, temp);
+//                    if (count > 1) {
+//                        // attribuisco ai nodi che incontro direzione di
+//                        // drenaggio 10
+//                        for( int k = 1; k <= 8; k++ ) {
+//                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+//                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
+//                            }
+//                        }
+//                    }
+//                }
+//                segnaIter.setSample(punto[0], punto[1], 0, 5);
+//            }
+//        } while( contr == 1 );
+//
+//        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+//                inFlow.getCoordinateReferenceSystem());
+//
+//    }
+//
+//    /**
+//     * Gives the channel enumeration of the hydrographic network according to
+//     * Hack’s enumeration using a fixed network.
+//     * 
+//     * @param flowData
+//     * @param netnum
+//     * @param hacks
+//     * @return
+//     */
+//    public void hackstreamNetFixed( WritableRandomIter flowIter, RandomIter netnumIter, WritableRandomIter segnaIter ) {
+//        int contr = 0;
+//        int count = 0, kk = 0;
+//
+//        int[] flow = new int[2], param = new int[2];
+//        int[] flow_p = new int[2];
+//        int[] punto = new int[2];
+//
+//        WritableRaster hackstreamWR = createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+//        WritableRandomIter hackstreamIter = RandomIterFactory.createWritable(hackstreamWR, null);
+//
+//        int iterations = 1;
+//        do {
+//            pm.beginTask(msg.message("workingiter") + iterations++, nRows); //$NON-NLS-1$
+//            for( int j = 0; j < nRows; j++ ) {
+//                for( int i = 0; i < nCols; i++ ) {
+//                    contr = 0;
+//                    // check of the drainage directions in the new matrix
+//                    // lool for the outlet
+//                    if (segnaIter.getSampleDouble(i, j, 0) == 10) {
+//                        // marked outlet with its line and column
+//                        flow[0] = i;
+//                        flow[1] = j;
+//                        contr = 1;
+//                        if (flowIter.getSampleDouble(i, j, 0) == 10) {
+//                            // set the hack order to 1 corresponding to the
+//                            // marked outlet
+//                            hackstreamIter.setSample(i, j, 0, 1);
+//                            // why these checks if segnaRandomIter is a copy of
+//                            // flowRandomIter?
+//                        } else if (flowIter.getSampleDouble(i, j, 0) != 10 && !isNovalue(flowIter.getSampleDouble(i, j, 0))) {
+//                            if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+//                                throw new ModelsRuntimeException("An error occurred in go_downstream.", this);
+//                            double tmp = 0;
+//                            if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)))
+//                                tmp = hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1;
+//                            hackstreamIter.setSample(i, j, 0, tmp);
+//                        }
+//                        // set punto as flow with row and column number of the
+//                        // outlet
+//                        punto[0] = i;
+//                        punto[1] = j;
+//                        /*
+//                         * if (copt != null && copt.isInterrupted()) return
+//                         * false;
+//                         */
+//                        break;
+//                    }
+//                }
+//                // why this check??
+//                pm.worked(1);
+//                if (contr == 1)
+//                    break;
+//            }
+//            pm.done();
+//
+//            flow[0] = punto[0];
+//            flow[1] = punto[1];
+//            if (contr == 1) {
+//                flow_p[0] = flow[0];
+//                flow_p[1] = flow[1];
+//                kk = 0;
+//                ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+//                kk = param[0];
+//                count = param[1];
+//                double tmp = 0;
+//                if (count > 0)
+//                    tmp = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
+//                hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
+//                if (count > 1) {
+//                    for( int k = 1; k <= 8; k++ ) {
+//                        if (flowIter.getSampleDouble(punto[0] + dir[k][1], punto[1] + dir[k][0], 0) == dir[k][2]) {
+//                            segnaIter.setSample(punto[0] + dir[k][1], punto[1] + dir[k][0], 0, 10);
+//                        }
+//                    }
+//                }
+//                while( count > 0 && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
+//                    /* segnaRandomIter altro pixel */
+//                    flow_p[0] = flow[0];
+//                    flow_p[1] = flow[1];
+//                    kk = 0;
+//                    ModelsEngine.goUpStreamOnNetFixed(flow, flowIter, netnumIter, param);
+//                    kk = param[0];
+//                    count = param[1];
+//                    tmp = hackstreamIter.getSample(punto[0], punto[1], 0);
+//                    hackstreamIter.setSample(flow[0], flow[1], 0, tmp);
+//                    if (count > 1) {
+//                        // attribuisco ai nodi che incontro direzione di
+//                        // drenaggio 10
+//                        for( int k = 1; k <= 8; k++ ) {
+//                            if (flowIter.getSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0) == dir[k][2] && k != kk) {
+//                                segnaIter.setSample(flow_p[0] + dir[k][1], flow_p[1] + dir[k][0], 0, 10);
+//                            }
+//                        }
+//                    }
+//                }
+//                segnaIter.setSample(punto[0], punto[1], 0, 5);
+//            }
+//        } while( contr == 1 );
+//
+//        segnaIter.done();
+//        int channel;
+//        double hacksValue = 0;
+//        int channelLength = 0;
+//        pm.beginTask("Calculating map...", nRows);
+//        for( int j = 0; j < nRows; j++ ) {
+//            for( int i = 0; i < nCols; i++ ) {
+//                if (!isNovalue(netnumIter.getSample(i, j, 0)) && hackstreamIter.getSampleDouble(i, j, 0) < 0) {
+//                    channelLength = 1;
+//                    channel = (int) netnumIter.getSampleDouble(i, j, 0);
+//                    for( int l = 0; l < nRows; l++ ) {
+//                        for( int n = 0; n < nCols; n++ ) {
+//                            if (netnumIter.getSampleDouble(n, l, 0) == channel) {
+//                                flow[0] = n;
+//                                flow[1] = l;
+//                                if (ModelsEngine.sourcesNet(flowIter, flow, channel, netnumIter)) {
+//                                    punto[0] = flow[0];
+//                                    punto[1] = flow[1];
+//                                    ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+//                                    while( netnumIter.getSampleDouble(flow[0], flow[1], 0) == channel ) {
+//                                        flow_p[0] = flow[0];
+//                                        flow_p[1] = flow[1];
+//                                        ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
+//                                        channelLength++;
+//                                    }
+//                                    double tmp = 0.;
+//                                    tmp = hackstreamIter.getSampleDouble(flow[0], flow[1], 0) + 1;
+//                                    hackstreamIter.setSample(punto[0], punto[1], 0, tmp);
+//                                    hacksValue = hackstreamIter.getSampleDouble(punto[0], punto[1], 0);
+//                                    flow_p[0] = punto[0];
+//                                    flow_p[1] = punto[1];
+//                                    int length = 1;
+//                                    while( netnumIter.getSampleDouble(flow_p[0], flow_p[1], 0) == channel
+//                                            && length <= channelLength ) {
+//                                        flow_p[0] = punto[0];
+//                                        flow_p[1] = punto[1];
+//                                        hackstreamIter.setSample(punto[0], punto[1], 0, hacksValue);
+//                                        ModelsEngine.go_downstream(punto, flowIter.getSampleDouble(punto[0], punto[1], 0));
+//                                        length++;
+//                                    }
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//            pm.worked(1);
+//        }
+//        pm.done();
+//
+//        outHackstream = CoverageUtilities.buildCoverage("hackstream", hackstreamWR, regionMap,
+//                inFlow.getCoordinateReferenceSystem());
+//
+//    }
+//
+//}

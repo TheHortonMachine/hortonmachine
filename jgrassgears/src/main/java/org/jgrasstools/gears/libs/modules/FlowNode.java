@@ -25,6 +25,8 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+
 /**
  * A node in the grid environment of a digital elevation model. 
  * 
@@ -380,13 +382,18 @@ public class FlowNode {
      * Get the upstream node based on the max tca value. 
      * 
      * @param tcaIter the tca map.
+     * @param hacklengthIter the optional hacklength map, if available 
+     *                  it is used in cases with multiple equal in coming tcas.
      * @return the upstream node.
      */
-    public FlowNode getUpstreamTcaBased( RandomIter tcaIter ) {
-        // TODO what to do if more tca are the same? use hacklength?
-        
+    /**
+     * @param tcaIter
+     * @return
+     */
+    public FlowNode getUpstreamTcaBased( RandomIter tcaIter, RandomIter hacklengthIter ) {
         Direction[] orderedDirs = Direction.getOrderedDirs();
         double maxTca = Double.NEGATIVE_INFINITY;
+        double maxHacklength = Double.NEGATIVE_INFINITY;
         int maxCol = 0;
         int maxRow = 0;
         for( Direction direction : orderedDirs ) {
@@ -446,10 +453,27 @@ public class FlowNode {
             }
             if (isInRaster(newCol, newRow)) {
                 double tcaValue = tcaIter.getSampleDouble(newCol, newRow, 0);
-                if (tcaValue > maxTca) {
+                double hacklengthValue = 0.0;
+                if (hacklengthIter != null)
+                    hacklengthValue = tcaIter.getSampleDouble(newCol, newRow, 0);
+                if (NumericsUtilities.dEq(tcaValue, maxTca) && hacklengthIter != null) {
+                    /*
+                     * if there are two equal tca values around
+                     * and info about hacklength is available, 
+                     * use that one to choose
+                     */
+                    if (hacklengthValue > maxHacklength) {
+                        // this has larger hacklength, use this one as max tca
+                        maxTca = tcaValue;
+                        maxCol = newCol;
+                        maxRow = newRow;
+                        maxHacklength = hacklengthValue;
+                    }
+                } else if (tcaValue > maxTca) {
                     maxTca = tcaValue;
                     maxCol = newCol;
                     maxRow = newRow;
+                    maxHacklength = hacklengthValue;
                 }
             }
         }
