@@ -79,7 +79,7 @@ public class NetworkAttributesBuilder extends JGTModel {
 
     @Description("Flag to also create the hack map.")
     @In
-    public boolean doHack = true;
+    public boolean doHack = false;
 
     @Description("The vector of the network.")
     @Out
@@ -187,12 +187,12 @@ public class NetworkAttributesBuilder extends JGTModel {
         }
     }
 
-    private void handleTrail( FlowNode runningNode, Coordinate startCoordinate, int index ) {
+    private void handleTrail( FlowNode runningNode, Coordinate startCoordinate, int hackIndex ) {
         List<Coordinate> lineCoordinatesList = new ArrayList<Coordinate>();
         if (startCoordinate != null) {
             lineCoordinatesList.add(startCoordinate);
             // write hack if needed
-            runningNode.setValueInMap(hackWIter, index);
+            runningNode.setValueInMap(hackWIter, hackIndex);
         }
         while( runningNode.getEnteringNodes().size() > 0 ) {
             int col = runningNode.col;
@@ -204,7 +204,7 @@ public class NetworkAttributesBuilder extends JGTModel {
                 // if a net value is available, then it needs to be vector net
                 lineCoordinatesList.add(coord);
                 // write hack if needed
-                runningNode.setValueInMap(hackWIter, index);
+                runningNode.setValueInMap(hackWIter, hackIndex);
             } else {
                 /*
                  * the line is finished 
@@ -213,7 +213,7 @@ public class NetworkAttributesBuilder extends JGTModel {
                     throw new RuntimeException();
                 }
                 // create a line and finish this trail
-                createLine(lineCoordinatesList, index);
+                createLine(lineCoordinatesList, hackIndex);
                 break;
             }
 
@@ -233,26 +233,26 @@ public class NetworkAttributesBuilder extends JGTModel {
                 runningNode = checkedNodes.get(0);
             } else if (checkedNodes.size() == 0) {
                 // it was an exit
-                createLine(lineCoordinatesList, index);
+                createLine(lineCoordinatesList, hackIndex);
                 break;
             } else if (checkedNodes.size() > 1) {
 
-                createLine(lineCoordinatesList, index);
+                createLine(lineCoordinatesList, hackIndex);
 
                 if (tcaIter == null) {
                     // we just extract the vector line
                     for( FlowNode flowNode : checkedNodes ) {
-                        handleTrail(flowNode, coord, index + 1);
+                        handleTrail(flowNode, coord, hackIndex + 1);
                     }
                 } else {
                     // we want also hack numbering and friends
                     FlowNode mainUpstream = runningNode.getUpstreamTcaBased(tcaIter, null);
                     // the main channel keeps the same index
-                    handleTrail(mainUpstream, coord, index);
+                    handleTrail(mainUpstream, coord, hackIndex);
                     // the others jump up one
                     for( FlowNode flowNode : checkedNodes ) {
                         if (!flowNode.equals(mainUpstream)) {
-                            handleTrail(flowNode, coord, index + 1);
+                            handleTrail(flowNode, coord, hackIndex + 1);
                         }
                     }
                 }
@@ -263,15 +263,15 @@ public class NetworkAttributesBuilder extends JGTModel {
         }
     }
 
-    private void createLine( List<Coordinate> lineCoordinatesList, int hack ) {
+    private void createLine( List<Coordinate> lineCoordinatesList, int hackindex ) {
         if (lineCoordinatesList.size() < 2) {
             return;
         }
-        if (hack > maxHack) {
-            maxHack = hack;
+        if (hackindex > maxHack) {
+            maxHack = hackindex;
         }
         LineString newNetLine = gf.createLineString(lineCoordinatesList.toArray(new Coordinate[0]));
-        Object[] values = new Object[]{newNetLine, hack, 0, "-"};
+        Object[] values = new Object[]{newNetLine, hackindex, 0, "-"};
         networkBuilder.addAll(values);
         SimpleFeature netFeature = networkBuilder.buildFeature(null);
         synchronized (networkList) {
