@@ -17,12 +17,14 @@
  */
 package org.jgrasstools.hortonmachine.modules.basin.rescaleddistance;
 
+import static java.lang.Math.abs;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -41,16 +43,17 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.Direction;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 @Description("Calculates the rescaled distance of each pixel from the outlet.")
 @Documentation("RescaledDistance.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Basin, Geomorphology, D2O")
 @Label(JGTConstants.BASIN)
 @Name("rescdist")
@@ -66,6 +69,10 @@ public class RescaledDistance extends JGTModel {
     @In
     public GridCoverage2D inNet = null;
 
+    @Description("The optional map of elevation for 3D.")
+    @In
+    public GridCoverage2D inElev = null;
+
     @Description("Ratio between the velocity in the channel and in the hillslope.")
     @In
     public double pRatio = 0;
@@ -74,7 +81,15 @@ public class RescaledDistance extends JGTModel {
     @Out
     public GridCoverage2D outRescaled = null;
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+    private WritableRandomIter rescaledIter;
+
+    private double xRes;
+
+    private double yRes;
+
+    private RandomIter netIter;
+
+    private RandomIter elevIter;
 
     @Execute
     public void process() {
@@ -82,71 +97,77 @@ public class RescaledDistance extends JGTModel {
             return;
         }
         checkNull(inFlow, inNet);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        xRes = regionMap.getXres();
+        yRes = regionMap.getYres();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-        RenderedImage netRI = inNet.getRenderedImage();
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
-        RandomIter netIter = RandomIterFactory.create(netRI, null);
 
-        WritableRaster rescaledWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
-        WritableRandomIter rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
+        RenderedImage netRI = inNet.getRenderedImage();
+        netIter = RandomIterFactory.create(netRI, null);
 
-        int[] flow = new int[2];
-        double count = 0.0, a = 0.0;
+        if (inElev != null) {
+            RenderedImage elevRI = inElev.getRenderedImage();
+            elevIter = RandomIterFactory.create(elevRI, null);
+        }
 
-        // grid contains the dimension of pixels according with flow directions
-        double[] grid = new double[11];
+        WritableRaster rescaledWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        rescaledIter = RandomIterFactory.createWritable(rescaledWR, null);
 
-        grid[0] = grid[9] = grid[10] = 0.0;
-        grid[1] = grid[5] = Math.abs(xRes);
-        grid[3] = grid[7] = Math.abs(yRes);
-        grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(xRes * xRes + yRes * yRes);
-
-        // FluidUtils.setNovalueBorder(flowData);
-
-        pm.beginTask(msg.message("rescaleddistance.calculating"), nRows);
-        for( int j = 0; j < nRows; j++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int i = 0; i < nCols; i++ ) {
-                count = 0.0;
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                    while( netIter.getSampleDouble(flow[0], flow[1], 0) != 2.0
-                            && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                            && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
-                        a = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        count += grid[(int) a] * pRatio;
-                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            throw new ModelsIllegalargumentException("Error while going downstream!", this.getClass()
-                                    .getSimpleName());
-                    }
-                    while( flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                            && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0)) ) {
-                        a = flowIter.getSampleDouble(flow[0], flow[1], 0);
-                        count = count + grid[(int) a];
-                        if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            throw new ModelsIllegalargumentException("Error while going downstream!", this.getClass()
-                                    .getSimpleName());
-                    }
-                    rescaledIter.setSample(i, j, 0, count);
-
-                } else if (isNovalue(flowIter.getSampleDouble(i, j, 0))) {
-                    rescaledIter.setSample(i, j, 0, doubleNovalue);
+        pm.beginTask("Find outlets...", rows); //$NON-NLS-1$
+        List<FlowNode> exitsList = new ArrayList<FlowNode>();
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double netValue = netIter.getSampleDouble(c, r, 0);
+                if (isNovalue(netValue)) {
+                    // we make sure that we pick only outlets that are on the net
+                    continue;
+                }
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                if (flowNode.isHeadingOutside()) {
+                    exitsList.add(flowNode);
                 }
             }
             pm.worked(1);
         }
         pm.done();
 
+        pm.beginTask("Calculate rescaled distance...", exitsList.size());
+        for( FlowNode exitNode : exitsList ) {
+            calculateRescaledDistance(exitNode, xRes);
+            pm.worked(1);
+        }
+        pm.done();
+
         outRescaled = CoverageUtilities.buildCoverage("RescaledDistance", rescaledWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
+    }
+
+    private void calculateRescaledDistance( FlowNode runningNode, double distance ) {
+        runningNode.setValueInMap(rescaledIter, distance);
+        if (runningNode.getEnteringNodes().size() > 0) {
+            List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
+            for( FlowNode enteringNode : enteringNodes ) {
+                double tmpDistance = Direction.forFlow((int) enteringNode.flow).getDistance(xRes, yRes);
+                if (elevIter != null) {
+                    double fromElev = enteringNode.getValueFromMap(elevIter);
+                    double toElev = runningNode.getValueFromMap(elevIter);
+                    tmpDistance = NumericsUtilities.pythagoras(tmpDistance, abs(toElev - fromElev));
+                }
+
+                double netValue = enteringNode.getValueFromMap(netIter);
+                double newDistance = 0.0;
+                if (isNovalue(netValue)) {
+                    newDistance = distance + tmpDistance * pRatio;
+                } else {
+                    newDistance = distance + tmpDistance;
+                }
+                calculateRescaledDistance(enteringNode, newDistance);
+            }
+        }
+
     }
 }
