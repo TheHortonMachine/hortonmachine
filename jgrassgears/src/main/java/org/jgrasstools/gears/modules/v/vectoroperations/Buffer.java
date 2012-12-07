@@ -80,7 +80,7 @@ public class Buffer extends JGTModel {
     @In
     public String pJoinstyle = JOIN_ROUND;
 
-    @Description("Flag to toggle singlesided buffer.")
+    @Description("The cap style to use.")
     @UI("combo:" + CAP_ROUND + "," + CAP_FLAT + "," + CAP_SQUARE)
     @In
     public String pCapstyle = CAP_ROUND;
