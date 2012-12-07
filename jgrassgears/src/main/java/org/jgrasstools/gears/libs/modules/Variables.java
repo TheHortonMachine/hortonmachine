@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import com.vividsolutions.jts.operation.buffer.BufferParameters;
+
 /**
  * Variable names that also need translations and used in the modules.
  * 
@@ -43,5 +45,12 @@ public interface Variables {
     public String TCA_CONVERGENT = "tca in convergent sites";
 
     public String FIXED_NETWORK = "with fixed network";
+
+    public String CAP_ROUND = "round";
+    public String CAP_FLAT = "flat";
+    public String CAP_SQUARE = "square";
+    public String JOIN_ROUND = "round";
+    public String JOIN_MITRE = "mitre";
+    public String JOIN_BEVEL = "bevel";
 
 }
