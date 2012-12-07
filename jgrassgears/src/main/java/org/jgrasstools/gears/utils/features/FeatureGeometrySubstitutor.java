@@ -28,6 +28,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.GeometryDescriptor;
 
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -39,20 +40,40 @@ import com.vividsolutions.jts.geom.Geometry;
 public class FeatureGeometrySubstitutor {
     private SimpleFeatureType newFeatureType;
 
+    public FeatureGeometrySubstitutor( SimpleFeatureType oldFeatureType ) throws Exception {
+        this(oldFeatureType, null);
+    }
+
     /**
      * @param oldFeatureType the {@link FeatureType} of the existing features.
      * @throws FactoryRegistryException 
      * @throws SchemaException
      */
-    public FeatureGeometrySubstitutor( SimpleFeatureType oldFeatureType ) throws FactoryRegistryException, SchemaException {
+    public FeatureGeometrySubstitutor( SimpleFeatureType oldFeatureType, Class< ? > newGeometryType ) throws Exception {
 
         List<AttributeDescriptor> oldAttributeDescriptors = oldFeatureType.getAttributeDescriptors();
 
         // create the feature type
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(oldFeatureType.getName());
-        b.addAll(oldAttributeDescriptors);
+        b.setCRS(oldFeatureType.getCoordinateReferenceSystem());
+
+        if (newGeometryType == null) {
+            b.addAll(oldAttributeDescriptors);
+        } else {
+            for( AttributeDescriptor attributeDescriptor : oldAttributeDescriptors ) {
+                if (attributeDescriptor instanceof GeometryDescriptor) {
+                    b.add("the_geom", newGeometryType);
+                } else {
+                    b.add(attributeDescriptor);
+                }
+            }
+        }
         newFeatureType = b.buildFeatureType();
+    }
+
+    public SimpleFeatureType getNewFeatureType() {
+        return newFeatureType;
     }
 
     /**
