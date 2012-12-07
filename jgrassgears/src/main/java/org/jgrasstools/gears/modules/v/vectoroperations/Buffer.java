@@ -78,12 +78,12 @@ public class Buffer extends JGTModel {
     @Description("The join style to use.")
     @UI("combo:" + JOIN_ROUND + "," + JOIN_MITRE + "," + JOIN_BEVEL)
     @In
-    private String pJoinstyle = JOIN_ROUND;
+    public String pJoinstyle = JOIN_ROUND;
 
     @Description("Flag to toggle singlesided buffer.")
     @UI("combo:" + CAP_ROUND + "," + CAP_FLAT + "," + CAP_SQUARE)
     @In
-    private String pCapstyle = CAP_ROUND;
+    public String pCapstyle = CAP_ROUND;
 
     @Description("The buffered vector map.")
     @Out
@@ -144,19 +144,6 @@ public class Buffer extends JGTModel {
 
         outMap = outMaptmp;
 
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String in = "D:/Dropbox/hydrologis/lavori/2012_11_ponte_arche/idraulico2d/ciresa/shape/ciresa_canale_intubato.shp";
-        String out = "D:/Dropbox/hydrologis/lavori/2012_11_ponte_arche/idraulico2d/ciresa/shape/ciresa_canale_intubato_buffer06.shp";
-
-        Buffer b = new Buffer();
-        b.inMap = VectorReader.readVector(in);
-        b.pBuffer = 0.6;
-        b.pCapstyle = CAP_FLAT;
-        b.process();
-        SimpleFeatureCollection outMap2 = b.outMap;
-        VectorWriter.writeVector(out, outMap2);
     }
 
 }
