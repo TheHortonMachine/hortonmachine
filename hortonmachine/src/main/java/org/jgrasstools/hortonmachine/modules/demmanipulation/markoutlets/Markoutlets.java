@@ -79,15 +79,8 @@ public class Markoutlets extends JGTModel {
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
                 FlowNode flowNode = new FlowNode(mflowIter, nCols, nRows, c, r);
-                if (flowNode.isValid() && flowNode.touchesBound()) {
-                    // check if the flow exits
-                    FlowNode goDownstream = flowNode.goDownstream();
-                    if (goDownstream == null) {
-                        // exit
-                        int outCol = flowNode.col;
-                        int outRow = flowNode.row;
-                        mflowWR.setSample(outCol, outRow, 0, 10);
-                    }
+                if (flowNode.isValid() && flowNode.isHeadingOutside()) {
+                    flowNode.setValueInMap(mflowIter, FlowNode.OUTLET);
                 }
             }
             pm.worked(1);

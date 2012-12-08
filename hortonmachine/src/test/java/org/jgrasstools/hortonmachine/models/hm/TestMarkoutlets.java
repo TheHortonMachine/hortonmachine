@@ -35,41 +35,24 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestMarkoutlets extends HMTestCase {
 
-    public static void main( String[] args ) throws Exception {
+    public void testTca() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
 
-        String base = "D:/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/tm35fin/lidar/cell/";
-        String in = base + "flow";
-        String out = base + "mflow";
+        double[][] flowData = HMTestMaps.flowData;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         Markoutlets moutlet = new Markoutlets();
 
-        moutlet.inFlow = RasterReader.readRaster(in);
+        moutlet.inFlow = flowCoverage;
+        moutlet.pm = pm;
 
         moutlet.process();
 
         GridCoverage2D markoutletCoverage = moutlet.outFlow;
-        RasterWriter.writeRaster(out, markoutletCoverage);
+
+        checkMatrixEqual(markoutletCoverage.getRenderedImage(), HMTestMaps.mflowData);
 
     }
-    // public void testTca() throws Exception {
-    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-    // CoordinateReferenceSystem crs = HMTestMaps.crs;
-    //
-    // double[][] flowData = HMTestMaps.flowData;
-    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-    // envelopeParams, crs, true);
-    //
-    // Markoutlets moutlet = new Markoutlets();
-    //
-    // moutlet.inFlow = flowCoverage;
-    // moutlet.pm = pm;
-    //
-    // moutlet.process();
-    //
-    // GridCoverage2D markoutletCoverage = moutlet.outFlow;
-    //
-    // checkMatrixEqual(markoutletCoverage.getRenderedImage(), HMTestMaps.mflowData);
-    //
-    // }
 
 }
