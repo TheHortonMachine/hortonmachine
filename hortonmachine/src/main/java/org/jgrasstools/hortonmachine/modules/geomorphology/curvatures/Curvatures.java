@@ -86,134 +86,68 @@ public class Curvatures extends JGTModel {
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
 
-        RandomIter elevationIter =CoverageUtilities.getRandomIterator(inElev);
+        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRaster planWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRaster tangWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-        // first derivate
-        WritableRaster sxData = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster syData = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        // second derivative
-        WritableRaster sxxData = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster syyData = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRaster sxyData = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-
         double plan = 0.0;
         double tang = 0.0;
         double prof = 0.0;
-
-        /*
-         * calculate first derivative 
-         */
-        pm.beginTask(msg.message("curvatures.firstderivate"), nCols - 2);
-        for( int x = 1; x < nCols - 1; x++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int y = 1; y < nRows - 1; y++ ) {
-                if (isNovalue(elevationIter.getSampleDouble(x, y, 0))) {
-                    sxData.setSample(x, y, 0, doubleNovalue);
-                    syData.setSample(x, y, 0, doubleNovalue);
-                } else {
-                    sxData.setSample(x, y, 0,
-                            0.5 * (elevationIter.getSampleDouble(x, y + 1, 0) - elevationIter.getSampleDouble(x, y - 1, 0))
-                                    / xRes);
-                    syData.setSample(x, y, 0,
-                            0.5 * (elevationIter.getSampleDouble(x + 1, y, 0) - elevationIter.getSampleDouble(x - 1, y, 0))
-                                    / yRes);
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        /*
-         * calculate second derivative
-         */
-        pm.beginTask(msg.message("curvatures.secondderivate"), nRows - 2);
         double disXX = Math.pow(xRes, 2.0);
         double disYY = Math.pow(yRes, 2.0);
-        // calculate the second order derivative
-        for( int j = 1; j < nRows - 1; j++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int i = 1; i < nCols - 1; i++ ) {
-                if (isNovalue(elevationIter.getSampleDouble(i, j, 0))) {
-                    sxxData.setSample(i, j, 0, doubleNovalue);
-                    syyData.setSample(i, j, 0, doubleNovalue);
-                    sxyData.setSample(i, j, 0, doubleNovalue);
-                } else {
-                    sxxData.setSample(
-                            i,
-                            j,
-                            0,
-                            ((elevationIter.getSampleDouble(i, j + 1, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter
-                                    .getSampleDouble(i, j - 1, 0)) / disXX));
-                    syyData.setSample(
-                            i,
-                            j,
-                            0,
-                            ((elevationIter.getSampleDouble(i + 1, j, 0) - 2 * elevationIter.getSampleDouble(i, j, 0) + elevationIter
-                                    .getSampleDouble(i - 1, j, 0)) / disYY));
-                    sxyData.setSample(
-                            i,
-                            j,
-                            0,
-                            0.25 * ((elevationIter.getSampleDouble(i + 1, j + 1, 0)
-                                    - elevationIter.getSampleDouble(i + 1, j - 1, 0)
-                                    - elevationIter.getSampleDouble(i - 1, j + 1, 0) + elevationIter.getSampleDouble(i - 1,
-                                    j - 1, 0)) / (xRes * yRes)));
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
         /*
          * calculate curvatures
          */
         pm.beginTask(msg.message("curvatures.calculating"), nRows - 2);
-        for( int j = 1; j < nRows - 1; j++ ) {
+        for( int r = 1; r < nRows - 1; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int i = 1; i < nCols - 1; i++ ) {
-                if (isNovalue(elevationIter.getSampleDouble(i, j, 0))) {
-                    plan = doubleNovalue;
-                    tang = doubleNovalue;
-                    prof = doubleNovalue;
-
-                } else {
-                    double sxSample = sxData.getSampleDouble(i, j, 0);
-                    double sySample = syData.getSampleDouble(i, j, 0);
-                    double p = Math.pow(sxSample, 2.0) + Math.pow(sySample, 2.0);
+            for( int c = 1; c < nCols - 1; c++ ) {
+                double elevation = elevationIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(elevation)) {
+                    double elevRplus = elevationIter.getSampleDouble(c, r + 1, 0);
+                    double elevRminus = elevationIter.getSampleDouble(c, r - 1, 0);
+                    double elevCplus = elevationIter.getSampleDouble(c + 1, r, 0);
+                    double elevCminus = elevationIter.getSampleDouble(c - 1, r, 0);
+                    /*
+                     * first derivate
+                     */
+                    double sxValue = 0.5 * (elevRplus - elevRminus) / xRes;
+                    double syValue = 0.5 * (elevCplus - elevCminus) / yRes;
+                    double p = Math.pow(sxValue, 2.0) + Math.pow(syValue, 2.0);
                     double q = p + 1;
                     if (p == 0.0) {
                         plan = 0.0;
                         tang = 0.0;
                         prof = 0.0;
                     } else {
-                        double sxxSample = sxxData.getSampleDouble(i, j, 0);
-                        double sxySample = sxyData.getSampleDouble(i, j, 0);
-                        double syySample = syyData.getSampleDouble(i, j, 0);
-                        plan = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample
-                                * Math.pow(sxSample, 2.0))
+                        double elevCplusRplus = elevationIter.getSampleDouble(c + 1, r + 1, 0);
+                        double elevCplusRminus = elevationIter.getSampleDouble(c + 1, r - 1, 0);
+                        double elevCminusRplus = elevationIter.getSampleDouble(c - 1, r + 1, 0);
+                        double elevCminusRminus = elevationIter.getSampleDouble(c - 1, r - 1, 0);
+
+                        double sxxValue = (elevRplus - 2 * elevation + elevRminus) / disXX;
+                        double syyValue = (elevCplus - 2 * elevation + elevCminus) / disYY;
+                        double sxyValue = 0.25 * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (xRes * yRes));
+
+                        plan = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
+                                * Math.pow(sxValue, 2.0))
                                 / (Math.pow(p, 1.5));
-                        tang = (sxxSample * Math.pow(sySample, 2.0) - 2 * sxySample * sxSample * sySample + syySample
-                                * Math.pow(sxSample, 2.0))
+                        tang = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
+                                * Math.pow(sxValue, 2.0))
                                 / (p * Math.pow(q, 0.5));
-                        prof = (sxxSample * Math.pow(sxSample, 2.0) + 2 * sxySample * sxSample * sySample + syySample
-                                * Math.pow(sySample, 2.0))
+                        prof = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue + syyValue
+                                * Math.pow(syValue, 2.0))
                                 / (p * Math.pow(q, 1.5));
                     }
 
+                    profWR.setSample(c, r, 0, prof);
+                    tangWR.setSample(c, r, 0, tang);
+                    planWR.setSample(c, r, 0, plan);
                 }
-                profWR.setSample(i, j, 0, prof);
-                tangWR.setSample(i, j, 0, tang);
-                planWR.setSample(i, j, 0, plan);
             }
             pm.worked(1);
         }
