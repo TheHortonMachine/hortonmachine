@@ -39,12 +39,9 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -158,19 +155,6 @@ public class IntensityClassifier extends JGTModel {
 
         outIntensity = CoverageUtilities
                 .buildCoverage("pitfiller", outWR, regionMap, inWaterDepth.getCoordinateReferenceSystem());
-
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String path = "D:/Dropbox/TMP/silli/CIRESA_4/";
-
-        IntensityClassifier c = new IntensityClassifier();
-        c.inWaterDepth = RasterReader.readRaster(path + "ciresa_depth.asc");
-        c.inVelocity = RasterReader.readRaster(path + "ciresa_speed.asc");
-        c.pm = new LogProgressMonitor();
-        c.process();
-        GridCoverage2D intensity = c.outIntensity;
-        RasterWriter.writeRaster(path + "ciresa_intensity.asc", intensity);
 
     }
 }
