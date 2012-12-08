@@ -42,6 +42,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -79,14 +80,13 @@ public class Curvatures extends JGTModel {
             return;
         }
         checkNull(inElev);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
 
-        RenderedImage elevationRI = inElev.getRenderedImage();
-        RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
+        RandomIter elevationIter =CoverageUtilities.getRandomIterator(inElev);
 
         WritableRaster profWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRaster planWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);

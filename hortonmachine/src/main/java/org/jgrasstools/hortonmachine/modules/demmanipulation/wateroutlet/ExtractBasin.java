@@ -48,7 +48,6 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
-import org.jaitools.jts.PolygonSmoother;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.io.vectorreader.VectorReader;

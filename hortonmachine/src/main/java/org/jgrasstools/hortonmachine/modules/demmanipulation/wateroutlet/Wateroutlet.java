@@ -47,7 +47,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Extract the watershed for a defined outlet.")
+@Description("Extract the watershed for a defined outlet (ported from GRASS r.wateroutlet).")
 @Documentation("Wateroutlet.html")
 @Author(name = "Charles Ehlschlaeger, Andrea Antonello", contact = "US Army Construction Engineering Research Laboratory, http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, FlowDirections")

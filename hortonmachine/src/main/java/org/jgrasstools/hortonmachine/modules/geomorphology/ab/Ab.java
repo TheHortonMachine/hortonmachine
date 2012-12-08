@@ -19,9 +19,7 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.ab;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -42,6 +40,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -78,15 +77,13 @@ public class Ab extends JGTModel {
             return;
         }
         checkNull(inTca, inPlan);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+        double xRes = regionMap.getXres();
 
-        RenderedImage tcaRI = inTca.getRenderedImage();
-        RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-        RenderedImage planRI = inPlan.getRenderedImage();
-        RandomIter planIter = RandomIterFactory.create(planRI, null);
+        RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        RandomIter planIter = CoverageUtilities.getRandomIterator(inPlan);
 
         WritableRaster alungWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
         WritableRandomIter alungIter = RandomIterFactory.createWritable(alungWR, null);
@@ -94,35 +91,35 @@ public class Ab extends JGTModel {
         WritableRandomIter bIter = RandomIterFactory.createWritable(bWR, null);
 
         pm.beginTask(msg.message("ab.calculating"), nRows);
-        for( int i = 0; i < nRows; i++ ) {
+        for( int r = 0; r < nRows; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int j = 0; j < nCols; j++ ) {
-                double planSample = planIter.getSampleDouble(j, i, 0);
+            for( int c = 0; c < nCols; c++ ) {
+                double planSample = planIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(planSample) && planSample != 0.0) {
                     if (xRes > 1 / planSample && planSample >= 0.0) {
-                        bIter.setSample(j, i, 0, 0.1 * xRes);
+                        bIter.setSample(c, r, 0, 0.1 * xRes);
                     } else if (xRes > Math.abs(1 / planSample) && planSample < 0.0) {
-                        bIter.setSample(j, i, 0, xRes + 0.9 * xRes);
+                        bIter.setSample(c, r, 0, xRes + 0.9 * xRes);
                     } else {
                         double bSample = 2 * Math.asin(xRes / (2 * (1 / planSample))) * (1 / planSample - xRes);
-                        bIter.setSample(j, i, 0, bSample);
+                        bIter.setSample(c, r, 0, bSample);
                         if (planSample >= 0.0 && bSample < 0.1 * xRes) {
-                            bIter.setSample(j, i, 0, 0.1 * xRes);
+                            bIter.setSample(c, r, 0, 0.1 * xRes);
                         }
                         if (planSample < 0.0 && bSample > (xRes + 0.9 * xRes)) {
-                            bIter.setSample(j, i, 0, xRes + 0.9 * xRes);
+                            bIter.setSample(c, r, 0, xRes + 0.9 * xRes);
                         }
                     }
                 }
                 if (planSample == 0.0) {
-                    bIter.setSample(j, i, 0, xRes);
+                    bIter.setSample(c, r, 0, xRes);
                 }
-                alungIter.setSample(j, i, 0, tcaIter.getSampleDouble(j, i, 0) * xRes * xRes / bIter.getSampleDouble(j, i, 0));
+                alungIter.setSample(c, r, 0, tcaIter.getSampleDouble(c, r, 0) * xRes * xRes / bIter.getSampleDouble(c, r, 0));
                 if (isNovalue(planSample)) {
-                    alungIter.setSample(j, i, 0, doubleNovalue);
-                    bIter.setSample(j, i, 0, doubleNovalue);
+                    alungIter.setSample(c, r, 0, doubleNovalue);
+                    bIter.setSample(c, r, 0, doubleNovalue);
                 }
             }
             pm.worked(1);

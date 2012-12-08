@@ -53,6 +53,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -95,14 +96,13 @@ public class Aspect extends JGTModel {
             radtodeg = 1.0;
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
 
-        RenderedImage elevationRI = inElev.getRenderedImage();
-        RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
+        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
 
         WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
@@ -110,11 +110,11 @@ public class Aspect extends JGTModel {
         pm.beginTask(msg.message("aspect.calculating"), rows);
 
         // Cycling into the valid region.
-        for( int y = 1; y < rows - 1; y++ ) {
-            for( int x = 1; x < cols - 1; x++ ) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, x, y);
+        for( int r = 1; r < rows - 1; r++ ) {
+            for( int c = 1; c < cols - 1; c++ ) {
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                 double aspect = calculateAspect(node, radtodeg, doRound);
-                aspectIter.setSample(x, y, 0, aspect);
+                aspectIter.setSample(c, r, 0, aspect);
             }
             pm.worked(1);
         }
@@ -147,25 +147,30 @@ public class Aspect extends JGTModel {
         double eValue = node.getEastElev();
 
         if (!isNovalue(centralValue)) {
-            if (!isNovalue(sValue) && !isNovalue(nValue)) {
+            boolean sIsNovalue = isNovalue(sValue);
+            boolean nIsNovalue = isNovalue(nValue);
+            boolean wIsNovalue = isNovalue(wValue);
+            boolean eIsNovalue = isNovalue(eValue);
+
+            if (!sIsNovalue && !nIsNovalue) {
                 aData = atan((nValue - sValue) / (2 * yRes));
-            } else if (isNovalue(nValue) && (!isNovalue(sValue))) {
+            } else if (nIsNovalue && !sIsNovalue) {
                 aData = atan((centralValue - sValue) / (yRes));
-            } else if (!isNovalue(nValue) && isNovalue(sValue)) {
+            } else if (!nIsNovalue && sIsNovalue) {
                 aData = atan((nValue - centralValue) / (yRes));
-            } else if (isNovalue(nValue) && isNovalue(sValue)) {
+            } else if (nIsNovalue && sIsNovalue) {
                 aData = doubleNovalue;
             } else {
                 // can't happen
                 throw new RuntimeException();
             }
-            if (!isNovalue(wValue) && !isNovalue(eValue)) {
+            if (!wIsNovalue && !eIsNovalue) {
                 bData = atan((wValue - eValue) / (2 * xRes));
-            } else if (isNovalue(wValue) && !isNovalue(eValue)) {
+            } else if (wIsNovalue && !eIsNovalue) {
                 bData = atan((centralValue - eValue) / (xRes));
-            } else if (!isNovalue(wValue) && isNovalue(eValue)) {
+            } else if (!wIsNovalue && eIsNovalue) {
                 bData = atan((wValue - centralValue) / (xRes));
-            } else if (isNovalue(wValue) && isNovalue(eValue)) {
+            } else if (wIsNovalue && eIsNovalue) {
                 bData = doubleNovalue;
             } else {
                 // can't happen
