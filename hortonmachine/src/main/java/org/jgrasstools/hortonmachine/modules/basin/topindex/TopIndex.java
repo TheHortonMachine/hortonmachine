@@ -20,9 +20,7 @@ package org.jgrasstools.hortonmachine.modules.basin.topindex;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -43,6 +41,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
@@ -76,32 +75,26 @@ public class TopIndex extends JGTModel {
             return;
         }
         checkNull(inTca, inSlope);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
 
-        RenderedImage tcaRI = inTca.getRenderedImage();
-        RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
-        RenderedImage slopeRI = inSlope.getRenderedImage();
-        RandomIter slopeIter = RandomIterFactory.create(slopeRI, null);
+        RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
+        RandomIter slopeIter = CoverageUtilities.getRandomIterator(inSlope);
 
-        WritableRaster topindexWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
+        WritableRaster topindexWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRandomIter topindexIter = RandomIterFactory.createWritable(topindexWR, null);
 
         pm.beginTask(msg.message("topindex.calculating"), nRows);
-        for( int j = 0; j < nRows; j++ ) {
+        for( int r = 0; r < nRows; r++ ) {
             if (isCanceled(pm)) {
                 return;
             }
-            for( int i = 0; i < nCols; i++ ) {
-                if (isNovalue(tcaIter.getSampleDouble(i, j, 0))) {
-                    topindexIter.setSample(i, j, 0, doubleNovalue);
-                } else {
-                    if (slopeIter.getSampleDouble(i, j, 0) != 0) {
-                        topindexIter.setSample(i, j, 0,
-                                Math.log(tcaIter.getSampleDouble(i, j, 0) / slopeIter.getSampleDouble(i, j, 0)));
-                    } else {
-                        topindexIter.setSample(i, j, 0, doubleNovalue);
+            for( int c = 0; c < nCols; c++ ) {
+                double tcaValue = tcaIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(tcaValue)) {
+                    if (slopeIter.getSampleDouble(c, r, 0) != 0) {
+                        topindexIter.setSample(c, r, 0, Math.log(tcaValue / slopeIter.getSampleDouble(c, r, 0)));
                     }
                 }
             }
