@@ -115,7 +115,7 @@ public class LeastCostFlowDirections extends JGTModel {
 
     private int rows;
 
-    public boolean doExcludeBorder = true;
+    private boolean doExcludeBorder = true;
 
     @Execute
     public void process() throws Exception {
@@ -156,6 +156,7 @@ public class LeastCostFlowDirections extends JGTModel {
         assignedFlowsMap = new BitMatrix(cols, rows);
 
         pm.beginTask("Check for potential outlets...", cols);
+        int nonValidCellsNum = 0;
         for( int c = 0; c < cols; c++ ) {
             if (isCanceled(pm)) {
                 return;
@@ -163,6 +164,7 @@ public class LeastCostFlowDirections extends JGTModel {
             for( int r = 0; r < rows; r++ ) {
                 GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
                 if (!node.isValid()) {
+                    nonValidCellsNum++;
                     assignedFlowsMap.mark(c, r);
                     continue;
                 }
@@ -179,7 +181,7 @@ public class LeastCostFlowDirections extends JGTModel {
         }
         pm.done();
 
-        pm.beginTask("Extract flowdirections...", cols * rows);
+        pm.beginTask("Extract flowdirections...", (rows * cols - nonValidCellsNum));
         GridNode lowestNode = null;
         while( (lowestNode = orderedNodes.pollFirst()) != null ) {
             /*
@@ -236,7 +238,6 @@ public class LeastCostFlowDirections extends JGTModel {
             if (nodeOk(se) && assignFlowDirection(lowestNode, se, s, e)) {
                 setNodeValues(se, SE.getEnteringFlow());
             }
-            pm.worked(1);
         }
         pm.done();
 
@@ -254,6 +255,8 @@ public class LeastCostFlowDirections extends JGTModel {
         int col = node.col;
         int row = node.row;
         flowIter.setSample(col, row, 0, enteringFlow);
+        pm.worked(1);
+
         orderedNodes.add(node);
         assignedFlowsMap.mark(col, row);
 
@@ -294,6 +297,7 @@ public class LeastCostFlowDirections extends JGTModel {
             }
         }
     }
+
     private boolean isInRaster( int col, int row ) {
         if (col < 0 || col >= cols || row < 0 || row >= rows) {
             return false;
