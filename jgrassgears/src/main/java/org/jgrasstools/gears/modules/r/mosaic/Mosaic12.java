@@ -33,11 +33,11 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -117,28 +117,32 @@ public class Mosaic12 extends JGTModel {
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description("The patched map.")
-    @Out
-    public GridCoverage2D outRaster = null;
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outMap = null;
+
+    public GridCoverage2D outRaster;
+
+    public boolean testmode = false;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outRaster == null, doReset)) {
-            return;
-        }
+        if (!testmode)
+            checkNull(outMap);
 
         List<File> filesList = new ArrayList<File>();
-        extracted(filesList, inMap1);
-        extracted(filesList, inMap2);
-        extracted(filesList, inMap3);
-        extracted(filesList, inMap4);
-        extracted(filesList, inMap5);
-        extracted(filesList, inMap6);
-        extracted(filesList, inMap7);
-        extracted(filesList, inMap8);
-        extracted(filesList, inMap9);
-        extracted(filesList, inMap10);
-        extracted(filesList, inMap11);
-        extracted(filesList, inMap12);
+        checkMap(filesList, inMap1);
+        checkMap(filesList, inMap2);
+        checkMap(filesList, inMap3);
+        checkMap(filesList, inMap4);
+        checkMap(filesList, inMap5);
+        checkMap(filesList, inMap6);
+        checkMap(filesList, inMap7);
+        checkMap(filesList, inMap8);
+        checkMap(filesList, inMap9);
+        checkMap(filesList, inMap10);
+        checkMap(filesList, inMap11);
+        checkMap(filesList, inMap12);
 
         if (filesList.size() < 2) {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
@@ -148,10 +152,13 @@ public class Mosaic12 extends JGTModel {
         mosaic.inFiles = filesList;
         mosaic.pm = pm;
         mosaic.process();
+
         outRaster = mosaic.outRaster;
+        if (!testmode)
+            RasterWriter.writeRaster(outMap, outRaster);
     }
 
-    private void extracted( List<File> filesList, String inMap ) {
+    private void checkMap( List<File> filesList, String inMap ) {
         if (inMap != null) {
             File tmp = new File(inMap);
             if (tmp.exists()) {

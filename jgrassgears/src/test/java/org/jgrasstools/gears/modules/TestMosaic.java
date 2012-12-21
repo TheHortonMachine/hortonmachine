@@ -60,6 +60,7 @@ public class TestMosaic extends HMTestCase {
         mosaic.inMap1 = left.getAbsolutePath();
         mosaic.inMap12 = right.getAbsolutePath();
         mosaic.pm = pm;
+        mosaic.testmode = true;
         mosaic.process();
         GridCoverage2D readCoverage = mosaic.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
