@@ -46,7 +46,7 @@ import org.opengis.geometry.DirectPosition;
 @Keywords("Raster, Conversion")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("raster2xyz")
-@Status(Status.EXPERIMENTAL)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 public class Raster2Xyz extends JGTModel {
 
