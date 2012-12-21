@@ -64,6 +64,10 @@ public class Slope extends JGTModel {
     @In
     public GridCoverage2D inFlow = null;
 
+    @Description("If true, negative slopes will be set to the minimum positive value.")
+    @In
+    public boolean doHandleNegativeSlope;
+
     @Description("The map of gradient.")
     @Out
     public GridCoverage2D outSlope = null;
@@ -95,6 +99,9 @@ public class Slope extends JGTModel {
                 double flowValue = flowIter.getSampleDouble(c, r, 0);
                 GridNode node = new GridNode(elevationIter, nCols, nRows, xRes, yRes, c, r);
                 double value = calculateSlope(node, flowValue);
+                if (doHandleNegativeSlope && value < 0) {
+                    value = Double.MIN_VALUE;
+                }
                 slopeWR.setSample(c, r, 0, value);
             }
             pm.worked(1);
