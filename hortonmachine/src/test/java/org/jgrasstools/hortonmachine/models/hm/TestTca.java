@@ -21,14 +21,14 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca.NewTca;
+import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OldTca;
 import org.jgrasstools.hortonmachine.modules.geomorphology.tca.Tca;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Tca} module.
+ * Test the {@link OldTca} module.
  * 
  * @author Giuseppe Formetta
  * @author Andrea Antonello (www.hydrologis.com)
@@ -42,46 +42,30 @@ public class TestTca extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Tca tca = new Tca();
+        OldTca tca = new OldTca();
         tca.inFlow = flowCoverage;
         tca.pm = pm;
         tca.process();
         GridCoverage2D tcaCoverage = tca.outTca;
-        
+
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
     }
 
     public void testNewTca() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
-        
+
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
-        
-        NewTca tca = new NewTca();
+
+        Tca tca = new Tca();
         tca.inFlow = flowCoverage;
         tca.pm = pm;
         tca.process();
         GridCoverage2D tcaCoverage = tca.outTca;
-        
+
+        // PrintUtilities.printCoverageData(tcaCoverage);
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
     }
-    
-//    GridCoverage2D flowCoverage = RasterReader
-//    .readCoverage("/home/moovida/bm_valsole/utm_valsole/cnr_pit/cell/netflow_drain");
-//
-//GridCoverage2D tcaCoverage = null;
-//try {
-//Tca tca = new Tca();
-//tca.inFlow = flowCoverage;
-//tca.pm = pm;
-//tca.process();
-//tcaCoverage = tca.outTca;
-// SimpleFeatureCollection outLoop = tca.outLoop;
-// RasterWriter.writeRaster("/home/moovida/bm_valsole/utm_valsole/cnr_pit/cell/netflow_tca2", tcaCoverage);
-// VectorWriter.writeVector("/home/moovida/bm_valsole/loop.shp", outLoop);
-//} catch (Exception e) {
-//e.printStackTrace();
-//}
 
 }

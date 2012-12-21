@@ -22,12 +22,6 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -35,7 +29,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,35 +38,20 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.utils.CheckPoint;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
-
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
 
 @Description("Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.")
-@Documentation("Tca.html")
-@Author(name = "Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
 @Keywords("Geomorphology, DrainDir, Tca3D, Ab, Multitca")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("tca")
-@Status(Status.CERTIFIED)
+@Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 public class Tca extends JGTModel {
     @Description("The map of flowdirections.")
@@ -88,146 +66,57 @@ public class Tca extends JGTModel {
     @Out
     public SimpleFeatureCollection outLoop = null;
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
-    private int cols;
-    private int rows;
-
-    private SimpleFeatureType loopFT;
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outTca == null, doReset)) {
             return;
         }
         checkNull(inFlow);
-        // prepare the loop featurecollection
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("loop");
-        b.setCRS(inFlow.getCoordinateReferenceSystem());
-        b.add("the_geom", LineString.class);
-        loopFT = b.buildFeatureType();
-        outLoop = FeatureCollections.newCollection();
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
 
         RenderedImage flowRI = inFlow.getRenderedImage();
-
-        pm.message(msg.message("tca.initializematrix"));
-
-        // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, 1.0);
+        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
 
         RandomIter flowIter = RandomIterFactory.create(flowRI, null);
         WritableRandomIter tcaIter = RandomIterFactory.createWritable(tcaWR, null);
 
-        pm.beginTask(msg.message("tca.workingon"), cols);
-
-        boolean loopError = false;
-
-        final int[] point = new int[2];
-        for( int col = 0; col < cols; col++ ) {
-            for( int row = 0; row < rows; row++ ) {
-                // get the directions of the current pixel.
-                double flowValue = flowIter.getSampleDouble(col, row, 0);
-                if (isNovalue(flowValue)) {
-                    tcaIter.setSample(col, row, 0, doubleNovalue);
-                } else {
-                    boolean isSource = ModelsEngine.isSourcePixel(flowIter, col, row);
-                    if (!isSource) {
-                        continue;
-                    }
-                    double tcaValue = tcaIter.getSampleDouble(col, row, 0);
-                    double previousTcaValue = tcaValue;
-                    point[0] = col;
-                    point[1] = row;
-                    // leave the current and go one down
-                    if (!ModelsEngine.go_downstream(point, flowValue)) {
-                        throw new RuntimeException();
-                    }
-                    flowValue = flowIter.getSampleDouble(point[0], point[1], 0);
-                    tcaValue = tcaIter.getSampleDouble(point[0], point[1], 0);
-
-                    TreeSet<CheckPoint> passedPoints = new TreeSet<CheckPoint>();
-                    int index = 0;
-                    while( flowValue < 9 && !isNovalue(flowValue) && flowValue != 0 ) {
-                        if (!passedPoints.add(new CheckPoint(point[0], point[1], index++))) {
-                            // create a shapefile with the loop performed
-                            GridGeometry2D gridGeometry = inFlow.getGridGeometry();
-                            Iterator<CheckPoint> iterator = passedPoints.iterator();
-                            GeometryFactory gf = GeometryUtilities.gf();
-                            List<Coordinate> coordinates = new ArrayList<Coordinate>();
-                            while( iterator.hasNext() ) {
-                                CheckPoint checkPoint = (CheckPoint) iterator.next();
-                                DirectPosition world = gridGeometry.gridToWorld(new GridCoordinates2D(checkPoint.col,
-                                        checkPoint.row));
-                                double[] coord = world.getCoordinate();
-                                coordinates.add(new Coordinate(coord[0], coord[1]));
-                            }
-                            LineString lineString = gf.createLineString(coordinates.toArray(new Coordinate[0]));
-                            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(loopFT);
-                            Object[] values = new Object[]{lineString};
-                            builder.addAll(values);
-                            SimpleFeature feature = builder.buildFeature(null);
-                            outLoop.add(feature);
-
-                            pm.errorMessage(MessageFormat
-                                    .format("The downstream sum passed twice through the same position, there might be an error in your flowdirections. col = {0} row = {1}",
-                                            col, row));
-                            loopError = true;
-                            break;
-                        }
-
-                        double newTcaValue = tcaValue + previousTcaValue;
-                        tcaIter.setSample(point[0], point[1], 0, newTcaValue);
-                        if (tcaValue == 1) {
-                            /*
-                             * if the tcavalue was one, then it is the first time
-                             * we are passing over it, so it is ok to set the previous 
-                             * tca value to cumulate values.
-                             * 
-                             * Instead if the pixel was already touched, then we do 
-                             * not cumulate, we just sum the tca that pas previous to 
-                             * the join point.
-                             */
+        pm.beginTask("Calculating tca...", rows); //$NON-NLS-1$
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                if (flowNode.isSource()) {
+                    double previousTcaValue = 0.0;
+                    while( flowNode != null && flowNode.isValid() ) {
+                        int col = flowNode.col;
+                        int row = flowNode.row;
+                        double tmpTca = tcaIter.getSampleDouble(col, row, 0);
+                        double newTcaValue;
+                        /*
+                         * cumulate only if first time passing, else
+                         * just propagate 
+                         */
+                        if (isNovalue(tmpTca)) {
+                            tmpTca = 1.0;
+                            newTcaValue = tmpTca + previousTcaValue;
                             previousTcaValue = newTcaValue;
+                        } else {
+                            newTcaValue = tmpTca + previousTcaValue;
                         }
-
-                        if (!ModelsEngine.go_downstream(point, flowValue)) {
-                            throw new RuntimeException();
-                        }
-
-                        // update the tca and flow values to those of the new position
-                        // downstream
-                        tcaValue = tcaIter.getSampleDouble(point[0], point[1], 0);
-                        flowValue = flowIter.getSampleDouble(point[0], point[1], 0);
-                    }
-                    if (loopError) {
-                        break;
-                    }
-
-                    if (flowValue == 10) {
-                        tcaIter.setSample(point[0], point[1], 0, tcaValue + 1);
+                        tcaIter.setSample(col, row, 0, newTcaValue);
+                        flowNode = flowNode.goDownstream();
                     }
                 }
-            }
-            if (loopError) {
-                break;
             }
             pm.worked(1);
         }
         pm.done();
-
         flowIter.done();
         tcaIter.done();
 
-        if (loopError) {
-            outTca = CoverageUtilities.buildDummyCoverage();
-        } else {
-            outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
-        }
+        outTca = CoverageUtilities.buildCoverage("tca", tcaWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
 }

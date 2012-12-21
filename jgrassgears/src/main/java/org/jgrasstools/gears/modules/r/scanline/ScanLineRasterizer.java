@@ -121,9 +121,9 @@ public class ScanLineRasterizer extends JGTModel {
     @In
     public Integer pCols = null;
 
-    @Description("Max threads to use (default 15)")
+    @Description("Max threads to use (default 4)")
     @In
-    public Integer pMaxThreads = 15;
+    public Integer pMaxThreads = 4;
 
     @Description("The output raster.")
     @Out
