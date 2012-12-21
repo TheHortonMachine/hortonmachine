@@ -201,7 +201,7 @@ public class ExtractBasin extends JGTModel {
         }
 
         FlowNode runningNode = new FlowNode(flowIter, ncols, nrows, outletColRow[0], outletColRow[1]);
-        runningNode.mark(basinIter, pValue);
+        runningNode.setValueInMap(basinIter, pValue);
         outArea++;
         List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
 
@@ -219,7 +219,7 @@ public class ExtractBasin extends JGTModel {
                                     flowNode.col, flowNode.row));
                     alreadyWarned = true;
                 }
-                flowNode.mark(basinIter, pValue);
+                flowNode.setValueInMap(basinIter, pValue);
                 outArea++;
 
                 List<FlowNode> newEntering = flowNode.getEnteringNodes();

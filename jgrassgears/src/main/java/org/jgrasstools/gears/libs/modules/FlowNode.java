@@ -305,7 +305,7 @@ public class FlowNode {
             e.printStackTrace();
         }
     }
-
+    
     /**
      * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node.
      * 
@@ -539,8 +539,6 @@ public class FlowNode {
         return true;
     }
 
-    public void mark( WritableRandomIter basinIter, double value ) {
-        basinIter.setSample(col, row, 0, value);
-    }
+ 
 
 }
