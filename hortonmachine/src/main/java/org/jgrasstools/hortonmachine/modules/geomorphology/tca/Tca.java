@@ -230,9 +230,4 @@ public class Tca extends JGTModel {
         }
     }
 
-    public static void main( String[] args ) {
-        TreeSet<CheckPoint> p = new TreeSet<CheckPoint>();
-        System.out.println(p.add(new CheckPoint(1, 3, 0)));
-        System.out.println(p.add(new CheckPoint(1, 3, 1)));
-    }
 }
