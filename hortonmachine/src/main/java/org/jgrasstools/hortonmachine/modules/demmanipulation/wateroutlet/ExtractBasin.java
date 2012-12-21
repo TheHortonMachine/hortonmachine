@@ -23,6 +23,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -204,6 +205,7 @@ public class ExtractBasin extends JGTModel {
         outArea++;
         List<FlowNode> enteringNodes = runningNode.getEnteringNodes();
 
+        boolean alreadyWarned = false;
         pm.beginTask(msg.message("wateroutlet.extracting"), -1);
         while( enteringNodes.size() > 0 ) {
             if (pm.isCanceled()) {
@@ -211,6 +213,12 @@ public class ExtractBasin extends JGTModel {
             }
             List<FlowNode> newEnteringNodes = new ArrayList<FlowNode>();
             for( FlowNode flowNode : enteringNodes ) {
+                if (!alreadyWarned && flowNode.touchesBound()) {
+                    pm.errorMessage(MessageFormat
+                            .format("WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
+                                    flowNode.col, flowNode.row));
+                    alreadyWarned = true;
+                }
                 flowNode.mark(basinIter, pValue);
                 outArea++;
 
