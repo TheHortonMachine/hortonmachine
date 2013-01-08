@@ -33,8 +33,14 @@ import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.UI;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.process.Process;
 import org.geotools.process.ProcessException;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -162,6 +168,54 @@ public class JGTModel implements Process {
                         .getClass().getSimpleName());
             }
         }
+    }
+
+    /**
+     * Fast default reading of raster from definition. 
+     * 
+     * <p>If the source format is not supported, and {@link Exception} is thrown.</p>
+     * 
+     * @param source the definition for the raster source.
+     * @return the read {@link GridCoverage2D}.
+     * @throws Exception
+     */
+    protected GridCoverage2D readRaster( String source ) throws Exception {
+        return OmsRasterReader.readRaster(source);
+    }
+
+    /**
+     * Fast default reading of vector from definition. 
+     * 
+     * <p>If the source format is not supported, and {@link Exception} is thrown.</p>
+     * 
+     * @param source the definition to the vector source.
+     * @return the read {@link GridCoverage2D}.
+     * @throws Exception
+     */
+    protected SimpleFeatureCollection readVector( String source ) throws Exception {
+        return OmsVectorReader.readVector(source);
+    }
+
+    /**
+     * Fast default writing of raster to source. 
+     * 
+     * @param raster the {@link GridCoverage2D} to write.
+     * @param source the source to which to write to.
+     * @throws Exception
+     */
+    protected void writeRaster( GridCoverage2D raster, String source ) throws Exception {
+        OmsRasterWriter.writeRaster(source, raster);
+    }
+
+    /**
+     * Fast default writing of vector to source. 
+     * 
+     * @param vector the {@link SimpleFeatureCollection} to write.
+     * @param source the source to which to write to.
+     * @throws Exception
+     */
+    protected void writeVector( SimpleFeatureCollection vector, String source ) throws Exception {
+        OmsVectorWriter.writeVector(source, vector);
     }
 
 }
