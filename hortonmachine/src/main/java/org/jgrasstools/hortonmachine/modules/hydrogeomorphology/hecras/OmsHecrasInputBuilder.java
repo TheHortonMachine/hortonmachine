@@ -58,7 +58,7 @@ import com.vividsolutions.jts.geom.LineString;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class HecrasInputBuilder extends JGTModel {
+public class OmsHecrasInputBuilder extends JGTModel {
 
     @Description("The map of elevation.")
     @In

@@ -69,14 +69,14 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
-@Description("The Adige model.")
+@Description("The OmsAdige model.")
 @Author(name = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology, Energy")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @Name("eicalculator")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EnergyIndexCalculator extends JGTModel {
+public class OmsEnergyIndexCalculator extends JGTModel {
 
     @Description("The digital elevation model (DEM).")
     @In
@@ -474,7 +474,7 @@ public class EnergyIndexCalculator extends JGTModel {
             day_begin[0] = 143;
             day_end[0] = 173;
         } else {
-            throw new ModelsIllegalargumentException("Incorrect in find_days", "EnergyIndexCalculator");
+            throw new ModelsIllegalargumentException("Incorrect in find_days", "OmsEnergyIndexCalculator");
         }
     }
 

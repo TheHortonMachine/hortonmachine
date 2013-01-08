@@ -24,7 +24,7 @@
 //import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 //import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre.DebrisVandre;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre.OmsDebrisVandre;
 //@SuppressWarnings("nls")
 //public class TestDebrisVandre extends HMTestCase {
 //    public void testVandre() throws Exception {
@@ -37,7 +37,7 @@
 //        GridCoverage2D soil = RasterReader.readRaster("soilthick");
 ////        SimpleFeatureCollection obstacles = VectorReader.readVector("");
 //
-//        DebrisVandre v = new DebrisVandre();
+//        OmsDebrisVandre v = new OmsDebrisVandre();
 //        v.inElev = pit;
 //        v.inFlow = netflow;
 //        v.inSlope = slope;

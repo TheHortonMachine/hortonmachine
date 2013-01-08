@@ -9,13 +9,13 @@ import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.EnergyIndexCalculator;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.OmsEnergyIndexCalculator;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test {@link EnergyIndexCalculator}.
+ * Test {@link OmsEnergyIndexCalculator}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -43,7 +43,7 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         double[][] subbasinsData = HMTestMaps.basinDataNN0;
         GridCoverage2D subbasinsCoverage = CoverageUtilities.buildCoverage("subbasins", subbasinsData, envelopeParams, crs, true);
 
-        EnergyIndexCalculator eiCalculator = new EnergyIndexCalculator();
+        OmsEnergyIndexCalculator eiCalculator = new OmsEnergyIndexCalculator();
         eiCalculator.inAspect = aspectCoverage;
         eiCalculator.inCurvatures = nablaCoverage;
         eiCalculator.inElev = pitCoverage;

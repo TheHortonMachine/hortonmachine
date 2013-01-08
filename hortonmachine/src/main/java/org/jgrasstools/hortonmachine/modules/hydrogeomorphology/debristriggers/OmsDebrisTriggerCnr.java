@@ -53,7 +53,7 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class DebrisTriggerCnr extends JGTModel {
+public class OmsDebrisTriggerCnr extends JGTModel {
 
     @Description("The map of elevation.")
     @In

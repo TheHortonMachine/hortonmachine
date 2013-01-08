@@ -47,7 +47,7 @@ import org.joda.time.format.DateTimeFormatter;
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @UI(JGTConstants.HIDE_UI_HINT)
-public class PenmanEtp extends JGTModel {
+public class OmsPenmanEtp extends JGTModel {
 
     // @Description("Baricenter elevation of the HillSlope for every basin on which to calculate.")
     // @Unit("m")

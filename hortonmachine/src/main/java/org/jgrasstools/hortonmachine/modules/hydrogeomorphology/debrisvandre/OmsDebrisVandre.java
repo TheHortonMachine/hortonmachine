@@ -73,7 +73,7 @@ import com.vividsolutions.jts.geom.Point;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class DebrisVandre extends JGTModel {
+public class OmsDebrisVandre extends JGTModel {
 
     @Description("The map of elevation.")
     @In

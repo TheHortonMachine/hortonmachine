@@ -9,12 +9,12 @@
 //import org.jgrasstools.gears.io.timeseries.TimeseriesReaderArray;
 //import org.jgrasstools.gears.io.timeseries.TimeseriesWriterArray;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.Peakflow;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //import org.joda.time.DateTime;
 //
 ///**
-// * Test the {@link Peakflow} module.
+// * Test the {@link OmsPeakflow} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -34,7 +34,7 @@
 //
 //        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 //
-//        Peakflow peakflow = new Peakflow();
+//        OmsPeakflow peakflow = new OmsPeakflow();
 //        peakflow.pm = pm;
 //        peakflow.inTopindex = topindexCoverage;
 //        peakflow.inRescaledsup = supRescaledCoverage;
@@ -90,7 +90,7 @@
 //        List<DateTime> timestampsList = rainReader.timestampsList;
 //        List<double[]> recordsList = rainReader.recordsList;
 //
-//        Peakflow peakflow = new Peakflow();
+//        OmsPeakflow peakflow = new OmsPeakflow();
 //        peakflow.pm = pm;
 //        peakflow.topindexCoverage = topindexCoverage;
 //        peakflow.supRescaledCoverage = supRescaledCoverage;

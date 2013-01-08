@@ -52,9 +52,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the skyview factor.")
-@Documentation("Skyview.html")
+@Documentation("OmsSkyview.html")
 @Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, Insolation, Hillshade")
+@Keywords("Hydrology, Radiation, OmsInsolation, OmsHillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23.")
@@ -62,7 +62,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Name("skyview")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Skyview extends JGTModel {
+public class OmsSkyview extends JGTModel {
     @Description("The map of the elevation.")
     @In
     public GridCoverage2D inElev = null;

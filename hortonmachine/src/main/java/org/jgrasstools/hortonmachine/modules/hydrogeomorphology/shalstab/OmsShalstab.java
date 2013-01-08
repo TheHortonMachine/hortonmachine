@@ -50,15 +50,15 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.ConstantRandomIter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("A version of the Shalstab stability model.")
-@Documentation("Shalstab.html")
+@Description("A version of the OmsShalstab stability model.")
+@Documentation("OmsShalstab.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Shalstab, Hydrology, Trasmissivity")
+@Keywords("OmsShalstab, Hydrology, Trasmissivity")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Name("shalstab")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Shalstab extends JGTModel {
+public class OmsShalstab extends JGTModel {
 
     @Description("The map of slope.")
     @In

@@ -15,10 +15,10 @@
 //import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 //import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.EnergyBalance;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.OmsEnergyBalance;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test EnergyBalance.
+// * Test OmsEnergyBalance.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -109,7 +109,7 @@
 //        dtmonthReader.pSeparator = "\\s+";
 //        dtmonthReader.fileNovalue = "-9999.0";
 //
-//        EnergyBalance energyBalance = new EnergyBalance();
+//        OmsEnergyBalance energyBalance = new OmsEnergyBalance();
 //        energyBalance.pm = pm;
 //        energyBalance.inBasins = basinsFC;
 //        energyBalance.inEnergy = energyList;

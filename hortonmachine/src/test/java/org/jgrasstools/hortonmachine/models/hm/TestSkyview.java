@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview.Skyview;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Skyview} module.
+ * Test the {@link OmsSkyview} module.
  * 
  * @author Daniele Andreis
  */
@@ -39,7 +39,7 @@ public class TestSkyview extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs3004;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        Skyview skyview = new Skyview();
+        OmsSkyview skyview = new OmsSkyview();
         skyview.inElev = elevationCoverage;
         skyview.pm = pm;
         skyview.process();

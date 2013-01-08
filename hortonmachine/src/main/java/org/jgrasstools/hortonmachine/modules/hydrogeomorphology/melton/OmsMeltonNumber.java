@@ -57,7 +57,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class MeltonNumber extends JGTModel {
+public class OmsMeltonNumber extends JGTModel {
 
     @Description("The map of elevation.")
     @In

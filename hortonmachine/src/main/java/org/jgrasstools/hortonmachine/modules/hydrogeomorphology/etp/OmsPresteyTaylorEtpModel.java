@@ -50,10 +50,10 @@ import org.joda.time.format.DateTimeFormatter;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @UI(JGTConstants.ITERATOR_UI_HINT)
 @Name("ptetp")
-@Documentation("PresteyTaylorEtpModel.html")
+@Documentation("OmsPresteyTaylorEtpModel.html")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class PresteyTaylorEtpModel extends JGTModel {
+public class OmsPresteyTaylorEtpModel extends JGTModel {
     @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
     @In
     @Unit("Watt m-2 ")

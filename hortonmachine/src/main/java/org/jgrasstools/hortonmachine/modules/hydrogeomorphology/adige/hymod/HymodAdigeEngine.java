@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.OmsAdige;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.IAdigeEngine;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
@@ -36,7 +36,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Pfafs
 import org.joda.time.DateTime;
 
 /**
- * The Hymod engine for the {@link Adige} framework.
+ * The Hymod engine for the {@link OmsAdige} framework.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)

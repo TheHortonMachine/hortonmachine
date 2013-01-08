@@ -9,13 +9,13 @@
 //import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 //import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.OmsAdige;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodInputs;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //
 ///**
-// * Test Adige.
+// * Test OmsAdige.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -133,7 +133,7 @@
 //        duffyInputs.pMaxSatVolumeS2 = 0.25;
 //        // adige.inInitialconditions = inBoundaryConditions;
 //
-//        Adige adige = new Adige();
+//        OmsAdige adige = new OmsAdige();
 //        adige.pm = pm;
 //        adige.inDuffyInput = duffyInputs;
 //        adige.inHillslope = hillslopeFC;
@@ -291,7 +291,7 @@
 //        hymodInputs.pRq = 0.12;
 //        hymodInputs.pQ0 = 10.0;
 //
-//        Adige adige = new Adige();
+//        OmsAdige adige = new OmsAdige();
 //        adige.pm = pm;
 //        adige.inHymodInput = hymodInputs;
 //        adige.inHillslope = hillslopeFC;

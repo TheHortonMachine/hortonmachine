@@ -18,7 +18,7 @@ package org.jgrasstools.hortonmachine.models.hm;
 //import eu.hydrologis.jgrass.hortonmachine.utils.HMTestCase;
 //
 ///**
-// * Test {@link EnergyIndexCalculator}.
+// * Test {@link OmsEnergyIndexCalculator}.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -74,7 +74,7 @@ package org.jgrasstools.hortonmachine.models.hm;
 //        reader.readCoverage();
 //        GridCoverage2D subbCoverage = reader.coverage;
 //
-//        EnergyIndexCalculator eiCalculator = new EnergyIndexCalculator();
+//        OmsEnergyIndexCalculator eiCalculator = new OmsEnergyIndexCalculator();
 //        eiCalculator.aspectCoverage = aspectCoverage;
 //        eiCalculator.curvaturesCoverage = nablaCoverage;
 //        eiCalculator.elevationCoverage = pitCoverage;

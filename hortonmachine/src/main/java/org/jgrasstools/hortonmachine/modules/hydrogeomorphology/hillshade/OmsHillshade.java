@@ -52,9 +52,9 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("This class evalutate the hillshade of a DEM.")
-@Documentation("Hillshade.html")
+@Documentation("OmsHillshade.html")
 @Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, SkyviewFactor, Insolation")
+@Keywords("Hydrology, Radiation, SkyviewFactor, OmsInsolation")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
@@ -63,7 +63,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Name("hillshade")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Hillshade extends JGTModel {
+public class OmsHillshade extends JGTModel {
     @Description("The map of the elevation.")
     @In
     public GridCoverage2D inElev = null;

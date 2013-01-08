@@ -43,7 +43,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(JGTConstants.ITERATOR_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class FaoEtpModel extends JGTModel {
+public class OmsFaoEtpModel extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
     @In
@@ -110,7 +110,7 @@ public class FaoEtpModel extends JGTModel {
     public void process() throws Exception {
         checkNull(inNetradiation, inWind, inTemp, inRh, inPressure);
 
-        FaoEtp faoEtp = new FaoEtp();
+        OmsFaoEtp faoEtp = new OmsFaoEtp();
 
         TimeSeriesIteratorReader netradReader = getTimeseriesReader(inNetradiation, fId);
         TimeSeriesIteratorReader windReader = getTimeseriesReader(inWind, fId);

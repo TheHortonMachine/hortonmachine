@@ -22,9 +22,9 @@
 //import org.jgrasstools.gears.io.rasterreader.RasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.DebrisTriggerCnr;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.OmsDebrisTriggerCnr;
 ///**
-// * Test for the {@link DebrisTriggerCnr} module.
+// * Test for the {@link OmsDebrisTriggerCnr} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -42,7 +42,7 @@
 //        GridCoverage2D net = RasterReader.readRaster(inRasterPath2);
 //        GridCoverage2D tca = RasterReader.readRaster(inRasterPath3);
 //
-//        DebrisTriggerCnr dt = new DebrisTriggerCnr();
+//        OmsDebrisTriggerCnr dt = new OmsDebrisTriggerCnr();
 //        dt.inElev = elev;
 //        dt.inNet = net;
 //        dt.inTca = tca;

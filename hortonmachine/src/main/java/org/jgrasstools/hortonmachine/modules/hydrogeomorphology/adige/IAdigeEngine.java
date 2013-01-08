@@ -25,7 +25,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDisc
 import org.joda.time.DateTime;
 
 /**
- * Interface for models that can be used inside the {@link Adige} framework.
+ * Interface for models that can be used inside the {@link OmsAdige} framework.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)

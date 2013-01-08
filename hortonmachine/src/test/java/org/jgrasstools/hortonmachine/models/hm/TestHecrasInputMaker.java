@@ -23,10 +23,10 @@
 //import org.jgrasstools.gears.io.rasterreader.RasterReader;
 //import org.jgrasstools.gears.io.vectorreader.VectorReader;
 //import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.HecrasInputBuilder;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test for the {@link HecrasInputBuilder} module.
+// * Test for the {@link OmsHecrasInputBuilder} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -46,7 +46,7 @@
 //        SimpleFeatureCollection riverMap = VectorReader.readVector(inRiverPath);
 //        // SimpleFeatureCollection sectionsMap = VectorReader.readVector(inSectionsPath);
 //
-//        HecrasInputBuilder hecras = new HecrasInputBuilder();
+//        OmsHecrasInputBuilder hecras = new OmsHecrasInputBuilder();
 //        hecras.inElev = elevMap;
 //        hecras.inRiver = riverMap;
 //        // hecras.inSections = sectionsMap;

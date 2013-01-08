@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade.Hillshade;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hillshade.OmsHillshade;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Hillshade} module.
+ * Test the {@link OmsHillshade} module.
  * 
  * @author Daniele Andreis
  */
@@ -40,7 +40,7 @@ public class TestHillshade extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs3004;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        Hillshade hillshade = new Hillshade();
+        OmsHillshade hillshade = new OmsHillshade();
         hillshade.inElev = elevationCoverage;
         hillshade.pElev = 45.0;
         hillshade.pAzimuth = 315;

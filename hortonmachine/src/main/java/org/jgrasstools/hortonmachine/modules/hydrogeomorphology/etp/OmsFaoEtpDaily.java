@@ -46,7 +46,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @UI(JGTConstants.ITERATOR_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class FaoEtpDaily extends JGTModel {
+public class OmsFaoEtpDaily extends JGTModel {
 
     @Description("The net Radiation at the grass surface in W/m2 for the current day.")
     @In

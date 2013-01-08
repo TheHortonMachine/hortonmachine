@@ -8,7 +8,7 @@ import org.geotools.data.DataUtilities;
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.PresteyTaylorEtpModel;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
 /**
@@ -37,7 +37,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
         TimeSeriesIteratorReader pressReader = getTimeseriesReader(pressureUrl, fId, startDate, endDate, timeStepMinutes);
         TimeSeriesIteratorReader netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate, timeStepMinutes);
 
-        PresteyTaylorEtpModel PTEtp = new PresteyTaylorEtpModel();
+        OmsPresteyTaylorEtpModel PTEtp = new OmsPresteyTaylorEtpModel();
 
         while( tempReader.doProcess ) {
             tempReader.nextRecord();
@@ -81,7 +81,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
         pressReader = getTimeseriesReader(pressureUrl, fId, startDate, endDate, timeStepMinutes);
         netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate, timeStepMinutes);
 
-        PTEtp = new PresteyTaylorEtpModel();
+        PTEtp = new OmsPresteyTaylorEtpModel();
 
         while( tempReader.doProcess ) {
             tempReader.nextRecord();

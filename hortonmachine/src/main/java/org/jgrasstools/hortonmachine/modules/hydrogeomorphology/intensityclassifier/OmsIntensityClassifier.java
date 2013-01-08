@@ -49,11 +49,11 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Flooding")
 @Label(JGTConstants.RASTERPROCESSING)
-// @Documentation("IntensityClassifier.html")
+// @Documentation("OmsIntensityClassifier.html")
 @Name("intensityclassifier")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class IntensityClassifier extends JGTModel {
+public class OmsIntensityClassifier extends JGTModel {
 
     @Description("The map of the water depth.")
     @Unit("[m]")

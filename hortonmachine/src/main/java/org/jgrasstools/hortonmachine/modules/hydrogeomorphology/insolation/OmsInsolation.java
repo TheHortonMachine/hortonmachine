@@ -63,9 +63,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
 @Description("Calculate the amount of power incident on a surface in a period of time.")
-@Documentation("Insolation.html")
+@Documentation("OmsInsolation.html")
 @Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, SkyviewFactor, Hillshade")
+@Keywords("Hydrology, Radiation, SkyviewFactor, OmsHillshade")
 @Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
         + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
         + ", International Journal of Geographical Information Science 17(1), 1–23. and"
@@ -74,7 +74,7 @@ import com.vividsolutions.jts.geom.Point;
 @Name("insolation")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Insolation extends JGTModel {
+public class OmsInsolation extends JGTModel {
     @Description("The map of the elevation.")
     @In
     public GridCoverage2D inElev = null;

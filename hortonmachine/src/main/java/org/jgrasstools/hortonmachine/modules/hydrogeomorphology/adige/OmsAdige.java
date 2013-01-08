@@ -28,11 +28,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
@@ -43,8 +43,6 @@ import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Dams;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Hydrometers;
@@ -62,13 +60,13 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-@Description("The Adige model.")
+@Description("The OmsAdige model.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Hydrology")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Adige extends JGTModel {
+public class OmsAdige extends JGTModel {
 
     @Description("The hillslope data.")
     @In

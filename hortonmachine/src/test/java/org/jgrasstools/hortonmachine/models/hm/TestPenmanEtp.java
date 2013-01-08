@@ -10,7 +10,7 @@
 //import org.jgrasstools.gears.io.adige.VegetationLibraryRecord;
 //import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 //import org.jgrasstools.gears.io.timedependent.TimeseriesByStepWriterId2Value;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.PenmanEtp;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.OmsPenmanEtp;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
 // * Test Penman Evapotranspiration..
@@ -55,7 +55,7 @@
 //        HashMap<Integer, VegetationLibraryRecord> vegetationData = vegetationReader.data;
 //        vegetationReader.close();
 //
-//        PenmanEtp penmanEtp = new PenmanEtp();
+//        OmsPenmanEtp penmanEtp = new OmsPenmanEtp();
 //        penmanEtp.inVegetation = vegetationData;
 //
 //        TimeseriesByStepWriterId2Value etpWriter = new TimeseriesByStepWriterId2Value();

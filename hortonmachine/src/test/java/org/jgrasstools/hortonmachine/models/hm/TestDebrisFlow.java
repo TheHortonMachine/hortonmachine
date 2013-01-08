@@ -22,9 +22,9 @@
 //import org.jgrasstools.gears.io.rasterreader.RasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
-//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.DebrisFlow;
+//import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.OmsDebrisFlow;
 ///**
-// * Test for the {@link DebrisFlow} module.
+// * Test for the {@link OmsDebrisFlow} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -38,7 +38,7 @@
 //            String flowPath = "";
 //            String depoPath = "";
 //            GridCoverage2D elev = RasterReader.readRaster(inRasterPath);
-//            DebrisFlow dt = new DebrisFlow();
+//            OmsDebrisFlow dt = new OmsDebrisFlow();
 //            dt.inElev = elev;
 //            dt.pMontecarlo = m;
 //            dt.pMcoeff = c;

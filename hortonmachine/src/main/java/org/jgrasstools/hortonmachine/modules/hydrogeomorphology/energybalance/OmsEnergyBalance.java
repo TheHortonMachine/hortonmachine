@@ -85,7 +85,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EnergyBalance extends JGTModel {
+public class OmsEnergyBalance extends JGTModel {
 
     private static final int GLACIER_SWE = 2000;
 

@@ -31,7 +31,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.Adige;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.OmsAdige;
 import org.joda.time.DateTime;
 
 /**
@@ -265,8 +265,8 @@ public class RungeKuttaFelberg {
 
             if (doLog) {
                 outputStream.message("->  "
-                        + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(Adige.adigeFormatter) + " / "
-                        + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(Adige.adigeFormatter)
+                        + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(OmsAdige.adigeFormatter) + " / "
+                        + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(OmsAdige.adigeFormatter)
                         + " Outlet Duffy Discharge: " + initialConditions[0]);
             }
             // int hillslopeNum = rainArray.length;
@@ -314,8 +314,8 @@ public class RungeKuttaFelberg {
             double currentDischarge = initialConditions[0] + initialConditions[hillslopeNum];
 
             outputStream.message("->  "
-                    + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(Adige.adigeFormatter) + " / "
-                    + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(Adige.adigeFormatter) + " "
+                    + new DateTime((long) (currentTimeInMinutes * 60.0 * 1000.0)).toString(OmsAdige.adigeFormatter) + " / "
+                    + new DateTime((long) (intervalEndTimeInMinutes * 60. * 1000.)).toString(OmsAdige.adigeFormatter) + " "
                     + currentDischarge + " with avg rain: " + sum);
         } else {
             outputStream.errorMessage("WARNING, UNEXPECTED");

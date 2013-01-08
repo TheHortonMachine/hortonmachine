@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.shalstab.Shalstab;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.shalstab.OmsShalstab;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Shalstab} module.
+ * Test the {@link OmsShalstab} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestShalstab extends HMTestCase {
         double[][] abData = HMTestMaps.abData;
         GridCoverage2D abCoverage = CoverageUtilities.buildCoverage("ab", abData, envelopeParams, crs, true);
         
-        Shalstab shalstab = new Shalstab();
+        OmsShalstab shalstab = new OmsShalstab();
         shalstab.inSlope = slopeCoverage;
         shalstab.inTca = abCoverage;
         shalstab.pTrasmissivity = 0.001;

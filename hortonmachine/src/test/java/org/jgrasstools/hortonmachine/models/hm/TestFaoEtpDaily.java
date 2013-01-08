@@ -10,7 +10,7 @@ import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.FaoEtpDaily;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.OmsFaoEtpDaily;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
  * Test FAO daily evapotranspiration.
@@ -46,7 +46,7 @@ public class TestFaoEtpDaily extends HMTestCase {
         TimeSeriesIteratorReader netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate,
                 timeStepMinutes);
 
-        FaoEtpDaily faoEtpDaily = new FaoEtpDaily();
+        OmsFaoEtpDaily faoEtpDaily = new OmsFaoEtpDaily();
 
         while( maxtempReader.doProcess ) {
             maxtempReader.nextRecord();

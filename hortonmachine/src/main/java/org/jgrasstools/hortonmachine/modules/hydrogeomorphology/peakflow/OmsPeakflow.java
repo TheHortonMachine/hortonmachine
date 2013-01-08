@@ -59,15 +59,15 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.je
 import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
 import org.joda.time.DateTime;
 
-@Description("The Peakflow semidistributed hydrologic model.")
-@Documentation("Peakflow.html")
+@Description("The OmsPeakflow semidistributed hydrologic model.")
+@Documentation("OmsPeakflow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Peakflow, Discharge, Hydrologic, Cb, RescaledDistance")
+@Keywords("OmsPeakflow, Discharge, Hydrologic, Cb, RescaledDistance")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Name("peakflow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Peakflow extends JGTModel {
+public class OmsPeakflow extends JGTModel {
 
     @Description("The a parameter for statistic rain calculations.")
     @Unit("mm/h^m")
@@ -200,11 +200,11 @@ public class Peakflow extends JGTModel {
 
         // check the case
         if (pA != -1 && pN != -1 && widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1) {
-            pm.message("Peakflow launched in statistic mode...");
+            pm.message("OmsPeakflow launched in statistic mode...");
             isStatistics = true;
             isReal = false;
         } else if (widthfunctionSupCb != null && pCelerity != -1 && pDiffusion != -1 && inRainfall != null) {
-            pm.message("Peakflow launched with real rain...");
+            pm.message("OmsPeakflow launched with real rain...");
             isStatistics = false;
             isReal = true;
         } else {
