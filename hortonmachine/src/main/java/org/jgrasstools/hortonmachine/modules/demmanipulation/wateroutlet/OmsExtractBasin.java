@@ -58,7 +58,7 @@ import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.modules.v.smoothing.LineSmootherMcMaster;
+import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -284,7 +284,7 @@ public class OmsExtractBasin extends JGTModel {
             SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
             newCollection.add(FeatureUtilities.toDummyFeature(lineString));
 
-            LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+            OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
             smoother.inVector = newCollection;
             smoother.pLookahead = 5;
             smoother.pSlide = 0.9;

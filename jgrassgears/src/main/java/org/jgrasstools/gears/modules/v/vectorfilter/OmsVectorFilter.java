@@ -39,14 +39,14 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
 @Description("Module that creates a subset of a vector based on a filtered vector.")
-@Documentation("VectorFilter.html")
+@Documentation("OmsVectorFilter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Filter, Vector, VectorReshaper")
+@Keywords("Filter, Vector, OmsVectorReshaper")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vfilter")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorFilter extends JGTModel {
+public class OmsVectorFilter extends JGTModel {
 
     @Description("The vector to filter.")
     @In

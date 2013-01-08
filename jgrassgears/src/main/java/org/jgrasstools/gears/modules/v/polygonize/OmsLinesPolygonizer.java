@@ -54,7 +54,7 @@ import com.vividsolutions.jts.operation.polygonize.Polygonizer;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LinesPolygonizer extends JGTModel {
+public class OmsLinesPolygonizer extends JGTModel {
 
     @Description("The map of lines to polygonize.")
     @In

@@ -20,11 +20,11 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 //import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
-//import org.jgrasstools.gears.modules.v.grids.GridsGenerator;
+//import org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
 ///**
-// * Test for {@link GridsGenerator}
+// * Test for {@link OmsGridsGenerator}
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -36,7 +36,7 @@
 //
 //        SimpleFeatureCollection inFC = OmsVectorReader.readVector(inVector);
 //
-//        GridsGenerator grid = new GridsGenerator();
+//        OmsGridsGenerator grid = new OmsGridsGenerator();
 //        grid.pm = pm;
 //        grid.inVector = inFC;
 //
@@ -48,7 +48,7 @@
 //        SimpleFeatureCollection outMap = grid.outMap;
 //        OmsVectorWriter.writeVector(outVector, outMap);
 //
-//        // GridsGenerator grid = new GridsGenerator();
+//        // OmsGridsGenerator grid = new OmsGridsGenerator();
 //        // grid.pm = pm;
 //        // grid.pCode = "EPSG:32632";
 //        //

@@ -74,7 +74,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class MarchingSquaresVectorializer extends JGTModel {
+public class OmsMarchingSquaresVectorializer extends JGTModel {
 
     @Description("The coverage that has to be converted.")
     @In

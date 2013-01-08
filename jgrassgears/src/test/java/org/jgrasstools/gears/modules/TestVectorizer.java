@@ -22,7 +22,7 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
+import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Test for {@link Vectorizer}.
+ * Test for {@link OmsVectorizer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -44,7 +44,7 @@ public class TestVectorizer extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        Vectorizer vectorizer = new Vectorizer();
+        OmsVectorizer vectorizer = new OmsVectorizer();
         vectorizer.pm = pm;
         vectorizer.inRaster = inCoverage;
         vectorizer.pValue = 2.0;

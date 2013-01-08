@@ -54,14 +54,14 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 @Description("The McMasters Sliding Averaging smoothing algorithm.")
-@Documentation("LineSmootherMcMaster.html")
+@Documentation("OmsLineSmootherMcMaster.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Smoothing, Vector, LineSmootherJaitools")
+@Keywords("Smoothing, Vector, OmsLineSmootherJaitools")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("linesmoother")
 @License("General Public License Version 3 (GPLv3)")
-public class LineSmootherMcMaster extends JGTModel {
+public class OmsLineSmootherMcMaster extends JGTModel {
 
     @Description("The vector containing the lines to be smoothed.")
     @In
@@ -232,7 +232,7 @@ public class LineSmootherMcMaster extends JGTModel {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
         SimpleFeatureCollection initialFC = OmsShapefileFeatureReader.readShapefile(shapePath);
 
-        LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
         smoother.pm = pm;
         smoother.pLimit = 10;
         smoother.inVector = initialFC;

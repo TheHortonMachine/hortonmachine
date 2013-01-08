@@ -39,14 +39,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
 
 @Description("Module that rounds a defined field attribute.")
-@Documentation("VectorFieldRounder.html")
+@Documentation("OmsVectorFieldRounder.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Round, VectorFieldJoiner")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vround")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorFieldRounder extends JGTModel {
+public class OmsVectorFieldRounder extends JGTModel {
 
     @Description("The vector of which to round a numeric value.")
     @In

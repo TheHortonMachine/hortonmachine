@@ -73,7 +73,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 @Description("Module for raster to vector conversion.")
-@Documentation("Vectorizer.html")
+@Documentation("OmsVectorizer.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Vector, OmsScanLineRasterizer")
 @Status(Status.CERTIFIED)
@@ -81,7 +81,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 @Name("vectorizer")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class Vectorizer extends JGTModel {
+public class OmsVectorizer extends JGTModel {
 
     @Description("The raster that has to be converted.")
     @In

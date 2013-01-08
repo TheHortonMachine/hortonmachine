@@ -45,14 +45,14 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module to convert dxf files to geotools vecotors.")
-@Documentation("DxfConverter.html")
+@Documentation("OmsDxfConverter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, DwgConverter, Feature, Vector, Reading")
+@Keywords("IO, OmsDwgConverter, Feature, Vector, Reading")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("dxfimport")
 @License("General Public License Version 3 (GPLv3)")
-public class DxfConverter extends JGTModel {
+public class OmsDxfConverter extends JGTModel {
     @Description("The dxf file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In

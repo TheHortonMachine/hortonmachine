@@ -48,14 +48,14 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 
 @Description("The line smoother from the jaitools project.")
-@Documentation("LineSmootherJaitools.html")
+@Documentation("OmsLineSmootherJaitools.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Smoothing, Vector")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("linesmootherjai")
 @License("General Public License Version 3 (GPLv3)")
-public class LineSmootherJaitools extends JGTModel {
+public class OmsLineSmootherJaitools extends JGTModel {
 
     @Description("The vector containing the lines to be smoothed.")
     @In

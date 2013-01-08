@@ -26,7 +26,7 @@
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 //import org.jgrasstools.gears.modules.r.transformer.OmsRasterResolutionResampler;
-//import org.jgrasstools.gears.modules.v.vectorreprojector.VectorReprojector;
+//import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.gears.utils.HMTestMaps;
 //import org.jgrasstools.gears.utils.coverage.CoverageUtilities;

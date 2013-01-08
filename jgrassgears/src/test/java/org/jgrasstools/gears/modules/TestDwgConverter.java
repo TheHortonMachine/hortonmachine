@@ -21,15 +21,15 @@
 //import java.net.URL;
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.modules.v.vectorconverter.DwgConverter;
-//import org.jgrasstools.gears.modules.v.vectorconverter.DxfConverter;
+//import org.jgrasstools.gears.modules.v.vectorconverter.OmsDwgConverter;
+//import org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.opengis.feature.simple.SimpleFeature;
 //
 //import com.vividsolutions.jts.geom.Coordinate;
 //import com.vividsolutions.jts.geom.Geometry;
 ///**
-// * Test for the {@link DwgConverter}
+// * Test for the {@link OmsDwgConverter}
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -40,7 +40,7 @@
 //        URL testUrl = this.getClass().getClassLoader().getResource("test.dxf");
 //        String dxfFile = new File(testUrl.toURI()).getAbsolutePath();
 //
-//        DwgConverter reader = new DwgConverter();
+//        OmsDwgConverter reader = new OmsDwgConverter();
 //        reader.file = dxfFile;
 //        reader.readFeatureCollection();
 //

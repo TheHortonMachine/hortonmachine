@@ -61,7 +61,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Status(Status.DRAFT)
 @Label(JGTConstants.VECTORPROCESSING)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SourcesDirectionCalculator extends JGTModel {
+public class OmsPointDirectionCalculator extends JGTModel {
 
     @Description("The source point features.")
     @In

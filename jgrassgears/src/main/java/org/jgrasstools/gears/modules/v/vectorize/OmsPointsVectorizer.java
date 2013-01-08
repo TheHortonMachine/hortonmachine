@@ -59,7 +59,7 @@ import com.vividsolutions.jts.geom.Point;
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("pvectorizer")
 @License("General Public License Version 3 (GPLv3)")
-public class PointsVectorizer extends JGTModel {
+public class OmsPointsVectorizer extends JGTModel {
 
     @Description("The raster that has to be converted.")
     @In

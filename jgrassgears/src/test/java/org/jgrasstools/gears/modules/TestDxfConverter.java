@@ -21,14 +21,14 @@ import java.io.File;
 import java.net.URL;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.modules.v.vectorconverter.DxfConverter;
+import org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 /**
- * Test for the {@link DxfConverter}
+ * Test for the {@link OmsDxfConverter}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -39,7 +39,7 @@ public class TestDxfConverter extends HMTestCase {
         URL testUrl = this.getClass().getClassLoader().getResource("test.dxf");
         String dxfFile = new File(testUrl.toURI()).getAbsolutePath();
 
-        DxfConverter reader = new DxfConverter();
+        OmsDxfConverter reader = new OmsDxfConverter();
         reader.file = dxfFile;
         reader.readFeatureCollection();
 

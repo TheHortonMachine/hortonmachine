@@ -22,7 +22,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.modules.v.vectorfieldrounder.VectorFieldRounder;
+import org.jgrasstools.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -32,7 +32,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 /**
- * Test {@link VectorFieldRounder}.
+ * Test {@link OmsVectorFieldRounder}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -55,7 +55,7 @@ public class TestVectorFieldRounder extends HMTestCase {
         SimpleFeature feature = builder.buildFeature(type.getTypeName() + ".0");
         newCollection.add(feature);
 
-        VectorFieldRounder rounder = new VectorFieldRounder();
+        OmsVectorFieldRounder rounder = new OmsVectorFieldRounder();
         rounder.inVector = newCollection;
         rounder.fRound = "area";
         rounder.pPattern = ".##";

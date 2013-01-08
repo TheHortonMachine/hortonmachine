@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.Point;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class ContourLinesLabeler extends JGTModel {
+public class OmsContourLinesLabeler extends JGTModel {
 
     @Description("The contour lines.")
     @In

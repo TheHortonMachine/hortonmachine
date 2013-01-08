@@ -40,8 +40,6 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -57,11 +55,11 @@ import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 @Description("A module that performs a buffer operation on a vector layer.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("JTS, Buffer")
+@Keywords("JTS, OmsBuffer")
 @Status(Status.EXPERIMENTAL)
 @Name("vbuffer")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Buffer extends JGTModel {
+public class OmsBuffer extends JGTModel {
 
     @Description("The input vector map.")
     @In

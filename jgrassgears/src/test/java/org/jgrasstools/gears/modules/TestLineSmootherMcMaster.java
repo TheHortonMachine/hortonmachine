@@ -24,7 +24,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.modules.v.smoothing.LineSmootherMcMaster;
+import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.io.WKTReader;
 /**
- * Test {@link LineSmootherMcMaster}.
+ * Test {@link OmsLineSmootherMcMaster}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -58,7 +58,7 @@ public class TestLineSmootherMcMaster extends HMTestCase {
         SimpleFeature feature = builder.buildFeature(type.getTypeName() + ".0");
         newCollection.add(feature);
 
-        LineSmootherMcMaster smoother = new LineSmootherMcMaster();
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
         smoother.inVector = newCollection;
         smoother.pLookahead = 3;
         smoother.pSlide = 0.9;

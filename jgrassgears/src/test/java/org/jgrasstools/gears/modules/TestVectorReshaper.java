@@ -22,7 +22,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.modules.v.vectorreshaper.VectorReshaper;
+import org.jgrasstools.gears.modules.v.vectorreshaper.OmsVectorReshaper;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -34,7 +34,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.MultiPoint;
 /**
- * Test for the {@link VectorReshaper}.
+ * Test for the {@link OmsVectorReshaper}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -45,7 +45,7 @@ public class TestVectorReshaper extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        VectorReshaper reshaper = new VectorReshaper();
+        OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
         reshaper.pCql = "newcat=cat*2 \n newcat2=cat*4";
         reshaper.process();
@@ -68,7 +68,7 @@ public class TestVectorReshaper extends HMTestCase {
         String cql = "the_geom=buffer(the_geom, 20.0)";
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
-        VectorReshaper reshaper = new VectorReshaper();
+        OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
         reshaper.pCql = cql;
         reshaper.process();
@@ -99,7 +99,7 @@ public class TestVectorReshaper extends HMTestCase {
         SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         newCollection.add(feature);
 
-        VectorReshaper reshaper = new VectorReshaper();
+        OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = newCollection;
         reshaper.pCql = cql;
         reshaper.process();
@@ -116,7 +116,7 @@ public class TestVectorReshaper extends HMTestCase {
         String cql = "the_geom=centroid(the_geom)";
 
         SimpleFeatureCollection testFC = HMTestMaps.testLeftFC;
-        VectorReshaper reshaper = new VectorReshaper();
+        OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
         reshaper.pCql = cql;
         reshaper.process();

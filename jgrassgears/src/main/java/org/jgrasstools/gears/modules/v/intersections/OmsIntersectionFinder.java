@@ -58,7 +58,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class IntersectionFinder extends JGTModel {
+public class OmsIntersectionFinder extends JGTModel {
 
     @Description("The map to test for intersections.")
     @In

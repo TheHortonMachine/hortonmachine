@@ -71,7 +71,7 @@ import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LineIntersectionCorrector extends JGTModel {
+public class OmsLineIntersectionCorrector extends JGTModel {
 
     @Description("The features to be corrected.")
     @In

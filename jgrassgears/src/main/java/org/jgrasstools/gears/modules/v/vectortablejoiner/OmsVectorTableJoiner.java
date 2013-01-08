@@ -41,14 +41,14 @@ import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
 
 @Description("Module that joins attributes from one vector into another based on a common field.")
-@Documentation("VectorTableJoiner.html")
+@Documentation("OmsVectorTableJoiner.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Join, VectorFieldRounder")
+@Keywords("Join, OmsVectorFieldRounder")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vjoin")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorTableJoiner extends JGTModel {
+public class OmsVectorTableJoiner extends JGTModel {
 
     @Description("The vector to extend.")
     @In

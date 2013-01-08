@@ -54,7 +54,7 @@ import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
-import org.jgrasstools.gears.modules.v.vectorize.Vectorizer;
+import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -235,7 +235,7 @@ public class OmsBasinShape extends JGTModel {
                 }
 
                 // extract the feature polygon of that basin number
-                Vectorizer vectorizer = new Vectorizer();
+                OmsVectorizer vectorizer = new OmsVectorizer();
                 try {
                     vectorizer.inRaster = inBasins;
                     vectorizer.pm = pm;

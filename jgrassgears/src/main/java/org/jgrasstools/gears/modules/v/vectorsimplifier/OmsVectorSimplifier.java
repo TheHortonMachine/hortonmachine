@@ -48,14 +48,14 @@ import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
 @Description("Collection of vector simplification algorithms.")
-@Documentation("VectorSimplifier.html")
+@Documentation("OmsVectorSimplifier.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Simplify, LineSmootherMcMaster, LineSmootherJaitools")
+@Keywords("Simplify, OmsLineSmootherMcMaster, OmsLineSmootherJaitools")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("vsimplify")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorSimplifier extends JGTModel {
+public class OmsVectorSimplifier extends JGTModel {
 
     @Description("The vector to be simplified.")
     @In

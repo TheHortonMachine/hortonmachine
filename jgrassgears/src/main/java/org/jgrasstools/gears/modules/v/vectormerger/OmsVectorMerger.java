@@ -43,14 +43,14 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description("Module for merging vecotrs into one single.")
-@Documentation("VectorMerger.html")
+@Documentation("OmsVectorMerger.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Feature, Vector, Merge")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vmerge")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorMerger extends JGTModel {
+public class OmsVectorMerger extends JGTModel {
     @Description("The input vectors to be merged.")
     @In
     public List<SimpleFeatureCollection> inVectors;

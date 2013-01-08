@@ -26,8 +26,8 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.modules.v.vectorfieldrounder.VectorFieldRounder;
-import org.jgrasstools.gears.modules.v.vectortablejoiner.VectorTableJoiner;
+import org.jgrasstools.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder;
+import org.jgrasstools.gears.modules.v.vectortablejoiner.OmsVectorTableJoiner;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -37,7 +37,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 /**
- * Test {@link VectorFieldRounder}.
+ * Test {@link OmsVectorFieldRounder}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -68,7 +68,7 @@ public class TestVectorTableJoiner extends HMTestCase {
         List<Object> area2 = Arrays.asList(new Object[]{67.89});
         tabledata.put("area2", area2);
 
-        VectorTableJoiner joiner = new VectorTableJoiner();
+        OmsVectorTableJoiner joiner = new OmsVectorTableJoiner();
         joiner.inVector = newCollection;
         joiner.tabledata = tabledata;
         joiner.fCommon = "id";

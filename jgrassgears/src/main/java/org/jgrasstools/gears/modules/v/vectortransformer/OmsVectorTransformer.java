@@ -50,7 +50,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Status(Status.CERTIFIED)
 @Name("vtrans")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorTransformer extends JGTModel {
+public class OmsVectorTransformer extends JGTModel {
 
     @Description("The feature collection that has to be transformed.")
     @In

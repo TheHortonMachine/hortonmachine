@@ -29,7 +29,7 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
-//import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
+//import org.jgrasstools.gears.modules.v.marchingsquares.OmsMarchingSquaresVectorializer;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.gears.utils.HMTestMaps;
 //import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.*;
@@ -69,7 +69,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = 2.0;
 //        squares.pm = pm;
@@ -109,7 +109,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = 2.0;
 //        squares.pm = pm;
@@ -149,7 +149,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = 2.0;
 //        squares.pm = pm;
@@ -198,7 +198,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = 2.0;
 //        squares.pm = pm;
@@ -247,7 +247,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = 2.0;
 //        squares.pm = pm;
@@ -296,7 +296,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = null;
 //        squares.pm = pm;
@@ -337,7 +337,7 @@
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
-//        MarchingSquaresVectorializer squares = new MarchingSquaresVectorializer();
+//        OmsMarchingSquaresVectorializer squares = new OmsMarchingSquaresVectorializer();
 //        squares.inGeodata = geodata;
 //        squares.pValue = null;
 //        squares.pm = pm;

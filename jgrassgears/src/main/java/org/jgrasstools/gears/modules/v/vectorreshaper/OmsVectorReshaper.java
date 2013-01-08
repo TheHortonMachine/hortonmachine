@@ -62,15 +62,15 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Module to reshape a vector.")
-@Documentation("VectorReshaper.html")
+@Documentation("OmsVectorReshaper.html")
 @Author(name = "Andrea Antonello, Jody Garnett", contact = "http://www.hydrologis.com")
-@Keywords("Reshape, Vector, VectorFilter")
+@Keywords("Reshape, Vector, OmsVectorFilter")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("reshape")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class VectorReshaper extends JGTModel {
+public class OmsVectorReshaper extends JGTModel {
 
     @Description("The vector to reshape.")
     @In

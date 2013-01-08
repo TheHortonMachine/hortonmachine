@@ -20,11 +20,11 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 //import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
-//import org.jgrasstools.gears.modules.v.polygonize.LinesPolygonizer;
+//import org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
 ///**
-// * Test for {@link LinesPolygonizer}.
+// * Test for {@link OmsLinesPolygonizer}.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -34,7 +34,7 @@
 //        SimpleFeatureCollection lines = OmsVectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_line.shp");
 //        SimpleFeatureCollection points = OmsVectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_point.shp");
 //
-//        LinesPolygonizer vectorizer = new LinesPolygonizer();
+//        OmsLinesPolygonizer vectorizer = new OmsLinesPolygonizer();
 //        vectorizer.pm = pm;
 //        vectorizer.inMap = lines;
 //        vectorizer.inPoints = points;

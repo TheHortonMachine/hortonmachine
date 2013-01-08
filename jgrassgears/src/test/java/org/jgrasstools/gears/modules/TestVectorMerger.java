@@ -20,11 +20,11 @@ package org.jgrasstools.gears.modules;
 import java.util.Arrays;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.modules.v.vectormerger.VectorMerger;
+import org.jgrasstools.gears.modules.v.vectormerger.OmsVectorMerger;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 /**
- * Test for the {@link VectorMerger}
+ * Test for the {@link OmsVectorMerger}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -35,7 +35,7 @@ public class TestVectorMerger extends HMTestCase {
         SimpleFeatureCollection testFC1 = HMTestMaps.testFC;
         SimpleFeatureCollection testFC2 = HMTestMaps.testFC;
 
-        VectorMerger filter = new VectorMerger();
+        OmsVectorMerger filter = new OmsVectorMerger();
         filter.pm = pm;
         filter.inVectors = Arrays.asList(testFC1, testFC2);
         filter.process();

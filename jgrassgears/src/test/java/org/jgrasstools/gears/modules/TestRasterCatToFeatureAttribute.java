@@ -22,7 +22,7 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.RasterCatToFeatureAttribute;
+import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -30,7 +30,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RasterCatToFeatureAttribute}.
+ * Test for {@link OmsRasterCatToFeatureAttribute}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -44,7 +44,7 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
 
         SimpleFeatureCollection inFC = HMTestMaps.testFC;
 
-        RasterCatToFeatureAttribute rc2fa = new RasterCatToFeatureAttribute();
+        OmsRasterCatToFeatureAttribute rc2fa = new OmsRasterCatToFeatureAttribute();
         rc2fa.pm = pm;
         rc2fa.inRaster = elevationCoverage;
         rc2fa.inVector = inFC;

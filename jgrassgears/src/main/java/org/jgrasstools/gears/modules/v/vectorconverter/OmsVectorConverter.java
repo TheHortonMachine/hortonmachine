@@ -40,7 +40,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Status(Status.EXPERIMENTAL)
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class VectorConverter extends JGTModel {
+public class OmsVectorConverter extends JGTModel {
     @Description("The input features.")
     @In
     public SimpleFeatureCollection inGeodata;

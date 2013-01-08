@@ -40,14 +40,14 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for vector reprojection.")
-@Documentation("VectorReprojector.html")
+@Documentation("OmsVectorReprojector.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("CRS, Reprojection, Vector")
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("vreproject")
 @License("General Public License Version 3 (GPLv3)")
-public class VectorReprojector extends JGTModel {
+public class OmsVectorReprojector extends JGTModel {
 
     @Description("The vector that has to be reprojected.")
     @In

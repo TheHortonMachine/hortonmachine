@@ -22,7 +22,7 @@
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.geotools.data.simple.SimpleFeatureIterator;
-//import org.jgrasstools.gears.modules.v.contoursextractor.ContourExtractor;
+//import org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.gears.utils.HMTestMaps;
 //import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -31,7 +31,7 @@
 //import com.vividsolutions.jts.geom.Geometry;
 //
 ///**
-// * Test for the {@link ContourExtractor}.
+// * Test for the {@link OmsContourExtractor}.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -42,7 +42,7 @@
 //        double[][] netData = HMTestMaps.contourExtractorData;
 //        GridCoverage2D cedCoverage = CoverageUtilities.buildCoverage("ced", netData, envelopeParams, crs, true);
 //
-//        ContourExtractor extractor = new ContourExtractor();
+//        OmsContourExtractor extractor = new OmsContourExtractor();
 //        extractor.inCoverage = cedCoverage;
 //        extractor.pMax = 95.0;
 //        extractor.pMin = 90.0;

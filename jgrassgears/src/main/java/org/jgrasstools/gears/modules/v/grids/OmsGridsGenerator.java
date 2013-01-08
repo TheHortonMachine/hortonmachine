@@ -75,7 +75,7 @@ import com.vividsolutions.jts.geom.Point;
 @Status(Status.CERTIFIED)
 @Name("gridgenerator")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class GridsGenerator extends JGTModel {
+public class OmsGridsGenerator extends JGTModel {
 
     @Description("Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.")
     @In

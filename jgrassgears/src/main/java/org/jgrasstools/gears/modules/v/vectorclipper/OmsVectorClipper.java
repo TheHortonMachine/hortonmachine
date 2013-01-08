@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.gears.modules.v.vectorclipper;
 
-import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -38,21 +37,17 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.time.EggClock;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
-import com.vividsolutions.jts.precision.EnhancedPrecisionOp;
 
 @Description("A vector clipping module.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
@@ -60,7 +55,7 @@ import com.vividsolutions.jts.precision.EnhancedPrecisionOp;
 @Status(Status.EXPERIMENTAL)
 @Name("clipper")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class VectorClipper extends JGTModel {
+public class OmsVectorClipper extends JGTModel {
 
     @Description("The vector map to be clipped.")
     @In
@@ -160,31 +155,32 @@ public class VectorClipper extends JGTModel {
         outMap = FeatureCollections.newCollection();
         outMap.addAll(newFeatures);
     }
-    public static void main( String[] args ) throws Exception {
-        PrintStream ps = System.out;
-        EggClock c = new EggClock("Time passed: ", " seconds\n");
-        c.startAndPrint(ps);
-
-//        String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
-        String basePath = "/home/ubuntu/development/ContourClipTest/";
-
-        SimpleFeatureCollection clip = OmsVectorReader.readVector(basePath + "StudyArea1MileBuffer.shp");
-        SimpleFeatureCollection data = OmsVectorReader.readVector(basePath + "Contours20Ft.shp");
-
-        c.printTimePassedInSeconds(ps);
-
-        VectorClipper clipper = new VectorClipper();
-        clipper.inMap = data;
-        clipper.inClipper = clip;
-        clipper.pMaxThreads = 32;
-        clipper.process();
-        SimpleFeatureCollection outMap2 = clipper.outMap;
-
-        c.printTimePassedInSeconds(ps);
-
-        OmsVectorWriter.writeVector(basePath + "clipped.shp", outMap2);
-
-        c.printTimePassedInSeconds(ps);
-    }
+    // public static void main( String[] args ) throws Exception {
+    // PrintStream ps = System.out;
+    // EggClock c = new EggClock("Time passed: ", " seconds\n");
+    // c.startAndPrint(ps);
+    //
+    // // String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
+    // String basePath = "/home/ubuntu/development/ContourClipTest/";
+    //
+    // SimpleFeatureCollection clip = OmsVectorReader.readVector(basePath +
+    // "StudyArea1MileBuffer.shp");
+    // SimpleFeatureCollection data = OmsVectorReader.readVector(basePath + "Contours20Ft.shp");
+    //
+    // c.printTimePassedInSeconds(ps);
+    //
+    // OmsVectorClipper clipper = new OmsVectorClipper();
+    // clipper.inMap = data;
+    // clipper.inClipper = clip;
+    // clipper.pMaxThreads = 32;
+    // clipper.process();
+    // SimpleFeatureCollection outMap2 = clipper.outMap;
+    //
+    // c.printTimePassedInSeconds(ps);
+    //
+    // OmsVectorWriter.writeVector(basePath + "clipped.shp", outMap2);
+    //
+    // c.printTimePassedInSeconds(ps);
+    // }
 
 }

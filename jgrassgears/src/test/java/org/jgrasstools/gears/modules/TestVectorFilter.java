@@ -19,12 +19,12 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.modules.v.vectorfilter.VectorFilter;
+import org.jgrasstools.gears.modules.v.vectorfilter.OmsVectorFilter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
 /**
- * Test for the {@link VectorFilter}
+ * Test for the {@link OmsVectorFilter}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -33,7 +33,7 @@ public class TestVectorFilter extends HMTestCase {
     @SuppressWarnings("nls")
     public void testVectorFilter() throws Exception {
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
-        VectorFilter filter = new VectorFilter();
+        OmsVectorFilter filter = new OmsVectorFilter();
         filter.inVector = testFC;
         filter.pCql = "cat > 2";
         filter.process();

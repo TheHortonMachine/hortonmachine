@@ -22,7 +22,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.modules.v.vectorreprojector.VectorReprojector;
+import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * Test for the {@link VectorReprojector}.
+ * Test for the {@link OmsVectorReprojector}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -44,7 +44,7 @@ public class TestVectorReprojector extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        VectorReprojector reprojector = new VectorReprojector();
+        OmsVectorReprojector reprojector = new OmsVectorReprojector();
         reprojector.inVector = testFC;
         reprojector.pCode = "EPSG:4326";
         reprojector.pm = pm;

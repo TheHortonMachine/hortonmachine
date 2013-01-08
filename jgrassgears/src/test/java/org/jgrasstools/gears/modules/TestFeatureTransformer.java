@@ -21,7 +21,7 @@ package org.jgrasstools.gears.modules;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.modules.v.vectortransformer.VectorTransformer;
+import org.jgrasstools.gears.modules.v.vectortransformer.OmsVectorTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.features.FeatureMate;
@@ -42,7 +42,7 @@ public class TestFeatureTransformer extends HMTestCase {
 
         SimpleFeatureCollection testFC = HMTestMaps.testFC;
 
-        VectorTransformer transformer = new VectorTransformer();
+        OmsVectorTransformer transformer = new OmsVectorTransformer();
         transformer.inVector = testFC;
         transformer.pTransX = 10.0;
         transformer.pTransY = 10.0;

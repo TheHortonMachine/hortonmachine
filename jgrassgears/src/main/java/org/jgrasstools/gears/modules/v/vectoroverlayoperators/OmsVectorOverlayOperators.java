@@ -62,7 +62,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Status(Status.EXPERIMENTAL)
 @Name("overlay")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class VectorOverlayOperators extends JGTModel {
+public class OmsVectorOverlayOperators extends JGTModel {
 
     @Description("The first vector map.")
     @In

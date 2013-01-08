@@ -22,7 +22,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.modules.v.vectortransformer.VectorTransformer;
+import org.jgrasstools.gears.modules.v.vectortransformer.OmsVectorTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 /**
- * Test {@link VectorTransformer}.
+ * Test {@link OmsVectorTransformer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -55,7 +55,7 @@ public class TestVectorTransformer extends HMTestCase {
         SimpleFeature feature = builder.buildFeature(type.getTypeName() + ".0");
         newCollection.add(feature);
 
-        VectorTransformer transformer = new VectorTransformer();
+        OmsVectorTransformer transformer = new OmsVectorTransformer();
         transformer.inVector = newCollection;
         transformer.pTransX = 1.0;
         transformer.pTransY = -1.0;

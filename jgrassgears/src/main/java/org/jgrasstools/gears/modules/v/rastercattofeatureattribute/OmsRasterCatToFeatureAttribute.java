@@ -58,7 +58,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
 @Description("Module that extracts raster categories and adds them to a feature collection.")
-@Documentation("RasterCatToFeatureAttribute.html")
+@Documentation("OmsRasterCatToFeatureAttribute.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.CERTIFIED)
@@ -66,7 +66,7 @@ import com.vividsolutions.jts.geom.Point;
 @Name("rat2featureattr")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class RasterCatToFeatureAttribute extends JGTModel{
+public class OmsRasterCatToFeatureAttribute extends JGTModel{
 
     @Description("The raster on which to map the vector features.")
     @In

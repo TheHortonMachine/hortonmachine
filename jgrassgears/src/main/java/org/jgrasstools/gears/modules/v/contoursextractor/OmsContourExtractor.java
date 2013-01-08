@@ -56,7 +56,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 @Description("Module that extracts contour lines from a raster.")
-@Documentation("ContourExtractor.html")
+@Documentation("OmsContourExtractor.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Vector")
 @Status(Status.EXPERIMENTAL)
@@ -64,7 +64,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 @Name("contourextract")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class ContourExtractor extends JGTModel {
+public class OmsContourExtractor extends JGTModel {
 
     @Description("The raster on which to calculate the contours.")
     @In
