@@ -45,7 +45,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.")
 @Documentation("OmsMarkoutlets.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia", contact = "http://www.hydrologis.com")
-@Keywords("Outlets, Dem, Raster, FlowDirections, DrainDir")
+@Keywords("Outlets, Dem, Raster, OmsFlowDirections, OmsDrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("markoutlets")
 @Status(Status.TESTED)

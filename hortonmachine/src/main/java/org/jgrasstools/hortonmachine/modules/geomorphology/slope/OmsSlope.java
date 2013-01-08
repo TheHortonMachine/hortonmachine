@@ -48,14 +48,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the slope in each point of the map.")
-@Documentation("Slope.html")
+@Documentation("OmsSlope.html")
 @Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, Gradient")
+@Keywords("Geomorphology, OmsGradient")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("slope")
 @Status(Status.TESTED)
 @License("General Public License Version 3 (GPLv3)")
-public class Slope extends JGTModel {
+public class OmsSlope extends JGTModel {
     @Description("The depitted elevation map.")
     @In
     public GridCoverage2D inPit = null;

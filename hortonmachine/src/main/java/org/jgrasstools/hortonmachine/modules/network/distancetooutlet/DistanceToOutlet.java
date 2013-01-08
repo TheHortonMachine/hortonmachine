@@ -48,7 +48,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Calculates the projection on the plane of the distance of each pixel from the outlet.")
 @Documentation("DistanceToOutlet.html")
 @Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo")
-@Keywords("Geomorphology, DrainDir")
+@Keywords("Geomorphology, OmsDrainDir")
 @Label(JGTConstants.NETWORK)
 @Name("d2o")
 @Status(Status.CERTIFIED)

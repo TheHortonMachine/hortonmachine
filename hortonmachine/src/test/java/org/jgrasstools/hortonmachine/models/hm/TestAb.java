@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.ab.Ab;
+import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -44,7 +44,7 @@ public class TestAb extends HMTestCase {
         GridCoverage2D planCoverage = CoverageUtilities.buildCoverage("plan", planData,
                 envelopeParams, crs, true);
 
-        Ab ab = new Ab();
+        OmsAb ab = new OmsAb();
         ab.inTca = tcaCoverage;
         ab.inPlan = planCoverage;
         ab.pm = pm;

@@ -59,14 +59,14 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
-@Documentation("Aspect.html")
+@Documentation("OmsAspect.html")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, DrainDir, FlowDirections")
+@Keywords("Geomorphology, OmsDrainDir, OmsFlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("aspect")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Aspect extends JGTModel {
+public class OmsAspect extends JGTModel {
     @Description("The map of the digital elevation model (DEM).")
     @In
     public GridCoverage2D inElev = null;

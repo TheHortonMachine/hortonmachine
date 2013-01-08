@@ -48,7 +48,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("It fills the depression points present within a DEM.")
 @Documentation("OmsPitfiller.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com")
-@Keywords("Dem manipulation, Geomorphology, DrainDir")
+@Keywords("Dem manipulation, Geomorphology, OmsDrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("pit")
 @Status(Status.CERTIFIED)

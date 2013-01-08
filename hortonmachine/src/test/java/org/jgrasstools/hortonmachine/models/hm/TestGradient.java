@@ -5,12 +5,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
+import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * It test the {@link Gradient} module.
+ * It test the {@link OmsGradient} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -23,7 +23,7 @@ public class TestGradient extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
-        Gradient gradient = new Gradient();
+        OmsGradient gradient = new OmsGradient();
         gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
 
@@ -40,7 +40,7 @@ public class TestGradient extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
-        Gradient gradient = new Gradient();
+        OmsGradient gradient = new OmsGradient();
         gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
         gradient.pMode = 1;
@@ -58,7 +58,7 @@ public class TestGradient extends HMTestCase {
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
 
-        Gradient gradient = new Gradient();
+        OmsGradient gradient = new OmsGradient();
         gradient.inElev = pitfillerCoverage;
         gradient.pm = pm;
         gradient.pMode = 2;

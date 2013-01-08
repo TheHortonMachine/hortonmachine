@@ -22,12 +22,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.Curvatures;
+import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Tests the {@link Curvatures} module.
+ * Tests the {@link OmsCurvatures} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -40,7 +40,7 @@ public class TestCurvatures extends HMTestCase {
         double[][] pitfillerData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller", pitfillerData, envelopeParams, crs, true);
 
-        Curvatures curvatures = new Curvatures();
+        OmsCurvatures curvatures = new OmsCurvatures();
         curvatures.inElev = pitfillerCoverage;
         curvatures.pm = pm;
 

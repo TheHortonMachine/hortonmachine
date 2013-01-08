@@ -49,7 +49,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Description("Select a hillslope or some of its property from the DEM")
 @Documentation("H2cA.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia, Andreis Daniele,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
-@Keywords("Geomorphology, DrainDir")
+@Keywords("Geomorphology, OmsDrainDir")
 @Label(JGTConstants.HILLSLOPE)
 @Name("H2cA")
 @Status(Status.CERTIFIED)

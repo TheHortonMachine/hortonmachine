@@ -45,14 +45,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the draining area per length unit.")
-@Documentation("Ab.html")
+@Documentation("OmsAb.html")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, Tca, Curvatures, DrainDir, FlowDirections")
+@Keywords("Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("ab")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Ab extends JGTModel {
+public class OmsAb extends JGTModel {
     @Description("The map of the total contributing area.")
     @In
     public GridCoverage2D inTca = null;

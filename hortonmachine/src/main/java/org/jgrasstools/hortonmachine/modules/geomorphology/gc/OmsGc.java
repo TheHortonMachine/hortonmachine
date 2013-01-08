@@ -28,14 +28,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Subdivides the sites of a basin in 11 topographic classes.")
-@Documentation("Gc.html")
+@Documentation("OmsGc.html")
 @Author(name = "Daniele Andreis,Erica Ghesla, Cozzini Andrea, Rigon Riccardo")
-@Keywords("Geomorphology, Tc, Slope, ExtractNetwork")
+@Keywords("Geomorphology, Tc, OmsSlope, ExtractNetwork")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("gc")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Gc extends JGTModel {
+public class OmsGc extends JGTModel {
     @Description("The map of the slope")
     @In
     public GridCoverage2D inSlope = null;

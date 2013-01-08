@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.Aspect;
+import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Aspect} module.
+ * Test the {@link OmsAspect} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -38,7 +38,7 @@ public class TestAspect extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
-        Aspect aspect = new Aspect();
+        OmsAspect aspect = new OmsAspect();
         aspect.inElev = pitCoverage;
         aspect.doRound = true;
         aspect.pm = pm;
@@ -56,7 +56,7 @@ public class TestAspect extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
-        Aspect aspect = new Aspect();
+        OmsAspect aspect = new OmsAspect();
         aspect.inElev = pitCoverage;
         aspect.doRadiants = true;
         aspect.pm = pm;

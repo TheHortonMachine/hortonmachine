@@ -45,14 +45,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the drainage directions with the D8 method.")
-@Documentation("FlowDirections.html")
+@Documentation("OmsFlowDirections.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, Aspect")
+@Keywords("Geomorphology, OmsAspect")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("flow")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class FlowDirections extends JGTModel {
+public class OmsFlowDirections extends JGTModel {
     @Description("The depitted elevation map.")
     @In
     public GridCoverage2D inPit = null;
@@ -64,7 +64,7 @@ public class FlowDirections extends JGTModel {
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     /**
-     * The novalue needed by FlowDirections.
+     * The novalue needed by OmsFlowDirections.
      */
     public static final double FLOWNOVALUE = -1.0;
 

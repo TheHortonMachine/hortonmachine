@@ -4,14 +4,14 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OldTca;
+import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OmsOldTca;
 import org.jgrasstools.hortonmachine.modules.network.magnitudo.Magnitudo;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link OldTca} module.
+ * Test the {@link OmsOldTca} module.
  * 
  * @author Giuseppe Formetta ()
  */

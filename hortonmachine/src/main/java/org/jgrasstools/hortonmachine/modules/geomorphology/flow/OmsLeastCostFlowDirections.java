@@ -56,19 +56,19 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.Aspect;
-import org.jgrasstools.hortonmachine.modules.geomorphology.slope.Slope;
+import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
+import org.jgrasstools.hortonmachine.modules.geomorphology.slope.OmsSlope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Calculates the drainage directions following the least cost method.")
-// @Documentation("FlowDirections.html")
+// @Documentation("OmsFlowDirections.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Geomorphology, Flowdirections, Least cost")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("flowlc")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class LeastCostFlowDirections extends JGTModel {
+public class OmsLeastCostFlowDirections extends JGTModel {
     @Description("The elevation map.")
     @In
     public GridCoverage2D inElev = null;
@@ -261,11 +261,11 @@ public class LeastCostFlowDirections extends JGTModel {
         assignedFlowsMap.mark(col, row);
 
         if (doSlope) {
-            double slope = Slope.calculateSlope(node, enteringFlow);
+            double slope = OmsSlope.calculateSlope(node, enteringFlow);
             slopeIter.setSample(col, row, 0, slope);
         }
         if (doAspect) {
-            double aspect = Aspect.calculateAspect(node, 1.0, false);
+            double aspect = OmsAspect.calculateAspect(node, 1.0, false);
             aspectIter.setSample(col, row, 0, aspect);
         }
 

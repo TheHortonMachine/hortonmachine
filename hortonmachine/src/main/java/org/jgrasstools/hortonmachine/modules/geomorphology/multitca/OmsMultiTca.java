@@ -29,14 +29,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 
 @Description("It calculates the contributing areas differently in convex and concave areas")
-@Documentation("MultiTca.html")
+@Documentation("OmsMultiTca.html")
 @Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Keywords("Geomorphology, DrainDir, Pitfiller, Ab")
+@Keywords("Geomorphology, OmsDrainDir, Pitfiller, OmsAb")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("multitca")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class MultiTca extends JGTModel {
+public class OmsMultiTca extends JGTModel {
     @Description("The map of depitted elevation.")
     @In
     public GridCoverage2D inPit = null;

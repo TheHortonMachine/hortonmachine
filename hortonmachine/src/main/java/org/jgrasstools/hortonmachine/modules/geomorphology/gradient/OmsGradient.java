@@ -51,14 +51,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the gradient in each point of the map.")
-@Documentation("Gradient.html")
+@Documentation("OmsGradient.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, DrainDir, FlowDirections, Slope, Curvatures")
+@Keywords("Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("gradient")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Gradient extends JGTModel {
+public class OmsGradient extends JGTModel {
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inElev = null;

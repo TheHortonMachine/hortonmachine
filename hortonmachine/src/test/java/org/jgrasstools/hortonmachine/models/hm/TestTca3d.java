@@ -21,12 +21,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca3d.Tca3d;
+import org.jgrasstools.hortonmachine.modules.geomorphology.tca3d.OmsTca3d;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test the {@link Tca3d} module.
+ * Test the {@link OmsTca3d} module.
  * 
  * @author Giuseppe Formetta ()
  */
@@ -41,7 +41,7 @@ public class TestTca3d extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Tca3d tca3d = new Tca3d();
+        OmsTca3d tca3d = new OmsTca3d();
         tca3d.inPit = pitCoverage;
         tca3d.inFlow = flowCoverage;
         tca3d.pm = pm;

@@ -21,14 +21,14 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OldTca;
-import org.jgrasstools.hortonmachine.modules.geomorphology.tca.Tca;
+import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OmsOldTca;
+import org.jgrasstools.hortonmachine.modules.geomorphology.tca.OmsTca;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link OldTca} module.
+ * Test the {@link OmsOldTca} module.
  * 
  * @author Giuseppe Formetta
  * @author Andrea Antonello (www.hydrologis.com)
@@ -42,7 +42,7 @@ public class TestTca extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        OldTca tca = new OldTca();
+        OmsOldTca tca = new OmsOldTca();
         tca.inFlow = flowCoverage;
         tca.pm = pm;
         tca.process();
@@ -58,7 +58,7 @@ public class TestTca extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Tca tca = new Tca();
+        OmsTca tca = new OmsTca();
         tca.inFlow = flowCoverage;
         tca.pm = pm;
         tca.process();

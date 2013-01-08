@@ -56,7 +56,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Extracts the raster network from an elevation model.")
 @Documentation("ExtractNetwork.html")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
+@Keywords("Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope")
 @Label(JGTConstants.NETWORK)
 @Name("extractnet")
 @Status(Status.CERTIFIED)
@@ -88,7 +88,7 @@ public class ExtractNetwork extends JGTModel {
     @In
     public String pMode = TCA;
 
-    @Description("Tca exponent for the mode with slope or topographic classes (default = 0.5).")
+    @Description("OmsTca exponent for the mode with slope or topographic classes (default = 0.5).")
     @In
     public double pExp = 0.5;
 

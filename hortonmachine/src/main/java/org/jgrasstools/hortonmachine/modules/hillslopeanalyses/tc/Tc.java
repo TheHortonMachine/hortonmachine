@@ -48,7 +48,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ")
 @Documentation("Tc.html")
 @Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hillslope, Curvatures")
+@Keywords("Hillslope, OmsCurvatures")
 @Label(JGTConstants.HILLSLOPE)
 @Name("tc")
 @Status(Status.CERTIFIED)

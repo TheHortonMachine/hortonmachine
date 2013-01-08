@@ -24,8 +24,8 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
-import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
+import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
+import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -105,7 +105,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output data of the {@link FlowDirections} module.
+     * Output data of the {@link OmsFlowDirections} module.
      */
     public static double[][] flowData = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //
@@ -119,7 +119,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output data of the {@link FlowDirections} module, since 
+     * Output data of the {@link OmsFlowDirections} module, since 
      * it has changed to also eat a border of data around the basin.
      */
     public static double[][] newFlowData = new double[][]{ //
@@ -134,7 +134,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output data for the {@link DrainDir} module run in LTD mode.
+     * Output data for the {@link OmsDrainDir} module run in LTD mode.
      */
     public static double[][] drainData0 = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //
@@ -148,7 +148,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output data for the {@link DrainDir} module run in LAD mode.
+     * Output data for the {@link OmsDrainDir} module run in LAD mode.
      */
     public static double[][] drainData1 = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //
@@ -206,7 +206,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output tca for {@link DrainDir} in LTD mode.
+     * Output tca for {@link OmsDrainDir} in LTD mode.
      */
     public static double[][] mtcaData0 = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //
@@ -220,7 +220,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output tca for {@link DrainDir} in LAD mode.
+     * Output tca for {@link OmsDrainDir} in LAD mode.
      */
     public static double[][] mtcaData = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //

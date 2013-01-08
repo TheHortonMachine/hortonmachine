@@ -28,7 +28,7 @@
 //
 //    @Test
 //    public void testOne() throws Exception {
-//        Name NAME = new NameImpl("org.jgrasstools.hortonmachine", "Gradient");
+//        Name NAME = new NameImpl("org.jgrasstools.hortonmachine", "OmsGradient");
 //        ProcessFactory factory = Processors.createProcessFactory(NAME);
 //        assertNotNull(factory);
 //        assertTrue(factory.isAvailable());

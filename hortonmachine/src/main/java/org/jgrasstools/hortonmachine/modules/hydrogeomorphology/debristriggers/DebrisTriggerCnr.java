@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.Gradient;
+import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 
 @Description("Module for extraction of debris trigger points along the network following the CNR methodology.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -86,7 +86,7 @@ public class DebrisTriggerCnr extends JGTModel {
         checkNull(inElev, inNet, inTca);
 
         // calculate gradient map degrees
-        Gradient gradient = new Gradient();
+        OmsGradient gradient = new OmsGradient();
         gradient.inElev = inElev;
         gradient.pMode = 0;
         gradient.doDegrees = true;
@@ -95,7 +95,7 @@ public class DebrisTriggerCnr extends JGTModel {
         GridCoverage2D gradientCoverageDeg = gradient.outSlope;
 
         // calculate gradient map %
-        gradient = new Gradient();
+        gradient = new OmsGradient();
         gradient.inElev = inElev;
         gradient.pMode = 0;
         gradient.doDegrees = false;

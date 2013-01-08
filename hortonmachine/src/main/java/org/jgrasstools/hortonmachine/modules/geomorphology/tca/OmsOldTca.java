@@ -68,14 +68,14 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
 @Description("Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.")
-@Documentation("Tca.html")
+@Documentation("OmsTca.html")
 @Author(name = "Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, DrainDir, Tca3D, Ab, Multitca")
+@Keywords("Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("oldtca")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class OldTca extends JGTModel {
+public class OmsOldTca extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;

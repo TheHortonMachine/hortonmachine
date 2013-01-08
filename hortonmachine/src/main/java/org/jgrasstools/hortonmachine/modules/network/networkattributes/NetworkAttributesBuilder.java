@@ -58,7 +58,7 @@ import com.vividsolutions.jts.geom.LineString;
 
 @Description("Extracts network attributes and the vector network based on a raster network.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Network, Vector, FlowDirectionsTC, GC, DrainDir, Gradient, Slope")
+@Keywords("Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope")
 @Label(JGTConstants.NETWORK)
 @Name("extractvectornet")
 @Status(Status.CERTIFIED)

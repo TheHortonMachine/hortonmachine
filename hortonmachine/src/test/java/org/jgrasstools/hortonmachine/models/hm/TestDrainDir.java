@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
+import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link DrainDir} module.
+ * Test the {@link OmsDrainDir} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestDrainDir extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        DrainDir drainDir = new DrainDir();
+        OmsDrainDir drainDir = new OmsDrainDir();
         // drainDir.doLad = false;
         drainDir.pLambda = 1;
         drainDir.inPit = pitfillerCoverage;
@@ -67,7 +67,7 @@ public class TestDrainDir extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        DrainDir drainDir = new DrainDir();
+        OmsDrainDir drainDir = new OmsDrainDir();
         drainDir.doLad = false;
         drainDir.pLambda = 1;
         drainDir.inPit = pitfillerCoverage;

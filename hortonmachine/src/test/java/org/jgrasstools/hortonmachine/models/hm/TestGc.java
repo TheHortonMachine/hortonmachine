@@ -5,13 +5,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.gc.Gc;
+import org.jgrasstools.hortonmachine.modules.geomorphology.gc.OmsGc;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Gc} models 
+ * Test the {@link OmsGc} models 
  * @author Daniele Andreis.
  *
  */
@@ -30,7 +30,7 @@ public class TestGc extends HMTestCase {
         GridCoverage2D networkGC = CoverageUtilities.buildCoverage("net", networkData, envelopeParams, crs, true);
         GridCoverage2D cp9GC = CoverageUtilities.buildCoverage("cp9", cp9Data, envelopeParams, crs, true);
 
-        Gc gc = new Gc();
+        OmsGc gc = new OmsGc();
         gc.inSlope = slopeGC;
         gc.inNetwork = networkGC;
         gc.inCp9 = cp9GC;

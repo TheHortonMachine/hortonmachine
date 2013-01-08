@@ -85,7 +85,7 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
 @Description("Extract a basin from a map of flowdirections.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "http://www.hydrologis.com")
-@Keywords("Dem manipulation, Basin, FlowDirections")
+@Keywords("Dem manipulation, Basin, OmsFlowDirections")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("extractbasin")
 @Status(Status.EXPERIMENTAL)

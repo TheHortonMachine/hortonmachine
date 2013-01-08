@@ -49,14 +49,14 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It calculates the drainage directions minimizing the deviation from the real flow")
-@Documentation("DrainDir.html")
+@Documentation("OmsDrainDir.html")
 @Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, Pitfiller, FlowDirections")
+@Keywords("Geomorphology, Pitfiller, OmsFlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("draindir")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class DrainDir extends JGTModel {
+public class OmsDrainDir extends JGTModel {
 
     @Description("The depitted elevation model.")
     @In

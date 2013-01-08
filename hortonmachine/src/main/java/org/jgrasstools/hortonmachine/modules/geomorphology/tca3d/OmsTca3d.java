@@ -52,14 +52,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the contributing areas considering also the elevation (3D), that represent the areas (in number of pixels) afferent to each point.")
-@Documentation("Tca3d.html")
+@Documentation("OmsTca3d.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, DrainDir, Tca, Ab, Multitca")
+@Keywords("Geomorphology, OmsDrainDir, OmsTca, OmsAb, Multitca")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("tca3d")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Tca3d extends JGTModel {
+public class OmsTca3d extends JGTModel {
     @Description("The depitted elevation model.")
     @In
     public GridCoverage2D inPit = null;

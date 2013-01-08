@@ -22,13 +22,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.flow.LeastCostFlowDirections;
+import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsLeastCostFlowDirections;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link LeastCostFlowDirections} module.
+ * Test the {@link OmsLeastCostFlowDirections} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         PrintUtilities.printCoverageData(mapCoverage);
 
-        LeastCostFlowDirections flowDirections = new LeastCostFlowDirections();
+        OmsLeastCostFlowDirections flowDirections = new OmsLeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
         flowDirections.pm = pm;
         flowDirections.doAspect = true;

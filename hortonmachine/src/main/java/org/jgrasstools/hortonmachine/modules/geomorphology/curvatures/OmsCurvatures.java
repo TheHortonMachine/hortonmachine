@@ -47,14 +47,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It estimates the longitudinal, normal and planar curvatures.")
-@Documentation("Curvatures.html")
+@Documentation("OmsCurvatures.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("curvatures")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Curvatures extends JGTModel {
+public class OmsCurvatures extends JGTModel {
     @Description("The map of the digital elevation model (DEM or pit).")
     @In
     public GridCoverage2D inElev = null;

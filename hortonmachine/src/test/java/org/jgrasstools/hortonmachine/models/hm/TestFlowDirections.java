@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
+import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link FlowDirections} module.
+ * Test the {@link OmsFlowDirections} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -39,7 +39,7 @@ public class TestFlowDirections extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("flow", pitfillerData, envelopeParams, crs, true);
 
-        FlowDirections flowDirections = new FlowDirections();
+        OmsFlowDirections flowDirections = new OmsFlowDirections();
         flowDirections.inPit = pitfillerCoverage;
         flowDirections.pm = pm;
 

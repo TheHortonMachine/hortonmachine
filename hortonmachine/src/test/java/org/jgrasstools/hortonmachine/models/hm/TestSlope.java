@@ -21,12 +21,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.geomorphology.slope.Slope;
+import org.jgrasstools.hortonmachine.modules.geomorphology.slope.OmsSlope;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Tests the {@link Slope} module.
+ * Tests the {@link OmsSlope} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestSlope extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Slope slope = new Slope();
+        OmsSlope slope = new OmsSlope();
         slope.inPit = pitfillerCoverage;
         slope.inFlow = flowCoverage;
         slope.pm = pm;

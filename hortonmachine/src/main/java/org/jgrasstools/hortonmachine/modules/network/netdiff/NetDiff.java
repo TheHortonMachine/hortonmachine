@@ -51,7 +51,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = "Daniele Andreis, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
 @Label(JGTConstants.NETWORK)
 @Documentation("NetDiff.html")
-@Keywords("Network, Pitfiller, DrainDir, FlowDirections")
+@Keywords("Network, Pitfiller, OmsDrainDir, OmsFlowDirections")
 @Name("netdiff")
 @Status(Status.CERTIFIED)
 @License("GPL3")

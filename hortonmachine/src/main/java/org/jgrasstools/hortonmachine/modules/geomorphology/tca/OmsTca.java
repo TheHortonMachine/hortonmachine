@@ -48,12 +48,12 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("Geomorphology, DrainDir, Tca3D, Ab, Multitca")
+@Keywords("Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("tca")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class Tca extends JGTModel {
+public class OmsTca extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
