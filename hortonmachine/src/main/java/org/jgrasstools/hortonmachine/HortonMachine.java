@@ -236,15 +236,13 @@ public class HortonMachine {
     public static void main( String[] args ) throws IOException {
         HortonMachine hm = HortonMachine.getInstance();
 
-        Set<Entry<String, Class< ? >>> entrySet = hm.moduleName2Class.entrySet();
-        for( Entry<String, Class< ? >> entry : entrySet ) {
-            System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
+        for( String className : hm.allClasses ) {
+            System.out.println(className);
+        }
+        for( String fieldName : hm.allFields ) {
+            System.out.println(fieldName);
         }
 
-        List<ClassField> list = hm.moduleName2Fields.get("Adige");
-        for( ClassField classField : list ) {
-            System.out.println(classField);
-        }
     }
 
 }

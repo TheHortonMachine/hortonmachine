@@ -239,15 +239,13 @@ public class JGrassGears {
     }
 
     public static void main( String[] args ) throws IOException {
-        Set<Entry<String, Class< ? >>> entrySet = getInstance().moduleName2Class.entrySet();
-        for( Entry<String, Class< ? >> entry : entrySet ) {
-            System.out.println(entry.getKey() + " - " + entry.getValue().getCanonicalName());
-        }
-
-        List<ClassField> list = getInstance().moduleName2Fields.get("LineSmoother");
-        for( ClassField classField : list ) {
-            System.out.println(classField);
-        }
+        JGrassGears jgr = getInstance();
+        for( String className : jgr.allClasses ) {
+            System.out.println(className);
+        } 
+        for( String fieldName : jgr.allFields ) {
+            System.out.println(fieldName);
+        } 
     }
 
 }
