@@ -38,14 +38,14 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
 @Description("Calculates the histogram of a set of data contained in a matrix "
         + "with respect to the set of data contained in another matrix.")
-@Documentation("Cb.html")
+@Documentation("OmsCb.html")
 @Author(name = "Andrea Antonello, Silvia Franceschi, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Histogram, Geomorphology, Statistic")
 @Label(JGTConstants.STATISTICS)
 @Name("cb")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Cb extends JGTModel {
+public class OmsCb extends JGTModel {
     @Description("The first raster to analyse.")
     @In
     public GridCoverage2D inRaster1 = null;

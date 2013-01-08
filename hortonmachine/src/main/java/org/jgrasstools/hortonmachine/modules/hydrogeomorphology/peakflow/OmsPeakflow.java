@@ -56,13 +56,13 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iu
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.iuh.IUHKinematic;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.RealJeff;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.jeff.StatisticJeff;
-import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
+import org.jgrasstools.hortonmachine.modules.statistics.cb.OmsCb;
 import org.joda.time.DateTime;
 
 @Description("The OmsPeakflow semidistributed hydrologic model.")
 @Documentation("OmsPeakflow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("OmsPeakflow, Discharge, Hydrologic, Cb, RescaledDistance")
+@Keywords("OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance")
 @Label(JGTConstants.HYDROGEOMORPHOLOGY)
 @Name("peakflow")
 @Status(Status.CERTIFIED)
@@ -469,7 +469,7 @@ public class OmsPeakflow extends JGTModel {
     }
 
     private double[][] doCb( GridCoverage2D coverage ) throws Exception {
-        Cb topindexCb = new Cb();
+        OmsCb topindexCb = new OmsCb();
         topindexCb.inRaster1 = coverage;
         topindexCb.pFirst = 1;
         topindexCb.pLast = 2;

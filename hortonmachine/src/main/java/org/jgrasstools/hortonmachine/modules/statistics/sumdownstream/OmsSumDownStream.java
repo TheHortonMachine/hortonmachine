@@ -41,14 +41,14 @@ import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Sums the values of a map downstream following the flowdirections.")
-@Documentation("SumDownStream.html")
+@Documentation("OmsSumDownStream.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Sumdownstream, Statistic, OmsExtractNetwork")
 @Label(JGTConstants.STATISTICS)
 @Name("sumdownstream")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class SumDownStream extends JGTModel {
+public class OmsSumDownStream extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;

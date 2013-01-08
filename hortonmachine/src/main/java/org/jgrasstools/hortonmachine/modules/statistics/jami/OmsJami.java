@@ -66,13 +66,13 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-@Description("Jami - Just another meteo interpolator")
+@Description("OmsJami - Just another meteo interpolator")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("Meteo, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Jami extends JGTModel {
+public class OmsJami extends JGTModel {
 
     @Description("The features representing the meteo stations " + "and containing the position information as well "
             + "as the elevation. Every feature has a unique id " + "that is used to map the meteo data records to it.")
@@ -306,7 +306,7 @@ public class Jami extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        System.out.println("Jami processing " + tCurrent + " " + pType);
+        System.out.println("OmsJami processing " + tCurrent + " " + pType);
 
         checkNull(inAltimetry, inAreas, inMeteo, inStations);
 

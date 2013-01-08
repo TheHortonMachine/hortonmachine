@@ -18,7 +18,7 @@
 //import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 //import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-//import org.jgrasstools.hortonmachine.modules.statistics.kriging.Kriging;
+//import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsKriging;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 //import org.opengis.feature.simple.SimpleFeature;
@@ -104,7 +104,7 @@
 //
 //        reader.initProcess();
 //
-//        Kriging kriging = new Kriging();
+//        OmsKriging kriging = new OmsKriging();
 //        kriging.pm = pm;
 //
 //        GridGeometry2D gridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(5204514.51713, 5141634.51713,
@@ -251,7 +251,7 @@
 //
 //        reader.initProcess();
 //
-//        Kriging kriging = new Kriging();
+//        OmsKriging kriging = new OmsKriging();
 //        kriging.pm = pm;
 //
 //        kriging.inStations = stationsFC;
@@ -391,7 +391,7 @@
 //
 //        reader.initProcess();
 //
-//        Kriging kriging = new Kriging();
+//        OmsKriging kriging = new OmsKriging();
 //        kriging.pm = pm;
 //
 //        kriging.inStations = stationsFC;
@@ -482,7 +482,7 @@
 //
 //        reader.initProcess();
 //
-//        Kriging kriging = new Kriging();
+//        OmsKriging kriging = new OmsKriging();
 //        kriging.pm = pm;
 //
 //        kriging.inStations = stationsFC;
@@ -574,7 +574,7 @@
 //
 //        reader.initProcess();
 //
-//        Kriging kriging = new Kriging();
+//        OmsKriging kriging = new OmsKriging();
 //        kriging.pm = pm;
 //
 //        kriging.inStations = stationsFC;

@@ -18,7 +18,7 @@
 //import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.libs.modules.JGTConstants;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.statistics.jami.Jami;
+//import org.jgrasstools.hortonmachine.modules.statistics.jami.OmsJami;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //import org.joda.time.DateTime;
 //import org.joda.time.format.DateTimeFormatter;
@@ -85,7 +85,7 @@
 //
 //        dataReader.initProcess();
 //
-//        Jami jami = new Jami();
+//        OmsJami jami = new OmsJami();
 //        jami.pm = pm;
 //        jami.inAltimetry = altimList;
 //        jami.inAreas = areasList;

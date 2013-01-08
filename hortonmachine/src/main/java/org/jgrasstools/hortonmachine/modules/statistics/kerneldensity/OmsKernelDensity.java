@@ -53,7 +53,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class KernelDensity extends JGTModel {
+public class OmsKernelDensity extends JGTModel {
 
     @Description("The input map.")
     @In

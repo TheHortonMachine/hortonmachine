@@ -21,10 +21,10 @@
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.jgrasstools.gears.io.rasterreader.RasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-//import org.jgrasstools.hortonmachine.modules.statistics.kerneldensity.KernelDensity;
+//import org.jgrasstools.hortonmachine.modules.statistics.kerneldensity.OmsKernelDensity;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test for the {@link KernelDensity} module.
+// * Test for the {@link OmsKernelDensity} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -37,7 +37,7 @@
 //
 //        GridCoverage2D elev = RasterReader.readRaster(inRasterPath1);
 //
-//        KernelDensity dt = new KernelDensity();
+//        OmsKernelDensity dt = new OmsKernelDensity();
 //        dt.inMap = elev;
 //        dt.pKernel = 7;
 //        dt.pRadius = 10;

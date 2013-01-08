@@ -22,13 +22,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.statistics.cb.Cb;
+import org.jgrasstools.hortonmachine.modules.statistics.cb.OmsCb;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for the {@link Cb} module.
+ * Test for the {@link OmsCb} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -74,7 +74,7 @@ public class TestCb extends HMTestCase {
 
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
 
-        Cb cb = new Cb();
+        OmsCb cb = new OmsCb();
         cb.pBins = 100;
         cb.pFirst = 1;
         cb.pLast = 1;

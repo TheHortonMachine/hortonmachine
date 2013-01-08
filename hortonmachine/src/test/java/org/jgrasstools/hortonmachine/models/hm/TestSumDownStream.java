@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.statistics.sumdownstream.SumDownStream;
+import org.jgrasstools.hortonmachine.modules.statistics.sumdownstream.OmsSumDownStream;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,7 +40,7 @@ public class TestSumDownStream extends HMTestCase {
         double[][] toSumData = HMTestMaps.netOneData;
         GridCoverage2D toSumCoverage = CoverageUtilities.buildCoverage("tosum", toSumData, envelopeParams, crs, true); //$NON-NLS-1$
 
-        SumDownStream sumDownstream = new SumDownStream();
+        OmsSumDownStream sumDownstream = new OmsSumDownStream();
         sumDownstream.pm = pm;
         sumDownstream.inFlow = flowCoverage;
         sumDownstream.inToSum = toSumCoverage;
@@ -52,7 +52,7 @@ public class TestSumDownStream extends HMTestCase {
         double[][] toSumThresData = HMTestMaps.netOneThresData;
         GridCoverage2D toSumThresCoverage = CoverageUtilities.buildCoverage(
                 "tosumthres", toSumThresData, envelopeParams, crs, true); //$NON-NLS-1$
-        sumDownstream = new SumDownStream();
+        sumDownstream = new OmsSumDownStream();
         sumDownstream.pm = pm;
         sumDownstream.inFlow = flowCoverage;
         sumDownstream.inToSum = toSumThresCoverage;

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-import org.jgrasstools.hortonmachine.modules.statistics.kriging.Variogram;
+import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsVariogram;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
 public class TestVariogram extends HMTestCase {
@@ -36,7 +36,7 @@ public class TestVariogram extends HMTestCase {
 
         reader.initProcess();
 
-        Variogram Meuse = new Variogram();
+        OmsVariogram Meuse = new OmsVariogram();
         Meuse.pm = pm;
 
         Meuse.inStations = stationsFC;

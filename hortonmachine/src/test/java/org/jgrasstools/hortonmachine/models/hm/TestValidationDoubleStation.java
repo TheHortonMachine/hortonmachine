@@ -10,7 +10,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-import org.jgrasstools.hortonmachine.modules.statistics.kriging.ValidateDoubleStation;
+import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsValidateDoubleStation;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 /**
@@ -45,7 +45,7 @@ public class TestValidationDoubleStation extends HMTestCase {
 
         reader.initProcess();
 
-        ValidateDoubleStation validatStation = new ValidateDoubleStation();
+        OmsValidateDoubleStation validatStation = new OmsValidateDoubleStation();
         validatStation.pm = pm;
 
         validatStation.inStations = stationsFC;

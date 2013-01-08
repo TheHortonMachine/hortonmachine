@@ -67,15 +67,15 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Ordinary kriging algorithm.")
-@Documentation("Kriging.html")
+@Documentation("OmsKriging.html")
 @Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com,  http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Kriging, Hydrology")
+@Keywords("OmsKriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Name("kriging")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class Kriging extends JGTModel {
+public class OmsKriging extends JGTModel {
 
     @Description("The vector of the measurement point, containing the position of the stations.")
     @In

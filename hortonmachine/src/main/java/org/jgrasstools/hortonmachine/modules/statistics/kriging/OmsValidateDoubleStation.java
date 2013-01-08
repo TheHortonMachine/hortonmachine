@@ -31,7 +31,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Keywords("Hydrology, statistic")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/")
-public class ValidateDoubleStation extends JGTModel {
+public class OmsValidateDoubleStation extends JGTModel {
 
     @Description("The collection of the measurement point, containing the position of the station.")
     @In

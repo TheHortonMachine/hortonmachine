@@ -55,13 +55,13 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Experimental semivariogram algorithm.")
 @Documentation("Experimental semivariogram")
 @Author(name = "Giuseppe Formetta, Francesco Adami, Silvia Franceschi")
-@Keywords("Experimental semivariogram, Kriging, Hydrology")
+@Keywords("Experimental semivariogram, OmsKriging, Hydrology")
 @Label(JGTConstants.STATISTICS)
 @Name("variogram")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class Variogram extends JGTModel {
+public class OmsVariogram extends JGTModel {
 
     @Description("The vector of the measurement point, containing the position of the stations.")
     @In
@@ -87,7 +87,7 @@ public class Variogram extends JGTModel {
     @In
     public double pCutoff;
 
-    @Description("The Experimental Variogram.")
+    @Description("The Experimental OmsVariogram.")
     @Out
     public double[][] outResult = null;
 
