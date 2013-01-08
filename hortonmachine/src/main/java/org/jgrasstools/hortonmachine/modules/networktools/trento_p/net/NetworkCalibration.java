@@ -42,7 +42,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.joda.time.DateTime;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.OUT_ID_PIPE;

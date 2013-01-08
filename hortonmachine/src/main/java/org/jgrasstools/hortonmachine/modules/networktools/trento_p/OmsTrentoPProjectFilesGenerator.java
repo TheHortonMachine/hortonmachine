@@ -42,7 +42,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.ITrentoPType;
@@ -54,13 +53,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Generates the input shapefiles for a TrentoP simulation.")
+@Description("Generates the input shapefiles for a OmsTrentoP simulation.")
 @Author(name = "Daniele Andreis")
-@Keywords("TrentoP")
+@Keywords("OmsTrentoP")
 @Status(Status.DRAFT)
-@Documentation("TrentoPProjectFilesGenerator.html")
+@Documentation("OmsTrentoPProjectFilesGenerator.html")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TrentoPProjectFilesGenerator extends JGTModel {
+public class OmsTrentoPProjectFilesGenerator extends JGTModel {
 
     @Description("The folder into which to create the base files.")
     @In
@@ -83,7 +82,7 @@ public class TrentoPProjectFilesGenerator extends JGTModel {
     @In
     public String pNetname = null;
 
-    @Description("The output vector of TrentoP. It's a geosewer network.")
+    @Description("The output vector of OmsTrentoP. It's a geosewer network.")
     @In
     public SimpleFeatureCollection pOldVector = null;
 

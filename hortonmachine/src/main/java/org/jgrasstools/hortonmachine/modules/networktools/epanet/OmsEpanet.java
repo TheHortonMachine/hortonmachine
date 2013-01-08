@@ -51,12 +51,12 @@ import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.types.Valv
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("The main Epanet module")
+@Description("The main OmsEpanet module")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Epanet extends JGTModel {
+public class OmsEpanet extends JGTModel {
 
     @Description("The epanet dynamic lib file.")
     @In

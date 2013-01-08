@@ -44,7 +44,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
 /**
- * It's a collection of method used only for the TrentoP project.
+ * It's a collection of method used only for the OmsTrentoP project.
  * 
  * @author Daniele Andreis, Riccardo Rigon, David tamanini.
  * 

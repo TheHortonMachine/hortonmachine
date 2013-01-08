@@ -5,10 +5,10 @@ import java.net.URL;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetFeaturesSynchronizer;
+import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetFeaturesSynchronizer;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
- * Test {@link EpanetFeaturesSynchronizer}.
+ * Test {@link OmsEpanetFeaturesSynchronizer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -45,7 +45,7 @@ public class TestEpanetSynchronizer extends HMTestCase {
 
     public void testEpanetSynchronizer() throws Exception {
 
-        EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
+        OmsEpanetFeaturesSynchronizer sync = new OmsEpanetFeaturesSynchronizer();
         sync.pm = pm;
         sync.inJunctions = jFC;
         sync.inTanks = tFC;
@@ -73,7 +73,7 @@ public class TestEpanetSynchronizer extends HMTestCase {
 
     public void testEpanetSynchronizerPartial() throws Exception {
 
-        EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
+        OmsEpanetFeaturesSynchronizer sync = new OmsEpanetFeaturesSynchronizer();
         sync.pm = pm;
         sync.inJunctions = jFC;
         sync.inPipes = piFC;
@@ -94,7 +94,7 @@ public class TestEpanetSynchronizer extends HMTestCase {
 
     public void testEpanetSynchronizerBasic() throws Exception {
 
-        EpanetFeaturesSynchronizer sync = new EpanetFeaturesSynchronizer();
+        OmsEpanetFeaturesSynchronizer sync = new OmsEpanetFeaturesSynchronizer();
         sync.pm = pm;
         sync.inJunctions = jFC;
         sync.inPipes = piFC;

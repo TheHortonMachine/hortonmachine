@@ -3,11 +3,11 @@
 //import java.io.File;
 //
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetProjectFilesGenerator;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetProjectFilesGenerator;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test Epanet file creation.
+// * Test OmsEpanet file creation.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -16,7 +16,7 @@
 //    public void testEpanet() throws Exception {
 //        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 //
-//        EpanetProjectFilesGenerator gen = new EpanetProjectFilesGenerator();
+//        OmsEpanetProjectFilesGenerator gen = new OmsEpanetProjectFilesGenerator();
 //        gen.pm = pm;
 //        gen.pCode = "EPSG:32632";
 //

@@ -60,19 +60,19 @@ import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Generates the inp file for an epanet run.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
-public class EpanetInpGenerator extends JGTModel {
+public class OmsEpanetInpGenerator extends JGTModel {
 
     @Description("The options parameters.")
     @In
-    public EpanetParametersOptions inOptions = null;
+    public OmsEpanetParametersOptions inOptions = null;
 
     @Description("The time parameters.")
     @In
-    public EpanetParametersTime inTime = null;
+    public OmsEpanetParametersTime inTime = null;
 
     @Description("The junctions features.")
     @In
@@ -271,7 +271,7 @@ public class EpanetInpGenerator extends JGTModel {
              * the time section
              */
             pm.worked(1);
-            write("\n\n" + EpanetParametersTime.TIMESECTION + "\n");
+            write("\n\n" + OmsEpanetParametersTime.TIMESECTION + "\n");
             Properties timeParameters = inTime.outProperties;
             Set<Entry<Object, Object>> entrySet = timeParameters.entrySet();
             for( Entry<Object, Object> entry : entrySet ) {
@@ -286,7 +286,7 @@ public class EpanetInpGenerator extends JGTModel {
              * the options section
              */
             pm.worked(1);
-            write("\n\n" + EpanetParametersOptions.OPTIONSSECTION + "\n");
+            write("\n\n" + OmsEpanetParametersOptions.OPTIONSSECTION + "\n");
             Properties optionsParameters = inOptions.outProperties;
             Set<Entry<Object, Object>> optionsEntrySet = optionsParameters.entrySet();
             for( Entry<Object, Object> entry : optionsEntrySet ) {

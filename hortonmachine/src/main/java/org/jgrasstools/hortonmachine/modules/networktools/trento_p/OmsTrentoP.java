@@ -82,9 +82,9 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Keywords("Sewer network")
 @Bibliography("http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Status(Status.DRAFT)
-@Documentation("TrentoP.html")
+@Documentation("OmsTrentoP.html")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class TrentoP extends JGTModel {
+public class OmsTrentoP extends JGTModel {
 
     @Description("Processing mode, 0=project, 1=verification.")
     @In
@@ -642,7 +642,7 @@ public class TrentoP extends JGTModel {
      * it. The Array is order following the ID.
      * </p>
      * oss: if the FeatureCillection is null a IllegalArgumentException is throw
-     * in {@link TrentoP#verifyParameter()}.
+     * in {@link OmsTrentoP#verifyParameter()}.
      * 
      * @param isAreaNotAllDry it is true if there is only a percentage of the input area dry.
      * @throws IllegalArgumentException

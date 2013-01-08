@@ -65,7 +65,7 @@ public class EpanetWrapper {
     /**
      * Get the reference to the jna native epanet instance.
      * 
-     * @return the Epanet native reference.
+     * @return the OmsEpanet native reference.
      */
     public static EpanetNativeFunctions getEpanet() {
         return epanet;
@@ -582,7 +582,7 @@ public class EpanetWrapper {
     }
 
     /**
-     * Get the version of Epanet.
+     * Get the version of OmsEpanet.
      *
      * @return the version of epanet.
      * @throws EpanetException

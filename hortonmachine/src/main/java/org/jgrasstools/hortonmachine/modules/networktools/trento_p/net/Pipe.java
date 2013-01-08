@@ -53,7 +53,7 @@ import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility;
 import org.opengis.feature.simple.SimpleFeature;
@@ -76,7 +76,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * In this class there is some methods that are used to calculate feature that
  * can be calculate only with few external parameters. The other properties
  * need, to be calculate, to the whole network so they are put into other
- * classes ({@link NetworkBuilder, @}{@link TrentoP}).
+ * classes ({@link NetworkBuilder, @}{@link OmsTrentoP}).
  * 
  * </p>
  * 
@@ -84,14 +84,14 @@ import com.vividsolutions.jts.geom.Geometry;
  * Some of the properties of a pipe are private and theirs fields are set at the
  * initializing time and the value is immutable (the initial value have to be
  * the same as the final) so there is only the getter method. Others fields are
- * set as a public and in the implementations of TrentoP program are set
+ * set as a public and in the implementations of OmsTrentoP program are set
  * directly. This is done to obtain a more readable code, in fact in the code
  * there is some large equations that aren't useful to read in a setter method.
  * </p>
  * 
  * 
  * @author Daniele Andreis, Riccardo Rigon, David Tamanini.
- * @see {@link TrentoP}
+ * @see {@link OmsTrentoP}
  * @version since 1.1
  * 
  */

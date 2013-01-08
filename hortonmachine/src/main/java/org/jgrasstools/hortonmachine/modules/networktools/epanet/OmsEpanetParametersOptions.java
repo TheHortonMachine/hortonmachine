@@ -38,10 +38,10 @@ import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.OptionPara
 
 @Description("The options parameters of the epanet inp file")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EpanetParametersOptions extends JGTModel {
+public class OmsEpanetParametersOptions extends JGTModel {
 
     @Description("Units.")
     @In
@@ -209,14 +209,14 @@ public class EpanetParametersOptions extends JGTModel {
     }
 
     /**
-     * Create a {@link EpanetParametersOptions} from a {@link HashMap} of values.
+     * Create a {@link OmsEpanetParametersOptions} from a {@link HashMap} of values.
      * 
      * @param options the {@link HashMap} of values. The keys have to be from {@link OptionParameterCodes}.
-     * @return the created {@link EpanetParametersOptions}.
+     * @return the created {@link OmsEpanetParametersOptions}.
      * @throws Exception 
      */
-    public static EpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) throws Exception {
-        EpanetParametersOptions epOptions = new EpanetParametersOptions();
+    public static OmsEpanetParametersOptions createFromMap( HashMap<OptionParameterCodes, String> options ) throws Exception {
+        OmsEpanetParametersOptions epOptions = new OmsEpanetParametersOptions();
         String units = options.get(OptionParameterCodes.UNITS);
         epOptions.units = units;
         String headloss = options.get(OptionParameterCodes.HEADLOSS);

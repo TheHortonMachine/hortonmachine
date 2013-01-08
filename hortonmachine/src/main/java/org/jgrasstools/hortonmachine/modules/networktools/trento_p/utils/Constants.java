@@ -18,7 +18,7 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 
 /**
- * A collection of constants to use in TrentoP.
+ * A collection of constants to use in OmsTrentoP.
  * 
  * 
  * @author Daniele Andreis

@@ -11,7 +11,7 @@ import java.util.Set;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
-import org.jgrasstools.hortonmachine.modules.networktools.trento_p.TrentoP;
+import org.jgrasstools.hortonmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.DiametersReader;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -35,7 +35,7 @@ public class TestTrentoP extends HMTestCase {
             0.001, 1, 0.2, 0.4};
     /**
      * This is a block of parameter that usually are used in the simulation of
-     * {@link TrentoP}.
+     * {@link OmsTrentoP}.
      */
     private static double a = 60.4;
     private static double n = 0.61;
@@ -53,7 +53,7 @@ public class TestTrentoP extends HMTestCase {
      public void testProject1() throws Exception {
      double[][] result = null;
      double[] globalparameters = INTERNAL_PARAMETERS;
-     TrentoP trento_P = new TrentoP();
+     OmsTrentoP trento_P = new OmsTrentoP();
      URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
      DiametersReader diametersreader = new DiametersReader();
      diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
@@ -114,7 +114,7 @@ public class TestTrentoP extends HMTestCase {
      public void testProject1Rect() throws Exception {
      double[][] result = null;
      double[] globalparameters = INTERNAL_PARAMETERS;
-     TrentoP trento_P = new TrentoP();
+     OmsTrentoP trento_P = new OmsTrentoP();
      // set parameters;
      URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
      DiametersReader diametersreader = new DiametersReader();
@@ -174,7 +174,7 @@ public class TestTrentoP extends HMTestCase {
      public void testProject1Trap() throws Exception {
      double[][] result = null;
      double[] globalparameters = INTERNAL_PARAMETERS;
-     TrentoP trento_P = new TrentoP();
+     OmsTrentoP trento_P = new OmsTrentoP();
      // set parameters;
      URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
      DiametersReader diametersreader = new DiametersReader();
@@ -243,7 +243,7 @@ public class TestTrentoP extends HMTestCase {
      diametersreader.fileNovalue = "-9999.0";
      diametersreader.readFile();
      List<double[]> pipe = diametersreader.data;
-     TrentoP trento_P = new TrentoP();
+     OmsTrentoP trento_P = new OmsTrentoP();
      // set parameters;
      trento_P.pMode = 0; // project
      trento_P.pA = a;
@@ -302,7 +302,7 @@ public class TestTrentoP extends HMTestCase {
      double[][] result = null;
      double[] globalparameters = INTERNAL_PARAMETERS;
     
-     TrentoP trento_P = new TrentoP();
+     OmsTrentoP trento_P = new OmsTrentoP();
      // set parameters;
      trento_P.pMode = 1; // verify
      trento_P.pMaxJunction = (int) globalparameters[1];
@@ -351,7 +351,7 @@ public class TestTrentoP extends HMTestCase {
     // public void testProject2() throws Exception {
     // double[][] result = null;
     // double[] globalparameters2 = INTERNAL_PARAMETERS2;
-    // TrentoP trento_P = new TrentoP();
+    // OmsTrentoP trento_P = new OmsTrentoP();
     // // set parameters;
     // URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
     // DiametersReader diametersreader = new DiametersReader();

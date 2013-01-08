@@ -5,9 +5,9 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetInpGenerator;
-//import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetParametersOptions;
-//import org.jgrasstools.hortonmachine.modules.networktools.epanet.EpanetParametersTime;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetInpGenerator;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetParametersOptions;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetParametersTime;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
@@ -17,7 +17,7 @@
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.Headloss;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test Epanet file creation.
+// * Test OmsEpanet file creation.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -44,7 +44,7 @@
 //        SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
 //        SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
 //
-//        EpanetParametersTime time = new EpanetParametersTime();
+//        OmsEpanetParametersTime time = new OmsEpanetParametersTime();
 //        time.duration = 7200.0;
 //        time.hydraulicTimestep = 60.0;
 //        time.patternTimestep = 60.0;
@@ -53,12 +53,12 @@
 //        time.statistic = "NONE";
 //        time.process();
 //
-//        EpanetParametersOptions options = new EpanetParametersOptions();
+//        OmsEpanetParametersOptions options = new OmsEpanetParametersOptions();
 //        options.headloss = Headloss.C_M.getName();
 //        options.unbalanced = "CONTINUE 10";
 //        options.process();
 //
-//        EpanetInpGenerator gen = new EpanetInpGenerator();
+//        OmsEpanetInpGenerator gen = new OmsEpanetInpGenerator();
 //        gen.pm = pm;
 //        gen.inJunctions = jFC;
 //        gen.inTanks = tFC;

@@ -1,6 +1,6 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils;
 /**
- * Optional parameters used to TrentoP in calibration mode.
+ * Optional parameters used to OmsTrentoP in calibration mode.
  * <p>
  * It specify a key and a description, that can be used to build a GUI, and the default value,if it exist, and the range.
  * </p>

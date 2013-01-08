@@ -58,11 +58,11 @@ import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Synchronizes the features of the different epanet layers.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 @SuppressWarnings("nls")
-public class EpanetFeaturesSynchronizer extends JGTModel {
+public class OmsEpanetFeaturesSynchronizer extends JGTModel {
 
     @Description("The junctions features.")
     @In

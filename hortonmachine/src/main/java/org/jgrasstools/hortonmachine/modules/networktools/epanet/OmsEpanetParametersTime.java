@@ -40,10 +40,10 @@ import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.TimeParame
 
 @Description("The time related parameters of the epanet inp file")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EpanetParametersTime extends JGTModel {
+public class OmsEpanetParametersTime extends JGTModel {
 
     @Description("The duration of the simulation in minutes. Default is 0.")
     @In
@@ -132,14 +132,14 @@ public class EpanetParametersTime extends JGTModel {
     }
 
     /**
-     * Create a {@link EpanetParametersTime} from a {@link HashMap} of values.
+     * Create a {@link OmsEpanetParametersTime} from a {@link HashMap} of values.
      * 
      * @param options the {@link HashMap} of values. The keys have to be from {@link TimeParameterCodes}.
-     * @return the created {@link EpanetParametersTime}.
+     * @return the created {@link OmsEpanetParametersTime}.
      * @throws Exception 
      */
-    public static EpanetParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) throws Exception {
-        EpanetParametersTime epTime = new EpanetParametersTime();
+    public static OmsEpanetParametersTime createFromMap( HashMap<TimeParameterCodes, String> options ) throws Exception {
+        OmsEpanetParametersTime epTime = new OmsEpanetParametersTime();
         String duration = options.get(TimeParameterCodes.DURATION);
         epTime.duration = NumericsUtilities.isNumber(duration, Double.class);
         String hydrTiStep = options.get(TimeParameterCodes.HYDSTEP);

@@ -61,10 +61,10 @@ import com.vividsolutions.jts.geom.Point;
 
 @Description("Generates the base shapefiles for an epanet run.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Epanet")
+@Keywords("OmsEpanet")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EpanetProjectFilesGenerator extends JGTModel {
+public class OmsEpanetProjectFilesGenerator extends JGTModel {
 
     @Description("The folder into which to create the base files.")
     @In

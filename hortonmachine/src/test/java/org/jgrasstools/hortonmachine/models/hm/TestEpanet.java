@@ -3,12 +3,12 @@
 //import java.util.List;
 //
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.networktools.epanet.Epanet;
+//import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanet;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.types.Junction;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.types.Pipe;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
-// * Test Epanet file creation.
+// * Test OmsEpanet file creation.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -22,7 +22,7 @@
 //        // "D:\\development\\epanet-hydromates-hg\\testdata\\Davide_2011_03_21\\prova.inp";
 //        // String inp = "D:\\TMP\\epanet-tests\\esempio_ravina\\test.inp";
 //
-//        Epanet gen = new Epanet();
+//        OmsEpanet gen = new OmsEpanet();
 //        gen.inInp = inp;
 //        gen.pm = pm;
 //        // gen.inDll =
