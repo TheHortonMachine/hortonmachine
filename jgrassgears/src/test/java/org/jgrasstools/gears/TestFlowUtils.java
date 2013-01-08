@@ -18,7 +18,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test FileIterator.
+ * Test OmsFileIterator.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */

@@ -51,7 +51,7 @@ import org.opengis.geometry.DirectPosition;
 @Status(Status.EXPERIMENTAL)
 @Name("gcps2wld")
 @License("General Public License Version 3 (GPLv3)")
-public class GroundControlPoints2World extends JGTModel {
+public class OmsGroundControlPoints2World extends JGTModel {
 
     @Description("The file containing the ground control points.")
     @UI(JGTConstants.FILEIN_UI_HINT)

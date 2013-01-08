@@ -46,7 +46,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Status(Status.CERTIFIED)
 @Name("rasterlister")
 @License("General Public License Version 3 (GPLv3)")
-public class CoverageLister extends JGTModel {
+public class OmsCoverageLister extends JGTModel {
 
     @Description("The list of file from which to read rasters.")
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)

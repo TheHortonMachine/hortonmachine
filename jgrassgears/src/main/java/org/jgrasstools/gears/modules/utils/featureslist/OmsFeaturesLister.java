@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Status(Status.CERTIFIED)
 @Name("vectorlister")
 @License("General Public License Version 3 (GPLv3)")
-public class FeaturesLister extends JGTModel {
+public class OmsFeaturesLister extends JGTModel {
 
     @Description("The list of file from which to read features.")
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
