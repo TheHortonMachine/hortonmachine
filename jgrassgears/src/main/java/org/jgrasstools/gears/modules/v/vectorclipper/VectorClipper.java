@@ -38,8 +38,8 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -168,8 +168,8 @@ public class VectorClipper extends JGTModel {
 //        String basePath = "D:/TMP/CLIPPING_CONTEST/ContourClipTest/";
         String basePath = "/home/ubuntu/development/ContourClipTest/";
 
-        SimpleFeatureCollection clip = VectorReader.readVector(basePath + "StudyArea1MileBuffer.shp");
-        SimpleFeatureCollection data = VectorReader.readVector(basePath + "Contours20Ft.shp");
+        SimpleFeatureCollection clip = OmsVectorReader.readVector(basePath + "StudyArea1MileBuffer.shp");
+        SimpleFeatureCollection data = OmsVectorReader.readVector(basePath + "Contours20Ft.shp");
 
         c.printTimePassedInSeconds(ps);
 
@@ -182,7 +182,7 @@ public class VectorClipper extends JGTModel {
 
         c.printTimePassedInSeconds(ps);
 
-        VectorWriter.writeVector(basePath + "clipped.shp", outMap2);
+        OmsVectorWriter.writeVector(basePath + "clipped.shp", outMap2);
 
         c.printTimePassedInSeconds(ps);
     }

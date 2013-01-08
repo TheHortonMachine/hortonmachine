@@ -23,7 +23,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -34,50 +34,47 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-@Description("Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.")
+import org.joda.time.DateTime;
+@Description("Utility class for reading data from csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
 @Label(JGTConstants.HASHMAP_READER)
 @UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class PlainId2ValueReader {
+public class OmsDateTime2ValueMapReader {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
+    @Description("The number of columns of the array.")
+    @In
+    public int pCols = 1;
+
     @Description("The csv separator.")
     @In
     public String pSeparator = ",";
 
-    @Role(Role.PARAMETER)
     @Description("The file novalue.")
     @In
     public String fileNovalue = "-9999.0";
-
-    @Role(Role.PARAMETER)
-    @Description("The novalue wanted in the coverage.")
-    @In
-    public double novalue = doubleNovalue;
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read map of ids and values.")
+    @Description("The read map of ids and values arrays.")
     @Out
-    public HashMap<Integer, double[]> data;
+    public LinkedHashMap<DateTime, double[]> data;
 
-    protected BufferedReader csvReader;
+    private BufferedReader csvReader;
 
     private void ensureOpen() throws IOException {
         if (csvReader == null)
@@ -87,20 +84,26 @@ public class PlainId2ValueReader {
     @Execute
     public void readNextLine() throws IOException {
         ensureOpen();
-        data = new HashMap<Integer, double[]>();
+        data = new LinkedHashMap<DateTime, double[]>();
         String line = null;
         if ((line = csvReader.readLine()) != null) {
-            String[] lineSplit = line.split(pSeparator);
-            for( int i = 0; i < lineSplit.length; i = i + 2 ) {
-                int id = (int) Double.parseDouble(lineSplit[i].trim());
-                double value = Double.parseDouble(lineSplit[i + 1].trim());
-                if (fileNovalue != null) {
-                    if (lineSplit[i + 1].trim().equals(fileNovalue)) {
-                        // set to internal novalue
-                        value = novalue;
+            String[] lineSplit = line.trim().split(pSeparator);
+            for( int i = 0; i < lineSplit.length; i++ ) {
+                DateTime dateTime = JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS.parseDateTime(lineSplit[i].trim());
+
+                double[] values = new double[pCols];
+                for( int j = i + 1, k = 0; j < i + pCols + 1; j++, k++ ) {
+                    double value = Double.parseDouble(lineSplit[j].trim());
+                    if (fileNovalue != null) {
+                        if (lineSplit[j].trim().equals(fileNovalue)) {
+                            // set to internal novalue
+                            value = doubleNovalue;
+                        }
                     }
+                    values[k] = value;
                 }
-                data.put(id, new double[]{value});
+                data.put(dateTime, values);
+                i = i + pCols;
             }
         }
     }

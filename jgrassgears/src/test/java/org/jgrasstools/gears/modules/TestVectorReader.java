@@ -10,8 +10,8 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -22,7 +22,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 /**
- * Test {@link VectorReader}.
+ * Test {@link OmsVectorReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -53,13 +53,13 @@ public class TestVectorReader extends HMTestCase {
             if (!tmpShape.delete())
                 throw new IOException();
         }
-        VectorWriter writer = new VectorWriter();
+        OmsVectorWriter writer = new OmsVectorWriter();
         writer.file = tmpShape.getAbsolutePath();
         writer.inVector = newCollection;
         writer.process();
 
         // now read it again
-        VectorReader reader = new VectorReader();
+        OmsVectorReader reader = new OmsVectorReader();
         reader.file = tmpShape.getAbsolutePath();
         reader.process();
         SimpleFeatureCollection readFC = reader.outVector;
@@ -98,7 +98,7 @@ public class TestVectorReader extends HMTestCase {
         String propertiesPath = new File(dataUrl.toURI()).getAbsolutePath();
 
         // now read it again
-        VectorReader reader = new VectorReader();
+        OmsVectorReader reader = new OmsVectorReader();
         reader.file = propertiesPath;
         reader.process();
         SimpleFeatureCollection readFC = reader.outVector;
@@ -137,7 +137,7 @@ public class TestVectorReader extends HMTestCase {
         String propertiesPath = new File(dataUrl.toURI()).getAbsolutePath();
 
         // now read it again
-        VectorReader reader = new VectorReader();
+        OmsVectorReader reader = new OmsVectorReader();
         reader.file = propertiesPath;
         reader.process();
         SimpleFeatureCollection readFC = reader.outVector;

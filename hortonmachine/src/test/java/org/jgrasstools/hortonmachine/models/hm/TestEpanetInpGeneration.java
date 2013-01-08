@@ -3,7 +3,7 @@
 //import java.io.File;
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetInpGenerator;
 //import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetParametersOptions;
@@ -37,12 +37,12 @@
 //        String piPath = folder + File.separator + Pipes.ID.getShapefileName();
 //        String vPath = folder + File.separator + Valves.ID.getShapefileName();
 //        String rPath = folder + File.separator + Reservoirs.ID.getShapefileName();
-//        SimpleFeatureCollection jFC = ShapefileFeatureReader.readShapefile(jPath);
-//        SimpleFeatureCollection tFC = ShapefileFeatureReader.readShapefile(tPath);
-//        SimpleFeatureCollection puFC = ShapefileFeatureReader.readShapefile(puPath);
-//        SimpleFeatureCollection piFC = ShapefileFeatureReader.readShapefile(piPath);
-//        SimpleFeatureCollection vFC = ShapefileFeatureReader.readShapefile(vPath);
-//        SimpleFeatureCollection rFC = ShapefileFeatureReader.readShapefile(rPath);
+//        SimpleFeatureCollection jFC = OmsShapefileFeatureReader.readShapefile(jPath);
+//        SimpleFeatureCollection tFC = OmsShapefileFeatureReader.readShapefile(tPath);
+//        SimpleFeatureCollection puFC = OmsShapefileFeatureReader.readShapefile(puPath);
+//        SimpleFeatureCollection piFC = OmsShapefileFeatureReader.readShapefile(piPath);
+//        SimpleFeatureCollection vFC = OmsShapefileFeatureReader.readShapefile(vPath);
+//        SimpleFeatureCollection rFC = OmsShapefileFeatureReader.readShapefile(rPath);
 //
 //        OmsEpanetParametersTime time = new OmsEpanetParametersTime();
 //        time.duration = 7200.0;

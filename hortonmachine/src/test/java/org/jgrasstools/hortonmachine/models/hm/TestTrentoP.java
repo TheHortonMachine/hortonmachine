@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.OmsTrentoP;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.DiametersReader;
@@ -90,7 +90,7 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pOutPipe = 16;
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
      File netFile = new File(net.toURI());
-     ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+     OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
      SimpleFeatureCollection netFC = netReader.geodata;
@@ -151,7 +151,7 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pOutPipe = 16;
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Rect.shp");
      File netFile = new File(net.toURI());
-     ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+     OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
      SimpleFeatureCollection netFC = netReader.geodata;
@@ -211,7 +211,7 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pOutPipe = 16;
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Trap.shp");
      File netFile = new File(net.toURI());
-     ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+     OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
      SimpleFeatureCollection netFC = netReader.geodata;
@@ -272,7 +272,7 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pOutPipe = 16;
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
      File netFile = new File(net.toURI());
-     ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+     OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
      SimpleFeatureCollection netFC = netReader.geodata;
@@ -317,7 +317,7 @@ public class TestTrentoP extends HMTestCase {
      trento_P.pGamma = globalparameters[15];
      trento_P.pEspInflux = globalparameters[16];
      trento_P.pOutPipe = 16;
-     TimeSeriesReader rainReader = new TimeSeriesReader();
+     OmsTimeSeriesReader rainReader = new OmsTimeSeriesReader();
      rainReader.fileNovalue = "-9999";
      rainReader.file = rainFile.getAbsolutePath();
      rainReader.read();
@@ -326,7 +326,7 @@ public class TestTrentoP extends HMTestCase {
      // set global parameters.
      URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
      File netFile = new File(net.toURI());
-     ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+     OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
      netReader.file = netFile.getAbsolutePath();
      netReader.readFeatureCollection();
      SimpleFeatureCollection netFC = netReader.geodata;
@@ -388,7 +388,7 @@ public class TestTrentoP extends HMTestCase {
     // trento_P.pOutPipe = 38;
     // URL net = this.getClass().getClassLoader().getResource("TestTrentoP2Verifica.shp");
     // File netFile = new File(net.toURI());
-    // ShapefileFeatureReader netReader = new ShapefileFeatureReader();
+    // OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
     // netReader.file = netFile.getAbsolutePath();
     // netReader.readFeatureCollection();
     // SimpleFeatureCollection netFC = netReader.geodata;

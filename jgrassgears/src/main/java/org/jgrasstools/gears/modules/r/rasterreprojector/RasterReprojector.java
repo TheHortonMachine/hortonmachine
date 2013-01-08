@@ -48,7 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection.")
 @Documentation("RasterConverter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Crs, Reprojection, Raster, RasterConverter, RasterReader")
+@Keywords("Crs, Reprojection, Raster, RasterConverter, OmsRasterReader")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("rreproject")

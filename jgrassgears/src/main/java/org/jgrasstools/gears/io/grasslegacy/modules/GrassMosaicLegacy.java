@@ -40,9 +40,9 @@ import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
+import org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -113,7 +113,7 @@ public class GrassMosaicLegacy extends JGTModel {
         CoordinateReferenceSystem crs = null;
         pm.beginTask("Calculating final bounds...", inFiles.size());
         for( File coverageFile : inFiles ) {
-            RasterReader reader = new RasterReader();
+            OmsRasterReader reader = new OmsRasterReader();
             reader.file = coverageFile.getAbsolutePath();
             reader.doEnvelope = true;
             reader.process();
@@ -168,7 +168,7 @@ public class GrassMosaicLegacy extends JGTModel {
 
         int index = 1;
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = OmsRasterReader.readRaster(coverageFile.getAbsolutePath());
             Envelope2D env = coverage.getEnvelope2D();
             GridGeometry2D gridGeometry = coverage.getGridGeometry();
             if (requestedEnvelope != null) {
@@ -206,7 +206,7 @@ public class GrassMosaicLegacy extends JGTModel {
         }
 
         pm.message("Writing mosaic map.");
-        GrassLegacyWriter writer = new GrassLegacyWriter();
+        OmsGrassLegacyWriter writer = new OmsGrassLegacyWriter();
         writer.geodata = outputData;
         writer.file = outGrassFile;
         writer.inWindow = writeWindow;

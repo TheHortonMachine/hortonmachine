@@ -41,7 +41,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Raster corrector module.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Correct, RasterReader")
+@Keywords("IO, Coverage, Raster, Correct, OmsRasterReader")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @Name("rcorrect")

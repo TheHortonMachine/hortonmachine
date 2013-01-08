@@ -21,10 +21,10 @@
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.coverage.grid.GridGeometry2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.gridgeometryreader.GridGeometryReader;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
+//import org.jgrasstools.gears.io.gridgeometryreader.OmsGridGeometryReader;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 //import org.jgrasstools.gears.modules.r.interpolation2d.SurfaceInterpolator;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
@@ -43,7 +43,7 @@
 //        String inMask = baseFolder + "mask";
 //        String outRaster = baseFolder + "geo_interp_intens01";
 //
-//        GridGeometryReader ggR = new GridGeometryReader();
+//        OmsGridGeometryReader ggR = new OmsGridGeometryReader();
 //        ggR.pNorth = 5105696.0;
 //        ggR.pSouth = 5105560.0;
 //        ggR.pWest = 675240.0;
@@ -61,8 +61,8 @@
 //
 //        GridGeometry2D gridGeometry2D = ggR.outGridgeom;
 //
-//        SimpleFeatureCollection readVector = VectorReader.readVector(inVector);
-//        GridCoverage2D mask = RasterReader.readRaster(inMask);
+//        SimpleFeatureCollection readVector = OmsVectorReader.readVector(inVector);
+//        GridCoverage2D mask = OmsRasterReader.readRaster(inMask);
 //
 //        SurfaceInterpolator spliner = new SurfaceInterpolator();
 //        spliner.inVector = readVector;
@@ -78,7 +78,7 @@
 //
 //        GridCoverage2D interpolated = spliner.outRaster;
 //
-//        RasterWriter.writeRaster(outRaster, interpolated);
+//        OmsRasterWriter.writeRaster(outRaster, interpolated);
 //    }
 //
 //    // public void testIDWInterpolator() throws Exception {
@@ -91,7 +91,7 @@
 //    // String outRaster = baseFolder +
 //    // "interpolation_idw_elev_ground";
 //    //
-//    // GridGeometryReader ggR = new GridGeometryReader();
+//    // OmsGridGeometryReader ggR = new OmsGridGeometryReader();
 //    // ggR.pNorth = 5105696.0;
 //    // ggR.pSouth = 5105560.0;
 //    // ggR.pWest = 675240.0;
@@ -109,8 +109,8 @@
 //    //
 //    // GridGeometry2D gridGeometry2D = ggR.outGridgeom;
 //    //
-//    // SimpleFeatureCollection readVector = VectorReader.readVector(inVector);
-//    // GridCoverage2D mask = RasterReader.readRaster(inMask);
+//    // SimpleFeatureCollection readVector = OmsVectorReader.readVector(inVector);
+//    // GridCoverage2D mask = OmsRasterReader.readRaster(inMask);
 //    //
 //    // SurfaceInterpolator spliner = new SurfaceInterpolator();
 //    // spliner.inVector = readVector;
@@ -125,6 +125,6 @@
 //    //
 //    // GridCoverage2D interpolated = spliner.outRaster;
 //    //
-//    // RasterWriter.writeRaster(outRaster, interpolated);
+//    // OmsRasterWriter.writeRaster(outRaster, interpolated);
 //    // }
 //}

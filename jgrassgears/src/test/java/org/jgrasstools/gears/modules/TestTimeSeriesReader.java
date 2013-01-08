@@ -24,13 +24,13 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 /**
- * Test {@link TimeSeriesReader}.
+ * Test {@link OmsTimeSeriesReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestTimeSeriesReader extends HMTestCase {
         URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesreader_test.csv");
         String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
-        TimeSeriesReader reader = new TimeSeriesReader();
+        OmsTimeSeriesReader reader = new OmsTimeSeriesReader();
         reader.file = dataPath;
         reader.read();
         HashMap<DateTime, double[]> outData = reader.outData;

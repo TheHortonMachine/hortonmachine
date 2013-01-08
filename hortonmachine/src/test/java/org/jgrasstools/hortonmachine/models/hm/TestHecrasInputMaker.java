@@ -20,9 +20,9 @@
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
-//import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+//import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
@@ -42,9 +42,9 @@
 //        String outSectionsPath = baseFolder + "ciresa_sections.shp";
 //        String outSectionsPointsPath = baseFolder + "ciresa_sectionspath.shp";
 //
-//        GridCoverage2D elevMap = RasterReader.readRaster(inElevationPath);
-//        SimpleFeatureCollection riverMap = VectorReader.readVector(inRiverPath);
-//        // SimpleFeatureCollection sectionsMap = VectorReader.readVector(inSectionsPath);
+//        GridCoverage2D elevMap = OmsRasterReader.readRaster(inElevationPath);
+//        SimpleFeatureCollection riverMap = OmsVectorReader.readVector(inRiverPath);
+//        // SimpleFeatureCollection sectionsMap = OmsVectorReader.readVector(inSectionsPath);
 //
 //        OmsHecrasInputBuilder hecras = new OmsHecrasInputBuilder();
 //        hecras.inElev = elevMap;
@@ -58,8 +58,8 @@
 //        hecras.pm = pm;
 //        hecras.process();
 //        SimpleFeatureCollection outSections = hecras.outSections;
-//        VectorWriter.writeVector(outSectionsPath, outSections);
+//        OmsVectorWriter.writeVector(outSectionsPath, outSections);
 //        SimpleFeatureCollection outSectionsPoints = hecras.outSectionPoints;
-//        VectorWriter.writeVector(outSectionsPointsPath, outSectionsPoints);
+//        OmsVectorWriter.writeVector(outSectionsPointsPath, outSectionsPoints);
 //    }
 //}

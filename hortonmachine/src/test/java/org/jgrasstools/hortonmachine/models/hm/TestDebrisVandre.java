@@ -20,9 +20,9 @@
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-//import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+//import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre.OmsDebrisVandre;
 //@SuppressWarnings("nls")
@@ -30,12 +30,12 @@
 //    public void testVandre() throws Exception {
 //
 //
-//        GridCoverage2D pit = RasterReader.readRaster("pit");
-//        GridCoverage2D netflow = RasterReader.readRaster("mflow");
-//        GridCoverage2D slope = RasterReader.readRaster("slope_grad");
-//        GridCoverage2D triggers = RasterReader.readRaster("triggers");
-//        GridCoverage2D soil = RasterReader.readRaster("soilthick");
-////        SimpleFeatureCollection obstacles = VectorReader.readVector("");
+//        GridCoverage2D pit = OmsRasterReader.readRaster("pit");
+//        GridCoverage2D netflow = OmsRasterReader.readRaster("mflow");
+//        GridCoverage2D slope = OmsRasterReader.readRaster("slope_grad");
+//        GridCoverage2D triggers = OmsRasterReader.readRaster("triggers");
+//        GridCoverage2D soil = OmsRasterReader.readRaster("soilthick");
+////        SimpleFeatureCollection obstacles = OmsVectorReader.readVector("");
 //
 //        OmsDebrisVandre v = new OmsDebrisVandre();
 //        v.inElev = pit;
@@ -50,8 +50,8 @@
 //        SimpleFeatureCollection outIndexedTriggers = v.outIndexedTriggers;
 //        GridCoverage2D outSoil = v.outSoil;
 //        
-//        VectorWriter.writeVector("triggers.shp", outIndexedTriggers);
-//        VectorWriter.writeVector("paths.shp", outPaths);
-//        RasterWriter.writeRaster("basin_tr30_cumulated", outSoil);
+//        OmsVectorWriter.writeVector("triggers.shp", outIndexedTriggers);
+//        OmsVectorWriter.writeVector("paths.shp", outPaths);
+//        OmsRasterWriter.writeRaster("basin_tr30_cumulated", outSoil);
 //    }
 //}

@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;

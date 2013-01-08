@@ -16,8 +16,8 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.disktree.DiskTreeWriter;
 import org.jgrasstools.gears.io.disktree.IDiskTree;
 import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -63,7 +63,7 @@ public class TestDiskTreeIO extends HMTestCase {
     // }
 
     // public void testDiskTreeWrite() throws Exception {
-    // SimpleFeatureCollection readVector = VectorReader.readVector("D:/TMP/milano/localita.shp");
+    // SimpleFeatureCollection readVector = OmsVectorReader.readVector("D:/TMP/milano/localita.shp");
     // List<FeatureMate> mates = FeatureUtilities.featureCollectionToMatesList(readVector);
     //
     // DiskTreeWriter w = new DiskTreeWriter("D:/TMP/milano/geometries_buffer0_simpl000002.qjts");
@@ -115,7 +115,7 @@ public class TestDiskTreeIO extends HMTestCase {
     // newCollection.add(feature);
     // }
     //
-    // VectorWriter.writeVector("D:/TMP/milano/geometries_buffer0_simpl000002.shp", newCollection);
+    // OmsVectorWriter.writeVector("D:/TMP/milano/geometries_buffer0_simpl000002.shp", newCollection);
     //
     // }
 

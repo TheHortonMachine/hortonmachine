@@ -53,7 +53,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Status(Status.CERTIFIED)
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class PropertiesFeatureReader extends JGTModel {
+public class OmsPropertiesFeatureReader extends JGTModel {
     @Description("The properties file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -114,7 +114,7 @@ public class PropertiesFeatureReader extends JGTModel {
      */
     public static SimpleFeatureCollection readPropertiesfile( String path ) throws IOException {
 
-        PropertiesFeatureReader reader = new PropertiesFeatureReader();
+        OmsPropertiesFeatureReader reader = new OmsPropertiesFeatureReader();
         reader.file = path;
         reader.readFeatureCollection();
 

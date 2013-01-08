@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
  * Test Id2ValueReader.
@@ -16,7 +16,7 @@ public class TestId2ValueReader extends HMTestCase {
     public void testId2ValueReader() throws Exception {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("kriging_rain.csv");
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = new File(krigingRainUrl.toURI()).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";
@@ -52,7 +52,7 @@ public class TestId2ValueReader extends HMTestCase {
     public void testId2ValueReaderNoTime() throws Exception {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("kriging_rain.csv");
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();       
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();       
         reader.file = new File(krigingRainUrl.toURI()).getAbsolutePath();
         reader.idfield = "ID";
         reader.nextRecord();
@@ -78,7 +78,7 @@ public class TestId2ValueReader extends HMTestCase {
     public void testId2ValueReader2() throws Exception {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("kriging_rain.csv");
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = new File(krigingRainUrl.toURI()).getAbsolutePath();
         reader.pNum = 2;
         reader.pAggregation = 0;

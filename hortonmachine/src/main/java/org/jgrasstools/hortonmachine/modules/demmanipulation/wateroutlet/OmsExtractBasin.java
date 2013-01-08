@@ -49,10 +49,10 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -387,16 +387,16 @@ public class OmsExtractBasin extends JGTModel {
         eb.pNorth = 6862353.979338094;
         eb.pEast = 3520253.4090277995;
         eb.pValue = 1.0;
-        eb.inFlow = RasterReader.readRaster(inFlowPath);
-        eb.inNetwork = VectorReader.readVector(inNetworkPath);
+        eb.inFlow = OmsRasterReader.readRaster(inFlowPath);
+        eb.inNetwork = OmsVectorReader.readVector(inNetworkPath);
         eb.pSnapbuffer = 200.0;
         eb.doVector = true;
         eb.doSmoothing = true;
         eb.process();
 
-        RasterWriter.writeRaster(outBasinPath, eb.outBasin);
-        VectorWriter.writeVector(outVectorBasinPath, eb.outVectorBasin);
-        VectorWriter.writeVector(outOutletPath, eb.outOutlet);
+        OmsRasterWriter.writeRaster(outBasinPath, eb.outBasin);
+        OmsVectorWriter.writeVector(outVectorBasinPath, eb.outVectorBasin);
+        OmsVectorWriter.writeVector(outOutletPath, eb.outOutlet);
     }
 
 }

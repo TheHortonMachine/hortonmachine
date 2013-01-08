@@ -36,8 +36,8 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -204,9 +204,9 @@ public class OmsStrahlerRatios extends JGTModel {
         String net = "";
 
         OmsStrahlerRatios ratios = new OmsStrahlerRatios();
-        ratios.inFlow = RasterReader.readRaster(flow);
-        ratios.inStrahler = RasterReader.readRaster(strahler);
-        ratios.inNet = VectorReader.readVector(net);
+        ratios.inFlow = OmsRasterReader.readRaster(flow);
+        ratios.inStrahler = OmsRasterReader.readRaster(strahler);
+        ratios.inNet = OmsVectorReader.readVector(net);
         ratios.process();
         System.out.println(ratios.outBisfurcation);
         System.out.println(ratios.outLength);

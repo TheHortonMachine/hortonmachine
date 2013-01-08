@@ -12,11 +12,11 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.geotools.filter.text.cql2.CQL;
 //import org.geotools.referencing.CRS;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 //import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsKriging;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -85,16 +85,16 @@
 //        //
 //        String stationIdField = "ID_PUNTI_M";
 //
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = stazioniGridFile.getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        // ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
+//        // OmsShapefileFeatureReader interpolatedPointsReader = new OmsShapefileFeatureReader();
 //        // interpolatedPointsReader.file = puntiFile.getAbsolutePath();
 //        // interpolatedPointsReader.readFeatureCollection();
 //
-//        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
 //        reader.file = krigingRain4File.getAbsolutePath();
 //        reader.idfield = "ID";
 //        reader.tStart = "2000-01-01 00:00";
@@ -136,7 +136,7 @@
 //        kriging.pMode = 1;
 //        kriging.pSemivariogramType = 1;
 //
-//        // TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+//        // OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
 //        // writer.file = interpolatedRainPath;
 //        //
 //        // writer.tStart = reader.tStart;
@@ -231,17 +231,17 @@
 //    // /////////////////////////////////////////////////////////////////////////////////////////
 //    public void testKriging1() throws Exception {
 //
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = stazioniFile.getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader interpolatedPointsReader = new OmsShapefileFeatureReader();
 //        interpolatedPointsReader.file = puntiFile.getAbsolutePath();
 //        interpolatedPointsReader.readFeatureCollection();
 //        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 //
-//        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
 //        reader.file = krigingRainFile.getAbsolutePath();
 //        reader.idfield = "ID";
 //        reader.tStart = "2000-01-01 00:00";
@@ -279,7 +279,7 @@
 //        kriging.pMode = 0;
 //        kriging.pSemivariogramType = 1;
 //
-//        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
 //        writer.file = interpolatedRainPath;
 //
 //        writer.tStart = reader.tStart;
@@ -371,17 +371,17 @@
 //    * @throws Exception
 //    */
 //    public void testKriging2() throws Exception {
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = stazioniFile.getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader interpolatedPointsReader = new OmsShapefileFeatureReader();
 //        interpolatedPointsReader.file = puntiFile.getAbsolutePath();
 //        interpolatedPointsReader.readFeatureCollection();
 //        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 //
-//        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
 //        reader.file = krigingRain2File.getAbsolutePath();
 //        reader.idfield = "ID";
 //        reader.tStart = "2000-01-01 00:00";
@@ -414,7 +414,7 @@
 //        */
 //        kriging.pMode = 0;
 //
-//        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
 //        writer.file = interpolatedRainPath;
 //
 //        writer.tStart = reader.tStart;
@@ -462,17 +462,17 @@
 //    // * @throws Exception
 //    // */
 //    public void testKriging4() throws Exception {
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = stazioniFile.getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader interpolatedPointsReader = new OmsShapefileFeatureReader();
 //        interpolatedPointsReader.file = puntiFile.getAbsolutePath();
 //        interpolatedPointsReader.readFeatureCollection();
 //        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 //
-//        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
 //        reader.file = krigingRainFile.getAbsolutePath();
 //        reader.idfield = "ID";
 //        reader.tStart = "2000-01-01 00:00";
@@ -506,7 +506,7 @@
 //        kriging.pMode = 0;
 //
 //        kriging.doIncludezero = false;
-//        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
 //        writer.file = interpolatedRainPath;
 //
 //        writer.tStart = reader.tStart;
@@ -554,17 +554,17 @@
 //    * @throws Exception
 //    */
 //    public void testKriging5() throws Exception {
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = stazioniFile.getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        ShapefileFeatureReader interpolatedPointsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader interpolatedPointsReader = new OmsShapefileFeatureReader();
 //        interpolatedPointsReader.file = puntiFile.getAbsolutePath();
 //        interpolatedPointsReader.readFeatureCollection();
 //        SimpleFeatureCollection interpolatedPointsFC = interpolatedPointsReader.geodata;
 //
-//        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
 //        reader.file = krigingRain3File.getAbsolutePath();
 //        reader.idfield = "ID";
 //        reader.tStart = "2000-01-01 00:00";
@@ -597,7 +597,7 @@
 //        */
 //        kriging.pMode = 0;
 //
-//        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
 //        writer.file = interpolatedRainPath;
 //
 //        writer.tStart = reader.tStart;

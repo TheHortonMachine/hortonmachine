@@ -16,14 +16,13 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.generic;
-
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+package org.jgrasstools.gears.io.eicalculator;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -39,43 +38,34 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-@Description("Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
+
+@Description("Utility class for reading energy data from csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
+@Label(JGTConstants.LIST_READER)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Id2ValueArrayReader {
+public class OmsEIEnergyReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
     @Role(Role.PARAMETER)
-    @Description("The number of columns of the array.")
-    @In
-    public int pCols = -1;
-
-    @Role(Role.PARAMETER)
     @Description("The csv separator.")
     @In
     public String pSeparator = ",";
-
-    @Role(Role.PARAMETER)
-    @Description("The file novalue.")
-    @In
-    public String fileNovalue = "-9999.0";
 
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read map of ids and values arrays.")
+    @Description("The read data.")
     @Out
-    public HashMap<Integer, double[]> data;
+    public List<EIEnergy> outEnergy;
 
     private BufferedReader csvReader;
 
@@ -83,36 +73,38 @@ public class Id2ValueArrayReader {
         if (csvReader == null)
             csvReader = new BufferedReader(new FileReader(file));
     }
-    
-    @Execute
-    public void readNextLine() throws IOException {
-        ensureOpen();
-        data = new HashMap<Integer, double[]>();
-        String line = null;
-        if ((line = csvReader.readLine()) != null) {
-            String[] lineSplit = line.trim().split(pSeparator);
-            for( int i = 0; i < lineSplit.length; i++ ) {
-                int id = (int) Double.parseDouble(lineSplit[i].trim());
-                
-                double[] values = new double[pCols];
-                for( int j = i + 1, k = 0; j < i + pCols + 1; j++,k++ ) {
-                    double value = Double.parseDouble(lineSplit[j].trim());
-                    if (fileNovalue != null) {
-                        if (lineSplit[j].trim().equals(fileNovalue)) {
-                            // set to internal novalue
-                            value = doubleNovalue;
-                        }
-                    }
-                    values[k] = value;
-                }
-                data.put(id, values);
-                i = i + pCols;
-            }
-        }
-    }
 
     @Finalize
     public void close() throws IOException {
         csvReader.close();
     }
+
+    @Execute
+    public void read() throws IOException {
+        if (!concatOr(outEnergy == null, doReset)) {
+            return;
+        }
+        ensureOpen();
+        outEnergy = new ArrayList<EIEnergy>();
+        String line = null;
+        while( (line = csvReader.readLine()) != null ) {
+            if (line.trim().length() == 0 || line.trim().startsWith("#")) {
+                // jump empty lines and lines that start as comment
+                continue;
+            }
+            String[] lineSplit = line.split(pSeparator);
+            if (lineSplit.length > 4) {
+                throw new IOException("Energy values are defined in 4 columns.");
+            }
+
+            EIEnergy eiEnergy = new EIEnergy();
+            eiEnergy.basinId = Integer.parseInt(lineSplit[0].trim());
+            eiEnergy.energeticBandId = Integer.parseInt(lineSplit[1].trim());
+            eiEnergy.virtualMonth = Integer.parseInt(lineSplit[2].trim());
+            eiEnergy.energyValue = Double.parseDouble(lineSplit[3].trim());
+            outEnergy.add(eiEnergy);
+        }
+
+    }
+
 }

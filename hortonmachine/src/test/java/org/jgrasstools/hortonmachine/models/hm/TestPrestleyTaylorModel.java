@@ -5,7 +5,7 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.geotools.data.DataUtilities;
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel;
@@ -33,9 +33,9 @@ public class TestPrestleyTaylorModel extends HMTestCase {
 
         URL pressureUrl = this.getClass().getClassLoader().getResource("PT_in_atmpress.csv");
 
-        TimeSeriesIteratorReader tempReader = getTimeseriesReader(TempUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeSeriesIteratorReader pressReader = getTimeseriesReader(pressureUrl, fId, startDate, endDate, timeStepMinutes);
-        TimeSeriesIteratorReader netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate, timeStepMinutes);
+        OmsTimeSeriesIteratorReader tempReader = getTimeseriesReader(TempUrl, fId, startDate, endDate, timeStepMinutes);
+        OmsTimeSeriesIteratorReader pressReader = getTimeseriesReader(pressureUrl, fId, startDate, endDate, timeStepMinutes);
+        OmsTimeSeriesIteratorReader netradReader = getTimeseriesReader(netradiationUrl, fId, startDate, endDate, timeStepMinutes);
 
         OmsPresteyTaylorEtpModel PTEtp = new OmsPresteyTaylorEtpModel();
 
@@ -116,9 +116,9 @@ public class TestPrestleyTaylorModel extends HMTestCase {
 
     }
 
-    private TimeSeriesIteratorReader getTimeseriesReader( URL url, String id, String startDate, String endDate,
+    private OmsTimeSeriesIteratorReader getTimeseriesReader( URL url, String id, String startDate, String endDate,
             int timeStepMinutes ) throws URISyntaxException {
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = DataUtilities.urlToFile(url).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = startDate;

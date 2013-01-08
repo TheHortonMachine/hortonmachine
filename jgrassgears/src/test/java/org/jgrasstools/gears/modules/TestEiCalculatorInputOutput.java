@@ -6,14 +6,14 @@
 //import java.util.List;
 //
 //import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
-//import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
-//import org.jgrasstools.gears.io.eicalculator.EIAltimetryWriter;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAltimetryReader;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAltimetryWriter;
 //import org.jgrasstools.gears.io.eicalculator.EIAreas;
-//import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
-//import org.jgrasstools.gears.io.eicalculator.EIAreasWriter;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAreasReader;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAreasWriter;
 //import org.jgrasstools.gears.io.eicalculator.EIEnergy;
-//import org.jgrasstools.gears.io.eicalculator.EIEnergyReader;
-//import org.jgrasstools.gears.io.eicalculator.EIEnergyWriter;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIEnergyReader;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIEnergyWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
 ///**
 // * Test EiCalculatorInputOutput .
@@ -24,7 +24,7 @@
 //
 //    public void testEiCalculatorInputOutput() throws Exception {
 //        URL altimUrl = this.getClass().getClassLoader().getResource("eicalculator_out_altimetry.csv");
-//        EIAltimetryReader altimReader = new EIAltimetryReader();
+//        OmsEIAltimetryReader altimReader = new OmsEIAltimetryReader();
 //        altimReader.file = new File(altimUrl.toURI()).getAbsolutePath();
 //        altimReader.pSeparator = "\\s+";
 //        altimReader.read();
@@ -35,13 +35,13 @@
 //        // write file
 //        File tmpFile = File.createTempFile("altim", ".csv");
 //        String altimTmpFile = tmpFile.getAbsolutePath();
-//        EIAltimetryWriter altimWriter = new EIAltimetryWriter();
+//        OmsEIAltimetryWriter altimWriter = new OmsEIAltimetryWriter();
 //        altimWriter.file = altimTmpFile;
 //        altimWriter.inAltimetry = altimetry;
 //        altimWriter.pSeparator = " ";
 //        altimWriter.write();
 //        altimWriter.close();
-//        EIAltimetryReader altimTmpReader = new EIAltimetryReader();
+//        OmsEIAltimetryReader altimTmpReader = new OmsEIAltimetryReader();
 //        altimTmpReader.file = altimTmpFile;
 //        altimTmpReader.pSeparator = "\\s+";
 //        altimTmpReader.read();
@@ -57,7 +57,7 @@
 //         * areas
 //         */
 //        URL areaUrl = this.getClass().getClassLoader().getResource("eicalculator_out_areas.csv");
-//        EIAreasReader areaReader = new EIAreasReader();
+//        OmsEIAreasReader areaReader = new OmsEIAreasReader();
 //        areaReader.file = new File(areaUrl.toURI()).getAbsolutePath();
 //        areaReader.pSeparator = "\\s+";
 //        areaReader.read();
@@ -68,13 +68,13 @@
 //        // write file
 //        File tmpFile1 = File.createTempFile("altim", ".csv");
 //        String areasTmpFile = tmpFile1.getAbsolutePath();
-//        EIAreasWriter areasWriter = new EIAreasWriter();
+//        OmsEIAreasWriter areasWriter = new OmsEIAreasWriter();
 //        areasWriter.file = areasTmpFile;
 //        areasWriter.inAreas = areas;
 //        areasWriter.pSeparator = " ";
 //        areasWriter.write();
 //        areasWriter.close();
-//        EIAreasReader areasTmpReader = new EIAreasReader();
+//        OmsEIAreasReader areasTmpReader = new OmsEIAreasReader();
 //        areasTmpReader.file = areasTmpFile;
 //        areasTmpReader.pSeparator = "\\s+";
 //        areasTmpReader.read();
@@ -90,7 +90,7 @@
 //         * energy
 //         */
 //        URL energyUrl = this.getClass().getClassLoader().getResource("eicalculator_out_energy.csv");
-//        EIEnergyReader energyReader = new EIEnergyReader();
+//        OmsEIEnergyReader energyReader = new OmsEIEnergyReader();
 //        energyReader.file = new File(energyUrl.toURI()).getAbsolutePath();
 //        energyReader.pSeparator = "\\s+";
 //        energyReader.read();
@@ -101,13 +101,13 @@
 //        // write file
 //        File tmpFile2 = File.createTempFile("altim", ".csv");
 //        String energyTmpFile = tmpFile2.getAbsolutePath();
-//        EIEnergyWriter energyWriter = new EIEnergyWriter();
+//        OmsEIEnergyWriter energyWriter = new OmsEIEnergyWriter();
 //        energyWriter.file = energyTmpFile;
 //        energyWriter.inEnergy = energy;
 //        energyWriter.pSeparator = " ";
 //        energyWriter.write();
 //        energyWriter.close();
-//        EIEnergyReader energyTmpReader = new EIEnergyReader();
+//        OmsEIEnergyReader energyTmpReader = new OmsEIEnergyReader();
 //        energyTmpReader.file = energyTmpFile;
 //        energyTmpReader.pSeparator = "\\s+";
 //        energyTmpReader.read();

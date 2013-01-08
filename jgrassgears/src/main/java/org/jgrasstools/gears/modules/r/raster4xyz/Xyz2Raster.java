@@ -38,7 +38,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -173,7 +173,7 @@ public class Xyz2Raster extends JGTModel {
         r.pCode = "EPSG:3067";
         r.process();
 
-        RasterWriter.writeRaster(out, r.outRaster);
+        OmsRasterWriter.writeRaster(out, r.outRaster);
     }
 
 }

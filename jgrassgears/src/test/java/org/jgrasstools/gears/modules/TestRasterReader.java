@@ -23,11 +23,11 @@ import java.io.File;
 import java.net.URL;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 /**
- * Test {@link RasterReader}.
+ * Test {@link OmsRasterReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -45,7 +45,7 @@ public class TestRasterReader extends HMTestCase {
 
     public void testRasterReaderAll() throws Exception {
 
-        RasterReader reader = new RasterReader();
+        OmsRasterReader reader = new OmsRasterReader();
         reader.file = arcPath;
         reader.fileNovalue = -9999.0;
         reader.geodataNovalue = Double.NaN;
@@ -53,7 +53,7 @@ public class TestRasterReader extends HMTestCase {
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
-        reader = new RasterReader();
+        reader = new OmsRasterReader();
         reader.file = grassPath;
         reader.fileNovalue = -9999.0;
         reader.geodataNovalue = Double.NaN;
@@ -78,7 +78,7 @@ public class TestRasterReader extends HMTestCase {
         double e = 1640920.0;
         double xres = 30.0;
         double yres = 30.0;
-        RasterReader reader = new RasterReader();
+        OmsRasterReader reader = new OmsRasterReader();
         reader.file = arcPath;
         reader.pNorth = n;
         reader.pSouth = s;
@@ -90,7 +90,7 @@ public class TestRasterReader extends HMTestCase {
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
-        reader = new RasterReader();
+        reader = new OmsRasterReader();
         reader.file = grassPath;
         reader.pNorth = n;
         reader.pSouth = s;
@@ -120,7 +120,7 @@ public class TestRasterReader extends HMTestCase {
 
         double xres = 60.0;
         double yres = 60.0;
-        RasterReader reader = new RasterReader();
+        OmsRasterReader reader = new OmsRasterReader();
         reader.pXres = xres;
         reader.pYres = yres;
         reader.file = arcPath;
@@ -128,7 +128,7 @@ public class TestRasterReader extends HMTestCase {
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData1);
 
-        reader = new RasterReader();
+        reader = new OmsRasterReader();
         reader.pXres = xres;
         reader.pYres = yres;
         reader.file = grassPath;
@@ -151,7 +151,7 @@ public class TestRasterReader extends HMTestCase {
         double e = 1640920.0;
         double xres = 45.0;
         double yres = 45.0;
-        RasterReader reader = new RasterReader();
+        OmsRasterReader reader = new OmsRasterReader();
         reader.file = arcPath;
         reader.pNorth = n;
         reader.pSouth = s;
@@ -163,7 +163,7 @@ public class TestRasterReader extends HMTestCase {
         GridCoverage2D readCoverage = reader.outRaster;
         checkMatrixEqual(readCoverage.getRenderedImage(), mapData);
 
-        reader = new RasterReader();
+        reader = new OmsRasterReader();
         reader.file = grassPath;
         reader.pNorth = n;
         reader.pSouth = s;

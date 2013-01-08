@@ -19,9 +19,9 @@
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 //import org.jgrasstools.gears.modules.r.bobthebuilder.BobTheBuilder;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
@@ -38,9 +38,9 @@
 //        String dtm = "/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/bobthebuilder/cell/dtm";
 //        String outdtm = "/home/moovida/data/hydrocareworkspace/grassdb/utm32n_etrf89/bobthebuilder/cell/dtm_bob_erode";
 //
-//        GridCoverage2D inRaster = RasterReader.readRaster(dtm);
-//        SimpleFeatureCollection inArea = VectorReader.readVector(area);
-//        SimpleFeatureCollection inPoints = VectorReader.readVector(points);
+//        GridCoverage2D inRaster = OmsRasterReader.readRaster(dtm);
+//        SimpleFeatureCollection inArea = OmsVectorReader.readVector(area);
+//        SimpleFeatureCollection inPoints = OmsVectorReader.readVector(points);
 //
 //        BobTheBuilder bob = new BobTheBuilder();
 //        bob.pm = pm;
@@ -52,7 +52,7 @@
 //        bob.process();
 //        GridCoverage2D outRaster = bob.outRaster;
 //
-//        RasterWriter.writeRaster(outdtm, outRaster);
+//        OmsRasterWriter.writeRaster(outdtm, outRaster);
 //    }
 //
 //}

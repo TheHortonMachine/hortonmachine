@@ -16,13 +16,16 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.eicalculator;
+package org.jgrasstools.gears.io.generic;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,24 +35,23 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading altimetry data from csv files.")
+@Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.LIST_READER)
+@Keywords("IO, Writing")
+@Label(JGTConstants.HASHMAP_WRITER)
+@UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EIAltimetryReader extends JGTModel {
-    @Description("The csv file to read from.")
+public class OmsId2ValueArrayWriter {
+    @Description("The csv file to write to.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
@@ -59,53 +61,55 @@ public class EIAltimetryReader extends JGTModel {
     @In
     public String pSeparator = ",";
 
+    @Role(Role.PARAMETER)
+    @Description("The file novalue.")
+    @In
+    public String fileNovalue = "-9999.0";
+
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read data.")
-    @Out
-    public List<EIAltimetry> outAltimetry;
+    @Description("The map of ids and values arrays to write.")
+    @In
+    public HashMap<Integer, double[]> data;
 
-    private BufferedReader csvReader;
+    private BufferedWriter csvWriter;
 
     private void ensureOpen() throws IOException {
-        if (csvReader == null)
-            csvReader = new BufferedReader(new FileReader(file));
+        if (csvWriter == null)
+            csvWriter = new BufferedWriter(new FileWriter(file));
+    }
+
+    private double novalue = -9999.0;
+
+    @Execute
+    public void writeNextLine() throws IOException {
+        ensureOpen();
+
+        novalue = Double.parseDouble(fileNovalue);
+
+        Set<Entry<Integer, double[]>> entrySet = data.entrySet();
+        for( Entry<Integer, double[]> entry : entrySet ) {
+            Integer id = entry.getKey();
+            double[] values = entry.getValue();
+
+            csvWriter.write(id.toString());
+            csvWriter.write(pSeparator);
+            for( int i = 0; i < values.length; i++ ) {
+                double value = values[i];
+                if (isNovalue(value)) {
+                    value = novalue;
+                }
+                csvWriter.write(String.valueOf(value));
+                csvWriter.write(pSeparator);
+            }
+        }
+        csvWriter.write("\n");
     }
 
     @Finalize
     public void close() throws IOException {
-        csvReader.close();
+        csvWriter.close();
     }
-
-    @Execute
-    public void read() throws IOException {
-        if (!concatOr(outAltimetry == null, doReset)) {
-            return;
-        }
-        ensureOpen();
-
-        outAltimetry = new ArrayList<EIAltimetry>();
-        String line = null;
-        while( (line = csvReader.readLine()) != null ) {
-            if (line.trim().length() == 0 || line.trim().startsWith("#")) {
-                // jump empty lines and lines that start as comment
-                continue;
-            }
-            String[] lineSplit = line.split(pSeparator);
-            if (lineSplit.length > 4) {
-                throw new IOException("Altimetry values are defined in 4 columns.");
-            }
-
-            EIAltimetry eiAltimetry = new EIAltimetry();
-            eiAltimetry.basinId = Integer.parseInt(lineSplit[0].trim());
-            eiAltimetry.altimetricBandId = Integer.parseInt(lineSplit[1].trim());
-            eiAltimetry.elevationValue = Double.parseDouble(lineSplit[2].trim());
-            eiAltimetry.bandRange = Double.parseDouble(lineSplit[3].trim());
-            outAltimetry.add(eiAltimetry);
-        }
-
-    }
-
 }

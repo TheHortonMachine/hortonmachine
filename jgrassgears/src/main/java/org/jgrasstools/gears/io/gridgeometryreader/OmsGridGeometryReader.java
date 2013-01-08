@@ -44,7 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Status(Status.CERTIFIED)
 @Name("gridgeomreader")
 @License("General Public License Version 3 (GPLv3)")
-public class GridGeometryReader extends JGTModel {
+public class OmsGridGeometryReader extends JGTModel {
     @Description("The boundary north coordinate.")
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In

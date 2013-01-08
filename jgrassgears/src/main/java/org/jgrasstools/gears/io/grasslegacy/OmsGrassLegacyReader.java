@@ -52,7 +52,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class GrassLegacyReader extends JGTModel {
+public class OmsGrassLegacyReader extends JGTModel {
     @Description("The file to the map to be read (the cell file).")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -159,7 +159,7 @@ public class GrassLegacyReader extends JGTModel {
         }
         Window rectangleAroundPoint = GrassLegacyUtilities.getRectangleAroundPoint(window, coordinate.x, coordinate.y);
 
-        GrassLegacyReader reader = new GrassLegacyReader();
+        OmsGrassLegacyReader reader = new OmsGrassLegacyReader();
         reader.file = filePath;
         reader.inWindow = rectangleAroundPoint;
         if (pm != null)

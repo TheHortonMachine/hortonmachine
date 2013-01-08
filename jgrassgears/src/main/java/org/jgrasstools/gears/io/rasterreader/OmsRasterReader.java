@@ -86,7 +86,7 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.geotools.gce.image.WorldImageReader;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.io.grasslegacy.GrassLegacyReader;
+import org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyReader;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -102,14 +102,14 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Envelope;
 
 @Description("Raster reader module.")
-@Documentation("RasterReader.html")
+@Documentation("OmsRasterReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Coverage, Raster, Reading")
 @Label(JGTConstants.RASTERREADER)
 @Status(Status.CERTIFIED)
 @Name("rasterreader")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterReader extends JGTModel {
+public class OmsRasterReader extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @Description("The raster file to read with extension (supported are: asc, tiff, grass).")
     @In
@@ -295,7 +295,7 @@ public class RasterReader extends JGTModel {
                 GrassCoverageReader reader = format.getReader(mapEnvironment.getCELL());
                 outRaster = (GridCoverage2D) reader.read(generalParameter);
             } else {
-                GrassLegacyReader reader = new GrassLegacyReader();
+                OmsGrassLegacyReader reader = new OmsGrassLegacyReader();
                 reader.file = file;
                 reader.pm = pm;
                 reader.inWindow = GrassLegacyUtilities.jgrassRegion2legacyWindow(readRegion);
@@ -472,7 +472,7 @@ public class RasterReader extends JGTModel {
      * @throws Exception
      */
     public static GridCoverage2D readRaster( String path ) throws Exception {
-        RasterReader reader = new RasterReader();
+        OmsRasterReader reader = new OmsRasterReader();
         reader.file = path;
         reader.process();
         GridCoverage2D geodata = reader.outRaster;

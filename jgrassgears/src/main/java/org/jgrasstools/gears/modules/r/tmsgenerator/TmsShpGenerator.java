@@ -5,7 +5,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -84,7 +84,7 @@ public class TmsShpGenerator {
             }
 
             String name = "tiles_" + z + ".shp";
-            VectorWriter.writeVector(folder + name, newCollection);
+            OmsVectorWriter.writeVector(folder + name, newCollection);
         }
 
     }

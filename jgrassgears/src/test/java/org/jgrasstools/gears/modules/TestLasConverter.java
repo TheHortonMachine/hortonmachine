@@ -19,8 +19,8 @@
 //package org.jgrasstools.gears.modules;
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.las.LasConverter;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
+//import org.jgrasstools.gears.io.las.OmsLasConverter;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //@SuppressWarnings("nls")
 //public class TestLasConverter extends HMTestCase {
@@ -33,9 +33,9 @@
 //        String outCsv = baseFolder + "ground.csv";
 //        String outputShpfile1 = baseFolder + "points_001059_1.shp";
 //
-//        SimpleFeatureCollection polygons = VectorReader.readVector(polygonFilter);
+//        SimpleFeatureCollection polygons = OmsVectorReader.readVector(polygonFilter);
 //
-//        LasConverter v = new LasConverter();
+//        OmsLasConverter v = new OmsLasConverter();
 //        v.inFile = lasFile1;
 //        v.outFile = outputShpfile1;
 //        v.pCode = "EPSG:32632";

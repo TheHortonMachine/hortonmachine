@@ -21,11 +21,11 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
- * Test {@link TimeSeriesIteratorWriter}.
+ * Test {@link OmsTimeSeriesIteratorWriter}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
         // setup reader
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = dataPath;
         reader.idfield = id;
         reader.tStart = startDate;
@@ -52,7 +52,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         // setup writer
         File tempFile = File.createTempFile("test", "jgt");
-        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
         writer.file = tempFile.getAbsolutePath();
         writer.inTablename = "testrain";
         writer.fileNovalue = "-9999.0";
@@ -69,7 +69,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         reader.close();
 
         // check written stuff
-        reader = new TimeSeriesIteratorReader();
+        reader = new OmsTimeSeriesIteratorReader();
         reader.file = tempFile.getAbsolutePath();
         reader.idfield = id;
         reader.tStart = startDate;
@@ -109,7 +109,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
         // setup reader
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = dataPath;
         reader.idfield = id;
         reader.tStart = startDate;
@@ -119,7 +119,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
 
         // setup writer
         File tempFile = File.createTempFile("test", "jgt");
-        TimeSeriesIteratorWriter writer = new TimeSeriesIteratorWriter();
+        OmsTimeSeriesIteratorWriter writer = new OmsTimeSeriesIteratorWriter();
         writer.file = tempFile.getAbsolutePath();
         writer.inTablename = "testrain";
         writer.fileNovalue = "-9999.0";
@@ -136,7 +136,7 @@ public class TestTimeSeriesIteratorWriter extends HMTestCase {
         reader.close();
 
         // check written stuff
-        reader = new TimeSeriesIteratorReader();
+        reader = new OmsTimeSeriesIteratorReader();
         reader.file = tempFile.getAbsolutePath();
         reader.idfield = id;
         reader.tStart = startDate;

@@ -19,9 +19,9 @@ package org.jgrasstools.hortonmachine.models.hm;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -42,15 +42,15 @@ public class TestExtractNetwork extends HMTestCase {
         String out = "D:/TMP/net.shp";
 
         OmsNetworkAttributesBuilder extract = new OmsNetworkAttributesBuilder();
-        extract.inFlow = RasterReader.readRaster(inFlow);
-        extract.inTca = RasterReader.readRaster(inTca);
-        extract.inNet = RasterReader.readRaster(inNet);
+        extract.inFlow = OmsRasterReader.readRaster(inFlow);
+        extract.inTca = OmsRasterReader.readRaster(inTca);
+        extract.inNet = OmsRasterReader.readRaster(inNet);
         extract.process();
 
         SimpleFeatureCollection net = extract.outNet;
-        VectorWriter.writeVector(out, net);
+        OmsVectorWriter.writeVector(out, net);
         GridCoverage2D hack = extract.outHack;
-        RasterWriter.writeRaster(outHack, hack);
+        OmsRasterWriter.writeRaster(outHack, hack);
 
     }
 

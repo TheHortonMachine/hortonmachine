@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.modules.r.raster2xyz.Raster2Xyz;
 import org.jgrasstools.gears.modules.r.summary.RasterSummary;
@@ -39,7 +39,7 @@ public class TestRaster2Xyz extends HMTestCase {
 
         // String raster = "/home/moovida/TMP/dtm_utm12201/dtm_utm12201.asc";
         // String outFile = "/home/moovida/TMP/dtm_utm12201/dtm_utm12201.xyz";
-        // GridCoverage2D inCoverage = RasterReader.readRaster(raster);
+        // GridCoverage2D inCoverage = OmsRasterReader.readRaster(raster);
         //
         // Raster2Xyz raster2Xyz = new Raster2Xyz();
         // raster2Xyz.pm = pm;

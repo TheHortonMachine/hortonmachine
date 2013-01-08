@@ -34,21 +34,21 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Vectors features writer to file module.")
-@Documentation("VectorWriter.html")
+@Documentation("OmsVectorWriter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Writing")
 @Label(JGTConstants.FEATUREWRITER)
 @Name("vectorwriter")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class VectorWriter extends JGTModel {
+public class OmsVectorWriter extends JGTModel {
     @Description("The read feature collection.")
     @In
     public SimpleFeatureCollection inVector = null;
@@ -78,7 +78,7 @@ public class VectorWriter extends JGTModel {
         }
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp") || (pType != null && pType.equals(JGTConstants.SHP))) {
-            ShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);
+            OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
@@ -92,7 +92,7 @@ public class VectorWriter extends JGTModel {
      * @throws IOException
      */
     public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
-        VectorWriter writer = new VectorWriter();
+        OmsVectorWriter writer = new OmsVectorWriter();
         writer.file = path;
         writer.inVector = featureCollection;
         writer.process();

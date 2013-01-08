@@ -36,7 +36,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Description("Raster conversion module.")
 @Documentation("RasterConverter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Convert, RasterReader")
+@Keywords("IO, Coverage, Raster, Convert, OmsRasterReader")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("rconvert")

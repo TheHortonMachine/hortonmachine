@@ -22,7 +22,7 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -93,7 +93,7 @@ public class TestNetNumbering extends HMTestCase {
         URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
         File pointsFile = new File(pointURL.toURI());
 
-        ShapefileFeatureReader pointsReader = new ShapefileFeatureReader();
+        OmsShapefileFeatureReader pointsReader = new OmsShapefileFeatureReader();
         pointsReader.file = pointsFile.getAbsolutePath();
         pointsReader.readFeatureCollection();
         SimpleFeatureCollection pointsFC = pointsReader.geodata;
@@ -125,7 +125,7 @@ public class TestNetNumbering extends HMTestCase {
     // URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
     // File pointsFile = new File(pointURL.toURI());
     //
-    // ShapefileFeatureReader pointsReader = new ShapefileFeatureReader();
+    // OmsShapefileFeatureReader pointsReader = new OmsShapefileFeatureReader();
     // pointsReader.file = pointsFile.getAbsolutePath();
     // pointsReader.readFeatureCollection();
     // SimpleFeatureCollection pointsFC = pointsReader.geodata;

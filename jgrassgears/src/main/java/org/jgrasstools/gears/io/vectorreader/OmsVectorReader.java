@@ -36,22 +36,22 @@ import oms3.annotations.UI;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.io.properties.PropertiesFeatureReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+import org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
 @Description("Vectors features reader module.")
-@Documentation("VectorReader.html")
+@Documentation("OmsVectorReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Shapefile, Feature, Vector, Reading")
 @Label(JGTConstants.FEATUREREADER)
 @Name("vectorreader")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class VectorReader extends JGTModel {
+public class OmsVectorReader extends JGTModel {
     @Description("The vector type to read (Supported is: shp, properties).")
     @In
     // currently not used, for future compatibility
@@ -81,13 +81,13 @@ public class VectorReader extends JGTModel {
         File vectorFile = new File(file);
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp")) {
-            ShapefileFeatureReader reader = new ShapefileFeatureReader();
+            OmsShapefileFeatureReader reader = new OmsShapefileFeatureReader();
             reader.file = vectorFile.getAbsolutePath();
             reader.pm = pm;
             reader.readFeatureCollection();
             outVector = reader.geodata;
         } else if (name.toLowerCase().endsWith("properties")) {
-            outVector = PropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
+            outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
@@ -106,7 +106,7 @@ public class VectorReader extends JGTModel {
     }
 
     private static SimpleFeatureCollection getFC( String path ) throws IOException {
-        VectorReader reader = new VectorReader();
+        OmsVectorReader reader = new OmsVectorReader();
         reader.file = path;
         reader.process();
         SimpleFeatureCollection fc = reader.outVector;

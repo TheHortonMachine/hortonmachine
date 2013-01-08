@@ -7,13 +7,13 @@
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.eicalculator.EIAreas;
-//import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAreasReader;
 //import org.jgrasstools.gears.io.eicalculator.EIEnergy;
-//import org.jgrasstools.gears.io.eicalculator.EIEnergyReader;
-//import org.jgrasstools.gears.io.generic.Id2ValueArrayReader;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIEnergyReader;
+//import org.jgrasstools.gears.io.generic.OmsId2ValueArrayReader;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energybalance.OmsEnergyBalance;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -42,7 +42,7 @@
 //
 //        URL basinsUrl = this.getClass().getClassLoader().getResource("jami_in_basins.shp");
 //
-//        EIAreasReader areas = new EIAreasReader();
+//        OmsEIAreasReader areas = new OmsEIAreasReader();
 //        File areaFile = new File(areasUrl.toURI());
 //        areas.file = areaFile.getAbsolutePath();
 //        areas.pSeparator = "\\s+";
@@ -51,7 +51,7 @@
 //        List<EIAreas> areasList = areas.outAreas;
 //        areas.close();
 //
-//        EIEnergyReader energy = new EIEnergyReader();
+//        OmsEIEnergyReader energy = new OmsEIEnergyReader();
 //        energy.file = new File(energyUrl.toURI()).getAbsolutePath();
 //        energy.pSeparator = "\\s+";
 //        energy.pm = pm;
@@ -59,12 +59,12 @@
 //        List<EIEnergy> energyList = energy.outEnergy;
 //        energy.close();
 //
-//        ShapefileFeatureReader basinsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader basinsReader = new OmsShapefileFeatureReader();
 //        basinsReader.file = new File(basinsUrl.toURI()).getAbsolutePath();
 //        basinsReader.readFeatureCollection();
 //        SimpleFeatureCollection basinsFC = basinsReader.geodata;
 //
-//        TimeSeriesIteratorReader rainReader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader rainReader = new OmsTimeSeriesIteratorReader();
 //        rainReader.file = new File(rainUrl.toURI()).getAbsolutePath();
 //        rainReader.idfield = "ID";
 //        rainReader.tStart = "2000-01-01 00:00";
@@ -73,37 +73,37 @@
 //        rainReader.fileNovalue = "-9999";
 //        rainReader.initProcess();
 //
-//        Id2ValueArrayReader tempReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader tempReader = new OmsId2ValueArrayReader();
 //        tempReader.file = new File(tempUrl.toURI()).getAbsolutePath();
 //        tempReader.pCols = 5;
 //        tempReader.pSeparator = "\\s+";
 //        tempReader.fileNovalue = "-9999.0";
 //
-//        Id2ValueArrayReader pressureReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader pressureReader = new OmsId2ValueArrayReader();
 //        pressureReader.file = new File(pressureUrl.toURI()).getAbsolutePath();
 //        pressureReader.pCols = 5;
 //        pressureReader.pSeparator = "\\s+";
 //        pressureReader.fileNovalue = "-9999.0";
 //
-//        Id2ValueArrayReader humidityReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader humidityReader = new OmsId2ValueArrayReader();
 //        humidityReader.file = new File(humidityUrl.toURI()).getAbsolutePath();
 //        humidityReader.pCols = 5;
 //        humidityReader.pSeparator = "\\s+";
 //        humidityReader.fileNovalue = "-9999.0";
 //
-//        Id2ValueArrayReader windReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader windReader = new OmsId2ValueArrayReader();
 //        windReader.file = new File(windUrl.toURI()).getAbsolutePath();
 //        windReader.pCols = 5;
 //        windReader.pSeparator = "\\s+";
 //        windReader.fileNovalue = "-9999.0";
 //
-//        Id2ValueArrayReader dtdayReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader dtdayReader = new OmsId2ValueArrayReader();
 //        dtdayReader.file = new File(dtdayUrl.toURI()).getAbsolutePath();
 //        dtdayReader.pCols = 5;
 //        dtdayReader.pSeparator = "\\s+";
 //        dtdayReader.fileNovalue = "-9999.0";
 //
-//        Id2ValueArrayReader dtmonthReader = new Id2ValueArrayReader();
+//        OmsId2ValueArrayReader dtmonthReader = new OmsId2ValueArrayReader();
 //        dtmonthReader.file = new File(dtmonthUrl.toURI()).getAbsolutePath();
 //        dtmonthReader.pCols = 5;
 //        dtmonthReader.pSeparator = "\\s+";
@@ -123,7 +123,7 @@
 //
 //        File pnetFile = new File(areaFile.getParentFile(), "energybalance_out_pnet.csv");
 //        pnetFile = classesTestFile2srcTestResourcesFile(pnetFile);
-//        TimeSeriesIteratorWriter pnetWriter = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter pnetWriter = new OmsTimeSeriesIteratorWriter();
 //        pnetWriter.file = pnetFile.getAbsolutePath();
 //        pnetWriter.tStart = rainReader.tStart;
 //        pnetWriter.tTimestep = rainReader.tTimestep;

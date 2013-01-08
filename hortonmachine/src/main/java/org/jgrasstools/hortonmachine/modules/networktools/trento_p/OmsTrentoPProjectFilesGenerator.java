@@ -37,7 +37,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -121,10 +121,10 @@ public class OmsTrentoPProjectFilesGenerator extends JGTModel {
             String file = new File(inFolder, pNetname).getAbsolutePath();
             if (pMode == 0) {
                 // project
-                ShapefileFeatureWriter.writeEmptyShapefile(file, getProjectFeatureType(crs));
+                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getProjectFeatureType(crs));
             } else if (pMode == 1) {
                 // calibration
-                ShapefileFeatureWriter.writeEmptyShapefile(file, getCalibrationFeatureType(crs));
+                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getCalibrationFeatureType(crs));
             }
             file = new File(inFolder, pShapeAreeName).getAbsolutePath();
             makePolygonShp(values, file, crs, pShapeAreeName);
@@ -134,7 +134,7 @@ public class OmsTrentoPProjectFilesGenerator extends JGTModel {
             }
             String file = new File(inFolder, pNetname).getAbsolutePath();
             SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationFeatureType(crs));
-            ShapefileFeatureWriter.writeShapefile(file, calibrationFC);
+            OmsShapefileFeatureWriter.writeShapefile(file, calibrationFC);
         }
         pm.done();
     }

@@ -18,8 +18,8 @@
 //package org.jgrasstools.gears.modules;
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
-//import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+//import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 //import org.jgrasstools.gears.modules.v.polygonize.LinesPolygonizer;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
@@ -31,8 +31,8 @@
 //public class TestLinesPolygonizer extends HMTestCase {
 //    public void testLinesPolygonizer() throws Exception {
 //
-//        SimpleFeatureCollection lines = VectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_line.shp");
-//        SimpleFeatureCollection points = VectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_point.shp");
+//        SimpleFeatureCollection lines = OmsVectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_line.shp");
+//        SimpleFeatureCollection points = OmsVectorReader.readVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_point.shp");
 //
 //        LinesPolygonizer vectorizer = new LinesPolygonizer();
 //        vectorizer.pm = pm;
@@ -44,7 +44,7 @@
 //
 //        SimpleFeatureCollection outPolygons = vectorizer.outMap;
 //
-//        VectorWriter.writeVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_poligoni.shp", outPolygons);
+//        OmsVectorWriter.writeVector("D:\\data\\dwg_dxf\\polygonizer\\pranzo_poligoni.shp", outPolygons);
 //
 //    }
 //

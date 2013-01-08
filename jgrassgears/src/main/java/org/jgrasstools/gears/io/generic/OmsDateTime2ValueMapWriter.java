@@ -18,12 +18,14 @@
  */
 package org.jgrasstools.gears.io.generic;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -33,7 +35,6 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -41,22 +42,19 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.joda.time.DateTime;
-@Description("Utility class for reading data from csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
+
+@Description("Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
+@Keywords("IO, Writing")
+@Label(JGTConstants.HASHMAP_WRITER)
 @UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class DateTime2ValueMapReader {
-    @Description("The csv file to read from.")
-    @UI(JGTConstants.FILEIN_UI_HINT)
+public class OmsDateTime2ValueMapWriter {
+    @Description("The csv file to write to.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
-
-    @Description("The number of columns of the array.")
-    @In
-    public int pCols = 1;
 
     @Description("The csv separator.")
     @In
@@ -70,46 +68,45 @@ public class DateTime2ValueMapReader {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read map of ids and values arrays.")
-    @Out
-    public LinkedHashMap<DateTime, double[]> data;
+    @Description("The map of ids and values arrays to write.")
+    @In
+    public HashMap<DateTime, double[]> data;
 
-    private BufferedReader csvReader;
+    private BufferedWriter csvWriter;
 
     private void ensureOpen() throws IOException {
-        if (csvReader == null)
-            csvReader = new BufferedReader(new FileReader(file));
+        if (csvWriter == null)
+            csvWriter = new BufferedWriter(new FileWriter(file));
     }
 
-    @Execute
-    public void readNextLine() throws IOException {
-        ensureOpen();
-        data = new LinkedHashMap<DateTime, double[]>();
-        String line = null;
-        if ((line = csvReader.readLine()) != null) {
-            String[] lineSplit = line.trim().split(pSeparator);
-            for( int i = 0; i < lineSplit.length; i++ ) {
-                DateTime dateTime = JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS.parseDateTime(lineSplit[i].trim());
+    private double novalue = -9999.0;
 
-                double[] values = new double[pCols];
-                for( int j = i + 1, k = 0; j < i + pCols + 1; j++, k++ ) {
-                    double value = Double.parseDouble(lineSplit[j].trim());
-                    if (fileNovalue != null) {
-                        if (lineSplit[j].trim().equals(fileNovalue)) {
-                            // set to internal novalue
-                            value = doubleNovalue;
-                        }
-                    }
-                    values[k] = value;
+    @Execute
+    public void writeNextLine() throws IOException {
+        ensureOpen();
+
+        novalue = Double.parseDouble(fileNovalue);
+
+        Set<Entry<DateTime, double[]>> entrySet = data.entrySet();
+        for( Entry<DateTime, double[]> entry : entrySet ) {
+            DateTime id = entry.getKey();
+            double[] values = entry.getValue();
+
+            csvWriter.write(id.toString(JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+            for( int i = 0; i < values.length; i++ ) {
+                csvWriter.write(pSeparator);
+                double value = values[i];
+                if (isNovalue(value)) {
+                    value = novalue;
                 }
-                data.put(dateTime, values);
-                i = i + pCols;
+                csvWriter.write(String.valueOf(value));
             }
+            csvWriter.write("\n");
         }
     }
 
     @Finalize
     public void close() throws IOException {
-        csvReader.close();
+        csvWriter.close();
     }
 }

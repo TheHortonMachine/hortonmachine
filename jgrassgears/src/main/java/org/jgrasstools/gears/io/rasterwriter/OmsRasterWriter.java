@@ -51,7 +51,7 @@ import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.jgrasstools.gears.io.grasslegacy.GrassLegacyGridCoverage2D;
-import org.jgrasstools.gears.io.grasslegacy.GrassLegacyWriter;
+import org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -63,14 +63,14 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 
 @Description("Raster writer module.")
-@Documentation("RasterWriter.html")
+@Documentation("OmsRasterWriter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Grass, Coverage, Raster, Writing")
 @Label(JGTConstants.RASTERWRITER)
 @Status(Status.CERTIFIED)
 @Name("rasterwriter")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterWriter extends JGTModel {
+public class OmsRasterWriter extends JGTModel {
     @Description("The raster map to write.")
     @In
     public GridCoverage2D inRaster = null;
@@ -178,7 +178,7 @@ public class RasterWriter extends JGTModel {
             writer.dispose();
         } else {
             GrassLegacyGridCoverage2D gd2 = (GrassLegacyGridCoverage2D) inRaster;
-            GrassLegacyWriter writer = new GrassLegacyWriter();
+            OmsGrassLegacyWriter writer = new OmsGrassLegacyWriter();
             writer.geodata = gd2.getData();
             writer.file = file;
             if (jGrassRegion == null)
@@ -190,7 +190,7 @@ public class RasterWriter extends JGTModel {
     }
 
     public static void writeRaster( String path, GridCoverage2D coverage ) throws Exception {
-        RasterWriter writer = new RasterWriter();
+        OmsRasterWriter writer = new OmsRasterWriter();
         writer.inRaster = coverage;
         writer.file = path;
         writer.process();

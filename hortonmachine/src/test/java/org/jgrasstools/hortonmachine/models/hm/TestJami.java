@@ -9,13 +9,13 @@
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
-//import org.jgrasstools.gears.io.eicalculator.EIAltimetryReader;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAltimetryReader;
 //import org.jgrasstools.gears.io.eicalculator.EIAreas;
-//import org.jgrasstools.gears.io.eicalculator.EIAreasReader;
-//import org.jgrasstools.gears.io.generic.Id2ValueArrayWriter;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-//import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
+//import org.jgrasstools.gears.io.eicalculator.OmsEIAreasReader;
+//import org.jgrasstools.gears.io.generic.OmsId2ValueArrayWriter;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+//import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 //import org.jgrasstools.gears.libs.modules.JGTConstants;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.hortonmachine.modules.statistics.jami.OmsJami;
@@ -49,7 +49,7 @@
 //        File stationDataFile = new File(stationdataUrl.toURI());
 //        URL basinsUrl = this.getClass().getClassLoader().getResource("jami_in_basins.shp");
 //
-//        EIAltimetryReader altim = new EIAltimetryReader();
+//        OmsEIAltimetryReader altim = new OmsEIAltimetryReader();
 //        altim.file = altimetryFile.getAbsolutePath();
 //        altim.pSeparator = "\\s+";
 //        altim.pm = pm;
@@ -57,7 +57,7 @@
 //        List<EIAltimetry> altimList = altim.outAltimetry;
 //        altim.close();
 //
-//        EIAreasReader areas = new EIAreasReader();
+//        OmsEIAreasReader areas = new OmsEIAreasReader();
 //        areas.file = areasFile.getAbsolutePath();
 //        areas.pSeparator = "\\s+";
 //        areas.pm = pm;
@@ -65,17 +65,17 @@
 //        List<EIAreas> areasList = areas.outAreas;
 //        areas.close();
 //
-//        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
 //        stationsReader.file = new File(stationsUrl.toURI()).getAbsolutePath();
 //        stationsReader.readFeatureCollection();
 //        SimpleFeatureCollection stationsFC = stationsReader.geodata;
 //
-//        ShapefileFeatureReader basinsReader = new ShapefileFeatureReader();
+//        OmsShapefileFeatureReader basinsReader = new OmsShapefileFeatureReader();
 //        basinsReader.file = new File(basinsUrl.toURI()).getAbsolutePath();
 //        basinsReader.readFeatureCollection();
 //        SimpleFeatureCollection basinsFC = basinsReader.geodata;
 //
-//        TimeSeriesIteratorReader dataReader = new TimeSeriesIteratorReader();
+//        OmsTimeSeriesIteratorReader dataReader = new OmsTimeSeriesIteratorReader();
 //        dataReader.file = stationDataFile.getAbsolutePath();
 //        dataReader.fileNovalue = "-9999";
 //        dataReader.idfield = "ID";
@@ -98,12 +98,12 @@
 //        jami.inStations = stationsFC;
 //        jami.inInterpolate = basinsFC;
 //
-//        Id2ValueArrayWriter writer = new Id2ValueArrayWriter();
+//        OmsId2ValueArrayWriter writer = new OmsId2ValueArrayWriter();
 //        writer.file = outputFile.getAbsolutePath();
 //        writer.pSeparator = " ";
 //        writer.fileNovalue = "-9999.0";
 //
-//        TimeSeriesIteratorWriter tsWriter = new TimeSeriesIteratorWriter();
+//        OmsTimeSeriesIteratorWriter tsWriter = new OmsTimeSeriesIteratorWriter();
 //        tsWriter.file = outputFileForEtp.getAbsolutePath();
 //        tsWriter.tStart = dataReader.tStart;
 //        tsWriter.tTimestep = dataReader.tTimestep;

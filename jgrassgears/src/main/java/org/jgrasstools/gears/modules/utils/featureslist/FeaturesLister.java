@@ -33,7 +33,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.vectorreader.VectorReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
@@ -61,7 +61,7 @@ public class FeaturesLister extends JGTModel {
         outFC = new ArrayList<SimpleFeatureCollection>();
 
         for( String file : inFiles ) {
-            SimpleFeatureCollection featureCollection = VectorReader.readVector(file);
+            SimpleFeatureCollection featureCollection = OmsVectorReader.readVector(file);
             outFC.add(featureCollection);
         }
 

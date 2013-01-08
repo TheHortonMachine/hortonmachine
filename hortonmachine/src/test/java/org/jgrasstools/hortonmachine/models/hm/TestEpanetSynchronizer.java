@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.URL;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.OmsEpanetFeaturesSynchronizer;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
@@ -35,12 +35,12 @@ public class TestEpanetSynchronizer extends HMTestCase {
         URL rUrl = this.getClass().getClassLoader().getResource("reservoirs.shp");
         String rPath = new File(rUrl.toURI()).getAbsolutePath();
 
-        jFC = ShapefileFeatureReader.readShapefile(jPath);
-        tFC = ShapefileFeatureReader.readShapefile(tPath);
-        puFC = ShapefileFeatureReader.readShapefile(puPath);
-        piFC = ShapefileFeatureReader.readShapefile(piPath);
-        vFC = ShapefileFeatureReader.readShapefile(vPath);
-        rFC = ShapefileFeatureReader.readShapefile(rPath);
+        jFC = OmsShapefileFeatureReader.readShapefile(jPath);
+        tFC = OmsShapefileFeatureReader.readShapefile(tPath);
+        puFC = OmsShapefileFeatureReader.readShapefile(puPath);
+        piFC = OmsShapefileFeatureReader.readShapefile(piPath);
+        vFC = OmsShapefileFeatureReader.readShapefile(vPath);
+        rFC = OmsShapefileFeatureReader.readShapefile(rPath);
     }
 
     public void testEpanetSynchronizer() throws Exception {

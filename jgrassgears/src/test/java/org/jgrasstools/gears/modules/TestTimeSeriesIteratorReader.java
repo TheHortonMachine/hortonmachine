@@ -21,10 +21,10 @@ import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.utils.HMTestCase;
 /**
- * Test {@link TimeSeriesIteratorReader}.
+ * Test {@link OmsTimeSeriesIteratorReader}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -33,7 +33,7 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
     public void testId2ValueReader() throws Exception {
         URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesiteratorreader_test.csv");
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = new File(dataUrl.toURI()).getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";
@@ -62,7 +62,7 @@ public class TestTimeSeriesIteratorReader extends HMTestCase {
     public void testId2ValueReader2() throws Exception {
         URL dataUrl = this.getClass().getClassLoader().getResource("csvtest2.csv");
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = new File(dataUrl.toURI()).getAbsolutePath();
         reader.pAggregation = 0;
         reader.idfield = "ID";

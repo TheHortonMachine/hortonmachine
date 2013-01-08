@@ -65,7 +65,7 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.jgrasstools.gears.io.grasslegacy.map.color.ColorRule;
 import org.jgrasstools.gears.io.grasslegacy.map.color.GrassColorTable;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -236,7 +236,7 @@ public class ImageGenerator {
                 if (reader == null) {
 
                     if (region == null) {
-                        raster = RasterReader.readRaster(coveragePath);
+                        raster = OmsRasterReader.readRaster(coveragePath);
                     } else {
                         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(region);
                         double n = regionMap.getNorth();
@@ -245,7 +245,7 @@ public class ImageGenerator {
                         double e = regionMap.getEast();
                         double xres = regionMap.getXres();
                         double yres = regionMap.getYres();
-                        RasterReader rreader = new RasterReader();
+                        OmsRasterReader rreader = new OmsRasterReader();
                         rreader.file = coveragePath;
                         rreader.pNorth = n;
                         rreader.pSouth = s;

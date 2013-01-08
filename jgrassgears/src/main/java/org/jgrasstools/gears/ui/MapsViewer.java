@@ -61,8 +61,8 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -302,8 +302,8 @@ public class MapsViewer {
 
     @SuppressWarnings("nls")
     public static void main( String[] args ) throws Exception {
-        GridCoverage2D coverage = RasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
-        SimpleFeatureCollection shapefile = ShapefileFeatureReader
+        GridCoverage2D coverage = OmsRasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
+        SimpleFeatureCollection shapefile = OmsShapefileFeatureReader
                 .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
         displayRasterAndFeatures(coverage, shapefile);
     }

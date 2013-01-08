@@ -27,7 +27,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.math.functions.MinimumFillDegreeFunction;
@@ -301,7 +301,7 @@ public class Utility {
         b.add("the_geom", Polygon.class);
         b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
         SimpleFeatureType areaType = b.buildFeatureType();
-        ShapefileFeatureWriter.writeEmptyShapefile(path, areaType);
+        OmsShapefileFeatureWriter.writeEmptyShapefile(path, areaType);
 
     }
 

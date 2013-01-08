@@ -37,7 +37,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -155,7 +155,7 @@ public class Mosaic12 extends JGTModel {
 
         outRaster = mosaic.outRaster;
         if (!testmode)
-            RasterWriter.writeRaster(outMap, outRaster);
+            OmsRasterWriter.writeRaster(outMap, outRaster);
     }
 
     private void checkMap( List<File> filesList, String inMap ) {

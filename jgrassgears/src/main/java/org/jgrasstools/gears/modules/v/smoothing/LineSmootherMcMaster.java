@@ -35,8 +35,8 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
@@ -230,7 +230,7 @@ public class LineSmootherMcMaster extends JGTModel {
      */
     public static void defaultSmoothShapefile( String shapePath, String outPath ) throws Exception {
         PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
-        SimpleFeatureCollection initialFC = ShapefileFeatureReader.readShapefile(shapePath);
+        SimpleFeatureCollection initialFC = OmsShapefileFeatureReader.readShapefile(shapePath);
 
         LineSmootherMcMaster smoother = new LineSmootherMcMaster();
         smoother.pm = pm;
@@ -244,7 +244,7 @@ public class LineSmootherMcMaster extends JGTModel {
 
         SimpleFeatureCollection smoothedFeatures = smoother.outVector;
 
-        ShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures);
+        OmsShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures);
     }
 
 }

@@ -52,7 +52,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -112,7 +112,7 @@ public class Mosaic extends JGTModel {
 
         pm.beginTask("Calculating final bounds...", inFiles.size());
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = OmsRasterReader.readRaster(coverageFile.getAbsolutePath());
             // pm.message(MessageFormat.format("Reading map: {0} with crs: {1}",
             // coverageFile.getAbsolutePath(),
             // CrsUtilities.getCodeFromCrs(crs)));
@@ -167,7 +167,7 @@ public class Mosaic extends JGTModel {
         int offestY = Math.abs(sp);
         int index = 1;
         for( File coverageFile : inFiles ) {
-            GridCoverage2D coverage = RasterReader.readRaster(coverageFile.getAbsolutePath());
+            GridCoverage2D coverage = OmsRasterReader.readRaster(coverageFile.getAbsolutePath());
 
             RenderedImage renderedImage = coverage.getRenderedImage();
             RandomIter randomIter = RandomIterFactory.create(renderedImage, null);

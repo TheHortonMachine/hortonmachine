@@ -40,16 +40,16 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for writing altimetry data to csv files.")
+@Description("Utility class for writing energy data to csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
 @Label(JGTConstants.LIST_WRITER)
 @Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class EIAltimetryWriter extends JGTModel {
+public class OmsEIEnergyWriter extends JGTModel {
     @Description("The data to write.")
     @In
-    public List<EIAltimetry> inAltimetry;
+    public List<EIEnergy> inEnergy;
 
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -81,16 +81,16 @@ public class EIAltimetryWriter extends JGTModel {
     public void write() throws IOException {
         ensureOpen();
 
-        csvWriter.write("# EIAltimetry writer output\n");
-        for( EIAltimetry altimetry : inAltimetry ) {
+        csvWriter.write("# EIEnergy writer output\n");
+        for( EIEnergy energy : inEnergy ) {
             StringBuilder sb = new StringBuilder();
-            sb.append(altimetry.basinId);
+            sb.append(energy.basinId);
             sb.append(pSeparator);
-            sb.append(altimetry.altimetricBandId);
+            sb.append(energy.energeticBandId);
             sb.append(pSeparator);
-            sb.append(altimetry.elevationValue);
+            sb.append(energy.virtualMonth);
             sb.append(pSeparator);
-            sb.append(altimetry.bandRange);
+            sb.append(energy.energyValue);
             sb.append("\n");
             csvWriter.write(sb.toString());
         }

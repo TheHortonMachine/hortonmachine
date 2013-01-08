@@ -48,7 +48,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Status(Status.DRAFT)
 @Name("dbfreader")
 @License("General Public License Version 3 (GPLv3)")
-public class DbfTableReader extends JGTModel {
+public class OmsDbfTableReader extends JGTModel {
     @Description("The dbf file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -106,7 +106,7 @@ public class DbfTableReader extends JGTModel {
      */
     public static HashMap<String, List<Object>> readDbf( String path ) throws IOException {
 
-        DbfTableReader reader = new DbfTableReader();
+        OmsDbfTableReader reader = new OmsDbfTableReader();
         reader.file = path;
         reader.readTable();
 

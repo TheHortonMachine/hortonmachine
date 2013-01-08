@@ -6,7 +6,7 @@
 //import org.jgrasstools.gears.io.adige.AdigeBoundaryCondition;
 //import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionReader;
 //import org.jgrasstools.gears.io.adige.AdigeBoundaryConditionWriter;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 //import org.jgrasstools.gears.io.timedependent.TimeseriesByStepReaderId2Value;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.OmsAdige;
@@ -61,7 +61,7 @@
 //
 //        String fId = "ID";
 //
-//        SimpleFeatureCollection hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
+//        SimpleFeatureCollection hillslopeFC = OmsShapefileFeatureReader.readShapefile(hillslopePath);
 //
 //        // meteo
 //        TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
@@ -93,13 +93,13 @@
 //        // fId,
 //        // startDate, endDate, timeStepMinutes);
 //
-//        SimpleFeatureCollection hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
-//        SimpleFeatureCollection damsFC = ShapefileFeatureReader.readShapefile(damsPath);
-//        SimpleFeatureCollection tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
-//        // SimpleFeatureCollection offtakesFC = ShapefileFeatureReader
+//        SimpleFeatureCollection hydrometersFC = OmsShapefileFeatureReader.readShapefile(hydrometersPath);
+//        SimpleFeatureCollection damsFC = OmsShapefileFeatureReader.readShapefile(damsPath);
+//        SimpleFeatureCollection tributaryFC = OmsShapefileFeatureReader.readShapefile(tributaryPath);
+//        // SimpleFeatureCollection offtakesFC = OmsShapefileFeatureReader
 //        // .readShapefile(offtakesPath);
 //
-//        SimpleFeatureCollection networkFC = ShapefileFeatureReader.readShapefile(networkPath);
+//        SimpleFeatureCollection networkFC = OmsShapefileFeatureReader.readShapefile(networkPath);
 //
 //        DuffyInputs duffyInputs = new DuffyInputs();
 //        duffyInputs.fAvg_sub = "mean_sub";
@@ -264,7 +264,7 @@
 //
 //        String fId = "ID";
 //
-//        SimpleFeatureCollection hillslopeFC = ShapefileFeatureReader.readShapefile(hillslopePath);
+//        SimpleFeatureCollection hillslopeFC = OmsShapefileFeatureReader.readShapefile(hillslopePath);
 //
 //        // meteo
 //        TimeseriesByStepReaderId2Value rainReader = getTimeseriesReader(rainDataPath, fId, startDate, endDate, timeStepMinutes);
@@ -277,11 +277,11 @@
 //        // etp
 //        TimeseriesByStepReaderId2Value etpReader = getTimeseriesReader(etpDataPath, fId, startDate, endDate, timeStepMinutes);
 //
-//        SimpleFeatureCollection hydrometersFC = ShapefileFeatureReader.readShapefile(hydrometersPath);
-//        SimpleFeatureCollection damsFC = ShapefileFeatureReader.readShapefile(damsPath);
-//        SimpleFeatureCollection tributaryFC = ShapefileFeatureReader.readShapefile(tributaryPath);
+//        SimpleFeatureCollection hydrometersFC = OmsShapefileFeatureReader.readShapefile(hydrometersPath);
+//        SimpleFeatureCollection damsFC = OmsShapefileFeatureReader.readShapefile(damsPath);
+//        SimpleFeatureCollection tributaryFC = OmsShapefileFeatureReader.readShapefile(tributaryPath);
 //
-//        SimpleFeatureCollection networkFC = ShapefileFeatureReader.readShapefile(networkPath);
+//        SimpleFeatureCollection networkFC = OmsShapefileFeatureReader.readShapefile(networkPath);
 //
 //        HymodInputs hymodInputs = new HymodInputs();
 //        hymodInputs.pCmax = 72.45;

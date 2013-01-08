@@ -46,7 +46,7 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.LasStats;
-import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -76,7 +76,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Label(JGTConstants.VECTORPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LasConverter extends JGTModel {
+public class OmsLasConverter extends JGTModel {
     @Description("The LAS file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -404,7 +404,7 @@ public class LasConverter extends JGTModel {
         }
 
         if (doShapefile) {
-            VectorWriter.writeVector(outFile, outGeodata);
+            OmsVectorWriter.writeVector(outFile, outGeodata);
         }
     }
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata ) {

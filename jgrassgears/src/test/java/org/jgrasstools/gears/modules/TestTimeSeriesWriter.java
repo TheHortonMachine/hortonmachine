@@ -24,14 +24,14 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.jgrasstools.gears.io.timeseries.TimeSeriesReader;
-import org.jgrasstools.gears.io.timeseries.TimeSeriesWriter;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 /**
- * Test {@link TimeSeriesWriter}.
+ * Test {@link OmsTimeSeriesWriter}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -44,14 +44,14 @@ public class TestTimeSeriesWriter extends HMTestCase {
         URL dataUrl = this.getClass().getClassLoader().getResource("timeseriesreader_test.csv");
         String dataPath = new File(dataUrl.toURI()).getAbsolutePath();
 
-        TimeSeriesReader reader = new TimeSeriesReader();
+        OmsTimeSeriesReader reader = new OmsTimeSeriesReader();
         reader.file = dataPath;
         reader.read();
         HashMap<DateTime, double[]> outData = reader.outData;
         reader.close();
 
         File tempFile = File.createTempFile("test", "jgt");
-        TimeSeriesWriter writer = new TimeSeriesWriter();
+        OmsTimeSeriesWriter writer = new OmsTimeSeriesWriter();
         writer.columns = "datetime, rain";
         writer.file = tempFile.getAbsolutePath();
         writer.doDates = true;
@@ -60,7 +60,7 @@ public class TestTimeSeriesWriter extends HMTestCase {
         writer.write();
         writer.close();
 
-        reader = new TimeSeriesReader();
+        reader = new OmsTimeSeriesReader();
         reader.file = dataPath;
         reader.read();
         outData = reader.outData;

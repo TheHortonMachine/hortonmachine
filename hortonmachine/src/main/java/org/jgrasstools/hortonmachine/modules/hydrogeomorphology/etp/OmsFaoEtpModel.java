@@ -31,8 +31,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorWriter;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
@@ -112,13 +112,13 @@ public class OmsFaoEtpModel extends JGTModel {
 
         OmsFaoEtp faoEtp = new OmsFaoEtp();
 
-        TimeSeriesIteratorReader netradReader = getTimeseriesReader(inNetradiation, fId);
-        TimeSeriesIteratorReader windReader = getTimeseriesReader(inWind, fId);
-        TimeSeriesIteratorReader tempReader = getTimeseriesReader(inTemp, fId);
-        TimeSeriesIteratorReader rhReader = getTimeseriesReader(inRh, fId);
-        TimeSeriesIteratorReader pressureReader = getTimeseriesReader(inPressure, fId);
+        OmsTimeSeriesIteratorReader netradReader = getTimeseriesReader(inNetradiation, fId);
+        OmsTimeSeriesIteratorReader windReader = getTimeseriesReader(inWind, fId);
+        OmsTimeSeriesIteratorReader tempReader = getTimeseriesReader(inTemp, fId);
+        OmsTimeSeriesIteratorReader rhReader = getTimeseriesReader(inRh, fId);
+        OmsTimeSeriesIteratorReader pressureReader = getTimeseriesReader(inPressure, fId);
 
-        TimeSeriesIteratorWriter outputWriter = new TimeSeriesIteratorWriter();
+        OmsTimeSeriesIteratorWriter outputWriter = new OmsTimeSeriesIteratorWriter();
         outputWriter.file = outFaoEtp;
 
         try {
@@ -166,8 +166,8 @@ public class OmsFaoEtpModel extends JGTModel {
         }
     }
 
-    private TimeSeriesIteratorReader getTimeseriesReader( String file, String id ) {
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+    private OmsTimeSeriesIteratorReader getTimeseriesReader( String file, String id ) {
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = file;
         reader.idfield = id;
         reader.fileNovalue = "-9999";

@@ -20,8 +20,8 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets.OmsMarkoutlets;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;

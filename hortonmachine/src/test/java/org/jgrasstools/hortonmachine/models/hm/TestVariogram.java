@@ -5,8 +5,8 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsVariogram;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 
@@ -21,12 +21,12 @@ public class TestVariogram extends HMTestCase {
         //
         String stationIdField = "Id";
 
-        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
         SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = variogramDataFile.getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";

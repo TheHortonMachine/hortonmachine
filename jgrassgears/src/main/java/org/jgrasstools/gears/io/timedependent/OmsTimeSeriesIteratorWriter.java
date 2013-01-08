@@ -46,14 +46,14 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
 @Description("Utility class for writing a id2values map to a OMS formatted csv file.")
-@Documentation("TimeSeriesIteratorWriter.html")
+@Documentation("OmsTimeSeriesIteratorWriter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Writing")
 @Label(JGTConstants.HASHMAP_WRITER)
 @Name("tsitwriter")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class TimeSeriesIteratorWriter {
+public class OmsTimeSeriesIteratorWriter {
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In

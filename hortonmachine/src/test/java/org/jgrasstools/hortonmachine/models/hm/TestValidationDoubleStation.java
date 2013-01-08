@@ -7,8 +7,8 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
-import org.jgrasstools.gears.io.timedependent.TimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsValidateDoubleStation;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -30,12 +30,12 @@ public class TestValidationDoubleStation extends HMTestCase {
         URL krigingRainUrl = this.getClass().getClassLoader().getResource("rain_test1.csv");
         File krigingRainFile = new File(krigingRainUrl.toURI());
 
-        ShapefileFeatureReader stationsReader = new ShapefileFeatureReader();
+        OmsShapefileFeatureReader stationsReader = new OmsShapefileFeatureReader();
         stationsReader.file = stazioniFile.getAbsolutePath();
         stationsReader.readFeatureCollection();
         SimpleFeatureCollection stationsFC = stationsReader.geodata;
 
-        TimeSeriesIteratorReader reader = new TimeSeriesIteratorReader();
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
         reader.file = krigingRainFile.getAbsolutePath();
         reader.idfield = "ID";
         reader.tStart = "2000-01-01 00:00";

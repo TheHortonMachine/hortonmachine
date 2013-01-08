@@ -22,14 +22,14 @@ import java.net.URL;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
-import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test {@link RasterWriter}.
+ * Test {@link OmsRasterWriter}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -55,12 +55,12 @@ public class TestRasterWriter extends HMTestCase {
     public void testRasterWriter() {
 
         try {
-            RasterWriter writer = new RasterWriter();
+            OmsRasterWriter writer = new OmsRasterWriter();
             writer.inRaster = coverage;
             writer.file = arcPath;
             writer.process();
 
-            RasterReader reader = new RasterReader();
+            OmsRasterReader reader = new OmsRasterReader();
             reader.file = arcPath;
             reader.fileNovalue = -9999.0;
             reader.geodataNovalue = Double.NaN;
@@ -68,12 +68,12 @@ public class TestRasterWriter extends HMTestCase {
             GridCoverage2D readCoverage = reader.outRaster;
             checkMatrixEqual(readCoverage.getRenderedImage(), HMTestMaps.mapData);
 
-            writer = new RasterWriter();
+            writer = new OmsRasterWriter();
             writer.inRaster = coverage;
             writer.file = grassPath;
             writer.process();
 
-            reader = new RasterReader();
+            reader = new OmsRasterReader();
             reader.file = grassPath;
             reader.fileNovalue = -9999.0;
             reader.geodataNovalue = Double.NaN;

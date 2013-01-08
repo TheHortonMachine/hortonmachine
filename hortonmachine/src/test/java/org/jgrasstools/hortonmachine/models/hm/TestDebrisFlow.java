@@ -19,8 +19,8 @@
 //package org.jgrasstools.hortonmachine.models.hm;
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.OmsDebrisFlow;
 ///**
@@ -37,7 +37,7 @@
 //            String inRasterPath = "";
 //            String flowPath = "";
 //            String depoPath = "";
-//            GridCoverage2D elev = RasterReader.readRaster(inRasterPath);
+//            GridCoverage2D elev = OmsRasterReader.readRaster(inRasterPath);
 //            OmsDebrisFlow dt = new OmsDebrisFlow();
 //            dt.inElev = elev;
 //            dt.pMontecarlo = m;
@@ -49,8 +49,8 @@
 //            dt.process();
 //            GridCoverage2D outMcs = dt.outMcs;
 //            GridCoverage2D outDepo = dt.outDepo;
-//            RasterWriter.writeRaster(flowPath, outMcs);
-//            RasterWriter.writeRaster(depoPath, outDepo);
+//            OmsRasterWriter.writeRaster(flowPath, outMcs);
+//            OmsRasterWriter.writeRaster(depoPath, outDepo);
 //        }
 //    }
 //}

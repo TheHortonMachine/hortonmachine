@@ -47,14 +47,14 @@ import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormatter;
 
 @Description("Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file.")
-@Documentation("TimeSeriesWriter.html")
+@Documentation("OmsTimeSeriesWriter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Writing")
 @Label(JGTConstants.HASHMAP_WRITER)
 @Name("tswriter")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class TimeSeriesWriter {
+public class OmsTimeSeriesWriter {
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In

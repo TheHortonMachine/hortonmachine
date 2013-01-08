@@ -45,14 +45,14 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
 @Description("Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.")
-@Documentation("TimeSeriesReader.html")
+@Documentation("OmsTimeSeriesReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Reading")
 @Label(JGTConstants.HASHMAP_READER)
 @Name("tsreader")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class TimeSeriesReader extends JGTModel {
+public class OmsTimeSeriesReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In

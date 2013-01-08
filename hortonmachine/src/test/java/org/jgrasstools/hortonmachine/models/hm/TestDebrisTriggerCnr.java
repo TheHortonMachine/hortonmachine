@@ -19,8 +19,8 @@
 //package org.jgrasstools.hortonmachine.models.hm;
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.OmsDebrisTriggerCnr;
 ///**
@@ -38,9 +38,9 @@
 //        String inRasterPath3 = baseFolder + "netshp2fl";
 //        String outRasterPath = baseFolder + "triggers100";
 //
-//        GridCoverage2D elev = RasterReader.readRaster(inRasterPath1);
-//        GridCoverage2D net = RasterReader.readRaster(inRasterPath2);
-//        GridCoverage2D tca = RasterReader.readRaster(inRasterPath3);
+//        GridCoverage2D elev = OmsRasterReader.readRaster(inRasterPath1);
+//        GridCoverage2D net = OmsRasterReader.readRaster(inRasterPath2);
+//        GridCoverage2D tca = OmsRasterReader.readRaster(inRasterPath3);
 //
 //        OmsDebrisTriggerCnr dt = new OmsDebrisTriggerCnr();
 //        dt.inElev = elev;
@@ -53,7 +53,7 @@
 //
 //        GridCoverage2D triggers = dt.outTriggers;
 //
-//        RasterWriter.writeRaster(outRasterPath, triggers);
+//        OmsRasterWriter.writeRaster(outRasterPath, triggers);
 //
 //    }
 //}

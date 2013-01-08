@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.shapefile;
+package org.jgrasstools.gears.io.grasslegacy;
 
 import java.io.File;
-import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -27,75 +26,62 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.shapefile.indexed.IndexedShapefileDataStore;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureCollection;
+import org.geotools.gce.grassraster.JGrassMapEnvironment;
+import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterWriter;
+import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading shapefiles to geotools featurecollections.")
+@Description("Legacy class for writing grass rasters.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
-@Status(Status.CERTIFIED)
+@Keywords("IO, Grass, Raster, Writing")
+@Label(JGTConstants.RASTERWRITER)
 @UI(JGTConstants.HIDE_UI_HINT)
+@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class ShapefileFeatureReader extends JGTModel {
-    @Description("The shapefile.")
+public class OmsGrassLegacyWriter extends JGTModel {
+    @Description("The map that needs to be written.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String file = null;
+    public double[][] geodata = null;
 
+    @Description("The region for the map to be written.")
+    @In
+    public Window inWindow = null;
+    
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The read feature collection.")
-    @Out
-    public SimpleFeatureCollection geodata = null;
+    @Description("The file to the map to be written (the cell file).")
+    @In
+    public String file = null;
+
+    private boolean hasWritten = false;
 
     @Execute
-    public void readFeatureCollection() throws IOException {
-        if (!concatOr(geodata == null, doReset)) {
+    public void writeRaster() throws Exception {
+        if (!concatOr(!hasWritten, doReset)) {
             return;
         }
+        JGrassMapEnvironment mapEnvironment = new JGrassMapEnvironment(new File(file));
 
+        GrassRasterWriter writer = new GrassRasterWriter();
         try {
-            File shapeFile = new File(file);
-            pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
-            IndexedShapefileDataStore   store = new IndexedShapefileDataStore(shapeFile.toURI().toURL());
-            SimpleFeatureSource featureSource = store.getFeatureSource();
-            geodata = featureSource.getFeatures();
+            writer.setOutputDataObject(new double[0][0]);
+            writer.setDataWindow(inWindow);
+            writer.open(mapEnvironment.getCELL().getAbsolutePath());
+            writer.write(geodata);
         } finally {
-            pm.done();
+            writer.close();
         }
+
+        hasWritten = true;
     }
 
-    /**
-     * Fast read access mode. 
-     * 
-     * @param path the shapefile path.
-     * @return the read {@link FeatureCollection}.
-     * @throws IOException
-     */
-    public static SimpleFeatureCollection readShapefile( String path ) throws IOException {
-
-        ShapefileFeatureReader reader = new ShapefileFeatureReader();
-        reader.file = path;
-        reader.readFeatureCollection();
-
-        return reader.geodata;
-    }
-
-    
-  
-    
-    
 }

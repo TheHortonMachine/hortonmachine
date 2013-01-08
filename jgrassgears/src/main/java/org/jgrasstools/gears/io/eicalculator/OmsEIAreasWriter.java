@@ -16,16 +16,12 @@
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jgrasstools.gears.io.generic;
-
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+package org.jgrasstools.gears.io.eicalculator;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,42 +31,39 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.joda.time.DateTime;
 
-@Description("Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
+@Description("Utility class for writing area data (for EICalculator) to csv files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
+@Label(JGTConstants.LIST_WRITER)
+@Status(Status.CERTIFIED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class DateTime2ValueMapWriter {
+public class OmsEIAreasWriter extends JGTModel {
+    @Description("The data to write.")
+    @In
+    public List<EIAreas> inAreas;
+
     @Description("The csv file to write to.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
+    @Role(Role.PARAMETER)
     @Description("The csv separator.")
     @In
     public String pSeparator = ",";
 
-    @Description("The file novalue.")
-    @In
-    public String fileNovalue = "-9999.0";
-
     @Description("The progress monitor.")
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The map of ids and values arrays to write.")
-    @In
-    public HashMap<DateTime, double[]> data;
 
     private BufferedWriter csvWriter;
 
@@ -79,34 +72,27 @@ public class DateTime2ValueMapWriter {
             csvWriter = new BufferedWriter(new FileWriter(file));
     }
 
-    private double novalue = -9999.0;
-
-    @Execute
-    public void writeNextLine() throws IOException {
-        ensureOpen();
-
-        novalue = Double.parseDouble(fileNovalue);
-
-        Set<Entry<DateTime, double[]>> entrySet = data.entrySet();
-        for( Entry<DateTime, double[]> entry : entrySet ) {
-            DateTime id = entry.getKey();
-            double[] values = entry.getValue();
-
-            csvWriter.write(id.toString(JGTConstants.dateTimeFormatterYYYYMMDDHHMMSS));
-            for( int i = 0; i < values.length; i++ ) {
-                csvWriter.write(pSeparator);
-                double value = values[i];
-                if (isNovalue(value)) {
-                    value = novalue;
-                }
-                csvWriter.write(String.valueOf(value));
-            }
-            csvWriter.write("\n");
-        }
-    }
-
     @Finalize
     public void close() throws IOException {
         csvWriter.close();
+    }
+
+    @Execute
+    public void write() throws IOException {
+        ensureOpen();
+
+        csvWriter.write("# EIAreas writer output\n");
+        for( EIAreas areas : inAreas ) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(areas.basinId);
+            sb.append(pSeparator);
+            sb.append(areas.altimetricBandId);
+            sb.append(pSeparator);
+            sb.append(areas.energyBandId);
+            sb.append(pSeparator);
+            sb.append(areas.areaValue);
+            sb.append("\n");
+            csvWriter.write(sb.toString());
+        }
     }
 }

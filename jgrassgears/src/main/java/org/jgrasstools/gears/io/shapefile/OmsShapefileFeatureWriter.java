@@ -54,7 +54,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Status(Status.CERTIFIED)
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class ShapefileFeatureWriter extends JGTModel {
+public class OmsShapefileFeatureWriter extends JGTModel {
 
     @Description("The feature collection to write.")
     @In
@@ -131,14 +131,14 @@ public class ShapefileFeatureWriter extends JGTModel {
     }
 
     public static void writeShapefile( String path, SimpleFeatureCollection featureCollection ) throws IOException {
-        ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
+        OmsShapefileFeatureWriter writer = new OmsShapefileFeatureWriter();
         writer.file = path;
         writer.geodata = featureCollection;
         writer.writeFeatureCollection();
     }
 
     public static void writeEmptyShapefile( String path, SimpleFeatureType schema ) throws IOException {
-        ShapefileFeatureWriter writer = new ShapefileFeatureWriter();
+        OmsShapefileFeatureWriter writer = new OmsShapefileFeatureWriter();
         writer.file = path;
         writer.pType = schema;
         writer.writeFeatureCollection();

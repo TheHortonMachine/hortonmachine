@@ -55,7 +55,7 @@ import org.joda.time.format.DateTimeFormatter;
 @UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class CsvMatrixReader extends JGTModel {
+public class OmsCsvMatrixReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In

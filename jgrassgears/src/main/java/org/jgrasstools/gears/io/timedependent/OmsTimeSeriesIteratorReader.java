@@ -50,14 +50,14 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
 @Description("Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.")
-@Documentation("TimeSeriesIteratorReader.html")
+@Documentation("OmsTimeSeriesIteratorReader.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("IO, Reading")
 @Label(JGTConstants.HASHMAP_READER)
 @Name("tsitreader")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class TimeSeriesIteratorReader extends JGTModel {
+public class OmsTimeSeriesIteratorReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In

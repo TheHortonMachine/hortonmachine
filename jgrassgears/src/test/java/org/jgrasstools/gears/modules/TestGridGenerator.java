@@ -18,8 +18,8 @@
 // */
 //
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.vectorreader.VectorReader;
-//import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
+//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+//import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 //import org.jgrasstools.gears.modules.v.grids.GridsGenerator;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
@@ -34,7 +34,7 @@
 //        String inVector = "/home/moovida/geologico2012/geologico_2012_data/THEBIG_PROCESSING/pl_10714_bosco.shp";
 //        String outVector = "/home/moovida/geologico2012/geologico_2012_data/THEBIG_PROCESSING/divisione5x5.shp";
 //
-//        SimpleFeatureCollection inFC = VectorReader.readVector(inVector);
+//        SimpleFeatureCollection inFC = OmsVectorReader.readVector(inVector);
 //
 //        GridsGenerator grid = new GridsGenerator();
 //        grid.pm = pm;
@@ -46,7 +46,7 @@
 //        grid.pType = 0;
 //        grid.process();
 //        SimpleFeatureCollection outMap = grid.outMap;
-//        VectorWriter.writeVector(outVector, outMap);
+//        OmsVectorWriter.writeVector(outVector, outMap);
 //
 //        // GridsGenerator grid = new GridsGenerator();
 //        // grid.pm = pm;

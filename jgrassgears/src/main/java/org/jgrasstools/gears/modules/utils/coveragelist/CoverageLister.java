@@ -35,7 +35,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.RasterReader;
+import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
@@ -111,7 +111,7 @@ public class CoverageLister extends JGTModel {
         outGC = new ArrayList<GridCoverage2D>();
 
         for( String file : inFiles ) {
-            RasterReader reader = new RasterReader();
+            OmsRasterReader reader = new OmsRasterReader();
             reader.file = file;
             reader.fileNovalue = fileNovalue;
             reader.geodataNovalue = geodataNovalue;

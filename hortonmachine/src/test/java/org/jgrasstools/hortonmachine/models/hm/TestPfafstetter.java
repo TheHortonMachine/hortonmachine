@@ -20,7 +20,7 @@
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
+//import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 //import org.jgrasstools.hortonmachine.modules.network.pfafstetter.OmsPfafstetter;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -54,7 +54,7 @@
 //        
 //        SimpleFeatureCollection pfafstetterFC = pfafstetter.outPfaf;
 //        
-//        ShapefileFeatureWriter.writeShapefile(outputPath, pfafstetterFC);
+//        OmsShapefileFeatureWriter.writeShapefile(outputPath, pfafstetterFC);
 //
 //    }
 //

@@ -19,8 +19,8 @@
 //package org.jgrasstools.hortonmachine.models.hm;
 //
 //import org.geotools.coverage.grid.GridCoverage2D;
-//import org.jgrasstools.gears.io.rasterreader.RasterReader;
-//import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
+//import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
+//import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 //import org.jgrasstools.hortonmachine.modules.statistics.kerneldensity.OmsKernelDensity;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 ///**
@@ -35,7 +35,7 @@
 //        String inRasterPath1 = baseFolder + "net_triggers";
 //        String outRasterPath = baseFolder + "triggers_density_triang";
 //
-//        GridCoverage2D elev = RasterReader.readRaster(inRasterPath1);
+//        GridCoverage2D elev = OmsRasterReader.readRaster(inRasterPath1);
 //
 //        OmsKernelDensity dt = new OmsKernelDensity();
 //        dt.inMap = elev;
@@ -47,7 +47,7 @@
 //
 //        GridCoverage2D density = dt.outDensity;
 //
-//        RasterWriter.writeRaster(outRasterPath, density);
+//        OmsRasterWriter.writeRaster(outRasterPath, density);
 //
 //    }
 //}
