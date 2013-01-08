@@ -18,14 +18,14 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow;
 
 public class SlopeProbability implements Comparable<SlopeProbability> {
-    double slope;
-    int fromRow;
-    int fromCol;
-    double fromElev;
-    int toRow;
-    int toCol;
-    double toElev;
-    double probability;
+    public double slope;
+    public int fromRow;
+    public int fromCol;
+    public double fromElev;
+    public int toRow;
+    public int toCol;
+    public double toElev;
+    public double probability;
 
     public int compareTo( SlopeProbability o ) {
         if (slope < o.slope) {
