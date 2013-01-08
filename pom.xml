@@ -23,7 +23,8 @@
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>grass</module>
-    </modules>
+    <module>jgt-modules</module>
+  </modules>
 
 	<issueManagement>
         <url>http://code.google.com/p/jgrasstools/issues/list</url>
