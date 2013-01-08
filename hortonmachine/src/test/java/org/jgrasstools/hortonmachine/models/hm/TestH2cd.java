@@ -21,12 +21,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2cd.H2cd;
+import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2cd.OmsH2cd;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Tests the {@link H2cd} module.
+ * Tests the {@link OmsH2cd} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Daniele Andreis
@@ -44,7 +44,7 @@ public class TestH2cd extends HMTestCase {
         GridCoverage2D flowRaster = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         GridCoverage2D netRaster = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
-        H2cd h2cd = new H2cd();
+        OmsH2cd h2cd = new OmsH2cd();
         h2cd.inFlow = flowRaster;
         h2cd.inNet = netRaster;
         h2cd.pMode = 0;
@@ -53,7 +53,7 @@ public class TestH2cd extends HMTestCase {
 
         checkMatrixEqual(outH2cd.getRenderedImage(), HMTestMaps.h2cdData);
 
-        h2cd = new H2cd();
+        h2cd = new OmsH2cd();
         h2cd.inFlow = flowRaster;
         h2cd.inNet = netRaster;
         h2cd.pMode = 1;
@@ -65,7 +65,7 @@ public class TestH2cd extends HMTestCase {
         // 3d mode
         double[][] elevData = HMTestMaps.pitData;
         GridCoverage2D elevRaster = CoverageUtilities.buildCoverage("pit", elevData, envelopeParams, crs, true);
-        h2cd = new H2cd();
+        h2cd = new OmsH2cd();
         h2cd.inFlow = flowRaster;
         h2cd.inNet = netRaster;
         h2cd.inElev = elevRaster;

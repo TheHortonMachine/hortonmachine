@@ -21,12 +21,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.tc.Tc;
+import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.tc.OmsTc;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Tests the {@link Tc} module.
+ * Tests the {@link OmsTc} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Daniele Andreis
@@ -44,7 +44,7 @@ public class TestTc extends HMTestCase {
         GridCoverage2D tanRaster = CoverageUtilities.buildCoverage("tan", tanData, envelopeParams, crs, true);
         GridCoverage2D profRaster = CoverageUtilities.buildCoverage("prof", profData, envelopeParams, crs, true);
 
-        Tc tc = new Tc();
+        OmsTc tc = new OmsTc();
         tc.pTanthres = 0.02;
         tc.pProfthres = 0.0017;
         tc.inProf = profRaster;

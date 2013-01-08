@@ -46,15 +46,15 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("It calculates for each hillslope pixel its distance from the river networks, following the steepest descent.")
-// @Documentation("Tc.html")
+// @Documentation("OmsTc.html")
 @Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hillslope, Outlet, Distance")
 @Label(JGTConstants.HILLSLOPE)
-@Documentation("H2cd.html")
+@Documentation("OmsH2cd.html")
 @Name("h2cd")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class H2cd extends JGTModel {
+public class OmsH2cd extends JGTModel {
 
     @Description("The map of flowdirections")
     @In

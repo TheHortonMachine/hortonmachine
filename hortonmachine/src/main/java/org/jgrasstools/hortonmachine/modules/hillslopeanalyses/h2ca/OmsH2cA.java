@@ -47,14 +47,14 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Select a hillslope or some of its property from the DEM")
-@Documentation("H2cA.html")
+@Documentation("OmsH2cA.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia, Andreis Daniele,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Geomorphology, OmsDrainDir")
 @Label(JGTConstants.HILLSLOPE)
-@Name("H2cA")
+@Name("OmsH2cA")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class H2cA extends JGTModel {
+public class OmsH2cA extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
