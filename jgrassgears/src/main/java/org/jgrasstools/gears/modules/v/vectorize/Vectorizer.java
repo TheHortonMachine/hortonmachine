@@ -59,7 +59,7 @@ import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.rangelookup.RangeLookup;
+import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -75,7 +75,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 @Description("Module for raster to vector conversion.")
 @Documentation("Vectorizer.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, ScanLineRasterizer")
+@Keywords("Raster, Vector, OmsScanLineRasterizer")
 @Status(Status.CERTIFIED)
 @Label(JGTConstants.VECTORPROCESSING)
 @Name("vectorizer")
@@ -146,7 +146,7 @@ public class Vectorizer extends JGTModel {
         String ranges = sb.toString();
 
         // values are first classified, since the vectorializer works on same values
-        RangeLookup cont = new RangeLookup();
+        OmsRangeLookup cont = new OmsRangeLookup();
         cont.inRaster = inRaster;
         cont.pRanges = ranges;
         cont.pClasses = classes;

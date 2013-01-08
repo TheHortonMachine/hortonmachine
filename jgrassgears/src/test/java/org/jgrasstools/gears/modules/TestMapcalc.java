@@ -25,14 +25,14 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.modules.r.mapcalc.Mapcalc;
+import org.jgrasstools.gears.modules.r.mapcalc.OmsMapcalc;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link Mapcalc}.
+ * Test for {@link OmsMapcalc}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -48,7 +48,7 @@ public class TestMapcalc extends HMTestCase {
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
-        Mapcalc mapcalc = new Mapcalc();
+        OmsMapcalc mapcalc = new OmsMapcalc();
         mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{ele=read; dest=write;} dest=ele*2-ele + sqrt(ele)^2-exp(log(ele));";
         mapcalc.process();
@@ -69,7 +69,7 @@ public class TestMapcalc extends HMTestCase {
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
-        Mapcalc mapcalc = new Mapcalc();
+        OmsMapcalc mapcalc = new OmsMapcalc();
         mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{flow=read; dest=write;} dest = (flow+flow)/2;";
 
@@ -89,7 +89,7 @@ public class TestMapcalc extends HMTestCase {
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
 
-        Mapcalc mapcalc = new Mapcalc();
+        OmsMapcalc mapcalc = new OmsMapcalc();
         mapcalc.inRasters = maps;
         mapcalc.pFunction = "images{ele=read; dest=write;} dest = xres()*yres();";
         mapcalc.process();

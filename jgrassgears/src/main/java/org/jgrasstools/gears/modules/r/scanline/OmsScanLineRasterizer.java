@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
 @Description("Module for polygon vector to raster conversion.")
-@Documentation("ScanLineRasterizer.html")
+@Documentation("OmsScanLineRasterizer.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Vector, Rasterize")
 @Label(JGTConstants.RASTERPROCESSING)
@@ -77,7 +77,7 @@ import com.vividsolutions.jts.geom.LineString;
 @Name("rscanline")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class ScanLineRasterizer extends JGTModel {
+public class OmsScanLineRasterizer extends JGTModel {
 
     @Description("The vector to rasterize.")
     @In

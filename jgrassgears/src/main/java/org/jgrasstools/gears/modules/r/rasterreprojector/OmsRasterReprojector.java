@@ -46,14 +46,14 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for raster reprojection.")
-@Documentation("RasterConverter.html")
+@Documentation("OmsRasterConverter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Crs, Reprojection, Raster, RasterConverter, OmsRasterReader")
+@Keywords("Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("rreproject")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterReprojector extends JGTModel {
+public class OmsRasterReprojector extends JGTModel {
 
     @Description("The raster that has to be reprojected.")
     @In

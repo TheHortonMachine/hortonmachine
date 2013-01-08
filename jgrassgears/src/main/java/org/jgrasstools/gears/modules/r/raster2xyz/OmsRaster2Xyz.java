@@ -48,7 +48,7 @@ import org.opengis.geometry.DirectPosition;
 @Name("raster2xyz")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Raster2Xyz extends JGTModel {
+public class OmsRaster2Xyz extends JGTModel {
 
     @Description("The map to convert.")
     @In

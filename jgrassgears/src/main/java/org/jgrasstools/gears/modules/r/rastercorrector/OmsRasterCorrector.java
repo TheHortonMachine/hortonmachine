@@ -46,7 +46,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Status(Status.EXPERIMENTAL)
 @Name("rcorrect")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterCorrector extends JGTModel {
+public class OmsRasterCorrector extends JGTModel {
     @Description("The input raster.")
     @In
     public GridCoverage2D inRaster;

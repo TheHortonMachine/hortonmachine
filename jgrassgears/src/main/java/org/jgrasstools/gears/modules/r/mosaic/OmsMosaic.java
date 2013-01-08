@@ -61,14 +61,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for raster patching.")
-@Documentation("Mosaic.html")
+@Documentation("OmsMosaic.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Mosaic, Raster")
+@Keywords("OmsMosaic, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("mosaic")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Mosaic extends JGTModel {
+public class OmsMosaic extends JGTModel {
 
     @Description("The list of maps that have to be patched.")
     @In

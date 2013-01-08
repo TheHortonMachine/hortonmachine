@@ -22,7 +22,7 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.Variables;
-import org.jgrasstools.gears.modules.r.transformer.RasterTransformer;
+import org.jgrasstools.gears.modules.r.transformer.OmsRasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
 /**
- * Test {@link RasterTransformer}.
+ * Test {@link OmsRasterTransformer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -44,7 +44,7 @@ public class TestRasterTransformer extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        RasterTransformer transformer = new RasterTransformer();
+        OmsRasterTransformer transformer = new OmsRasterTransformer();
         transformer.inRaster = flowCoverage;
         transformer.pInterpolation = Variables.BICUBIC;
         transformer.pAngle = 90.0;

@@ -44,7 +44,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.modules.r.summary.RasterSummary;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
@@ -95,7 +95,7 @@ public class OmsStrahlerRatios extends JGTModel {
 
         List<FeatureMate> netList = FeatureUtilities.featureCollectionToMatesList(inNet);
 
-        RasterSummary summary = new RasterSummary();
+        OmsRasterSummary summary = new OmsRasterSummary();
         summary.inRaster = inStrahler;
         summary.pm = pm;
         summary.process();

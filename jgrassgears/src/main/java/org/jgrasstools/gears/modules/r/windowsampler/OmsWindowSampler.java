@@ -53,7 +53,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Status(Status.EXPERIMENTAL)
 @Name("winsampler")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class WindowSampler extends JGTModel {
+public class OmsWindowSampler extends JGTModel {
     @Description("The input coverage.")
     @In
     public GridCoverage2D inGeodata;

@@ -63,7 +63,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Status(Status.EXPERIMENTAL)
 @Name("rasterizepoints")
 @License("General Public License Version 3 (GPLv3)")
-public class PointsRasterizer extends JGTModel {
+public class OmsPointsRasterizer extends JGTModel {
 
     @Description("The points vector.")
     @In

@@ -44,14 +44,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Module for raster rangelookup.")
-@Documentation("RangeLookup.html")
+@Documentation("OmsRangeLookup.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Rangelookup")
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.CERTIFIED)
 @Name("rrangelookup")
 @License("General Public License Version 3 (GPLv3)")
-public class RangeLookup extends JGTModel {
+public class OmsRangeLookup extends JGTModel {
 
     @Description("The raster that has to be processed.")
     @In

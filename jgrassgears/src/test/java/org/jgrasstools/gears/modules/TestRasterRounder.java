@@ -22,14 +22,14 @@ import static java.lang.Double.NaN;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.rastervaluerounder.RasterValueRounder;
-import org.jgrasstools.gears.modules.r.transformer.RasterTransformer;
+import org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
+import org.jgrasstools.gears.modules.r.transformer.OmsRasterTransformer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test {@link RasterTransformer}.
+ * Test {@link OmsRasterTransformer}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -50,7 +50,7 @@ public class TestRasterRounder extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        RasterValueRounder transformer = new RasterValueRounder();
+        OmsRasterValueRounder transformer = new OmsRasterValueRounder();
         transformer.inRaster = inCoverage;
         transformer.pPattern = ".000";
         transformer.process();
@@ -61,7 +61,7 @@ public class TestRasterRounder extends HMTestCase {
         String valueStr = String.valueOf(value).replace(',', '.');
         assertEquals(expected, valueStr);
 
-        transformer = new RasterValueRounder();
+        transformer = new OmsRasterValueRounder();
         transformer.inRaster = inCoverage;
         transformer.pPattern = "##.";
         transformer.process();

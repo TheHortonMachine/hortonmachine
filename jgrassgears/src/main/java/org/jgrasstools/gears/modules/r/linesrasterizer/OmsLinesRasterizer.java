@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.LineString;
 @Status(Status.EXPERIMENTAL)
 @Name("rasterizelines")
 @License("General Public License Version 3 (GPLv3)")
-public class LinesRasterizer extends JGTModel {
+public class OmsLinesRasterizer extends JGTModel {
 
     @Description("The lines vector.")
     @In

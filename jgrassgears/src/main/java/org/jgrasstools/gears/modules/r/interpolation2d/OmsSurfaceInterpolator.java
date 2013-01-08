@@ -72,7 +72,7 @@ it = "Interpolazione di superfici"//
 @Status(Status.DRAFT)
 @Name("surfaceinterpolator")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SurfaceInterpolator extends JGTModel {
+public class OmsSurfaceInterpolator extends JGTModel {
 
     @Description(//
     en = "The input vector map of points.",//

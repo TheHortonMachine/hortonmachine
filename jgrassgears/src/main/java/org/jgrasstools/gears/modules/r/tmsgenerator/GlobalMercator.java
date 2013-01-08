@@ -21,7 +21,7 @@ import java.util.Arrays;
  */
 
 /**
- * TMS Global Mercator Profile ---------------------------
+ * TMS Global Mercator OmsProfile ---------------------------
  * 
  * Functions necessary for generation of tiles in Spherical Mercator projection,
  * EPSG:900913 (EPSG:gOOglE, Google Maps Global Mercator), EPSG:3785,

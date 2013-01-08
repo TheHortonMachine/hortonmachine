@@ -58,7 +58,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Name("tmsdownloader")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class OnlineTilesDownloader extends JGTModel {
+public class OmsOnlineTilesDownloader extends JGTModel {
 
     @Description("An optional online tile service to include (XXX, YYY, ZZZ will be substituted by tile indexes and zoom level).")
     @In

@@ -23,7 +23,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
-import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -35,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Polygon;
 /**
- * Test for the {@link ScanLineRasterizer}
+ * Test for the {@link OmsScanLineRasterizer}
  * <
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -46,7 +46,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         RegionMap ep = HMTestMaps.envelopeParams;
         SimpleFeatureCollection newCollection = doCollection(ep);
 
-        ScanLineRasterizer raster = new ScanLineRasterizer();
+        OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
         raster.inVector = newCollection;
         raster.pCols = ep.getCols();
         raster.pRows = ep.getRows();
@@ -60,7 +60,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         GridCoverage2D outGeodata = raster.outRaster;
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all2Data);
 
-        raster = new ScanLineRasterizer();
+        raster = new OmsScanLineRasterizer();
         raster.inVector = newCollection;
         raster.pCols = ep.getCols();
         raster.pRows = ep.getRows();

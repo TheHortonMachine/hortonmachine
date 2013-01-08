@@ -22,11 +22,11 @@
 //import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 //import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-//import org.jgrasstools.gears.modules.r.bobthebuilder.BobTheBuilder;
+//import org.jgrasstools.gears.modules.r.bobthebuilder.OmsBobTheBuilder;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
 ///**
-// * Test for {@link BobTheBuilder}
+// * Test for {@link OmsBobTheBuilder}
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -42,7 +42,7 @@
 //        SimpleFeatureCollection inArea = OmsVectorReader.readVector(area);
 //        SimpleFeatureCollection inPoints = OmsVectorReader.readVector(points);
 //
-//        BobTheBuilder bob = new BobTheBuilder();
+//        OmsBobTheBuilder bob = new OmsBobTheBuilder();
 //        bob.pm = pm;
 //        bob.inRaster = inRaster;
 //        bob.inArea = inArea;

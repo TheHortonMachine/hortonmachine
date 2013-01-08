@@ -45,14 +45,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Module for raster thresholding and masking.")
-@Documentation("CutOut.html")
+@Documentation("OmsCutOut.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Threshold, Mapcalc")
+@Keywords("Raster, Threshold, OmsMapcalc")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("cutout")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class CutOut extends JGTModel {
+public class OmsCutOut extends JGTModel {
 
     @Description("The map that has to be processed.")
     @In

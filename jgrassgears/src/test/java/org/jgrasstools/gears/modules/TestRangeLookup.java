@@ -20,14 +20,14 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.rangelookup.RangeLookup;
+import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RangeLookup}
+ * Test for {@link OmsRangeLookup}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -39,7 +39,7 @@ public class TestRangeLookup extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        RangeLookup range = new RangeLookup();
+        OmsRangeLookup range = new OmsRangeLookup();
         range.pm = pm;
         range.inRaster = inCoverage;
         range.pRanges = "[0 90),[90 180),[180 270),[270 360)";

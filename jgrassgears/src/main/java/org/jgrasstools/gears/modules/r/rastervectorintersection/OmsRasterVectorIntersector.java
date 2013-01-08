@@ -34,8 +34,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.cutout.CutOut;
-import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
@@ -49,7 +49,7 @@ import org.opengis.feature.type.GeometryType;
 @Status(Status.EXPERIMENTAL)
 @Name("rvintersector")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterVectorIntersector extends JGTModel {
+public class OmsRasterVectorIntersector extends JGTModel {
 
     @Description("The polygon vector to use for the intersection.")
     @In
@@ -78,7 +78,7 @@ public class RasterVectorIntersector extends JGTModel {
         }
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        ScanLineRasterizer raster = new ScanLineRasterizer();
+        OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
         raster.inVector = inVector;
         raster.pCols = regionMap.getCols();
         raster.pRows = regionMap.getRows();
@@ -90,7 +90,7 @@ public class RasterVectorIntersector extends JGTModel {
         raster.process();
         GridCoverage2D rasterizedVector = raster.outRaster;
 
-        CutOut cutout = new CutOut();
+        OmsCutOut cutout = new OmsCutOut();
         cutout.pm = pm;
         cutout.inRaster = inRaster;
         cutout.inMask = rasterizedVector;

@@ -40,8 +40,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.linesrasterizer.LinesRasterizer;
-import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.linesrasterizer.OmsLinesRasterizer;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -52,7 +52,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class Carver extends JGTModel {
+public class OmsCarver extends JGTModel {
 
     @Description("The input raster.")
     @In
@@ -119,7 +119,7 @@ public class Carver extends JGTModel {
         GridCoverage2D depthPolygonsRaster = null;
 
         if (inCarverLines != null) {
-            LinesRasterizer lr = new LinesRasterizer();
+            OmsLinesRasterizer lr = new OmsLinesRasterizer();
             lr.fCat = fDepthLines;
             lr.pCat = pDepthLines;
             lr.inVector = inCarverLines;
@@ -134,7 +134,7 @@ public class Carver extends JGTModel {
             depthLinesRaster = lr.outRaster;
         }
         if (inCarverPolygons != null) {
-            ScanLineRasterizer raster = new ScanLineRasterizer();
+            OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
             raster.inVector = inCarverPolygons;
             raster.pNorth = regionMap.getNorth();
             raster.pSouth = regionMap.getSouth();
@@ -250,7 +250,7 @@ public class Carver extends JGTModel {
     // bufferArea);
     // outPoints.addAll(controlPoints);
     //
-    // BobTheBuilder bob = new BobTheBuilder();
+    // OmsBobTheBuilder bob = new OmsBobTheBuilder();
     // bob.pm = new DummyProgressMonitor();// pm;
     // bob.inRaster = inRaster;
     // bob.inArea = areaFC;

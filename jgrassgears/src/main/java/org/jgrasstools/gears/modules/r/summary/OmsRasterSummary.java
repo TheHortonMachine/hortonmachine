@@ -46,14 +46,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
 @Description("Calculate a summary of the map with base statistics.")
-@Documentation("RasterSummary.html")
+@Documentation("OmsRasterSummary.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Statistics, Raster, Mapcalc")
+@Keywords("Statistics, Raster, OmsMapcalc")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("rsummary")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class RasterSummary extends JGTModel {
+public class OmsRasterSummary extends JGTModel {
 
     @Description("The map to analize.")
     @In

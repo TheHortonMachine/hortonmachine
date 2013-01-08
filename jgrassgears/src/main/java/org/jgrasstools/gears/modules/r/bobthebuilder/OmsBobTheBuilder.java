@@ -50,7 +50,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
-import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.coverage.ProfilePoint;
@@ -72,7 +72,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Label(JGTConstants.RASTERPROCESSING)
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class BobTheBuilder extends JGTModel {
+public class OmsBobTheBuilder extends JGTModel {
 
     @Description("The input raster.")
     @In
@@ -191,7 +191,7 @@ public class BobTheBuilder extends JGTModel {
 
         SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
         newCollection.add(polygonMate.getFeature());
-        ScanLineRasterizer slRasterizer = new ScanLineRasterizer();
+        OmsScanLineRasterizer slRasterizer = new OmsScanLineRasterizer();
         slRasterizer.pm = pm;
         slRasterizer.inVector = newCollection;
         slRasterizer.pCols = cols;

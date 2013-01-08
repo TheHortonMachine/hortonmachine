@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.modules.r.rastervectorintersection.RasterVectorIntersector;
+import org.jgrasstools.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector;
 import org.jgrasstools.gears.ui.MapsViewer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -28,7 +28,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test for the {@link RasterVectorIntersector}
+ * Test for the {@link OmsRasterVectorIntersector}
  * <
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -58,14 +58,14 @@ public class TestRasterVectorIntersector extends HMTestCase {
             }
         }
 
-        RasterVectorIntersector intersect = new RasterVectorIntersector();
+        OmsRasterVectorIntersector intersect = new OmsRasterVectorIntersector();
         intersect.inRaster = elevationCoverage;
         intersect.inVector = testLeftFC;
         intersect.process();
         GridCoverage2D outRaster = intersect.outRaster;
         checkMatrixEqual(outRaster.getRenderedImage(), test);
 
-        intersect = new RasterVectorIntersector();
+        intersect = new OmsRasterVectorIntersector();
         intersect.inRaster = elevationCoverage;
         intersect.inVector = testLeftFC;
         intersect.doInverse = true;

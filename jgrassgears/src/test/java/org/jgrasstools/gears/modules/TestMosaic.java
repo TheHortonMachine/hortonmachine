@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.mosaic.Mosaic;
-import org.jgrasstools.gears.modules.r.mosaic.Mosaic12;
+import org.jgrasstools.gears.modules.r.mosaic.OmsMosaic;
+import org.jgrasstools.gears.modules.r.mosaic.OmsMosaic12;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 /**
@@ -42,7 +42,7 @@ public class TestMosaic extends HMTestCase {
 
         List<File> filesList = Arrays.asList(left, right);
 
-        Mosaic mosaic = new Mosaic();
+        OmsMosaic mosaic = new OmsMosaic();
         mosaic.inFiles = filesList;
         mosaic.pm = pm;
         mosaic.process();
@@ -56,7 +56,7 @@ public class TestMosaic extends HMTestCase {
         testUrl = this.getClass().getClassLoader().getResource("dtm_test_right.asc");
         File right = new File(testUrl.toURI());
 
-        Mosaic12 mosaic = new Mosaic12();
+        OmsMosaic12 mosaic = new OmsMosaic12();
         mosaic.inMap1 = left.getAbsolutePath();
         mosaic.inMap12 = right.getAbsolutePath();
         mosaic.pm = pm;

@@ -55,7 +55,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("Module for GRASS raster patching.")
 @Documentation("GrassMosaicLegacy.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Mosaic, Raster")
+@Keywords("OmsMosaic, Raster")
 @Name("grassmosaic")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")

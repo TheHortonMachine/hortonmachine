@@ -22,15 +22,15 @@ import static java.lang.Double.NaN;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.rastercorrector.RasterCorrector;
-import org.jgrasstools.gears.modules.r.rasterreprojector.RasterReprojector;
+import org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector;
+import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RasterCorrector}.
+ * Test for {@link OmsRasterCorrector}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestRasterCorrector extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        RasterCorrector reprojector = new RasterCorrector();
+        OmsRasterCorrector reprojector = new OmsRasterCorrector();
         reprojector.inRaster = inCoverage;
         reprojector.pCorrections = "0,0,1.0, 5,5, 666";
         reprojector.process();

@@ -40,8 +40,8 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
-import org.jgrasstools.gears.modules.r.summary.RasterSummary;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -106,7 +106,7 @@ public class OmsMeltonNumber extends JGTModel {
             SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
             newCollection.add(fan);
 
-            ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+            OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
             rasterizer.inVector = newCollection;
             rasterizer.pCols = cols;
             rasterizer.pRows = rows;
@@ -123,7 +123,7 @@ public class OmsMeltonNumber extends JGTModel {
             GridCoverage2D fanElev = CoverageUtilities.coverageValuesMapper(inElev, rasterizedFan);
 
             // extract min and max
-            RasterSummary summary = new RasterSummary();
+            OmsRasterSummary summary = new OmsRasterSummary();
             summary.pm = new DummyProgressMonitor();
             summary.inRaster = fanElev;
             summary.process();

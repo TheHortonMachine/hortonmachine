@@ -21,14 +21,14 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Variables;
-import org.jgrasstools.gears.modules.r.transformer.RasterResolutionResampler;
+import org.jgrasstools.gears.modules.r.transformer.OmsRasterResolutionResampler;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test {@link RasterResolutionResampler}.
+ * Test {@link OmsRasterResolutionResampler}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestRasterResolutionResampler extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        RasterResolutionResampler transformer = new RasterResolutionResampler();
+        OmsRasterResolutionResampler transformer = new OmsRasterResolutionResampler();
         transformer.inGeodata = flowCoverage;
         transformer.pInterpolation = Variables.NEAREST_NEIGHTBOUR;
         transformer.pXres = 60.0;

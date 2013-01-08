@@ -50,7 +50,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Name("rresolresampler")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class RasterResolutionResampler extends JGTModel {
+public class OmsRasterResolutionResampler extends JGTModel {
     @Description("The input coverage.")
     @In
     public GridCoverage2D inGeodata;

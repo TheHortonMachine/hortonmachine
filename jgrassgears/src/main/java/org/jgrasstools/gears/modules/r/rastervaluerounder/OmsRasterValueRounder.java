@@ -50,7 +50,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Status(Status.CERTIFIED)
 @Name("rround")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterValueRounder extends JGTModel {
+public class OmsRasterValueRounder extends JGTModel {
 
     @Description("The raster of which to round the values.")
     @In

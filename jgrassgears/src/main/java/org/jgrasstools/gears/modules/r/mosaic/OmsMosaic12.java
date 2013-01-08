@@ -44,12 +44,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description("Module for patching max 12 rasters.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Mosaic, Raster")
+@Keywords("OmsMosaic, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("mosaic12")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Mosaic12 extends JGTModel {
+public class OmsMosaic12 extends JGTModel {
 
     @Description("The Map N.1 to be patched")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -148,7 +148,7 @@ public class Mosaic12 extends JGTModel {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
         }
 
-        Mosaic mosaic = new Mosaic();
+        OmsMosaic mosaic = new OmsMosaic();
         mosaic.inFiles = filesList;
         mosaic.pm = pm;
         mosaic.process();

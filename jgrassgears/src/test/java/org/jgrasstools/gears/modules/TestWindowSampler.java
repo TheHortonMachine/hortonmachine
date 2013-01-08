@@ -20,14 +20,14 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.windowsampler.WindowSampler;
+import org.jgrasstools.gears.modules.r.windowsampler.OmsWindowSampler;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link WindowSampler}.
+ * Test for {@link OmsWindowSampler}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -39,7 +39,7 @@ public class TestWindowSampler extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true); //$NON-NLS-1$
 
-        WindowSampler windowSampler = new WindowSampler();
+        OmsWindowSampler windowSampler = new OmsWindowSampler();
         windowSampler.inGeodata = inCoverage;
         windowSampler.pMode = 0;
         windowSampler.pCols = 2;
@@ -55,7 +55,7 @@ public class TestWindowSampler extends HMTestCase {
         };
         checkMatrixEqual(outGeodata.getRenderedImage(), res2x2, 0.000001);
 
-        windowSampler = new WindowSampler();
+        windowSampler = new OmsWindowSampler();
         windowSampler.inGeodata = inCoverage;
         windowSampler.pMode = 0;
         windowSampler.pCols = 3;

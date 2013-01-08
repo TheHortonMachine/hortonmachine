@@ -77,7 +77,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 @Status(Status.DRAFT)
 @Name("rtrans")
 @License("General Public License Version 3 (GPLv3)")
-public class RasterTransformer extends JGTModel {
+public class OmsRasterTransformer extends JGTModel {
 
     @Description("The raster that has to be transformed.")
     @In

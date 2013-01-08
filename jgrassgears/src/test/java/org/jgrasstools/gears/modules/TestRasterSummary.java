@@ -21,14 +21,14 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.modules.r.summary.RasterSummary;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RasterSummary}.
+ * Test for {@link OmsRasterSummary}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -40,7 +40,7 @@ public class TestRasterSummary extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        RasterSummary summary = new RasterSummary();
+        OmsRasterSummary summary = new OmsRasterSummary();
         summary.pm = pm;
         summary.inRaster = inCoverage;
         summary.doHistogram = true;

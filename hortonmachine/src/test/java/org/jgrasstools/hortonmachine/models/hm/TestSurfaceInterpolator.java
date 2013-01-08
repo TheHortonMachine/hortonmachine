@@ -25,11 +25,11 @@
 //import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 //import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 //import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-//import org.jgrasstools.gears.modules.r.interpolation2d.SurfaceInterpolator;
+//import org.jgrasstools.gears.modules.r.interpolation2d.OmsSurfaceInterpolator;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //
 ///**
-// * Test for the {@link SurfaceInterpolator} module.
+// * Test for the {@link OmsSurfaceInterpolator} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -64,7 +64,7 @@
 //        SimpleFeatureCollection readVector = OmsVectorReader.readVector(inVector);
 //        GridCoverage2D mask = OmsRasterReader.readRaster(inMask);
 //
-//        SurfaceInterpolator spliner = new SurfaceInterpolator();
+//        OmsSurfaceInterpolator spliner = new OmsSurfaceInterpolator();
 //        spliner.inVector = readVector;
 //        spliner.inGrid = gridGeometry2D;
 //        spliner.inMask = mask;
@@ -112,7 +112,7 @@
 //    // SimpleFeatureCollection readVector = OmsVectorReader.readVector(inVector);
 //    // GridCoverage2D mask = OmsRasterReader.readRaster(inMask);
 //    //
-//    // SurfaceInterpolator spliner = new SurfaceInterpolator();
+//    // OmsSurfaceInterpolator spliner = new OmsSurfaceInterpolator();
 //    // spliner.inVector = readVector;
 //    // spliner.inGrid = gridGeometry2D;
 //    // spliner.inMask = mask;

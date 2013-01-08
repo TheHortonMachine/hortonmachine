@@ -15,9 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.modules.r.imagemosaic;
-
-import java.io.File;
+package org.jgrasstools.gears.modules.r.rasterconverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -28,39 +26,34 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
-import oms3.annotations.UI;
 
-import org.geotools.gce.imagemosaic.ImageMosaicFormat;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
-@Description("Module for creating an mosaic shapefile for images.")
+@Description("Raster conversion module.")
+@Documentation("OmsRasterConverter.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Imagemosaic, Raster")
+@Keywords("IO, Coverage, Raster, Convert, OmsRasterReader")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("imagemosaic")
 @Status(Status.CERTIFIED)
+@Name("rconvert")
 @License("General Public License Version 3 (GPLv3)")
-public class ImageMosaicCreator extends JGTModel {
-
-    @Description("The folder containing the images to mosaic.")
-    @UI(JGTConstants.FOLDERIN_UI_HINT)
+public class OmsRasterConverter extends JGTModel {
+    @Description("The input raster.")
     @In
-    public String inFolder;
+    public GridCoverage2D inRaster;
+
+    @Description("The output raster.")
+    @Out
+    public GridCoverage2D outRaster;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFolder);
-
-        pm.beginTask("Generating mosaic... this might take some time depending on the number of images...",
-                IJGTProgressMonitor.UNKNOWN);
-
-        ImageMosaicFormat imageMosaicFormat = new ImageMosaicFormat();
-        File imageryFolder = new File(inFolder);
-        imageMosaicFormat.getReader(imageryFolder);
-
-        pm.done();
+        checkNull(inRaster);
+        outRaster = inRaster;
     }
+
 }

@@ -22,7 +22,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.modules.r.profile.Profile;
+import org.jgrasstools.gears.modules.r.profile.OmsProfile;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -35,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 /**
- * Test for the {@link Profile}
+ * Test for the {@link OmsProfile}
  * <
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -54,7 +54,7 @@ public class TestProfile extends HMTestCase {
         String coords = (westNorth.x + ep.getXres() / 2) + "," + (centerCoord.y + ep.getYres() / 2) + ","
                 + (eastSouth.x - ep.getXres() / 2) + "," + (centerCoord.y + ep.getYres() / 2);
 
-        Profile profile = new Profile();
+        OmsProfile profile = new OmsProfile();
         profile.inRaster = elevationCoverage;
         profile.pm = pm;
         profile.inCoordinates = coords;
@@ -65,7 +65,7 @@ public class TestProfile extends HMTestCase {
             assertEquals(result[i], outProfile[i][1], 0.000001);
         }
 
-        profile = new Profile();
+        profile = new OmsProfile();
         profile.inRaster = elevationCoverage;
         profile.pm = pm;
         profile.inVector = doCollection();

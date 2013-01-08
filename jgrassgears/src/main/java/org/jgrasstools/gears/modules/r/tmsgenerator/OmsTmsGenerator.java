@@ -57,7 +57,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Name("tmsgenerator")
 @License("General Public License Version 3 (GPLv3)")
 @SuppressWarnings("nls")
-public class TmsGenerator extends JGTModel {
+public class OmsTmsGenerator extends JGTModel {
 
     @Description("A file containing the list of raster map paths to consider (the order is relevant, first layers are placed below others).")
     @UI(JGTConstants.FILEIN_UI_HINT)

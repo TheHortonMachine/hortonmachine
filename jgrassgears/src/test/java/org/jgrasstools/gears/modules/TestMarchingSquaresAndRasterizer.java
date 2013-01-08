@@ -28,7 +28,7 @@
 //import org.geotools.coverage.grid.GridGeometry2D;
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.gears.modules.r.scanline.ScanLineRasterizer;
+//import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 //import org.jgrasstools.gears.modules.v.marchingsquares.MarchingSquaresVectorializer;
 //import org.jgrasstools.gears.utils.HMTestCase;
 //import org.jgrasstools.gears.utils.HMTestMaps;
@@ -40,7 +40,7 @@
 // */
 //public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 //
-//    private void setBounds( ScanLineRasterizer rast, GridGeometry2D gridGeom ) {
+//    private void setBounds( OmsScanLineRasterizer rast, GridGeometry2D gridGeom ) {
 //        HashMap<String, Double> envelopeParams = gridGeometry2RegionParamsMap(gridGeom);
 //        double west = envelopeParams.get(WEST);
 //        double south = envelopeParams.get(SOUTH);
@@ -81,7 +81,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -121,7 +121,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -161,7 +161,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -210,7 +210,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -259,7 +259,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -308,7 +308,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());
@@ -349,7 +349,7 @@
 //        /*
 //         * and rasterize back again
 //         */
-//        ScanLineRasterizer rasterizer = new ScanLineRasterizer();
+//        OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
 //        rasterizer.inGeodata = outGeodata;
 //        rasterizer.pm = pm;
 //        setBounds(rasterizer, geodata.getGridGeometry());

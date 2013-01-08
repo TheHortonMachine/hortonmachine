@@ -20,14 +20,14 @@ package org.jgrasstools.gears.modules;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.rasterreprojector.RasterReprojector;
+import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link RasterReprojector}.
+ * Test for {@link OmsRasterReprojector}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -39,13 +39,13 @@ public class TestRasterReprojector extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
-        RasterReprojector reprojector = new RasterReprojector();
+        OmsRasterReprojector reprojector = new OmsRasterReprojector();
         reprojector.inRaster = inCoverage;
         reprojector.pCode = "EPSG:4326";
         reprojector.process();
         GridCoverage2D outGeodata = reprojector.outRaster;
 
-        reprojector = new RasterReprojector();
+        reprojector = new OmsRasterReprojector();
         reprojector.inRaster = outGeodata;
         reprojector.pCode = "EPSG:32632";
         reprojector.process();

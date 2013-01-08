@@ -49,12 +49,12 @@ import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Module creating profiles over rasters.")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Profile, Raster")
+@Keywords("OmsProfile, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("profile")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class Profile extends JGTModel {
+public class OmsProfile extends JGTModel {
 
     @Description("The raster map to use for the profile")
     @In

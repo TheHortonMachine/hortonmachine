@@ -55,14 +55,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description("Module for doing raster map algebra.")
-@Documentation("Mapcalc.html")
+@Documentation("OmsMapcalc.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Mapcalc, Raster, CutOut")
+@Keywords("OmsMapcalc, Raster, OmsCutOut")
 @Label(JGTConstants.RASTERPROCESSING)
 @Name("mapcalc")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Mapcalc extends JGTModel {
+public class OmsMapcalc extends JGTModel {
 
     @Description("The maps that are used in the calculation.")
     @In

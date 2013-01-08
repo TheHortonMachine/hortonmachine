@@ -38,7 +38,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -57,7 +56,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Name("xyz2raster")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Xyz2Raster extends JGTModel {
+public class OmsXyz2Raster extends JGTModel {
 
     @Description("The file of regularly distributed xyz triplets.")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -159,21 +158,6 @@ public class Xyz2Raster extends JGTModel {
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
         outRaster = CoverageUtilities.buildCoverage("fromxyz", writableRaster, regionMap, crs);
 
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String base = "/home/moovida/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/test_area/08_Korkeusmalli_10m_DTM_interp/";
-
-        String in = base + "all.xyz";
-        String out = base + "all.asc";
-
-        Xyz2Raster r = new Xyz2Raster();
-        r.inFile = in;
-        r.pRes = 10.0;
-        r.pCode = "EPSG:3067";
-        r.process();
-
-        OmsRasterWriter.writeRaster(out, r.outRaster);
     }
 
 }
