@@ -22,13 +22,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.network.hacklength.HackLength;
+import org.jgrasstools.hortonmachine.modules.network.hacklength.OmsHackLength;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test {@link HackLength}.
+ * Test {@link OmsHackLength}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -43,7 +43,7 @@ public class TestHackLength extends HMTestCase {
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
 
-        HackLength hackLength = new HackLength();
+        OmsHackLength hackLength = new OmsHackLength();
         hackLength.inFlow = flowCoverage;
         hackLength.inTca = tcaCoverage;
         hackLength.pm = pm;
@@ -65,7 +65,7 @@ public class TestHackLength extends HMTestCase {
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
 
-        HackLength hackLength = new HackLength();
+        OmsHackLength hackLength = new OmsHackLength();
         hackLength.inFlow = flowCoverage;
         hackLength.inTca = tcaCoverage;
         hackLength.inElevation = pitCoverage;

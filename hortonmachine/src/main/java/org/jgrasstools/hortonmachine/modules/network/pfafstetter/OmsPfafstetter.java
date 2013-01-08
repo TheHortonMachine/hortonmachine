@@ -87,13 +87,13 @@ import com.vividsolutions.jts.geom.MultiLineString;
  */
 @Description("Creates a hierarchial form of the network.")
 @Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
-@Keywords("Network, Pfafstetter")
+@Keywords("Network, OmsPfafstetter")
 @Label(JGTConstants.NETWORK)
 @Status(Status.EXPERIMENTAL)
-@Documentation("Pfafstetter.html")
+@Documentation("OmsPfafstetter.html")
 @Name("pfafstetter")
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Pfafstetter extends JGTModel {
+public class OmsPfafstetter extends JGTModel {
 
     @Description("The map of pitfiller.")
     @In
@@ -123,7 +123,7 @@ public class Pfafstetter extends JGTModel {
     @In
     public double pMode = 0;
 
-    @Description("The Pfafstetter feature collection of the network.")
+    @Description("The OmsPfafstetter feature collection of the network.")
     @Out
     public SimpleFeatureCollection outPfaf = null;
 
@@ -290,7 +290,7 @@ public class Pfafstetter extends JGTModel {
         int[] flow = new int[2];
         int f, netNumValue;
 
-        pm.message(msg.message("working") + " Pfafstetter"); //$NON-NLS-1$//$NON-NLS-2$
+        pm.message(msg.message("working") + " OmsPfafstetter"); //$NON-NLS-1$//$NON-NLS-2$
         pm.message(msg.message("working12")); //$NON-NLS-1$
 
         // creates a vector of object ChannelInfo

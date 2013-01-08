@@ -63,7 +63,7 @@ import com.vividsolutions.jts.geom.LineString;
 @Name("extractvectornet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class NetworkAttributesBuilder extends JGTModel {
+public class OmsNetworkAttributesBuilder extends JGTModel {
 
     @Description("The network raster map.")
     @In

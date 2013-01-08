@@ -26,7 +26,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections;
-import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
+import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -448,7 +448,7 @@ public class HMTestMaps {
     };
 
     /**
-     * {@link ExtractNetwork} output with mode 0.
+     * {@link OmsExtractNetwork} output with mode 0.
      */
     public static double[][] extractNet0Data = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //
@@ -461,7 +461,7 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N}};
 
     /**
-     * {@link ExtractNetwork} output with mode 1.
+     * {@link OmsExtractNetwork} output with mode 1.
      */
     public static double[][] extractNet1Data = new double[][]{ //
     /*    */{N, N, N, N, N, N, N, N, N, N}, //

@@ -30,7 +30,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Subdivides the sites of a basin in 11 topographic classes.")
 @Documentation("OmsGc.html")
 @Author(name = "Daniele Andreis,Erica Ghesla, Cozzini Andrea, Rigon Riccardo")
-@Keywords("Geomorphology, OmsTc, OmsSlope, ExtractNetwork")
+@Keywords("Geomorphology, OmsTc, OmsSlope, OmsExtractNetwork")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("gc")
 @Status(Status.CERTIFIED)

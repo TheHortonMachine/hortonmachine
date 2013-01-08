@@ -24,8 +24,8 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * The object for Pfafstetter numbers, supplying several methods to compare and analyse a
- * hierarchial network numbered following a Pfafstetter modified network.
+ * The object for OmsPfafstetter numbers, supplying several methods to compare and analyse a
+ * hierarchial network numbered following a OmsPfafstetter modified network.
  * 
  * @author Andrea Antonello - www.hydrologis.com
  */

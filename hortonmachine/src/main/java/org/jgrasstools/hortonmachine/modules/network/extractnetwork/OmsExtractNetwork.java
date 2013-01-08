@@ -54,14 +54,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extracts the raster network from an elevation model.")
-@Documentation("ExtractNetwork.html")
-@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
+@Documentation("OmsExtractNetwork.html")
+@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope")
 @Label(JGTConstants.NETWORK)
 @Name("extractnet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class ExtractNetwork extends JGTModel {
+public class OmsExtractNetwork extends JGTModel {
 
     @Description("The map of total contributing areas.")
     @In

@@ -50,12 +50,12 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Calculates the difference between the value of a quantity in one point and the value of the same quantity in another point across a basin")
 @Author(name = "Daniele Andreis, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
 @Label(JGTConstants.NETWORK)
-@Documentation("NetDiff.html")
+@Documentation("OmsNetDiff.html")
 @Keywords("Network, Pitfiller, OmsDrainDir, OmsFlowDirections")
 @Name("netdiff")
 @Status(Status.CERTIFIED)
 @License("GPL3")
-public class NetDiff extends JGTModel {
+public class OmsNetDiff extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In

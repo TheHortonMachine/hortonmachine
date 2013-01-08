@@ -54,14 +54,14 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("Assigned a point in a basin calculates"
         + " the distance from the watershed measured along the net (until it exists)"
         + " and then, again from valley upriver, along the maximal slope.")
-@Documentation("HackLength.html")
+@Documentation("OmsHackLength.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea,  Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
 @Keywords("Network, HackLength3D, HackStream")
 @Label(JGTConstants.NETWORK)
 @Name("hacklength")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class HackLength extends JGTModel {
+public class OmsHackLength extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In

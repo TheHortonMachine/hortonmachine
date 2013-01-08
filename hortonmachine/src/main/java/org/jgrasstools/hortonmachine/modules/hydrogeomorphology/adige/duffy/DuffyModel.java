@@ -79,7 +79,7 @@ public class DuffyModel {
      * 
      * @param linksList
      *            the list of all the network links, expressed through their
-     *            Pfafstetter numbers
+     *            OmsPfafstetter numbers
      * @param closureHillslope
      *            the most downstream hillslope in the analyzed basin
      * @param routingType

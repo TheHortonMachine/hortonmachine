@@ -49,11 +49,11 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Description("It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.")
 @Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
 @Label(JGTConstants.NETWORK)
-@Documentation("Magnitudo.html")
+@Documentation("OmsMagnitudo.html")
 @Status(Status.CERTIFIED)
 @Name("magnitudo")
 @License("GPL3")
-public class Magnitudo extends JGTModel {
+public class OmsMagnitudo extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Contains the info of every channel of the network. Pfafstetter uses this class to compose the network.
+ * Contains the info of every channel of the network. OmsPfafstetter uses this class to compose the network.
  * 
  * @author Erica Ghesla - erica.ghesla@ing.unitn.it
  * @author Andrea Antonello - www.hydrologis.com

@@ -22,11 +22,11 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.io.vectorwriter.VectorWriter;
-import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
-import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkAttributesBuilder;
+import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
+import org.jgrasstools.hortonmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 /**
- * It test the {@link ExtractNetwork} module.
+ * It test the {@link OmsExtractNetwork} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestExtractNetwork extends HMTestCase {
         String outHack = base + "hack";
         String out = "D:/TMP/net.shp";
 
-        NetworkAttributesBuilder extract = new NetworkAttributesBuilder();
+        OmsNetworkAttributesBuilder extract = new OmsNetworkAttributesBuilder();
         extract.inFlow = RasterReader.readRaster(inFlow);
         extract.inTca = RasterReader.readRaster(inTca);
         extract.inNet = RasterReader.readRaster(inNet);
@@ -68,7 +68,7 @@ public class TestExtractNetwork extends HMTestCase {
     // GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams,
     // crs, true);
     //
-    // ExtractNetwork extractNetwork = new ExtractNetwork();
+    // OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
     // extractNetwork.pm = pm;
     // extractNetwork.inFlow = flowCoverage;
     // extractNetwork.inTca = tcaCoverage;
@@ -98,7 +98,7 @@ public class TestExtractNetwork extends HMTestCase {
     // GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData,
     // envelopeParams, crs, true);
     //
-    // ExtractNetwork extractNetwork = new ExtractNetwork();
+    // OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
     // extractNetwork.pm = pm;
     // extractNetwork.inFlow = flowCoverage;
     // extractNetwork.inTca = tcaCoverage;
@@ -123,7 +123,7 @@ public class TestExtractNetwork extends HMTestCase {
     // GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams,
     // crs, true);
     //
-    // NetworkAttributesBuilder extractNetwork = new NetworkAttributesBuilder();
+    // OmsNetworkAttributesBuilder extractNetwork = new OmsNetworkAttributesBuilder();
     // extractNetwork.pm = pm;
     // extractNetwork.inFlow = flowCoverage;
     // extractNetwork.inNet = netCoverage;

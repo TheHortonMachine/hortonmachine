@@ -24,12 +24,12 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.ShapefileFeatureReader;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.network.netnumbering.NetNumbering;
+import org.jgrasstools.hortonmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test {@link NetNumbering}.
+ * Test {@link OmsNetNumbering}.
  * 
  * @author Andrea Antonello (www.hydrologis.com), Daniele Andreis
  */
@@ -44,7 +44,7 @@ public class TestNetNumbering extends HMTestCase {
         double[][] netData = HMTestMaps.extractNet1Data;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
-        NetNumbering netNumbering = new NetNumbering();
+        OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
         netNumbering.pMode = 0;
@@ -70,7 +70,7 @@ public class TestNetNumbering extends HMTestCase {
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
 
-        NetNumbering netNumbering = new NetNumbering();
+        OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
         netNumbering.inTca = tcaCoverage;
@@ -102,7 +102,7 @@ public class TestNetNumbering extends HMTestCase {
         double[][] netData = HMTestMaps.extractNet1Data;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
-        NetNumbering netNumbering = new NetNumbering();
+        OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
         netNumbering.fPointId = "RETE_ID";
@@ -139,7 +139,7 @@ public class TestNetNumbering extends HMTestCase {
     // GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams,
     // crs, true);
     //
-    // NetNumbering netNumbering = new NetNumbering();
+    // OmsNetNumbering netNumbering = new OmsNetNumbering();
     // netNumbering.inFlow = flowCoverage;
     // netNumbering.inNet = netCoverage;
     // netNumbering.inTca = tcaCoverage;

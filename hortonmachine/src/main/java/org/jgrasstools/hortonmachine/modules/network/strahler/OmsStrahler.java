@@ -47,14 +47,14 @@ import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Calculates the Strahler order on a basin.")
+@Description("Calculates the OmsStrahler order on a basin.")
 @Author(name = "Erica Ghesla, Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Network, Strahler")
+@Keywords("Network, OmsStrahler")
 @Label(JGTConstants.NETWORK)
 @Name("strahler")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class Strahler extends JGTModel {
+public class OmsStrahler extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In
@@ -118,7 +118,7 @@ public class Strahler extends JGTModel {
         WritableRandomIter strahlerIter = RandomIterFactory.createWritable(strahlerWR, null);
         // start to calculate the output map.
 
-        pm.beginTask("Calculating Strahler order...", nRows * 2);
+        pm.beginTask("Calculating OmsStrahler order...", nRows * 2);
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
                 flow[0] = c;

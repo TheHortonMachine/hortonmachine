@@ -21,7 +21,7 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.network.distancetooutlet.DistanceToOutlet;
+import org.jgrasstools.hortonmachine.modules.network.distancetooutlet.OmsDistanceToOutlet;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -29,7 +29,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestDistanceToOutlet extends HMTestCase {
 
     /**
-     * test {@link DistanceToOutlet} in the topological mode.
+     * test {@link OmsDistanceToOutlet} in the topological mode.
      * 
      */
     public void testDistanceToOutletTopological() {
@@ -38,7 +38,7 @@ public class TestDistanceToOutlet extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
-        DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
+        OmsDistanceToOutlet distanceToOutlet = new OmsDistanceToOutlet();
         distanceToOutlet.inFlow = flowCoverage;
         distanceToOutlet.pMode = 1;
         distanceToOutlet.process();
@@ -47,7 +47,7 @@ public class TestDistanceToOutlet extends HMTestCase {
     }
 
     /**
-     * test {@link DistanceToOutlet} in the simple mode.
+     * test {@link OmsDistanceToOutlet} in the simple mode.
      * 
      */
     public void testDistanceToOutletMetere() {
@@ -56,7 +56,7 @@ public class TestDistanceToOutlet extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
-        DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
+        OmsDistanceToOutlet distanceToOutlet = new OmsDistanceToOutlet();
         distanceToOutlet.inFlow = flowCoverage;
         distanceToOutlet.pMode = 0;
         distanceToOutlet.process();
@@ -65,7 +65,7 @@ public class TestDistanceToOutlet extends HMTestCase {
     }
     
     /**
-     * test {@link DistanceToOutlet} in 3d.
+     * test {@link OmsDistanceToOutlet} in 3d.
      * 
      */
     public void testDistanceToOutlet3D() throws Exception {
@@ -77,7 +77,7 @@ public class TestDistanceToOutlet extends HMTestCase {
         //get the pit map.
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
-        DistanceToOutlet distanceToOutlet = new DistanceToOutlet();
+        OmsDistanceToOutlet distanceToOutlet = new OmsDistanceToOutlet();
         //set the needed input. 
         distanceToOutlet.pMode = 0;
         distanceToOutlet.inFlow = flowCoverage;

@@ -46,14 +46,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Calculates the projection on the plane of the distance of each pixel from the outlet.")
-@Documentation("DistanceToOutlet.html")
+@Documentation("OmsDistanceToOutlet.html")
 @Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo")
 @Keywords("Geomorphology, OmsDrainDir")
 @Label(JGTConstants.NETWORK)
 @Name("d2o")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class DistanceToOutlet extends JGTModel {
+public class OmsDistanceToOutlet extends JGTModel {
     @Description("The map of depitted elevation, if it's null the models work in 2d mode.")
     @In
     public GridCoverage2D inPit = null;

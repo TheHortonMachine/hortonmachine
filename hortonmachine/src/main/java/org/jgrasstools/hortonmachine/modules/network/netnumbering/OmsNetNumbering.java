@@ -55,14 +55,14 @@ import org.opengis.feature.type.AttributeType;
 import com.vividsolutions.jts.geom.Geometry;
 
 @Description("Assigns the numbers to the network's links.")
-@Documentation("NetNumbering.html")
+@Documentation("OmsNetNumbering.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Network, SplitSubbasins")
 @Label(JGTConstants.NETWORK)
 @Name("netnum")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class NetNumbering extends JGTModel {
+public class OmsNetNumbering extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;

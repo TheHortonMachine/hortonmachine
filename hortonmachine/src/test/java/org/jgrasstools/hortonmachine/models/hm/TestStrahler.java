@@ -22,13 +22,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.network.strahler.Strahler;
+import org.jgrasstools.hortonmachine.modules.network.strahler.OmsStrahler;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Strahler} module.
+ * Test the {@link OmsStrahler} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestStrahler extends HMTestCase {
         double[][] netData = HMTestMaps.extractNet1Data;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
-        Strahler strahler = new Strahler();
+        OmsStrahler strahler = new OmsStrahler();
         strahler.inFlow = flowCoverage;
         strahler.inNet = netCoverage;
         strahler.pm = pm;

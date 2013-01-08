@@ -66,14 +66,14 @@ import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
 @Description("Transforms the network shape to a flow map.")
-@Documentation("Netshape2Flow.html")
+@Documentation("OmsNetshape2Flow.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Network, Flowdirections")
 @Label(JGTConstants.NETWORK)
 @Name("net2flow")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class Netshape2Flow extends JGTModel {
+public class OmsNetshape2Flow extends JGTModel {
 
     @Description("The network features.")
     @In

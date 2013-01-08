@@ -43,7 +43,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Description("Sums the values of a map downstream following the flowdirections.")
 @Documentation("SumDownStream.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Sumdownstream, Statistic, ExtractNetwork")
+@Keywords("Sumdownstream, Statistic, OmsExtractNetwork")
 @Label(JGTConstants.STATISTICS)
 @Name("sumdownstream")
 @Status(Status.CERTIFIED)

@@ -22,11 +22,11 @@
 //import org.geotools.data.simple.SimpleFeatureCollection;
 //import org.jgrasstools.gears.io.shapefile.ShapefileFeatureWriter;
 //import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-//import org.jgrasstools.hortonmachine.modules.network.pfafstetter.Pfafstetter;
+//import org.jgrasstools.hortonmachine.modules.network.pfafstetter.OmsPfafstetter;
 //import org.jgrasstools.hortonmachine.utils.HMTestCase;
 //
 ///**
-// * Test the {@link Pfafstetter} module.
+// * Test the {@link OmsPfafstetter} module.
 // * 
 // * @author Andrea Antonello (www.hydrologis.com)
 // */
@@ -42,7 +42,7 @@
 //
 //        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.err);
 //
-//        Pfafstetter pfafstetter = new Pfafstetter();
+//        OmsPfafstetter pfafstetter = new OmsPfafstetter();
 //        pfafstetter.pm = pm;
 //        pfafstetter.inFlow = flowCoverage;
 //        pfafstetter.inPit = pitCoverage;

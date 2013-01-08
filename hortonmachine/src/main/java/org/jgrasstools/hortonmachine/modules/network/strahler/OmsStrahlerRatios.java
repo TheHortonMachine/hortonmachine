@@ -52,20 +52,20 @@ import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsWate
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Calculates the Strahler ratios.")
-@Author(name = "Antonello Andrea, Silvia Francesci", contact = "http://www.hydrologis.com")
-@Keywords("Network, Strahler")
+@Description("Calculates the OmsStrahler ratios.")
+@Author(name = "Antonello Andrea, Silvia Franceschi", contact = "http://www.hydrologis.com")
+@Keywords("Network, OmsStrahler")
 @Label(JGTConstants.NETWORK)
 @Name("strahlerratio")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class StrahlerRatios extends JGTModel {
+public class OmsStrahlerRatios extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of Strahler.")
+    @Description("The map of OmsStrahler.")
     @In
     public GridCoverage2D inStrahler = null;
 
@@ -115,7 +115,7 @@ public class StrahlerRatios extends JGTModel {
             inStrahler.evaluate(new Point2D.Double(coordinate.x, coordinate.y), value);
 
             if (JGTConstants.isNovalue(value[0]) || value[0] < 1 || value[0] > maxStrahler) {
-                throw new ModelsIllegalargumentException("An incorrect value of Strahler was extracted from the map.", this);
+                throw new ModelsIllegalargumentException("An incorrect value of OmsStrahler was extracted from the map.", this);
             }
 
             int strahler = (int) value[0];
@@ -196,22 +196,21 @@ public class StrahlerRatios extends JGTModel {
 
     }
 
-     public static void main( String[] args ) throws Exception {
-    
-     String flow = "C:/dati_gis/grassdata/liguria_gbovest/def10m/cell/a.cravinaie_drain";
-     String strahler =
-     "C:/dati_gis/grassdata/liguria_gbovest/def10m/cell/a.cravinaie_strahler_50";
-     // String strahler = "D:/TMP/TESTSTRAHLER/liguria_gbovest/def10m/cell/a.cravinaie_strahler";
-     String net = "E:/lavori_tmp/2011_06_roggeri_cravinaie/shape/cravinaie_net_50_small.shp";
-    
-     StrahlerRatios ratios = new StrahlerRatios();
-     ratios.inFlow = RasterReader.readRaster(flow);
-     ratios.inStrahler = RasterReader.readRaster(strahler);
-     ratios.inNet = VectorReader.readVector(net);
-     ratios.process();
-     System.out.println(ratios.outBisfurcation);
-     System.out.println(ratios.outLength);
-     System.out.println(ratios.outArea);
-     }
+    public static void main( String[] args ) throws Exception {
+
+        String flow = "";
+        String strahler = "";
+        // String strahler = "";
+        String net = "";
+
+        OmsStrahlerRatios ratios = new OmsStrahlerRatios();
+        ratios.inFlow = RasterReader.readRaster(flow);
+        ratios.inStrahler = RasterReader.readRaster(strahler);
+        ratios.inNet = VectorReader.readVector(net);
+        ratios.process();
+        System.out.println(ratios.outBisfurcation);
+        System.out.println(ratios.outLength);
+        System.out.println(ratios.outArea);
+    }
 
 }

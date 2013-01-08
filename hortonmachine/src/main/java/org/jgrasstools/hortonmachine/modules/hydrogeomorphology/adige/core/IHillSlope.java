@@ -73,7 +73,7 @@ public interface IHillSlope extends Comparator<IHillSlope> {
     /**
      * Calculate the upstream area of the current hillslope.
      * 
-     * @param limit a list of Pfafstetter numbers that define a list of hillslopes that block the
+     * @param limit a list of OmsPfafstetter numbers that define a list of hillslopes that block the
      *        recursion for area calculation. Through that for example we can define areas between
      *        two hillslopes.
      * @return the upstream area
@@ -85,7 +85,7 @@ public interface IHillSlope extends Comparator<IHillSlope> {
     public abstract IHillSlope getFirstOfMaiorBasinElement();
 
     /**
-     * Tries to add an element upstream to the actual one. A check is done on Pfafstetter to
+     * Tries to add an element upstream to the actual one. A check is done on OmsPfafstetter to
      * understand if the passed element really is connected to the actual one. If it isn't the
      * element isn't added.
      * <p>
@@ -99,7 +99,7 @@ public interface IHillSlope extends Comparator<IHillSlope> {
     public abstract boolean addConnectedUpstreamElementWithCheck( IHillSlope element );
 
     /**
-     * Tries to add an element downstream to the actual one. A check is done on Pfafstetter to
+     * Tries to add an element downstream to the actual one. A check is done on OmsPfafstetter to
      * understand if the passed element really is connected to the actual one. If it isn't the
      * element isn't added.
      * 
