@@ -22,13 +22,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.RescaledDistance;
+import org.jgrasstools.hortonmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test {@link RescaledDistance}.
+ * Test {@link OmsRescaledDistance}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -43,7 +43,7 @@ public class TestRescaledDistance extends HMTestCase {
         double[][] netData = HMTestMaps.extractNet0Data;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
-        RescaledDistance rescaledDistance = new RescaledDistance();
+        OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
         rescaledDistance.pRatio = 0.3;
@@ -66,7 +66,7 @@ public class TestRescaledDistance extends HMTestCase {
         double[][] elevData = HMTestMaps.mapData;
         GridCoverage2D elevCoverage = CoverageUtilities.buildCoverage("elev", elevData, envelopeParams, crs, true);
 
-        RescaledDistance rescaledDistance = new RescaledDistance();
+        OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
         rescaledDistance.inFlow = flowCoverage;
         rescaledDistance.inNet = netCoverage;
         rescaledDistance.inElev = elevCoverage;

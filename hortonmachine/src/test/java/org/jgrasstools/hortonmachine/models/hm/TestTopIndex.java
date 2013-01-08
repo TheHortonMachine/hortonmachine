@@ -21,12 +21,12 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.basin.topindex.TopIndex;
+import org.jgrasstools.hortonmachine.modules.basin.topindex.OmsTopIndex;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
- * Test {@link TopIndex}.
+ * Test {@link OmsTopIndex}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestTopIndex extends HMTestCase {
         double[][] slopeData = HMTestMaps.slopeData;
         GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("plan", slopeData, envelopeParams, crs, true);
 
-        TopIndex topindex = new TopIndex();
+        OmsTopIndex topindex = new OmsTopIndex();
         topindex.inTca = tcaCoverage;
         topindex.inSlope = slopeCoverage;
         topindex.pm = pm;

@@ -46,14 +46,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Topographic index calculator.")
-@Documentation("TopIndex.html")
+@Documentation("OmsTopIndex.html")
 @Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Hydrology")
 @Label(JGTConstants.BASIN)
 @Name("topindex")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class TopIndex extends JGTModel {
+public class OmsTopIndex extends JGTModel {
 
     @Description("The map of the contributing area.")
     @In
