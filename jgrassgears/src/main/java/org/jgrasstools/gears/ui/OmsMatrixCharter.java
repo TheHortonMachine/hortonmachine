@@ -62,7 +62,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 @UI(JGTConstants.HIDE_UI_HINT)
 @Name("matrixcharter")
 @License("General Public License Version 3 (GPLv3)")
-public class MatrixCharter extends JGTModel {
+public class OmsMatrixCharter extends JGTModel {
     @Description("The matrix to chart.")
     @In
     public double[][] inData;

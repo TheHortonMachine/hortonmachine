@@ -35,6 +35,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -63,6 +64,7 @@ import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.type.GeometryDescriptor;
@@ -70,13 +72,14 @@ import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 
 @Description("A simple geodata viewer.")
-@Documentation("MapsViewer.html")
+@Documentation("OmsMapsViewer.html")
 @Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Coverage, Raster, Viewer, UI")
 @Status(Status.CERTIFIED)
+@UI(JGTConstants.HIDE_UI_HINT)
 @Name("mapsviewer")
 @License("General Public License Version 3 (GPLv3)")
-public class MapsViewer {
+public class OmsMapsViewer {
     @Description("The rasters to visualize.")
     @In
     public GridCoverage2D[] inRasters = new GridCoverage2D[0];
@@ -123,12 +126,12 @@ public class MapsViewer {
                 if (sldFile.exists()) {
                     SLDParser stylereader = new SLDParser(sf, sldFile);
                     StyledLayerDescriptor sld = stylereader.parseSLD();
-                    
+
                     namedStyle = SLD.defaultStyle(sld);
                     SLDTransformer aTransformer = new SLDTransformer();
                     aTransformer.setIndentation(4);
                     String xml = ""; //$NON-NLS-1$
-                        xml = aTransformer.transform(sld);
+                    xml = aTransformer.transform(sld);
                     System.out.println(xml);
                 }
             }
@@ -283,7 +286,7 @@ public class MapsViewer {
         new Thread(){
             @Override
             public void run() {
-                MapsViewer viewer = new MapsViewer();
+                OmsMapsViewer viewer = new OmsMapsViewer();
                 if (raster != null) {
                     viewer.inRasters = new GridCoverage2D[]{raster};
                 }
@@ -300,12 +303,12 @@ public class MapsViewer {
 
     }
 
-    @SuppressWarnings("nls")
-    public static void main( String[] args ) throws Exception {
-        GridCoverage2D coverage = OmsRasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
-        SimpleFeatureCollection shapefile = OmsShapefileFeatureReader
-                .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
-        displayRasterAndFeatures(coverage, shapefile);
-    }
+    // @SuppressWarnings("nls")
+    // public static void main( String[] args ) throws Exception {
+    // GridCoverage2D coverage = OmsRasterReader.readRaster("/home/moovida/TMP/byumba_basins.asc");
+    // SimpleFeatureCollection shapefile = OmsShapefileFeatureReader
+    // .readShapefile("/home/moovida/TMP/byumba_extrbasins.shp");
+    // displayRasterAndFeatures(coverage, shapefile);
+    // }
 
 }

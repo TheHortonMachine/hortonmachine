@@ -7,7 +7,7 @@ package org.jgrasstools.gears.utils;
  * Versions consist of a 3-part version number: <code>major.minor.patch</code>
  * An optional release status string may be present in the string version of
  * the version.
- * 
+ * <p>Copied from JTSVersion.
  */
 public class JGTVersion {
 
@@ -29,7 +29,7 @@ public class JGTVersion {
     /**
      * The patch version number.
      */
-    public static final int PATCH = 3;
+    public static final int PATCH = 7;
 
     /**
      * An optional string providing further release info (such as "alpha 1");

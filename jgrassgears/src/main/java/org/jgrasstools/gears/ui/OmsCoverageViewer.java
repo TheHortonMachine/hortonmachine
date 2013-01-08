@@ -55,7 +55,7 @@ import org.opengis.filter.expression.Expression;
 @Status(Status.CERTIFIED)
 @UI(JGTConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class CoverageViewer {
+public class OmsCoverageViewer {
     @Description("The coverage to visualize.")
     @In
     public GridCoverage2D raster = null;
