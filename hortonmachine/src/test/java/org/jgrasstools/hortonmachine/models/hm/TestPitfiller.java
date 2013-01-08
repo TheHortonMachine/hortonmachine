@@ -22,13 +22,13 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Pitfiller} module.
+ * Test the {@link OmsPitfiller} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -40,7 +40,7 @@ public class TestPitfiller extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        Pitfiller pitfiller = new Pitfiller();
+        OmsPitfiller pitfiller = new OmsPitfiller();
         pitfiller.inElev = elevationCoverage;
         pitfiller.pm = pm;
         pitfiller.process();

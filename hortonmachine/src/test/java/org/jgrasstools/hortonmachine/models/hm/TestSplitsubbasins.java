@@ -21,13 +21,13 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.splitsubbasin.SplitSubbasins;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.splitsubbasin.OmsSplitSubbasins;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link SplitSubbasins} module.
+ * Test the {@link OmsSplitSubbasins} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,7 +42,7 @@ public class TestSplitsubbasins extends HMTestCase {
         double[][] hackstreamData = HMTestMaps.hackstream;
         GridCoverage2D hackstreamCoverage = CoverageUtilities.buildCoverage("drain", hackstreamData, envelopeParams, crs, true);
 
-        SplitSubbasins pitfiller = new SplitSubbasins();
+        OmsSplitSubbasins pitfiller = new OmsSplitSubbasins();
         pitfiller.inFlow = drainCoverage;
         pitfiller.inHack = hackstreamCoverage;
         pitfiller.pHackorder = 3.0;

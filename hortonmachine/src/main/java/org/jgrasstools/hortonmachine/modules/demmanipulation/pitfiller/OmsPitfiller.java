@@ -46,14 +46,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("It fills the depression points present within a DEM.")
-@Documentation("Pitfiller.html")
+@Documentation("OmsPitfiller.html")
 @Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, DrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("pit")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Pitfiller extends JGTModel {
+public class OmsPitfiller extends JGTModel {
     @Description("The map of digital elevation model (DEM).")
     @In
     public GridCoverage2D inElev;
@@ -445,7 +445,7 @@ public class Pitfiller extends JGTModel {
                 nt = (int) (np1 * (1 - per / 100));
             }
         }
-        pm.message("Pitfiller finished...");
+        pm.message("OmsPitfiller finished...");
     }
 
     /**

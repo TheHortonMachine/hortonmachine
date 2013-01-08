@@ -23,13 +23,13 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.rasterreader.RasterReader;
 import org.jgrasstools.gears.io.rasterwriter.RasterWriter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets.Markoutlets;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets.OmsMarkoutlets;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Markoutlets} module.
+ * Test the {@link OmsMarkoutlets} module.
  * 
  * @author Giuseppe Formetta ()
  */
@@ -42,7 +42,7 @@ public class TestMarkoutlets extends HMTestCase {
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Markoutlets moutlet = new Markoutlets();
+        OmsMarkoutlets moutlet = new OmsMarkoutlets();
 
         moutlet.inFlow = flowCoverage;
         moutlet.pm = pm;

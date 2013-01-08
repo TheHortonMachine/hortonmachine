@@ -90,7 +90,7 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 @Name("extractbasin")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
-public class ExtractBasin extends JGTModel {
+public class OmsExtractBasin extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
@@ -383,7 +383,7 @@ public class ExtractBasin extends JGTModel {
         String outOutletPath = shapeBase + "eb_outlet.shp";
         String outVectorBasinPath = shapeBase + "eb_basin_smoothed.shp";
 
-        ExtractBasin eb = new ExtractBasin();
+        OmsExtractBasin eb = new OmsExtractBasin();
         eb.pNorth = 6862353.979338094;
         eb.pEast = 3520253.4090277995;
         eb.pValue = 1.0;

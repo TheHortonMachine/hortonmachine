@@ -43,14 +43,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.")
-@Documentation("Markoutlets.html")
+@Documentation("OmsMarkoutlets.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia", contact = "http://www.hydrologis.com")
 @Keywords("Outlets, Dem, Raster, FlowDirections, DrainDir")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("markoutlets")
 @Status(Status.TESTED)
 @License("General Public License Version 3 (GPLv3)")
-public class Markoutlets extends JGTModel {
+public class OmsMarkoutlets extends JGTModel {
     @Description("The map of flowdirections.")
     @In
     public GridCoverage2D inFlow = null;

@@ -48,14 +48,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
 @Description("Extract the watershed for a defined outlet (ported from GRASS r.wateroutlet).")
-@Documentation("Wateroutlet.html")
+@Documentation("OmsWateroutlet.html")
 @Author(name = "Charles Ehlschlaeger, Andrea Antonello", contact = "US Army Construction Engineering Research Laboratory, http://www.hydrologis.com")
 @Keywords("Dem manipulation, Geomorphology, FlowDirections")
 @Label(JGTConstants.DEMMANIPULATION)
 @Name("wateroutlet")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Wateroutlet extends JGTModel {
+public class OmsWateroutlet extends JGTModel {
     @Description("The northern coordinate of the watershed outlet.")
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In

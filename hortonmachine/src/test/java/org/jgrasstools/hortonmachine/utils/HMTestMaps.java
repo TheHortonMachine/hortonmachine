@@ -23,7 +23,7 @@ import static java.lang.Double.NaN;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.Pitfiller;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.DrainDir;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.FlowDirections;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.ExtractNetwork;
@@ -77,7 +77,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Input data for the {@link Pitfiller} module.
+     * Input data for the {@link OmsPitfiller} module.
      */
     public static double[][] pitData = new double[][]{ //
     /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
@@ -91,7 +91,7 @@ public class HMTestMaps {
     };
 
     /**
-     * Output data of the {@link Pitfiller} module.
+     * Output data of the {@link OmsPitfiller} module.
      */
     public static double[][] outPitData = new double[][]{ //
     /*    */{800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //

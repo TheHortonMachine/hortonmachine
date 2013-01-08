@@ -47,7 +47,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.summary.RasterSummary;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -160,7 +160,7 @@ public class StrahlerRatios extends JGTModel {
             for( FeatureMate featureMate : mates1 ) {
                 Coordinate[] coordinates = featureMate.getGeometry().getCoordinates();
                 Coordinate c = coordinates[coordinates.length - 2];
-                Wateroutlet wateroutlet = new Wateroutlet();
+                OmsWateroutlet wateroutlet = new OmsWateroutlet();
                 wateroutlet.inFlow = inFlow;
                 wateroutlet.pEast = c.x;
                 wateroutlet.pNorth = c.y;
@@ -174,7 +174,7 @@ public class StrahlerRatios extends JGTModel {
             for( FeatureMate featureMate : mates2 ) {
                 Coordinate[] coordinates = featureMate.getGeometry().getCoordinates();
                 Coordinate c = coordinates[coordinates.length - 2];
-                Wateroutlet wateroutlet = new Wateroutlet();
+                OmsWateroutlet wateroutlet = new OmsWateroutlet();
                 wateroutlet.inFlow = inFlow;
                 wateroutlet.pEast = c.x;
                 wateroutlet.pNorth = c.y;

@@ -22,14 +22,14 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.ExtractBasin;
-import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.Wateroutlet;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
+import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test the {@link Wateroutlet} module.
+ * Test the {@link OmsWateroutlet} module.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -41,7 +41,7 @@ public class TestWateroutlet extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        Wateroutlet wateroutlet = new Wateroutlet();
+        OmsWateroutlet wateroutlet = new OmsWateroutlet();
         wateroutlet.pm = pm;
         wateroutlet.inFlow = flowCoverage;
         wateroutlet.pNorth = 5139885.0;
@@ -64,7 +64,7 @@ public class TestWateroutlet extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        ExtractBasin extractBasin = new ExtractBasin();
+        OmsExtractBasin extractBasin = new OmsExtractBasin();
         extractBasin.pm = pm;
         extractBasin.inFlow = flowCoverage;
         extractBasin.pNorth = 5139885.0;

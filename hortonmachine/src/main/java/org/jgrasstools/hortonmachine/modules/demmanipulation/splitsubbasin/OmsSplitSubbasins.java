@@ -57,7 +57,7 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 @Name("splitsubbasins")
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class SplitSubbasins extends JGTModel {
+public class OmsSplitSubbasins extends JGTModel {
     @Description("The map of flow direction.")
     @In
     public GridCoverage2D inFlow = null;
