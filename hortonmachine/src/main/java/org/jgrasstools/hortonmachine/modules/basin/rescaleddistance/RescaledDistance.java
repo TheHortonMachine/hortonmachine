@@ -52,14 +52,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 @Description("Calculates the rescaled distance of each pixel from the outlet.")
-@Documentation("OmsRescaledDistance.html")
+@Documentation("RescaledDistance.html")
 @Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Basin, Geomorphology, D2O")
 @Label(JGTConstants.BASIN)
 @Name("rescdist")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class OmsRescaledDistance extends JGTModel {
+public class RescaledDistance extends JGTModel {
 
     @Description("The map of flowdirections.")
     @In
@@ -142,7 +142,7 @@ public class OmsRescaledDistance extends JGTModel {
         }
         pm.done();
 
-        outRescaled = CoverageUtilities.buildCoverage("OmsRescaledDistance", rescaledWR, regionMap,
+        outRescaled = CoverageUtilities.buildCoverage("RescaledDistance", rescaledWR, regionMap,
                 inFlow.getCoordinateReferenceSystem());
     }
 

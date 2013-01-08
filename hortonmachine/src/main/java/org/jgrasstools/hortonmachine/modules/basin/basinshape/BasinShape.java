@@ -66,14 +66,14 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
 @Description("Creates a Feature collection of the subbasins created with the netnumbering module.")
-@Documentation("OmsBasinShape.html")
+@Documentation("BasinShape.html")
 @Author(name = "Erica Ghesla, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Basin, Geomorphology")
 @Label(JGTConstants.BASIN)
 @Name("basinshape")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class OmsBasinShape extends JGTModel {
+public class BasinShape extends JGTModel {
 
     @Description("The elevation map.")
     @In

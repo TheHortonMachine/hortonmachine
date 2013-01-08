@@ -23,7 +23,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.modules.basin.basinshape.OmsBasinShape;
+import org.jgrasstools.hortonmachine.modules.basin.basinshape.BasinShape;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
 import org.opengis.feature.simple.SimpleFeature;
@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 /**
- * Test {@link OmsBasinShape}.
+ * Test {@link BasinShape}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -51,7 +51,7 @@ public class TestBasinShape extends HMTestCase {
         double[][] basinsData = HMTestMaps.basinShapeData;
         GridCoverage2D basinsCoverage = CoverageUtilities.buildCoverage("basins", basinsData, envelopeParams, crs, true);
 
-        OmsBasinShape basin = new OmsBasinShape();
+        BasinShape basin = new BasinShape();
         basin.inElev = pitCoverage;
         basin.inBasins = basinsCoverage;
         basin.pm = pm;
