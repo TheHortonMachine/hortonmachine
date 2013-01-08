@@ -17,24 +17,6 @@
  */
 package org.jgrasstools.modules;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.acos;
-import static java.lang.Math.atan;
-import static java.lang.Math.cos;
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
-import java.awt.image.WritableRaster;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -48,13 +30,9 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
 
 @Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
 @Documentation("Aspect.html")
@@ -83,8 +61,6 @@ public class Aspect extends JGTModel {
     @In
     public String outAspect = null;
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outAspect == null, doReset)) {
@@ -94,130 +70,14 @@ public class Aspect extends JGTModel {
 
         GridCoverage2D inElevGC = getRaster(inElev);
 
-        double radtodeg = NumericsUtilities.RADTODEG;
-        if (doRadiants) {
-            radtodeg = 1.0;
-        }
+        OmsAspect aspect = new OmsAspect();
+        aspect.inElev = inElevGC;
+        aspect.doRound = true;
+        aspect.pm = pm;
+        aspect.process();
+        GridCoverage2D aspectCoverage = aspect.outAspect;
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElevGC);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-        double xRes = regionMap.getXres();
-        double yRes = regionMap.getYres();
-
-        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElevGC);
-
-        WritableRaster aspectWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter aspectIter = RandomIterFactory.createWritable(aspectWR, null);
-
-        pm.beginTask(msg.message("aspect.calculating"), rows);
-
-        // Cycling into the valid region.
-        for( int r = 1; r < rows - 1; r++ ) {
-            for( int c = 1; c < cols - 1; c++ ) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, c, r);
-                double aspect = calculateAspect(node, radtodeg, doRound);
-                aspectIter.setSample(c, r, 0, aspect);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        CoverageUtilities.setNovalueBorder(aspectWR);
-        GridCoverage2D outAspectGC = CoverageUtilities.buildCoverage("aspect", aspectWR, regionMap,
-                inElevGC.getCoordinateReferenceSystem());
-        dumpRaster(outAspectGC, outAspect);
-
-    }
-
-    /**
-     * Calculates the aspect in a given {@link GridNode}.
-     * 
-     * @param node the current grid node.
-     * @param radtodeg radiants to degrees conversion factor. Use {@link NumericsUtilities#RADTODEG} if you 
-     *                 want degrees, use 1 if you want radiants. 
-     * @param doRound if <code>true</code>, values are round to integer.
-     * @return the value of aspect.
-     */
-    public static double calculateAspect( GridNode node, double radtodeg, boolean doRound ) {
-        double aspect = doubleNovalue;
-        // the value of the x and y derivative
-        double aData = 0.0;
-        double bData = 0.0;
-        double xRes = node.xRes;
-        double yRes = node.yRes;
-        double centralValue = node.elevation;
-        double nValue = node.getNorthElev();
-        double sValue = node.getSouthElev();
-        double wValue = node.getWestElev();
-        double eValue = node.getEastElev();
-
-        if (!isNovalue(centralValue)) {
-            boolean sIsNovalue = isNovalue(sValue);
-            boolean nIsNovalue = isNovalue(nValue);
-            boolean wIsNovalue = isNovalue(wValue);
-            boolean eIsNovalue = isNovalue(eValue);
-
-            if (!sIsNovalue && !nIsNovalue) {
-                aData = atan((nValue - sValue) / (2 * yRes));
-            } else if (nIsNovalue && !sIsNovalue) {
-                aData = atan((centralValue - sValue) / (yRes));
-            } else if (!nIsNovalue && sIsNovalue) {
-                aData = atan((nValue - centralValue) / (yRes));
-            } else if (nIsNovalue && sIsNovalue) {
-                aData = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-            if (!wIsNovalue && !eIsNovalue) {
-                bData = atan((wValue - eValue) / (2 * xRes));
-            } else if (wIsNovalue && !eIsNovalue) {
-                bData = atan((centralValue - eValue) / (xRes));
-            } else if (!wIsNovalue && eIsNovalue) {
-                bData = atan((wValue - centralValue) / (xRes));
-            } else if (wIsNovalue && eIsNovalue) {
-                bData = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-
-            double delta = 0.0;
-            // calculate the aspect value
-            if (aData < 0 && bData > 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = delta * radtodeg;
-            } else if (aData > 0 && bData > 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (PI - delta) * radtodeg;
-            } else if (aData > 0 && bData < 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (PI + delta) * radtodeg;
-            } else if (aData < 0 && bData < 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (2 * PI - delta) * radtodeg;
-            } else if (aData == 0 && bData > 0) {
-                aspect = (PI / 2.) * radtodeg;
-            } else if (aData == 0 && bData < 0) {
-                aspect = (PI * 3. / 2.) * radtodeg;
-            } else if (aData > 0 && bData == 0) {
-                aspect = PI * radtodeg;
-            } else if (aData < 0 && bData == 0) {
-                aspect = 2.0 * PI * radtodeg;
-            } else if (aData == 0 && bData == 0) {
-                aspect = 0.0;
-            } else if (isNovalue(aData) || isNovalue(bData)) {
-                aspect = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-            if (doRound) {
-                aspect = round(aspect);
-            }
-        }
-        return aspect;
+        dumpRaster(aspectCoverage, outAspect);
     }
 
 }

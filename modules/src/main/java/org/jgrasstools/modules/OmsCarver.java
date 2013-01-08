@@ -250,7 +250,7 @@ public class OmsCarver extends JGTModel {
     // bufferArea);
     // outPoints.addAll(controlPoints);
     //
-    // OmsBobTheBuilder bob = new OmsBobTheBuilder();
+    // BobTheBuilder bob = new BobTheBuilder();
     // bob.pm = new DummyProgressMonitor();// pm;
     // bob.inRaster = inRaster;
     // bob.inArea = areaFC;

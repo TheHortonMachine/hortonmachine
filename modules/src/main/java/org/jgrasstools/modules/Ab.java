@@ -16,15 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.modules;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
-import java.awt.image.WritableRaster;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -40,9 +31,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
+import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 
 @Description("Calculates the draining area per length unit.")
 @Documentation("Ab.html")
@@ -73,8 +62,6 @@ public class Ab extends JGTModel {
     @In
     public String outB = null;
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outAb == null, doReset)) {
@@ -85,61 +72,14 @@ public class Ab extends JGTModel {
         GridCoverage2D inTcaGC = getRaster(inTca);
         GridCoverage2D inPlanGC = getRaster(inPlan);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTcaGC);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
-        double xRes = regionMap.getXres();
+        OmsAb ab = new OmsAb();
+        ab.inTca = inTcaGC;
+        ab.inPlan = inPlanGC;
+        ab.pm = pm;
+        ab.process();
 
-        RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTcaGC);
-        RandomIter planIter = CoverageUtilities.getRandomIterator(inPlanGC);
-
-        WritableRaster alungWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
-        WritableRandomIter alungIter = RandomIterFactory.createWritable(alungWR, null);
-        WritableRaster bWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, null);
-        WritableRandomIter bIter = RandomIterFactory.createWritable(bWR, null);
-
-        pm.beginTask(msg.message("ab.calculating"), nRows);
-        for( int r = 0; r < nRows; r++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int c = 0; c < nCols; c++ ) {
-                double planSample = planIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(planSample) && planSample != 0.0) {
-                    if (xRes > 1 / planSample && planSample >= 0.0) {
-                        bIter.setSample(c, r, 0, 0.1 * xRes);
-                    } else if (xRes > Math.abs(1 / planSample) && planSample < 0.0) {
-                        bIter.setSample(c, r, 0, xRes + 0.9 * xRes);
-                    } else {
-                        double bSample = 2 * Math.asin(xRes / (2 * (1 / planSample))) * (1 / planSample - xRes);
-                        bIter.setSample(c, r, 0, bSample);
-                        if (planSample >= 0.0 && bSample < 0.1 * xRes) {
-                            bIter.setSample(c, r, 0, 0.1 * xRes);
-                        }
-                        if (planSample < 0.0 && bSample > (xRes + 0.9 * xRes)) {
-                            bIter.setSample(c, r, 0, xRes + 0.9 * xRes);
-                        }
-                    }
-                }
-                if (planSample == 0.0) {
-                    bIter.setSample(c, r, 0, xRes);
-                }
-                alungIter.setSample(c, r, 0, tcaIter.getSampleDouble(c, r, 0) * xRes * xRes / bIter.getSampleDouble(c, r, 0));
-                if (isNovalue(planSample)) {
-                    alungIter.setSample(c, r, 0, doubleNovalue);
-                    bIter.setSample(c, r, 0, doubleNovalue);
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        GridCoverage2D outAbGC = CoverageUtilities.buildCoverage("alung", alungWR, regionMap,
-                inTcaGC.getCoordinateReferenceSystem());
-        GridCoverage2D outBGC = CoverageUtilities.buildCoverage("b", bWR, regionMap, inTcaGC.getCoordinateReferenceSystem());
-
-        dumpRaster(outAbGC, outAb);
-        dumpRaster(outBGC, outB);
+        dumpRaster(ab.outAb, outAb);
+        dumpRaster(ab.outB, outB);
 
     }
 }
