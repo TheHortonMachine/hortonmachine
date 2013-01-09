@@ -92,16 +92,6 @@ public class Cb extends JGTModel {
         cb.pLast = pLast;
         cb.process();
         outCb = cb.outCb;
-
-        // print to console
-        for( int r = 0; r < outCb.length; r++ ) {
-            StringBuilder sb = new StringBuilder();
-            for( int c = 0; c < outCb[0].length; c++ ) {
-                sb.append(outCb[r][c] + "\t");
-            }
-            sb.append("\n");
-            pm.message(sb.toString());
-        }
     }
 
 }
