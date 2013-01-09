@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.v.vectorreprojector;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_doLenient_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_doLongitudeFirst_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pForceCode_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -39,39 +54,39 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Module for vector reprojection.")
-@Documentation("OmsVectorReprojector.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("CRS, Reprojection, Vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vreproject")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORREPROJECTOR_DESCRIPTION)
+@Documentation(OMSVECTORREPROJECTOR_DOCUMENTATION)
+@Author(name = OMSVECTORREPROJECTOR_AUTHORNAMES, contact = OMSVECTORREPROJECTOR_AUTHORCONTACTS)
+@Keywords(OMSVECTORREPROJECTOR_KEYWORDS)
+@Label(OMSVECTORREPROJECTOR_LABEL)
+@Name(OMSVECTORREPROJECTOR_NAME)
+@Status(OMSVECTORREPROJECTOR_STATUS)
+@License(OMSVECTORREPROJECTOR_LICENSE)
 public class OmsVectorReprojector extends JGTModel {
 
-    @Description("The vector that has to be reprojected.")
+    @Description(OMSVECTORREPROJECTOR_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSVECTORREPROJECTOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("A flag to modify the axes order.")
+    @Description(OMSVECTORREPROJECTOR_doLongitudeFirst_DESCRIPTION)
     @In
     public Boolean doLongitudeFirst = null;
 
-    @Description("A coordinate reference system on which to force the input, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSVECTORREPROJECTOR_pForceCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pForceCode;
 
-    @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
+    @Description(OMSVECTORREPROJECTOR_doLenient_DESCRIPTION)
     @In
     public boolean doLenient = true;
 
-    @Description("The output reprojected vector.")
+    @Description(OMSVECTORREPROJECTOR_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 
@@ -84,7 +99,7 @@ public class OmsVectorReprojector extends JGTModel {
         CoordinateReferenceSystem targetCrs = null;
         if (doLongitudeFirst != null) {
             targetCrs = CRS.decode(pCode, doLongitudeFirst);
-        }else{
+        } else {
             targetCrs = CRS.decode(pCode);
         }
         if (pForceCode != null) {

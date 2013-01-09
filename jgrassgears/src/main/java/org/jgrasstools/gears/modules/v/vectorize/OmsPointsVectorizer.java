@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.modules.v.vectorize;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_fDefault_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_outVector_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
@@ -25,6 +37,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -41,7 +54,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.opengis.feature.simple.SimpleFeature;
@@ -52,24 +64,25 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Module that creates a points vector layer from raster values.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.EXPERIMENTAL)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("pvectorizer")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSPOINTSVECTORIZER_DESCRIPTION)
+@Documentation(OMSPOINTSVECTORIZER_DOCUMENTATION)
+@Author(name = OMSPOINTSVECTORIZER_AUTHORNAMES, contact = OMSPOINTSVECTORIZER_AUTHORCONTACTS)
+@Keywords(OMSPOINTSVECTORIZER_KEYWORDS)
+@Label(OMSPOINTSVECTORIZER_LABEL)
+@Name(OMSPOINTSVECTORIZER_NAME)
+@Status(OMSPOINTSVECTORIZER_STATUS)
+@License(OMSPOINTSVECTORIZER_LICENSE)
 public class OmsPointsVectorizer extends JGTModel {
 
-    @Description("The raster that has to be converted.")
+    @Description(OMSPOINTSVECTORIZER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The field name to use as a name for the raster value in the vector.")
+    @Description(OMSPOINTSVECTORIZER_fDefault_DESCRIPTION)
     @In
     public String fDefault = "value";
 
-    @Description("The extracted vector.")
+    @Description(OMSPOINTSVECTORIZER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

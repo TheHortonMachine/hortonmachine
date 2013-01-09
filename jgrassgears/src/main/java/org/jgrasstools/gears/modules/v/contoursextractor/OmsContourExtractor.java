@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.v.contoursextractor;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMax_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMin_DESCRIPTION;
+
 import java.awt.geom.AffineTransform;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +60,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jaitools.media.jai.contour.ContourDescriptor;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -55,34 +69,33 @@ import org.opengis.metadata.spatial.PixelOrientation;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
-@Description("Module that extracts contour lines from a raster.")
-@Documentation("OmsContourExtractor.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.EXPERIMENTAL)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("contourextract")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSCONTOUREXTRACTOR_DESCRIPTION)
+@Documentation(OMSCONTOUREXTRACTOR_DOCUMENTATION)
+@Author(name = OMSCONTOUREXTRACTOR_AUTHORNAMES, contact = OMSCONTOUREXTRACTOR_AUTHORCONTACTS)
+@Keywords(OMSCONTOUREXTRACTOR_KEYWORDS)
+@Label(OMSCONTOUREXTRACTOR_LABEL)
+@Name(OMSCONTOUREXTRACTOR_NAME)
+@Status(OMSCONTOUREXTRACTOR_STATUS)
+@License(OMSCONTOUREXTRACTOR_LICENSE)
 public class OmsContourExtractor extends JGTModel {
 
-    @Description("The raster on which to calculate the contours.")
+    @Description(OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION)
     @In
     public GridCoverage2D inCoverage;
 
-    @Description("The minimum value for the contours.")
+    @Description(OMSCONTOUREXTRACTOR_pMin_DESCRIPTION)
     @In
     public Double pMin;
 
-    @Description("The maximum value for the contours.")
+    @Description(OMSCONTOUREXTRACTOR_pMax_DESCRIPTION)
     @In
     public Double pMax;
 
-    @Description("The contours interval.")
+    @Description(OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION)
     @In
     public Double pInterval;
 
-    @Description("The generated contour lines vector.")
+    @Description(OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outGeodata = null;
 

@@ -17,6 +17,24 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_attributesVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_contourVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_lineVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pointsVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_polygonVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_textVector_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
@@ -45,46 +63,47 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Module to convert dxf files to geotools vecotors.")
-@Documentation("OmsDwgConverter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, OmsDxfConverter, Feature, Vector, Reading")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@Name("dwgimport")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDWGCONVERTER_DESCRIPTION)
+@Documentation(OMSDWGCONVERTER_DOCUMENTATION)
+@Author(name = OMSDWGCONVERTER_AUTHORNAMES, contact = OMSDWGCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSDWGCONVERTER_KEYWORDS)
+@Label(OMSDWGCONVERTER_LABEL)
+@Name(OMSDWGCONVERTER_NAME)
+@Status(OMSDWGCONVERTER_STATUS)
+@License(OMSDWGCONVERTER_LICENSE)
 public class OmsDwgConverter extends JGTModel {
-    @Description("The dwg input file.")
+
+    @Description(OMSDWGCONVERTER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @Description(OMSDWGCONVERTER_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The output point vector.")
+    @Description(OMSDWGCONVERTER_pointsVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection pointsVector = null;
 
-    @Description("The output line vector.")
+    @Description(OMSDWGCONVERTER_lineVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection lineVector = null;
 
-    @Description("The output polygon vector.")
+    @Description(OMSDWGCONVERTER_polygonVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection polygonVector = null;
 
-    @Description("The output text vector.")
+    @Description(OMSDWGCONVERTER_textVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection textVector;
 
-    @Description("The output attributes vector.")
+    @Description(OMSDWGCONVERTER_attributesVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection attributesVector;
 
-    @Description("The output contour vector.")
+    @Description(OMSDWGCONVERTER_contourVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection contourVector;
 

@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.i18n;
 
-import oms3.annotations.Description;
 
 /**
  * Messages for the JGrassGears.
@@ -47,7 +46,7 @@ public class GearsMessages {
     public static final String OMSVECTORCONVERTER_DOCUMENTATION = "";
     public static final String OMSVECTORCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
     public static final String OMSVECTORCONVERTER_LABEL = "Vector Processing";
-    public static final String OMSVECTORCONVERTER_NAME = "";
+    public static final String OMSVECTORCONVERTER_NAME = "vconvert";
     public static final int OMSVECTORCONVERTER_STATUS = 5;
     public static final String OMSVECTORCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSVECTORCONVERTER_AUTHORNAMES = "Andrea Antonello";
@@ -523,7 +522,7 @@ public class GearsMessages {
     public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
     public static final String OMSVECTOROVERLAYOPERATORS_DOCUMENTATION = "";
     public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
-    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = "";
+    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = "Vector Processing";
     public static final String OMSVECTOROVERLAYOPERATORS_NAME = "overlay";
     public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 5;
     public static final String OMSVECTOROVERLAYOPERATORS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -642,7 +641,7 @@ public class GearsMessages {
     public static final String OMSBUFFER_DESCRIPTION = "A module that performs a buffer operation on a vector layer.";
     public static final String OMSBUFFER_DOCUMENTATION = "";
     public static final String OMSBUFFER_KEYWORDS = "JTS, OmsBuffer";
-    public static final String OMSBUFFER_LABEL = "";
+    public static final String OMSBUFFER_LABEL = "Vector Processing";
     public static final String OMSBUFFER_NAME = "vbuffer";
     public static final int OMSBUFFER_STATUS = 5;
     public static final String OMSBUFFER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";

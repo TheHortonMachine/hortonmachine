@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.vectorclipper;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inClipper_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_inMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_outMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION;
+
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -26,9 +40,11 @@ import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -49,27 +65,29 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description("A vector clipping module.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("JTS, Clip, Vector")
-@Status(Status.EXPERIMENTAL)
-@Name("clipper")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSVECTORCLIPPER_DESCRIPTION)
+@Documentation(OMSVECTORCLIPPER_DOCUMENTATION)
+@Author(name = OMSVECTORCLIPPER_AUTHORNAMES, contact = OMSVECTORCLIPPER_AUTHORCONTACTS)
+@Keywords(OMSVECTORCLIPPER_KEYWORDS)
+@Label(OMSVECTORCLIPPER_LABEL)
+@Name(OMSVECTORCLIPPER_NAME)
+@Status(OMSVECTORCLIPPER_STATUS)
+@License(OMSVECTORCLIPPER_LICENSE)
 public class OmsVectorClipper extends JGTModel {
 
-    @Description("The vector map to be clipped.")
+    @Description(OMSVECTORCLIPPER_inMap_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description("The clipping vector map.")
+    @Description(OMSVECTORCLIPPER_inClipper_DESCRIPTION)
     @In
     public SimpleFeatureCollection inClipper = null;
 
-    @Description("Max threads to use (default 1)")
+    @Description(OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION)
     @In
     public int pMaxThreads = 1;
 
-    @Description("The resulting vector map.")
+    @Description(OMSVECTORCLIPPER_outMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
 

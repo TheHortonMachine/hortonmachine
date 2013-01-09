@@ -18,34 +18,50 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_inGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_outGeodata_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("A simple middleman module to do feature conversion.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Feature, Vector, Convert")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSVECTORCONVERTER_DESCRIPTION)
+@Documentation(OMSVECTORCONVERTER_DOCUMENTATION)
+@Author(name = OMSVECTORCONVERTER_AUTHORNAMES, contact = OMSVECTORCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSVECTORCONVERTER_KEYWORDS)
+@Label(OMSVECTORCONVERTER_LABEL)
+@Name(OMSVECTORCONVERTER_NAME)
+@Status(OMSVECTORCONVERTER_STATUS)
+@License(OMSVECTORCONVERTER_LICENSE)
+@UI(OMSVECTORCONVERTER_UI)
 public class OmsVectorConverter extends JGTModel {
-    @Description("The input features.")
+
+    @Description(OMSVECTORCONVERTER_inGeodata_DESCRIPTION)
     @In
     public SimpleFeatureCollection inGeodata;
 
-    @Description("The output features.")
+    @Description(OMSVECTORCONVERTER_outGeodata_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outGeodata;
 

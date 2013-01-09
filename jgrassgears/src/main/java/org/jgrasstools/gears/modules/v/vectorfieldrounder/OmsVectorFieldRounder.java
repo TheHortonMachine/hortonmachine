@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.vectorfieldrounder;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_fRound_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION;
+
 import java.text.DecimalFormat;
 
 import oms3.annotations.Author;
@@ -34,33 +48,32 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
 
-@Description("Module that rounds a defined field attribute.")
-@Documentation("OmsVectorFieldRounder.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Round, VectorFieldJoiner")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vround")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORFIELDROUNDER_DESCRIPTION)
+@Documentation(OMSVECTORFIELDROUNDER_DOCUMENTATION)
+@Author(name = OMSVECTORFIELDROUNDER_AUTHORNAMES, contact = OMSVECTORFIELDROUNDER_AUTHORCONTACTS)
+@Keywords(OMSVECTORFIELDROUNDER_KEYWORDS)
+@Label(OMSVECTORFIELDROUNDER_LABEL)
+@Name(OMSVECTORFIELDROUNDER_NAME)
+@Status(OMSVECTORFIELDROUNDER_STATUS)
+@License(OMSVECTORFIELDROUNDER_LICENSE)
 public class OmsVectorFieldRounder extends JGTModel {
 
-    @Description("The vector of which to round a numeric value.")
+    @Description(OMSVECTORFIELDROUNDER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The double field of the number to round.")
+    @Description(OMSVECTORFIELDROUNDER_fRound_DESCRIPTION)
     @In
     public String fRound = null;
 
-    @Description("The rounding pattern.")
+    @Description(OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description("The modified vector.")
+    @Description(OMSVECTORFIELDROUNDER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

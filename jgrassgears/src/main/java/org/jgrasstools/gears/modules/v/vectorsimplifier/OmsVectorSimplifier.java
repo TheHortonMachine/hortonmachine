@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.vectorsimplifier;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pTolerance_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pType_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +49,6 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -47,29 +60,29 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
-@Description("Collection of vector simplification algorithms.")
-@Documentation("OmsVectorSimplifier.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Simplify, OmsLineSmootherMcMaster, OmsLineSmootherJaitools")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("vsimplify")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORSIMPLIFIER_DESCRIPTION)
+@Documentation(OMSVECTORSIMPLIFIER_DOCUMENTATION)
+@Author(name = OMSVECTORSIMPLIFIER_AUTHORNAMES, contact = OMSVECTORSIMPLIFIER_AUTHORCONTACTS)
+@Keywords(OMSVECTORSIMPLIFIER_KEYWORDS)
+@Label(OMSVECTORSIMPLIFIER_LABEL)
+@Name(OMSVECTORSIMPLIFIER_NAME)
+@Status(OMSVECTORSIMPLIFIER_STATUS)
+@License(OMSVECTORSIMPLIFIER_LICENSE)
 public class OmsVectorSimplifier extends JGTModel {
 
-    @Description("The vector to be simplified.")
+    @Description(OMSVECTORSIMPLIFIER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The simplification type: TopologyPreservingSimplifier = 0, Douglas Peucker = 1 (default = 0).")
+    @Description(OMSVECTORSIMPLIFIER_pType_DESCRIPTION)
     @In
     public int pType = 0;
 
-    @Description("The distance tolerance for the simplification.")
+    @Description(OMSVECTORSIMPLIFIER_pTolerance_DESCRIPTION)
     @In
     public double pTolerance = 0.2;
 
-    @Description("The simplified vector.")
+    @Description(OMSVECTORSIMPLIFIER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 
@@ -86,7 +99,6 @@ public class OmsVectorSimplifier extends JGTModel {
 
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
 
-        int id = 0;
         int size = inVector.size();
         pm.beginTask("Simplifing features...", size);
         while( inFeatureIterator.hasNext() ) {
@@ -101,8 +113,7 @@ public class OmsVectorSimplifier extends JGTModel {
                 Geometry geometryN = geometry.getGeometryN(i);
                 switch( pType ) {
                 case 0:
-                    TopologyPreservingSimplifier tpSimplifier = new TopologyPreservingSimplifier(
-                            geometryN);
+                    TopologyPreservingSimplifier tpSimplifier = new TopologyPreservingSimplifier(geometryN);
                     tpSimplifier.setDistanceTolerance(pTolerance);
                     Geometry tpsGeometry = tpSimplifier.getResultGeometry();
                     geomList.add(tpsGeometry);
@@ -127,7 +138,6 @@ public class OmsVectorSimplifier extends JGTModel {
             }
 
             SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry);
-            id++;
 
             outVector.add(newFeature);
             pm.worked(1);

@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_lineVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pointsVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_polygonVector_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
@@ -44,34 +59,35 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Module to convert dxf files to geotools vecotors.")
-@Documentation("OmsDxfConverter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, OmsDwgConverter, Feature, Vector, Reading")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("dxfimport")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDXFCONVERTER_DESCRIPTION)
+@Documentation(OMSDXFCONVERTER_DOCUMENTATION)
+@Author(name = OMSDXFCONVERTER_AUTHORNAMES, contact = OMSDXFCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSDXFCONVERTER_KEYWORDS)
+@Label(OMSDXFCONVERTER_LABEL)
+@Name(OMSDXFCONVERTER_NAME)
+@Status(OMSDXFCONVERTER_STATUS)
+@License(OMSDXFCONVERTER_LICENSE)
 public class OmsDxfConverter extends JGTModel {
-    @Description("The dxf file.")
+
+    @Description(OMSDXFCONVERTER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @Description(OMSDXFCONVERTER_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The output point vector.")
+    @Description(OMSDXFCONVERTER_pointsVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection pointsVector = null;
 
-    @Description("The output lines vector.")
+    @Description(OMSDXFCONVERTER_lineVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection lineVector = null;
 
-    @Description("The output polygons vector.")
+    @Description(OMSDXFCONVERTER_polygonVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection polygonVector = null;
 

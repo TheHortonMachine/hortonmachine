@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.v.vectoroperations;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_doSinglesided_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_inMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_outMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pBuffer_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pCapstyle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_pJoinstyle_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_FLAT;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_ROUND;
 import static org.jgrasstools.gears.libs.modules.Variables.CAP_SQUARE;
@@ -29,9 +44,11 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -53,37 +70,39 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.operation.buffer.BufferOp;
 import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
-@Description("A module that performs a buffer operation on a vector layer.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("JTS, OmsBuffer")
-@Status(Status.EXPERIMENTAL)
-@Name("vbuffer")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSBUFFER_DESCRIPTION)
+@Documentation(OMSBUFFER_DOCUMENTATION)
+@Author(name = OMSBUFFER_AUTHORNAMES, contact = OMSBUFFER_AUTHORCONTACTS)
+@Keywords(OMSBUFFER_KEYWORDS)
+@Label(OMSBUFFER_LABEL)
+@Name(OMSBUFFER_NAME)
+@Status(OMSBUFFER_STATUS)
+@License(OMSBUFFER_LICENSE)
 public class OmsBuffer extends JGTModel {
 
-    @Description("The input vector map.")
+    @Description(OMSBUFFER_inMap_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description("The buffer distance.")
+    @Description(OMSBUFFER_pBuffer_DESCRIPTION)
     @In
     public double pBuffer = 10.0;
 
-    @Description("Flag to toggle singlesided buffer.")
+    @Description(OMSBUFFER_doSinglesided_DESCRIPTION)
     @In
     public boolean doSinglesided = false;
 
-    @Description("The join style to use.")
+    @Description(OMSBUFFER_pJoinstyle_DESCRIPTION)
     @UI("combo:" + JOIN_ROUND + "," + JOIN_MITRE + "," + JOIN_BEVEL)
     @In
     public String pJoinstyle = JOIN_ROUND;
 
-    @Description("The cap style to use.")
+    @Description(OMSBUFFER_pCapstyle_DESCRIPTION)
     @UI("combo:" + CAP_ROUND + "," + CAP_FLAT + "," + CAP_SQUARE)
     @In
     public String pCapstyle = CAP_ROUND;
 
-    @Description("The buffered vector map.")
+    @Description(OMSBUFFER_outMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
 

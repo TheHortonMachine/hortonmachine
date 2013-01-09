@@ -19,6 +19,19 @@ package org.jgrasstools.gears.modules.v.sourcesdirection;
 
 import static java.lang.Double.NaN;
 import static java.lang.Math.sqrt;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_inCoverage_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_inSources_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_outSources_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_pRes_DESCRIPTION;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridToWorld;
 
 import java.awt.geom.AffineTransform;
@@ -26,11 +39,13 @@ import java.awt.geom.Point2D;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -45,7 +60,6 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -55,27 +69,29 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Calculates the direction of maximum slope for a source point on a dem.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.DRAFT)
-@Label(JGTConstants.VECTORPROCESSING)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSPOINTDIRECTIONCALCULATOR_DESCRIPTION)
+@Documentation(OMSPOINTDIRECTIONCALCULATOR_DOCUMENTATION)
+@Author(name = OMSPOINTDIRECTIONCALCULATOR_AUTHORNAMES, contact = OMSPOINTDIRECTIONCALCULATOR_AUTHORCONTACTS)
+@Keywords(OMSPOINTDIRECTIONCALCULATOR_KEYWORDS)
+@Label(OMSPOINTDIRECTIONCALCULATOR_LABEL)
+@Name(OMSPOINTDIRECTIONCALCULATOR_NAME)
+@Status(OMSPOINTDIRECTIONCALCULATOR_STATUS)
+@License(OMSPOINTDIRECTIONCALCULATOR_LICENSE)
 public class OmsPointDirectionCalculator extends JGTModel {
 
-    @Description("The source point features.")
+    @Description(OMSPOINTDIRECTIONCALCULATOR_inSources_DESCRIPTION)
     @In
     public SimpleFeatureCollection inSources;
 
-    @Description("Resolution to use.")
+    @Description(OMSPOINTDIRECTIONCALCULATOR_pRes_DESCRIPTION)
     @In
     public double pRes = NaN;
 
-    @Description("The input coverage.")
+    @Description(OMSPOINTDIRECTIONCALCULATOR_inCoverage_DESCRIPTION)
     @In
     public GridCoverage2D inCoverage = null;
 
-    @Description("The source point features with the added azimuth angle.")
+    @Description(OMSPOINTDIRECTIONCALCULATOR_outSources_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outSources;
 
@@ -89,11 +105,9 @@ public class OmsPointDirectionCalculator extends JGTModel {
 
         outSources = FeatureCollections.newCollection();
 
-        FeatureExtender fExt = new FeatureExtender(inSources.getSchema(), new String[]{"azimuth",
-                "availpixels", "c11", "c12", "c13", "c21", "c22", "c23", "c31", "c32", "c33"},
-                new Class< ? >[]{Double.class, Integer.class, Double.class, Double.class,
-                        Double.class, Double.class, Double.class, Double.class, Double.class,
-                        Double.class, Double.class});
+        FeatureExtender fExt = new FeatureExtender(inSources.getSchema(), new String[]{"azimuth", "availpixels", "c11", "c12",
+                "c13", "c21", "c22", "c23", "c31", "c32", "c33"}, new Class< ? >[]{Double.class, Integer.class, Double.class,
+                Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class, Double.class});
 
         // resample dem to required resolution
         double[] res = resFromCoverage(inCoverage);
@@ -101,12 +115,11 @@ public class OmsPointDirectionCalculator extends JGTModel {
             double scaleX = res[0] / pRes;
             double scaleY = res[1] / pRes;
             System.out.println(res[0] + "/" + res[1] + "/" + scaleX + "/" + scaleY);
-            inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage,
-                    scaleX, scaleY);
+            inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage, scaleX, scaleY);
         }
         Envelope2D env = inCoverage.getEnvelope2D();
         GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
-        
+
         int size = inSources.size();
         pm.beginTask("Extracting azimuth...", size);
         while( inFeatureIterator.hasNext() ) {
@@ -125,8 +138,7 @@ public class OmsPointDirectionCalculator extends JGTModel {
             int cols = gridRange.width;
             int rows = gridRange.height;
 
-            GridCoordinates2D centerGC = gridGeometry.worldToGrid(new DirectPosition2D(
-                    coordinate.x, coordinate.y));
+            GridCoordinates2D centerGC = gridGeometry.worldToGrid(new DirectPosition2D(coordinate.x, coordinate.y));
 
             /*
              * c11 | c12 | c13
@@ -217,8 +229,7 @@ public class OmsPointDirectionCalculator extends JGTModel {
                 oneIsNull = true;
             }
 
-            GridCoordinates2D[] cArray = new GridCoordinates2D[]{c31, c32, c33, c21, c23, c11, c12,
-                    c13};
+            GridCoordinates2D[] cArray = new GridCoordinates2D[]{c31, c32, c33, c21, c23, c11, c12, c13};
             double[] tArray = new double[]{dz31, dz32, dz33, dz21, dz23, dz11, dz12, dz13};
 
             QuickSortAlgorithmObjects qSobj = new QuickSortAlgorithmObjects(null);
@@ -233,13 +244,12 @@ public class OmsPointDirectionCalculator extends JGTModel {
 
             double azimuth = -9999.0;
             if (!oneIsNull) {
-                azimuth = GeometryUtilities.azimuth(new Coordinate(cent[0], cent[1]),
-                        new Coordinate(c[0], c[1]));
+                azimuth = GeometryUtilities.azimuth(new Coordinate(cent[0], cent[1]), new Coordinate(c[0], c[1]));
             }
 
-            SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth,
-                    pixelNum, getValue(v11), getValue(v12), getValue(v13), getValue(v21),
-                    getValue(center), getValue(v23), getValue(v31), getValue(v32), getValue(v33)});
+            SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth, pixelNum, getValue(v11),
+                    getValue(v12), getValue(v13), getValue(v21), getValue(center), getValue(v23), getValue(v31), getValue(v32),
+                    getValue(v33)});
             outSources.add(azimuthFeature);
 
         }
@@ -250,10 +260,8 @@ public class OmsPointDirectionCalculator extends JGTModel {
         return array != null ? array[0] : -9999.0;
     }
 
-    private double[] getPixelValue( GridCoverage2D dem, int cols, int rows,
-            GridCoordinates2D gridCoordinate ) {
-        if (gridCoordinate.x >= 0 && gridCoordinate.x < cols && gridCoordinate.y >= 0
-                && gridCoordinate.y < rows) {
+    private double[] getPixelValue( GridCoverage2D dem, int cols, int rows, GridCoordinates2D gridCoordinate ) {
+        if (gridCoordinate.x >= 0 && gridCoordinate.x < cols && gridCoordinate.y >= 0 && gridCoordinate.y < rows) {
             double[] value = dem.evaluate((GridCoordinates2D) gridCoordinate, (double[]) null);
             return value;
         }
@@ -263,8 +271,7 @@ public class OmsPointDirectionCalculator extends JGTModel {
     private double[] resFromCoverage( GridCoverage2D dem ) {
         GridGeometry2D gridGeometry = dem.getGridGeometry();
         AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
-        double[] res = new double[]{XAffineTransform.getScaleX0(gridToCRS),
-                XAffineTransform.getScaleY0(gridToCRS)};
+        double[] res = new double[]{XAffineTransform.getScaleX0(gridToCRS), XAffineTransform.getScaleY0(gridToCRS)};
         return res;
     }
 }

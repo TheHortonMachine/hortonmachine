@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.rastercattofeatureattribute;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_fNew_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_pPos_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
@@ -46,7 +60,6 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
@@ -57,34 +70,33 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Module that extracts raster categories and adds them to a feature collection.")
-@Documentation("OmsRasterCatToFeatureAttribute.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("rat2featureattr")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
-public class OmsRasterCatToFeatureAttribute extends JGTModel{
+@Description(OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION)
+@Documentation(OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION)
+@Author(name = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES, contact = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS)
+@Keywords(OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS)
+@Label(OMSRASTERCATTOFEATUREATTRIBUTE_LABEL)
+@Name(OMSRASTERCATTOFEATUREATTRIBUTE_NAME)
+@Status(OMSRASTERCATTOFEATUREATTRIBUTE_STATUS)
+@License(OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE)
+public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
-    @Description("The raster on which to map the vector features.")
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The vector to use for the geometric mapping.")
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The name for the new field to create.")
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_fNew_DESCRIPTION)
     @In
     public String fNew = "new";
 
-    @Description("The position of the coordinate to take in the case of multi geometries.")
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_pPos_DESCRIPTION)
     @In
     public String pPos = MIDDLE;
 
-    @Description("The extended vector.")
+    @Description(OMSRASTERCATTOFEATUREATTRIBUTE_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 
@@ -116,8 +128,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel{
 
         SimpleFeatureType featureType = inVector.getSchema();
 
-        FeatureExtender fExt = new FeatureExtender(featureType, new String[]{fNew},
-                new Class< ? >[]{Double.class});
+        FeatureExtender fExt = new FeatureExtender(featureType, new String[]{fNew}, new Class< ? >[]{Double.class});
 
         Envelope2D inCoverageEnvelope = inRaster.getEnvelope2D();
         outVector = FeatureCollections.newCollection();
@@ -130,11 +141,9 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel{
             double value = -1;
             Coordinate c;
             Coordinate[] coordinates = geometry.getCoordinates();
-            if (getGeometryType(geometry) == GEOMETRYTYPE.POINT
-                    || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOINT) {
+            if (getGeometryType(geometry) == GEOMETRYTYPE.POINT || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOINT) {
                 c = coordinates[0];
-            } else if (getGeometryType(geometry) == GEOMETRYTYPE.LINE
-                    || getGeometryType(geometry) == GEOMETRYTYPE.MULTILINE) {
+            } else if (getGeometryType(geometry) == GEOMETRYTYPE.LINE || getGeometryType(geometry) == GEOMETRYTYPE.MULTILINE) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
                 } else if (pPos.trim().equalsIgnoreCase(END)) {
@@ -151,8 +160,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel{
                     c = coordinates[0];
                 }
             } else {
-                throw new ModelsIllegalargumentException("The Geometry type is not supported.",
-                        this);
+                throw new ModelsIllegalargumentException("The Geometry type is not supported.", this);
             }
 
             if (!inCoverageEnvelope.contains(c.x, c.y)) {

@@ -17,6 +17,22 @@
  */
 package org.jgrasstools.gears.ui;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inRasters_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inSld_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPSVIEWER_inVectors_DESCRIPTION;
+
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -32,6 +48,7 @@ import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
@@ -62,41 +79,41 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
 
-@Description("A simple geodata viewer.")
-@Documentation("OmsMapsViewer.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Coverage, Raster, Viewer, UI")
-@Status(Status.CERTIFIED)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Name("mapsviewer")
-@License("General Public License Version 3 (GPLv3)")
-public class OmsMapsViewer {
-    @Description("The rasters to visualize.")
+@Description(OMSMAPSVIEWER_DESCRIPTION)
+@Documentation(OMSMAPSVIEWER_DOCUMENTATION)
+@Author(name = OMSMAPSVIEWER_AUTHORNAMES, contact = OMSMAPSVIEWER_AUTHORCONTACTS)
+@Keywords(OMSMAPSVIEWER_KEYWORDS)
+@Label(OMSMAPSVIEWER_LABEL)
+@Name(OMSMAPSVIEWER_NAME)
+@Status(OMSMAPSVIEWER_STATUS)
+@License(OMSMAPSVIEWER_LICENSE)
+@UI(OMSMAPSVIEWER_UI)
+public class OmsMapsViewer extends JGTModel {
+
+    @Description(OMSMAPSVIEWER_inRasters_DESCRIPTION)
     @In
     public GridCoverage2D[] inRasters = new GridCoverage2D[0];
 
-    @Description("The raster to visualize.")
+    @Description(OMSMAPSVIEWER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The feature collections to visualize.")
+    @Description(OMSMAPSVIEWER_inVectors_DESCRIPTION)
     @In
     public SimpleFeatureCollection[] inVectors = new SimpleFeatureCollection[0];
 
-    @Description("The feature collection to visualize.")
+    @Description(OMSMAPSVIEWER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The feature collections style layer.")
+    @Description(OMSMAPSVIEWER_inSld_DESCRIPTION)
     @In
     public String inSld = null;
 

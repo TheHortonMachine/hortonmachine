@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.modules.v.vectorfilter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_pCql_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -32,31 +44,30 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.filter.Filter;
 
-@Description("Module that creates a subset of a vector based on a filtered vector.")
-@Documentation("OmsVectorFilter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Filter, Vector, OmsVectorReshaper")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vfilter")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORFILTER_DESCRIPTION)
+@Documentation(OMSVECTORFILTER_DOCUMENTATION)
+@Author(name = OMSVECTORFILTER_AUTHORNAMES, contact = OMSVECTORFILTER_AUTHORCONTACTS)
+@Keywords(OMSVECTORFILTER_KEYWORDS)
+@Label(OMSVECTORFILTER_LABEL)
+@Name(OMSVECTORFILTER_NAME)
+@Status(OMSVECTORFILTER_STATUS)
+@License(OMSVECTORFILTER_LICENSE)
 public class OmsVectorFilter extends JGTModel {
 
-    @Description("The vector to filter.")
+    @Description(OMSVECTORFILTER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The ECQL filter function.")
+    @Description(OMSVECTORFILTER_pCql_DESCRIPTION)
     @In
     public String pCql = null;
 
-    @Description("The filtered vector.")
+    @Description(OMSVECTORFILTER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

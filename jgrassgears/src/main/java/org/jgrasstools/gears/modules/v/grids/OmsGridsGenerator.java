@@ -17,12 +17,35 @@
  */
 package org.jgrasstools.gears.modules.v.grids;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_outMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pHeight_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pLat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pLon_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pSpacing_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pWidth_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -68,61 +91,62 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Generates grid of lines or polygons.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Vector, Grid")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("gridgenerator")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSGRIDSGENERATOR_DESCRIPTION)
+@Documentation(OMSGRIDSGENERATOR_DOCUMENTATION)
+@Author(name = OMSGRIDSGENERATOR_AUTHORNAMES, contact = OMSGRIDSGENERATOR_AUTHORCONTACTS)
+@Keywords(OMSGRIDSGENERATOR_KEYWORDS)
+@Label(OMSGRIDSGENERATOR_LABEL)
+@Name(OMSGRIDSGENERATOR_NAME)
+@Status(OMSGRIDSGENERATOR_STATUS)
+@License(OMSGRIDSGENERATOR_LICENSE)
 public class OmsGridsGenerator extends JGTModel {
 
-    @Description("Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.")
+    @Description(OMSGRIDSGENERATOR_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("Optional raster map from which to take the bounds (if supplied, all other bounds related parameter are ignored. This needs pRows and pCols to be defined.")
+    @Description(OMSGRIDSGENERATOR_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The lower left longitude.")
+    @Description(OMSGRIDSGENERATOR_pLon_DESCRIPTION)
     @In
     public double pLon = 0.0;
 
-    @Description("The lower left latitude.")
+    @Description(OMSGRIDSGENERATOR_pLat_DESCRIPTION)
     @In
     public double pLat = 0.0;
 
-    @Description("The grid cell width.")
+    @Description(OMSGRIDSGENERATOR_pWidth_DESCRIPTION)
     @In
     public double pWidth = 1.0;
 
-    @Description("The grid cell height.")
+    @Description(OMSGRIDSGENERATOR_pHeight_DESCRIPTION)
     @In
     public double pHeight = 1.0;
 
-    @Description("The number of rows.")
+    @Description(OMSGRIDSGENERATOR_pRows_DESCRIPTION)
     @In
     public int pRows = 10;
 
-    @Description("The number of cols.")
+    @Description(OMSGRIDSGENERATOR_pCols_DESCRIPTION)
     @In
     public int pCols = 10;
 
-    @Description("The vertex spacing to use.")
+    @Description(OMSGRIDSGENERATOR_pSpacing_DESCRIPTION)
     @In
     public Double pSpacing = null;
 
-    @Description("Output type: 0 = polygons, 1 = lines, 2 = points (default = 0).")
+    @Description(OMSGRIDSGENERATOR_pType_DESCRIPTION)
     @In
     public int pType = 0;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @Description(OMSGRIDSGENERATOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The grid.")
+    @Description(OMSGRIDSGENERATOR_outMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
 

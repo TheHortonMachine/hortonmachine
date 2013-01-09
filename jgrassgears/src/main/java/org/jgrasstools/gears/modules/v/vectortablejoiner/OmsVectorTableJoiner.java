@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.v.vectortablejoiner;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_fCommon_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_pFields_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_tabledata_DESCRIPTION;
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,38 +50,37 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
 
-@Description("Module that joins attributes from one vector into another based on a common field.")
-@Documentation("OmsVectorTableJoiner.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Join, OmsVectorFieldRounder")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vjoin")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORTABLEJOINER_DESCRIPTION)
+@Documentation(OMSVECTORTABLEJOINER_DOCUMENTATION)
+@Author(name = OMSVECTORTABLEJOINER_AUTHORNAMES, contact = OMSVECTORTABLEJOINER_AUTHORCONTACTS)
+@Keywords(OMSVECTORTABLEJOINER_KEYWORDS)
+@Label(OMSVECTORTABLEJOINER_LABEL)
+@Name(OMSVECTORTABLEJOINER_NAME)
+@Status(OMSVECTORTABLEJOINER_STATUS)
+@License(OMSVECTORTABLEJOINER_LICENSE)
 public class OmsVectorTableJoiner extends JGTModel {
 
-    @Description("The vector to extend.")
+    @Description(OMSVECTORTABLEJOINER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The dbf tabledata to merge in.")
+    @Description(OMSVECTORTABLEJOINER_tabledata_DESCRIPTION)
     @In
     public HashMap<String, List<Object>> tabledata = null;
 
-    @Description("The common field (if different in the two sources, commaseparated, first shapefile, then dbf.")
+    @Description(OMSVECTORTABLEJOINER_fCommon_DESCRIPTION)
     @In
     public String fCommon = null;
 
-    @Description("The commaseparated list of fields to merge in.")
+    @Description(OMSVECTORTABLEJOINER_pFields_DESCRIPTION)
     @In
     public String pFields = null;
 
-    @Description("The joined vector.")
+    @Description(OMSVECTORTABLEJOINER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

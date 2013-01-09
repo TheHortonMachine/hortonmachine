@@ -17,6 +17,35 @@
  */
 package org.jgrasstools.gears.ui;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doChart_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doCumulate_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doDump_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doLegend_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doNormalize_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_doPoints_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inChartPath_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inColors_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inFormats_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inLabels_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inSeries_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inSubTitle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inTitle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_inTypes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_pHeight_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_pWidth_DESCRIPTION;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -26,9 +55,11 @@ import javax.imageio.ImageIO;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
@@ -51,87 +82,89 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
-@Description("Utility class for charting matrix data.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Viewer, UI, Chart")
-@Status(Status.EXPERIMENTAL)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Name("matrixcharter")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMATRIXCHARTER_DESCRIPTION)
+@Documentation(OMSMATRIXCHARTER_DOCUMENTATION)
+@Author(name = OMSMATRIXCHARTER_AUTHORNAMES, contact = OMSMATRIXCHARTER_AUTHORCONTACTS)
+@Keywords(OMSMATRIXCHARTER_KEYWORDS)
+@Label(OMSMATRIXCHARTER_LABEL)
+@Name(OMSMATRIXCHARTER_NAME)
+@Status(OMSMATRIXCHARTER_STATUS)
+@License(OMSMATRIXCHARTER_LICENSE)
+@UI(OMSMATRIXCHARTER_UI)
 public class OmsMatrixCharter extends JGTModel {
-    @Description("The matrix to chart.")
+
+    @Description(OMSMATRIXCHARTER_inData_DESCRIPTION)
     @In
     public double[][] inData;
 
-    @Description("The data title.")
+    @Description(OMSMATRIXCHARTER_inTitle_DESCRIPTION)
     @In
     public String inTitle;
 
-    @Description("The subtitle.")
+    @Description(OMSMATRIXCHARTER_inSubTitle_DESCRIPTION)
     @In
     public String inSubTitle;
 
-    @Description("The data series names.")
+    @Description(OMSMATRIXCHARTER_inSeries_DESCRIPTION)
     @In
     public String[] inSeries;
 
-    @Description("The optional data series colors. Format is rbg triplets delimited by semicolon: ex. 0,0,255;0,255,0;255,0,0. The colors have to be the same number as the series.")
+    @Description(OMSMATRIXCHARTER_inColors_DESCRIPTION)
     @In
     public String inColors;
 
-    @Description("The axis labels (x, y1, y2, ...).")
+    @Description(OMSMATRIXCHARTER_inLabels_DESCRIPTION)
     @In
     public String[] inLabels;
 
-    @Description("The data formats (dates and numeric formatting patterns).")
+    @Description(OMSMATRIXCHARTER_inFormats_DESCRIPTION)
     @In
     public String[] inFormats;
 
-    @Description("The data types (dates or numerics like double, int).")
+    @Description(OMSMATRIXCHARTER_inTypes_DESCRIPTION)
     @In
     public String[] inTypes;
 
-    @Description("Chart type: 0 = line, 1 = histogram (default is 0).")
+    @Description(OMSMATRIXCHARTER_pType_DESCRIPTION)
     @In
     public int pType = 0;;
 
-    @Description("Chart the data.")
+    @Description(OMSMATRIXCHARTER_doChart_DESCRIPTION)
     @In
     public boolean doChart;
 
-    @Description("Dump the chart to disk.")
+    @Description(OMSMATRIXCHARTER_doDump_DESCRIPTION)
     @In
     public boolean doDump;
 
-    @Description("Show the legend.")
+    @Description(OMSMATRIXCHARTER_doLegend_DESCRIPTION)
     @In
     public boolean doLegend;
 
-    @Description("Show shapes in line charts.")
+    @Description(OMSMATRIXCHARTER_doPoints_DESCRIPTION)
     @In
     public boolean doPoints;
 
-    @Description("Cumulate data.")
+    @Description(OMSMATRIXCHARTER_doCumulate_DESCRIPTION)
     @In
     public boolean doCumulate;
 
-    @Description("Normalize data.")
+    @Description(OMSMATRIXCHARTER_doNormalize_DESCRIPTION)
     @In
     public boolean doNormalize;
 
-    @Description("Chart image width (in case of doDump=true, defaults to 800 px).")
+    @Description(OMSMATRIXCHARTER_pWidth_DESCRIPTION)
     @In
     public int pWidth = 800;
 
-    @Description("Chart image height (in case of doDump=true, defaults to 600 px).")
+    @Description(OMSMATRIXCHARTER_pHeight_DESCRIPTION)
     @In
     public int pHeight = 600;
 
-    @Description("Chart dump path (in case of doDump=true).")
+    @Description(OMSMATRIXCHARTER_inChartPath_DESCRIPTION)
     @In
     public String inChartPath;
 

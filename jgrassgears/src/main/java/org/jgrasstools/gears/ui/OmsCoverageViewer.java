@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.ui;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGEVIEWER_raster_DESCRIPTION;
+
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -27,10 +39,13 @@ import javax.media.jai.iterator.RectIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -46,17 +61,21 @@ import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.filter.expression.Expression;
 
-@Description("Utility class for viewing coverages.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Coverage, Raster, Viewer, UI")
-@Status(Status.CERTIFIED)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("General Public License Version 3 (GPLv3)")
-public class OmsCoverageViewer {
-    @Description("The coverage to visualize.")
+@Description(OMSCOVERAGEVIEWER_DESCRIPTION)
+@Documentation(OMSCOVERAGEVIEWER_DOCUMENTATION)
+@Author(name = OMSCOVERAGEVIEWER_AUTHORNAMES, contact = OMSCOVERAGEVIEWER_AUTHORCONTACTS)
+@Keywords(OMSCOVERAGEVIEWER_KEYWORDS)
+@Label(OMSCOVERAGEVIEWER_LABEL)
+@Name(OMSCOVERAGEVIEWER_NAME)
+@Status(OMSCOVERAGEVIEWER_STATUS)
+@License(OMSCOVERAGEVIEWER_LICENSE)
+@UI(OMSCOVERAGEVIEWER_UI)
+public class OmsCoverageViewer extends JGTModel {
+
+    @Description(OMSCOVERAGEVIEWER_raster_DESCRIPTION)
     @In
     public GridCoverage2D raster = null;
 

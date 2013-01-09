@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +48,6 @@ import oms3.annotations.Status;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jaitools.jts.LineSmoother;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -47,25 +59,25 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 
-@Description("The line smoother from the jaitools project.")
-@Documentation("OmsLineSmootherJaitools.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Smoothing, Vector")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("linesmootherjai")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSLINESMOOTHERJAITOOLS_DESCRIPTION)
+@Documentation(OMSLINESMOOTHERJAITOOLS_DOCUMENTATION)
+@Author(name = OMSLINESMOOTHERJAITOOLS_AUTHORNAMES, contact = OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS)
+@Keywords(OMSLINESMOOTHERJAITOOLS_KEYWORDS)
+@Label(OMSLINESMOOTHERJAITOOLS_LABEL)
+@Name(OMSLINESMOOTHERJAITOOLS_NAME)
+@Status(OMSLINESMOOTHERJAITOOLS_STATUS)
+@License(OMSLINESMOOTHERJAITOOLS_LICENSE)
 public class OmsLineSmootherJaitools extends JGTModel {
 
-    @Description("The vector containing the lines to be smoothed.")
+    @Description(OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).")
+    @Description(OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION)
     @In
     public double pAlpha = 0;
 
-    @Description("The smoothed features.")
+    @Description(OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 
@@ -78,7 +90,6 @@ public class OmsLineSmootherJaitools extends JGTModel {
         }
         outVector = FeatureCollections.newCollection();
 
-        int id = 0;
         pm.message("Collecting geometries...");
         List<SimpleFeature> linesList = FeatureUtilities.featureCollectionToList(inVector);
         int size = inVector.size();
@@ -102,7 +113,6 @@ public class OmsLineSmootherJaitools extends JGTModel {
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
                 outVector.add(newFeature);
-                id++;
             }
             pm.worked(1);
         }

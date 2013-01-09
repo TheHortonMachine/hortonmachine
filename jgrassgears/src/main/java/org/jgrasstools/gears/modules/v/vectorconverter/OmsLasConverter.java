@@ -17,6 +17,30 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doBbox_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doHeader_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_doInfo_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inPolygons_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_outFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pClasses_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pImpulses_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIndexrange_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pWest_DESCRIPTION;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
 import java.io.BufferedWriter;
@@ -26,6 +50,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -50,8 +75,6 @@ import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -69,81 +92,79 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
-@Description("Coverter from LAS to vector point data.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Name("lasconverter")
-@Keywords("IO, Feature, Vector, Convert")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSLASCONVERTER_DESCRIPTION)
+@Documentation(OMSLASCONVERTER_DOCUMENTATION)
+@Author(name = OMSLASCONVERTER_AUTHORNAMES, contact = OMSLASCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSLASCONVERTER_KEYWORDS)
+@Label(OMSLASCONVERTER_LABEL)
+@Name(OMSLASCONVERTER_NAME)
+@Status(OMSLASCONVERTER_STATUS)
+@License(OMSLASCONVERTER_LICENSE)
 public class OmsLasConverter extends JGTModel {
-    @Description("The LAS file.")
+
+    @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFile;
 
-    @Description("A vector map of polygons to filter the data on.")
+    @Description(OMSLASCONVERTER_inPolygons_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPolygons;
 
-    @Description("The (min, max) range inside which the values should be taken.")
+    @Description(OMSLASCONVERTER_pIntensityrange_DESCRIPTION)
     @In
     public String pIntensityrange;
 
-    @Description("The comma separated list of impulses values to keep.")
+    @Description(OMSLASCONVERTER_pImpulses_DESCRIPTION)
     @In
     public String pImpulses;
 
-    @Description("The comma separated list of classes to keep.")
+    @Description(OMSLASCONVERTER_pClasses_DESCRIPTION)
     @In
     public String pClasses;
 
-    @Description("The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.")
+    @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
     @In
     public String pIndexrange;
 
-    @Description("The optional requested boundary north coordinate.")
+    @Description(OMSLASCONVERTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The optional requested boundary south coordinate.")
+    @Description(OMSLASCONVERTER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The optional requested boundary west coordinate.")
+    @Description(OMSLASCONVERTER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The optional requested boundary east coordinate.")
+    @Description(OMSLASCONVERTER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file.")
+    @Description(OMSLASCONVERTER_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("Only print header and exit (default is false).")
+    @Description(OMSLASCONVERTER_doHeader_DESCRIPTION)
     @In
     public boolean doHeader = false;
 
-    @Description("Print additional info and exit (default is false).")
+    @Description(OMSLASCONVERTER_doInfo_DESCRIPTION)
     @In
     public boolean doInfo = false;
 
-    @Description("Generate a bounding box polygon as output vector (default is false).")
+    @Description(OMSLASCONVERTER_doBbox_DESCRIPTION)
     @In
     public boolean doBbox = false;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The output file (csv or shp).")
+    @Description(OMSLASCONVERTER_outFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outFile;

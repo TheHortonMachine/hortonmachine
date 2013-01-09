@@ -18,6 +18,21 @@
 package org.jgrasstools.gears.modules.v.marchingsquares;
 
 import static java.lang.Math.abs;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_defaultFeatureField_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_inGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_pThres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_pValue_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -38,11 +53,13 @@ import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -53,7 +70,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -66,33 +82,34 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Module for raster to vector conversion")
-@Author(name = "Andrea Antonello, Daniele Andreis", contact = "www.hydrologis.com")
-@Keywords("Raster, Vector")
-@Status(Status.DRAFT)
-@Label(JGTConstants.VECTORPROCESSING)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION)
+@Documentation(OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION)
+@Author(name = OMSMARCHINGSQUARESVECTORIALIZER_AUTHORNAMES, contact = OMSMARCHINGSQUARESVECTORIALIZER_AUTHORCONTACTS)
+@Keywords(OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS)
+@Label(OMSMARCHINGSQUARESVECTORIALIZER_LABEL)
+@Name(OMSMARCHINGSQUARESVECTORIALIZER_NAME)
+@Status(OMSMARCHINGSQUARESVECTORIALIZER_STATUS)
+@License(OMSMARCHINGSQUARESVECTORIALIZER_LICENSE)
+@UI(OMSMARCHINGSQUARESVECTORIALIZER_UI)
 public class OmsMarchingSquaresVectorializer extends JGTModel {
 
-    @Description("The coverage that has to be converted.")
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_inGeodata_DESCRIPTION)
     @In
     public GridCoverage2D inGeodata;
 
-    @Description("The value to use to trace the polygons. If it is null then all the value of the raster are used")
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_pValue_DESCRIPTION)
     @In
     public Double pValue = doubleNovalue;
 
-    @Description("The value to use as a name for the raster value in the Feature.")
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_defaultFeatureField_DESCRIPTION)
     @In
     public String defaultFeatureField = "value";
 
-    @Description("A threshold on cell number to filter away polygons with cells less than that.")
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
 
-    @Description("The extracted features.")
+    @Description(OMSMARCHINGSQUARESVECTORIALIZER_outGeodata_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outGeodata = null;
 

@@ -18,13 +18,29 @@
  */
 package org.jgrasstools.gears.modules.v.contourlabels;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_buffer_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_fElevation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_inContour_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_inLines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_outPoints_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -35,7 +51,6 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -49,32 +64,33 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Generates a layer of point features with a given label text and angle, following "
-        + "reference lines intersecting them with a layer of countourlines.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Contourlines, Vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSCONTOURLINESLABELER_DESCRIPTION)
+@Documentation(OMSCONTOURLINESLABELER_DOCUMENTATION)
+@Author(name = OMSCONTOURLINESLABELER_AUTHORNAMES, contact = OMSCONTOURLINESLABELER_AUTHORCONTACTS)
+@Keywords(OMSCONTOURLINESLABELER_KEYWORDS)
+@Label(OMSCONTOURLINESLABELER_LABEL)
+@Name(OMSCONTOURLINESLABELER_NAME)
+@Status(OMSCONTOURLINESLABELER_STATUS)
+@License(OMSCONTOURLINESLABELER_LICENSE)
 public class OmsContourLinesLabeler extends JGTModel {
 
-    @Description("The contour lines.")
+    @Description(OMSCONTOURLINESLABELER_inContour_DESCRIPTION)
     @In
     public SimpleFeatureCollection inContour;
 
-    @Description("Field name of the contour elevation")
+    @Description(OMSCONTOURLINESLABELER_fElevation_DESCRIPTION)
     @In
     public String fElevation;
 
-    @Description("The lines to intersect with the contours to generate label points.")
+    @Description(OMSCONTOURLINESLABELER_inLines_DESCRIPTION)
     @In
     public SimpleFeatureCollection inLines;
 
-    @Description("The buffer to consider for every line.")
+    @Description(OMSCONTOURLINESLABELER_buffer_DESCRIPTION)
     @In
     public double buffer;
 
-    @Description("The labeled point layer.")
+    @Description(OMSCONTOURLINESLABELER_outPoints_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPoints = null;
 
@@ -86,8 +102,7 @@ public class OmsContourLinesLabeler extends JGTModel {
         }
         SimpleFeatureType inSchema = inContour.getSchema();
         MemoryDataStore memDatastore = new MemoryDataStore(inContour);
-        SimpleFeatureSource contourSource = memDatastore
-                .getFeatureSource(memDatastore.getTypeNames()[0]);
+        SimpleFeatureSource contourSource = memDatastore.getFeatureSource(memDatastore.getTypeNames()[0]);
 
         CoordinateReferenceSystem crs = inSchema.getCoordinateReferenceSystem();
 
@@ -110,8 +125,7 @@ public class OmsContourLinesLabeler extends JGTModel {
             BoundingBox lineBounds = line.getBounds();
 
             Filter bboxFilter = FilterUtilities.getBboxFilter("the_geom", lineBounds);
-            SimpleFeatureCollection filteredContours = contourSource
-                    .getFeatures(bboxFilter);
+            SimpleFeatureCollection filteredContours = contourSource.getFeatures(bboxFilter);
 
             FeatureIterator<SimpleFeature> contourIterator = filteredContours.features();
             while( contourIterator.hasNext() ) {
@@ -136,8 +150,7 @@ public class OmsContourLinesLabeler extends JGTModel {
                     SimpleFeatureBuilder builder = new SimpleFeatureBuilder(outType);
                     Object[] values = new Object[]{labelPoint, elevation, azimuth, azimuthFrom90};
                     builder.addAll(values);
-                    SimpleFeature pointFeature = builder.buildFeature(outType.getTypeName() + "."
-                            + count++);
+                    SimpleFeature pointFeature = builder.buildFeature(outType.getTypeName() + "." + count++);
                     outPoints.add(pointFeature);
                 }
 

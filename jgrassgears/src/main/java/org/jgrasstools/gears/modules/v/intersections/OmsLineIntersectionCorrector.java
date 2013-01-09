@@ -18,6 +18,24 @@
  */
 package org.jgrasstools.gears.modules.v.intersections;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_correctedFeatures_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_doReverse_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_errorFeatures_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_fSort_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_linesFeatures_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_pBuffer_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_pointFeatures_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINEINTERSECTIONCORRECTOR_untouchedFeatures_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -25,11 +43,13 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -43,7 +63,6 @@ import org.geotools.graph.structure.Edge;
 import org.geotools.graph.structure.Graph;
 import org.geotools.graph.structure.Node;
 import org.geotools.graph.traverse.standard.DijkstraIterator;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -62,46 +81,45 @@ import com.vividsolutions.jts.operation.linemerge.LineSequencer;
 import com.vividsolutions.jts.operation.overlay.snap.GeometrySnapper;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
-@Description("Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging "
-        + "Algorithm. The new position of each point "
-        + "is the average of the pLookahead  points around. Parameter pSlide is used for "
-        + "linear interpolation between old and new position.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Smoothing, Vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSLINEINTERSECTIONCORRECTOR_DESCRIPTION)
+@Documentation(OMSLINEINTERSECTIONCORRECTOR_DOCUMENTATION)
+@Author(name = OMSLINEINTERSECTIONCORRECTOR_AUTHORNAMES, contact = OMSLINEINTERSECTIONCORRECTOR_AUTHORCONTACTS)
+@Keywords(OMSLINEINTERSECTIONCORRECTOR_KEYWORDS)
+@Label(OMSLINEINTERSECTIONCORRECTOR_LABEL)
+@Name(OMSLINEINTERSECTIONCORRECTOR_NAME)
+@Status(OMSLINEINTERSECTIONCORRECTOR_STATUS)
+@License(OMSLINEINTERSECTIONCORRECTOR_LICENSE)
 public class OmsLineIntersectionCorrector extends JGTModel {
 
-    @Description("The features to be corrected.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_linesFeatures_DESCRIPTION)
     @In
     public SimpleFeatureCollection linesFeatures;
 
-    @Description("The point features that define intersections.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_pointFeatures_DESCRIPTION)
     @In
     public SimpleFeatureCollection pointFeatures;
 
-    @Description("Protection buffer.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_pBuffer_DESCRIPTION)
     @In
     public double pBuffer = 0.05;
 
-    @Description("Field name of sorting attribute.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_fSort_DESCRIPTION)
     @In
     public String fSort = null;
 
-    @Description("Sorting order (default is true).")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_doReverse_DESCRIPTION)
     @In
     public boolean doReverse = true;
 
-    @Description("The untouched features.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_untouchedFeatures_DESCRIPTION)
     @Out
     public SimpleFeatureCollection untouchedFeatures;
 
-    @Description("The corrected features.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_correctedFeatures_DESCRIPTION)
     @Out
     public SimpleFeatureCollection correctedFeatures;
 
-    @Description("The non corrected features.")
+    @Description(OMSLINEINTERSECTIONCORRECTOR_errorFeatures_DESCRIPTION)
     @Out
     public SimpleFeatureCollection errorFeatures;
 
@@ -137,8 +155,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
                 Coordinate ur = new Coordinate(c.x + pbuff, c.y + pbuff);
                 Coordinate lr = new Coordinate(c.x + pbuff, c.y - pbuff);
                 Coordinate end = new Coordinate(c.x - pbuff, c.y - pbuff);
-                LineString envelopeLine = gF
-                        .createLineString(new Coordinate[]{ll, ul, ur, lr, end});
+                LineString envelopeLine = gF.createLineString(new Coordinate[]{ll, ul, ur, lr, end});
                 pointsEnvelopes.add(envelopeLine);
             }
             pm.worked(1);
@@ -199,8 +216,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
             LineString[] lsArray = (LineString[]) geomList.toArray(new LineString[numGeometries]);
 
             try {
-                boolean splitCoordinates = correctLineIntersections(featureElevationComparer,
-                        badFeatures, lsArray, id);
+                boolean splitCoordinates = correctLineIntersections(featureElevationComparer, badFeatures, lsArray, id);
                 if (splitCoordinates) {
                     geomList.clear();
                     for( LineString lineString : lsArray ) {
@@ -217,8 +233,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
                             for( int i = 0; i <= quarter; i++ ) {
                                 tmpList.add(coordinates[i]);
                             }
-                            Coordinate[] tmpArray = (Coordinate[]) tmpList
-                                    .toArray(new Coordinate[tmpList.size()]);
+                            Coordinate[] tmpArray = (Coordinate[]) tmpList.toArray(new Coordinate[tmpList.size()]);
                             geomList.add(gF.createLineString(tmpArray));
                         } else {
                             // TODO improve this part
@@ -288,10 +303,8 @@ public class OmsLineIntersectionCorrector extends JGTModel {
      *           the rotation of the geometry's first point is requested for a second try.
      * @throws Exception
      */
-    private boolean correctLineIntersections(
-            FeatureElevationComparer currentFeatureElevationComparer,
-            List<FeatureElevationComparer> comparerList, LineString[] lsArray, int currentLineIndex )
-            throws Exception {
+    private boolean correctLineIntersections( FeatureElevationComparer currentFeatureElevationComparer,
+            List<FeatureElevationComparer> comparerList, LineString[] lsArray, int currentLineIndex ) throws Exception {
 
         ArrayList<LineString> newLines = new ArrayList<LineString>(lsArray.length);
         for( final LineString line : lsArray ) {
@@ -346,8 +359,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
                     Thread t = new Thread(new Runnable(){
 
                         public void run() {
-                            double snapTol = GeometrySnapper.computeOverlaySnapTolerance(union,
-                                    line);
+                            double snapTol = GeometrySnapper.computeOverlaySnapTolerance(union, line);
                             Geometry aFix = selfSnap(union, snapTol);
                             collection[0] = aFix.symDifference(line);
                         }
@@ -421,8 +433,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
                     Node startNode = lineStringGen.getNode(lineCoords[0]);
                     Node endNode = lineStringGen.getNode(lineCoords[lineCoords.length - 1]);
 
-                    DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph,
-                            startNode, costFunction());
+                    DijkstraShortestPathFinder pfinder = new DijkstraShortestPathFinder(graph, startNode, costFunction());
                     pfinder.calculate();
                     Path path = null;
                     try {

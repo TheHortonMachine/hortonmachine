@@ -17,6 +17,23 @@
  */
 package org.jgrasstools.gears.modules.v.smoothing;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pDensify_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pLimit_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pLookahead_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pSimplify_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pSlide_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +54,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -53,41 +69,41 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 
-@Description("The McMasters Sliding Averaging smoothing algorithm.")
-@Documentation("OmsLineSmootherMcMaster.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Smoothing, Vector, OmsLineSmootherJaitools")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("linesmoother")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSLINESMOOTHERMCMASTER_DESCRIPTION)
+@Documentation(OMSLINESMOOTHERMCMASTER_DOCUMENTATION)
+@Author(name = OMSLINESMOOTHERMCMASTER_AUTHORNAMES, contact = OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS)
+@Keywords(OMSLINESMOOTHERMCMASTER_KEYWORDS)
+@Label(OMSLINESMOOTHERMCMASTER_LABEL)
+@Name(OMSLINESMOOTHERMCMASTER_NAME)
+@Status(OMSLINESMOOTHERMCMASTER_STATUS)
+@License(OMSLINESMOOTHERMCMASTER_LICENSE)
 public class OmsLineSmootherMcMaster extends JGTModel {
 
-    @Description("The vector containing the lines to be smoothed.")
+    @Description(OMSLINESMOOTHERMCMASTER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The number of points to consider in every smoothing step (default = 7).")
+    @Description(OMSLINESMOOTHERMCMASTER_pLookahead_DESCRIPTION)
     @In
     public int pLookahead = 7;
 
-    @Description("Minimum length for a line to be smoothed.")
+    @Description(OMSLINESMOOTHERMCMASTER_pLimit_DESCRIPTION)
     @In
     public int pLimit = 0;
 
-    @Description("Slide parameter.")
+    @Description(OMSLINESMOOTHERMCMASTER_pSlide_DESCRIPTION)
     @In
     public double pSlide = 0.9;
 
-    @Description("Densifier interval.")
+    @Description(OMSLINESMOOTHERMCMASTER_pDensify_DESCRIPTION)
     @In
     public Double pDensify = null;
 
-    @Description("Simplifier tollerance.")
+    @Description(OMSLINESMOOTHERMCMASTER_pSimplify_DESCRIPTION)
     @In
     public Double pSimplify = null;
 
-    @Description("The vector with smoothed features.")
+    @Description(OMSLINESMOOTHERMCMASTER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 
@@ -114,7 +130,6 @@ public class OmsLineSmootherMcMaster extends JGTModel {
 
         outVector = FeatureCollections.newCollection();
 
-        int id = 0;
         pm.message("Collecting geometries...");
         linesList = FeatureUtilities.featureCollectionToList(inVector);
         int size = inVector.size();
@@ -128,7 +143,6 @@ public class OmsLineSmootherMcMaster extends JGTModel {
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
                 outVector.add(newFeature);
-                id++;
             }
             pm.worked(1);
         }

@@ -18,8 +18,22 @@
  */
 package org.jgrasstools.gears.modules.v.vectortransformer;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransY_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -34,7 +48,6 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -43,28 +56,29 @@ import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Module for vector tranforms. Currently only translation is supported.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Transform, Vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vtrans")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORTRANSFORMER_DESCRIPTION)
+@Documentation(OMSVECTORTRANSFORMER_DOCUMENTATION)
+@Author(name = OMSVECTORTRANSFORMER_AUTHORNAMES, contact = OMSVECTORTRANSFORMER_AUTHORCONTACTS)
+@Keywords(OMSVECTORTRANSFORMER_KEYWORDS)
+@Label(OMSVECTORTRANSFORMER_LABEL)
+@Name(OMSVECTORTRANSFORMER_NAME)
+@Status(OMSVECTORTRANSFORMER_STATUS)
+@License(OMSVECTORTRANSFORMER_LICENSE)
 public class OmsVectorTransformer extends JGTModel {
 
-    @Description("The feature collection that has to be transformed.")
+    @Description(OMSVECTORTRANSFORMER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The translation along the X axis.")
+    @Description(OMSVECTORTRANSFORMER_pTransX_DESCRIPTION)
     @In
     public double pTransX;
 
-    @Description("The translation along the Y axis.")
+    @Description(OMSVECTORTRANSFORMER_pTransY_DESCRIPTION)
     @In
     public double pTransY;
 
-    @Description("The transformed feature collection.")
+    @Description(OMSVECTORTRANSFORMER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

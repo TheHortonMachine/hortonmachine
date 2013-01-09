@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.modules.v.vectormerger;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVectors_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_outVector_DESCRIPTION;
+
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -36,26 +48,26 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-@Description("Module for merging vecotrs into one single.")
-@Documentation("OmsVectorMerger.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Feature, Vector, Merge")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("vmerge")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORMERGER_DESCRIPTION)
+@Documentation(OMSVECTORMERGER_DOCUMENTATION)
+@Author(name = OMSVECTORMERGER_AUTHORNAMES, contact = OMSVECTORMERGER_AUTHORCONTACTS)
+@Keywords(OMSVECTORMERGER_KEYWORDS)
+@Label(OMSVECTORMERGER_LABEL)
+@Name(OMSVECTORMERGER_NAME)
+@Status(OMSVECTORMERGER_STATUS)
+@License(OMSVECTORMERGER_LICENSE)
 public class OmsVectorMerger extends JGTModel {
-    @Description("The input vectors to be merged.")
+
+    @Description(OMSVECTORMERGER_inVectors_DESCRIPTION)
     @In
     public List<SimpleFeatureCollection> inVectors;
 
-    @Description("The output vector.")
+    @Description(OMSVECTORMERGER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

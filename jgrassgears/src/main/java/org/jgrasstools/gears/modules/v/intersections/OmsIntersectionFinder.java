@@ -18,16 +18,29 @@
  */
 package org.jgrasstools.gears.modules.v.intersections;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_inMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -37,10 +50,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
@@ -52,27 +62,24 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
-@Description("Finds intersection geometries in feature collections")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSINTERSECTIONFINDER_DESCRIPTION)
+@Author(name = OMSINTERSECTIONFINDER_AUTHORNAMES, contact = OMSINTERSECTIONFINDER_AUTHORCONTACTS)
+@Keywords(OMSINTERSECTIONFINDER_KEYWORDS)
+@Label(OMSINTERSECTIONFINDER_LABEL)
+@Name(OMSINTERSECTIONFINDER_NAME)
+@Status(OMSINTERSECTIONFINDER_STATUS)
+@License(OMSINTERSECTIONFINDER_LICENSE)
 public class OmsIntersectionFinder extends JGTModel {
 
-    @Description("The map to test for intersections.")
+    @Description(OMSINTERSECTIONFINDER_inMap_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The intersections points map.")
+    @Description(OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPointsMap = null;
 
-    @Description("The intersections lines map.")
+    @Description(OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outLinesMap = null;
 
@@ -85,8 +92,7 @@ public class OmsIntersectionFinder extends JGTModel {
         outPointsMap = FeatureCollections.newCollection();
         outLinesMap = FeatureCollections.newCollection();
 
-        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(inMap.getSchema()
-                .getGeometryDescriptor().getType());
+        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
         switch( geometryType ) {
         case LINE:
         case MULTILINE:
@@ -94,11 +100,9 @@ public class OmsIntersectionFinder extends JGTModel {
             break;
         case POLYGON:
         case MULTIPOLYGON:
-            throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.",
-                    this);
+            throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.", this);
         default:
-            throw new ModelsIllegalargumentException("The module doesn't work for points.", this
-                    .getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("The module doesn't work for points.", this.getClass().getSimpleName());
         }
 
     }
@@ -148,16 +152,14 @@ public class OmsIntersectionFinder extends JGTModel {
                             Point p = (Point) geometryN;
                             Object[] values = new Object[]{p};
                             builder.addAll(values);
-                            SimpleFeature feature = builder.buildFeature(pointType.getTypeName()
-                                    + "." + id++);
+                            SimpleFeature feature = builder.buildFeature(pointType.getTypeName() + "." + id++);
                             outPointsMap.add(feature);
                         } else if (geometryN instanceof LineString) {
                             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(linesType);
                             LineString l = (LineString) geometryN;
                             Object[] values = new Object[]{l};
                             builder.addAll(values);
-                            SimpleFeature feature = builder.buildFeature(linesType.getTypeName()
-                                    + "." + id++);
+                            SimpleFeature feature = builder.buildFeature(linesType.getTypeName() + "." + id++);
                             outLinesMap.add(feature);
                         }
 

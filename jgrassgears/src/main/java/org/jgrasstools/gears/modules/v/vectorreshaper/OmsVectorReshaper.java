@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.v.vectorreshaper;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pCql_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pRemove_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -61,31 +75,30 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Module to reshape a vector.")
-@Documentation("OmsVectorReshaper.html")
-@Author(name = "Andrea Antonello, Jody Garnett", contact = "http://www.hydrologis.com")
-@Keywords("Reshape, Vector, OmsVectorFilter")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("reshape")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSVECTORRESHAPER_DESCRIPTION)
+@Documentation(OMSVECTORRESHAPER_DOCUMENTATION)
+@Author(name = OMSVECTORRESHAPER_AUTHORNAMES, contact = OMSVECTORRESHAPER_AUTHORCONTACTS)
+@Keywords(OMSVECTORRESHAPER_KEYWORDS)
+@Label(OMSVECTORRESHAPER_LABEL)
+@Name(OMSVECTORRESHAPER_NAME)
+@Status(OMSVECTORRESHAPER_STATUS)
+@License(OMSVECTORRESHAPER_LICENSE)
 public class OmsVectorReshaper extends JGTModel {
 
-    @Description("The vector to reshape.")
+    @Description(OMSVECTORRESHAPER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description("The ECQL reshape function.")
+    @Description(OMSVECTORRESHAPER_pCql_DESCRIPTION)
     @UI(JGTConstants.MULTILINE_UI_HINT + "5")
     @In
     public String pCql = null;
 
-    @Description("The list of fields to remove, comma separated.")
+    @Description(OMSVECTORRESHAPER_pRemove_DESCRIPTION)
     @In
     public String pRemove = null;
 
-    @Description("The new reshaped vector.")
+    @Description(OMSVECTORRESHAPER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
 

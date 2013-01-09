@@ -19,6 +19,21 @@ package org.jgrasstools.gears.modules.v.vectorize;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_doRegioncheck_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_fDefault_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pThres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pValue_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.Point;
@@ -57,7 +72,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -72,38 +86,37 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
-@Description("Module for raster to vector conversion.")
-@Documentation("OmsVectorizer.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, OmsScanLineRasterizer")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("vectorizer")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSVECTORIZER_DESCRIPTION)
+@Documentation(OMSVECTORIZER_DOCUMENTATION)
+@Author(name = OMSVECTORIZER_AUTHORNAMES, contact = OMSVECTORIZER_AUTHORCONTACTS)
+@Keywords(OMSVECTORIZER_KEYWORDS)
+@Label(OMSVECTORIZER_LABEL)
+@Name(OMSVECTORIZER_NAME)
+@Status(OMSVECTORIZER_STATUS)
+@License(OMSVECTORIZER_LICENSE)
 public class OmsVectorizer extends JGTModel {
 
-    @Description("The raster that has to be converted.")
+    @Description(OMSVECTORIZER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The value to use to trace the polygons. If it is null then all the value of the raster are used.")
+    @Description(OMSVECTORIZER_pValue_DESCRIPTION)
     @In
     public Double pValue = null;
 
-    @Description("The field name to use as a name for the raster value in the vector.")
+    @Description(OMSVECTORIZER_fDefault_DESCRIPTION)
     @In
     public String fDefault = "value";
 
-    @Description("A threshold on cell number to filter away polygons with cells less than that.")
+    @Description(OMSVECTORIZER_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
 
-    @Description("Make a check on the raster first and shrink the boundaries on the region with data.")
+    @Description(OMSVECTORIZER_doRegioncheck_DESCRIPTION)
     @In
     public boolean doRegioncheck = false;
 
-    @Description("The extracted vector.")
+    @Description(OMSVECTORIZER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 
