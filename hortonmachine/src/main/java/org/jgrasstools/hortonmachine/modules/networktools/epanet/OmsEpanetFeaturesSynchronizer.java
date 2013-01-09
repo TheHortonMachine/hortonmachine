@@ -21,6 +21,23 @@ package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 import static java.lang.Math.abs;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inJunctions_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inPipes_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inPumps_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inReservoirs_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inTanks_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_inValves_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_outWarning_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETFEATURESSYNCHRONIZER_pTol_DESCRIPTION;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
@@ -32,7 +49,9 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -41,8 +60,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetConstants;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
@@ -56,57 +73,54 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Synchronizes the features of the different epanet layers.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-@SuppressWarnings("nls")
+@Description(OMSEPANETFEATURESSYNCHRONIZER_DESCRIPTION)
+@Author(name = OMSEPANETFEATURESSYNCHRONIZER_AUTHORNAMES, contact = OMSEPANETFEATURESSYNCHRONIZER_AUTHORCONTACTS)
+@Keywords(OMSEPANETFEATURESSYNCHRONIZER_KEYWORDS)
+@Label(OMSEPANETFEATURESSYNCHRONIZER_LABEL)
+@Name(OMSEPANETFEATURESSYNCHRONIZER_NAME)
+@Status(OMSEPANETFEATURESSYNCHRONIZER_STATUS)
+@License(OMSEPANETFEATURESSYNCHRONIZER_LICENSE)
 public class OmsEpanetFeaturesSynchronizer extends JGTModel {
 
-    @Description("The junctions features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inJunctions_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inJunctions = null;
 
-    @Description("The junctions features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inTanks_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inTanks = null;
 
-    @Description("The tanks features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inReservoirs_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inReservoirs = null;
 
-    @Description("The pumps features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inPumps_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inPumps = null;
 
-    @Description("The valves features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inValves_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inValves = null;
 
-    @Description("The pipes features.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inPipes_DESCRIPTION)
     @In
     @Out
     public SimpleFeatureCollection inPipes = null;
 
-    @Description("The elevation model to extract the elevations.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The tolerance in meters for putting a node on a coordinate (default = 0.0001 meters).")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_pTol_DESCRIPTION)
     @In
     public double pTol = 0.0001;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("Warning messages if something odd happened but is no error.")
+    @Description(OMSEPANETFEATURESSYNCHRONIZER_outWarning_DESCRIPTION)
     @Out
     public String outWarning = "";
 

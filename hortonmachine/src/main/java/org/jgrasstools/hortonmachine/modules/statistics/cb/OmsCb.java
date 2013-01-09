@@ -17,11 +17,25 @@
  */
 package org.jgrasstools.hortonmachine.modules.statistics.cb;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_inRaster1_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_inRaster2_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_outCb_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_pBins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_pFirst_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCB_pLast_DESCRIPTION;
+
 import java.awt.image.RenderedImage;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -32,43 +46,39 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
-@Description("Calculates the histogram of a set of data contained in a matrix "
-        + "with respect to the set of data contained in another matrix.")
-@Documentation("OmsCb.html")
-@Author(name = "Andrea Antonello, Silvia Franceschi, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Histogram, Geomorphology, Statistic")
-@Label(JGTConstants.STATISTICS)
-@Name("cb")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSCB_DESCRIPTION)
+@Author(name = OMSCB_AUTHORNAMES, contact = OMSCB_AUTHORCONTACTS)
+@Keywords(OMSCB_KEYWORDS)
+@Label(OMSCB_LABEL)
+@Name(OMSCB_NAME)
+@Status(OMSCB_STATUS)
+@License(OMSCB_LICENSE)
 public class OmsCb extends JGTModel {
-    @Description("The first raster to analyse.")
+
+    @Description(OMSCB_inRaster1_DESCRIPTION)
     @In
     public GridCoverage2D inRaster1 = null;
 
-    @Description("The second raster to analyse.")
+    @Description(OMSCB_inRaster2_DESCRIPTION)
     @In
     public GridCoverage2D inRaster2 = null;
 
-    @Description("The number of bins into which divide the data range.")
+    @Description(OMSCB_pBins_DESCRIPTION)
     @In
     public int pBins = 100;
 
-    @Description("The first moment to calculate.")
+    @Description(OMSCB_pFirst_DESCRIPTION)
     @In
     public int pFirst = 1;
 
-    @Description("The last moment to calculate.")
+    @Description(OMSCB_pLast_DESCRIPTION)
     @In
     public int pLast = 2;
 
-    @Description("A matrix containing " + "1) the mean value of the data in abscissa; "
-            + "2) the number of elements in each interval; " + "3) the mean value of the data in ordinate; "
-            + "n+2) the n-esimal moment of the data in ordinate.")
+    @Description(OMSCB_outCb_DESCRIPTION)
     @Out
     public double[][] outCb;
 

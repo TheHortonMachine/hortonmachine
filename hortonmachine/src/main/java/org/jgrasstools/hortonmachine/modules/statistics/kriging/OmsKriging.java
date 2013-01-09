@@ -17,6 +17,33 @@
 package org.jgrasstools.hortonmachine.modules.statistics.kriging;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_doIncludezero_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_doLogarithmic_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_fInterpolateid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_fPointZ_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_fStationsZ_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_fStationsid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_inData_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_inInterpolate_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_inInterpolationGrid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_inStations_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_outData_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_outGrid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pIntegralscale_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pMode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pNug_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pSemivariogramType_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKRIGING_pVariance_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -31,7 +58,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -50,7 +76,6 @@ import org.geotools.feature.SchemaException;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -66,42 +91,40 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Ordinary kriging algorithm.")
-@Documentation("OmsKriging.html")
-@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com,  http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("OmsKriging, Hydrology")
-@Label(JGTConstants.STATISTICS)
-@Name("kriging")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSKRIGING_DESCRIPTION)
+@Author(name = OMSKRIGING_AUTHORNAMES, contact = OMSKRIGING_AUTHORCONTACTS)
+@Keywords(OMSKRIGING_KEYWORDS)
+@Label(OMSKRIGING_LABEL)
+@Name(OMSKRIGING_NAME)
+@Status(OMSKRIGING_STATUS)
+@License(OMSKRIGING_LICENSE)
 public class OmsKriging extends JGTModel {
 
-    @Description("The vector of the measurement point, containing the position of the stations.")
+    @Description(OMSKRIGING_inStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inStations = null;
 
-    @Description("The field of the vector of stations, defining the id.")
+    @Description(OMSKRIGING_fStationsid_DESCRIPTION)
     @In
     public String fStationsid = null;
 
-    @Description("The field of the vector of stations, defining the elevation.")
+    @Description(OMSKRIGING_fStationsZ_DESCRIPTION)
     @In
     public String fStationsZ = null;
 
-    @Description("The file with the measured data, to be interpolated.")
+    @Description(OMSKRIGING_inData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData = null;
 
-    @Description("The vector of the points in which the data have to be interpolated.")
+    @Description(OMSKRIGING_inInterpolate_DESCRIPTION)
     @In
     public SimpleFeatureCollection inInterpolate = null;
 
-    @Description("The field of the interpolated vector points, defining the id.")
+    @Description(OMSKRIGING_fInterpolateid_DESCRIPTION)
     @In
     public String fInterpolateid = null;
 
-    @Description("The field of the interpolated vector points, defining the elevation.")
+    @Description(OMSKRIGING_fPointZ_DESCRIPTION)
     @In
     public String fPointZ = null;
 
@@ -119,7 +142,7 @@ public class OmsKriging extends JGTModel {
      * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
      * so the grid have to contains a dem.
      */
-    @Description("The interpolation mode (0 = interpolate on irregular grid, 1 = interpolate on regular grid).")
+    @Description(OMSKRIGING_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
@@ -127,14 +150,14 @@ public class OmsKriging extends JGTModel {
      * The integral scale, this is necessary to calculate the variogram if the
      * program use {@link Kriging2.variogram(rx,ry,rz)}.
      */
-    @Description("The integral scale.")
+    @Description(OMSKRIGING_pIntegralscale_DESCRIPTION)
     @In
     public double[] pIntegralscale = null;
 
     /**
      * Variance of the measure field.
      */
-    @Description("The variance.")
+    @Description(OMSKRIGING_pVariance_DESCRIPTION)
     @In
     public double pVariance = 0;
 
@@ -142,41 +165,41 @@ public class OmsKriging extends JGTModel {
      * The logarithm selector, if it's true then the models runs with the log of
      * the data.
      */
-    @Description("Switch for logaritmic run selection.")
+    @Description(OMSKRIGING_doLogarithmic_DESCRIPTION)
     @In
     public boolean doLogarithmic = false;
 
-    @Description("The collection of the points in which the data needs to be interpolated.")
+    @Description(OMSKRIGING_inInterpolationGrid_DESCRIPTION)
     @In
     public GridGeometry2D inInterpolationGrid = null;
 
     public int defaultVariogramMode = 0;
 
-    @Description("The type of theoretical semivariogram: 0 = Gaussian; 1 = Exponential.")
+    @Description(OMSKRIGING_pSemivariogramType_DESCRIPTION)
     @In
     public double pSemivariogramType = 0;
 
-    @Description("Include zeros in computations (default is true).")
+    @Description(OMSKRIGING_doIncludezero_DESCRIPTION)
     @In
     public boolean doIncludezero = true;
 
-    @Description("The range if the models runs with the gaussian variogram.")
+    @Description(OMSKRIGING_pA_DESCRIPTION)
     @In
     public double pA;
 
-    @Description("The sill if the models runs with the gaussian variogram.")
+    @Description(OMSKRIGING_pS_DESCRIPTION)
     @In
     public double pS;
 
-    @Description("Is the nugget if the models runs with the gaussian variogram.")
+    @Description(OMSKRIGING_pNug_DESCRIPTION)
     @In
     public double pNug;
 
-    @Description("The interpolated gridded data (for mode 2 and 3.")
+    @Description(OMSKRIGING_outGrid_DESCRIPTION)
     @Out
     public GridCoverage2D outGrid = null;
 
-    @Description("The interpolated data (for mode 0 and 1).")
+    @Description(OMSKRIGING_outData_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outData = null;
 

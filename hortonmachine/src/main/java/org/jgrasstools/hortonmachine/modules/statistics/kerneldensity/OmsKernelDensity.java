@@ -18,6 +18,19 @@
 package org.jgrasstools.hortonmachine.modules.statistics.kerneldensity;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_doConstant_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_inMap_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_outDensity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_pKernel_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSKERNELDENSITY_pRadius_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -46,32 +59,32 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Kernel Density Estimator (based on the Jaitools project).")
-@Author(name = "Andrea Antonello", contact = "http://jaitools.org, www.hydrologis.com")
-@Keywords("Kernel Density, Raster")
-@Name("kerneldenisty")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSKERNELDENSITY_DESCRIPTION)
+@Author(name = OMSKERNELDENSITY_AUTHORNAMES, contact = OMSKERNELDENSITY_AUTHORCONTACTS)
+@Keywords(OMSKERNELDENSITY_KEYWORDS)
+@Label(OMSKERNELDENSITY_LABEL)
+@Name(OMSKERNELDENSITY_NAME)
+@Status(OMSKERNELDENSITY_STATUS)
+@License(OMSKERNELDENSITY_LICENSE)
 public class OmsKernelDensity extends JGTModel {
 
-    @Description("The input map.")
+    @Description(OMSKERNELDENSITY_inMap_DESCRIPTION)
     @In
     public GridCoverage2D inMap = null;
 
-    @Description("The kernel to use (binary=0, cosine=1, distance=2, epanechnikov=3 (default), gaussian=4, inverse_distance=5, quartic=6, triangular=7, triweight=8).")
+    @Description(OMSKERNELDENSITY_pKernel_DESCRIPTION)
     @In
     public int pKernel = 3;
 
-    @Description("The kernel radius to use (default = 10).")
+    @Description(OMSKERNELDENSITY_pRadius_DESCRIPTION)
     @In
     public int pRadius = 10;
 
-    @Description("Use a constant value for the existing input map values instead of the real map value (default = false).")
+    @Description(OMSKERNELDENSITY_doConstant_DESCRIPTION)
     @In
     public boolean doConstant = false;
 
-    @Description("The kernel density estimation.")
+    @Description(OMSKERNELDENSITY_outDensity_DESCRIPTION)
     @Out
     public GridCoverage2D outDensity = null;
 

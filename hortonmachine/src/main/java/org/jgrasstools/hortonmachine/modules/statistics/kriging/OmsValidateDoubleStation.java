@@ -1,5 +1,20 @@
 package org.jgrasstools.hortonmachine.modules.statistics.kriging;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_doMean_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_fStationsid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_inData_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_inStations_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_outData_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVALIDATEDOUBLESTATION_outStations_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,8 +24,9 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -18,48 +34,42 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Verify if there is a double station into the data. If the double station have different value then it is possible calculating the mean of two value ")
-@Author(name = "Daniele Andreis and Riccardo Rigon")
-@Keywords("Hydrology, statistic")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/")
+@Description(OMSVALIDATEDOUBLESTATION_DESCRIPTION)
+@Author(name = OMSVALIDATEDOUBLESTATION_AUTHORNAMES, contact = OMSVALIDATEDOUBLESTATION_AUTHORCONTACTS)
+@Keywords(OMSVALIDATEDOUBLESTATION_KEYWORDS)
+@Label(OMSVALIDATEDOUBLESTATION_LABEL)
+@Name(OMSVALIDATEDOUBLESTATION_NAME)
+@Status(OMSVALIDATEDOUBLESTATION_STATUS)
+@License(OMSVALIDATEDOUBLESTATION_LICENSE)
 public class OmsValidateDoubleStation extends JGTModel {
 
-    @Description("The collection of the measurement point, containing the position of the station.")
+    @Description(OMSVALIDATEDOUBLESTATION_inStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inStations = null;
 
-    @Description("The field of the stations collections, defining the id.")
+    @Description(OMSVALIDATEDOUBLESTATION_fStationsid_DESCRIPTION)
     @In
     public String fStationsid = null;
 
-    @Description("The measured data, to be verified.")
+    @Description(OMSVALIDATEDOUBLESTATION_inData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData = null;
 
-    @Description("The measured data, without a double value.")
+    @Description(OMSVALIDATEDOUBLESTATION_outData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> outData = null;
 
-    @Description("The collection of the measurement point, containing the position of the station without the double point.")
+    @Description(OMSVALIDATEDOUBLESTATION_outStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection outStations = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Role(Role.PARAMETER)
-    @Description("Select if do the mean between double value or delete one of these if they are equals.")
+    @Description(OMSVALIDATEDOUBLESTATION_doMean_DESCRIPTION)
     @In
     public boolean doMean = false;
 

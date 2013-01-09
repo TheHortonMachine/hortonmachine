@@ -17,17 +17,33 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_doFromold_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_pNetname_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_pOldVector_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOPPROJECTFILESGENERATOR_pShapeAreeName_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Utility.makePolygonShp;
 
 import java.io.File;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -40,8 +56,6 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants;
 import org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.ITrentoPType;
@@ -53,47 +67,44 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Generates the input shapefiles for a OmsTrentoP simulation.")
-@Author(name = "Daniele Andreis")
-@Keywords("OmsTrentoP")
-@Status(Status.DRAFT)
-@Documentation("OmsTrentoPProjectFilesGenerator.html")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION)
+@Author(name = OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES, contact = OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS)
+@Keywords(OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS)
+@Label(OMSTRENTOPPROJECTFILESGENERATOR_LABEL)
+@Name(OMSTRENTOPPROJECTFILESGENERATOR_NAME)
+@Status(OMSTRENTOPPROJECTFILESGENERATOR_STATUS)
+@License(OMSTRENTOPPROJECTFILESGENERATOR_LICENSE)
 public class OmsTrentoPProjectFilesGenerator extends JGTModel {
 
-    @Description("The folder into which to create the base files.")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION)
     @In
     public String inFolder = null;
 
-    @Description("If it is 0 then create a project file (default mode), if 1 create the calibration shp.")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("If it is true then generate it from an old output file.")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_doFromold_DESCRIPTION)
     @In
     public boolean doFromold = false;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The optional name of the shapefile.")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pNetname_DESCRIPTION)
     @In
     public String pNetname = null;
 
-    @Description("The output vector of OmsTrentoP. It's a geosewer network.")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pOldVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection pOldVector = null;
 
-    @Description("The optional name of the shapefile. By default it is aree.shp")
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pShapeAreeName_DESCRIPTION)
     @In
     public String pShapeAreeName = Constants.AREA_NAME_SHP;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-    
     /**
      * Message handler.
      */

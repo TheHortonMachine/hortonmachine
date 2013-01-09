@@ -28,6 +28,36 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.WIND;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.tk;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultDtday_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultDtmonth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultTolltmax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultTolltmin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_defaultW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_fBasinid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_fStationelev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_fStationid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_inAltimetry_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_inAreas_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_inInterpolate_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_inMeteo_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_inStations_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_outInterpolatedBand_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_outInterpolated_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pBins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pHtmax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pHtmin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pNum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pType_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_tCurrent_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,8 +76,8 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
@@ -66,123 +96,109 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-@Description("OmsJami - Just another meteo interpolator")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Meteo, Hydrology")
-@Label(JGTConstants.STATISTICS)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description(OMSJAMI_DESCRIPTION)
+@Author(name = OMSJAMI_AUTHORNAMES, contact = OMSJAMI_AUTHORCONTACTS)
+@Keywords(OMSJAMI_KEYWORDS)
+@Label(OMSJAMI_LABEL)
+@Name(OMSJAMI_NAME)
+@Status(OMSJAMI_STATUS)
+@License(OMSJAMI_LICENSE)
 public class OmsJami extends JGTModel {
 
-    @Description("The features representing the meteo stations " + "and containing the position information as well "
-            + "as the elevation. Every feature has a unique id " + "that is used to map the meteo data records to it.")
+    @Description(OMSJAMI_inStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inStations;
 
-    @Role(Role.PARAMETER)
-    @Description("The field name of the attribute table that holds the station id.")
+    @Description(OMSJAMI_fStationid_DESCRIPTION)
     @In
     public String fStationid;
 
-    @Role(Role.PARAMETER)
-    @Description("The field name of the attribute table that holds the station elevation.")
+    @Description(OMSJAMI_fStationelev_DESCRIPTION)
     @In
     public String fStationelev;
 
-    @Role(Role.PARAMETER)
-    @Description("The bins into which to divide the vertical range of stations in order to define levels.")
+    @Description(OMSJAMI_pBins_DESCRIPTION)
     @In
     public int pBins = 4;
 
-    @Role(Role.PARAMETER)
-    @Description("The minimum number of stations required at a certain level, to perform interpolation.")
+    @Description(OMSJAMI_pNum_DESCRIPTION)
     @In
     public int pNum = 3;
 
-    @Description("The features representing the points in which the meteo data will be interpolated to. The baricenter of the basin is used to place the result of"
-            + "the interpolation. These can be of any shape, the baricenter will be used anyways.")
+    @Description(OMSJAMI_inInterpolate_DESCRIPTION)
     @In
     public SimpleFeatureCollection inInterpolate;
 
-    @Role(Role.PARAMETER)
-    @Description("The field name of the attribute table that holds the basin id.")
+    @Description(OMSJAMI_fBasinid_DESCRIPTION)
     @In
     public String fBasinid;
 
-    @Role(Role.PARAMETER)
-    @Description("The meteo type that will be handled for interpolation.")
+    @Description(OMSJAMI_pType_DESCRIPTION)
     @In
     public int pType = -1;
 
-    @Role(Role.PARAMETER)
-    @Description("The default value for relative humidity: 70%")
+    @Description(OMSJAMI_defaultRh_DESCRIPTION)
     @Unit("%")
     @In
     public double defaultRh = 70.0;
 
-    @Role(Role.PARAMETER)
-    @Description("The default value for wind speed: 1 m/s")
+    @Description(OMSJAMI_defaultW_DESCRIPTION)
     @Unit("m/s")
     @In
     public double defaultW = 1.0;
 
-    @Role(Role.PARAMETER)
-    @Description("The hour of the day in which Tmin is supposed to happen.")
+    @Description(OMSJAMI_pHtmin_DESCRIPTION)
     @Unit("hours")
     @In
     public double pHtmin = 5.0;
 
-    @Role(Role.PARAMETER)
-    @Description("The hour of the day in which Tmax is supposed to happen.")
+    @Description(OMSJAMI_pHtmax_DESCRIPTION)
     @Unit("hours")
     @In
     public double pHtmax = 13.0;
 
-    @Role(Role.PARAMETER)
-    @Description("Dayly temperature range.")
+    @Description(OMSJAMI_defaultDtday_DESCRIPTION)
     @Unit("celsius degrees")
     @In
     public double defaultDtday = 7.0;
 
-    @Role(Role.PARAMETER)
-    @Description("Monthly temperature range.")
+    @Description(OMSJAMI_defaultDtmonth_DESCRIPTION)
     @Unit("celsius degrees")
     @In
     public double defaultDtmonth = 7.0;
 
-    @Role(Role.PARAMETER)
-    @Description("Number of hours of tollerance in Tmin")
+    @Description(OMSJAMI_defaultTolltmin_DESCRIPTION)
     @Unit("hours")
     @In
     public double defaultTolltmin = 2.0;
 
-    @Role(Role.PARAMETER)
-    @Description("Number of hours of tollerance in Tmax")
+    @Description(OMSJAMI_defaultTolltmax_DESCRIPTION)
     @Unit("hours")
     @In
     public double defaultTolltmax = 2.0;
 
-    @Description("The current time variable.")
+    @Description(OMSJAMI_tCurrent_DESCRIPTION)
     @In
     public String tCurrent = null;
 
-    @Description("The list of altimetric bands information, into which the basin is divided.")
+    @Description(OMSJAMI_inAltimetry_DESCRIPTION)
     @In
     public List<EIAltimetry> inAltimetry = null;
 
-    @Description("The list of altimetric/energetic bands areas.")
+    @Description(OMSJAMI_inAreas_DESCRIPTION)
     @In
     public List<EIAreas> inAreas = null;
 
-    @Description("The map of meteo data to interpolate. Every value is associated to the id of the station.")
+    @Description(OMSJAMI_inMeteo_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inMeteo = null;
 
-    @Description("The map of interpolated meteo data for every band and point. Every value is associated to the id of the interpolation point.")
+    @Description(OMSJAMI_outInterpolatedBand_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outInterpolatedBand = null;
 
-    @Description("The map of interpolated meteo data for every point. Every value is associated to the id of the interpolation point.")
+    @Description(OMSJAMI_outInterpolated_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outInterpolated = null;
 
@@ -942,14 +958,14 @@ public class OmsJami extends JGTModel {
                  */
                 // i is the column (basin) index
                 // the station id index can be taken from the idStationIndexMap
-              //  System.out.print("STATIONS for basin " + basinindex2basinidMap.get(i) + ": ");
+                // System.out.print("STATIONS for basin " + basinindex2basinidMap.get(i) + ": ");
                 for( Integer stationIdToEnable : stationsToUse ) {
                     int stIndex = stationid2StationindexMap.get(stationIdToEnable);
                     stationsBasins[stIndex][i] = 1;
-                    
-                //    System.out.print(stationIdToEnable + ", ");
+
+                    // System.out.print(stationIdToEnable + ", ");
                 }
-              //  System.out.println();
+                // System.out.println();
                 activeStationsForThisBasin = activeStationsForThisBasin + stationsToUse.size();
             }
 

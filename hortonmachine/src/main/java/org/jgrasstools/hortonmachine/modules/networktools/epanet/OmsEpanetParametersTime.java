@@ -18,6 +18,25 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_duration_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_hydraulicTimestep_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_inFile_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_outProperties_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_patternStart_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_patternTimestep_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_reportStart_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_reportTimestep_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_startClockTime_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSTIME_statistic_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -28,64 +47,62 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.TimeParameterCodes;
 
-@Description("The time related parameters of the epanet inp file")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEPANETPARAMETERSTIME_DESCRIPTION)
+@Author(name = OMSEPANETPARAMETERSTIME_AUTHORNAMES, contact = OMSEPANETPARAMETERSTIME_AUTHORCONTACTS)
+@Keywords(OMSEPANETPARAMETERSTIME_KEYWORDS)
+@Label(OMSEPANETPARAMETERSTIME_LABEL)
+@Name(OMSEPANETPARAMETERSTIME_NAME)
+@Status(OMSEPANETPARAMETERSTIME_STATUS)
+@License(OMSEPANETPARAMETERSTIME_LICENSE)
 public class OmsEpanetParametersTime extends JGTModel {
 
-    @Description("The duration of the simulation in minutes. Default is 0.")
+    @Description(OMSEPANETPARAMETERSTIME_duration_DESCRIPTION)
     @In
     public Double duration = null;
 
-    @Description("Defines how often a new hydraulic state of the network is computed. In minutes. Default is 60 minutes.")
+    @Description(OMSEPANETPARAMETERSTIME_hydraulicTimestep_DESCRIPTION)
     @In
     public Double hydraulicTimestep = null;
 
-    @Description("The interval between time periods in all time patterns. Default is 60 minutes.")
+    @Description(OMSEPANETPARAMETERSTIME_patternTimestep_DESCRIPTION)
     @In
     public Double patternTimestep = null;
 
-    @Description("The time offset in minutes at which all patterns will start.")
+    @Description(OMSEPANETPARAMETERSTIME_patternStart_DESCRIPTION)
     @In
     public Double patternStart = null;
 
-    @Description("Sets the timestep interval of the report in minutes. Default is 60 minutes.")
+    @Description(OMSEPANETPARAMETERSTIME_reportTimestep_DESCRIPTION)
     @In
     public Double reportTimestep = null;
 
-    @Description("The time offset in minutes at which the report will start.")
+    @Description(OMSEPANETPARAMETERSTIME_reportStart_DESCRIPTION)
     @In
     public Double reportStart = null;
 
-    @Description("The time of the day at which the simulation begins. format is: [HH:MM AM/PM]")
+    @Description(OMSEPANETPARAMETERSTIME_startClockTime_DESCRIPTION)
     @In
     public String startClockTime = null;
 
-    @Description("Kind of postprocessing that should be done on time series.")
+    @Description(OMSEPANETPARAMETERSTIME_statistic_DESCRIPTION)
     @In
     public String statistic = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("Properties file containing the time options.")
+    @Description(OMSEPANETPARAMETERSTIME_inFile_DESCRIPTION)
     @In
     public String inFile = null;
 
-    @Description("The Properties needed for epanet.")
+    @Description(OMSEPANETPARAMETERSTIME_outProperties_DESCRIPTION)
     @Out
     public Properties outProperties = new Properties();
 

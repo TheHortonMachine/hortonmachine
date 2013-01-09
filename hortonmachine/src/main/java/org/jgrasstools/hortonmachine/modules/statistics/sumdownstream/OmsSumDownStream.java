@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.hortonmachine.modules.statistics.sumdownstream;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_inToSum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_outSummed_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_pLowerThres_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION;
+
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
@@ -24,7 +38,6 @@ import javax.media.jai.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -35,37 +48,36 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Sums the values of a map downstream following the flowdirections.")
-@Documentation("OmsSumDownStream.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Sumdownstream, Statistic, OmsExtractNetwork")
-@Label(JGTConstants.STATISTICS)
-@Name("sumdownstream")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSUMDOWNSTREAM_DESCRIPTION)
+@Author(name = OMSSUMDOWNSTREAM_AUTHORNAMES, contact = OMSSUMDOWNSTREAM_AUTHORCONTACTS)
+@Keywords(OMSSUMDOWNSTREAM_KEYWORDS)
+@Label(OMSSUMDOWNSTREAM_LABEL)
+@Name(OMSSUMDOWNSTREAM_NAME)
+@Status(OMSSUMDOWNSTREAM_STATUS)
+@License(OMSSUMDOWNSTREAM_LICENSE)
 public class OmsSumDownStream extends JGTModel {
-    @Description("The map of flowdirections.")
+
+    @Description(OMSSUMDOWNSTREAM_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map to sum.")
+    @Description(OMSSUMDOWNSTREAM_inToSum_DESCRIPTION)
     @In
     public GridCoverage2D inToSum = null;
 
-    @Description("The upper threshold.")
+    @Description(OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION)
     @In
     public Double pUpperThres = null;
 
-    @Description("The lower threshold.")
+    @Description(OMSSUMDOWNSTREAM_pLowerThres_DESCRIPTION)
     @In
     public Double pLowerThres = null;
 
-    @Description("The map of summed values.")
+    @Description(OMSSUMDOWNSTREAM_outSummed_DESCRIPTION)
     @Out
     public GridCoverage2D outSummed = null;
 

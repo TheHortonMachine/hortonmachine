@@ -18,6 +18,30 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_accuracy_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_demandMultiplier_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_diffusivity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_emitterExponent_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_headloss_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_inFile_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_outProperties_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_pattern_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_quality_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_specificGravity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_tolerance_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_trials_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_unbalanced_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_units_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPARAMETERSOPTIONS_viscosity_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -28,7 +52,9 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -36,70 +62,72 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.OptionParameterCodes;
 
-@Description("The options parameters of the epanet inp file")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEPANETPARAMETERSOPTIONS_DESCRIPTION)
+@Author(name = OMSEPANETPARAMETERSOPTIONS_AUTHORNAMES, contact = OMSEPANETPARAMETERSOPTIONS_AUTHORCONTACTS)
+@Keywords(OMSEPANETPARAMETERSOPTIONS_KEYWORDS)
+@Label(OMSEPANETPARAMETERSOPTIONS_LABEL)
+@Name(OMSEPANETPARAMETERSOPTIONS_NAME)
+@Status(OMSEPANETPARAMETERSOPTIONS_STATUS)
+@License(OMSEPANETPARAMETERSOPTIONS_LICENSE)
 public class OmsEpanetParametersOptions extends JGTModel {
 
-    @Description("Units.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_units_DESCRIPTION)
     @In
     public String units = null;
 
-    @Description("Headloss.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_headloss_DESCRIPTION)
     @In
     public String headloss = null;
 
-    @Description("Quality.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_quality_DESCRIPTION)
     @In
     public String quality = null;
 
-    @Description("Viscosity.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_viscosity_DESCRIPTION)
     @In
     public Double viscosity = null;
 
-    @Description("Diffusivity.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_diffusivity_DESCRIPTION)
     @In
     public Double diffusivity = null;
 
-    @Description("Specific gravity.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_specificGravity_DESCRIPTION)
     @In
     public Double specificGravity = null;
 
-    @Description("Trials.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_trials_DESCRIPTION)
     @In
     public Integer trials = null;
 
-    @Description("Accuracy.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_accuracy_DESCRIPTION)
     @In
     public Double accuracy = null;
 
-    @Description("Unbalanced.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_unbalanced_DESCRIPTION)
     @In
     public String unbalanced = null;
 
-    @Description("Pattern.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_pattern_DESCRIPTION)
     @In
     public Integer pattern = null;
 
-    @Description("Demand multiplier.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_demandMultiplier_DESCRIPTION)
     @In
     public Double demandMultiplier = null;
 
-    @Description("Emitter exponent.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_emitterExponent_DESCRIPTION)
     @In
     public Double emitterExponent = null;
 
-    @Description("Tolerance.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_tolerance_DESCRIPTION)
     @In
     public Double tolerance = null;
 
-    @Description("Properties file containing the options.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_inFile_DESCRIPTION)
     @In
     public String inFile = null;
 
-    @Description("The Properties needed for epanet.")
+    @Description(OMSEPANETPARAMETERSOPTIONS_outProperties_DESCRIPTION)
     @Out
     public Properties outProperties = new Properties();
 

@@ -747,7 +747,7 @@ public class HortonMessages {
     public static final String OMSJAMI_DOCUMENTATION = "";
     public static final String OMSJAMI_KEYWORDS = "Meteo, Hydrology";
     public static final String OMSJAMI_LABEL = "HortonMachine/Statistics";
-    public static final String OMSJAMI_NAME = "";
+    public static final String OMSJAMI_NAME = "jami";
     public static final int OMSJAMI_STATUS = 5;
     public static final String OMSJAMI_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSJAMI_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";

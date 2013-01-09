@@ -18,6 +18,28 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inControl_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inDemand_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inExtras_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inJunctions_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inOptions_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inPipes_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inPumps_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inReservoirs_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inRules_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inTanks_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inTime_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_inValves_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETINPGENERATOR_outFile_DESCRIPTION;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -35,15 +57,15 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetConstants;
@@ -58,67 +80,64 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Generates the inp file for an epanet run.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-@SuppressWarnings("nls")
+@Description(OMSEPANETINPGENERATOR_DESCRIPTION)
+@Author(name = OMSEPANETINPGENERATOR_AUTHORNAMES, contact = OMSEPANETINPGENERATOR_AUTHORCONTACTS)
+@Keywords(OMSEPANETINPGENERATOR_KEYWORDS)
+@Label(OMSEPANETINPGENERATOR_LABEL)
+@Name(OMSEPANETINPGENERATOR_NAME)
+@Status(OMSEPANETINPGENERATOR_STATUS)
+@License(OMSEPANETINPGENERATOR_LICENSE)
 public class OmsEpanetInpGenerator extends JGTModel {
 
-    @Description("The options parameters.")
+    @Description(OMSEPANETINPGENERATOR_inOptions_DESCRIPTION)
     @In
     public OmsEpanetParametersOptions inOptions = null;
 
-    @Description("The time parameters.")
+    @Description(OMSEPANETINPGENERATOR_inTime_DESCRIPTION)
     @In
     public OmsEpanetParametersTime inTime = null;
 
-    @Description("The junctions features.")
+    @Description(OMSEPANETINPGENERATOR_inJunctions_DESCRIPTION)
     @In
     public SimpleFeatureCollection inJunctions = null;
 
-    @Description("The junctions features.")
+    @Description(OMSEPANETINPGENERATOR_inTanks_DESCRIPTION)
     @In
     public SimpleFeatureCollection inTanks = null;
 
-    @Description("The tanks features.")
+    @Description(OMSEPANETINPGENERATOR_inReservoirs_DESCRIPTION)
     @In
     public SimpleFeatureCollection inReservoirs = null;
 
-    @Description("The pumps features.")
+    @Description(OMSEPANETINPGENERATOR_inPumps_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPumps = null;
 
-    @Description("The valves features.")
+    @Description(OMSEPANETINPGENERATOR_inValves_DESCRIPTION)
     @In
     public SimpleFeatureCollection inValves = null;
 
-    @Description("The pipes features.")
+    @Description(OMSEPANETINPGENERATOR_inPipes_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPipes = null;
 
-    @Description("The patterns, curves folder.")
+    @Description(OMSEPANETINPGENERATOR_inExtras_DESCRIPTION)
     @In
     public String inExtras = null;
 
-    @Description("The demands file.")
+    @Description(OMSEPANETINPGENERATOR_inDemand_DESCRIPTION)
     @In
     public String inDemand = null;
 
-    @Description("The controls file.")
+    @Description(OMSEPANETINPGENERATOR_inControl_DESCRIPTION)
     @In
     public String inControl = null;
 
-    @Description("The rules file.")
+    @Description(OMSEPANETINPGENERATOR_inRules_DESCRIPTION)
     @In
     public String inRules = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The file into which to write the inp.")
+    @Description(OMSEPANETINPGENERATOR_outFile_DESCRIPTION)
     @In
     public String outFile = null;
 

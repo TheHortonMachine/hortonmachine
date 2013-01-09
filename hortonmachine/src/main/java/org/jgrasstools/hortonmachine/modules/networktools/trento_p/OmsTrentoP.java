@@ -18,6 +18,49 @@
 package org.jgrasstools.hortonmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_dt_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_inDiameters_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_inPipes_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_inRain_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_outDischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_outFillDegree_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_outPipes_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_outTpMax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pAccuracy_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pAlign_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pC_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pCelerityFactor_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pEpsilon_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pEspInflux_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pExponent_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pFranco_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pG_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pGamma_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pJMax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMaxJunction_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMaxTheta_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMinDischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMinG_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMinimumDepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pMode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pOutPipe_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pTau_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_pTolerance_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_tDTp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_tMax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_tpMaxCalibration_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_tpMax_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTRENTOP_tpMin_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_ACCURACY;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_CELERITY_FACTOR;
 import static org.jgrasstools.hortonmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_EPSILON;
@@ -43,16 +86,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Range;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
@@ -77,206 +119,203 @@ import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-@Description("Calculates the diameters of a sewer net or verify the discharge for each pipe.")
-@Author(name = "Daniele Andreis,Rigon Riccardo,David tamanini", contact = "")
-@Keywords("Sewer network")
-@Bibliography("http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Status(Status.DRAFT)
-@Documentation("OmsTrentoP.html")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSTRENTOP_DESCRIPTION)
+@Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
+@Keywords(OMSTRENTOP_KEYWORDS)
+@Label(OMSTRENTOP_LABEL)
+@Name(OMSTRENTOP_NAME)
+@Status(OMSTRENTOP_STATUS)
+@License(OMSTRENTOP_LICENSE)
 public class OmsTrentoP extends JGTModel {
 
-    @Description("Processing mode, 0=project, 1=verification.")
+    @Description(OMSTRENTOP_pMode_DESCRIPTION)
     @In
     public int pMode;
 
-    @Description("Minimum excavation depth")
+    @Description(OMSTRENTOP_pMinimumDepth_DESCRIPTION)
     @Unit("m")
     @In
     public double pMinimumDepth = DEFAULT_MINIMUM_DEPTH;
 
-    @Description("Max number of pipes that can converge in a junction.")
+    @Description(OMSTRENTOP_pMaxJunction_DESCRIPTION)
     @Unit("-")
     @Range(max = 6, min = 0)
     @In
     public int pMaxJunction = DEFAULT_MAX_JUNCTION;
 
-    @Description("Max number of bisection to do (default is 40)to search a solution of a transcendently equation.")
+    @Description(OMSTRENTOP_pJMax_DESCRIPTION)
     @Unit("-")
     @Range(max = 1000, min = 3)
     @In
     public int pJMax = DEFAULT_J_MAX;
 
-    @Description("Accuracy to use to calculate a solution with bisection method.")
+    @Description(OMSTRENTOP_pAccuracy_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public Double pAccuracy = DEFAULT_ACCURACY;
 
-    @Description("Accuracy to use to calculate the discharge.")
+    @Description(OMSTRENTOP_pEpsilon_DESCRIPTION)
     @Unit("-")
     @Range(max = 1, min = 0)
     @In
     public double pEpsilon = DEFAULT_EPSILON;
 
-    @Description("Minimum Fill degree")
+    @Description(OMSTRENTOP_pMinG_DESCRIPTION)
     @Unit("-")
     @Range(max = 0.1, min = 0)
     @In
     public double pMinG = DEFAULT_MING;
 
-    @Description("Minimum discharge in a pipe")
+    @Description(OMSTRENTOP_pMinDischarge_DESCRIPTION)
     @Unit("m3/s")
     @Range(min = 0)
     @In
     public double pMinDischarge = DEFAULT_MIN_DISCHARGE;
 
-    @Description("Maximum Fill degree")
+    @Description(OMSTRENTOP_pMaxTheta_DESCRIPTION)
     @Unit("-")
     @Range(min = Math.PI)
     @In
     public double pMaxTheta = DEFAULT_MAX_THETA;
 
-    @Description("Celerity factor, value used to obtain the celerity of the discharge wave.")
+    @Description(OMSTRENTOP_pCelerityFactor_DESCRIPTION)
     @Unit("-")
     @Range(min = 1, max = 1.6)
     @In
     public double pCelerityFactor = DEFAULT_CELERITY_FACTOR;
 
-    @Description("Exponent of the basin extension. Used to calculate the average acces time to the network.")
+    @Description(OMSTRENTOP_pExponent_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public double pExponent = DEFAULT_EXPONENT;
 
-    @Description("tollerance, used to obtain the radius")
+    @Description(OMSTRENTOP_pTolerance_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public double pTolerance = DEFAULT_TOLERANCE;
 
-    @Description("Division base to height in the rectangular or trapezium section.")
+    @Description(OMSTRENTOP_pC_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public double pC = 1;
 
-    @Description("Exponent of the average ponderal slope of a basin to calculate the average access time to the network  for area units.")
+    @Description(OMSTRENTOP_pGamma_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public double pGamma = DEFAULT_GAMMA;
 
-    @Description("Exponent of the influx coefficent to calculate the average residence time in the network .")
+    @Description(OMSTRENTOP_pEspInflux_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public double pEspInflux = DEFAULT_ESP1;
 
-    @Description("Minimum dig depth, for rectangular or trapezium pipe.")
+    @Description(OMSTRENTOP_pFranco_DESCRIPTION)
     @Unit("m")
     @Range(min = 0)
     @In
     public double pFranco = DEFAULT_FRANCO;
 
-    @Description(" Coefficient of the pluviometric curve of possibility.")
+    @Description(OMSTRENTOP_pA_DESCRIPTION)
     @Unit("-")
     @Range(min = 0)
     @In
     public Double pA;
 
-    @Description("Exponent of the pluviometric curve of possibility. ")
+    @Description(OMSTRENTOP_pN_DESCRIPTION)
     @Unit("-")
     @Range(min = 0.05, max = 0.95)
     @In
     public Double pN;
 
-    @Description("Tangential bottom stress, which ensure the self-cleaning of the network.")
+    @Description(OMSTRENTOP_pTau_DESCRIPTION)
     @Unit("N/m2")
     @Range(min = 0)
     @In
     public Double pTau;
 
-    @Description("Fill degree to use during the project.")
+    @Description(OMSTRENTOP_pG_DESCRIPTION)
     @Unit("-")
     @Range(min = 0, max = 0.99)
     @In
     public Double pG;
 
-    @Description("Align mode, it can be 0 (so the free surface is aligned through a change in the depth of the pipes) or 1 (aligned with bottom step).")
+    @Description(OMSTRENTOP_pAlign_DESCRIPTION)
     @In
     public Integer pAlign;
 
+    @Description(OMSTRENTOP_inDiameters_DESCRIPTION)
     @UI("infile")
-    @Description("Matrix which contains the commercial diameters of the pipes.")
     @In
     public List<double[]> inDiameters;
 
-    @Description("The outlet, the last pipe of the network,.")
+    @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
     @Unit("-")
     @In
     public Integer pOutPipe = null;
 
-    @Description("Time step to calculate the discharge in project mode.")
+    @Description(OMSTRENTOP_tDTp_DESCRIPTION)
     @Unit("-")
     @Range(min = 0.015)
     @In
     public double tDTp = DEFAULT_TDTP;
 
-    @Description("Minimum Rain Time step to calculate the discharge.")
+    @Description(OMSTRENTOP_tpMin_DESCRIPTION)
     @Unit("-")
     @Range(min = 5)
     @In
     public double tpMin = DEFAULT_TPMIN;
 
-    @Description("Maximum Rain Time step to calculate the discharge.")
+    @Description(OMSTRENTOP_tpMax_DESCRIPTION)
     @Unit("minutes")
     @Range(min = 30)
     @In
     public double tpMax = DEFAULT_TMAX;
 
-    @Description("Max number of time step.")
+    @Description(OMSTRENTOP_tMax_DESCRIPTION)
     @Unit("-")
     @In
     public int tMax = (int) DEFAULT_TMAX;
 
-    @Description("Maximum Rain Time step to evaluate the Rain in calibration mode.")
+    @Description(OMSTRENTOP_tpMaxCalibration_DESCRIPTION)
     @Unit("minutes")
     @In
     public Integer tpMaxCalibration = null;
 
-    @Description("Time step, if pMode=1, in minutes. Is the step used to calculate the discharge. If it's not setted then it's equal to the rain time step.")
+    @Description(OMSTRENTOP_dt_DESCRIPTION)
     @Unit("minutes")
     @In
     public Integer dt;
 
-    @Description("rain data.")
-    @Role(Role.INPUT)
+    @Description(OMSTRENTOP_inRain_DESCRIPTION)
     @UI("infile")
     @In
     public HashMap<DateTime, double[]> inRain = null;
 
-    @Description("The read feature collection.")
+    @Description(OMSTRENTOP_inPipes_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPipes = null;
 
-    @Description("The output feature collection which contains the net with all hydraulics value.")
+    @Description(OMSTRENTOP_outPipes_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPipes = null;
 
+    @Description(OMSTRENTOP_outDischarge_DESCRIPTION)
     @UI("outfile")
-    @Description("The output if pTest=1, contains the discharge for each pipes at several time.")
-    @Role(Role.OUTPUT)
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outDischarge;
 
+    @Description(OMSTRENTOP_outFillDegree_DESCRIPTION)
     @UI("outfile")
-    @Description("The output if pTest=1, contains the fill degree for each pipes at several time.")
     @Out
     public HashMap<DateTime, HashMap<Integer, double[]>> outFillDegree;
 
-    @Description("The time which give the maximum discharge.")
-    @Role(Role.OUTPUT)
+    @Description(OMSTRENTOP_outTpMax_DESCRIPTION)
     @Unit("minutes")
     @Out
     public Integer outTpMax = null;

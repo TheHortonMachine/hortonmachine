@@ -18,6 +18,17 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_inFolder_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,7 +41,9 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -44,8 +57,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
 import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
@@ -59,25 +70,23 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Generates the base shapefiles for an epanet run.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION)
+@Author(name = OMSEPANETPROJECTFILESGENERATOR_AUTHORNAMES, contact = OMSEPANETPROJECTFILESGENERATOR_AUTHORCONTACTS)
+@Keywords(OMSEPANETPROJECTFILESGENERATOR_KEYWORDS)
+@Label(OMSEPANETPROJECTFILESGENERATOR_LABEL)
+@Name(OMSEPANETPROJECTFILESGENERATOR_NAME)
+@Status(OMSEPANETPROJECTFILESGENERATOR_STATUS)
+@License(OMSEPANETPROJECTFILESGENERATOR_LICENSE)
 public class OmsEpanetProjectFilesGenerator extends JGTModel {
 
-    @Description("The folder into which to create the base files.")
+    @Description(OMSEPANETPROJECTFILESGENERATOR_inFolder_DESCRIPTION)
     @In
     public String inFolder = null;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     @Execute
     public void process() throws Exception {

@@ -17,6 +17,21 @@
 package org.jgrasstools.hortonmachine.modules.statistics.kriging;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_fStationsZ_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_fStationsid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_inData_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_inStations_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_outResult_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_pCutoff_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSVARIOGRAM_pPath_DESCRIPTION;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -27,7 +42,6 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,61 +53,50 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Experimental semivariogram algorithm.")
-@Documentation("Experimental semivariogram")
-@Author(name = "Giuseppe Formetta, Francesco Adami, Silvia Franceschi")
-@Keywords("Experimental semivariogram, OmsKriging, Hydrology")
-@Label(JGTConstants.STATISTICS)
-@Name("variogram")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSVARIOGRAM_DESCRIPTION)
+@Author(name = OMSVARIOGRAM_AUTHORNAMES, contact = OMSVARIOGRAM_AUTHORCONTACTS)
+@Keywords(OMSVARIOGRAM_KEYWORDS)
+@Label(OMSVARIOGRAM_LABEL)
+@Name(OMSVARIOGRAM_NAME)
+@Status(OMSVARIOGRAM_STATUS)
+@License(OMSVARIOGRAM_LICENSE)
 public class OmsVariogram extends JGTModel {
 
-    @Description("The vector of the measurement point, containing the position of the stations.")
+    @Description(OMSVARIOGRAM_inStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inStations = null;
 
-    @Description("The field of the vector of stations, defining the id.")
+    @Description(OMSVARIOGRAM_fStationsid_DESCRIPTION)
     @In
     public String fStationsid = null;
 
-    @Description("The field of the vector of stations, defining the elevation.")
+    @Description(OMSVARIOGRAM_fStationsZ_DESCRIPTION)
     @In
     public String fStationsZ = null;
 
-    @Description("The file with the measured data, to be interpolated.")
+    @Description(OMSVARIOGRAM_inData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData = null;
 
-    @Description("The path to the printed file.")
+    @Description(OMSVARIOGRAM_pPath_DESCRIPTION)
     @In
     public String pPath = null;
 
-    @Description("Spatial separation distance up to which point pairs are included in semivariance estimates; as a default, the length of the diagonal of the box spanning the data is divided by three.")
+    @Description(OMSVARIOGRAM_pCutoff_DESCRIPTION)
     @In
     public double pCutoff;
 
-    @Description("The Experimental OmsVariogram.")
+    @Description(OMSVARIOGRAM_outResult_DESCRIPTION)
     @Out
     public double[][] outResult = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

@@ -18,6 +18,26 @@
  */
 package org.jgrasstools.hortonmachine.modules.networktools.epanet;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_inDll_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_inInp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_junctionsList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_pipesList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_pumpsList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_reservoirsList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tCurrent_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tStart_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_tanksList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_valvesList_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEPANET_warnings_DESCRIPTION;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +48,9 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
@@ -51,54 +73,56 @@ import org.jgrasstools.hortonmachine.modules.networktools.epanet.core.types.Valv
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("The main OmsEpanet module")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("OmsEpanet")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEPANET_DESCRIPTION)
+@Author(name = OMSEPANET_AUTHORNAMES, contact = OMSEPANET_AUTHORCONTACTS)
+@Keywords(OMSEPANET_KEYWORDS)
+@Label(OMSEPANET_LABEL)
+@Name(OMSEPANET_NAME)
+@Status(OMSEPANET_STATUS)
+@License(OMSEPANET_LICENSE)
 public class OmsEpanet extends JGTModel {
 
-    @Description("The epanet dynamic lib file.")
+    @Description(OMSEPANET_inDll_DESCRIPTION)
     @In
     public String inDll = null;
 
-    @Description("The inp file.")
+    @Description(OMSEPANET_inInp_DESCRIPTION)
     @In
     public String inInp = null;
 
-    @Description("The start time.")
+    @Description(OMSEPANET_tStart_DESCRIPTION)
     @In
     public String tStart = "1970-01-01 00:00:00"; //$NON-NLS-1$
 
-    @Description("The current time.")
+    @Description(OMSEPANET_tCurrent_DESCRIPTION)
     @Out
     public String tCurrent = null;
 
-    @Description("The pipes result data.")
+    @Description(OMSEPANET_pipesList_DESCRIPTION)
     @Out
     public List<Pipe> pipesList = null;
 
-    @Description("The junctions result data.")
+    @Description(OMSEPANET_junctionsList_DESCRIPTION)
     @Out
     public List<Junction> junctionsList = null;
 
-    @Description("The pumps result data.")
+    @Description(OMSEPANET_pumpsList_DESCRIPTION)
     @Out
     public List<Pump> pumpsList = null;
 
-    @Description("The valves result data.")
+    @Description(OMSEPANET_valvesList_DESCRIPTION)
     @Out
     public List<Valve> valvesList = null;
 
-    @Description("The tanks result data.")
+    @Description(OMSEPANET_tanksList_DESCRIPTION)
     @Out
     public List<Tank> tanksList = null;
 
-    @Description("The reservoirs result data.")
+    @Description(OMSEPANET_reservoirsList_DESCRIPTION)
     @Out
     public List<Reservoir> reservoirsList = null;
 
-    @Description("Warning messages for the run.")
+    @Description(OMSEPANET_warnings_DESCRIPTION)
     @Out
     public String warnings = null;
 
@@ -130,8 +154,8 @@ public class OmsEpanet extends JGTModel {
                 String path = dllFile.getParentFile().getAbsolutePath();
                 ep = new EpanetWrapper(nameWithoutExtention, path);
             }
-            
-//            int version = ep.ENgetversion();
+
+            // int version = ep.ENgetversion();
 
             current = formatter.parseDateTime(tStart);
             tCurrent = tStart;
