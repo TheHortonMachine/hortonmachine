@@ -20,15 +20,15 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DORADIANTS_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DOROUND_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_INELEV_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LICENSE;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_NAME;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_OUTASPECT_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRadiants_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRound_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAspect_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -52,20 +52,20 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
 @Status(OMSASPECT_STATUS)
 @License(OMSASPECT_LICENSE)
 public class Aspect extends JGTModel {
-    @Description(OMSASPECT_INELEV_DESCRIPTION)
+    @Description(OMSASPECT_inElev_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev = null;
 
-    @Description(OMSASPECT_DORADIANTS_DESCRIPTION)
+    @Description(OMSASPECT_doRadiants_DESCRIPTION)
     @In
     public boolean doRadiants = false;
 
-    @Description(OMSASPECT_DOROUND_DESCRIPTION)
+    @Description(OMSASPECT_doRound_DESCRIPTION)
     @In
     public boolean doRound = false;
 
-    @Description(OMSASPECT_OUTASPECT_DESCRIPTION)
+    @Description(OMSASPECT_outAspect_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outAspect = null;

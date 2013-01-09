@@ -20,6 +20,19 @@ package org.jgrasstools.hortonmachine.modules.basin.rescaleddistance;
 import static java.lang.Math.abs;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -32,7 +45,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,39 +57,37 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
-@Description("Calculates the rescaled distance of each pixel from the outlet.")
-@Documentation("OmsRescaledDistance.html")
-@Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Basin, Geomorphology, D2O")
-@Label(JGTConstants.BASIN)
-@Name("rescdist")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRESCALEDDISTANCE_DESCRIPTION)
+@Author(name = OMSRESCALEDDISTANCE_AUTHORNAMES, contact = OMSRESCALEDDISTANCE_AUTHORCONTACTS)
+@Keywords(OMSRESCALEDDISTANCE_KEYWORDS)
+@Label(OMSRESCALEDDISTANCE_LABEL)
+@Name(OMSRESCALEDDISTANCE_NAME)
+@Status(OMSRESCALEDDISTANCE_STATUS)
+@License(OMSRESCALEDDISTANCE_LICENSE)
 public class OmsRescaledDistance extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSRESCALEDDISTANCE_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of the network.")
+    @Description(OMSRESCALEDDISTANCE_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The optional map of elevation for 3D.")
+    @Description(OMSRESCALEDDISTANCE_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("Ratio between the velocity in the channel and in the hillslope.")
+    @Description(OMSRESCALEDDISTANCE_pRatio_DESCRIPTION)
     @In
     public double pRatio = 0;
 
-    @Description("The map of the rescaled distances.")
+    @Description(OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION)
     @Out
     public GridCoverage2D outRescaled = null;
 

@@ -19,6 +19,16 @@ package org.jgrasstools.hortonmachine.modules.demmanipulation.pitfiller;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPITFILLER_outPit_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
@@ -28,7 +38,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,26 +48,24 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("It fills the depression points present within a DEM.")
-@Documentation("OmsPitfiller.html")
-@Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com")
-@Keywords("Dem manipulation, Geomorphology, OmsDrainDir")
-@Label(JGTConstants.DEMMANIPULATION)
-@Name("pit")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSPITFILLER_DESCRIPTION)
+@Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
+@Keywords(OMSPITFILLER_KEYWORDS)
+@Label(OMSPITFILLER_LABEL)
+@Name(OMSPITFILLER_NAME)
+@Status(OMSPITFILLER_STATUS)
+@License(OMSPITFILLER_LICENSE)
 public class OmsPitfiller extends JGTModel {
-    @Description("The map of digital elevation model (DEM).")
+    @Description(OMSPITFILLER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev;
 
-    @Description("The depitted elevation map.")
+    @Description(OMSPITFILLER_outPit_DESCRIPTION)
     @Out
     public GridCoverage2D outPit = null;
 

@@ -19,6 +19,19 @@ package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_outArea_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_outBasin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_pEast_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSWATEROUTLET_pNorth_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -28,7 +41,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,34 +59,33 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Extract the watershed for a defined outlet (ported from GRASS r.wateroutlet).")
-@Documentation("OmsWateroutlet.html")
-@Author(name = "Charles Ehlschlaeger, Andrea Antonello", contact = "US Army Construction Engineering Research Laboratory, http://www.hydrologis.com")
-@Keywords("Dem manipulation, Geomorphology, OmsFlowDirections")
-@Label(JGTConstants.DEMMANIPULATION)
-@Name("wateroutlet")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSWATEROUTLET_DESCRIPTION)
+@Author(name = OMSWATEROUTLET_AUTHORNAMES, contact = OMSWATEROUTLET_AUTHORCONTACTS)
+@Keywords(OMSWATEROUTLET_KEYWORDS)
+@Label(OMSWATEROUTLET_LABEL)
+@Name(OMSWATEROUTLET_NAME)
+@Status(OMSWATEROUTLET_STATUS)
+@License(OMSWATEROUTLET_LICENSE)
 public class OmsWateroutlet extends JGTModel {
-    @Description("The northern coordinate of the watershed outlet.")
+    @Description(OMSWATEROUTLET_pNorth_DESCRIPTION)
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public double pNorth = -1.0;
 
-    @Description("The eastern coordinate of the watershed outlet.")
+    @Description(OMSWATEROUTLET_pEast_DESCRIPTION)
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSWATEROUTLET_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow;
 
-    @Description("The extracted basin mask.")
+    @Description(OMSWATEROUTLET_outBasin_DESCRIPTION)
     @Out
     public GridCoverage2D outBasin = null;
 
-    @Description("The area of the extracted basin.")
+    @Description(OMSWATEROUTLET_outArea_DESCRIPTION)
     @Out
     public double outArea = 0;
 

@@ -19,6 +19,17 @@ package org.jgrasstools.hortonmachine.modules.basin.basinshape;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_inBasins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSBASINSHAPE_outBasins_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -32,7 +43,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +61,6 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
@@ -65,25 +74,24 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Creates a Feature collection of the subbasins created with the netnumbering module.")
-@Documentation("OmsBasinShape.html")
-@Author(name = "Erica Ghesla, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Basin, Geomorphology")
-@Label(JGTConstants.BASIN)
-@Name("basinshape")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSBASINSHAPE_DESCRIPTION)
+@Author(name = OMSBASINSHAPE_AUTHORNAMES, contact = OMSBASINSHAPE_AUTHORCONTACTS)
+@Keywords(OMSBASINSHAPE_KEYWORDS)
+@Label(OMSBASINSHAPE_LABEL)
+@Name(OMSBASINSHAPE_NAME)
+@Status(OMSBASINSHAPE_STATUS)
+@License(OMSBASINSHAPE_LICENSE)
 public class OmsBasinShape extends JGTModel {
 
-    @Description("The elevation map.")
+    @Description(OMSBASINSHAPE_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of the numbered basins.")
+    @Description(OMSBASINSHAPE_inBasins_DESCRIPTION)
     @In
     public GridCoverage2D inBasins = null;
 
-    @Description("The extracted basins vector map.")
+    @Description(OMSBASINSHAPE_outBasins_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outBasins = null;
 

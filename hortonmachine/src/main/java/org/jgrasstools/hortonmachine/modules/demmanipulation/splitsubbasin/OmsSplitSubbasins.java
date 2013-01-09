@@ -19,6 +19,19 @@
 package org.jgrasstools.hortonmachine.modules.demmanipulation.splitsubbasin;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_inHack_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_outNetnum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_pHackorder_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -48,33 +61,31 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
-@Description("A tool for" + " labeling the subbasins of a basin. Given the Hacks number of the channel"
-        + " network, the subbasin up to a selected order are labeled. If Hack order 2 was"
-        + " selected, the subbasins of Hack order 1 and 2 and the network of the same" + " order are extracted.")
-@Author(name = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla", contact = "http://www.hydrologis.com")
-@Keywords("Subbasins, Dem, Raster")
-@Label(JGTConstants.DEMMANIPULATION)
-@Name("splitsubbasins")
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSSPLITSUBBASINS_DESCRIPTION)
+@Author(name = OMSSPLITSUBBASINS_AUTHORNAMES, contact = OMSSPLITSUBBASINS_AUTHORCONTACTS)
+@Keywords(OMSSPLITSUBBASINS_KEYWORDS)
+@Label(OMSSPLITSUBBASINS_LABEL)
+@Name(OMSSPLITSUBBASINS_NAME)
+@Status(OMSSPLITSUBBASINS_STATUS)
+@License(OMSSPLITSUBBASINS_LICENSE)
 public class OmsSplitSubbasins extends JGTModel {
-    @Description("The map of flow direction.")
+    @Description(OMSSPLITSUBBASINS_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of hack.")
+    @Description(OMSSPLITSUBBASINS_inHack_DESCRIPTION)
     @In
     public GridCoverage2D inHack = null;
 
-    @Description("The maximum hack order to consider for basin split.")
+    @Description(OMSSPLITSUBBASINS_pHackorder_DESCRIPTION)
     @In
     public Double pHackorder = null;
 
-    @Description("The map of numbered network.")
+    @Description(OMSSPLITSUBBASINS_outNetnum_DESCRIPTION)
     @Out
     public GridCoverage2D outNetnum = null;
 
-    @Description("The map of subbasins.")
+    @Description(OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION)
     @Out
     public GridCoverage2D outSubbasins = null;
 

@@ -17,6 +17,17 @@
  */
 package org.jgrasstools.hortonmachine.modules.demmanipulation.markoutlets;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMARKOUTLETS_outFlow_DESCRIPTION;
+
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIterFactory;
@@ -24,7 +35,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -36,26 +46,24 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.")
-@Documentation("OmsMarkoutlets.html")
-@Author(name = "Antonello Andrea, Franceschi Silvia", contact = "http://www.hydrologis.com")
-@Keywords("Outlets, Dem, Raster, OmsFlowDirections, OmsDrainDir")
-@Label(JGTConstants.DEMMANIPULATION)
-@Name("markoutlets")
-@Status(Status.TESTED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMARKOUTLETS_DESCRIPTION)
+@Author(name = OMSMARKOUTLETS_AUTHORNAMES, contact = OMSMARKOUTLETS_AUTHORCONTACTS)
+@Keywords(OMSMARKOUTLETS_KEYWORDS)
+@Label(OMSMARKOUTLETS_LABEL)
+@Name(OMSMARKOUTLETS_NAME)
+@Status(OMSMARKOUTLETS_STATUS)
+@License(OMSMARKOUTLETS_LICENSE)
 public class OmsMarkoutlets extends JGTModel {
-    @Description("The map of flowdirections.")
+    @Description(OMSMARKOUTLETS_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of the flowdirections with outlet marked.")
+    @Description(OMSMARKOUTLETS_outFlow_DESCRIPTION)
     @Out
     public GridCoverage2D outFlow = null;
 

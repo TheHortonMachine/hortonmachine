@@ -19,6 +19,26 @@ package org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_doVector_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outArea_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outBasin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outOutlet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pEast_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pNorth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTBASIN_pValue_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -83,61 +103,61 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LinearLocation;
 import com.vividsolutions.jts.linearref.LocationIndexedLine;
 
-@Description("Extract a basin from a map of flowdirections.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "http://www.hydrologis.com")
-@Keywords("Dem manipulation, Basin, OmsFlowDirections")
-@Label(JGTConstants.DEMMANIPULATION)
-@Name("extractbasin")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSEXTRACTBASIN_DESCRIPTION)
+@Author(name = OMSEXTRACTBASIN_AUTHORNAMES, contact = OMSEXTRACTBASIN_AUTHORCONTACTS)
+@Keywords(OMSEXTRACTBASIN_KEYWORDS)
+@Label(OMSEXTRACTBASIN_LABEL)
+@Name(OMSEXTRACTBASIN_NAME)
+@Status(OMSEXTRACTBASIN_STATUS)
+@License(OMSEXTRACTBASIN_LICENSE)
 public class OmsExtractBasin extends JGTModel {
-    @Description("The northern coordinate of the watershed outlet.")
+    @Description(OMSEXTRACTBASIN_pNorth_DESCRIPTION)
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public double pNorth = -1.0;
 
-    @Description("The eastern coordinate of the watershed outlet.")
+    @Description(OMSEXTRACTBASIN_pEast_DESCRIPTION)
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public double pEast = -1.0;
 
-    @Description("The value for the map (defaults to 1).")
+    @Description(OMSEXTRACTBASIN_pValue_DESCRIPTION)
     @In
     public double pValue = 1.0;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow;
 
-    @Description("A user supplied network map. If available, the outlet point is snapped to it before extracting the basin.")
+    @Description(OMSEXTRACTBASIN_inNetwork_DESCRIPTION)
     @In
     public SimpleFeatureCollection inNetwork;
 
-    @Description("A buffer to consider for network snapping.")
+    @Description(OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION)
     @In
     public double pSnapbuffer = 200;
 
-    @Description("Flag to enable vector basin extraction.")
+    @Description(OMSEXTRACTBASIN_doVector_DESCRIPTION)
     @In
     public boolean doVector = true;
 
-    @Description("Flag to enable vector basin smoothing.")
+    @Description(OMSEXTRACTBASIN_doSmoothing_DESCRIPTION)
     @In
     public boolean doSmoothing = false;
 
-    @Description("The area of the extracted basin.")
+    @Description(OMSEXTRACTBASIN_outArea_DESCRIPTION)
     @Out
     public double outArea = 0;
 
-    @Description("The extracted basin mask.")
+    @Description(OMSEXTRACTBASIN_outBasin_DESCRIPTION)
     @Out
     public GridCoverage2D outBasin = null;
 
-    @Description("The optional outlet point vector map.")
+    @Description(OMSEXTRACTBASIN_outOutlet_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outOutlet = null;
 
-    @Description("The optional extracted basin vector map.")
+    @Description(OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVectorBasin = null;
 

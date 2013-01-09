@@ -19,6 +19,17 @@ package org.jgrasstools.hortonmachine.modules.basin.topindex;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTOPINDEX_outTopindex_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
@@ -28,7 +39,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,31 +49,29 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Topographic index calculator.")
-@Documentation("OmsTopIndex.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology")
-@Label(JGTConstants.BASIN)
-@Name("topindex")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTOPINDEX_DESCRIPTION)
+@Author(name = OMSTOPINDEX_AUTHORNAMES, contact = OMSTOPINDEX_AUTHORCONTACTS)
+@Keywords(OMSTOPINDEX_KEYWORDS)
+@Label(OMSTOPINDEX_LABEL)
+@Name(OMSTOPINDEX_NAME)
+@Status(OMSTOPINDEX_STATUS)
+@License(OMSTOPINDEX_LICENSE)
 public class OmsTopIndex extends JGTModel {
 
-    @Description("The map of the contributing area.")
+    @Description(OMSTOPINDEX_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The map of slope.")
+    @Description(OMSTOPINDEX_inSlope_DESCRIPTION)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map of the topographic index.")
+    @Description(OMSTOPINDEX_outTopindex_DESCRIPTION)
     @Out
     public GridCoverage2D outTopindex = null;
 
