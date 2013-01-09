@@ -18,7 +18,6 @@
 package org.jgrasstools.modules;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -30,19 +29,17 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 
 @Description("Calculates the draining area per length unit.")
-@Documentation("Ab.html")
 @Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
 @Keywords("Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections")
 @Label(JGTConstants.GEOMORPHOLOGY)
 @Name("_ab")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-public class Ab extends JGTModel {
-    @Description("The map of the total contributing area.")
+public class Ab extends OmsAb {
+    @Description( "The map of the total contributing area.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTca = null;
@@ -64,22 +61,20 @@ public class Ab extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outAb == null, doReset)) {
-            return;
-        }
-        checkNull(inTca, inPlan);
-
         GridCoverage2D inTcaGC = getRaster(inTca);
         GridCoverage2D inPlanGC = getRaster(inPlan);
+        super.inTca = inTcaGC;
+        super.inPlan = inPlanGC;
 
-        OmsAb ab = new OmsAb();
-        ab.inTca = inTcaGC;
-        ab.inPlan = inPlanGC;
-        ab.pm = pm;
-        ab.process();
+        // OmsAb ab = new OmsAb();
+        // ab.inTca = inTcaGC;
+        // ab.inPlan = inPlanGC;
+        // ab.pm = pm;
+        super.process();
 
-        dumpRaster(ab.outAb, outAb);
-        dumpRaster(ab.outB, outB);
-
+        dumpRaster(super.outAb, outAb);
+        dumpRaster(super.outB, outB);
     }
+
+
 }

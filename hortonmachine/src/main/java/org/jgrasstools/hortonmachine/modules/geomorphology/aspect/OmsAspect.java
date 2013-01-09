@@ -28,10 +28,17 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.*;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_STATUS;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -51,35 +58,34 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.")
-@Documentation("OmsAspect.html")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsDrainDir, OmsFlowDirections")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("aspect")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSASPECT_DESCRIPTION)
+@Documentation(OMSASPECT_DOCUMENTATION)
+@Author(name = OMSASPECT_AUTHORNAMES, contact = OMSASPECT_AUTHORCONTACTS)
+@Keywords(OMSASPECT_KEYWORDS)
+@Label(OMSASPECT_LABEL)
+@Name(OMSASPECT_NAME)
+@Status(OMSASPECT_STATUS)
+@License(OMSASPECT_LICENSE)
 public class OmsAspect extends JGTModel {
-    @Description("The map of the digital elevation model (DEM).")
+    @Description(OMSASPECT_INELEV_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("Switch to define whether create the output map in degrees (default) or radiants.")
+    @Description(OMSASPECT_DORADIANTS_DESCRIPTION)
     @In
     public boolean doRadiants = false;
 
-    @Description("Switch to define whether the output map values should be rounded (might make sense in the case of degree maps).")
+    @Description(OMSASPECT_DOROUND_DESCRIPTION)
     @In
     public boolean doRound = false;
 
-    @Description("The map of aspect.")
+    @Description(OMSASPECT_OUTASPECT_DESCRIPTION)
     @Out
     public GridCoverage2D outAspect = null;
 

@@ -32,11 +32,19 @@ import java.util.Set;
 
 import oms3.Access;
 import oms3.ComponentAccess;
+import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.ClassField;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.hortonmachine.i18n.HortonMessages;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 
@@ -236,13 +244,105 @@ public class HortonMachine {
     public static void main( String[] args ) throws IOException {
         HortonMachine hm = HortonMachine.getInstance();
 
-        for( String className : hm.allClasses ) {
-            System.out.println(className);
+        LinkedHashMap<String, List<ClassField>> moduleName2Fields = hm.moduleName2Fields;
+        LinkedHashMap<String, Class< ? >> moduleName2Class = hm.moduleName2Class;
+
+        Set<Entry<String, List<ClassField>>> entrySet = moduleName2Fields.entrySet();
+        for( Entry<String, List<ClassField>> entry : entrySet ) {
+            String moduleName = entry.getKey();
+            if (moduleName.toLowerCase().equals("omsaspect")) {
+                System.out.println();
+            }
+
+            StringBuilder sb = new StringBuilder();
+
+            Class< ? > moduleClass = moduleName2Class.get(moduleName);
+            Description description = moduleClass.getAnnotation(Description.class);
+            sb.append("public static final String " + moduleName.toUpperCase() + "_DESCRIPTION = \"" + description.value()
+                    + "\";\n");
+            Documentation documentation = moduleClass.getAnnotation(Documentation.class);
+            String doc;
+            if (documentation == null) {
+                doc = "";
+            } else {
+                doc = documentation.value();
+            }
+            sb.append("public static final String " + moduleName.toUpperCase() + "_DOCUMENTATION = \"" + doc + "\";\n");
+            Keywords keywords = moduleClass.getAnnotation(Keywords.class);
+            String k;
+            if (keywords == null) {
+                k = "";
+            } else {
+                k = keywords.value();
+            }
+            sb.append("public static final String " + moduleName.toUpperCase() + "_KEYWORDS = \"" + k + "\";\n");
+            Label label = moduleClass.getAnnotation(Label.class);
+            String lab;
+            if (label == null) {
+                lab = "";
+            } else {
+                lab = label.value();
+            }
+            sb.append("public static final String " + moduleName.toUpperCase() + "_LABEL = \"" + lab + "\";\n");
+            Name name = moduleClass.getAnnotation(Name.class);
+            String n;
+            if (name == null) {
+                n = "";
+            } else {
+                n = name.value();
+            }
+            sb.append("public static final String " + moduleName.toUpperCase() + "_NAME = \"" + n + "\";\n");
+            Status status = moduleClass.getAnnotation(Status.class);
+            // String st = "";
+            // switch( status.value() ) {
+            // case 5:
+            // st = "EXPERIMENTAL";
+            // break;
+            // case 10:
+            // st = "DRAFT";
+            // break;
+            // case 20:
+            // st = "TESTED";
+            // break;
+            // case 30:
+            // st = "VALIDATED";
+            // break;
+            // case 40:
+            // st = "CERTIFIED";
+            // break;
+            // default:
+            // st = "DRAFT";
+            // break;
+            // }
+
+            sb.append("public static final int " + moduleName.toUpperCase() + "_STATUS = " + status.value() + ";\n");
+            License license = moduleClass.getAnnotation(License.class);
+            sb.append("public static final String " + moduleName.toUpperCase() + "_LICENSE = \"" + license.value() + "\";\n");
+            Author author = moduleClass.getAnnotation(Author.class);
+            String authorName = author.name();
+            sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName + "\";\n");
+            String authorContact = author.contact();
+            sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact + "\";\n");
+
+            List<ClassField> value = entry.getValue();
+            for( ClassField classField : value ) {
+                String fieldName = classField.fieldName;
+                String fieldDescription = classField.fieldDescription;
+
+                String str = "public static final String " + moduleName.toUpperCase() + "_" + fieldName.toUpperCase()
+                        + "_DESCRIPTION = \"" + fieldDescription + "\";\n";
+                sb.append(str);
+            }
+            System.out.println(sb.toString());
+            System.out.println();
         }
-        for( String fieldName : hm.allFields ) {
-            System.out.println(fieldName);
-        }
+
+        // for( String className : hm.allClasses ) {
+        // System.out.println(className);
+        // }
+        // for( String fieldName : hm.allFields ) {
+        // System.out.println(fieldName);
+        // }
 
     }
-
 }

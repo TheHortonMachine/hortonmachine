@@ -23,7 +23,7 @@
         <module>jgrassgears</module>
         <module>hortonmachine</module>
         <module>grass</module>
-    <module>jgt-modules</module>
+    <module>modules</module>
   </modules>
 
 	<issueManagement>

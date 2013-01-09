@@ -174,12 +174,15 @@ public class JGTModel implements Process {
      * Fast default reading of raster from definition. 
      * 
      * <p>If the source format is not supported, and {@link Exception} is thrown.</p>
+     * <p>If the source is <code>null</code>, null will be returned.</p>
      * 
      * @param source the definition for the raster source.
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
     protected GridCoverage2D getRaster( String source ) throws Exception {
+        if (source == null)
+            return null;
         return OmsRasterReader.readRaster(source);
     }
 
@@ -187,12 +190,15 @@ public class JGTModel implements Process {
      * Fast default reading of vector from definition. 
      * 
      * <p>If the source format is not supported, and {@link Exception} is thrown.</p>
+     * <p>If the source is <code>null</code>, null will be returned.</p>
      * 
      * @param source the definition to the vector source.
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
     protected SimpleFeatureCollection getVector( String source ) throws Exception {
+        if (source == null)
+            return null;
         return OmsVectorReader.readVector(source);
     }
 
@@ -204,6 +210,8 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     protected void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
+        if (raster == null)
+            return;
         OmsRasterWriter.writeRaster(source, raster);
     }
 
@@ -215,6 +223,8 @@ public class JGTModel implements Process {
      * @throws Exception
      */
     protected void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
+        if (vector == null)
+            return;
         OmsVectorWriter.writeVector(source, vector);
     }
 
