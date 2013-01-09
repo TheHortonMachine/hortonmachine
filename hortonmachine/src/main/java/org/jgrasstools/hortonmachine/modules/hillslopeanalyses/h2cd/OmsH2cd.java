@@ -18,6 +18,19 @@
 package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2cd;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_outH2cd_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CD_pMode_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -28,7 +41,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,34 +57,32 @@ import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("It calculates for each hillslope pixel its distance from the river networks, following the steepest descent.")
-// @Documentation("OmsTc.html")
-@Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hillslope, Outlet, Distance")
-@Label(JGTConstants.HILLSLOPE)
-@Documentation("OmsH2cd.html")
-@Name("h2cd")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSH2CD_DESCRIPTION)
+@Author(name = OMSH2CD_AUTHORNAMES, contact = OMSH2CD_AUTHORCONTACTS)
+@Keywords(OMSH2CD_KEYWORDS)
+@Label(OMSH2CD_LABEL)
+@Name(OMSH2CD_NAME)
+@Status(OMSH2CD_STATUS)
+@License(OMSH2CD_LICENSE)
 public class OmsH2cd extends JGTModel {
 
-    @Description("The map of flowdirections")
+    @Description(OMSH2CD_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of the network.")
+    @Description(OMSH2CD_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The optional map of the elevation used for 3d mode in pMode = 1.")
+    @Description(OMSH2CD_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The processing mode (0 = in number of pixels (default), 1 = in meters).")
+    @Description(OMSH2CD_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("The map of hillslope to channels distance.")
+    @Description(OMSH2CD_outH2cd_DESCRIPTION)
     @Out
     public GridCoverage2D outH2cd = null;
 

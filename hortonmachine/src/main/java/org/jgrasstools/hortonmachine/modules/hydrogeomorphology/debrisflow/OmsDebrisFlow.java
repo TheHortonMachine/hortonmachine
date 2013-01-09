@@ -25,6 +25,23 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.isBetween;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.pythagoras;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_outDepo_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_outMcs_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pDcoeff_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pEasting_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pMcoeff_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pMontecarlo_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pNorthing_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISFLOW_pVolume_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -59,53 +76,52 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-@Description("Debris flow area and deposit calculator on fans.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Debris, Raster")
-@Name("debrisflow")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDEBRISFLOW_DESCRIPTION)
+@Author(name = OMSDEBRISFLOW_AUTHORNAMES, contact = OMSDEBRISFLOW_AUTHORCONTACTS)
+@Keywords(OMSDEBRISFLOW_KEYWORDS)
+@Label(OMSDEBRISFLOW_LABEL)
+@Name(OMSDEBRISFLOW_NAME)
+@Status(OMSDEBRISFLOW_STATUS)
+@License(OMSDEBRISFLOW_LICENSE)
 public class OmsDebrisFlow extends JGTModel {
-
-    @Description("The map of elevation.")
+    @Description(OMSDEBRISFLOW_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The volume of the event to simulate.")
+    @Description(OMSDEBRISFLOW_pVolume_DESCRIPTION)
     @Unit("m2")
     @In
     public double pVolume = 4000;
 
-    @Description("The mobility coefficient")
+    @Description(OMSDEBRISFLOW_pMcoeff_DESCRIPTION)
     @Unit("-")
     @In
     public double pMcoeff = 52;
 
-    @Description("The deposit coefficient")
+    @Description(OMSDEBRISFLOW_pDcoeff_DESCRIPTION)
     @Unit("-")
     @In
     public double pDcoeff = 0.06;
 
-    @Description("The start position of the simulation (easting)")
+    @Description(OMSDEBRISFLOW_pEasting_DESCRIPTION)
     @Unit("m")
     @In
     public double pEasting = 143;
 
-    @Description("The start position of the simulation (northing)")
+    @Description(OMSDEBRISFLOW_pNorthing_DESCRIPTION)
     @Unit("m")
     @In
     public double pNorthing = 604;
 
-    @Description("The Montecarlo number.")
+    @Description(OMSDEBRISFLOW_pMontecarlo_DESCRIPTION)
     @In
     public int pMontecarlo = 50;
 
-    @Description("The output inundation map.")
+    @Description(OMSDEBRISFLOW_outMcs_DESCRIPTION)
     @Out
     public GridCoverage2D outMcs = null;
 
-    @Description("The output deposit map.")
+    @Description(OMSDEBRISFLOW_outDepo_DESCRIPTION)
     @Out
     public GridCoverage2D outDepo = null;
 

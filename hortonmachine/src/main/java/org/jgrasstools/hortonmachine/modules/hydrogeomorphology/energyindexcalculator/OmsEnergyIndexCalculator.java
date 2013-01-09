@@ -27,6 +27,25 @@ import static java.lang.Math.tan;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.intNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.omega;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_inAspect_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_inBasins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_inCurvatures_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_outAltimetry_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_outArea_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_outEnergy_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_pDt_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_pEi_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSENERGYINDEXCALCULATOR_pEs_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -57,68 +76,63 @@ import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
-/**
- * @author Stefano Endrizzi
- * @author Andrea Antonello (www.hydrologis.com)
- * @author Silvia Franceschi (www.hydrologis.com)
- */
-@Description("The OmsAdige model.")
-@Author(name = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Hydrology, Energy")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@Name("eicalculator")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description(OMSENERGYINDEXCALCULATOR_DESCRIPTION)
+@Author(name = OMSENERGYINDEXCALCULATOR_AUTHORNAMES, contact = OMSENERGYINDEXCALCULATOR_AUTHORCONTACTS)
+@Keywords(OMSENERGYINDEXCALCULATOR_KEYWORDS)
+@Label(OMSENERGYINDEXCALCULATOR_LABEL)
+@Name(OMSENERGYINDEXCALCULATOR_NAME)
+@Status(OMSENERGYINDEXCALCULATOR_STATUS)
+@License(OMSENERGYINDEXCALCULATOR_LICENSE)
 public class OmsEnergyIndexCalculator extends JGTModel {
 
-    @Description("The digital elevation model (DEM).")
+    @Description(OMSENERGYINDEXCALCULATOR_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of basins with the id as category.")
+    @Description(OMSENERGYINDEXCALCULATOR_inBasins_DESCRIPTION)
     @In
     public GridCoverage2D inBasins = null;
 
-    @Description("The map of curvatures.")
+    @Description(OMSENERGYINDEXCALCULATOR_inCurvatures_DESCRIPTION)
     @In
     public GridCoverage2D inCurvatures = null;
 
-    @Description("The map of aspect in radiants.")
+    @Description(OMSENERGYINDEXCALCULATOR_inAspect_DESCRIPTION)
     @In
     public GridCoverage2D inAspect = null;
 
-    @Description("The map of slope in radiants.")
+    @Description(OMSENERGYINDEXCALCULATOR_inSlope_DESCRIPTION)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("Number of altimetric bands.")
+    @Description(OMSENERGYINDEXCALCULATOR_pEs_DESCRIPTION)
     @In
     public int pEs = -1;
 
-    @Description("Number of energetic bands.")
+    @Description(OMSENERGYINDEXCALCULATOR_pEi_DESCRIPTION)
     @In
     public int pEi = -1;
 
-    @Description("Aggregation interval of the data.")
+    @Description(OMSENERGYINDEXCALCULATOR_pDt_DESCRIPTION)
     @In
     public double pDt = -1;
 
-    @Description("The list of altimetric bands information.")
+    @Description(OMSENERGYINDEXCALCULATOR_outAltimetry_DESCRIPTION)
     @Out
     public List<EIAltimetry> outAltimetry;
 
-    @Description("The list of energetic bands information.")
+    @Description(OMSENERGYINDEXCALCULATOR_outEnergy_DESCRIPTION)
     @Out
     public List<EIEnergy> outEnergy;
 
-    @Description("The list of areas of the energetic and altimetric bands.")
+    @Description(OMSENERGYINDEXCALCULATOR_outArea_DESCRIPTION)
     @Out
     public List<EIAreas> outArea;
 

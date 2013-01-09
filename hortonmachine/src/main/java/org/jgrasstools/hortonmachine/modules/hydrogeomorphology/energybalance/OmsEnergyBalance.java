@@ -62,6 +62,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -79,142 +80,146 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Geometry;
-@Description("The module for calculating the energybalance")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Snow, Energybalance")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.*;
+
+@Description(OMSENERGYBALANCE_DESCRIPTION)
+@Author(name = OMSENERGYBALANCE_AUTHORNAMES, contact = OMSENERGYBALANCE_AUTHORCONTACTS)
+@Keywords(OMSENERGYBALANCE_KEYWORDS)
+@Label(OMSENERGYBALANCE_LABEL)
+@Name(OMSENERGYBALANCE_NAME)
+@Status(OMSENERGYBALANCE_STATUS)
+@License(OMSENERGYBALANCE_LICENSE)
 public class OmsEnergyBalance extends JGTModel {
 
     private static final int GLACIER_SWE = 2000;
 
-    @Description("The feature collection of basins to process.")
+    @Description(OMSENERGYBALANCE_inBasins_DESCRIPTION)
     @In
     public SimpleFeatureCollection inBasins;
 
-    @Description("The field of the basins feature collection that hold the id.")
+    @Description(OMSENERGYBALANCE_fBasinid_DESCRIPTION)
     @In
     public String fBasinid = null;
 
-    @Description("The field of the basins feature collection that hold the soil use.")
+    @Description(OMSENERGYBALANCE_fBasinlandcover_DESCRIPTION)
     @In
     public String fBasinlandcover = null;
 
-    @Description("Temperature above which the precipitation is rain.")
+    @Description(OMSENERGYBALANCE_pTrain_DESCRIPTION)
     @Unit("degrees")
     @In
     public double pTrain = 2.0;
 
-    @Description("Temperature below which the precipitation is snow.")
+    @Description(OMSENERGYBALANCE_pTsnow_DESCRIPTION)
     @Unit("degrees")
     @In
     public double pTsnow = 0.0;
 
-    @Description("Internal timestep in minutes for the model.")
+    @Description(OMSENERGYBALANCE_pInternaltimestep_DESCRIPTION)
     @In
     public double pInternaltimestep = 1;
 
-    @Description("Snow density.")
+    @Description(OMSENERGYBALANCE_pRhosnow_DESCRIPTION)
     @Unit("kg/m3")
     @In
     public double pRhosnow = 400.0;
 
-    @Description("Initial constant SWE value.")
+    @Description(OMSENERGYBALANCE_pInitswe_DESCRIPTION)
     @In
     public double pInitswe = -9999.0;
 
-    @Description("Constant value of canopy height.")
+    @Description(OMSENERGYBALANCE_pCanopyh_DESCRIPTION)
     @In
     public double pCanopyh = 0.0;
 
-    @Description("Value in the basins attributes that identifies the glaciers.")
+    @Description(OMSENERGYBALANCE_pGlacierid_DESCRIPTION)
     @In
     public double pGlacierid = -9999.0;
 
-    @Description("Snow reflectivity in the visible spectrum.")
+    @Description(OMSENERGYBALANCE_pSnowrefv_DESCRIPTION)
     @In
     public double pSnowrefv = 0.85;
 
-    @Description("Snow reflectivity in the near infrared.")
+    @Description(OMSENERGYBALANCE_pSnowrefir_DESCRIPTION)
     @In
     public double pSnowrefir = 0.65;
 
-    @Description("The timestep in minutes.")
+    @Description(OMSENERGYBALANCE_tTimestep_DESCRIPTION)
     @In
     public int tTimestep;
 
-    @Description("The current time.")
+    @Description(OMSENERGYBALANCE_tCurrent_DESCRIPTION)
     @In
     public String tCurrent = null;
 
-    @Description("The rain input for every basin.")
+    @Description(OMSENERGYBALANCE_inRain_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inRain;
 
-    @Description("The temperatures for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inTemp_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inTemp;
 
-    @Description("The wind for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inWind_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inWind;
 
-    @Description("The pressure for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inPressure_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inPressure;
 
-    @Description("The relative humidity for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inRh_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inRh;
 
-    @Description("The dtday for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inDtday_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inDtday;
 
-    @Description("The dtmonth for every altimetric band of every basin.")
+    @Description(OMSENERGYBALANCE_inDtmonth_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inDtmonth;
 
-    @Description("The energy values for the basins.")
+    @Description(OMSENERGYBALANCE_inEnergy_DESCRIPTION)
     @In
     public List<EIEnergy> inEnergy = null;
 
-    @Description("The areas of energetic and altimetric bands.")
+    @Description(OMSENERGYBALANCE_inAreas_DESCRIPTION)
     @In
     public List<EIAreas> inAreas = null;
 
-    @Description("The path to the safepoint to use as initial conditions.")
+    @Description(OMSENERGYBALANCE_pInitsafepoint_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String pInitsafepoint;
 
-    @Description("The path to which to write the safepoint.")
+    @Description(OMSENERGYBALANCE_pEndsafepoint_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String pEndsafepoint;
 
-    @Description("Net precipitation.")
+    @Description(OMSENERGYBALANCE_outPnet_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outPnet;
 
-    @Description("Precipitation that is rain.")
+    @Description(OMSENERGYBALANCE_outPrain_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outPrain;
 
-    @Description("Precipitation that is snow.")
+    @Description(OMSENERGYBALANCE_outPsnow_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outPsnow;
 
-    @Description("SWE for each basin.")
+    @Description(OMSENERGYBALANCE_outSwe_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outSwe;
 
-    @Description("Net radiation for each basin.")
+    @Description(OMSENERGYBALANCE_outNetradiation_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outNetradiation;
-    
-    @Description("Net shortwave radiation for each basin.")
+
+    @Description(OMSENERGYBALANCE_outNetshortradiation_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outNetshortradiation;
 
@@ -319,8 +324,7 @@ public class OmsEnergyBalance extends JGTModel {
 
             int basinIdFieldIndex = featureType.indexOf(fBasinid);
             if (basinIdFieldIndex == -1) {
-                throw new IllegalArgumentException(
-                        "The field of the basin id couldn't be found in the supplied basin data.");
+                throw new IllegalArgumentException("The field of the basin id couldn't be found in the supplied basin data.");
             }
             if (fBasinlandcover != null) {
                 usoFieldIndex = featureType.indexOf(fBasinlandcover);
@@ -339,10 +343,8 @@ public class OmsEnergyBalance extends JGTModel {
                 pm.worked(1);
                 SimpleFeature feature = featureIterator.next();
                 basinsFeatures.add(feature);
-                basinid2BasinindexMap.put(((Number) feature.getAttribute(basinIdFieldIndex))
-                        .intValue(), index);
-                basinindex2BasinidMap.put(index, ((Number) feature.getAttribute(basinIdFieldIndex))
-                        .intValue());
+                basinid2BasinindexMap.put(((Number) feature.getAttribute(basinIdFieldIndex)).intValue(), index);
+                basinindex2BasinidMap.put(index, ((Number) feature.getAttribute(basinIdFieldIndex)).intValue());
                 Geometry basinGeometry = (Geometry) feature.getDefaultGeometry();
                 Abasin[index] = basinGeometry.getArea() / 1000000.0; // area in km2 as the input
                 // area for energetic and
@@ -621,8 +623,7 @@ public class OmsEnergyBalance extends JGTModel {
                 canopy[i][j] = pCanopyh;
             }
         }
-        checkParametersAndRunEnergyBalance(rain, T, V, P, RH, currentMonth, currentDay, hour,
-                Abasin, A, EI, DTd, DTm, canopy);
+        checkParametersAndRunEnergyBalance(rain, T, V, P, RH, currentMonth, currentDay, hour, Abasin, A, EI, DTd, DTm, canopy);
 
     }
 
@@ -685,9 +686,9 @@ public class OmsEnergyBalance extends JGTModel {
      * @param DTm monthly temperature range.
      * @param canopy
      */
-    private void checkParametersAndRunEnergyBalance( double[] rain, double[][] T, double[][] V,
-            double[][] P, double[][] RH, double month, double day, double hour, double[] Abasin,
-            double[][][] A, double[][][] EI, double[][] DTd, double[][] DTm, double[][] canopy ) {
+    private void checkParametersAndRunEnergyBalance( double[] rain, double[][] T, double[][] V, double[][] P, double[][] RH,
+            double month, double day, double hour, double[] Abasin, double[][][] A, double[][][] EI, double[][] DTd,
+            double[][] DTm, double[][] canopy ) {
 
         double Dt = ((double) tTimestep / (double) pInternaltimestep) * 60.0;
 
@@ -723,9 +724,8 @@ public class OmsEnergyBalance extends JGTModel {
         sun(hour, day);
 
         for( int i = 0; i < basinNum; i++ ) {
-            calculateEnergyBalance(i, month, hasNoStations, V[i], canopy, T[i], P[i], RH[i], rain,
-                    pTrain, pTsnow, Dt, A, Abasin, EI, DTd[i], DTm[i], K, eps, Lc, pRhosnow, Ksat,
-                    rho_g, De, C_g, aep, albedo_land, Ks, Ts_min, Ts_max);
+            calculateEnergyBalance(i, month, hasNoStations, V[i], canopy, T[i], P[i], RH[i], rain, pTrain, pTsnow, Dt, A, Abasin,
+                    EI, DTd[i], DTm[i], K, eps, Lc, pRhosnow, Ksat, rho_g, De, C_g, aep, albedo_land, Ks, Ts_min, Ts_max);
         }
     }
 
@@ -765,12 +765,11 @@ public class OmsEnergyBalance extends JGTModel {
      * @param SnAge snow age [banda altimetrica][banda energetica][bacino]
      * @param Ts surface temperature
      */
-    private void calculateEnergyBalance( int i, double month, boolean hasNoStations,
-            double[] windSpeed, double[][] canopy, double[] T, double[] P, double[] RH,
-            double[] rain, double Train, double Tsnow, double Dt, double[][][] A, double[] Abasin,
-            double[][][] EI, double[] DTd, double[] DTm, double K, double eps, double Lc,
-            double rho_sn, double Ksat, double rho_g, double De, double C_g, double aep,
-            double albedo_land, double Ks, double Ts_min, double Ts_max ) {
+    private void calculateEnergyBalance( int i, double month, boolean hasNoStations, double[] windSpeed, double[][] canopy,
+            double[] T, double[] P, double[] RH, double[] rain, double Train, double Tsnow, double Dt, double[][][] A,
+            double[] Abasin, double[][][] EI, double[] DTd, double[] DTm, double K, double eps, double Lc, double rho_sn,
+            double Ksat, double rho_g, double De, double C_g, double aep, double albedo_land, double Ks, double Ts_min,
+            double Ts_max ) {
 
         double rho, cp, ea, Psnow, T_snow, Prain, T_rain, Qp, Pnet;
         double[] tausn = new double[1];
@@ -881,9 +880,8 @@ public class OmsEnergyBalance extends JGTModel {
                     // alpha, E0,
                     // Ts[j][k][i], Wice[0], T[j], ea, Psnow,
                     // DTd[j], DTm[j], tausn, Rsw, Rlwin);
-                    calculateRadiation(EI[(int) month][k][i], Ts[j][k][i], Wice[0], T[j], ea, P[j],
-                            Psnow, DTd[j], DTm[j], tausn, Rsw, Rlwin, Dt, aep, albedo_land,
-                            netRadiation, netShortRadiation, pSnowrefv, pSnowrefir);
+                    calculateRadiation(EI[(int) month][k][i], Ts[j][k][i], Wice[0], T[j], ea, P[j], Psnow, DTd[j], DTm[j], tausn,
+                            Rsw, Rlwin, Dt, aep, albedo_land, netRadiation, netShortRadiation, pSnowrefv, pSnowrefir);
 
                     // double Dt, double aep, double albedo_land
 
@@ -895,9 +893,8 @@ public class OmsEnergyBalance extends JGTModel {
 
                     // PREDICTOR
                     // temperatura della superficie
-                    Tsur = calculateSurfaceTemperature(conv, Ts[j][k][i], Tin[0], T[j], P[j],
-                            windSpeed[j], ea, Rsw[0], Rlwin[0], Qp, rho, cp, canopy[j][i], K,
-                            rho_sn, Ks, eps, Ts_min, Ts_max);
+                    Tsur = calculateSurfaceTemperature(conv, Ts[j][k][i], Tin[0], T[j], P[j], windSpeed[j], ea, Rsw[0], Rlwin[0],
+                            Qp, rho, cp, canopy[j][i], K, rho_sn, Ks, eps, Ts_min, Ts_max);
 
                     if (Double.isNaN(Tsur) || conv[0] != 1)
                         Tsur = T[j]; // controllo in caso di non
@@ -926,8 +923,7 @@ public class OmsEnergyBalance extends JGTModel {
 
                     // aggiornamento
                     W1 = SWE[j][k][i] + rain[i] + (L0 / Lv - M0) * Dt;
-                    U1 = U[j][k][i] + 1.0E-3 * (Rsw[0] + Rlwin[0] + Qp - Lf * M0 - R0 + H0 + L0)
-                            * Dt;
+                    U1 = U[j][k][i] + 1.0E-3 * (Rsw[0] + Rlwin[0] + Qp - Lf * M0 - R0 + H0 + L0) * Dt;
 
                     U0 = U1; // aggiorno i parametri di U e W con i valori
                     // calcolati
@@ -943,9 +939,8 @@ public class OmsEnergyBalance extends JGTModel {
                         calculateTemp(Wice, Tin, Fliq, 1.0E3 * U1, W1, rho_g, De, C_g);
 
                         // temperatura della superficie
-                        Tsur = calculateSurfaceTemperature(conv, Tsur, Tin[0], T[j], P[j],
-                                windSpeed[j], ea, Rsw[0], Rlwin[0], Qp, rho, cp, canopy[j][i], K,
-                                rho_sn, Ks, eps, Ts_min, Ts_max);
+                        Tsur = calculateSurfaceTemperature(conv, Tsur, Tin[0], T[j], P[j], windSpeed[j], ea, Rsw[0], Rlwin[0],
+                                Qp, rho, cp, canopy[j][i], K, rho_sn, Ks, eps, Ts_min, Ts_max);
                         if (Double.isNaN(Tsur) || conv[0] != 1)
                             Tsur = T[j]; // controllo in caso di non
                         // convergenza
@@ -968,8 +963,7 @@ public class OmsEnergyBalance extends JGTModel {
                             W2 = 0.0;
                             tol = 3;
                         } else {
-                            Se = (Fliq[0] / (1.0 - Fliq[0]) - Lc)
-                                    / (rho_w / rho_sn - rho_w / rho_i - Lc);
+                            Se = (Fliq[0] / (1.0 - Fliq[0]) - Lc) / (rho_w / rho_sn - rho_w / rho_i - Lc);
                             if (Se < 0)
                                 Se = 0.0;
                             M1 = Ksat * pow(Se, 3.0);
@@ -979,21 +973,18 @@ public class OmsEnergyBalance extends JGTModel {
                                 M1 = (W1 - Wice[0]) / Dt;
 
                             // aggiornamento
-                            W2 = SWE[j][k][i] + rain[i]
-                                    + (0.5 * (L0 / Lv - M0) + 0.5 * (L1 / Lv - M1)) * Dt;
+                            W2 = SWE[j][k][i] + rain[i] + (0.5 * (L0 / Lv - M0) + 0.5 * (L1 / Lv - M1)) * Dt;
                             U2 = U[j][k][i]
                                     + 1.0E-3
-                                    * (Rsw[0] + Rlwin[0] + Qp + 0.5 * (-Lf * M0 - R0 + H0 + L0) + 0.5 * (-Lf
-                                            * M1 - R1 + H1 + L1)) * Dt;
+                                    * (Rsw[0] + Rlwin[0] + Qp + 0.5 * (-Lf * M0 - R0 + H0 + L0) + 0.5 * (-Lf * M1 - R1 + H1 + L1))
+                                    * Dt;
 
                             cont += 1;
 
                             // controllo convergenza
-                            if (cont == 1 && abs(U2 - U1) < defaultTollU0
-                                    && abs(W2 - W1) < defaultTollW0)
+                            if (cont == 1 && abs(U2 - U1) < defaultTollU0 && abs(W2 - W1) < defaultTollW0)
                                 tol = 1;
-                            if (cont > 1 && abs(U2 - U1) < defaultTollU
-                                    && abs(W2 - W1) < defaultTollW)
+                            if (cont > 1 && abs(U2 - U1) < defaultTollU && abs(W2 - W1) < defaultTollW)
                                 tol = 2;
                             if (conv[0] != 1)
                                 tol = 0; // se Tsur non converge, non va bene
@@ -1045,9 +1036,8 @@ public class OmsEnergyBalance extends JGTModel {
                     Tsur = T[j];
                     Ts[j][k][i] = Tsur;
                     tausn[0] = 0.0;
-                    calculateRadiation(EI[(int) month][k][i], Ts[j][k][i], 0.0, T[j], ea, P[j],
-                            Psnow, DTd[j], DTm[j], tausn, Rsw, Rlwin, Dt, aep, albedo_land,
-                            netRadiation, netShortRadiation, pSnowrefv, pSnowrefir);
+                    calculateRadiation(EI[(int) month][k][i], Ts[j][k][i], 0.0, T[j], ea, P[j], Psnow, DTd[j], DTm[j], tausn,
+                            Rsw, Rlwin, Dt, aep, albedo_land, netRadiation, netShortRadiation, pSnowrefv, pSnowrefir);
                     // for( m = 2; m <= 40; m++ ) {
                     // logg[m] = -1.0;
                     // }
@@ -1081,8 +1071,8 @@ public class OmsEnergyBalance extends JGTModel {
         averageTemperature[2 * i + 1] /= num_ES;
     }
 
-    private void calculateTemp( double[] Wice, double[] Tin, double[] Fliq, double U, double SWE,
-            double rho_g, double De, double C_g ) {
+    private void calculateTemp( double[] Wice, double[] Tin, double[] Fliq, double U, double SWE, double rho_g, double De,
+            double C_g ) {
         if (U <= 0) {
             Wice[0] = SWE;
             Tin[0] = U / (SWE * C_ice + rho_g * De * C_g);
@@ -1099,10 +1089,9 @@ public class OmsEnergyBalance extends JGTModel {
 
     }
 
-    private void calculateRadiation( double EI, double Ts, double Wice, double Ta, double ea,
-            double P, double Psnow, double DTd, double DTm, double[] tausn, double[] Rsw,
-            double[] Rlwin, double Dt, double aep, double albedo_land, double[] netRadiation,
-            double[] netShortRadiation, double avo, double airo ) {
+    private void calculateRadiation( double EI, double Ts, double Wice, double Ta, double ea, double P, double Psnow, double DTd,
+            double DTm, double[] tausn, double[] Rsw, double[] Rlwin, double Dt, double aep, double albedo_land,
+            double[] netRadiation, double[] netShortRadiation, double avo, double airo ) {
 
         double coszen, r1, r2, r3, fzen, fage, avd, avis, aird, anir, albedo, rr, AtmTrans;
         double eps_clsky, CF, eps;
@@ -1170,14 +1159,13 @@ public class OmsEnergyBalance extends JGTModel {
         if (AtmTrans <= 0.22) {
             diff2glob = 1.0 - 0.09 * AtmTrans;
         } else if (AtmTrans > 0.22 && AtmTrans <= 0.80) {
-            diff2glob = 0.9511 - 0.1604 * AtmTrans + 4.388 * pow(AtmTrans, 2.0) - 16.638
-                    * pow(AtmTrans, 3.0) + 12.336 * pow(AtmTrans, 4.0);
+            diff2glob = 0.9511 - 0.1604 * AtmTrans + 4.388 * pow(AtmTrans, 2.0) - 16.638 * pow(AtmTrans, 3.0) + 12.336
+                    * pow(AtmTrans, 4.0);
         } else {
             diff2glob = 0.165;
         }
         // Rsw=direct+diffuse
-        Rsw[0] = Isc * E0 * AtmTrans * (1.0 - albedo)
-                * ((1.0 - diff2glob) * coszen + diff2glob * sin(alpha));
+        Rsw[0] = Isc * E0 * AtmTrans * (1.0 - albedo) * ((1.0 - diff2glob) * coszen + diff2glob * sin(alpha));
 
         // INCOMING LONGWAVE RADIATION
         eps_clsky = 1.08 * (1.0 - exp(-pow(ea, (Ta + tk) / 2016.0)));
@@ -1223,25 +1211,22 @@ public class OmsEnergyBalance extends JGTModel {
      * @param Ts_max 
      * @return
      */
-    private double calculateSurfaceTemperature( int[] conv, double Ts, double Tin, double Ta,
-            double P, double V, double ea, double Rsw, double Rlwin, double Qp, double rho,
-            double cp, double Fcanopy, double K, double rho_sn, double Ks, double eps,
-            double Ts_min, double Ts_max ) {
+    private double calculateSurfaceTemperature( int[] conv, double Ts, double Tin, double Ta, double P, double V, double ea,
+            double Rsw, double Rlwin, double Qp, double rho, double cp, double Fcanopy, double K, double rho_sn, double Ks,
+            double eps, double Ts_min, double Ts_max ) {
         double a, b, Ts0;
         short cont;
 
         // coefficienti non dipendenti dalla temperatura della superficie
-        a = Rsw + Rlwin + Qp + K * V * Ta * rho * cp + rho_sn * C_ice * Ks * Tin + 0.622 * K * V
-                * Lv * rho * ea / P;
+        a = Rsw + Rlwin + Qp + K * V * Ta * rho * cp + rho_sn * C_ice * Ks * Tin + 0.622 * K * V * Lv * rho * ea / P;
         b = rho_sn * C_ice * Ks + K * V * rho * cp;
         cont = 0;
 
         do {
             Ts0 = Ts;
-            Ts = (a - 0.622 * K * V * Lv * rho * (pVap(Ts0, P) - Ts * dpVap(Ts0, P)) / P + 3.0
-                    * Fcanopy * sigma * eps * pow(Ts0 + tk, 4.0))
-                    / (b + 0.622 * dpVap(Ts0, P) * K * V * Lv * rho / P + 4.0 * Fcanopy * eps
-                            * sigma * pow(Ts0 + tk, 3.0));
+            Ts = (a - 0.622 * K * V * Lv * rho * (pVap(Ts0, P) - Ts * dpVap(Ts0, P)) / P + 3.0 * Fcanopy * sigma * eps
+                    * pow(Ts0 + tk, 4.0))
+                    / (b + 0.622 * dpVap(Ts0, P) * K * V * Lv * rho / P + 4.0 * Fcanopy * eps * sigma * pow(Ts0 + tk, 3.0));
             cont += 1;
         } while( abs(Ts - Ts0) > defaultTollTs && cont <= defaultTsiter );
 
@@ -1303,19 +1288,17 @@ public class OmsEnergyBalance extends JGTModel {
 
         // correction sideral time
         double G = 2.0 * PI * (day - 1.0) / 365.0;
-        double Et = 0.000075 + 0.001868 * cos(G) - 0.032077 * sin(G) - 0.014615 * cos(2 * G)
-                - 0.04089 * sin(2 * G);
+        double Et = 0.000075 + 0.001868 * cos(G) - 0.032077 * sin(G) - 0.014615 * cos(2 * G) - 0.04089 * sin(2 * G);
 
         // local time
         double lh = hour + (longitude - lst) / omega + Et / omega;
 
         // earth-sun distance correction
-        E0 = 1.00011 + 0.034221 * cos(G) + 0.00128 * sin(G) + 0.000719 * cos(2 * G) + 0.000077
-                * sin(2 * G);
+        E0 = 1.00011 + 0.034221 * cos(G) + 0.00128 * sin(G) + 0.000719 * cos(2 * G) + 0.000077 * sin(2 * G);
 
         // solar declination
-        double D = 0.006918 - 0.399912 * cos(G) + 0.070257 * sin(G) - 0.006758 * cos(2 * G)
-                + 0.000907 * sin(2 * G) - 0.002697 * cos(3 * G) + 0.00148 * sin(3 * G);
+        double D = 0.006918 - 0.399912 * cos(G) + 0.070257 * sin(G) - 0.006758 * cos(2 * G) + 0.000907 * sin(2 * G) - 0.002697
+                * cos(3 * G) + 0.00148 * sin(3 * G);
 
         // Sunrise and sunset with respect to 12pm [hour]
         double Thr = (acos(-tan(D) * tan(latitude))) / omega;

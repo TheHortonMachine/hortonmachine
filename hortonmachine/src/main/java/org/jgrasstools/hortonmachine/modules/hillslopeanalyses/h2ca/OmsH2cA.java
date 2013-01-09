@@ -18,6 +18,18 @@
 package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2ca;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inAttribute_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_outAttribute_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -28,7 +40,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,34 +51,32 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Select a hillslope or some of its property from the DEM")
-@Documentation("OmsH2cA.html")
-@Author(name = "Antonello Andrea, Franceschi Silvia, Andreis Daniele,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
-@Keywords("Geomorphology, OmsDrainDir")
-@Label(JGTConstants.HILLSLOPE)
-@Name("OmsH2cA")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSH2CA_DESCRIPTION)
+@Author(name = OMSH2CA_AUTHORNAMES, contact = OMSH2CA_AUTHORCONTACTS)
+@Keywords(OMSH2CA_KEYWORDS)
+@Label(OMSH2CA_LABEL)
+@Name(OMSH2CA_NAME)
+@Status(OMSH2CA_STATUS)
+@License(OMSH2CA_LICENSE)
 public class OmsH2cA extends JGTModel {
-    @Description("The map of flowdirections.")
+    @Description(OMSH2CA_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map with the net.")
+    @Description(OMSH2CA_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The map of the attribute to estimate.")
+    @Description(OMSH2CA_inAttribute_DESCRIPTION)
     @In
     public GridCoverage2D inAttribute = null;
 
-    @Description("The output map of the attribute.")
+    @Description(OMSH2CA_outAttribute_DESCRIPTION)
     @Out
     public GridCoverage2D outAttribute = null;
 

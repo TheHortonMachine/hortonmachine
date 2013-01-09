@@ -19,6 +19,27 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.distance3d;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_doWholenet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inObstacles_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inSoil_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_inTriggers_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_outIndexedTriggers_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_outPaths_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_outSoil_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_pDistance_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISVANDRE_pMode_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -49,7 +70,6 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -66,66 +86,66 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Implementation of the Vandre methodology for Debris handling.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Debris, Raster")
-@Name("debrisvandre")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDEBRISVANDRE_DESCRIPTION)
+@Author(name = OMSDEBRISVANDRE_AUTHORNAMES, contact = OMSDEBRISVANDRE_AUTHORCONTACTS)
+@Keywords(OMSDEBRISVANDRE_KEYWORDS)
+@Label(OMSDEBRISVANDRE_LABEL)
+@Name(OMSDEBRISVANDRE_NAME)
+@Status(OMSDEBRISVANDRE_STATUS)
+@License(OMSDEBRISVANDRE_LICENSE)
 public class OmsDebrisVandre extends JGTModel {
 
-    @Description("The map of elevation.")
+    @Description(OMSDEBRISVANDRE_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of flow directions.")
+    @Description(OMSDEBRISVANDRE_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of slope.")
+    @Description(OMSDEBRISVANDRE_inSlope_DESCRIPTION)
     @Unit("degree")
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map of debris triggering points.")
+    @Description(OMSDEBRISVANDRE_inTriggers_DESCRIPTION)
     @In
     public GridCoverage2D inTriggers = null;
 
-    @Description("The optional map of soil height.")
+    @Description(OMSDEBRISVANDRE_inSoil_DESCRIPTION)
     @In
     public GridCoverage2D inSoil = null;
 
-    @Description("The optional map of the network (needed if the soil map is supplied).")
+    @Description(OMSDEBRISVANDRE_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The flag that defines (in the case of supplied soil map0 if the cumulated should be propagated down the whole network channel.")
+    @Description(OMSDEBRISVANDRE_doWholenet_DESCRIPTION)
     @In
     public boolean doWholenet = false;
 
-    @Description("The optional maximum distance (used if the soil map is supplied, defaults to 100 meters).")
+    @Description(OMSDEBRISVANDRE_pDistance_DESCRIPTION)
     @In
     @Unit("[m]")
     public double pDistance = 100.0;
 
-    @Description("An optional point map of obstacles on the network, that can stop the debris path.")
+    @Description(OMSDEBRISVANDRE_inObstacles_DESCRIPTION)
     @In
     public SimpleFeatureCollection inObstacles = null;
 
-    @Description("The criteria mode to use (0 = Burton/Bathurst = default, 1 = Tn modified Barton/Bathurst).")
+    @Description(OMSDEBRISVANDRE_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("The debris paths for every trigger point.")
+    @Description(OMSDEBRISVANDRE_outPaths_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPaths = null;
 
-    @Description("The trigger map, linked to the id of its path.")
+    @Description(OMSDEBRISVANDRE_outIndexedTriggers_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outIndexedTriggers = null;
 
-    @Description("The optional output map of cumulated soil.")
+    @Description(OMSDEBRISVANDRE_outSoil_DESCRIPTION)
     @Out
     public GridCoverage2D outSoil = null;
 
@@ -603,7 +623,7 @@ public class OmsDebrisVandre extends JGTModel {
                                 + flowDirColRow[1], this);
                     tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 }
-                
+
             }
 
         }

@@ -18,6 +18,20 @@
 package org.jgrasstools.hortonmachine.modules.hillslopeanalyses.tc;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_inProf_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_inTan_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_outTc3_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_outTc9_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_pProfthres_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTC_pTanthres_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -28,7 +42,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,37 +58,36 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ")
-@Documentation("OmsTc.html")
-@Author(name = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hillslope, OmsCurvatures")
-@Label(JGTConstants.HILLSLOPE)
-@Name("tc")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTC_DESCRIPTION)
+@Author(name = OMSTC_AUTHORNAMES, contact = OMSTC_AUTHORCONTACTS)
+@Keywords(OMSTC_KEYWORDS)
+@Label(OMSTC_LABEL)
+@Name(OMSTC_NAME)
+@Status(OMSTC_STATUS)
+@License(OMSTC_LICENSE)
 public class OmsTc extends JGTModel {
 
-    @Description("The longitudinal curvatures raster.")
+    @Description(OMSTC_inProf_DESCRIPTION)
     @In
     public GridCoverage2D inProf = null;
 
-    @Description("The normal curvatures raster.")
+    @Description(OMSTC_inTan_DESCRIPTION)
     @In
     public GridCoverage2D inTan = null;
 
-    @Description("The threshold value for the longitudinal curvatures.")
+    @Description(OMSTC_pProfthres_DESCRIPTION)
     @In
     public double pProfthres = 0.0;
 
-    @Description("The threshold value for the normal curvaturess.")
+    @Description(OMSTC_pTanthres_DESCRIPTION)
     @In
     public double pTanthres = 0.0;
 
-    @Description("The map of 9 topographic classes.")
+    @Description(OMSTC_outTc9_DESCRIPTION)
     @Out
     public GridCoverage2D outTc9 = null;
 
-    @Description("The map of 3 aggregated fundamental topographic classes.")
+    @Description(OMSTC_outTc3_DESCRIPTION)
     @Out
     public GridCoverage2D outTc3 = null;
 

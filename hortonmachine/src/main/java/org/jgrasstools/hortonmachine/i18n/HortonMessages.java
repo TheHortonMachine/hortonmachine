@@ -1063,7 +1063,7 @@ public class HortonMessages {
     public static final String OMSENERGYBALANCE_DOCUMENTATION = "";
     public static final String OMSENERGYBALANCE_KEYWORDS = "Snow, Energybalance";
     public static final String OMSENERGYBALANCE_LABEL = "HortonMachine/Hydro-Geomorphology";
-    public static final String OMSENERGYBALANCE_NAME = "";
+    public static final String OMSENERGYBALANCE_NAME = "energybalance";
     public static final int OMSENERGYBALANCE_STATUS = 5;
     public static final String OMSENERGYBALANCE_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSENERGYBALANCE_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";

@@ -19,6 +19,20 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers;
 
 import static java.lang.Math.pow;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_outTriggers_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -46,38 +60,38 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 
-@Description("Module for extraction of debris trigger points along the network following the CNR methodology.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Debris, Trigger, Raster")
-@Name("debristrigger")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDEBRISTRIGGERCNR_DESCRIPTION)
+@Author(name = OMSDEBRISTRIGGERCNR_AUTHORNAMES, contact = OMSDEBRISTRIGGERCNR_AUTHORCONTACTS)
+@Keywords(OMSDEBRISTRIGGERCNR_KEYWORDS)
+@Label(OMSDEBRISTRIGGERCNR_LABEL)
+@Name(OMSDEBRISTRIGGERCNR_NAME)
+@Status(OMSDEBRISTRIGGERCNR_STATUS)
+@License(OMSDEBRISTRIGGERCNR_LICENSE)
 public class OmsDebrisTriggerCnr extends JGTModel {
 
-    @Description("The map of elevation.")
+    @Description(OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of the network.")
+    @Description(OMSDEBRISTRIGGERCNR_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The map of tca.")
+    @Description(OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The tca threshold to use (default = 10 km2).")
+    @Description(OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION)
     @Unit("km2")
     @In
     public double pTcathres = 10;
 
-    @Description("The gradient threshold to use (default = 38 deg).")
+    @Description(OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION)
     @Unit("degree")
     @In
     public double pGradthres = 38;
 
-    @Description("The trigger map.")
+    @Description(OMSDEBRISTRIGGERCNR_outTriggers_DESCRIPTION)
     @Out
     public GridCoverage2D outTriggers = null;
 

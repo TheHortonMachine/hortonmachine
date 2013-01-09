@@ -19,6 +19,43 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_doLog_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fBaricenter_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fMonpointid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetelevend_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetelevstart_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetnum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fPfaff_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDams_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDamsdata_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDuffyInput_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inEtp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inHillslope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inHydrometerdata_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inHydrometers_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inHymodInput_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inNetwork_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inOfftakes_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inOfftakesdata_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inRain_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inTributary_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inTributarydata_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_outDischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_outSubdischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_pPfafids_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_pRainduration_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_pRainintensity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_tEnd_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_tStart_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_tTimestep_DESCRIPTION;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +71,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
@@ -60,131 +98,133 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-@Description("The OmsAdige model.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Hydrology")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+
+@Description(OMSADIGE_DESCRIPTION)
+@Author(name = OMSADIGE_AUTHORNAMES, contact = OMSADIGE_AUTHORCONTACTS)
+@Keywords(OMSADIGE_KEYWORDS)
+@Label(OMSADIGE_LABEL)
+@Name(OMSADIGE_NAME)
+@Status(OMSADIGE_STATUS)
+@License(OMSADIGE_LICENSE)
 public class OmsAdige extends JGTModel {
 
-    @Description("The hillslope data.")
+    @Description(OMSADIGE_inHillslope_DESCRIPTION)
     @In
     public SimpleFeatureCollection inHillslope;
 
-    @Description("The field name of the netnum attribute in the hillslope data.")
+    @Description(OMSADIGE_fNetnum_DESCRIPTION)
     @In
     public String fNetnum = null;
 
-    @Description("The a field name of the baricenter elevation attribute in the hillslope data.")
+    @Description(OMSADIGE_fBaricenter_DESCRIPTION)
     @In
     public String fBaricenter = null;
 
-    @Description("A constant value of rain intensity.")
+    @Description(OMSADIGE_pRainintensity_DESCRIPTION)
     @Unit("mm/h")
     @In
     @Out
     public double pRainintensity = -1.0;
 
-    @Description("The duration of the constant rain in minutes.")
+    @Description(OMSADIGE_pRainduration_DESCRIPTION)
     @Unit("min")
     @In
     @Out
     public int pRainduration = -1;
 
-    @Description("The rainfall data.")
+    @Description(OMSADIGE_inRain_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inRain;
 
-    @Description("The hydrometers monitoring points.")
+    @Description(OMSADIGE_inHydrometers_DESCRIPTION)
     @In
     public SimpleFeatureCollection inHydrometers;
 
-    @Description("The hydrometers data.")
+    @Description(OMSADIGE_inHydrometerdata_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inHydrometerdata;
 
-    @Description("The dams monitoring points.")
+    @Description(OMSADIGE_inDams_DESCRIPTION)
     @In
     public SimpleFeatureCollection inDams;
 
-    @Description("The dams data.")
+    @Description(OMSADIGE_inDamsdata_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inDamsdata;
 
-    @Description("The tributary monitoring points.")
+    @Description(OMSADIGE_inTributary_DESCRIPTION)
     @In
     public SimpleFeatureCollection inTributary;
 
-    @Description("The tributary data.")
+    @Description(OMSADIGE_inTributarydata_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inTributarydata;
 
-    @Description("The offtakes monitoring points.")
+    @Description(OMSADIGE_inOfftakes_DESCRIPTION)
     @In
     public SimpleFeatureCollection inOfftakes;
 
-    @Description("The offtakes data.")
+    @Description(OMSADIGE_inOfftakesdata_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inOfftakesdata;
 
-    @Description("Comma separated list of pfafstetter ids, in which to generate the output")
+    @Description(OMSADIGE_pPfafids_DESCRIPTION)
     @In
     public String pPfafids = null;
 
-    @Description("The field name of the monitoring point's id attribute in the monitoring points data.")
+    @Description(OMSADIGE_fMonpointid_DESCRIPTION)
     @In
     public String fMonpointid = null;
 
-    @Description("The network data.")
+    @Description(OMSADIGE_inNetwork_DESCRIPTION)
     @In
     public SimpleFeatureCollection inNetwork;
 
-    @Description("The field name of the pfafstetter enumeration attribute in the network data.")
+    @Description(OMSADIGE_fPfaff_DESCRIPTION)
     @In
     public String fPfaff = null;
 
-    @Description("The field name of the elevation of the starting point of a link in the network data.")
+    @Description(OMSADIGE_fNetelevstart_DESCRIPTION)
     @In
     public String fNetelevstart = null;
 
-    @Description("The field name of the elevation of the end point of a link in the network data.")
+    @Description(OMSADIGE_fNetelevend_DESCRIPTION)
     @In
     public String fNetelevend = null;
 
-    @Description("The evapotranspiration data.")
+    @Description(OMSADIGE_inEtp_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inEtp;
 
-    @Description("Switch to activate additional logging to file.")
+    @Description(OMSADIGE_doLog_DESCRIPTION)
     @In
     public boolean doLog = false;
 
-    @Description("The timestep in minutes.")
+    @Description(OMSADIGE_tTimestep_DESCRIPTION)
     @In
     public int tTimestep = 0;
 
-    @Description("The start date.")
+    @Description(OMSADIGE_tStart_DESCRIPTION)
     @In
     public String tStart = null;
 
-    @Description("The end date.")
+    @Description(OMSADIGE_tEnd_DESCRIPTION)
     @In
     public String tEnd = null;
 
-    @Description("The inputs in the case of Duffy elaboration.")
+    @Description(OMSADIGE_inDuffyInput_DESCRIPTION)
     @In
     public DuffyInputs inDuffyInput = null;
 
-    @Description("The inputs in the case of HyMod elaboration.")
+    @Description(OMSADIGE_inHymodInput_DESCRIPTION)
     @In
     public HymodInputs inHymodInput = null;
 
-    @Description("The superficial discharge for every basin id.")
+    @Description(OMSADIGE_outDischarge_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outDischarge;
 
-    @Description("The sub-superficial discharge for every basin id.")
+    @Description(OMSADIGE_outSubdischarge_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outSubdischarge;
 
@@ -468,7 +508,7 @@ public class OmsAdige extends JGTModel {
                         index2Basinid, pfaffsList, pfaff2Index, outDischarge, outSubdischarge, startTimestamp, endTimestamp,
                         tTimestep);
             } else if (inHymodInput != null) {
-                initialConditions =null;
+                initialConditions = null;
                 adigeEngine = new HymodAdigeEngine(inHymodInput, orderedHillslopes, index2Basinid, outDischarge, outSubdischarge,
                         pfaffsList, doLog, doLog, pm);
             } else {
@@ -550,7 +590,7 @@ public class OmsAdige extends JGTModel {
             if (isNovalue(value[0])) {
                 value[0] = 0.0;
             }
-            //endArray[index] = value[0] / (tTimestep / 60.0);
+            // endArray[index] = value[0] / (tTimestep / 60.0);
             endArray[index] = value[0];
         }
     }
