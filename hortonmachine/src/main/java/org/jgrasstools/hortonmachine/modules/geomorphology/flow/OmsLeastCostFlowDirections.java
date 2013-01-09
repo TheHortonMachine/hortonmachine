@@ -28,6 +28,23 @@ import static org.jgrasstools.gears.libs.modules.Direction.W;
 import static org.jgrasstools.gears.libs.modules.Direction.WS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_doAspect_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_doSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_doTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_outAspect_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_outFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.List;
@@ -38,6 +55,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +69,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -60,44 +77,44 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
 import org.jgrasstools.hortonmachine.modules.geomorphology.slope.OmsSlope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Calculates the drainage directions following the least cost method.")
-// @Documentation("OmsFlowDirections.html")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Geomorphology, Flowdirections, Least cost")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("flowlc")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION)
+@Documentation(OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION)
+@Author(name = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES, contact = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS)
+@Keywords(OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS)
+@Label(OMSLEASTCOSTFLOWDIRECTIONS_LABEL)
+@Name(OMSLEASTCOSTFLOWDIRECTIONS_NAME)
+@Status(OMSLEASTCOSTFLOWDIRECTIONS_STATUS)
+@License(OMSLEASTCOSTFLOWDIRECTIONS_LICENSE)
 public class OmsLeastCostFlowDirections extends JGTModel {
-    @Description("The elevation map.")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("Flag to toggle tca calculation.")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_doTca_DESCRIPTION)
     @In
     public boolean doTca = true;
 
-    @Description("Flag to toggle slope calculation.")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_doSlope_DESCRIPTION)
     @In
     public boolean doSlope = true;
 
-    @Description("Flag to toggle aspect calculation.")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_doAspect_DESCRIPTION)
     @In
     public boolean doAspect = true;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_outFlow_DESCRIPTION)
     @Out
     public GridCoverage2D outFlow = null;
 
-    @Description("The map of tca (optional).")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
 
-    @Description("The map of aspect (optional).")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_outAspect_DESCRIPTION)
     @Out
     public GridCoverage2D outAspect = null;
 
-    @Description("The map of slope (optional).")
+    @Description(OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION)
     @Out
     public GridCoverage2D outSlope = null;
 

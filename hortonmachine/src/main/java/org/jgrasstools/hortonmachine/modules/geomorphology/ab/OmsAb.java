@@ -18,6 +18,19 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.ab;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inPlan_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outAb_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outB_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
@@ -38,34 +51,33 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the draining area per length unit.")
-@Documentation("OmsAb.html")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("ab")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSAB_DESCRIPTION)
+@Documentation(OMSAB_DOCUMENTATION)
+@Author(name = OMSAB_AUTHORNAMES, contact = OMSAB_AUTHORCONTACTS)
+@Keywords(OMSAB_KEYWORDS)
+@Label(OMSAB_LABEL)
+@Name(OMSAB_NAME)
+@Status(OMSAB_STATUS)
+@License(OMSAB_LICENSE)
 public class OmsAb extends JGTModel {
-    @Description("The map of the total contributing area.")
+    @Description(OMSAB_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The map of the planar curvatures.")
+    @Description(OMSAB_inPlan_DESCRIPTION)
     @In
     public GridCoverage2D inPlan = null;
 
-    @Description("The map of area per length.")
+    @Description(OMSAB_outAb_DESCRIPTION)
     @Out
     public GridCoverage2D outAb = null;
 
-    @Description("The map of contour line.")
+    @Description(OMSAB_outB_DESCRIPTION)
     @Out
     public GridCoverage2D outB = null;
 

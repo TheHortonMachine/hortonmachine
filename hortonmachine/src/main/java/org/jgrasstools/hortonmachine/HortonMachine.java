@@ -250,9 +250,6 @@ public class HortonMachine {
         Set<Entry<String, List<ClassField>>> entrySet = moduleName2Fields.entrySet();
         for( Entry<String, List<ClassField>> entry : entrySet ) {
             String moduleName = entry.getKey();
-            if (moduleName.toLowerCase().equals("omsaspect")) {
-                System.out.println();
-            }
 
             StringBuilder sb = new StringBuilder();
 
@@ -327,10 +324,13 @@ public class HortonMachine {
             List<ClassField> value = entry.getValue();
             for( ClassField classField : value ) {
                 String fieldName = classField.fieldName;
+                if (fieldName.equals("pm")) {
+                    continue;
+                }
                 String fieldDescription = classField.fieldDescription;
 
-                String str = "public static final String " + moduleName.toUpperCase() + "_" + fieldName.toUpperCase()
-                        + "_DESCRIPTION = \"" + fieldDescription + "\";\n";
+                String str = "public static final String " + moduleName.toUpperCase() + "_" + fieldName + "_DESCRIPTION = \""
+                        + fieldDescription + "\";\n";
                 sb.append(str);
             }
             System.out.println(sb.toString());

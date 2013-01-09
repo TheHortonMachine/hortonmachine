@@ -22,6 +22,18 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_outTca_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -44,31 +56,30 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the contributing areas considering also the elevation (3D), that represent the areas (in number of pixels) afferent to each point.")
-@Documentation("OmsTca3d.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsDrainDir, OmsTca, OmsAb, Multitca")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("tca3d")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTCA3D_DESCRIPTION)
+@Documentation(OMSTCA3D_DOCUMENTATION)
+@Author(name = OMSTCA3D_AUTHORNAMES, contact = OMSTCA3D_AUTHORCONTACTS)
+@Keywords(OMSTCA3D_KEYWORDS)
+@Label(OMSTCA3D_LABEL)
+@Name(OMSTCA3D_NAME)
+@Status(OMSTCA3D_STATUS)
+@License(OMSTCA3D_LICENSE)
 public class OmsTca3d extends JGTModel {
-    @Description("The depitted elevation model.")
+    @Description(OMSTCA3D_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSTCA3D_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of total contributing areas 3d.")
+    @Description(OMSTCA3D_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
 

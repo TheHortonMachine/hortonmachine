@@ -19,6 +19,18 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.tca;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_outLoop_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA_outTca_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -29,6 +41,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -41,28 +54,28 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.")
-@Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("tca")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTCA_DESCRIPTION)
+@Documentation(OMSTCA_DOCUMENTATION)
+@Author(name = OMSTCA_AUTHORNAMES, contact = OMSTCA_AUTHORCONTACTS)
+@Keywords(OMSTCA_KEYWORDS)
+@Label(OMSTCA_LABEL)
+@Name(OMSTCA_NAME)
+@Status(OMSTCA_STATUS)
+@License(OMSTCA_LICENSE)
 public class OmsTca extends JGTModel {
-    @Description("The map of flowdirections.")
+    @Description(OMSTCA_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of total contributing areas.")
+    @Description(OMSTCA_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
 
-    @Description("The vector containing loops, if there are any.")
+    @Description(OMSTCA_outLoop_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outLoop = null;
 

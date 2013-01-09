@@ -19,6 +19,17 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.flow;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
@@ -39,25 +50,24 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the drainage directions with the D8 method.")
-@Documentation("OmsFlowDirections.html")
-@Author(name = "David Tarboton, Andrea Antonello", contact = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsAspect")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("flow")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSFLOWDIRECTIONS_DESCRIPTION)
+@Documentation(OMSFLOWDIRECTIONS_DOCUMENTATION)
+@Author(name = OMSFLOWDIRECTIONS_AUTHORNAMES, contact = OMSFLOWDIRECTIONS_AUTHORCONTACTS)
+@Keywords(OMSFLOWDIRECTIONS_KEYWORDS)
+@Label(OMSFLOWDIRECTIONS_LABEL)
+@Name(OMSFLOWDIRECTIONS_NAME)
+@Status(OMSFLOWDIRECTIONS_STATUS)
+@License(OMSFLOWDIRECTIONS_LICENSE)
 public class OmsFlowDirections extends JGTModel {
-    @Description("The depitted elevation map.")
+    @Description(OMSFLOWDIRECTIONS_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSFLOWDIRECTIONS_outFlow_DESCRIPTION)
     @Out
     public GridCoverage2D outFlow = null;
 

@@ -1,6 +1,19 @@
 package org.jgrasstools.hortonmachine.modules.geomorphology.multitca;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_inCp9_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_outMultiTca_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
@@ -28,31 +41,31 @@ import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 
-@Description("It calculates the contributing areas differently in convex and concave areas")
-@Documentation("OmsMultiTca.html")
-@Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Keywords("Geomorphology, OmsDrainDir, Pitfiller, OmsAb")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("multitca")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMULTITCA_DESCRIPTION)
+@Documentation(OMSMULTITCA_DOCUMENTATION)
+@Author(name = OMSMULTITCA_AUTHORNAMES, contact = OMSMULTITCA_AUTHORCONTACTS)
+@Keywords(OMSMULTITCA_KEYWORDS)
+@Label(OMSMULTITCA_LABEL)
+@Name(OMSMULTITCA_NAME)
+@Status(OMSMULTITCA_STATUS)
+@License(OMSMULTITCA_LICENSE)
 public class OmsMultiTca extends JGTModel {
-    @Description("The map of depitted elevation.")
+    @Description(OMSMULTITCA_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
-    
-    @Description("The map of flowdirections.")
+
+    @Description(OMSMULTITCA_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
-    
-    @Description("The map with the Thopological classes cp9.")
+
+    @Description(OMSMULTITCA_inCp9_DESCRIPTION)
     @In
     public GridCoverage2D inCp9 = null;
-    
-    @Description("The map of total contributing areas.")
+
+    @Description(OMSMULTITCA_outMultiTca_DESCRIPTION)
     @Out
     public GridCoverage2D outMultiTca = null;
-    
+
     // the flow direction.
     private int[][] dir = ModelsSupporter.DIR_WITHFLOW_EXITING;
     // the incoming flow direction.
@@ -63,7 +76,7 @@ public class OmsMultiTca extends JGTModel {
         if (!concatOr(outMultiTca == null, doReset)) {
             return;
         }
-        checkNull(inPit,inFlow,inCp9);
+        checkNull(inPit, inFlow, inCp9);
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         int cols = regionMap.get(CoverageUtilities.COLS).intValue();
         int rows = regionMap.get(CoverageUtilities.ROWS).intValue();

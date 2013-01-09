@@ -19,6 +19,19 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.slope;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_doHandleNegativeSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_outSlope_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -42,33 +55,32 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.GridNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the slope in each point of the map.")
-@Documentation("OmsSlope.html")
-@Author(name = "Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsGradient")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("slope")
-@Status(Status.TESTED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSLOPE_DESCRIPTION)
+@Documentation(OMSSLOPE_DOCUMENTATION)
+@Author(name = OMSSLOPE_AUTHORNAMES, contact = OMSSLOPE_AUTHORCONTACTS)
+@Keywords(OMSSLOPE_KEYWORDS)
+@Label(OMSSLOPE_LABEL)
+@Name(OMSSLOPE_NAME)
+@Status(OMSSLOPE_STATUS)
+@License(OMSSLOPE_LICENSE)
 public class OmsSlope extends JGTModel {
-    @Description("The depitted elevation map.")
+    @Description(OMSSLOPE_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of flowdirection.")
+    @Description(OMSSLOPE_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("If true, negative slopes will be set to the minimum positive value.")
+    @Description(OMSSLOPE_doHandleNegativeSlope_DESCRIPTION)
     @In
     public boolean doHandleNegativeSlope;
 
-    @Description("The map of gradient.")
+    @Description(OMSSLOPE_outSlope_DESCRIPTION)
     @Out
     public GridCoverage2D outSlope = null;
 

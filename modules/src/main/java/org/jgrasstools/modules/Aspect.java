@@ -40,7 +40,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
@@ -73,14 +72,13 @@ public class Aspect extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        GridCoverage2D inElevGC = getRaster(inElev);
         OmsAspect aspect = new OmsAspect();
-        aspect.inElev = inElevGC;
-        aspect.doRound = true;
+        aspect.inElev = getRaster(inElev);
+        aspect.doRadiants = doRadiants;
+        aspect.doRound = doRound;
         aspect.pm = pm;
         aspect.process();
-        GridCoverage2D aspectCoverage = aspect.outAspect;
-        dumpRaster(aspectCoverage, outAspect);
+        dumpRaster(aspect.outAspect, outAspect);
     }
 
 }

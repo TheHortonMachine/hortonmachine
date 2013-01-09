@@ -23,6 +23,19 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_doDegrees_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -45,33 +58,33 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the gradient in each point of the map.")
-@Documentation("OmsGradient.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("gradient")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+
+@Description(OMSGRADIENT_DESCRIPTION)
+@Documentation(OMSGRADIENT_DOCUMENTATION)
+@Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
+@Keywords(OMSGRADIENT_KEYWORDS)
+@Label(OMSGRADIENT_LABEL)
+@Name(OMSGRADIENT_NAME)
+@Status(OMSGRADIENT_STATUS)
+@License(OMSGRADIENT_LICENSE)
 public class OmsGradient extends JGTModel {
-    @Description("The map of the digital elevation model (DEM or pit).")
+    @Description(OMSGRADIENT_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
+    @Description(OMSGRADIENT_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("The output type, if false = tan of the angle (default), if true = degrees")
+    @Description(OMSGRADIENT_doDegrees_DESCRIPTION)
     @In
     public boolean doDegrees = false;
 
-    @Description("The map of gradient.")
+    @Description(OMSGRADIENT_outSlope_DESCRIPTION)
     @Out
     public GridCoverage2D outSlope = null;
 

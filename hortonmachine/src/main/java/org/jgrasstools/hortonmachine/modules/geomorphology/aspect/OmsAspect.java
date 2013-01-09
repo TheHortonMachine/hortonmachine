@@ -28,7 +28,7 @@ import static java.lang.Math.sin;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.*;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DOCUMENTATION;
@@ -37,6 +37,10 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_LICENSE;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRadiants_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRound_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAspect_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
@@ -73,19 +77,19 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Status(OMSASPECT_STATUS)
 @License(OMSASPECT_LICENSE)
 public class OmsAspect extends JGTModel {
-    @Description(OMSASPECT_INELEV_DESCRIPTION)
+    @Description(OMSASPECT_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description(OMSASPECT_DORADIANTS_DESCRIPTION)
+    @Description(OMSASPECT_doRadiants_DESCRIPTION)
     @In
     public boolean doRadiants = false;
 
-    @Description(OMSASPECT_DOROUND_DESCRIPTION)
+    @Description(OMSASPECT_doRound_DESCRIPTION)
     @In
     public boolean doRound = false;
 
-    @Description(OMSASPECT_OUTASPECT_DESCRIPTION)
+    @Description(OMSASPECT_outAspect_DESCRIPTION)
     @Out
     public GridCoverage2D outAspect = null;
 

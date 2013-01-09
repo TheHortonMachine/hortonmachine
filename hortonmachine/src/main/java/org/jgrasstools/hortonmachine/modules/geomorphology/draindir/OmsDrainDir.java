@@ -19,6 +19,22 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.draindir;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_doLad_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inFlownet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_outTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDRAINDIR_pLambda_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -41,48 +57,47 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("It calculates the drainage directions minimizing the deviation from the real flow")
-@Documentation("OmsDrainDir.html")
-@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, Pitfiller, OmsFlowDirections")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("draindir")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDRAINDIR_DESCRIPTION)
+@Documentation(OMSDRAINDIR_DOCUMENTATION)
+@Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
+@Keywords(OMSDRAINDIR_KEYWORDS)
+@Label(OMSDRAINDIR_LABEL)
+@Name(OMSDRAINDIR_NAME)
+@Status(OMSDRAINDIR_STATUS)
+@License(OMSDRAINDIR_LICENSE)
 public class OmsDrainDir extends JGTModel {
 
-    @Description("The depitted elevation model.")
+    @Description(OMSDRAINDIR_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSDRAINDIR_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.")
+    @Description(OMSDRAINDIR_inFlownet_DESCRIPTION)
     @In
     public GridCoverage2D inFlownet = null;
 
-    @Description("The direction correction factor.")
+    @Description(OMSDRAINDIR_pLambda_DESCRIPTION)
     @In
     public double pLambda = 1.0;
 
-    @Description("Switch for the mode to use: true = LAD (default), false = LTD)).")
+    @Description(OMSDRAINDIR_doLad_DESCRIPTION)
     @In
     public boolean doLad = true;
 
-    @Description("The map of drainage directions.")
+    @Description(OMSDRAINDIR_outFlow_DESCRIPTION)
     @Out
     public GridCoverage2D outFlow = null;
 
-    @Description("The map of total contributing areas.")
+    @Description(OMSDRAINDIR_outTca_DESCRIPTION)
     @Out
     public GridCoverage2D outTca = null;
 

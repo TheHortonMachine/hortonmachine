@@ -2,6 +2,21 @@ package org.jgrasstools.hortonmachine.modules.geomorphology.gc;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_inCp9_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_inNetwork_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_outAggregateClasses_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_outClasses_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGC_pTh_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
@@ -23,40 +38,40 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-@Description("Subdivides the sites of a basin in 11 topographic classes.")
-@Documentation("OmsGc.html")
-@Author(name = "Daniele Andreis,Erica Ghesla, Cozzini Andrea, Rigon Riccardo")
-@Keywords("Geomorphology, OmsTc, OmsSlope, OmsExtractNetwork")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("gc")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+
+@Description(OMSGC_DESCRIPTION)
+@Documentation(OMSGC_DOCUMENTATION)
+@Author(name = OMSGC_AUTHORNAMES, contact = OMSGC_AUTHORCONTACTS)
+@Keywords(OMSGC_KEYWORDS)
+@Label(OMSGC_LABEL)
+@Name(OMSGC_NAME)
+@Status(OMSGC_STATUS)
+@License(OMSGC_LICENSE)
 public class OmsGc extends JGTModel {
-    @Description("The map of the slope")
+    @Description(OMSGC_inSlope_DESCRIPTION)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map with the network")
+    @Description(OMSGC_inNetwork_DESCRIPTION)
     @In
     public GridCoverage2D inNetwork = null;
 
-    @Description("The map with the Thopological classes cp9")
+    @Description(OMSGC_inCp9_DESCRIPTION)
     @In
     public GridCoverage2D inCp9 = null;
 
-    @Description("The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).")
+    @Description(OMSGC_pTh_DESCRIPTION)
     @In
     public int pTh = 0;
 
-    @Description("The map with the geomorphological classes")
+    @Description(OMSGC_outClasses_DESCRIPTION)
     @Out
     public GridCoverage2D outClasses = null;
 
-    @Description("The map with the geomorphological classes")
+    @Description(OMSGC_outAggregateClasses_DESCRIPTION)
     @Out
     public GridCoverage2D outAggregateClasses = null;
 
