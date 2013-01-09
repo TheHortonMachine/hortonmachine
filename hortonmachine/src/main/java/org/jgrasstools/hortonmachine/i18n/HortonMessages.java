@@ -490,6 +490,7 @@ public class HortonMessages {
     public static final String OMSFAOETPMODEL_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSFAOETPMODEL_AUTHORNAMES = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello";
     public static final String OMSFAOETPMODEL_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSFAOETPMODEL_UI = "iterator";
     public static final String OMSFAOETPMODEL_inNetradiation_DESCRIPTION = "The net Radiation at the grass surface in W/m2 for the current hour.";
     public static final String OMSFAOETPMODEL_defaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
     public static final String OMSFAOETPMODEL_inWind_DESCRIPTION = "The average hourly wind speed.";
@@ -598,6 +599,7 @@ public class HortonMessages {
     public static final String OMSPRESTEYTAYLORETPMODEL_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello";
     public static final String OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSPRESTEYTAYLORETPMODEL_UI = "iterator";
     public static final String OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION = "The net Radiation at the grass surface in W/m2 for the current hour.";
     public static final String OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
     public static final String OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
@@ -656,6 +658,7 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSFAOETPDAILY_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSFAOETPDAILY_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSFAOETPDAILY_UI = "iterator";
     public static final String OMSFAOETPDAILY_inNetradiation_DESCRIPTION = "The net Radiation at the grass surface in W/m2 for the current day.";
     public static final String OMSFAOETPDAILY_defaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
     public static final String OMSFAOETPDAILY_inWind_DESCRIPTION = "The average daily wind speed.";
@@ -807,6 +810,7 @@ public class HortonMessages {
     public static final String OMSFAOETP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSFAOETP_AUTHORNAMES = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello";
     public static final String OMSFAOETP_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSFAOETP_UI = "iterator";
     public static final String OMSFAOETP_inNetradiation_DESCRIPTION = "The net Radiation at the grass surface in W/m2 for the current hour.";
     public static final String OMSFAOETP_defaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
     public static final String OMSFAOETP_inWind_DESCRIPTION = "The average hourly wind speed.";
@@ -1140,6 +1144,7 @@ public class HortonMessages {
     public static final String OMSPENMANETP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSPENMANETP_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSPENMANETP_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSPENMANETP_UI = "hide";
     public static final String OMSPENMANETP_inVegetation_DESCRIPTION = "The vegetation library for every basin.";
     public static final String OMSPENMANETP_inNetradiation_DESCRIPTION = "Net radiation.";
     public static final String OMSPENMANETP_inShortradiation_DESCRIPTION = "Shortwave net radiation.";
@@ -1204,6 +1209,7 @@ public class HortonMessages {
     public static final String DIAMETERSREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String DIAMETERSREADER_AUTHORNAMES = "Andrea Antonello";
     public static final String DIAMETERSREADER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String DIAMETERSREADER_UI = "hide";
     public static final String DIAMETERSREADER_file_DESCRIPTION = "The csv file to read from.";
     public static final String DIAMETERSREADER_pCols_DESCRIPTION = "The number of columns of the array.";
     public static final String DIAMETERSREADER_pSeparator_DESCRIPTION = "The csv separator.";

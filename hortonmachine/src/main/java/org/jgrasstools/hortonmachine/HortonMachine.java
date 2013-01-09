@@ -41,6 +41,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.ClassField;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -320,6 +321,11 @@ public class HortonMachine {
             sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORNAMES = \"" + authorName + "\";\n");
             String authorContact = author.contact();
             sb.append("public static final String " + moduleName.toUpperCase() + "_AUTHORCONTACTS = \"" + authorContact + "\";\n");
+
+            UI ui = moduleClass.getAnnotation(UI.class);
+            if (ui != null) {
+                sb.append("public static final String " + moduleName.toUpperCase() + "_UI = \"" + ui.value() + "\";\n");
+            }
 
             List<ClassField> value = entry.getValue();
             for( ClassField classField : value ) {
