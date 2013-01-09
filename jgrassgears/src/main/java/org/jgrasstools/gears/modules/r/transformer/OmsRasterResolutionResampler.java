@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pInterpolation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pXres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_pYres_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -25,6 +39,7 @@ import javax.media.jai.Interpolation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,37 +53,38 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
-@Description("Module to do coverage resolution resampling.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Convert")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("rresolresampler")
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION)
+@Documentation(OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION)
+@Author(name = OMSRASTERRESOLUTIONRESAMPLER_AUTHORNAMES, contact = OMSRASTERRESOLUTIONRESAMPLER_AUTHORCONTACTS)
+@Keywords(OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS)
+@Label(OMSRASTERRESOLUTIONRESAMPLER_LABEL)
+@Name(OMSRASTERRESOLUTIONRESAMPLER_NAME)
+@Status(OMSRASTERRESOLUTIONRESAMPLER_STATUS)
+@License(OMSRASTERRESOLUTIONRESAMPLER_LICENSE)
 public class OmsRasterResolutionResampler extends JGTModel {
-    @Description("The input coverage.")
+
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION)
     @In
     public GridCoverage2D inGeodata;
 
-    @Description("The interpolation type to use")
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description("The new resolution in X")
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_pXres_DESCRIPTION)
     @In
     public Double pXres;
 
-    @Description("The new resolution in Y (if null taken same as pXres)")
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_pYres_DESCRIPTION)
     @In
     public Double pYres;
 
-    @Description("The output coverage.")
+    @Description(OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION)
     @Out
     public GridCoverage2D outGeodata;
 

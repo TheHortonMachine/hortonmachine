@@ -17,10 +17,22 @@
  */
 package org.jgrasstools.gears.modules.r.imagemosaic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION;
+
 import java.io.File;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -35,16 +47,17 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 
-@Description("Module for creating an mosaic shapefile for images.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Imagemosaic, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("imagemosaic")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSIMAGEMOSAICCREATOR_DESCRIPTION)
+@Documentation(OMSIMAGEMOSAICCREATOR_DOCUMENTATION)
+@Author(name = OMSIMAGEMOSAICCREATOR_AUTHORNAMES, contact = OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS)
+@Keywords(OMSIMAGEMOSAICCREATOR_KEYWORDS)
+@Label(OMSIMAGEMOSAICCREATOR_LABEL)
+@Name(OMSIMAGEMOSAICCREATOR_NAME)
+@Status(OMSIMAGEMOSAICCREATOR_STATUS)
+@License(OMSIMAGEMOSAICCREATOR_LICENSE)
 public class OmsImageMosaicCreator extends JGTModel {
 
-    @Description("The folder containing the images to mosaic.")
+    @Description(OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;

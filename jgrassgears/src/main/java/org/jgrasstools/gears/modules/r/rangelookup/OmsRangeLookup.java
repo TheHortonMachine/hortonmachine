@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.modules.r.rangelookup;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pClasses_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pRanges_DESCRIPTION;
+
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
@@ -43,29 +57,29 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Module for raster rangelookup.")
-@Documentation("OmsRangeLookup.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Rangelookup")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("rrangelookup")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRANGELOOKUP_DESCRIPTION)
+@Documentation(OMSRANGELOOKUP_DOCUMENTATION)
+@Author(name = OMSRANGELOOKUP_AUTHORNAMES, contact = OMSRANGELOOKUP_AUTHORCONTACTS)
+@Keywords(OMSRANGELOOKUP_KEYWORDS)
+@Label(OMSRANGELOOKUP_LABEL)
+@Name(OMSRANGELOOKUP_NAME)
+@Status(OMSRANGELOOKUP_STATUS)
+@License(OMSRANGELOOKUP_LICENSE)
 public class OmsRangeLookup extends JGTModel {
 
-    @Description("The raster that has to be processed.")
+    @Description(OMSRANGELOOKUP_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The ranges in the form [r1l r1h),[r2l r2h]")
+    @Description(OMSRANGELOOKUP_pRanges_DESCRIPTION)
     @In
     public String pRanges;
 
-    @Description("The classes to substitute in the same order of the ranges (in the form 1,2)")
+    @Description(OMSRANGELOOKUP_pClasses_DESCRIPTION)
     @In
     public String pClasses;
 
-    @Description("The processed raster.")
+    @Description(OMSRANGELOOKUP_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 
@@ -126,7 +140,6 @@ public class OmsRangeLookup extends JGTModel {
         RenderedImage lookupImg = JAI.create("RangeLookup", pb);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap,
-                inRaster.getCoordinateReferenceSystem());
+        outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap, inRaster.getCoordinateReferenceSystem());
     }
 }

@@ -17,6 +17,23 @@
  */
 package org.jgrasstools.gears.modules.r.interpolation2d;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.IDW;
 import static org.jgrasstools.gears.libs.modules.Variables.TPS;
@@ -32,9 +49,11 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
@@ -63,72 +82,47 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description(//
-en = "Surface Interpolator module",//
-it = "Interpolazione di superfici"//
-)
-@Author(name = "Jan Jezek, Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Interpolation, Raster, Spline")
-@Status(Status.DRAFT)
-@Name("surfaceinterpolator")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSSURFACEINTERPOLATOR_DESCRIPTION)
+@Documentation(OMSSURFACEINTERPOLATOR_DOCUMENTATION)
+@Author(name = OMSSURFACEINTERPOLATOR_AUTHORNAMES, contact = OMSSURFACEINTERPOLATOR_AUTHORCONTACTS)
+@Keywords(OMSSURFACEINTERPOLATOR_KEYWORDS)
+@Label(OMSSURFACEINTERPOLATOR_LABEL)
+@Name(OMSSURFACEINTERPOLATOR_NAME)
+@Status(OMSSURFACEINTERPOLATOR_STATUS)
+@License(OMSSURFACEINTERPOLATOR_LICENSE)
 public class OmsSurfaceInterpolator extends JGTModel {
 
-    @Description(//
-    en = "The input vector map of points.",//
-    it = "La mappa vettoriale di punti."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector;
 
-    @Description(//
-    en = "The grid on which to interpolate.",//
-    it = "La griglia sulla quale interpolare."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION)
     @In
     public GridGeometry2D inGrid = null;
 
-    @Description(//
-    en = "An optional mask raster map. Values will be computed only where the mask has values.",//
-    it = "Una mappa raster opzionale da usare come maschera per il calcolo."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION)
     @In
     public GridCoverage2D inMask = null;
 
-    @Description(//
-    en = "Field from which to take the category value.",//
-    it = "Campo dal quale prendere il valore della categoria."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description(//
-    en = "Interpolation mode (default is TPS).",//
-    it = "Metodo di interpolazione (default e' TPS)."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION)
     @UI("combo:" + TPS + "," + IDW)
     @In
     public String pMode = "TPS";
 
-    @Description(//
-    en = "The buffer to use for interpolation (default is 4).",//
-    it = "Il buffer da usare per l'interpolazione (default e' 4)."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION)
     @Unit("m")
     @In
     public double pBuffer = 4.0;
 
-    @Description(//
-    en = "Max threads to use (default 1).",//
-    it = "Numero massimo di thread da usare (default 1)."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION)
     @In
     public int pMaxThreads = 1;
 
-    @Description(//
-    en = "The interpolated raster.",//
-    it = "Il raster interpolato."//
-    )
+    @Description(OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

@@ -17,6 +17,24 @@
  */
 package org.jgrasstools.gears.modules.r.carver;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_fDepthLines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_fDepthPolygons_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inCarverLines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inCarverPolygons_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthLines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthPolygons_DESCRIPTION;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
@@ -26,6 +44,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,24 +64,25 @@ import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Carves a raster using a vector map.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Carve, Raster")
-@Name("carver")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSCARVER_DESCRIPTION)
+@Documentation(OMSCARVER_DOCUMENTATION)
+@Author(name = OMSCARVER_AUTHORNAMES, contact = OMSCARVER_AUTHORCONTACTS)
+@Keywords(OMSCARVER_KEYWORDS)
+@Label(OMSCARVER_LABEL)
+@Name(OMSCARVER_NAME)
+@Status(OMSCARVER_STATUS)
+@License(OMSCARVER_LICENSE)
 public class OmsCarver extends JGTModel {
 
-    @Description("The input raster.")
+    @Description(OMSCARVER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The polygon vector map used to carve the raster.")
+    @Description(OMSCARVER_inCarverPolygons_DESCRIPTION)
     @In
     public SimpleFeatureCollection inCarverPolygons = null;
 
-    @Description("The lines vector map used to carve the raster.")
+    @Description(OMSCARVER_inCarverLines_DESCRIPTION)
     @In
     public SimpleFeatureCollection inCarverLines = null;
 
@@ -75,23 +95,23 @@ public class OmsCarver extends JGTModel {
     // @In
     // public double pBuffer = 30.0;
 
-    @Description("The optional vector lines field containing the depth to be carved.")
+    @Description(OMSCARVER_fDepthLines_DESCRIPTION)
     @In
     public String fDepthLines = null;
 
-    @Description("The carve depth to use for vector lines if no field is supplied.")
+    @Description(OMSCARVER_pDepthLines_DESCRIPTION)
     @In
     public double pDepthLines = 6.0;
 
-    @Description("The optional vector polygons field containing the depth to be carved.")
+    @Description(OMSCARVER_fDepthPolygons_DESCRIPTION)
     @In
     public String fDepthPolygons = null;
 
-    @Description("The carve depth to use for vector polygons if no field is supplied.")
+    @Description(OMSCARVER_pDepthPolygons_DESCRIPTION)
     @In
     public double pDepthPolygons = 6.0;
 
-    @Description("The carved raster map.")
+    @Description(OMSCARVER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

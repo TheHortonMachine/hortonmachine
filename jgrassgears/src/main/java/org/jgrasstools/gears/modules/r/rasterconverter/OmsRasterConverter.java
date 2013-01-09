@@ -17,6 +17,17 @@
  */
 package org.jgrasstools.gears.modules.r.rasterconverter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_outRaster_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -30,23 +41,23 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Raster conversion module.")
-@Documentation("OmsRasterConverter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Convert, OmsRasterReader")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("rconvert")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERCONVERTER_DESCRIPTION)
+@Documentation(OMSRASTERCONVERTER_DOCUMENTATION)
+@Author(name = OMSRASTERCONVERTER_AUTHORNAMES, contact = OMSRASTERCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSRASTERCONVERTER_KEYWORDS)
+@Label(OMSRASTERCONVERTER_LABEL)
+@Name(OMSRASTERCONVERTER_NAME)
+@Status(OMSRASTERCONVERTER_STATUS)
+@License(OMSRASTERCONVERTER_LICENSE)
 public class OmsRasterConverter extends JGTModel {
-    @Description("The input raster.")
+
+    @Description(OMSRASTERCONVERTER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The output raster.")
+    @Description(OMSRASTERCONVERTER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

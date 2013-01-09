@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.modules.r.raster2xyz;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_doRemovenv_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inRaster_DESCRIPTION;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
@@ -24,6 +37,7 @@ import javax.media.jai.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -41,24 +55,25 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.geometry.DirectPosition;
 
-@Description("Convert a raster to XYZ triplets.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Conversion")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("raster2xyz")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTER2XYZ_DESCRIPTION)
+@Documentation(OMSRASTER2XYZ_DOCUMENTATION)
+@Author(name = OMSRASTER2XYZ_AUTHORNAMES, contact = OMSRASTER2XYZ_AUTHORCONTACTS)
+@Keywords(OMSRASTER2XYZ_KEYWORDS)
+@Label(OMSRASTER2XYZ_LABEL)
+@Name(OMSRASTER2XYZ_NAME)
+@Status(OMSRASTER2XYZ_STATUS)
+@License(OMSRASTER2XYZ_LICENSE)
 public class OmsRaster2Xyz extends JGTModel {
 
-    @Description("The map to convert.")
+    @Description(OMSRASTER2XYZ_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The file into which to save the result.")
+    @Description(OMSRASTER2XYZ_inFile_DESCRIPTION)
     @In
     public String inFile;
 
-    @Description("Flag to remove novalues.")
+    @Description(OMSRASTER2XYZ_doRemovenv_DESCRIPTION)
     @In
     public boolean doRemovenv = true;
 

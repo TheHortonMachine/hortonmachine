@@ -17,9 +17,23 @@
  */
 package org.jgrasstools.gears.modules.r.rastervectorintersection;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -32,7 +46,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
@@ -42,28 +55,29 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
 
-@Description("Module for raster with polygon vector intersection.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, Intersect")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@Name("rvintersector")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERVECTORINTERSECTOR_DESCRIPTION)
+@Documentation(OMSRASTERVECTORINTERSECTOR_DOCUMENTATION)
+@Author(name = OMSRASTERVECTORINTERSECTOR_AUTHORNAMES, contact = OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS)
+@Keywords(OMSRASTERVECTORINTERSECTOR_KEYWORDS)
+@Label(OMSRASTERVECTORINTERSECTOR_LABEL)
+@Name(OMSRASTERVECTORINTERSECTOR_NAME)
+@Status(OMSRASTERVECTORINTERSECTOR_STATUS)
+@License(OMSRASTERVECTORINTERSECTOR_LICENSE)
 public class OmsRasterVectorIntersector extends JGTModel {
 
-    @Description("The polygon vector to use for the intersection.")
+    @Description(OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The raster to use for the intersection.")
+    @Description(OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("Flag to use to invert the result (default is false = keep data inside vector)")
+    @Description(OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
-    @Description("The output raster.")
+    @Description(OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

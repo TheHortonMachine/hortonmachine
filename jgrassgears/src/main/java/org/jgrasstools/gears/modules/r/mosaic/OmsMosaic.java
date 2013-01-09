@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.modules.r.mosaic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_inFiles_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMOSAIC_pInterpolation_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -60,26 +72,26 @@ import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Module for raster patching.")
-@Documentation("OmsMosaic.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("OmsMosaic, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("mosaic")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMOSAIC_DESCRIPTION)
+@Documentation(OMSMOSAIC_DOCUMENTATION)
+@Author(name = OMSMOSAIC_AUTHORNAMES, contact = OMSMOSAIC_AUTHORCONTACTS)
+@Keywords(OMSMOSAIC_KEYWORDS)
+@Label(OMSMOSAIC_LABEL)
+@Name(OMSMOSAIC_NAME)
+@Status(OMSMOSAIC_STATUS)
+@License(OMSMOSAIC_LICENSE)
 public class OmsMosaic extends JGTModel {
 
-    @Description("The list of maps that have to be patched.")
+    @Description(OMSMOSAIC_inFiles_DESCRIPTION)
     @In
     public List<File> inFiles;
 
-    @Description("The interpolation type to use")
+    @Description(OMSMOSAIC_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description("The patched map.")
+    @Description(OMSMOSAIC_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

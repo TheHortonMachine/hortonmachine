@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.modules.r.pointsrasterizer;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_fCat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inGrid_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 
 import java.awt.image.WritableRaster;
@@ -27,6 +40,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,28 +70,29 @@ import org.opengis.feature.type.GeometryType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Module to convert vector points to raster. Currently this does simply put the point in the nearest cell, without check.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, Points")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@Name("rasterizepoints")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSPOINTSRASTERIZER_DESCRIPTION)
+@Documentation(OMSPOINTSRASTERIZER_DOCUMENTATION)
+@Author(name = OMSPOINTSRASTERIZER_AUTHORNAMES, contact = OMSPOINTSRASTERIZER_AUTHORCONTACTS)
+@Keywords(OMSPOINTSRASTERIZER_KEYWORDS)
+@Label(OMSPOINTSRASTERIZER_LABEL)
+@Name(OMSPOINTSRASTERIZER_NAME)
+@Status(OMSPOINTSRASTERIZER_STATUS)
+@License(OMSPOINTSRASTERIZER_LICENSE)
 public class OmsPointsRasterizer extends JGTModel {
 
-    @Description("The points vector.")
+    @Description(OMSPOINTSRASTERIZER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The grid on which to place the values.")
+    @Description(OMSPOINTSRASTERIZER_inGrid_DESCRIPTION)
     @In
     public GridGeometry2D inGrid;
 
-    @Description("The field of the vector to take the category from.")
+    @Description(OMSPOINTSRASTERIZER_fCat_DESCRIPTION)
     @In
     public String fCat;
 
-    @Description("The output raster.")
+    @Description(OMSPOINTSRASTERIZER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

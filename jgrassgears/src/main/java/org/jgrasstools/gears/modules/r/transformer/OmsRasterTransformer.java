@@ -18,6 +18,28 @@
  */
 package org.jgrasstools.gears.modules.r.transformer;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_doFlipHorizontal_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_doFlipVertical_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_outBounds_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pAngle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pInterpolation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pScaleX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pScaleY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pTransX_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_pTransY_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -40,6 +62,7 @@ import javax.media.jai.operator.TransposeDescriptor;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -70,70 +93,70 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-@Description("Module for raster tranforms.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Transform, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.DRAFT)
-@Name("rtrans")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERTRANSFORMER_DESCRIPTION)
+@Documentation(OMSRASTERTRANSFORMER_DOCUMENTATION)
+@Author(name = OMSRASTERTRANSFORMER_AUTHORNAMES, contact = OMSRASTERTRANSFORMER_AUTHORCONTACTS)
+@Keywords(OMSRASTERTRANSFORMER_KEYWORDS)
+@Label(OMSRASTERTRANSFORMER_LABEL)
+@Name(OMSRASTERTRANSFORMER_NAME)
+@Status(OMSRASTERTRANSFORMER_STATUS)
+@License(OMSRASTERTRANSFORMER_LICENSE)
 public class OmsRasterTransformer extends JGTModel {
-
-    @Description("The raster that has to be transformed.")
+    @Description(OMSRASTERTRANSFORMER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The interpolation type to use")
+    @Description(OMSRASTERTRANSFORMER_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description("The translation along the X axis.")
+    @Description(OMSRASTERTRANSFORMER_pTransX_DESCRIPTION)
     @Unit("m")
     @In
     public Double pTransX;
 
-    @Description("The translation along the Y axis.")
+    @Description(OMSRASTERTRANSFORMER_pTransY_DESCRIPTION)
     @Unit("m")
     @In
     public Double pTransY;
 
-    @Description("The scale factor along X axis.")
+    @Description(OMSRASTERTRANSFORMER_pScaleX_DESCRIPTION)
     @In
     public Double pScaleX;
 
-    @Description("The scale factor along the Y axis.")
+    @Description(OMSRASTERTRANSFORMER_pScaleY_DESCRIPTION)
     @In
     public Double pScaleY;
 
-    @Description("Flip horizontally.")
+    @Description(OMSRASTERTRANSFORMER_doFlipHorizontal_DESCRIPTION)
     @In
     public boolean doFlipHorizontal;
 
-    @Description("Flip vertically.")
+    @Description(OMSRASTERTRANSFORMER_doFlipVertical_DESCRIPTION)
     @In
     public boolean doFlipVertical;
 
-    @Description("The northern coordinate of the rotation point.")
+    @Description(OMSRASTERTRANSFORMER_pNorth_DESCRIPTION)
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
     public Double pNorth;
 
-    @Description("The eastern coordinate of the rotation point.")
+    @Description(OMSRASTERTRANSFORMER_pEast_DESCRIPTION)
     @UI(JGTConstants.EASTING_UI_HINT)
     @In
     public Double pEast;
 
-    @Description("The rotation angle in degree (rotation is performed before translation).")
+    @Description(OMSRASTERTRANSFORMER_pAngle_DESCRIPTION)
     @Unit("degrees")
     @In
     public Double pAngle;
 
-    @Description("The transformed raster.")
+    @Description(OMSRASTERTRANSFORMER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 
-    @Description("The new raster geometry.")
+    @Description(OMSRASTERTRANSFORMER_outBounds_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outBounds = null;
 

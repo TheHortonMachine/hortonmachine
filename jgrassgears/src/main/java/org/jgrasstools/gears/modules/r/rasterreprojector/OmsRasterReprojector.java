@@ -17,6 +17,25 @@
  */
 package org.jgrasstools.gears.modules.r.rasterreprojector;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pInterpolation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pWest_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
@@ -45,61 +64,62 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-@Description("Module for raster reprojection.")
-@Documentation("OmsRasterConverter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("rreproject")
-@License("General Public License Version 3 (GPLv3)")
+
+@Description(OMSRASTERREPROJECTOR_DESCRIPTION)
+@Documentation(OMSRASTERREPROJECTOR_DOCUMENTATION)
+@Author(name = OMSRASTERREPROJECTOR_AUTHORNAMES, contact = OMSRASTERREPROJECTOR_AUTHORCONTACTS)
+@Keywords(OMSRASTERREPROJECTOR_KEYWORDS)
+@Label(OMSRASTERREPROJECTOR_LABEL)
+@Name(OMSRASTERREPROJECTOR_NAME)
+@Status(OMSRASTERREPROJECTOR_STATUS)
+@License(OMSRASTERREPROJECTOR_LICENSE)
 public class OmsRasterReprojector extends JGTModel {
 
-    @Description("The raster that has to be reprojected.")
+    @Description(OMSRASTERREPROJECTOR_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The north bound of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The rows of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pRows_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description("The cols of the region to consider")
+    @Description(OMSRASTERREPROJECTOR_pCols_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description("The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSRASTERREPROJECTOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The interpolation type to use")
+    @Description(OMSRASTERREPROJECTOR_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description("The reprojected output raster.")
+    @Description(OMSRASTERREPROJECTOR_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 
@@ -117,7 +137,7 @@ public class OmsRasterReprojector extends JGTModel {
         } else if (pInterpolation.equals(BICUBIC)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
         }
-        
+
         GridGeometry2D gridGeometry = null;
         if (pNorth != null && pSouth != null && pWest != null && pEast != null && pRows != null && pCols != null) {
             gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, targetCrs);

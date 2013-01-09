@@ -17,6 +17,29 @@
  */
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_doLenient_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_inPath_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_inServiceUrl_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pEpsg_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pMaxzoom_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pMinzoom_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pName_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pType_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSONLINETILESDOWNLOADER_pWest_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -25,6 +48,7 @@ import java.net.URL;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,8 +64,6 @@ import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -49,71 +71,67 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
-@Description("Module for the downloading of map tiles.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, TMS, Tiles")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.DRAFT)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Name("tmsdownloader")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSONLINETILESDOWNLOADER_DESCRIPTION)
+@Documentation(OMSONLINETILESDOWNLOADER_DOCUMENTATION)
+@Author(name = OMSONLINETILESDOWNLOADER_AUTHORNAMES, contact = OMSONLINETILESDOWNLOADER_AUTHORCONTACTS)
+@Keywords(OMSONLINETILESDOWNLOADER_KEYWORDS)
+@Label(OMSONLINETILESDOWNLOADER_LABEL)
+@Name(OMSONLINETILESDOWNLOADER_NAME)
+@Status(OMSONLINETILESDOWNLOADER_STATUS)
+@License(OMSONLINETILESDOWNLOADER_LICENSE)
+@UI(OMSONLINETILESDOWNLOADER_UI)
 public class OmsOnlineTilesDownloader extends JGTModel {
 
-    @Description("An optional online tile service to include (XXX, YYY, ZZZ will be substituted by tile indexes and zoom level).")
+    @Description(OMSONLINETILESDOWNLOADER_inServiceUrl_DESCRIPTION)
     @In
     public String inServiceUrl = null;
 
-    @Description("The type of tile source (0 = TMS, 1 = google).")
+    @Description(OMSONLINETILESDOWNLOADER_pType_DESCRIPTION)
     @In
     public int pType = 0;
 
-    @Description("A name of the tile source.")
+    @Description(OMSONLINETILESDOWNLOADER_pName_DESCRIPTION)
     @In
     public String pName = "tmstiles";
 
-    @Description("The min zoom for which to generate tiles.")
+    @Description(OMSONLINETILESDOWNLOADER_pMinzoom_DESCRIPTION)
     @In
     public Integer pMinzoom = null;
 
-    @Description("The max zoom for which to generate tiles.")
+    @Description(OMSONLINETILESDOWNLOADER_pMaxzoom_DESCRIPTION)
     @In
     public Integer pMaxzoom = null;
 
-    @Description("The north bound of the region to consider.")
+    @Description(OMSONLINETILESDOWNLOADER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider.")
+    @Description(OMSONLINETILESDOWNLOADER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider.")
+    @Description(OMSONLINETILESDOWNLOADER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider.")
+    @Description(OMSONLINETILESDOWNLOADER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The coordinate reference system of the bound coordinates (ex. EPSG:4328).")
+    @Description(OMSONLINETILESDOWNLOADER_pEpsg_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pEpsg;
 
-    @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
+    @Description(OMSONLINETILESDOWNLOADER_doLenient_DESCRIPTION)
     @In
     public boolean doLenient = true;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The folder inside which to create the tiles.")
+    @Description(OMSONLINETILESDOWNLOADER_inPath_DESCRIPTION)
     @In
     public String inPath;
 

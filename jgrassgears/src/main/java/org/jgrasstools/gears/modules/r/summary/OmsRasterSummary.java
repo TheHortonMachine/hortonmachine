@@ -17,6 +17,26 @@
  */
 package org.jgrasstools.gears.modules.r.summary;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_doHistogram_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outCb_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMax_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMean_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outMin_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outRange_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outSdev_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outSum_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_pBins_DESCRIPTION;
+
 import java.awt.image.RenderedImage;
 import java.util.List;
 
@@ -45,53 +65,53 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 
-@Description("Calculate a summary of the map with base statistics.")
-@Documentation("OmsRasterSummary.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Statistics, Raster, OmsMapcalc")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("rsummary")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERSUMMARY_DESCRIPTION)
+@Documentation(OMSRASTERSUMMARY_DOCUMENTATION)
+@Author(name = OMSRASTERSUMMARY_AUTHORNAMES, contact = OMSRASTERSUMMARY_AUTHORCONTACTS)
+@Keywords(OMSRASTERSUMMARY_KEYWORDS)
+@Label(OMSRASTERSUMMARY_LABEL)
+@Name(OMSRASTERSUMMARY_NAME)
+@Status(OMSRASTERSUMMARY_STATUS)
+@License(OMSRASTERSUMMARY_LICENSE)
 public class OmsRasterSummary extends JGTModel {
 
-    @Description("The map to analize.")
+    @Description(OMSRASTERSUMMARY_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The number of bins for the histogram (default = 100).")
+    @Description(OMSRASTERSUMMARY_pBins_DESCRIPTION)
     @In
     public int pBins = 100;
 
-    @Description("Flag that defines if the histogram should be done also (default = false).")
+    @Description(OMSRASTERSUMMARY_doHistogram_DESCRIPTION)
     @In
     public boolean doHistogram = false;
 
-    @Description("The min value.")
+    @Description(OMSRASTERSUMMARY_outMin_DESCRIPTION)
     @Out
     public Double outMin = null;
 
-    @Description("The max value.")
+    @Description(OMSRASTERSUMMARY_outMax_DESCRIPTION)
     @Out
     public Double outMax = null;
 
-    @Description("The mean value.")
+    @Description(OMSRASTERSUMMARY_outMean_DESCRIPTION)
     @Out
     public Double outMean = null;
 
-    @Description("The standard deviation value.")
+    @Description(OMSRASTERSUMMARY_outSdev_DESCRIPTION)
     @Out
     public Double outSdev = null;
 
-    @Description("The range value.")
+    @Description(OMSRASTERSUMMARY_outRange_DESCRIPTION)
     @Out
     public Double outRange = null;
 
-    @Description("The sum value.")
+    @Description(OMSRASTERSUMMARY_outSum_DESCRIPTION)
     @Out
     public Double outSum = null;
 
-    @Description("The histogram.")
+    @Description(OMSRASTERSUMMARY_outCb_DESCRIPTION)
     @Out
     public double[][] outCb = null;
 

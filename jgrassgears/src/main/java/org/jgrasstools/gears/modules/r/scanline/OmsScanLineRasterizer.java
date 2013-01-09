@@ -17,6 +17,26 @@
  */
 package org.jgrasstools.gears.modules.r.scanline;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_fCat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pValue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pWest_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
@@ -68,64 +88,63 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Module for polygon vector to raster conversion.")
-@Documentation("OmsScanLineRasterizer.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, Rasterize")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("rscanline")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSSCANLINERASTERIZER_DESCRIPTION)
+@Documentation(OMSSCANLINERASTERIZER_DOCUMENTATION)
+@Author(name = OMSSCANLINERASTERIZER_AUTHORNAMES, contact = OMSSCANLINERASTERIZER_AUTHORCONTACTS)
+@Keywords(OMSSCANLINERASTERIZER_KEYWORDS)
+@Label(OMSSCANLINERASTERIZER_LABEL)
+@Name(OMSSCANLINERASTERIZER_NAME)
+@Status(OMSSCANLINERASTERIZER_STATUS)
+@License(OMSSCANLINERASTERIZER_LICENSE)
 public class OmsScanLineRasterizer extends JGTModel {
 
-    @Description("The vector to rasterize.")
+    @Description(OMSSCANLINERASTERIZER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The value to use as raster value if no field is given.")
+    @Description(OMSSCANLINERASTERIZER_pValue_DESCRIPTION)
     @In
     public Double pValue = null;
 
-    @Description("The field to use to retrieve the category value for the raster.")
+    @Description(OMSSCANLINERASTERIZER_fCat_DESCRIPTION)
     @In
     public String fCat = null;
 
-    @Description("The north bound of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The rows of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pRows_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description("The cols of the region to consider")
+    @Description(OMSSCANLINERASTERIZER_pCols_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description("Max threads to use (default 4)")
+    @Description(OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION)
     @In
     public Integer pMaxThreads = 4;
 
-    @Description("The output raster.")
+    @Description(OMSSCANLINERASTERIZER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

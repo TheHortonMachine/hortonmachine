@@ -17,6 +17,34 @@
  */
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_doLegacyGrass_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_doLenient_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inPath_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inRasterBounds_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inRasterFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inVectorFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_inWMS_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pCheckcolor_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEpsg_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pImagetype_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMaxThreads_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMaxzoom_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMinzoom_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pName_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pWest_DESCRIPTION;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -24,6 +52,7 @@ import java.util.concurrent.Executors;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,92 +78,92 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 
-@Description("Module for the generation of map tiles.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Vector, TMS, Tiles")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.DRAFT)
-@Name("tmsgenerator")
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
+@Description(OMSTMSGENERATOR_DESCRIPTION)
+@Documentation(OMSTMSGENERATOR_DOCUMENTATION)
+@Author(name = OMSTMSGENERATOR_AUTHORNAMES, contact = OMSTMSGENERATOR_AUTHORCONTACTS)
+@Keywords(OMSTMSGENERATOR_KEYWORDS)
+@Label(OMSTMSGENERATOR_LABEL)
+@Name(OMSTMSGENERATOR_NAME)
+@Status(OMSTMSGENERATOR_STATUS)
+@License(OMSTMSGENERATOR_LICENSE)
 public class OmsTmsGenerator extends JGTModel {
 
-    @Description("A file containing the list of raster map paths to consider (the order is relevant, first layers are placed below others).")
+    @Description(OMSTMSGENERATOR_inRasterFile_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRasterFile = null;
 
-    @Description("Optional regions for reading the rasters.")
+    @Description(OMSTMSGENERATOR_inRasterBounds_DESCRIPTION)
     @In
     public List<GridGeometry2D> inRasterBounds = null;
 
-    @Description("A file containing the list of vector map paths to consider (the order is relevant, first layers are placed below others).")
+    @Description(OMSTMSGENERATOR_inVectorFile_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inVectorFile = null;
 
-    @Description("An optional WMS url and layer name in the format: http://wmsurl#layername")
+    @Description(OMSTMSGENERATOR_inWMS_DESCRIPTION)
     @In
     public String inWMS = null;
 
-    @Description("A name of the tile source.")
+    @Description(OMSTMSGENERATOR_pName_DESCRIPTION)
     @In
     public String pName = "tmstiles";
 
-    @Description("The min zoom for which to generate tiles.")
+    @Description(OMSTMSGENERATOR_pMinzoom_DESCRIPTION)
     @In
     public Integer pMinzoom = null;
 
-    @Description("The max zoom for which to generate tiles.")
+    @Description(OMSTMSGENERATOR_pMaxzoom_DESCRIPTION)
     @In
     public Integer pMaxzoom = null;
 
-    @Description("The north bound of the region to consider.")
+    @Description(OMSTMSGENERATOR_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The south bound of the region to consider.")
+    @Description(OMSTMSGENERATOR_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The west bound of the region to consider.")
+    @Description(OMSTMSGENERATOR_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The east bound of the region to consider.")
+    @Description(OMSTMSGENERATOR_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The coordinate reference system of the bound coordinates and supplied datasets (ex. EPSG:4328).")
+    @Description(OMSTMSGENERATOR_pEpsg_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pEpsg;
 
-    @Description("Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.")
+    @Description(OMSTMSGENERATOR_doLenient_DESCRIPTION)
     @In
     public boolean doLenient = true;
 
-    @Description("The image type to generate (0 = png = default, 1 = jpg).")
+    @Description(OMSTMSGENERATOR_pImagetype_DESCRIPTION)
     @In
     public int pImagetype = 0;
 
-    @Description("A color rgb tripled. if it is not null and a tiles is made only of that color, then the tiles is not generated. Usefull to avoid generation of empty tiles.")
+    @Description(OMSTMSGENERATOR_pCheckcolor_DESCRIPTION)
     @In
     public int[] pCheckcolor = new int[]{255, 255, 255};
 
-    @Description("Optional flag to force a legacy GRASS driver usage.")
+    @Description(OMSTMSGENERATOR_doLegacyGrass_DESCRIPTION)
     @In
     public Boolean doLegacyGrass = false;
 
-    @Description("The folder inside which to create the tiles.")
+    @Description(OMSTMSGENERATOR_inPath_DESCRIPTION)
     @In
     public String inPath;
 
-    @Description("Max threads to use (default 1)")
+    @Description(OMSTMSGENERATOR_pMaxThreads_DESCRIPTION)
     @In
     public Integer pMaxThreads = 1;
 

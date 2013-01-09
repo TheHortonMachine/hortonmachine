@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.modules.r.mapcalc;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_inRasters_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSMAPCALC_pFunction_DESCRIPTION;
+
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -54,26 +67,26 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Module for doing raster map algebra.")
-@Documentation("OmsMapcalc.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("OmsMapcalc, Raster, OmsCutOut")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("mapcalc")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMAPCALC_DESCRIPTION)
+@Documentation(OMSMAPCALC_DOCUMENTATION)
+@Author(name = OMSMAPCALC_AUTHORNAMES, contact = OMSMAPCALC_AUTHORCONTACTS)
+@Keywords(OMSMAPCALC_KEYWORDS)
+@Label(OMSMAPCALC_LABEL)
+@Name(OMSMAPCALC_NAME)
+@Status(OMSMAPCALC_STATUS)
+@License(OMSMAPCALC_LICENSE)
 public class OmsMapcalc extends JGTModel {
 
-    @Description("The maps that are used in the calculation.")
+    @Description(OMSMAPCALC_inRasters_DESCRIPTION)
     @In
     public List<GridCoverage2D> inRasters;
 
-    @Description("The function to process.")
+    @Description(OMSMAPCALC_pFunction_DESCRIPTION)
     @UI(JGTConstants.MULTILINE_UI_HINT + "10," + JGTConstants.MAPCALC_UI_HINT)
     @In
     public String pFunction;
 
-    @Description("The resulting map picked from the inserted function.")
+    @Description(OMSMAPCALC_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

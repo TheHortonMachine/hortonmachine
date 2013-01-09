@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.modules.r.cutout;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_doInverse_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_inMask_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMax_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMin_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
@@ -44,37 +59,37 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Module for raster thresholding and masking.")
-@Documentation("OmsCutOut.html")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Threshold, OmsMapcalc")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("cutout")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSCUTOUT_DESCRIPTION)
+@Documentation(OMSCUTOUT_DOCUMENTATION)
+@Author(name = OMSCUTOUT_AUTHORNAMES, contact = OMSCUTOUT_AUTHORCONTACTS)
+@Keywords(OMSCUTOUT_KEYWORDS)
+@Label(OMSCUTOUT_LABEL)
+@Name(OMSCUTOUT_NAME)
+@Status(OMSCUTOUT_STATUS)
+@License(OMSCUTOUT_LICENSE)
 public class OmsCutOut extends JGTModel {
 
-    @Description("The map that has to be processed.")
+    @Description(OMSCUTOUT_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The map to use as mask.")
+    @Description(OMSCUTOUT_inMask_DESCRIPTION)
     @In
     public GridCoverage2D inMask;
 
-    @Description("The upper threshold value.")
+    @Description(OMSCUTOUT_pMax_DESCRIPTION)
     @In
     public Double pMax;
 
-    @Description("The lower threshold value.")
+    @Description(OMSCUTOUT_pMin_DESCRIPTION)
     @In
     public Double pMin;
 
-    @Description("Switch for doing extraction of the mask area or the inverse (negative). Default is false and extract the mask area.")
+    @Description(OMSCUTOUT_doInverse_DESCRIPTION)
     @In
     public boolean doInverse = false;
 
-    @Description("The processed map.")
+    @Description(OMSCUTOUT_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

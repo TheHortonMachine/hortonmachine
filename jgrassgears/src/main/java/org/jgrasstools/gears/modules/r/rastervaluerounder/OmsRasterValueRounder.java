@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.modules.r.rastervaluerounder;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
@@ -28,6 +40,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,29 +51,29 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Module that rounds the values of a raster map.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Round, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.CERTIFIED)
-@Name("rround")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERVALUEROUNDER_DESCRIPTION)
+@Documentation(OMSRASTERVALUEROUNDER_DOCUMENTATION)
+@Author(name = OMSRASTERVALUEROUNDER_AUTHORNAMES, contact = OMSRASTERVALUEROUNDER_AUTHORCONTACTS)
+@Keywords(OMSRASTERVALUEROUNDER_KEYWORDS)
+@Label(OMSRASTERVALUEROUNDER_LABEL)
+@Name(OMSRASTERVALUEROUNDER_NAME)
+@Status(OMSRASTERVALUEROUNDER_STATUS)
+@License(OMSRASTERVALUEROUNDER_LICENSE)
 public class OmsRasterValueRounder extends JGTModel {
 
-    @Description("The raster of which to round the values.")
+    @Description(OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The rounding pattern.")
+    @Description(OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION)
     @In
     public String pPattern = null;
 
-    @Description("The rounded raster.")
+    @Description(OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,24 +40,28 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Raster corrector module.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Correct, OmsRasterReader")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@Name("rcorrect")
-@License("General Public License Version 3 (GPLv3)")
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+
+@Description(OMSRASTERCORRECTOR_DESCRIPTION)
+@Documentation(OMSRASTERCORRECTOR_DOCUMENTATION)
+@Author(name = OMSRASTERCORRECTOR_AUTHORNAMES, contact = OMSRASTERCORRECTOR_AUTHORCONTACTS)
+@Keywords(OMSRASTERCORRECTOR_KEYWORDS)
+@Label(OMSRASTERCORRECTOR_LABEL)
+@Name(OMSRASTERCORRECTOR_NAME)
+@Status(OMSRASTERCORRECTOR_STATUS)
+@License(OMSRASTERCORRECTOR_LICENSE)
 public class OmsRasterCorrector extends JGTModel {
-    @Description("The input raster.")
+
+    @Description(OMSRASTERCORRECTOR_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description("The values to correct as a CSV list of triplets (format is col1,row1,value1,col2,row2,value2...).")
+    @Description(OMSRASTERCORRECTOR_pCorrections_DESCRIPTION)
     @UI(JGTConstants.EASTINGNORTHING_UI_HINT)
     @In
     public String pCorrections;
 
-    @Description("The output raster.")
+    @Description(OMSRASTERCORRECTOR_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 

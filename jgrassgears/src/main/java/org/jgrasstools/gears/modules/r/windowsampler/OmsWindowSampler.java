@@ -21,6 +21,22 @@ package org.jgrasstools.gears.modules.r.windowsampler;
 import static java.lang.Math.ceil;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_inGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pMode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pXstep_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pYstep_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.Dimension;
@@ -29,6 +45,7 @@ import java.awt.image.WritableRaster;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,58 +63,59 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Module to do coverage downsampling on defined windows.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Downsampling, Interpolation")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@Name("winsampler")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSWINDOWSAMPLER_DESCRIPTION)
+@Documentation(OMSWINDOWSAMPLER_DOCUMENTATION)
+@Author(name = OMSWINDOWSAMPLER_AUTHORNAMES, contact = OMSWINDOWSAMPLER_AUTHORCONTACTS)
+@Keywords(OMSWINDOWSAMPLER_KEYWORDS)
+@Label(OMSWINDOWSAMPLER_LABEL)
+@Name(OMSWINDOWSAMPLER_NAME)
+@Status(OMSWINDOWSAMPLER_STATUS)
+@License(OMSWINDOWSAMPLER_LICENSE)
 public class OmsWindowSampler extends JGTModel {
-    @Description("The input coverage.")
+
+    @Description(OMSWINDOWSAMPLER_inGeodata_DESCRIPTION)
     @In
     public GridCoverage2D inGeodata;
 
-    @Description("The mode to use: average (0 = default), sum (1), max (2), min (3).")
+    @Description(OMSWINDOWSAMPLER_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("The windows rows to use (default is 3).")
+    @Description(OMSWINDOWSAMPLER_pRows_DESCRIPTION)
     @In
     public int pRows = 3;
 
-    @Description("The window cols to use (default is 3).")
+    @Description(OMSWINDOWSAMPLER_pCols_DESCRIPTION)
     @In
     public int pCols = 3;
 
-    @Description("The cols to move the window forward (default is = pCols).")
+    @Description(OMSWINDOWSAMPLER_pXstep_DESCRIPTION)
     @In
     public Integer pXstep;
-    
-    @Description("The rows to move the window forward (default is = pRows).")
+
+    @Description(OMSWINDOWSAMPLER_pYstep_DESCRIPTION)
     @In
     public Integer pYstep;
 
-    @Description("The output coverage.")
+    @Description(OMSWINDOWSAMPLER_outGeodata_DESCRIPTION)
     @Out
     public GridCoverage2D outGeodata;
 
     @Execute
     public void process() throws Exception {
         checkNull(inGeodata);
-        
-        
+
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
 
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
-        int xstep = pCols; 
+        int xstep = pCols;
         int ystep = pRows;
-        if (pXstep!=null) {
+        if (pXstep != null) {
             xstep = pXstep;
         }
-        if (pYstep!=null) {
+        if (pYstep != null) {
             ystep = pYstep;
         }
 

@@ -17,6 +17,24 @@
  */
 package org.jgrasstools.gears.modules.r.bobthebuilder;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doErode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doPolygonborder_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_doUseOnlyInternal_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_fElevation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inArea_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inElevations_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_inRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_pMaxbuffer_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.isBetween;
 
@@ -30,6 +48,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -65,48 +84,49 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
-@Description("Builds rasterized artifacts on a raster.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Build, Raster")
-@Name("bobbuilder")
-@Label(JGTConstants.RASTERPROCESSING)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSBOBTHEBUILDER_DESCRIPTION)
+@Documentation(OMSBOBTHEBUILDER_DOCUMENTATION)
+@Author(name = OMSBOBTHEBUILDER_AUTHORNAMES, contact = OMSBOBTHEBUILDER_AUTHORCONTACTS)
+@Keywords(OMSBOBTHEBUILDER_KEYWORDS)
+@Label(OMSBOBTHEBUILDER_LABEL)
+@Name(OMSBOBTHEBUILDER_NAME)
+@Status(OMSBOBTHEBUILDER_STATUS)
+@License(OMSBOBTHEBUILDER_LICENSE)
 public class OmsBobTheBuilder extends JGTModel {
 
-    @Description("The input raster.")
+    @Description(OMSBOBTHEBUILDER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The vector map containing the polygonal area to modify.")
+    @Description(OMSBOBTHEBUILDER_inArea_DESCRIPTION)
     @In
     public SimpleFeatureCollection inArea = null;
 
-    @Description("The vector map containing the points that provide the new elevations.")
+    @Description(OMSBOBTHEBUILDER_inElevations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inElevations = null;
 
-    @Description("The maximum radius to use for interpolation.")
+    @Description(OMSBOBTHEBUILDER_pMaxbuffer_DESCRIPTION)
     @In
     public double pMaxbuffer = -1;
 
-    @Description("The field of the elevations map that contain the elevation of the point.")
+    @Description(OMSBOBTHEBUILDER_fElevation_DESCRIPTION)
     @In
     public String fElevation = null;
 
-    @Description("Switch that defines if the module should erode in places the actual raster is higher (default is false).")
+    @Description(OMSBOBTHEBUILDER_doErode_DESCRIPTION)
     @In
     public boolean doErode = false;
 
-    @Description("Switch that defines if the module should use only points contained in the polygon for the interpolation (default is false. i.e. use all).")
+    @Description(OMSBOBTHEBUILDER_doUseOnlyInternal_DESCRIPTION)
     @In
     public boolean doUseOnlyInternal = false;
 
-    @Description("Switch that defines if the module should add the border of the polygon as elevation point to aid connection between new and old (default is false).")
+    @Description(OMSBOBTHEBUILDER_doPolygonborder_DESCRIPTION)
     @In
     public boolean doPolygonborder = false;
 
-    @Description("The modified raster map.")
+    @Description(OMSBOBTHEBUILDER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

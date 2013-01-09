@@ -27,6 +27,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -42,81 +43,84 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Module for patching max 12 rasters.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("OmsMosaic, Raster")
-@Label(JGTConstants.RASTERPROCESSING)
-@Name("mosaic12")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+
+@Description(OMSMOSAIC12_DESCRIPTION)
+@Documentation(OMSMOSAIC12_DOCUMENTATION)
+@Author(name = OMSMOSAIC12_AUTHORNAMES, contact = OMSMOSAIC12_AUTHORCONTACTS)
+@Keywords(OMSMOSAIC12_KEYWORDS)
+@Label(OMSMOSAIC12_LABEL)
+@Name(OMSMOSAIC12_NAME)
+@Status(OMSMOSAIC12_STATUS)
+@License(OMSMOSAIC12_LICENSE)
 public class OmsMosaic12 extends JGTModel {
 
-    @Description("The Map N.1 to be patched")
+    @Description(OMSMOSAIC12_inMap1_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap1;
 
-    @Description("The Map N.2 to be patched")
+    @Description(OMSMOSAIC12_inMap2_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap2;
 
-    @Description("The optional Map N.3 to be patched")
+    @Description(OMSMOSAIC12_inMap3_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap3;
 
-    @Description("The optional Map N.4 to be patched")
+    @Description(OMSMOSAIC12_inMap4_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap4;
 
-    @Description("The optional Map N.5 to be patched")
+    @Description(OMSMOSAIC12_inMap5_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap5;
 
-    @Description("The optional Map N.6 to be patched")
+    @Description(OMSMOSAIC12_inMap6_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap6;
 
-    @Description("The optional Map N.7 to be patched")
+    @Description(OMSMOSAIC12_inMap7_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap7;
 
-    @Description("The optional Map N.8 to be patched")
+    @Description(OMSMOSAIC12_inMap8_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap8;
 
-    @Description("The optional Map N.9 to be patched")
+    @Description(OMSMOSAIC12_inMap9_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap9;
 
-    @Description("The optional Map N.10 to be patched")
+    @Description(OMSMOSAIC12_inMap10_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap10;
 
-    @Description("The optional Map N.11 to be patched")
+    @Description(OMSMOSAIC12_inMap11_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap11;
 
-    @Description("The optional Map N.12 to be patched")
+    @Description(OMSMOSAIC12_inMap12_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMap12;
 
-    @Description("The interpolation type to use")
+    @Description(OMSMOSAIC12_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
-    @Description("The patched map.")
+    @Description(OMSMOSAIC12_outMap_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;
