@@ -18,38 +18,56 @@
  */
 package org.jgrasstools.gears.io.converters;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_inData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.IDVALUESARRAY2IDVALUESCONVERTER_outData_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-@Description("Utility class for converting from 'id1 value1[]' to 'id1 value1' by averaging.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class IdValuesArray2IdValuesConverter {
-    @Description("Input data.")
+
+import org.jgrasstools.gears.libs.modules.JGTModel;
+
+@Description(IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION)
+@Author(name = IDVALUESARRAY2IDVALUESCONVERTER_AUTHORNAMES, contact = IDVALUESARRAY2IDVALUESCONVERTER_AUTHORCONTACTS)
+@Keywords(IDVALUESARRAY2IDVALUESCONVERTER_KEYWORDS)
+@Label(IDVALUESARRAY2IDVALUESCONVERTER_LABEL)
+@Name(IDVALUESARRAY2IDVALUESCONVERTER_NAME)
+@Status(IDVALUESARRAY2IDVALUESCONVERTER_STATUS)
+@License(IDVALUESARRAY2IDVALUESCONVERTER_LICENSE)
+public class IdValuesArray2IdValuesConverter extends JGTModel {
+
+    @Description(IDVALUESARRAY2IDVALUESCONVERTER_inData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData;
 
-    @Description("Output data.")
+    @Description(IDVALUESARRAY2IDVALUESCONVERTER_outData_DESCRIPTION)
     @Out
     public HashMap<Integer, Double> outData;
 
     @Execute
     public void convert() throws IOException {
-        if (outData==null) {
+        if (outData == null) {
             outData = new HashMap<Integer, Double>();
         }
         Set<Entry<Integer, double[]>> entries = inData.entrySet();
@@ -66,7 +84,7 @@ public class IdValuesArray2IdValuesConverter {
                 }
             }
             avg = avg / num;
-            
+
             outData.put(id, avg);
         }
     }

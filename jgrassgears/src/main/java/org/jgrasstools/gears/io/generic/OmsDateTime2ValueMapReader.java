@@ -18,6 +18,20 @@
  */
 package org.jgrasstools.gears.io.generic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPREADER_pSeparator_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -33,44 +47,43 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
-@Description("Utility class for reading data from csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class OmsDateTime2ValueMapReader {
-    @Description("The csv file to read from.")
+
+@Description(OMSDATETIME2VALUEMAPREADER_DESCRIPTION)
+@Author(name = OMSDATETIME2VALUEMAPREADER_AUTHORNAMES, contact = OMSDATETIME2VALUEMAPREADER_AUTHORCONTACTS)
+@Keywords(OMSDATETIME2VALUEMAPREADER_KEYWORDS)
+@Label(OMSDATETIME2VALUEMAPREADER_LABEL)
+@Name(OMSDATETIME2VALUEMAPREADER_NAME)
+@Status(OMSDATETIME2VALUEMAPREADER_STATUS)
+@License(OMSDATETIME2VALUEMAPREADER_LICENSE)
+@UI(OMSDATETIME2VALUEMAPREADER_UI)
+public class OmsDateTime2ValueMapReader extends JGTModel {
+
+    @Description(OMSDATETIME2VALUEMAPREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The number of columns of the array.")
+    @Description(OMSDATETIME2VALUEMAPREADER_pCols_DESCRIPTION)
     @In
     public int pCols = 1;
 
-    @Description("The csv separator.")
+    @Description(OMSDATETIME2VALUEMAPREADER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description("The file novalue.")
+    @Description(OMSDATETIME2VALUEMAPREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read map of ids and values arrays.")
+    @Description(OMSDATETIME2VALUEMAPREADER_data_DESCRIPTION)
     @Out
     public LinkedHashMap<DateTime, double[]> data;
 

@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.io.vectorreader;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_pType_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -40,33 +53,28 @@ import org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Vectors features reader module.")
-@Documentation("OmsVectorReader.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
-@Name("vectorreader")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORREADER_DESCRIPTION)
+@Documentation(OMSVECTORREADER_DOCUMENTATION)
+@Author(name = OMSVECTORREADER_AUTHORNAMES, contact = OMSVECTORREADER_AUTHORCONTACTS)
+@Keywords(OMSVECTORREADER_KEYWORDS)
+@Label(OMSVECTORREADER_LABEL)
+@Name(OMSVECTORREADER_NAME)
+@Status(OMSVECTORREADER_STATUS)
+@License(OMSVECTORREADER_LICENSE)
 public class OmsVectorReader extends JGTModel {
-    @Description("The vector type to read (Supported is: shp, properties).")
+
+    @Description(OMSVECTORREADER_pType_DESCRIPTION)
     @In
     // currently not used, for future compatibility
     public String pType = null;
 
-    @Description("The vector file to read.")
+    @Description(OMSVECTORREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read feature collection.")
+    @Description(OMSVECTORREADER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
 

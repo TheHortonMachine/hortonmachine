@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.io.properties;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREADER_geodata_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -27,6 +39,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -40,30 +53,26 @@ import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-@Description("Utility class for reading properties files to geotools featurecollections.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Properties, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
-@Status(Status.CERTIFIED)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSPROPERTIESFEATUREREADER_DESCRIPTION)
+@Author(name = OMSPROPERTIESFEATUREREADER_AUTHORNAMES, contact = OMSPROPERTIESFEATUREREADER_AUTHORCONTACTS)
+@Keywords(OMSPROPERTIESFEATUREREADER_KEYWORDS)
+@Label(OMSPROPERTIESFEATUREREADER_LABEL)
+@Name(OMSPROPERTIESFEATUREREADER_NAME)
+@Status(OMSPROPERTIESFEATUREREADER_STATUS)
+@License(OMSPROPERTIESFEATUREREADER_LICENSE)
+@UI(OMSPROPERTIESFEATUREREADER_UI)
 public class OmsPropertiesFeatureReader extends JGTModel {
-    @Description("The properties file.")
+
+    @Description(OMSPROPERTIESFEATUREREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read feature collection.")
+    @Description(OMSPROPERTIESFEATUREREADER_geodata_DESCRIPTION)
     @Out
     public SimpleFeatureCollection geodata = null;
 

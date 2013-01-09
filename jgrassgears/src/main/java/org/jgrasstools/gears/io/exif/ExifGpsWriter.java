@@ -18,6 +18,22 @@
  */
 package org.jgrasstools.gears.io.exif;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_doEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_doNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pAltitude_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pLat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_pLon_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFGPSWRITER_tTimestamp_DESCRIPTION;
+
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,14 +62,14 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.w3c.dom.NodeList;
 
 import com.sun.media.imageio.plugins.tiff.EXIFGPSTagSet;
@@ -64,45 +80,40 @@ import com.sun.media.imageio.plugins.tiff.TIFFImageReadParam;
 import com.sun.media.imageio.plugins.tiff.TIFFTag;
 import com.sun.media.imageioimpl.plugins.tiff.TIFFIFD;
 
-/**
- * Adapted code from http://code.google.com/p/gmoting/
- */
-@Description("Utility class for writing exif tags in jpegs.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Jpeg, Exif, Reading")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-@SuppressWarnings("nls")
+@Description(EXIFGPSWRITER_DESCRIPTION)
+@Author(name = EXIFGPSWRITER_AUTHORNAMES, contact = EXIFGPSWRITER_AUTHORCONTACTS)
+@Keywords(EXIFGPSWRITER_KEYWORDS)
+@Label(EXIFGPSWRITER_LABEL)
+@Name(EXIFGPSWRITER_NAME)
+@Status(EXIFGPSWRITER_STATUS)
+@License(EXIFGPSWRITER_LICENSE)
 public class ExifGpsWriter extends JGTModel {
-    @Description("The jpeg file.")
+
+    @Description(EXIFGPSWRITER_file_DESCRIPTION)
     @In
     public String file = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The latitude to add to the exif tags.")
+    @Description(EXIFGPSWRITER_pLat_DESCRIPTION)
     @Out
     public Double pLat = null;
 
-    @Description("The longitude to add to the exif tags.")
+    @Description(EXIFGPSWRITER_pLon_DESCRIPTION)
     @Out
     public Double pLon = null;
 
-    @Description("The timestamp to add to the exif tags (format yyyy-MM-dd HH:mm:ss).")
+    @Description(EXIFGPSWRITER_tTimestamp_DESCRIPTION)
     @Out
     public String tTimestamp = null;
 
-    @Description("The altidude in meters to add to the exif tags.")
+    @Description(EXIFGPSWRITER_pAltitude_DESCRIPTION)
     @Out
     public Double pAltitude = null;
 
-    @Description("Switch to define if latitude is northern or southern hemisphere (default is true, i.e northern).")
+    @Description(EXIFGPSWRITER_doNorth_DESCRIPTION)
     @Out
     public boolean doNorth = true;
 
-    @Description("Switch to define if longitude is eastern or western part (default is true, i.e eastern).")
+    @Description(EXIFGPSWRITER_doEast_DESCRIPTION)
     @Out
     public boolean doEast = true;
 

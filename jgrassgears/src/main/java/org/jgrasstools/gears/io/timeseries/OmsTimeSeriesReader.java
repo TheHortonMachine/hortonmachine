@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.io.timeseries;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_novalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESREADER_outData_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -44,29 +58,30 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.")
-@Documentation("OmsTimeSeriesReader.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@Name("tsreader")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTIMESERIESREADER_DESCRIPTION)
+@Documentation(OMSTIMESERIESREADER_DOCUMENTATION)
+@Author(name = OMSTIMESERIESREADER_AUTHORNAMES, contact = OMSTIMESERIESREADER_AUTHORCONTACTS)
+@Keywords(OMSTIMESERIESREADER_KEYWORDS)
+@Label(OMSTIMESERIESREADER_LABEL)
+@Name(OMSTIMESERIESREADER_NAME)
+@Status(OMSTIMESERIESREADER_STATUS)
+@License(OMSTIMESERIESREADER_LICENSE)
 public class OmsTimeSeriesReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(OMSTIMESERIESREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.")
+    @Description(OMSTIMESERIESREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The internal novalue to use (defaults to NaN).")
+    @Description(OMSTIMESERIESREADER_novalue_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description("The sorted hashmap of read data.")
+    @Description(OMSTIMESERIESREADER_outData_DESCRIPTION)
     @Out
     public HashMap<DateTime, double[]> outData;
 
@@ -104,7 +119,7 @@ public class OmsTimeSeriesReader extends JGTModel {
                 }
                 record[i - 2] = value;
             }
-                
+
             outData.put(formatter.parseDateTime(row[1]), record);
         }
     }

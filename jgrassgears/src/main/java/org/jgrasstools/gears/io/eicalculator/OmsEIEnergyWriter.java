@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_inEnergy_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIENERGYWRITER_pSeparator_DESCRIPTION;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,39 +43,34 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for writing energy data to csv files.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.LIST_WRITER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEIENERGYWRITER_DESCRIPTION)
+@Author(name = OMSEIENERGYWRITER_AUTHORNAMES, contact = OMSEIENERGYWRITER_AUTHORCONTACTS)
+@Keywords(OMSEIENERGYWRITER_KEYWORDS)
+@Label(OMSEIENERGYWRITER_LABEL)
+@Name(OMSEIENERGYWRITER_NAME)
+@Status(OMSEIENERGYWRITER_STATUS)
+@License(OMSEIENERGYWRITER_LICENSE)
 public class OmsEIEnergyWriter extends JGTModel {
-    @Description("The data to write.")
+
+    @Description(OMSEIENERGYWRITER_inEnergy_DESCRIPTION)
     @In
     public List<EIEnergy> inEnergy;
 
-    @Description("The csv file to write to.")
+    @Description(OMSEIENERGYWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSEIENERGYWRITER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private BufferedWriter csvWriter;
 

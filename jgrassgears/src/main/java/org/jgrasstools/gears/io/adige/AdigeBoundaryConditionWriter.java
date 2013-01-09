@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.adige;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,32 +45,36 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.io.DataIO;
 import oms3.io.MemoryTable;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for writing the final boundary conditions of the model adige to an OMS formatted csv file.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Status(Status.CERTIFIED)
-@Label(JGTConstants.GENERICWRITER)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class AdigeBoundaryConditionWriter {
-    @Description("The csv file to write to.")
+@Description(ADIGEBOUNDARYCONDITIONWRITER_DESCRIPTION)
+@Author(name = ADIGEBOUNDARYCONDITIONWRITER_AUTHORNAMES, contact = ADIGEBOUNDARYCONDITIONWRITER_AUTHORCONTACTS)
+@Keywords(ADIGEBOUNDARYCONDITIONWRITER_KEYWORDS)
+@Label(ADIGEBOUNDARYCONDITIONWRITER_LABEL)
+@Name(ADIGEBOUNDARYCONDITIONWRITER_NAME)
+@Status(ADIGEBOUNDARYCONDITIONWRITER_STATUS)
+@License(ADIGEBOUNDARYCONDITIONWRITER_LICENSE)
+public class AdigeBoundaryConditionWriter extends JGTModel {
+
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The table name.")
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_tablename_DESCRIPTION)
     @In
     public String tablename = "table";
 
-    @Description("The list of boundary conditions to write.")
+    @Description(ADIGEBOUNDARYCONDITIONWRITER_data_DESCRIPTION)
     @In
     public HashMap<Integer, AdigeBoundaryCondition> data;
 

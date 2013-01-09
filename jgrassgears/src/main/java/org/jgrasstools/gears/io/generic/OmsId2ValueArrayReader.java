@@ -18,6 +18,20 @@
  */
 package org.jgrasstools.gears.io.generic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYREADER_pSeparator_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -33,47 +47,42 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-@Description("Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class OmsId2ValueArrayReader {
-    @Description("The csv file to read from.")
+import org.jgrasstools.gears.libs.modules.JGTModel;
+
+@Description(OMSID2VALUEARRAYREADER_DESCRIPTION)
+@Author(name = OMSID2VALUEARRAYREADER_AUTHORNAMES, contact = OMSID2VALUEARRAYREADER_AUTHORCONTACTS)
+@Keywords(OMSID2VALUEARRAYREADER_KEYWORDS)
+@Label(OMSID2VALUEARRAYREADER_LABEL)
+@Name(OMSID2VALUEARRAYREADER_NAME)
+@Status(OMSID2VALUEARRAYREADER_STATUS)
+@License(OMSID2VALUEARRAYREADER_LICENSE)
+@UI(OMSID2VALUEARRAYREADER_UI)
+public class OmsId2ValueArrayReader extends JGTModel {
+
+    @Description(OMSID2VALUEARRAYREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The number of columns of the array.")
+    @Description(OMSID2VALUEARRAYREADER_pCols_DESCRIPTION)
     @In
     public int pCols = -1;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSID2VALUEARRAYREADER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Role(Role.PARAMETER)
-    @Description("The file novalue.")
+    @Description(OMSID2VALUEARRAYREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read map of ids and values arrays.")
+    @Description(OMSID2VALUEARRAYREADER_data_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> data;
 
@@ -83,7 +92,7 @@ public class OmsId2ValueArrayReader {
         if (csvReader == null)
             csvReader = new BufferedReader(new FileReader(file));
     }
-    
+
     @Execute
     public void readNextLine() throws IOException {
         ensureOpen();
@@ -93,9 +102,9 @@ public class OmsId2ValueArrayReader {
             String[] lineSplit = line.trim().split(pSeparator);
             for( int i = 0; i < lineSplit.length; i++ ) {
                 int id = (int) Double.parseDouble(lineSplit[i].trim());
-                
+
                 double[] values = new double[pCols];
-                for( int j = i + 1, k = 0; j < i + pCols + 1; j++,k++ ) {
+                for( int j = i + 1, k = 0; j < i + pCols + 1; j++, k++ ) {
                     double value = Double.parseDouble(lineSplit[j].trim());
                     if (fileNovalue != null) {
                         if (lineSplit[j].trim().equals(fileNovalue)) {

@@ -17,6 +17,22 @@
  */
 package org.jgrasstools.gears.io.timeseries;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_columns_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_doDates_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_inData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_inMetadata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESWRITER_tablename_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,41 +58,43 @@ import oms3.io.MemoryTable;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file.")
-@Documentation("OmsTimeSeriesWriter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@Name("tswriter")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
-public class OmsTimeSeriesWriter {
-    @Description("The csv file to write to.")
+@Description(OMSTIMESERIESWRITER_DESCRIPTION)
+@Documentation(OMSTIMESERIESWRITER_DOCUMENTATION)
+@Author(name = OMSTIMESERIESWRITER_AUTHORNAMES, contact = OMSTIMESERIESWRITER_AUTHORCONTACTS)
+@Keywords(OMSTIMESERIESWRITER_KEYWORDS)
+@Label(OMSTIMESERIESWRITER_LABEL)
+@Name(OMSTIMESERIESWRITER_NAME)
+@Status(OMSTIMESERIESWRITER_STATUS)
+@License(OMSTIMESERIESWRITER_LICENSE)
+public class OmsTimeSeriesWriter extends JGTModel {
+
+    @Description(OMSTIMESERIESWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The table name.")
+    @Description(OMSTIMESERIESWRITER_tablename_DESCRIPTION)
     @In
     public String tablename = "table";
 
-    @Description("The hashmap of data to write. IMPORTANT: The hashmap is assumed to be sorted.")
+    @Description(OMSTIMESERIESWRITER_inData_DESCRIPTION)
     @In
     public HashMap<DateTime, double[]> inData;
 
-    @Description("A switch that defines whether to write the timestamps as dates or as intervals of seconds if a date doesn't make sense.")
+    @Description(OMSTIMESERIESWRITER_doDates_DESCRIPTION)
     @In
     public boolean doDates = true;
 
-    @Description("The comma separated list of column names.")
+    @Description(OMSTIMESERIESWRITER_columns_DESCRIPTION)
     @In
     public String columns = null;
 
-    @Description("A list of lists of metadata that can be attached to the column of the csv file.")
+    @Description(OMSTIMESERIESWRITER_inMetadata_DESCRIPTION)
     @In
     public List<List<String>> inMetadata = null;
 

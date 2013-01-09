@@ -17,6 +17,20 @@
  */
 package org.jgrasstools.gears.io.shapefile;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_doIndex_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_geodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER_pType_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,6 +44,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -43,39 +58,34 @@ import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-@Description("Utility class for writing geotools featurecollections to shapefile.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Writing")
-@Label(JGTConstants.FEATUREWRITER)
-@Status(Status.CERTIFIED)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSHAPEFILEFEATUREWRITER_DESCRIPTION)
+@Author(name = OMSSHAPEFILEFEATUREWRITER_AUTHORNAMES, contact = OMSSHAPEFILEFEATUREWRITER_AUTHORCONTACTS)
+@Keywords(OMSSHAPEFILEFEATUREWRITER_KEYWORDS)
+@Label(OMSSHAPEFILEFEATUREWRITER_LABEL)
+@Name(OMSSHAPEFILEFEATUREWRITER_NAME)
+@Status(OMSSHAPEFILEFEATUREWRITER_STATUS)
+@License(OMSSHAPEFILEFEATUREWRITER_LICENSE)
+@UI(OMSSHAPEFILEFEATUREWRITER_UI)
 public class OmsShapefileFeatureWriter extends JGTModel {
 
-    @Description("The feature collection to write.")
+    @Description(OMSSHAPEFILEFEATUREWRITER_geodata_DESCRIPTION)
     @In
     public SimpleFeatureCollection geodata = null;
 
-    @Description("The shapefile to which to write to.")
+    @Description(OMSSHAPEFILEFEATUREWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description("Create also the spatial index for the file.")
+    @Description(OMSSHAPEFILEFEATUREWRITER_doIndex_DESCRIPTION)
     @In
     public boolean doIndex = true;
 
-    @Description("The feature type. It's mandatory only if you want to write down an empty FeatureCollection")
+    @Description(OMSSHAPEFILEFEATUREWRITER_pType_DESCRIPTION)
     @In
     public SimpleFeatureType pType = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private boolean hasWritten = false;
 
@@ -97,7 +107,7 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         String key = "create spatial index";
         if (doIndex) {
             params.put(key, Boolean.TRUE);
-        }else{
+        } else {
             params.put(key, Boolean.FALSE);
         }
         if (geodata != null && geodata.size() != 0) {

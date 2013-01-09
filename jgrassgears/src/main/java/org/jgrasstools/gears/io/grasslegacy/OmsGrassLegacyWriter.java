@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.io.grasslegacy;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_geodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYWRITER_inWindow_DESCRIPTION;
+
 import java.io.File;
 
 import oms3.annotations.Author;
@@ -26,6 +39,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -34,31 +48,27 @@ import org.jgrasstools.gears.io.grasslegacy.io.GrassRasterWriter;
 import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Legacy class for writing grass rasters.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Grass, Raster, Writing")
-@Label(JGTConstants.RASTERWRITER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSGRASSLEGACYWRITER_DESCRIPTION)
+@Author(name = OMSGRASSLEGACYWRITER_AUTHORNAMES, contact = OMSGRASSLEGACYWRITER_AUTHORCONTACTS)
+@Keywords(OMSGRASSLEGACYWRITER_KEYWORDS)
+@Label(OMSGRASSLEGACYWRITER_LABEL)
+@Name(OMSGRASSLEGACYWRITER_NAME)
+@Status(OMSGRASSLEGACYWRITER_STATUS)
+@License(OMSGRASSLEGACYWRITER_LICENSE)
+@UI(OMSGRASSLEGACYWRITER_UI)
 public class OmsGrassLegacyWriter extends JGTModel {
-    @Description("The map that needs to be written.")
+
+    @Description(OMSGRASSLEGACYWRITER_geodata_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public double[][] geodata = null;
 
-    @Description("The region for the map to be written.")
+    @Description(OMSGRASSLEGACYWRITER_inWindow_DESCRIPTION)
     @In
     public Window inWindow = null;
-    
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
-    @Description("The file to the map to be written (the cell file).")
+    @Description(OMSGRASSLEGACYWRITER_file_DESCRIPTION)
     @In
     public String file = null;
 

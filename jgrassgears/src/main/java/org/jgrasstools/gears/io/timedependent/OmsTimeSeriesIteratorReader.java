@@ -17,6 +17,26 @@
  */
 package org.jgrasstools.gears.io.timedependent;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_idfield_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_novalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_pAggregation_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_pNum_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tCurrent_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tPrevious_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORREADER_tTimestep_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.File;
@@ -27,7 +47,6 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -49,64 +68,64 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.")
-@Documentation("OmsTimeSeriesIteratorReader.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@Name("tsitreader")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSTIMESERIESITERATORREADER_DESCRIPTION)
+@Author(name = OMSTIMESERIESITERATORREADER_AUTHORNAMES, contact = OMSTIMESERIESITERATORREADER_AUTHORCONTACTS)
+@Keywords(OMSTIMESERIESITERATORREADER_KEYWORDS)
+@Label(OMSTIMESERIESITERATORREADER_LABEL)
+@Name(OMSTIMESERIESITERATORREADER_NAME)
+@Status(OMSTIMESERIESITERATORREADER_STATUS)
+@License(OMSTIMESERIESITERATORREADER_LICENSE)
 public class OmsTimeSeriesIteratorReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(OMSTIMESERIESITERATORREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The id metadata field.")
+    @Description(OMSTIMESERIESITERATORREADER_idfield_DESCRIPTION)
     @In
     public String idfield = "ID";
 
-    @Description("The file novalue to be translated into the internal novalue. Can be a string also")
+    @Description(OMSTIMESERIESITERATORREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The internal novalue to use (usually not changed).")
+    @Description(OMSTIMESERIESITERATORREADER_novalue_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description("The number of rows to aggregate (default is 1, i.e. no aggregation).")
+    @Description(OMSTIMESERIESITERATORREADER_pNum_DESCRIPTION)
     @In
     public int pNum = 1;
 
-    @Description("The aggregation type to use (0 = sum, 1 = avg).")
+    @Description(OMSTIMESERIESITERATORREADER_pAggregation_DESCRIPTION)
     @In
     public int pAggregation = 0;
 
-    @Description("The time at which start to read (format: yyyy-MM-dd HH:mm ).")
+    @Description(OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION)
     @In
     @Out
     public String tStart;
 
-    @Description("The time at which end to read (format: yyyy-MM-dd HH:mm ).")
+    @Description(OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION)
     @In
     @Out
     public String tEnd;
 
-    @Description("The reading timestep in minutes.")
+    @Description(OMSTIMESERIESITERATORREADER_tTimestep_DESCRIPTION)
     @In
     @Out
     public int tTimestep;
 
-    @Description("The current time read (format: yyyy-MM-dd HH:mm ).")
+    @Description(OMSTIMESERIESITERATORREADER_tCurrent_DESCRIPTION)
     @Out
     public String tCurrent;
 
-    @Description("The previous time read (format: yyyy-MM-dd HH:mm ).")
+    @Description(OMSTIMESERIESITERATORREADER_tPrevious_DESCRIPTION)
     @Out
     public String tPrevious;
 
-    @Description("The read map of ids and values.")
+    @Description(OMSTIMESERIESITERATORREADER_outData_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> outData;
 

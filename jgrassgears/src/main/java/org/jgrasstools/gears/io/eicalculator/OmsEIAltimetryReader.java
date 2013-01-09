@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_outAltimetry_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYREADER_pSeparator_DESCRIPTION;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,38 +44,33 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading altimetry data from csv files.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.LIST_READER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEIALTIMETRYREADER_DESCRIPTION)
+@Author(name = OMSEIALTIMETRYREADER_AUTHORNAMES, contact = OMSEIALTIMETRYREADER_AUTHORCONTACTS)
+@Keywords(OMSEIALTIMETRYREADER_KEYWORDS)
+@Label(OMSEIALTIMETRYREADER_LABEL)
+@Name(OMSEIALTIMETRYREADER_NAME)
+@Status(OMSEIALTIMETRYREADER_STATUS)
+@License(OMSEIALTIMETRYREADER_LICENSE)
 public class OmsEIAltimetryReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(OMSEIALTIMETRYREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSEIALTIMETRYREADER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read data.")
+    @Description(OMSEIALTIMETRYREADER_outAltimetry_DESCRIPTION)
     @Out
     public List<EIAltimetry> outAltimetry;
 

@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_inAreas_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASWRITER_pSeparator_DESCRIPTION;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,39 +43,34 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for writing area data (for EICalculator) to csv files.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.LIST_WRITER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEIAREASWRITER_DESCRIPTION)
+@Author(name = OMSEIAREASWRITER_AUTHORNAMES, contact = OMSEIAREASWRITER_AUTHORCONTACTS)
+@Keywords(OMSEIAREASWRITER_KEYWORDS)
+@Label(OMSEIAREASWRITER_LABEL)
+@Name(OMSEIAREASWRITER_NAME)
+@Status(OMSEIAREASWRITER_STATUS)
+@License(OMSEIAREASWRITER_LICENSE)
 public class OmsEIAreasWriter extends JGTModel {
-    @Description("The data to write.")
+
+    @Description(OMSEIAREASWRITER_inAreas_DESCRIPTION)
     @In
     public List<EIAreas> inAreas;
 
-    @Description("The csv file to write to.")
+    @Description(OMSEIAREASWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSEIAREASWRITER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private BufferedWriter csvWriter;
 

@@ -18,6 +18,19 @@
  */
 package org.jgrasstools.gears.io.generic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSID2VALUEARRAYWRITER_pSeparator_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.BufferedWriter;
@@ -35,42 +48,37 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class OmsId2ValueArrayWriter {
-    @Description("The csv file to write to.")
+@Description(OMSID2VALUEARRAYWRITER_DESCRIPTION)
+@Author(name = OMSID2VALUEARRAYWRITER_AUTHORNAMES, contact = OMSID2VALUEARRAYWRITER_AUTHORCONTACTS)
+@Keywords(OMSID2VALUEARRAYWRITER_KEYWORDS)
+@Label(OMSID2VALUEARRAYWRITER_LABEL)
+@Name(OMSID2VALUEARRAYWRITER_NAME)
+@Status(OMSID2VALUEARRAYWRITER_STATUS)
+@License(OMSID2VALUEARRAYWRITER_LICENSE)
+@UI(OMSID2VALUEARRAYWRITER_UI)
+public class OmsId2ValueArrayWriter extends JGTModel {
+
+    @Description(OMSID2VALUEARRAYWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSID2VALUEARRAYWRITER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Role(Role.PARAMETER)
-    @Description("The file novalue.")
+    @Description(OMSID2VALUEARRAYWRITER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The map of ids and values arrays to write.")
+    @Description(OMSID2VALUEARRAYWRITER_data_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> data;
 

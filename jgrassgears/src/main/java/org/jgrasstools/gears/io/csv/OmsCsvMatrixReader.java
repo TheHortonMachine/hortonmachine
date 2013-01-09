@@ -17,6 +17,26 @@
  */
 package org.jgrasstools.gears.io.csv;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_novalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outFormats_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outIds_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outLabels_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTitle_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCSVMATRIXREADER_outTypes_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,53 +67,54 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for reading data from a OMS formatted csv file to a double matrix (dates are saved as longs).")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Reading, csv")
-@Label(JGTConstants.MATRIXREADER)
-@Name("csvmatrixreader")
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSCSVMATRIXREADER_DESCRIPTION)
+@Author(name = OMSCSVMATRIXREADER_AUTHORNAMES, contact = OMSCSVMATRIXREADER_AUTHORCONTACTS)
+@Keywords(OMSCSVMATRIXREADER_KEYWORDS)
+@Label(OMSCSVMATRIXREADER_LABEL)
+@Name(OMSCSVMATRIXREADER_NAME)
+@Status(OMSCSVMATRIXREADER_STATUS)
+@License(OMSCSVMATRIXREADER_LICENSE)
+@UI(OMSCSVMATRIXREADER_UI)
 public class OmsCsvMatrixReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(OMSCSVMATRIXREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The file novalue to be translated into the internal novalue (defaults to -9999.0). Can be also a string.")
+    @Description(OMSCSVMATRIXREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The internal novalue to use (defaults to NaN).")
+    @Description(OMSCSVMATRIXREADER_novalue_DESCRIPTION)
     @In
     public double novalue = JGTConstants.doubleNovalue;
 
-    @Description("The matrix of read data.")
+    @Description(OMSCSVMATRIXREADER_outData_DESCRIPTION)
     @Out
     public double[][] outData;
 
-    @Description("The data title.")
+    @Description(OMSCSVMATRIXREADER_outTitle_DESCRIPTION)
     @Out
     public String outTitle;
 
-    @Description("The data subtitle.")
+    @Description(OMSCSVMATRIXREADER_outSubTitle_DESCRIPTION)
     @Out
     public String outSubTitle;
 
-    @Description("The data series names.")
+    @Description(OMSCSVMATRIXREADER_outIds_DESCRIPTION)
     @Out
     public String[] outIds;
 
-    @Description("The data labels or null.")
+    @Description(OMSCSVMATRIXREADER_outLabels_DESCRIPTION)
     @Out
     public String[] outLabels;
 
-    @Description("The data formats (dates and numeric formatting patterns) or null.")
+    @Description(OMSCSVMATRIXREADER_outFormats_DESCRIPTION)
     @Out
     public String[] outFormats;
 
-    @Description("The data types (dates or numerics like double, int) or null.")
+    @Description(OMSCSVMATRIXREADER_outTypes_DESCRIPTION)
     @Out
     public String[] outTypes;
 

@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_outAreas_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIAREASREADER_pSeparator_DESCRIPTION;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,38 +44,33 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading area data (for EICalculator) from csv files.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.LIST_READER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEIAREASREADER_DESCRIPTION)
+@Author(name = OMSEIAREASREADER_AUTHORNAMES, contact = OMSEIAREASREADER_AUTHORCONTACTS)
+@Keywords(OMSEIAREASREADER_KEYWORDS)
+@Label(OMSEIAREASREADER_LABEL)
+@Name(OMSEIAREASREADER_NAME)
+@Status(OMSEIAREASREADER_STATUS)
+@License(OMSEIAREASREADER_LICENSE)
 public class OmsEIAreasReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(OMSEIAREASREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSEIAREASREADER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read data.")
+    @Description(OMSEIAREASREADER_outAreas_DESCRIPTION)
     @Out
     public List<EIAreas> outAreas;
 

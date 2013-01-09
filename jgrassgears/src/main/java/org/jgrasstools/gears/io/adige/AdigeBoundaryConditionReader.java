@@ -30,6 +30,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -40,19 +41,23 @@ import oms3.io.TableIterator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Utility class for reading the initial boundary conditions of the model adige from an OMS formatted csv file.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.GENERICREADER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+
+@Description(ADIGEBOUNDARYCONDITIONREADER_DESCRIPTION)
+@Author(name = ADIGEBOUNDARYCONDITIONREADER_AUTHORNAMES, contact = ADIGEBOUNDARYCONDITIONREADER_AUTHORCONTACTS)
+@Keywords(ADIGEBOUNDARYCONDITIONREADER_KEYWORDS)
+@Label(ADIGEBOUNDARYCONDITIONREADER_LABEL)
+@Name(ADIGEBOUNDARYCONDITIONREADER_NAME)
+@Status(ADIGEBOUNDARYCONDITIONREADER_STATUS)
+@License(ADIGEBOUNDARYCONDITIONREADER_LICENSE)
 public class AdigeBoundaryConditionReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(ADIGEBOUNDARYCONDITIONREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The list initial boundary conditions.")
+    @Description(ADIGEBOUNDARYCONDITIONREADER_data_DESCRIPTION)
     @Out
     public HashMap<Integer, AdigeBoundaryCondition> data;
 

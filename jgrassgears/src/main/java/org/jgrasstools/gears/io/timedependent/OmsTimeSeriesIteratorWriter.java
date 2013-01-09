@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.io.timedependent;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_inData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_inTablename_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_tStart_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSTIMESERIESITERATORWRITER_tTimestep_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -28,7 +43,6 @@ import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -42,40 +56,41 @@ import oms3.io.DataIO;
 import oms3.io.MemoryTable;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Utility class for writing a id2values map to a OMS formatted csv file.")
-@Documentation("OmsTimeSeriesIteratorWriter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@Name("tsitwriter")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
-public class OmsTimeSeriesIteratorWriter {
-    @Description("The csv file to write to.")
+@Description(OMSTIMESERIESITERATORWRITER_DESCRIPTION)
+@Author(name = OMSTIMESERIESITERATORWRITER_AUTHORNAMES, contact = OMSTIMESERIESITERATORWRITER_AUTHORCONTACTS)
+@Keywords(OMSTIMESERIESITERATORWRITER_KEYWORDS)
+@Label(OMSTIMESERIESITERATORWRITER_LABEL)
+@Name(OMSTIMESERIESITERATORWRITER_NAME)
+@Status(OMSTIMESERIESITERATORWRITER_STATUS)
+@License(OMSTIMESERIESITERATORWRITER_LICENSE)
+public class OmsTimeSeriesIteratorWriter extends JGTModel {
+
+    @Description(OMSTIMESERIESITERATORWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The table name.")
+    @Description(OMSTIMESERIESITERATORWRITER_inTablename_DESCRIPTION)
     @In
     public String inTablename = "table";
 
-    @Description("The hashmap of ids and values to write.")
+    @Description(OMSTIMESERIESITERATORWRITER_inData_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inData;
 
-    @Description("The start date. If available time is added as first column.")
+    @Description(OMSTIMESERIESITERATORWRITER_tStart_DESCRIPTION)
     @In
     public String tStart;
 
-    @Description("The timestep. If available time is added as first column.")
+    @Description(OMSTIMESERIESITERATORWRITER_tTimestep_DESCRIPTION)
     @In
     public int tTimestep = -1;
 
-    @Description("The novalue to use in the file (default is -9999.0).")
+    @Description(OMSTIMESERIESITERATORWRITER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 

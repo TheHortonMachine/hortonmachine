@@ -17,6 +17,17 @@
  */
 package org.jgrasstools.gears.io.dbf;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDBFTABLEREADER_outTabledata_DESCRIPTION;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -41,20 +52,21 @@ import org.geotools.data.shapefile.dbf.DbaseFileReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Utility class for reading dbf tables.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@Status(Status.DRAFT)
-@Name("dbfreader")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDBFTABLEREADER_DESCRIPTION)
+@Author(name = OMSDBFTABLEREADER_AUTHORNAMES, contact = OMSDBFTABLEREADER_AUTHORCONTACTS)
+@Keywords(OMSDBFTABLEREADER_KEYWORDS)
+@Label(OMSDBFTABLEREADER_LABEL)
+@Name(OMSDBFTABLEREADER_NAME)
+@Status(OMSDBFTABLEREADER_STATUS)
+@License(OMSDBFTABLEREADER_LICENSE)
 public class OmsDbfTableReader extends JGTModel {
-    @Description("The dbf file.")
+
+    @Description(OMSDBFTABLEREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The read dbf table.")
+    @Description(OMSDBFTABLEREADER_outTabledata_DESCRIPTION)
     @Out
     public HashMap<String, List<Object>> outTabledata = null;
 

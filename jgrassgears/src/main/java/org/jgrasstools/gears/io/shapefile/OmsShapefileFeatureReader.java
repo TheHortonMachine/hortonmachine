@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.gears.io.shapefile;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREREADER_geodata_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -27,6 +39,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -37,27 +50,23 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for reading shapefiles to geotools featurecollections.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Reading")
-@Label(JGTConstants.FEATUREREADER)
-@Status(Status.CERTIFIED)
-@UI(JGTConstants.HIDE_UI_HINT)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSHAPEFILEFEATUREREADER_DESCRIPTION)
+@Author(name = OMSSHAPEFILEFEATUREREADER_AUTHORNAMES, contact = OMSSHAPEFILEFEATUREREADER_AUTHORCONTACTS)
+@Keywords(OMSSHAPEFILEFEATUREREADER_KEYWORDS)
+@Label(OMSSHAPEFILEFEATUREREADER_LABEL)
+@Name(OMSSHAPEFILEFEATUREREADER_NAME)
+@Status(OMSSHAPEFILEFEATUREREADER_STATUS)
+@License(OMSSHAPEFILEFEATUREREADER_LICENSE)
+@UI(OMSSHAPEFILEFEATUREREADER_UI)
 public class OmsShapefileFeatureReader extends JGTModel {
-    @Description("The shapefile.")
+
+    @Description(OMSSHAPEFILEFEATUREREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read feature collection.")
+    @Description(OMSSHAPEFILEFEATUREREADER_geodata_DESCRIPTION)
     @Out
     public SimpleFeatureCollection geodata = null;
 
@@ -70,7 +79,7 @@ public class OmsShapefileFeatureReader extends JGTModel {
         try {
             File shapeFile = new File(file);
             pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
-            IndexedShapefileDataStore   store = new IndexedShapefileDataStore(shapeFile.toURI().toURL());
+            IndexedShapefileDataStore store = new IndexedShapefileDataStore(shapeFile.toURI().toURL());
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
         } finally {
@@ -94,8 +103,4 @@ public class OmsShapefileFeatureReader extends JGTModel {
         return reader.geodata;
     }
 
-    
-  
-    
-    
 }

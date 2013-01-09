@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.gears.io.grasslegacy;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_doActive_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_geodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_inWindow_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRASSLEGACYREADER_outGC_DESCRIPTION;
+
 import java.io.File;
 
 import oms3.annotations.Author;
@@ -26,6 +41,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -40,42 +56,38 @@ import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
-@Description("Legacy class for reading grass data the old way.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Grass, Raster, Reading")
-@Label(JGTConstants.RASTERREADER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSGRASSLEGACYREADER_DESCRIPTION)
+@Author(name = OMSGRASSLEGACYREADER_AUTHORNAMES, contact = OMSGRASSLEGACYREADER_AUTHORCONTACTS)
+@Keywords(OMSGRASSLEGACYREADER_KEYWORDS)
+@Label(OMSGRASSLEGACYREADER_LABEL)
+@Name(OMSGRASSLEGACYREADER_NAME)
+@Status(OMSGRASSLEGACYREADER_STATUS)
+@License(OMSGRASSLEGACYREADER_LICENSE)
+@UI(OMSGRASSLEGACYREADER_UI)
 public class OmsGrassLegacyReader extends JGTModel {
-    @Description("The file to the map to be read (the cell file).")
+
+    @Description(OMSGRASSLEGACYREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("Flag that defines if the map should be read as a whole (false) or"
-            + " on the active region (true and default).")
+    @Description(OMSGRASSLEGACYREADER_doActive_DESCRIPTION)
     @In
     public boolean doActive = true;
 
-    @Description("The region to read.")
+    @Description(OMSGRASSLEGACYREADER_inWindow_DESCRIPTION)
     @In
     public Window inWindow = null;
 
-    @Description("The read output map as limited coverage version.")
+    @Description(OMSGRASSLEGACYREADER_outGC_DESCRIPTION)
     @Out
     public GridCoverage2D outGC = null;
 
-    @Description("The read output map data.")
+    @Description(OMSGRASSLEGACYREADER_geodata_DESCRIPTION)
     @Out
     public double[][] geodata = null;
 
@@ -109,7 +121,7 @@ public class OmsGrassLegacyReader extends JGTModel {
         } finally {
             reader.close();
         }
-        
+
         CoordinateReferenceSystem crs = mapEnvironment.getCoordinateReferenceSystem();
         outGC = new GrassLegacyGridCoverage2D(inWindow, geodata, crs);
     }

@@ -18,6 +18,17 @@
  */
 package org.jgrasstools.gears.io.exif;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.EXIFREADER_outTags_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -28,41 +39,33 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.FileImageInputStream;
 
 import oms3.annotations.Author;
-import oms3.annotations.Label;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
+import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.w3c.dom.NodeList;
 
-@Description("Utility class for reading exif tags in jpegs.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Jpeg, Exif, Reading")
-@Label(JGTConstants.GENERICREADER)
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(EXIFREADER_DESCRIPTION)
+@Author(name = EXIFREADER_AUTHORNAMES, contact = EXIFREADER_AUTHORCONTACTS)
+@Keywords(EXIFREADER_KEYWORDS)
+@Label(EXIFREADER_LABEL)
+@Name(EXIFREADER_NAME)
+@Status(EXIFREADER_STATUS)
+@License(EXIFREADER_LICENSE)
 public class ExifReader extends JGTModel {
-    @Role(Role.PARAMETER)
-    @Description("The jpeg file.")
+
+    @Description(EXIFREADER_file_DESCRIPTION)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Role(Role.PARAMETER)
-    @Description("The read exif tags.")
+    @Description(EXIFREADER_outTags_DESCRIPTION)
     @Out
     public HashMap<String, ExifTag> outTags = null;
 

@@ -18,6 +18,18 @@
  */
 package org.jgrasstools.gears.io.eicalculator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_inAltimetry_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSEIALTIMETRYWRITER_pSeparator_DESCRIPTION;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,39 +43,34 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
-import oms3.annotations.Role;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Utility class for writing altimetry data to csv files.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.LIST_WRITER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSEIALTIMETRYWRITER_DESCRIPTION)
+@Author(name = OMSEIALTIMETRYWRITER_AUTHORNAMES, contact = OMSEIALTIMETRYWRITER_AUTHORCONTACTS)
+@Keywords(OMSEIALTIMETRYWRITER_KEYWORDS)
+@Label(OMSEIALTIMETRYWRITER_LABEL)
+@Name(OMSEIALTIMETRYWRITER_NAME)
+@Status(OMSEIALTIMETRYWRITER_STATUS)
+@License(OMSEIALTIMETRYWRITER_LICENSE)
 public class OmsEIAltimetryWriter extends JGTModel {
-    @Description("The data to write.")
+
+    @Description(OMSEIALTIMETRYWRITER_inAltimetry_DESCRIPTION)
     @In
     public List<EIAltimetry> inAltimetry;
 
-    @Description("The csv file to write to.")
+    @Description(OMSEIALTIMETRYWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSEIALTIMETRYWRITER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
 
     private BufferedWriter csvWriter;
 

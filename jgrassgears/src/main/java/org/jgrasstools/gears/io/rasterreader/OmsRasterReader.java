@@ -17,13 +17,35 @@
  */
 package org.jgrasstools.gears.io.rasterreader;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_doLegacyGrass_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_geodataNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_outRaster_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pXres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREADER_pYres_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.AIG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GRASS;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.JPEG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.JPG;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.PNG;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
@@ -57,7 +79,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -92,7 +113,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -101,77 +121,73 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-@Description("Raster reader module.")
-@Documentation("OmsRasterReader.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Coverage, Raster, Reading")
-@Label(JGTConstants.RASTERREADER)
-@Status(Status.CERTIFIED)
-@Name("rasterreader")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERREADER_DESCRIPTION)
+@Author(name = OMSRASTERREADER_AUTHORNAMES, contact = OMSRASTERREADER_AUTHORCONTACTS)
+@Keywords(OMSRASTERREADER_KEYWORDS)
+@Label(OMSRASTERREADER_LABEL)
+@Name(OMSRASTERREADER_NAME)
+@Status(OMSRASTERREADER_STATUS)
+@License(OMSRASTERREADER_LICENSE)
 public class OmsRasterReader extends JGTModel {
+
+    @Description(OMSRASTERREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
-    @Description("The raster file to read with extension (supported are: asc, tiff, grass).")
     @In
     public String file = null;
 
-    @Description("The file novalue.")
+    @Description(OMSRASTERREADER_fileNovalue_DESCRIPTION)
     @In
     public Double fileNovalue = -9999.0;
 
-    @Description("The novalue wanted in the raster.")
+    @Description(OMSRASTERREADER_geodataNovalue_DESCRIPTION)
     @In
     public Double geodataNovalue = doubleNovalue;
 
-    @Description("The optional requested boundary north coordinate.")
+    @Description(OMSRASTERREADER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The optional requested boundary south coordinate.")
+    @Description(OMSRASTERREADER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The optional requested boundary west coordinate.")
+    @Description(OMSRASTERREADER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The optional requested boundary east coordinate.")
+    @Description(OMSRASTERREADER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The optional requested resolution in x.")
+    @Description(OMSRASTERREADER_pXres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description("The optional requested resolution in y.")
+    @Description(OMSRASTERREADER_pYres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description("The optional requested numer of rows.")
+    @Description(OMSRASTERREADER_pRows_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description("The optional requested numer of cols.")
+    @Description(OMSRASTERREADER_pCols_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description("Optional flag to force a legacy GRASS driver usage.")
+    @Description(OMSRASTERREADER_doLegacyGrass_DESCRIPTION)
     @In
     public Boolean doLegacyGrass = false;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read output raster map.")
+    @Description(OMSRASTERREADER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
 

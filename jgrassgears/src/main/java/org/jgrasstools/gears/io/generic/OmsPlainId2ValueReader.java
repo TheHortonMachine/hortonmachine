@@ -18,6 +18,20 @@
  */
 package org.jgrasstools.gears.io.generic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_novalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSPLAINID2VALUEREADER_pSeparator_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.io.BufferedReader;
@@ -33,47 +47,42 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
-@Description("Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.HASHMAP_READER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class OmsPlainId2ValueReader {
-    @Description("The csv file to read from.")
+import org.jgrasstools.gears.libs.modules.JGTModel;
+
+@Description(OMSPLAINID2VALUEREADER_DESCRIPTION)
+@Author(name = OMSPLAINID2VALUEREADER_AUTHORNAMES, contact = OMSPLAINID2VALUEREADER_AUTHORCONTACTS)
+@Keywords(OMSPLAINID2VALUEREADER_KEYWORDS)
+@Label(OMSPLAINID2VALUEREADER_LABEL)
+@Name(OMSPLAINID2VALUEREADER_NAME)
+@Status(OMSPLAINID2VALUEREADER_STATUS)
+@License(OMSPLAINID2VALUEREADER_LICENSE)
+@UI(OMSPLAINID2VALUEREADER_UI)
+public class OmsPlainId2ValueReader extends JGTModel {
+
+    @Description(OMSPLAINID2VALUEREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The csv separator.")
+    @Description(OMSPLAINID2VALUEREADER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Role(Role.PARAMETER)
-    @Description("The file novalue.")
+    @Description(OMSPLAINID2VALUEREADER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Role(Role.PARAMETER)
-    @Description("The novalue wanted in the coverage.")
+    @Description(OMSPLAINID2VALUEREADER_novalue_DESCRIPTION)
     @In
     public double novalue = doubleNovalue;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The read map of ids and values.")
+    @Description(OMSPLAINID2VALUEREADER_data_DESCRIPTION)
     @Out
     public HashMap<Integer, double[]> data;
 

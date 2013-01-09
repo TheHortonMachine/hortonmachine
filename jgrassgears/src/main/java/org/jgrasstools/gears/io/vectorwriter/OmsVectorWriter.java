@@ -17,6 +17,19 @@
  */
 package org.jgrasstools.gears.io.vectorwriter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_inVector_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_pType_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -37,32 +50,27 @@ import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 
-@Description("Vectors features writer to file module.")
-@Documentation("OmsVectorWriter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Shapefile, Feature, Vector, Writing")
-@Label(JGTConstants.FEATUREWRITER)
-@Name("vectorwriter")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSVECTORWRITER_DESCRIPTION)
+@Documentation(OMSVECTORWRITER_DOCUMENTATION)
+@Author(name = OMSVECTORWRITER_AUTHORNAMES, contact = OMSVECTORWRITER_AUTHORCONTACTS)
+@Keywords(OMSVECTORWRITER_KEYWORDS)
+@Label(OMSVECTORWRITER_LABEL)
+@Name(OMSVECTORWRITER_NAME)
+@Status(OMSVECTORWRITER_STATUS)
+@License(OMSVECTORWRITER_LICENSE)
 public class OmsVectorWriter extends JGTModel {
-    @Description("The read feature collection.")
+
+    @Description(OMSVECTORWRITER_inVector_DESCRIPTION)
     @In
     public SimpleFeatureCollection inVector = null;
 
-    @Description("The vector type to write (Supported is: shp).")
+    @Description(OMSVECTORWRITER_pType_DESCRIPTION)
     @In
     // currently not used, for future compatibility
     public String pType = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The vector file to write.")
+    @Description(OMSVECTORWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;

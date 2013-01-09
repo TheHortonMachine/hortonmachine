@@ -17,6 +17,22 @@
  */
 package org.jgrasstools.gears.io.gridgeometryreader;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_outGridgeom_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -37,50 +53,51 @@ import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("GridGeometry reader module.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, GridGeometry, Raster, Reading")
-@Label(JGTConstants.GRIDGEOMETRYREADER)
-@Status(Status.CERTIFIED)
-@Name("gridgeomreader")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSGRIDGEOMETRYREADER_DESCRIPTION)
+@Author(name = OMSGRIDGEOMETRYREADER_AUTHORNAMES, contact = OMSGRIDGEOMETRYREADER_AUTHORCONTACTS)
+@Keywords(OMSGRIDGEOMETRYREADER_KEYWORDS)
+@Label(OMSGRIDGEOMETRYREADER_LABEL)
+@Name(OMSGRIDGEOMETRYREADER_NAME)
+@Status(OMSGRIDGEOMETRYREADER_STATUS)
+@License(OMSGRIDGEOMETRYREADER_LICENSE)
 public class OmsGridGeometryReader extends JGTModel {
-    @Description("The boundary north coordinate.")
+
+    @Description(OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The boundary south coordinate.")
+    @Description(OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The boundary west coordinate.")
+    @Description(OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The boundary east coordinate.")
+    @Description(OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The resolution in x.")
+    @Description(OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description("The resolution in y.")
+    @Description(OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).")
+    @Description(OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("The output GridGeometry.")
+    @Description(OMSGRIDGEOMETRYREADER_outGridgeom_DESCRIPTION)
     @Out
     public GridGeometry2D outGridgeom = null;
 

@@ -18,6 +18,19 @@
  */
 package org.jgrasstools.gears.io.generic;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_UI;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSDATETIME2VALUEMAPWRITER_pSeparator_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.io.BufferedWriter;
@@ -35,40 +48,38 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 
-@Description("Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Writing")
-@Label(JGTConstants.HASHMAP_WRITER)
-@UI(JGTConstants.HIDE_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class OmsDateTime2ValueMapWriter {
-    @Description("The csv file to write to.")
+@Description(OMSDATETIME2VALUEMAPWRITER_DESCRIPTION)
+@Author(name = OMSDATETIME2VALUEMAPWRITER_AUTHORNAMES, contact = OMSDATETIME2VALUEMAPWRITER_AUTHORCONTACTS)
+@Keywords(OMSDATETIME2VALUEMAPWRITER_KEYWORDS)
+@Label(OMSDATETIME2VALUEMAPWRITER_LABEL)
+@Name(OMSDATETIME2VALUEMAPWRITER_NAME)
+@Status(OMSDATETIME2VALUEMAPWRITER_STATUS)
+@License(OMSDATETIME2VALUEMAPWRITER_LICENSE)
+@UI(OMSDATETIME2VALUEMAPWRITER_UI)
+public class OmsDateTime2ValueMapWriter extends JGTModel {
+
+    @Description(OMSDATETIME2VALUEMAPWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The csv separator.")
+    @Description(OMSDATETIME2VALUEMAPWRITER_pSeparator_DESCRIPTION)
     @In
     public String pSeparator = ",";
 
-    @Description("The file novalue.")
+    @Description(OMSDATETIME2VALUEMAPWRITER_fileNovalue_DESCRIPTION)
     @In
     public String fileNovalue = "-9999.0";
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The map of ids and values arrays to write.")
+    @Description(OMSDATETIME2VALUEMAPWRITER_data_DESCRIPTION)
     @In
     public HashMap<DateTime, double[]> data;
 

@@ -18,6 +18,17 @@
  */
 package org.jgrasstools.gears.io.adige;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_data_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.VEGETATIONLIBRARYREADER_file_DESCRIPTION;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
@@ -30,6 +41,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -40,19 +52,21 @@ import oms3.io.TableIterator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Utility class for reading data from a OMS formatted csv file assumed to be containing the Vegetation library data.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("IO, Reading")
-@Label(JGTConstants.GENERICREADER)
-@Status(Status.CERTIFIED)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(VEGETATIONLIBRARYREADER_DESCRIPTION)
+@Author(name = VEGETATIONLIBRARYREADER_AUTHORNAMES, contact = VEGETATIONLIBRARYREADER_AUTHORCONTACTS)
+@Keywords(VEGETATIONLIBRARYREADER_KEYWORDS)
+@Label(VEGETATIONLIBRARYREADER_LABEL)
+@Name(VEGETATIONLIBRARYREADER_NAME)
+@Status(VEGETATIONLIBRARYREADER_STATUS)
+@License(VEGETATIONLIBRARYREADER_LICENSE)
 public class VegetationLibraryReader extends JGTModel {
-    @Description("The csv file to read from.")
+
+    @Description(VEGETATIONLIBRARYREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String file = null;
 
-    @Description("The list of arrays representing the values in the rows.")
+    @Description(VEGETATIONLIBRARYREADER_data_DESCRIPTION)
     @Out
     public HashMap<Integer, VegetationLibraryRecord> data;
 
@@ -105,9 +119,9 @@ public class VegetationLibraryReader extends JGTModel {
             double wind_atten = Double.parseDouble(row[i++]);
             double trunk_ratio = Double.parseDouble(row[i]);
 
-            VegetationLibraryRecord vegetation = new VegetationLibraryRecord(vegetationIndex,
-                    architectural_resistance, min_stomatal_resistanc, laiMonths, albedoMonths,
-                    roughMonths, displMonths, wind_height, wind_atten, rgl, rad_atten, trunk_ratio);
+            VegetationLibraryRecord vegetation = new VegetationLibraryRecord(vegetationIndex, architectural_resistance,
+                    min_stomatal_resistanc, laiMonths, albedoMonths, roughMonths, displMonths, wind_height, wind_atten, rgl,
+                    rad_atten, trunk_ratio);
 
             data.put(vegetationIndex, vegetation);
         }

@@ -17,6 +17,16 @@
  */
 package org.jgrasstools.gears.io.rasterwriter;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_file_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERWRITER_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.ESRIGRID;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIF;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.GEOTIFF;
@@ -26,7 +36,6 @@ import java.io.File;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,30 +65,25 @@ import org.jgrasstools.gears.io.grasslegacy.utils.GrassLegacyUtilities;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 
-@Description("Raster writer module.")
-@Documentation("OmsRasterWriter.html")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("IO, Grass, Coverage, Raster, Writing")
-@Label(JGTConstants.RASTERWRITER)
-@Status(Status.CERTIFIED)
-@Name("rasterwriter")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSRASTERWRITER_DESCRIPTION)
+@Author(name = OMSRASTERWRITER_AUTHORNAMES, contact = OMSRASTERWRITER_AUTHORCONTACTS)
+@Keywords(OMSRASTERWRITER_KEYWORDS)
+@Label(OMSRASTERWRITER_LABEL)
+@Name(OMSRASTERWRITER_NAME)
+@Status(OMSRASTERWRITER_STATUS)
+@License(OMSRASTERWRITER_LICENSE)
 public class OmsRasterWriter extends JGTModel {
-    @Description("The raster map to write.")
+
+    @Description(OMSRASTERWRITER_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-
-    @Description("The file to write the raster to with extension (supported are: asc, tiff, grass).")
+    @Description(OMSRASTERWRITER_file_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String file = null;
