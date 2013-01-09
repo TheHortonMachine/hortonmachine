@@ -16,8 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.modules;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DOCUMENTATION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inPlan_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outAb_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outB_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -27,54 +41,46 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 
-@Description("Calculates the draining area per length unit.")
-@Author(name = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections")
-@Label(JGTConstants.GEOMORPHOLOGY)
-@Name("_ab")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSAB_DESCRIPTION)
+@Documentation(OMSAB_DOCUMENTATION)
+@Author(name = OMSAB_AUTHORNAMES, contact = OMSAB_AUTHORCONTACTS)
+@Keywords(OMSAB_KEYWORDS)
+@Label(OMSAB_LABEL)
+@Name(OMSAB_NAME)
+@Status(OMSAB_STATUS)
+@License(OMSAB_LICENSE)
 public class Ab extends OmsAb {
-    @Description( "The map of the total contributing area.")
+    @Description(OMSAB_inTca_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTca = null;
 
-    @Description("The map of the planar curvatures.")
+    @Description(OMSAB_inPlan_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPlan = null;
 
-    @Description("The map of area per length.")
+    @Description(OMSAB_outAb_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outAb = null;
 
-    @Description("The map of contour line.")
+    @Description(OMSAB_outB_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outB = null;
 
     @Execute
     public void process() throws Exception {
-        GridCoverage2D inTcaGC = getRaster(inTca);
-        GridCoverage2D inPlanGC = getRaster(inPlan);
-        super.inTca = inTcaGC;
-        super.inPlan = inPlanGC;
-
-        // OmsAb ab = new OmsAb();
-        // ab.inTca = inTcaGC;
-        // ab.inPlan = inPlanGC;
-        // ab.pm = pm;
-        super.process();
-
-        dumpRaster(super.outAb, outAb);
-        dumpRaster(super.outB, outB);
+        OmsAb ab = new OmsAb();
+        ab.inTca = getRaster(inTca);
+        ab.inPlan = getRaster(inPlan);
+        ab.pm = pm;
+        dumpRaster(ab.outAb, outAb);
+        dumpRaster(ab.outB, outB);
     }
-
 
 }
