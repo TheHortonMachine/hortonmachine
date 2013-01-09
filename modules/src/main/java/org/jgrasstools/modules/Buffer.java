@@ -38,10 +38,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.CAP_SQUARE;
 import static org.jgrasstools.gears.libs.modules.Variables.JOIN_BEVEL;
 import static org.jgrasstools.gears.libs.modules.Variables.JOIN_MITRE;
 import static org.jgrasstools.gears.libs.modules.Variables.JOIN_ROUND;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -55,20 +51,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
-import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.MultiPolygon;
-import com.vividsolutions.jts.geom.Polygon;
-import com.vividsolutions.jts.operation.buffer.BufferOp;
-import com.vividsolutions.jts.operation.buffer.BufferParameters;
+import org.jgrasstools.gears.modules.v.vectoroperations.OmsBuffer;
 
 @Description(OMSBUFFER_DESCRIPTION)
 @Documentation(OMSBUFFER_DOCUMENTATION)
@@ -78,11 +63,12 @@ import com.vividsolutions.jts.operation.buffer.BufferParameters;
 @Name(OMSBUFFER_NAME)
 @Status(OMSBUFFER_STATUS)
 @License(OMSBUFFER_LICENSE)
-public class OmsBuffer extends JGTModel {
+public class Buffer extends JGTModel {
 
     @Description(OMSBUFFER_inMap_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public SimpleFeatureCollection inMap = null;
+    public String inMap = null;
 
     @Description(OMSBUFFER_pBuffer_DESCRIPTION)
     @In
@@ -103,64 +89,21 @@ public class OmsBuffer extends JGTModel {
     public String pCapstyle = CAP_ROUND;
 
     @Description(OMSBUFFER_outMap_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public SimpleFeatureCollection outMap = null;
-
-    private double mitreLimit = BufferParameters.DEFAULT_MITRE_LIMIT;
-    private int quadrantSegments = BufferParameters.DEFAULT_QUADRANT_SEGMENTS;
+    public String outMap = null;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inMap);
-
-        int joinStyle;
-        if (pJoinstyle.equals(JOIN_MITRE)) {
-            joinStyle = BufferParameters.JOIN_MITRE;
-        } else if (pJoinstyle.equals(JOIN_BEVEL)) {
-            joinStyle = BufferParameters.JOIN_BEVEL;
-        } else {
-            joinStyle = BufferParameters.JOIN_ROUND;
-        }
-        int endCapStyle;
-        if (pCapstyle.equals(CAP_FLAT)) {
-            endCapStyle = BufferParameters.CAP_FLAT;
-        } else if (pCapstyle.equals(CAP_SQUARE)) {
-            endCapStyle = BufferParameters.CAP_SQUARE;
-        } else {
-            endCapStyle = BufferParameters.CAP_ROUND;
-        }
-
-        FeatureGeometrySubstitutor fgs = new FeatureGeometrySubstitutor(inMap.getSchema(), MultiPolygon.class);
-
-        DefaultFeatureCollection outMaptmp = new DefaultFeatureCollection("new", fgs.getNewFeatureType());
-
-        GeometryFactory gf = GeometryUtilities.gf();
-
-        List<SimpleFeature> featuresList = FeatureUtilities.featureCollectionToList(inMap);
-        pm.beginTask("Buffering geometries...", featuresList.size());
-        for( SimpleFeature feature : featuresList ) {
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
-
-            BufferParameters bP = new BufferParameters(quadrantSegments, endCapStyle, joinStyle, mitreLimit);
-            Geometry bufferedGeom = BufferOp.bufferOp(geometry, pBuffer, bP);
-            List<Polygon> polygons = new ArrayList<Polygon>(bufferedGeom.getNumGeometries());
-            for( int i = 0; i < bufferedGeom.getNumGeometries(); i++ ) {
-                Geometry geometryN = bufferedGeom.getGeometryN(i);
-                if (geometryN instanceof Polygon) {
-                    polygons.add((Polygon) geometryN);
-                } else {
-                    pm.errorMessage("Ignored non polygonal geometry in: " + geometryN.toText());
-                }
-            }
-            MultiPolygon multiPolygon = gf.createMultiPolygon(polygons.toArray(GeometryUtilities.TYPE_POLYGON));
-            SimpleFeature newFeature = fgs.substituteGeometry(feature, multiPolygon);
-            outMaptmp.add(newFeature);
-            pm.worked(1);
-        }
-        pm.done();
-
-        outMap = outMaptmp;
-
+        OmsBuffer buffer = new OmsBuffer();
+        buffer.inMap = getVector(inMap);
+        buffer.pBuffer = pBuffer;
+        buffer.doSinglesided = doSinglesided;
+        buffer.pJoinstyle = pJoinstyle;
+        buffer.pCapstyle = pCapstyle;
+        buffer.pm = pm;
+        buffer.process();
+        dumpVector(buffer.outMap, outMap);
     }
 
 }

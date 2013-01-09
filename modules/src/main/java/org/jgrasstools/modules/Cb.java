@@ -90,6 +90,7 @@ public class Cb extends JGTModel {
         cb.pBins = pBins;
         cb.pFirst = pFirst;
         cb.pLast = pLast;
+        cb.pm = pm;
         cb.process();
         outCb = cb.outCb;
     }

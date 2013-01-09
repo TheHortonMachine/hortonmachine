@@ -79,6 +79,7 @@ public class Ab extends OmsAb {
         ab.inTca = getRaster(inTca);
         ab.inPlan = getRaster(inPlan);
         ab.pm = pm;
+        ab.process();
         dumpRaster(ab.outAb, outAb);
         dumpRaster(ab.outB, outB);
     }
