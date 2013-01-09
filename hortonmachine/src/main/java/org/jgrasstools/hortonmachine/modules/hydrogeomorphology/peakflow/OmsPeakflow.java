@@ -19,6 +19,25 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRainfall_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsub_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsup_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inSat_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inTopindex_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_outDischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pCelerity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pSat_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -32,7 +51,6 @@ import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,7 +63,6 @@ import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
@@ -59,61 +76,60 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.core.je
 import org.jgrasstools.hortonmachine.modules.statistics.cb.OmsCb;
 import org.joda.time.DateTime;
 
-@Description("The OmsPeakflow semidistributed hydrologic model.")
-@Documentation("OmsPeakflow.html")
-@Author(name = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Name("peakflow")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSPEAKFLOW_DESCRIPTION)
+@Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)
+@Keywords(OMSPEAKFLOW_KEYWORDS)
+@Label(OMSPEAKFLOW_LABEL)
+@Name(OMSPEAKFLOW_NAME)
+@Status(OMSPEAKFLOW_STATUS)
+@License(OMSPEAKFLOW_LICENSE)
 public class OmsPeakflow extends JGTModel {
 
-    @Description("The a parameter for statistic rain calculations.")
+    @Description(OMSPEAKFLOW_pA_DESCRIPTION)
     @Unit("mm/h^m")
     @In
     public double pA = -1f;
 
-    @Description("The n parameter for statistic rain calculations.")
+    @Description(OMSPEAKFLOW_pN_DESCRIPTION)
     @In
     public double pN = -1f;
 
-    @Description("The channel celerity parameter.")
+    @Description(OMSPEAKFLOW_pCelerity_DESCRIPTION)
     @Unit("m/s")
     @In
     public double pCelerity = -1f;
 
-    @Description("The diffusion parameter.")
+    @Description(OMSPEAKFLOW_pDiffusion_DESCRIPTION)
     @Unit("m2/s")
     @In
     public double pDiffusion = -1f;
 
-    @Description("The saturation percentage.")
+    @Description(OMSPEAKFLOW_pSat_DESCRIPTION)
     @Unit("%")
     @In
     public double pSat = -1f;
 
-    @Description("The map of Topindex.")
+    @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
     @In
     public GridCoverage2D inTopindex = null;
 
-    @Description("Optional map of saturation.")
+    @Description(OMSPEAKFLOW_inSat_DESCRIPTION)
     @In
     public GridCoverage2D inSat = null;
 
-    @Description("The map of superficial rescaled distance.")
+    @Description(OMSPEAKFLOW_inRescaledsup_DESCRIPTION)
     @In
     public GridCoverage2D inRescaledsup = null;
 
-    @Description("The map of sub-superficial rescaled distance.")
+    @Description(OMSPEAKFLOW_inRescaledsub_DESCRIPTION)
     @In
     public GridCoverage2D inRescaledsub = null;
 
-    @Description("The sorted hasmap of rainfall data per timestep.")
+    @Description(OMSPEAKFLOW_inRainfall_DESCRIPTION)
     @In
     public HashMap<DateTime, double[]> inRainfall;
 
-    @Description("The sorted hashmap of peakflow output per timestep.")
+    @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
     @Out
     public HashMap<DateTime, double[]> outDischarge;
 

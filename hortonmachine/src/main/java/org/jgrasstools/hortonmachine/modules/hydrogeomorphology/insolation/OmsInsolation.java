@@ -21,6 +21,18 @@ import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVect
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateFactor;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_outIns_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_tEndDate_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINSOLATION_tStartDate_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -33,9 +45,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +57,6 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -62,32 +71,28 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Calculate the amount of power incident on a surface in a period of time.")
-@Documentation("OmsInsolation.html")
-@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, SkyviewFactor, OmsHillshade")
-@Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
-        + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
-        + ", International Journal of Geographical Information Science 17(1), 1–23. and"
-        + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Name("insolation")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSINSOLATION_DESCRIPTION)
+@Author(name = OMSINSOLATION_AUTHORNAMES, contact = OMSINSOLATION_AUTHORCONTACTS)
+@Keywords(OMSINSOLATION_KEYWORDS)
+@Label(OMSINSOLATION_LABEL)
+@Name(OMSINSOLATION_NAME)
+@Status(OMSINSOLATION_STATUS)
+@License(OMSINSOLATION_LICENSE)
 public class OmsInsolation extends JGTModel {
-    @Description("The map of the elevation.")
+
+    @Description(OMSINSOLATION_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The first day of the simulation.")
+    @Description(OMSINSOLATION_tStartDate_DESCRIPTION)
     @In
     public String tStartDate = null;
 
-    @Description("The last day of the simulation.")
+    @Description(OMSINSOLATION_tEndDate_DESCRIPTION)
     @In
     public String tEndDate = null;
 
-    @Description("The map of total insolation.")
+    @Description(OMSINSOLATION_outIns_DESCRIPTION)
     @Out
     public GridCoverage2D outIns;
 

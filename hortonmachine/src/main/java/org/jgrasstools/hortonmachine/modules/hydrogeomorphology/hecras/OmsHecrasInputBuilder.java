@@ -17,6 +17,27 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.hecras;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_inSections_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_outSections_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION;
+
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.util.ArrayList;
@@ -38,8 +59,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -51,65 +70,61 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Module that prepares data for Hecras.")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Hecras, Raster, Vector, Hydraulic")
-@Name("inhecras")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSHECRASINPUTBUILDER_DESCRIPTION)
+@Author(name = OMSHECRASINPUTBUILDER_AUTHORNAMES, contact = OMSHECRASINPUTBUILDER_AUTHORCONTACTS)
+@Keywords(OMSHECRASINPUTBUILDER_KEYWORDS)
+@Label(OMSHECRASINPUTBUILDER_LABEL)
+@Name(OMSHECRASINPUTBUILDER_NAME)
+@Status(OMSHECRASINPUTBUILDER_STATUS)
+@License(OMSHECRASINPUTBUILDER_LICENSE)
 public class OmsHecrasInputBuilder extends JGTModel {
 
-    @Description("The map of elevation.")
+    @Description(OMSHECRASINPUTBUILDER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of the river.")
+    @Description(OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION)
     @In
     public SimpleFeatureCollection inRiver = null;
 
-    @Description("The map of bridges to consider.")
+    @Description(OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION)
     @In
     public SimpleFeatureCollection inBridges = null;
 
-    @Description("The map of sections to consider. If supplied, they are used instead of extracting at a given interval. The sections need to be created with this same module.")
+    @Description(OMSHECRASINPUTBUILDER_inSections_DESCRIPTION)
     @In
     public SimpleFeatureCollection inSections = null;
 
-    @Description("The id of the river/simulation.")
+    @Description(OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION)
     @In
     public String pTitle = "DEFAULTID";
 
-    @Description("")
+    @Description(OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION)
     @In
     public double pSectionsIntervalDistance = 0.0D;
 
-    @Description("")
+    @Description(OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION)
     @In
     public double pSectionsWidth = 0.0D;
 
-    @Description("")
+    @Description(OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION)
     @In
     public double pBridgeBuffer = 0.0D;
 
-    @Description("")
+    @Description(OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION)
     @In
     public String fBridgeWidth;
 
-    @Description("The path to the generated hecras.")
+    @Description(OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION)
     @In
     @UI(JGTConstants.FILEIN_UI_HINT)
     public String inHecras = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The extracted section lines.")
+    @Description(OMSHECRASINPUTBUILDER_outSections_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outSections = null;
 
-    @Description("The extracted section points (with the elevation in the attribute table).")
+    @Description(OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outSectionPoints = null;
 

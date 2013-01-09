@@ -21,6 +21,19 @@ import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVect
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calculateFactor;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_outHill_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_pAzimuth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_pElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHILLSHADE_pMinDiffuse_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -33,9 +46,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,36 +62,32 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("This class evalutate the hillshade of a DEM.")
-@Documentation("OmsHillshade.html")
-@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, SkyviewFactor, OmsInsolation")
-@Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
-        + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
-        + ", International Journal of Geographical Information Science 17(1), 1–23. and"
-        + "Iqbal, M., 1983. An Introduction to solar radiation. In: , Academic Press, New York")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Name("hillshade")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSHILLSHADE_DESCRIPTION)
+@Author(name = OMSHILLSHADE_AUTHORNAMES, contact = OMSHILLSHADE_AUTHORCONTACTS)
+@Keywords(OMSHILLSHADE_KEYWORDS)
+@Label(OMSHILLSHADE_LABEL)
+@Name(OMSHILLSHADE_NAME)
+@Status(OMSHILLSHADE_STATUS)
+@License(OMSHILLSHADE_LICENSE)
 public class OmsHillshade extends JGTModel {
-    @Description("The map of the elevation.")
+
+    @Description(OMSHILLSHADE_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The minimum value of diffuse insolation between 0 to 1 (default is 0).")
+    @Description(OMSHILLSHADE_pMinDiffuse_DESCRIPTION)
     @In
     public double pMinDiffuse = 0.0;
 
-    @Description("The value of the azimuth (default is 360).")
+    @Description(OMSHILLSHADE_pAzimuth_DESCRIPTION)
     @In
     public double pAzimuth = 360;
 
-    @Description("The sun elevation (default is 90).")
+    @Description(OMSHILLSHADE_pElev_DESCRIPTION)
     @In
     public double pElev = 90;
 
-    @Description("The map of hillshade.")
+    @Description(OMSHILLSHADE_outHill_DESCRIPTION)
     @Out
     public GridCoverage2D outHill;
 

@@ -22,6 +22,31 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inCohesion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inQ_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inRho_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inSdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inTgphi_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inTrasmissivity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_outQcrit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_outShalstab_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pCohesion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pQ_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pRho_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pRock_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pSdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pTgphi_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_pTrasmissivity_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -33,7 +58,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,94 +69,92 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.ConstantRandomIter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("A version of the OmsShalstab stability model.")
-@Documentation("OmsShalstab.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("OmsShalstab, Hydrology, Trasmissivity")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Name("shalstab")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSHALSTAB_DESCRIPTION)
+@Author(name = OMSSHALSTAB_AUTHORNAMES, contact = OMSSHALSTAB_AUTHORCONTACTS)
+@Keywords(OMSSHALSTAB_KEYWORDS)
+@Label(OMSSHALSTAB_LABEL)
+@Name(OMSSHALSTAB_NAME)
+@Status(OMSSHALSTAB_STATUS)
+@License(OMSSHALSTAB_LICENSE)
 public class OmsShalstab extends JGTModel {
 
-    @Description("The map of slope.")
+    @Description(OMSSHALSTAB_inSlope_DESCRIPTION)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The map of contributing area.")
+    @Description(OMSSHALSTAB_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The map of trasmissivity.")
+    @Description(OMSSHALSTAB_inTrasmissivity_DESCRIPTION)
     @Unit("m^2/day")
     @In
     public GridCoverage2D inTrasmissivity = null;
 
-    @Description("A constant of trasmissivity to use instead of the map.")
+    @Description(OMSSHALSTAB_pTrasmissivity_DESCRIPTION)
     @Unit("m^2/day")
     @In
     public double pTrasmissivity = -1.0;
 
-    @Description("The map of the tangent of the friction tangent angle.")
+    @Description(OMSSHALSTAB_inTgphi_DESCRIPTION)
     @In
     public GridCoverage2D inTgphi = null;
 
-    @Description("A constant of tangent of the friction angle to use instead of the map.")
+    @Description(OMSSHALSTAB_pTgphi_DESCRIPTION)
     @In
     public double pTgphi = -1.0;
 
-    @Description("The map of cohesion.")
+    @Description(OMSSHALSTAB_inCohesion_DESCRIPTION)
     @Unit("Pa")
     @In
     public GridCoverage2D inCohesion = null;
 
-    @Description("A constant of cohesion to use instead of the map.")
+    @Description(OMSSHALSTAB_pCohesion_DESCRIPTION)
     @Unit("Pa")
     @In
     public double pCohesion = -1.0;
 
-    @Description("The map of soil depth.")
+    @Description(OMSSHALSTAB_inSdepth_DESCRIPTION)
     @Unit("m")
     @In
     public GridCoverage2D inSdepth = null;
 
-    @Description("A constant of soil depth to use instead of the map.")
+    @Description(OMSSHALSTAB_pSdepth_DESCRIPTION)
     @Unit("m")
     @In
     public double pSdepth = -1.0;
 
-    @Description("The map of effective precipitation.")
+    @Description(OMSSHALSTAB_inQ_DESCRIPTION)
     @Unit("mm/day")
     @In
     public GridCoverage2D inQ = null;
 
-    @Description("A constant of effective precipitation to use instead of the map.")
+    @Description(OMSSHALSTAB_pQ_DESCRIPTION)
     @Unit("mm/day")
     @In
     public double pQ = -1.0;
 
-    @Description("The map of rho.")
+    @Description(OMSSHALSTAB_inRho_DESCRIPTION)
     @In
     public GridCoverage2D inRho = null;
 
-    @Description("A constant of rho to use instead of the map.")
+    @Description(OMSSHALSTAB_pRho_DESCRIPTION)
     @In
     public double pRho = -1.0;
 
-    @Description("A value for the slope for rock.")
+    @Description(OMSSHALSTAB_pRock_DESCRIPTION)
     @In
     public double pRock = -9999.0;
 
-    @Description("The map of qcrit.")
+    @Description(OMSSHALSTAB_outQcrit_DESCRIPTION)
     @Out
     public GridCoverage2D outQcrit = null;
 
-    @Description("The map of classi.")
+    @Description(OMSSHALSTAB_outShalstab_DESCRIPTION)
     @Out
     public GridCoverage2D outShalstab = null;
 

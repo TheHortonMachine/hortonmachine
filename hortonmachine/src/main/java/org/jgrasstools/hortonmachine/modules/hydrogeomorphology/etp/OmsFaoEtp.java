@@ -18,6 +18,26 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_UI;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_defaultNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_defaultPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_defaultRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_defaultTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_defaultWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_inNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_inPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_inRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_inTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_inWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETP_outFaoEtp_DESCRIPTION;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -30,74 +50,75 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Calculates evapotranspiration.")
-@Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Evapotranspiration, Hydrologic")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@UI(JGTConstants.ITERATOR_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSFAOETP_DESCRIPTION)
+@Author(name = OMSFAOETP_AUTHORNAMES, contact = OMSFAOETP_AUTHORCONTACTS)
+@Keywords(OMSFAOETP_KEYWORDS)
+@Label(OMSFAOETP_LABEL)
+@Name(OMSFAOETP_NAME)
+@Status(OMSFAOETP_STATUS)
+@License(OMSFAOETP_LICENSE)
+@UI(OMSFAOETP_UI)
 public class OmsFaoEtp extends JGTModel {
 
-    @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
+    @Description(OMSFAOETP_inNetradiation_DESCRIPTION)
     @In
     @Unit("MJ m-2 hour-1")
     public HashMap<Integer, double[]> inNetradiation;
 
-    @Description("The net Radiation default value in case of missing data.")
+    @Description(OMSFAOETP_defaultNetradiation_DESCRIPTION)
     @In
     @Unit("MJ m-2 hour-1")
     public double defaultNetradiation = 2.0;
 
-    @Description("The average hourly wind speed.")
+    @Description(OMSFAOETP_inWind_DESCRIPTION)
     @In
     @Unit("m s-1")
     public HashMap<Integer, double[]> inWind;
 
-    @Description("The wind default value in case of missing data.")
+    @Description(OMSFAOETP_defaultWind_DESCRIPTION)
     @In
     @Unit("m s-1")
     public double defaultWind = 2.0;
 
-    @Description("The mean hourly air temperature.")
+    @Description(OMSFAOETP_inTemp_DESCRIPTION)
     @In
     @Unit("C")
     public HashMap<Integer, double[]> inTemp;
 
-    @Description("The temperature default value in case of missing data.")
+    @Description(OMSFAOETP_defaultTemp_DESCRIPTION)
     @In
     @Unit("C")
     public double defaultTemp = 15.0;
 
-    @Description("The average air hourly relative humidity.")
+    @Description(OMSFAOETP_inRh_DESCRIPTION)
     @In
     @Unit("%")
     public HashMap<Integer, double[]> inRh;
 
-    @Description("The humidity default value in case of missing data.")
+    @Description(OMSFAOETP_defaultRh_DESCRIPTION)
     @In
     @Unit("%")
     public double defaultRh = 70.0;
 
-    @Description("The atmospheric pressure in hPa.")
+    @Description(OMSFAOETP_inPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public HashMap<Integer, double[]> inPressure;
 
-    @Description("The pressure default value in case of missing data.")
+    @Description(OMSFAOETP_defaultPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public double defaultPressure = 100.0;
 
-    @Description("The reference evapotranspiration.")
+    @Description(OMSFAOETP_outFaoEtp_DESCRIPTION)
     @Unit("mm hour-1")
     @Out
     public HashMap<Integer, double[]> outFaoEtp;
@@ -121,7 +142,7 @@ public class OmsFaoEtp extends JGTModel {
             double netradiation = inNetradiation.get(basinId)[0];
             if (isNovalue(netradiation)) {
                 netradiation = defaultNetradiation;
-            }else {
+            } else {
                 netradiation = inNetradiation.get(basinId)[0] * 3.6 / 1000.0;
             }
 
@@ -133,7 +154,7 @@ public class OmsFaoEtp extends JGTModel {
             double pressure = inPressure.get(basinId)[0];
             if (isNovalue(pressure)) {
                 pressure = defaultPressure;
-            }else {
+            } else {
                 pressure = inPressure.get(basinId)[0] / 10.0;
             }
 

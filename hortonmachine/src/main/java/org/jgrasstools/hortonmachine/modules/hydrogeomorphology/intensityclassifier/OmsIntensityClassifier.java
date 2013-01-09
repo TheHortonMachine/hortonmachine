@@ -19,6 +19,21 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.intensityclassi
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
@@ -40,52 +55,50 @@ import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Module for the calculation of the flooding intensity.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Raster, Flooding")
-@Label(JGTConstants.RASTERPROCESSING)
-// @Documentation("OmsIntensityClassifier.html")
-@Name("intensityclassifier")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
+@Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
+@Keywords(OMSINTENSITYCLASSIFIER_KEYWORDS)
+@Label(OMSINTENSITYCLASSIFIER_LABEL)
+@Name(OMSINTENSITYCLASSIFIER_NAME)
+@Status(OMSINTENSITYCLASSIFIER_STATUS)
+@License(OMSINTENSITYCLASSIFIER_LICENSE)
 public class OmsIntensityClassifier extends JGTModel {
 
-    @Description("The map of the water depth.")
+    @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
     @Unit("[m]")
     @In
     public GridCoverage2D inWaterDepth;
 
-    @Description("The map of the water velocity.")
+    @Description(OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION)
     @Unit("[m/s]")
     @In
     public GridCoverage2D inVelocity;
 
-    @Description("The upper threshold value for the water depth.")
+    @Description(OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION)
     @Unit("[m]")
     @In
     public Double pUpperThresWaterdepth = 1.0;
 
-    @Description("The upper threshold value for the product of water depth and velocity.")
+    @Description(OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION)
     @Unit("[m2/s]")
     @In
     public Double pUpperThresVelocityWaterdepth = 1.0;
 
-    @Description("The lower threshold value for the water depth.")
+    @Description(OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION)
     @Unit("[m]")
     @In
     public Double pLowerThresWaterdepth = 0.5;
 
-    @Description("The lower threshold value for the product of water depth and velocity.")
+    @Description(OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION)
     @Unit("[m2/s]")
     @In
     public Double pLowerThresVelocityWaterdepth = 0.5;
 
-    @Description("The map of flooding intensity.")
+    @Description(OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION)
     @Out
     public GridCoverage2D outIntensity = null;
 

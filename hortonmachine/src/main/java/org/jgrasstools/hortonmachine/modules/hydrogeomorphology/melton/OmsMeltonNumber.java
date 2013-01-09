@@ -18,6 +18,18 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.melton;
 
 import static java.lang.Math.sqrt;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_fId_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_inFans_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMELTONNUMBER_outMelton_DESCRIPTION;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -37,7 +49,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
@@ -50,28 +61,28 @@ import org.opengis.feature.type.AttributeType;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Melton number calculator")
-@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
-@Keywords("Melton, Raster, Vector")
-@Name("meltonnum")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSMELTONNUMBER_DESCRIPTION)
+@Author(name = OMSMELTONNUMBER_AUTHORNAMES, contact = OMSMELTONNUMBER_AUTHORCONTACTS)
+@Keywords(OMSMELTONNUMBER_KEYWORDS)
+@Label(OMSMELTONNUMBER_LABEL)
+@Name(OMSMELTONNUMBER_NAME)
+@Status(OMSMELTONNUMBER_STATUS)
+@License(OMSMELTONNUMBER_LICENSE)
 public class OmsMeltonNumber extends JGTModel {
 
-    @Description("The map of elevation.")
+    @Description(OMSMELTONNUMBER_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of polygons of the fans.")
+    @Description(OMSMELTONNUMBER_inFans_DESCRIPTION)
     @In
     public SimpleFeatureCollection inFans = null;
 
-    @Description("The fields of the polygons containing the id of the polygon.")
+    @Description(OMSMELTONNUMBER_fId_DESCRIPTION)
     @In
     public String fId;
 
-    @Description("The Melton numbers per id [id, num].")
+    @Description(OMSMELTONNUMBER_outMelton_DESCRIPTION)
     @Out
     public String[][] outMelton = null;
 

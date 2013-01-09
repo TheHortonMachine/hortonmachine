@@ -17,6 +17,26 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_UI;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inShortradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inSwe_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inVegetation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_inWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_outEtp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPENMANETP_tCurrent_DESCRIPTION;
+
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,6 +48,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -40,13 +61,14 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Calculates the daily evapotranspiration using the combination equation.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Evapotranspiration, Penman, Hydrologic")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-@UI(JGTConstants.HIDE_UI_HINT)
+@Description(OMSPENMANETP_DESCRIPTION)
+@Author(name = OMSPENMANETP_AUTHORNAMES, contact = OMSPENMANETP_AUTHORCONTACTS)
+@Keywords(OMSPENMANETP_KEYWORDS)
+@Label(OMSPENMANETP_LABEL)
+@Name(OMSPENMANETP_NAME)
+@Status(OMSPENMANETP_STATUS)
+@License(OMSPENMANETP_LICENSE)
+@UI(OMSPENMANETP_UI)
 public class OmsPenmanEtp extends JGTModel {
 
     // @Description("Baricenter elevation of the HillSlope for every basin on which to calculate.")
@@ -54,45 +76,45 @@ public class OmsPenmanEtp extends JGTModel {
     // @In
     // public HashMap<Integer, double[]> inElevations;
 
-    @Description("The vegetation library for every basin.")
+    @Description(OMSPENMANETP_inVegetation_DESCRIPTION)
     @In
     public HashMap<Integer, VegetationLibraryRecord> inVegetation;
 
-    @Description("Net radiation.")
+    @Description(OMSPENMANETP_inNetradiation_DESCRIPTION)
     @Unit("W/m2")
     @In
     public HashMap<Integer, double[]> inNetradiation;
 
-    @Description("Shortwave net radiation.")
+    @Description(OMSPENMANETP_inShortradiation_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inShortradiation;
 
-    @Description("The air temperature data.")
+    @Description(OMSPENMANETP_inTemp_DESCRIPTION)
     @Unit("C")
     @In
     public HashMap<Integer, double[]> inTemp;
 
-    @Description("The humidity data.")
+    @Description(OMSPENMANETP_inRh_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inRh;
 
-    @Description("The windspeed data.")
+    @Description(OMSPENMANETP_inWind_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inWind;
 
-    @Description("The pressure data.")
+    @Description(OMSPENMANETP_inPressure_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inPressure;
 
-    @Description("The snow water equivalent data.")
+    @Description(OMSPENMANETP_inSwe_DESCRIPTION)
     @In
     public HashMap<Integer, double[]> inSwe;
 
-    @Description("The current timestamp (format: yyyy-MM-dd HH:mm ).")
+    @Description(OMSPENMANETP_tCurrent_DESCRIPTION)
     @In
     public String tCurrent;
 
-    @Description("Daily evapotranspiration.")
+    @Description(OMSPENMANETP_outEtp_DESCRIPTION)
     @Unit("mm/day")
     @Out
     public HashMap<Integer, double[]> outEtp;

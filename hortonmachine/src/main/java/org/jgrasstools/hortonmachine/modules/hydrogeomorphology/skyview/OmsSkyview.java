@@ -24,6 +24,16 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcInverseSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.calcNormalSunVector;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.scalarProduct;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_inElev_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSKYVIEW_outSky_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -33,9 +43,7 @@ import java.util.HashMap;
 import javax.media.jai.RasterFactory;
 
 import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,28 +54,24 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the skyview factor.")
-@Documentation("OmsSkyview.html")
-@Author(name = "Daniele Andreis and Riccardo Rigon", contact = "http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Hydrology, Radiation, OmsInsolation, OmsHillshade")
-@Bibliography("Corripio, J. G.: 2003," + " Vectorial algebra algorithms for calculating terrain parameters"
-        + "from DEMs and the position of the sun for solar radiation modelling in mountainous terrain"
-        + ", International Journal of Geographical Information Science 17(1), 1–23.")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@Name("skyview")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSKYVIEW_DESCRIPTION)
+@Author(name = OMSSKYVIEW_AUTHORNAMES, contact = OMSSKYVIEW_AUTHORCONTACTS)
+@Keywords(OMSSKYVIEW_KEYWORDS)
+@Label(OMSSKYVIEW_LABEL)
+@Name(OMSSKYVIEW_NAME)
+@Status(OMSSKYVIEW_STATUS)
+@License(OMSSKYVIEW_LICENSE)
 public class OmsSkyview extends JGTModel {
-    @Description("The map of the elevation.")
+
+    @Description(OMSSKYVIEW_inElev_DESCRIPTION)
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The map of skyview factor.")
+    @Description(OMSSKYVIEW_outSky_DESCRIPTION)
     @Out
     public GridCoverage2D outSky;
 

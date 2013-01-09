@@ -19,6 +19,28 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
 import static java.lang.Math.exp;
 import static java.lang.Math.pow;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_UI;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultMaxTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultMinTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_defaultWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inMaxTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inMinTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_inWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPDAILY_outFaoEtp_DESCRIPTION;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -31,86 +53,87 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Calculates evapotranspiration at daily timestep.")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Evapotranspiration, Hydrologic")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@UI(JGTConstants.ITERATOR_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSFAOETPDAILY_DESCRIPTION)
+@Author(name = OMSFAOETPDAILY_AUTHORNAMES, contact = OMSFAOETPDAILY_AUTHORCONTACTS)
+@Keywords(OMSFAOETPDAILY_KEYWORDS)
+@Label(OMSFAOETPDAILY_LABEL)
+@Name(OMSFAOETPDAILY_NAME)
+@Status(OMSFAOETPDAILY_STATUS)
+@License(OMSFAOETPDAILY_LICENSE)
+@UI(OMSFAOETPDAILY_UI)
 public class OmsFaoEtpDaily extends JGTModel {
 
-    @Description("The net Radiation at the grass surface in W/m2 for the current day.")
+    @Description(OMSFAOETPDAILY_inNetradiation_DESCRIPTION)
     @In
     @Unit("MJ m-2 day-1")
     public HashMap<Integer, double[]> inNetradiation;
 
-    @Description("The net Radiation default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultNetradiation_DESCRIPTION)
     @In
     @Unit("MJ m-2 day-1")
     public double defaultNetradiation = 2.0;
 
-    @Description("The average daily wind speed.")
+    @Description(OMSFAOETPDAILY_inWind_DESCRIPTION)
     @In
     @Unit("m s-1")
     public HashMap<Integer, double[]> inWind;
 
-    @Description("The wind default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultWind_DESCRIPTION)
     @In
     @Unit("m s-1")
     public double defaultWind = 2.0;
 
-    @Description("The maximum daily air temperature.")
+    @Description(OMSFAOETPDAILY_inMaxTemp_DESCRIPTION)
     @In
     @Unit("C")
     public HashMap<Integer, double[]> inMaxTemp;
 
-    @Description("The minimum daily air temperature.")
+    @Description(OMSFAOETPDAILY_inMinTemp_DESCRIPTION)
     @In
     @Unit("C")
     public HashMap<Integer, double[]> inMinTemp;
 
-    @Description("The max temperature default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultMaxTemp_DESCRIPTION)
     @In
     @Unit("C")
     public double defaultMaxTemp = 15.0;
 
-    @Description("The min temperature default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultMinTemp_DESCRIPTION)
     @In
     @Unit("C")
     public double defaultMinTemp = 0.0;
 
-    @Description("The average air daily relative humidity.")
+    @Description(OMSFAOETPDAILY_inRh_DESCRIPTION)
     @In
     @Unit("%")
     public HashMap<Integer, double[]> inRh;
 
-    @Description("The humidity default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultRh_DESCRIPTION)
     @In
     @Unit("%")
     public double defaultRh = 70.0;
 
-    @Description("The average atmospheric daily air pressure in hPa.")
+    @Description(OMSFAOETPDAILY_inPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public HashMap<Integer, double[]> inPressure;
 
-    @Description("The pressure default value in case of missing data.")
+    @Description(OMSFAOETPDAILY_defaultPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public double defaultPressure = 100.0;
 
     // TODO Add the elevation value in case of missing P data
 
-    @Description("The reference evapotranspiration.")
+    @Description(OMSFAOETPDAILY_outFaoEtp_DESCRIPTION)
     @Unit("mm day-1")
     @Out
     public HashMap<Integer, double[]> outFaoEtp;
@@ -159,7 +182,8 @@ public class OmsFaoEtpDaily extends JGTModel {
         }
     }
 
-    private double compute( double netradiation, double wind, double maxtemperature, double mintemperature, double rh, double pressure ) {
+    private double compute( double netradiation, double wind, double maxtemperature, double mintemperature, double rh,
+            double pressure ) {
 
         // Computation of Delta [KPa °C-1]
         double meanTemperature = (maxtemperature + mintemperature) / 2.0;

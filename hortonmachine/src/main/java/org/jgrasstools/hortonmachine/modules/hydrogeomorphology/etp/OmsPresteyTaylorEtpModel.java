@@ -18,6 +18,29 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_UI;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_fId_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -25,7 +48,6 @@ import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -37,87 +59,87 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-@Description("Calculates evapotranspiration based on the Prestey-Taylor model.")
-@Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Evapotranspiration, Hydrologic")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@UI(JGTConstants.ITERATOR_UI_HINT)
-@Name("ptetp")
-@Documentation("OmsPresteyTaylorEtpModel.html")
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSPRESTEYTAYLORETPMODEL_DESCRIPTION)
+@Author(name = OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES, contact = OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS)
+@Keywords(OMSPRESTEYTAYLORETPMODEL_KEYWORDS)
+@Label(OMSPRESTEYTAYLORETPMODEL_LABEL)
+@Name(OMSPRESTEYTAYLORETPMODEL_NAME)
+@Status(OMSPRESTEYTAYLORETPMODEL_STATUS)
+@License(OMSPRESTEYTAYLORETPMODEL_LICENSE)
+@UI(OMSPRESTEYTAYLORETPMODEL_UI)
 public class OmsPresteyTaylorEtpModel extends JGTModel {
-    @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
+
+    @Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
     @In
     @Unit("Watt m-2 ")
     public HashMap<Integer, double[]> inNetradiation;
 
-    @Description("The net Radiation default value in case of missing data.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
     @In
     @Unit("Watt m-2")
     public double pDailyDefaultNetradiation = 300.0;
 
-    @Description("The net Radiation default value in case of missing data.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION)
     @In
     @Unit("Watt m-2")
     public double pHourlyDefaultNetradiation = 100.0;
 
-    @Description("Switch that defines if it is hourly.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION)
     @In
     @Unit("")
     public boolean doHourly;
 
-    @Description("The mean hourly air temperature.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
     @In
     @Unit("C")
     public HashMap<Integer, double[]> inTemp;
 
-    @Description("The alpha.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
     @In
     @Unit("m")
     public double pAlpha = 0;
 
-    @Description("The g morning.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
     @In
     @Unit("")
     public double pGmorn = 0;
-    
-    @Description("The g nigth.")
+
+    @Description(OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION)
     @In
     @Unit("")
     public double pGnight = 0;
 
-    @Description("The temperature default value in case of missing data.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION)
     @In
     @Unit("C")
     public double defaultTemp = 15.0;
 
-    @Description("The atmospheric pressure in KPa.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public HashMap<Integer, double[]> inPressure;
 
-    @Description("The pressure default value in case of missing data.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public double defaultPressure = 100.0;
 
-    @Description("The current time.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION)
     @In
     @Unit("C")
     public String time;
-    @Description("Station id field.")
+
+    @Description(OMSPRESTEYTAYLORETPMODEL_fId_DESCRIPTION)
     @In
     public String fId = "ID";
 
-    @Description("The reference evapotranspiration.")
+    @Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
     @Unit("mm hour-1")
     @Out
     public HashMap<Integer, double[]> outPTEtp;
@@ -125,7 +147,7 @@ public class OmsPresteyTaylorEtpModel extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inTemp);
-        
+
         outPTEtp = new HashMap<Integer, double[]>();
         Set<Entry<Integer, double[]>> entrySet = inTemp.entrySet();
         for( Entry<Integer, double[]> entry : entrySet ) {

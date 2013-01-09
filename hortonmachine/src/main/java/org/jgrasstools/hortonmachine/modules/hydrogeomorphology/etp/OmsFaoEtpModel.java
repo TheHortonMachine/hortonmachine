@@ -17,6 +17,28 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_UI;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_defaultNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_defaultPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_defaultRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_defaultTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_defaultWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_fId_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_inNetradiation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_inPressure_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_inRh_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_inTemp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_inWind_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFAOETPMODEL_outFaoEtp_DESCRIPTION;
+
 import java.util.HashMap;
 
 import oms3.annotations.Author;
@@ -26,6 +48,7 @@ import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
@@ -36,72 +59,74 @@ import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("Calculates evapotranspiration.")
-@Author(name = "Giuseppe Formetta, Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Evapotranspiration, Hydrologic")
-@Label(JGTConstants.HYDROGEOMORPHOLOGY)
-@UI(JGTConstants.ITERATOR_UI_HINT)
-@Status(Status.EXPERIMENTAL)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSFAOETPMODEL_DESCRIPTION)
+@Author(name = OMSFAOETPMODEL_AUTHORNAMES, contact = OMSFAOETPMODEL_AUTHORCONTACTS)
+@Keywords(OMSFAOETPMODEL_KEYWORDS)
+@Label(OMSFAOETPMODEL_LABEL)
+@Name(OMSFAOETPMODEL_NAME)
+@Status(OMSFAOETPMODEL_STATUS)
+@License(OMSFAOETPMODEL_LICENSE)
+@UI(OMSFAOETPMODEL_UI)
 public class OmsFaoEtpModel extends JGTModel {
+
+    @Description(OMSFAOETPMODEL_inNetradiation_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
-    @Description("The net Radiation at the grass surface in W/m2 for the current hour.")
     @In
     @Unit("MJ m-2 hour-1")
     public String inNetradiation;
 
-    @Description("The net Radiation default value in case of missing data.")
+    @Description(OMSFAOETPMODEL_defaultNetradiation_DESCRIPTION)
     @In
     @Unit("MJ m-2 hour-1")
     public double defaultNetradiation = 2.0;
 
+    @Description(OMSFAOETPMODEL_inWind_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
-    @Description("The average hourly wind speed.")
     @In
     @Unit("m s-1")
     public String inWind;
 
-    @Description("The wind default value in case of missing data.")
+    @Description(OMSFAOETPMODEL_defaultWind_DESCRIPTION)
     @In
     @Unit("m s-1")
     public double defaultWind = 2.0;
 
-    @Description("The mean hourly air temperature.")
+    @Description(OMSFAOETPMODEL_inTemp_DESCRIPTION)
     @In
     @Unit("C")
     public String inTemp;
 
-    @Description("The temperature default value in case of missing data.")
+    @Description(OMSFAOETPMODEL_defaultTemp_DESCRIPTION)
     @In
     @Unit("C")
     public double defaultTemp = 15.0;
 
-    @Description("The average air hourly relative humidity.")
+    @Description(OMSFAOETPMODEL_inRh_DESCRIPTION)
     @In
     @Unit("%")
     public String inRh;
 
-    @Description("The humidity default value in case of missing data.")
+    @Description(OMSFAOETPMODEL_defaultRh_DESCRIPTION)
     @In
     @Unit("%")
     public double defaultRh = 70.0;
 
-    @Description("The atmospheric pressure in hPa.")
+    @Description(OMSFAOETPMODEL_inPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public String inPressure;
 
-    @Description("The pressure default value in case of missing data.")
+    @Description(OMSFAOETPMODEL_defaultPressure_DESCRIPTION)
     @In
     @Unit("KPa")
     public double defaultPressure = 100.0;
 
-    @Description("Station id field.")
+    @Description(OMSFAOETPMODEL_fId_DESCRIPTION)
     @In
     public String fId = "ID";
 
+    @Description(OMSFAOETPMODEL_outFaoEtp_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Description("The reference evapotranspiration.")
     @Unit("mm hour-1")
     @Out
     public String outFaoEtp;
