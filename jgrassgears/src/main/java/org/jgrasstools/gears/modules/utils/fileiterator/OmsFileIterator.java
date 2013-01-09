@@ -17,6 +17,23 @@
  */
 package org.jgrasstools.gears.modules.utils.fileiterator;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_fileFilter_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_filesList_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_inFolder_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_outCurrentfile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pCode_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pRegex_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_pathsList_DESCRIPTION;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
@@ -24,6 +41,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
@@ -42,42 +60,43 @@ import org.jgrasstools.gears.utils.files.FileTraversal;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-@Description("A module that iterates over files in a folder")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Iterator, File")
-@Label(JGTConstants.LIST_READER)
-@Status(Status.DRAFT)
-@Name("fileiterator")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSFILEITERATOR_DESCRIPTION)
+@Documentation(OMSFILEITERATOR_DOCUMENTATION)
+@Author(name = OMSFILEITERATOR_AUTHORNAMES, contact = OMSFILEITERATOR_AUTHORCONTACTS)
+@Keywords(OMSFILEITERATOR_KEYWORDS)
+@Label(OMSFILEITERATOR_LABEL)
+@Name(OMSFILEITERATOR_NAME)
+@Status(OMSFILEITERATOR_STATUS)
+@License(OMSFILEITERATOR_LICENSE)
 public class OmsFileIterator extends JGTModel {
 
-    @Description("The folder on which to iterate")
+    @Description(OMSFILEITERATOR_inFolder_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
-    @Description("Regular expression to match the file names.")
+    @Description(OMSFILEITERATOR_pRegex_DESCRIPTION)
     @In
     public String pRegex = null;
 
-    @Description("The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.")
+    @Description(OMSFILEITERATOR_pCode_DESCRIPTION)
     @UI(JGTConstants.CRS_UI_HINT)
     @In
     public String pCode;
 
-    @Description("An optional file filter (used when developing).")
+    @Description(OMSFILEITERATOR_fileFilter_DESCRIPTION)
     @In
     public FileFilter fileFilter = null;
 
-    @Description("The current file of the list of files in the folder.")
+    @Description(OMSFILEITERATOR_outCurrentfile_DESCRIPTION)
     @Out
     public String outCurrentfile = null;
 
-    @Description("All the files that were found matching.")
+    @Description(OMSFILEITERATOR_filesList_DESCRIPTION)
     @Out
     public List<File> filesList = null;
 
-    @Description("All the file path that were found matching.")
+    @Description(OMSFILEITERATOR_pathsList_DESCRIPTION)
     @Out
     public List<String> pathsList = null;
 

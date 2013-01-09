@@ -17,11 +17,24 @@
  */
 package org.jgrasstools.gears.modules.utils.featureslist;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_inFiles_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSFEATURESLISTER_outFC_DESCRIPTION;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -37,21 +50,22 @@ import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("A module that reads vectors.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Iterator, Vector")
-@Label(JGTConstants.LIST_READER)
-@Status(Status.CERTIFIED)
-@Name("vectorlister")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSFEATURESLISTER_DESCRIPTION)
+@Documentation(OMSFEATURESLISTER_DOCUMENTATION)
+@Author(name = OMSFEATURESLISTER_AUTHORNAMES, contact = OMSFEATURESLISTER_AUTHORCONTACTS)
+@Keywords(OMSFEATURESLISTER_KEYWORDS)
+@Label(OMSFEATURESLISTER_LABEL)
+@Name(OMSFEATURESLISTER_NAME)
+@Status(OMSFEATURESLISTER_STATUS)
+@License(OMSFEATURESLISTER_LICENSE)
 public class OmsFeaturesLister extends JGTModel {
 
-    @Description("The list of file from which to read features.")
+    @Description(OMSFEATURESLISTER_inFiles_DESCRIPTION)
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
 
-    @Description("All features read from the input files.")
+    @Description(OMSFEATURESLISTER_outFC_DESCRIPTION)
     @Out
     public List<SimpleFeatureCollection> outFC = null;
 

@@ -17,6 +17,27 @@
  */
 package org.jgrasstools.gears.modules.utils.coveragelist;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_fileNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_geodataNovalue_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_inFiles_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_outGC_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pCols_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pEast_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pNorth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pRows_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pSouth_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pWest_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pXres_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCOVERAGELISTER_pYres_DESCRIPTION;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.util.ArrayList;
@@ -24,6 +45,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,69 +61,70 @@ import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description("A module that reads rasters.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Iterator, Raster")
-@Label(JGTConstants.LIST_READER)
-@Status(Status.CERTIFIED)
-@Name("rasterlister")
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSCOVERAGELISTER_DESCRIPTION)
+@Documentation(OMSCOVERAGELISTER_DOCUMENTATION)
+@Author(name = OMSCOVERAGELISTER_AUTHORNAMES, contact = OMSCOVERAGELISTER_AUTHORCONTACTS)
+@Keywords(OMSCOVERAGELISTER_KEYWORDS)
+@Label(OMSCOVERAGELISTER_LABEL)
+@Name(OMSCOVERAGELISTER_NAME)
+@Status(OMSCOVERAGELISTER_STATUS)
+@License(OMSCOVERAGELISTER_LICENSE)
 public class OmsCoverageLister extends JGTModel {
 
-    @Description("The list of file from which to read rasters.")
+    @Description(OMSCOVERAGELISTER_inFiles_DESCRIPTION)
     @UI(JGTConstants.FILESPATHLIST_UI_HINT)
     @In
     public List<String> inFiles;
 
-    @Description("The file novalue.")
+    @Description(OMSCOVERAGELISTER_fileNovalue_DESCRIPTION)
     @In
     public Double fileNovalue = -9999.0;
 
-    @Description("The novalue wanted in the raster.")
+    @Description(OMSCOVERAGELISTER_geodataNovalue_DESCRIPTION)
     @In
     public Double geodataNovalue = doubleNovalue;
 
-    @Description("The optional requested boundary north coordinate.")
+    @Description(OMSCOVERAGELISTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
     @In
     public Double pNorth = null;
 
-    @Description("The optional requested boundary south coordinate.")
+    @Description(OMSCOVERAGELISTER_pSouth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
     @In
     public Double pSouth = null;
 
-    @Description("The optional requested boundary west coordinate.")
+    @Description(OMSCOVERAGELISTER_pWest_DESCRIPTION)
     @UI(JGTConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
 
-    @Description("The optional requested boundary east coordinate.")
+    @Description(OMSCOVERAGELISTER_pEast_DESCRIPTION)
     @UI(JGTConstants.PROCESS_EAST_UI_HINT)
     @In
     public Double pEast = null;
 
-    @Description("The optional requested resolution in x.")
+    @Description(OMSCOVERAGELISTER_pXres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_XRES_UI_HINT)
     @In
     public Double pXres = null;
 
-    @Description("The optional requested resolution in y.")
+    @Description(OMSCOVERAGELISTER_pYres_DESCRIPTION)
     @UI(JGTConstants.PROCESS_YRES_UI_HINT)
     @In
     public Double pYres = null;
 
-    @Description("The optional requested numer of rows.")
+    @Description(OMSCOVERAGELISTER_pRows_DESCRIPTION)
     @UI(JGTConstants.PROCESS_ROWS_UI_HINT)
     @In
     public Integer pRows = null;
 
-    @Description("The optional requested numer of cols.")
+    @Description(OMSCOVERAGELISTER_pCols_DESCRIPTION)
     @UI(JGTConstants.PROCESS_COLS_UI_HINT)
     @In
     public Integer pCols = null;
 
-    @Description("All rasters matching read from the input files.")
+    @Description(OMSCOVERAGELISTER_outGC_DESCRIPTION)
     @Out
     public List<GridCoverage2D> outGC = null;
 
