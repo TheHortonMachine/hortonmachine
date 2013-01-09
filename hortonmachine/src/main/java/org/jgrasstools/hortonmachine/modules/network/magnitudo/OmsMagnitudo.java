@@ -21,6 +21,16 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.isSourcePixel;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMAGNITUDO_outMag_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -31,9 +41,9 @@ import javax.media.jai.iterator.RandomIterFactory;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
@@ -41,26 +51,24 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.")
-@Author(name = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Label(JGTConstants.NETWORK)
-@Documentation("OmsMagnitudo.html")
-@Status(Status.CERTIFIED)
-@Name("magnitudo")
-@License("GPL3")
+@Description(OMSMAGNITUDO_DESCRIPTION)
+@Author(name = OMSMAGNITUDO_AUTHORNAMES, contact = OMSMAGNITUDO_AUTHORCONTACTS)
+@Keywords(OMSMAGNITUDO_KEYWORDS)
+@Label(OMSMAGNITUDO_LABEL)
+@Name(OMSMAGNITUDO_NAME)
+@Status(OMSMAGNITUDO_STATUS)
+@License(OMSMAGNITUDO_LICENSE)
 public class OmsMagnitudo extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSMAGNITUDO_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-
-    @Description("The map of magnitudo.")
+    @Description(OMSMAGNITUDO_outMag_DESCRIPTION)
     @Out
     public GridCoverage2D outMag = null;
 

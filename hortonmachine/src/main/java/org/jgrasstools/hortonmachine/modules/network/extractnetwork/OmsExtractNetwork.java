@@ -24,6 +24,22 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_CONVERGENT;
 import static org.jgrasstools.gears.libs.modules.Variables.TCA_SLOPE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTc3_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_outNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pExp_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pMode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSEXTRACTNETWORK_pThres_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -34,7 +50,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -53,46 +68,45 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Extracts the raster network from an elevation model.")
-@Documentation("OmsExtractNetwork.html")
-@Author(name = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope")
-@Label(JGTConstants.NETWORK)
-@Name("extractnet")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSEXTRACTNETWORK_DESCRIPTION)
+@Author(name = OMSEXTRACTNETWORK_AUTHORNAMES, contact = OMSEXTRACTNETWORK_AUTHORCONTACTS)
+@Keywords(OMSEXTRACTNETWORK_KEYWORDS)
+@Label(OMSEXTRACTNETWORK_LABEL)
+@Name(OMSEXTRACTNETWORK_NAME)
+@Status(OMSEXTRACTNETWORK_STATUS)
+@License(OMSEXTRACTNETWORK_LICENSE)
 public class OmsExtractNetwork extends JGTModel {
 
-    @Description("The map of total contributing areas.")
+    @Description(OMSEXTRACTNETWORK_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The optional map of flowdirections (needed for case with slope or topographic classes).")
+    @Description(OMSEXTRACTNETWORK_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The optional map of slope.")
+    @Description(OMSEXTRACTNETWORK_inSlope_DESCRIPTION)
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The optional map of aggregated topographic classes.")
+    @Description(OMSEXTRACTNETWORK_inTc3_DESCRIPTION)
     @In
     public GridCoverage2D inTc3 = null;
 
-    @Description("The threshold on the map.")
+    @Description(OMSEXTRACTNETWORK_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
 
-    @Description("The thresholding mode (default is on tca).")
+    @Description(OMSEXTRACTNETWORK_pMode_DESCRIPTION)
     @UI("combo:" + TCA + "," + TCA_SLOPE + "," + TCA_CONVERGENT)
     @In
     public String pMode = TCA;
 
-    @Description("OmsTca exponent for the mode with slope or topographic classes (default = 0.5).")
+    @Description(OMSEXTRACTNETWORK_pExp_DESCRIPTION)
     @In
     public double pExp = 0.5;
 
-    @Description("The extracted network raster.")
+    @Description(OMSEXTRACTNETWORK_outNet_DESCRIPTION)
     @Out
     public GridCoverage2D outNet = null;
 

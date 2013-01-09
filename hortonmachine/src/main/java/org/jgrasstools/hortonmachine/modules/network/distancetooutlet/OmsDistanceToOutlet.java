@@ -17,6 +17,18 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.distancetooutlet;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_outDistance_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSDISTANCETOOUTLET_pMode_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -27,7 +39,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,28 +56,28 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the projection on the plane of the distance of each pixel from the outlet.")
-@Documentation("OmsDistanceToOutlet.html")
-@Author(name = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo")
-@Keywords("Geomorphology, OmsDrainDir")
-@Label(JGTConstants.NETWORK)
-@Name("d2o")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSDISTANCETOOUTLET_DESCRIPTION)
+@Author(name = OMSDISTANCETOOUTLET_AUTHORNAMES, contact = OMSDISTANCETOOUTLET_AUTHORCONTACTS)
+@Keywords(OMSDISTANCETOOUTLET_KEYWORDS)
+@Label(OMSDISTANCETOOUTLET_LABEL)
+@Name(OMSDISTANCETOOUTLET_NAME)
+@Status(OMSDISTANCETOOUTLET_STATUS)
+@License(OMSDISTANCETOOUTLET_LICENSE)
 public class OmsDistanceToOutlet extends JGTModel {
-    @Description("The map of depitted elevation, if it's null the models work in 2d mode.")
+
+    @Description(OMSDISTANCETOOUTLET_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
-    
-    @Description("The map of flowdirections.")
+
+    @Description(OMSDISTANCETOOUTLET_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
-    
-    @Description("Processing mode, 0= simple mode in meter, 1 = topological distance.")
+
+    @Description(OMSDISTANCETOOUTLET_pMode_DESCRIPTION)
     @In
     public int pMode;
-    
-    @Description("The map of the distance to the outlet.")
+
+    @Description(OMSDISTANCETOOUTLET_outDistance_DESCRIPTION)
     @Out
     public GridCoverage2D outDistance = null;
 

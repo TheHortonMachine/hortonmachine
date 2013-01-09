@@ -20,6 +20,18 @@ package org.jgrasstools.hortonmachine.modules.network.hacklength;
 import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_inElevation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSHACKLENGTH_outHacklength_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -31,7 +43,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,38 +55,34 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Assigned a point in a basin calculates"
-        + " the distance from the watershed measured along the net (until it exists)"
-        + " and then, again from valley upriver, along the maximal slope.")
-@Documentation("OmsHackLength.html")
-@Author(name = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea,  Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com")
-@Keywords("Network, HackLength3D, HackStream")
-@Label(JGTConstants.NETWORK)
-@Name("hacklength")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSHACKLENGTH_DESCRIPTION)
+@Author(name = OMSHACKLENGTH_AUTHORNAMES, contact = OMSHACKLENGTH_AUTHORCONTACTS)
+@Keywords(OMSHACKLENGTH_KEYWORDS)
+@Label(OMSHACKLENGTH_LABEL)
+@Name(OMSHACKLENGTH_NAME)
+@Status(OMSHACKLENGTH_STATUS)
+@License(OMSHACKLENGTH_LICENSE)
 public class OmsHackLength extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSHACKLENGTH_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of tca.")
+    @Description(OMSHACKLENGTH_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The optional map of the elevation to work in 3D mode.")
+    @Description(OMSHACKLENGTH_inElevation_DESCRIPTION)
     @In
     public GridCoverage2D inElevation = null;
 
-    @Description("The map of hack lengths.")
+    @Description(OMSHACKLENGTH_outHacklength_DESCRIPTION)
     @Out
     public GridCoverage2D outHacklength = null;
 

@@ -19,6 +19,17 @@ package org.jgrasstools.hortonmachine.modules.network.strahler;
 
 import static java.lang.Math.max;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLER_outStrahler_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -47,24 +58,24 @@ import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
-@Description("Calculates the OmsStrahler order on a basin.")
-@Author(name = "Erica Ghesla, Antonello Andrea, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Network, OmsStrahler")
-@Label(JGTConstants.NETWORK)
-@Name("strahler")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSTRAHLER_DESCRIPTION)
+@Author(name = OMSSTRAHLER_AUTHORNAMES, contact = OMSSTRAHLER_AUTHORCONTACTS)
+@Keywords(OMSSTRAHLER_KEYWORDS)
+@Label(OMSSTRAHLER_LABEL)
+@Name(OMSSTRAHLER_NAME)
+@Status(OMSSTRAHLER_STATUS)
+@License(OMSSTRAHLER_LICENSE)
 public class OmsStrahler extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSSTRAHLER_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of the network.")
+    @Description(OMSSTRAHLER_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The map of the strahler order.")
+    @Description(OMSSTRAHLER_outStrahler_DESCRIPTION)
     @Out
     public GridCoverage2D outStrahler = null;
 

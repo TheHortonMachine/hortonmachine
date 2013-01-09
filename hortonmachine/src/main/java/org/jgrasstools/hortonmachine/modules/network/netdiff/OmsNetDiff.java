@@ -19,6 +19,18 @@ package org.jgrasstools.hortonmachine.modules.network.netdiff;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_inRaster_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_inStream_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETDIFF_outDiff_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
@@ -29,7 +41,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,41 +51,39 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-@Description("Calculates the difference between the value of a quantity in one point and the value of the same quantity in another point across a basin")
-@Author(name = "Daniele Andreis, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo")
-@Label(JGTConstants.NETWORK)
-@Documentation("OmsNetDiff.html")
-@Keywords("Network, Pitfiller, OmsDrainDir, OmsFlowDirections")
-@Name("netdiff")
-@Status(Status.CERTIFIED)
-@License("GPL3")
+@Description(OMSNETDIFF_DESCRIPTION)
+@Author(name = OMSNETDIFF_AUTHORNAMES, contact = OMSNETDIFF_AUTHORCONTACTS)
+@Keywords(OMSNETDIFF_KEYWORDS)
+@Label(OMSNETDIFF_LABEL)
+@Name(OMSNETDIFF_NAME)
+@Status(OMSNETDIFF_STATUS)
+@License(OMSNETDIFF_LICENSE)
 public class OmsNetDiff extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSNETDIFF_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of the stream.")
+    @Description(OMSNETDIFF_inStream_DESCRIPTION)
     @In
     public GridCoverage2D inStream = null;
 
-    @Description("The map of to evaluate the difference.")
+    @Description(OMSNETDIFF_inRaster_DESCRIPTION)
     @In
     public GridCoverage2D inRaster = null;
 
-    @Description("The map of difference.")
+    @Description(OMSNETDIFF_outDiff_DESCRIPTION)
     @Out
     public GridCoverage2D outDiff = null;
-    
+
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
+
     @Execute
     public void process() {
         if (!concatOr(outDiff == null, doReset)) {
@@ -141,8 +150,8 @@ public class OmsNetDiff extends JGTModel {
             }
             pm.worked(1);
         }
-        WritableRaster diffImage = CoverageUtilities.createDoubleWritableRaster(cols, rows,
-                null, inFlow.getRenderedImage().getSampleModel(), null);
+        WritableRaster diffImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, inFlow.getRenderedImage()
+                .getSampleModel(), null);
         WritableRandomIter diffIter = RandomIterFactory.createWritable(diffImage, null);
         // Second step: It calculate the difference among the first and the last
         // point of a link
@@ -156,11 +165,9 @@ public class OmsNetDiff extends JGTModel {
                     if (!isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))) {
                         // call go_downstream in FluidUtils
                         ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0));
-                        while( segna[flow[0]][flow[1]] < 1
-                                && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                        while( segna[flow[0]][flow[1]] < 1 && !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i,
-                                        j, 0) ) {
+                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i, j, 0) ) {
                             oldflow[0] = flow[0];
                             oldflow[1] = flow[1];
                             if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -180,15 +187,13 @@ public class OmsNetDiff extends JGTModel {
                             return null;
                         while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
                                 && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
-                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i,
-                                        j, 0) ) {
+                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i, j, 0) ) {
                             diffIter.setSample(flow[0], flow[1], 0, diffIter.getSampleDouble(i, j, 0));
                             if (!ModelsEngine.go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return null;
                         }
                         if (flowIter.getSampleDouble(flow[0], flow[1], 0) == 10
-                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i,
-                                        j, 0)) {
+                                && streamIter.getSampleDouble(flow[0], flow[1], 0) == streamIter.getSampleDouble(i, j, 0)) {
                             diffIter.setSample(flow[0], flow[1], 0, diffIter.getSampleDouble(i, j, 0));
                         }
                     }

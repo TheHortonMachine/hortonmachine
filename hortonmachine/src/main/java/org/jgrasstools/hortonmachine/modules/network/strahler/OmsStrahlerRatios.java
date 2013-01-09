@@ -17,6 +17,21 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.strahler;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_inStrahler_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_outArea_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_outBisfurcation_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSTRAHLERRATIOS_outLength_DESCRIPTION;
+
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,14 +51,10 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -52,40 +63,36 @@ import org.jgrasstools.hortonmachine.modules.demmanipulation.wateroutlet.OmsWate
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Calculates the OmsStrahler ratios.")
-@Author(name = "Antonello Andrea, Silvia Franceschi", contact = "http://www.hydrologis.com")
-@Keywords("Network, OmsStrahler")
-@Label(JGTConstants.NETWORK)
-@Name("strahlerratio")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSSTRAHLERRATIOS_DESCRIPTION)
+@Author(name = OMSSTRAHLERRATIOS_AUTHORNAMES, contact = OMSSTRAHLERRATIOS_AUTHORCONTACTS)
+@Keywords(OMSSTRAHLERRATIOS_KEYWORDS)
+@Label(OMSSTRAHLERRATIOS_LABEL)
+@Name(OMSSTRAHLERRATIOS_NAME)
+@Status(OMSSTRAHLERRATIOS_STATUS)
+@License(OMSSTRAHLERRATIOS_LICENSE)
 public class OmsStrahlerRatios extends JGTModel {
 
-    @Description("The map of flowdirections.")
+    @Description(OMSSTRAHLERRATIOS_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of OmsStrahler.")
+    @Description(OMSSTRAHLERRATIOS_inStrahler_DESCRIPTION)
     @In
     public GridCoverage2D inStrahler = null;
 
-    @Description("The map of the network.")
+    @Description(OMSSTRAHLERRATIOS_inNet_DESCRIPTION)
     @In
     public SimpleFeatureCollection inNet = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new LogProgressMonitor();
-
-    @Description("The bifurcation ratio.")
+    @Description(OMSSTRAHLERRATIOS_outBisfurcation_DESCRIPTION)
     @Out
     public double outBisfurcation;
 
-    @Description("The area ratio.")
+    @Description(OMSSTRAHLERRATIOS_outArea_DESCRIPTION)
     @Out
     public double outArea;
 
-    @Description("The length ratio.")
+    @Description(OMSSTRAHLERRATIOS_outLength_DESCRIPTION)
     @Out
     public double outLength;
 
@@ -196,21 +203,21 @@ public class OmsStrahlerRatios extends JGTModel {
 
     }
 
-    public static void main( String[] args ) throws Exception {
-
-        String flow = "";
-        String strahler = "";
-        // String strahler = "";
-        String net = "";
-
-        OmsStrahlerRatios ratios = new OmsStrahlerRatios();
-        ratios.inFlow = OmsRasterReader.readRaster(flow);
-        ratios.inStrahler = OmsRasterReader.readRaster(strahler);
-        ratios.inNet = OmsVectorReader.readVector(net);
-        ratios.process();
-        System.out.println(ratios.outBisfurcation);
-        System.out.println(ratios.outLength);
-        System.out.println(ratios.outArea);
-    }
+    // public static void main( String[] args ) throws Exception {
+    //
+    // String flow = "";
+    // String strahler = "";
+    // // String strahler = "";
+    // String net = "";
+    //
+    // OmsStrahlerRatios ratios = new OmsStrahlerRatios();
+    // ratios.inFlow = OmsRasterReader.readRaster(flow);
+    // ratios.inStrahler = OmsRasterReader.readRaster(strahler);
+    // ratios.inNet = OmsVectorReader.readVector(net);
+    // ratios.process();
+    // System.out.println(ratios.outBisfurcation);
+    // System.out.println(ratios.outLength);
+    // System.out.println(ratios.outArea);
+    // }
 
 }

@@ -18,6 +18,20 @@
 package org.jgrasstools.hortonmachine.modules.network.networkattributes;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -56,36 +70,36 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
-@Description("Extracts network attributes and the vector network based on a raster network.")
-@Author(name = "Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope")
-@Label(JGTConstants.NETWORK)
-@Name("extractvectornet")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION)
+@Author(name = OMSNETWORKATTRIBUTESBUILDER_AUTHORNAMES, contact = OMSNETWORKATTRIBUTESBUILDER_AUTHORCONTACTS)
+@Keywords(OMSNETWORKATTRIBUTESBUILDER_KEYWORDS)
+@Label(OMSNETWORKATTRIBUTESBUILDER_LABEL)
+@Name(OMSNETWORKATTRIBUTESBUILDER_NAME)
+@Status(OMSNETWORKATTRIBUTESBUILDER_STATUS)
+@License(OMSNETWORKATTRIBUTESBUILDER_LICENSE)
 public class OmsNetworkAttributesBuilder extends JGTModel {
 
-    @Description("The network raster map.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of tca.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("Flag to also create the hack map.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION)
     @In
     public boolean doHack = false;
 
-    @Description("The vector of the network.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outNet = null;
 
-    @Description("The map of hack numbering.")
+    @Description(OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION)
     @Out
     public GridCoverage2D outHack = null;
 

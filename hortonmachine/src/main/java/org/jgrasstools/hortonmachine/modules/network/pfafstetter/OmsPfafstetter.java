@@ -21,6 +21,22 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.go_downstream;
 import static org.jgrasstools.gears.libs.modules.ModelsEngine.net2ShapeGeometries;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inChannel_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inChannelfeatures_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inHackstream_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inNetnum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_outPfaf_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPFAFSTETTER_pMode_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -36,7 +52,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -57,7 +72,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -71,59 +85,44 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.MultiLineString;
 
-/**
- * <p>
- * Usage: mode 1: h.pfafstetter --mode 1 --igrass-flow flow --igrass-hacks hacks --igrass-pit pit
- * --igrass-netnumber netnumber --igrass-channel channel --ishapefile-netshape filePath
- * --oshapefile-netshapeout filePath"
- * </p>
- * <p>
- * Usege mode 0: h.pfafstetter --mode 0 --igrass-flow flow --igrass-hacks hacks --igrass-pit pit
- * --igrass-netnumber netnumber --oshapefile-netshapeout filePath
- * </p>
- * 
- * @author Erica Ghesla - erica.ghesla@ing.unitn.it
- * @author Andrea Antonello - www.hydrologis.com
- */
-@Description("Creates a hierarchial form of the network.")
-@Author(name = "Erica Ghesla, Andrea Antonello, Franceschi Silvia", contact = "www.hydrologis.com")
-@Keywords("Network, OmsPfafstetter")
-@Label(JGTConstants.NETWORK)
-@Status(Status.EXPERIMENTAL)
-@Documentation("OmsPfafstetter.html")
-@Name("pfafstetter")
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSPFAFSTETTER_DESCRIPTION)
+@Author(name = OMSPFAFSTETTER_AUTHORNAMES, contact = OMSPFAFSTETTER_AUTHORCONTACTS)
+@Keywords(OMSPFAFSTETTER_KEYWORDS)
+@Label(OMSPFAFSTETTER_LABEL)
+@Name(OMSPFAFSTETTER_NAME)
+@Status(OMSPFAFSTETTER_STATUS)
+@License(OMSPFAFSTETTER_LICENSE)
 public class OmsPfafstetter extends JGTModel {
 
-    @Description("The map of pitfiller.")
+    @Description(OMSPFAFSTETTER_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
 
-    @Description("The map of flowdirections.")
+    @Description(OMSPFAFSTETTER_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of hackstream.")
+    @Description(OMSPFAFSTETTER_inHackstream_DESCRIPTION)
     @In
     public GridCoverage2D inHackstream = null;
 
-    @Description("The map of netnumbering.")
+    @Description(OMSPFAFSTETTER_inNetnum_DESCRIPTION)
     @In
     public GridCoverage2D inNetnum = null;
 
-    @Description("The map of channel numbering.")
+    @Description(OMSPFAFSTETTER_inChannel_DESCRIPTION)
     @In
     public GridCoverage2D inChannel = null;
 
-    @Description("The map of channel features.")
+    @Description(OMSPFAFSTETTER_inChannelfeatures_DESCRIPTION)
     @In
     public SimpleFeatureCollection inChannelfeatures = null;
 
-    @Description("The processing mode (0 = normal, 1 = with channel and channelfeatures map.")
+    @Description(OMSPFAFSTETTER_pMode_DESCRIPTION)
     @In
     public double pMode = 0;
 
-    @Description("The OmsPfafstetter feature collection of the network.")
+    @Description(OMSPFAFSTETTER_outPfaf_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPfaf = null;
 

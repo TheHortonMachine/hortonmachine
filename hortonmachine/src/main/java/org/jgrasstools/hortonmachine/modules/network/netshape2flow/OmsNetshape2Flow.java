@@ -18,6 +18,21 @@
 package org.jgrasstools.hortonmachine.modules.network.netshape2flow;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_fActive_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_fId_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_inGrid_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_outFlownet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_outNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_outProblems_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -30,7 +45,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,7 +52,6 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
-import oms3.annotations.Role;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -65,43 +78,40 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.MultiPoint;
 
-@Description("Transforms the network shape to a flow map.")
-@Documentation("OmsNetshape2Flow.html")
-@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
-@Keywords("Network, Flowdirections")
-@Label(JGTConstants.NETWORK)
-@Name("net2flow")
-@Status(Status.EXPERIMENTAL)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSNETSHAPE2FLOW_DESCRIPTION)
+@Author(name = OMSNETSHAPE2FLOW_AUTHORNAMES, contact = OMSNETSHAPE2FLOW_AUTHORCONTACTS)
+@Keywords(OMSNETSHAPE2FLOW_KEYWORDS)
+@Label(OMSNETSHAPE2FLOW_LABEL)
+@Name(OMSNETSHAPE2FLOW_NAME)
+@Status(OMSNETSHAPE2FLOW_STATUS)
+@License(OMSNETSHAPE2FLOW_LICENSE)
 public class OmsNetshape2Flow extends JGTModel {
 
-    @Description("The network features.")
+    @Description(OMSNETSHAPE2FLOW_inNet_DESCRIPTION)
     @In
     public SimpleFeatureCollection inNet = null;
 
-    @Description("The grid geometry of the region on which to create the output rasters.")
+    @Description(OMSNETSHAPE2FLOW_inGrid_DESCRIPTION)
     @In
     public GridGeometry2D inGrid = null;
 
-    @Role(Role.PARAMETER)
-    @Description("The field of the attributes table of the network flagging the feature as active.")
+    @Description(OMSNETSHAPE2FLOW_fActive_DESCRIPTION)
     @In
     public String fActive;
 
-    @Role(Role.PARAMETER)
-    @Description("The field of the attributes table of the network defining the id of the feature.")
+    @Description(OMSNETSHAPE2FLOW_fId_DESCRIPTION)
     @In
     public String fId;
 
-    @Description("The output flow map on the network pixels.")
+    @Description(OMSNETSHAPE2FLOW_outFlownet_DESCRIPTION)
     @Out
     public GridCoverage2D outFlownet = null;
 
-    @Description("The output network map.")
+    @Description(OMSNETSHAPE2FLOW_outNet_DESCRIPTION)
     @Out
     public GridCoverage2D outNet = null;
 
-    @Description("The problems features points.")
+    @Description(OMSNETSHAPE2FLOW_outProblems_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outProblems = null;
 

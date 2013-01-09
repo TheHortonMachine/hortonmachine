@@ -17,6 +17,24 @@
  */
 package org.jgrasstools.hortonmachine.modules.network.netnumbering;
 
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_fPointId_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inFlow_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inNet_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inPoints_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inTca_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outBasins_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outNetnum_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pMode_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pThres_DESCRIPTION;
+
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
@@ -29,7 +47,6 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -43,7 +60,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -54,48 +70,48 @@ import org.opengis.feature.type.AttributeType;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-@Description("Assigns the numbers to the network's links.")
-@Documentation("OmsNetNumbering.html")
-@Author(name = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo", contact = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon")
-@Keywords("Network, SplitSubbasins")
-@Label(JGTConstants.NETWORK)
-@Name("netnum")
-@Status(Status.CERTIFIED)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSNETNUMBERING_DESCRIPTION)
+@Author(name = OMSNETNUMBERING_AUTHORNAMES, contact = OMSNETNUMBERING_AUTHORCONTACTS)
+@Keywords(OMSNETNUMBERING_KEYWORDS)
+@Label(OMSNETNUMBERING_LABEL)
+@Name(OMSNETNUMBERING_NAME)
+@Status(OMSNETNUMBERING_STATUS)
+@License(OMSNETNUMBERING_LICENSE)
 public class OmsNetNumbering extends JGTModel {
-    @Description("The map of flowdirections.")
+
+    @Description(OMSNETNUMBERING_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
-    @Description("The map of total contributing area.")
+    @Description(OMSNETNUMBERING_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
 
-    @Description("The map of the network.")
+    @Description(OMSNETNUMBERING_inNet_DESCRIPTION)
     @In
     public GridCoverage2D inNet = null;
 
-    @Description("The monitoringpoints vector map.")
+    @Description(OMSNETNUMBERING_inPoints_DESCRIPTION)
     @In
     public SimpleFeatureCollection inPoints = null;
 
-    @Description("The running mode: 0: standard way (default); 1: with a threshold on TCA; 2: in a set of defined monitoring points")
+    @Description(OMSNETNUMBERING_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    @Description("Threshold value on tca map.")
+    @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
-    
-    @Description("The name of the node id field in mode 2.")
+
+    @Description(OMSNETNUMBERING_fPointId_DESCRIPTION)
     @In
     public String fPointId = null;
-    
-    @Description("The map of netnumbering")
+
+    @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
     @Out
     public GridCoverage2D outNetnum = null;
 
-    @Description("The map of subbasins")
+    @Description(OMSNETNUMBERING_outBasins_DESCRIPTION)
     @Out
     public GridCoverage2D outBasins = null;
 
@@ -170,11 +186,11 @@ public class OmsNetNumbering extends JGTModel {
             if (attributeVect == null || geomVect == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
             }
-            if(fPointId==null){
-            	throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this);
+            if (fPointId == null) {
+                throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this);
             }
             netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
-                    inFlow.getGridGeometry(),fPointId, pm);
+                    inFlow.getGridGeometry(), fPointId, pm);
         } else {
             // if (attributeVect == null || geomVect == null || tcaIter == null) {
             // throw new ModelsIllegalargumentException(
