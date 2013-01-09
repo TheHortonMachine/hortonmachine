@@ -1,0 +1,90 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.jgrasstools.modules;
+
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DOCUMENTATION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_KEYWORDS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMax_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMin_DESCRIPTION;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor;
+
+@Description(OMSCONTOUREXTRACTOR_DESCRIPTION)
+@Documentation(OMSCONTOUREXTRACTOR_DOCUMENTATION)
+@Author(name = OMSCONTOUREXTRACTOR_AUTHORNAMES, contact = OMSCONTOUREXTRACTOR_AUTHORCONTACTS)
+@Keywords(OMSCONTOUREXTRACTOR_KEYWORDS)
+@Label(OMSCONTOUREXTRACTOR_LABEL)
+@Name(OMSCONTOUREXTRACTOR_NAME)
+@Status(OMSCONTOUREXTRACTOR_STATUS)
+@License(OMSCONTOUREXTRACTOR_LICENSE)
+public class ContourExtractor extends JGTModel {
+
+    @Description(OMSCONTOUREXTRACTOR_inCoverage_DESCRIPTION)
+    @In
+    public String inCoverage;
+
+    @Description(OMSCONTOUREXTRACTOR_pMin_DESCRIPTION)
+    @In
+    public Double pMin;
+
+    @Description(OMSCONTOUREXTRACTOR_pMax_DESCRIPTION)
+    @In
+    public Double pMax;
+
+    @Description(OMSCONTOUREXTRACTOR_pInterval_DESCRIPTION)
+    @In
+    public Double pInterval;
+
+    @Description(OMSCONTOUREXTRACTOR_outGeodata_DESCRIPTION)
+    @Out
+    public String outGeodata = null;
+
+    @Execute
+    public void process() throws Exception {
+        OmsContourExtractor ex = new OmsContourExtractor();
+        ex.pm = pm;
+        ex.inCoverage = getRaster(inCoverage);
+        ex.pMin = pMin;
+        ex.pMax = pMax;
+        ex.pInterval = pInterval;
+        ex.process();
+        dumpVector(ex.outGeodata, outGeodata);
+    }
+}
