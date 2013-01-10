@@ -34,11 +34,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pCode_DES
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_pointsVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_polygonVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_textVector_DESCRIPTION;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.channels.FileChannel;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -52,16 +47,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.PrjFileReader;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.dxfdwg.libs.DwgHandler;
-import org.jgrasstools.gears.io.dxfdwg.libs.DwgReader;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.jgrasstools.gears.modules.v.vectorconverter.OmsDwgConverter;
 
 @Description(OMSDWGCONVERTER_DESCRIPTION)
 @Documentation(OMSDWGCONVERTER_DOCUMENTATION)
@@ -71,7 +59,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("_" + OMSDWGCONVERTER_NAME)
 @Status(OMSDWGCONVERTER_STATUS)
 @License(OMSDWGCONVERTER_LICENSE)
-public class OmsDwgConverter extends JGTModel {
+public class DwgConverter extends JGTModel {
 
     @Description(OMSDWGCONVERTER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -85,65 +73,43 @@ public class OmsDwgConverter extends JGTModel {
 
     @Description(OMSDWGCONVERTER_pointsVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection pointsVector = null;
+    public String pointsVector = null;
 
     @Description(OMSDWGCONVERTER_lineVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection lineVector = null;
+    public String lineVector = null;
 
     @Description(OMSDWGCONVERTER_polygonVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection polygonVector = null;
+    public String polygonVector = null;
 
     @Description(OMSDWGCONVERTER_textVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection textVector;
+    public String textVector;
 
     @Description(OMSDWGCONVERTER_attributesVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection attributesVector;
+    public String attributesVector;
 
     @Description(OMSDWGCONVERTER_contourVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection contourVector;
-
-    private CoordinateReferenceSystem crs;
+    public String contourVector;
 
     @Execute
     public void readFeatureCollection() throws Exception {
-        if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
-            return;
-        }
-
-        File dwgFile = new File(file);
-        File parentFolder = dwgFile.getParentFile();
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dwgFile);
-        File prjFile = new File(parentFolder, nameWithoutExtention + ".prj");
-        if (prjFile.exists()) {
-            FileInputStream instream = new FileInputStream(prjFile);
-            final FileChannel channel = instream.getChannel();
-            PrjFileReader reader = new PrjFileReader(channel);
-            crs = reader.getCoordinateReferenceSystem();
-        }
-        if (crs == null) {
-            if (pCode != null) {
-                crs = CRS.decode(pCode);
-            } else {
-                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DWG file.", this);
-            }
-        }
-
-        DwgHandler dataHandler = new DwgHandler(dwgFile, crs);
-        dataHandler.getLayerTypes();
-        DwgReader dwgReader = dataHandler.getDwgReader();
-
-        textVector = dwgReader.getTextFeatures();
-        attributesVector = dwgReader.getAttributesFeatures();
-        contourVector = dwgReader.getContourFeatures();
-        pointsVector = dwgReader.getMultiPointFeatures();
-        lineVector = dwgReader.getMultiLineFeatures();
-        polygonVector = dwgReader.getMultiPolygonFeatures();
-
+        OmsDwgConverter dwgconverter = new OmsDwgConverter();
+        dwgconverter.file = file;
+        dwgconverter.pCode = pCode;
+        dwgconverter.pm = pm;
+        dwgconverter.doProcess = doProcess;
+        dwgconverter.doReset = doReset;
+        dwgconverter.readFeatureCollection();
+        dumpVector(dwgconverter.pointsVector, pointsVector);
+        dumpVector(dwgconverter.lineVector, lineVector);
+        dumpVector(dwgconverter.polygonVector, polygonVector);
+        dumpVector(dwgconverter.textVector, textVector);
+        dumpVector(dwgconverter.attributesVector, attributesVector);
+        dumpVector(dwgconverter.contourVector, contourVector);
     }
 
 }

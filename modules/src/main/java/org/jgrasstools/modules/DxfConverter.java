@@ -31,11 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_lineVecto
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pCode_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pointsVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_polygonVector_DESCRIPTION;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.nio.channels.FileChannel;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -49,15 +44,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.data.PrjFileReader;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.dxfdwg.libs.dxf.DxfFile;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter;
 
 @Description(OMSDXFCONVERTER_DESCRIPTION)
 @Documentation(OMSDXFCONVERTER_DOCUMENTATION)
@@ -67,7 +56,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("_" + OMSDXFCONVERTER_NAME)
 @Status(OMSDXFCONVERTER_STATUS)
 @License(OMSDXFCONVERTER_LICENSE)
-public class OmsDxfConverter extends JGTModel {
+public class DxfConverter extends JGTModel {
 
     @Description(OMSDXFCONVERTER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -81,54 +70,28 @@ public class OmsDxfConverter extends JGTModel {
 
     @Description(OMSDXFCONVERTER_pointsVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection pointsVector = null;
+    public String pointsVector = null;
 
     @Description(OMSDXFCONVERTER_lineVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection lineVector = null;
+    public String lineVector = null;
 
     @Description(OMSDXFCONVERTER_polygonVector_DESCRIPTION)
     @Out
-    public SimpleFeatureCollection polygonVector = null;
-
-    private CoordinateReferenceSystem crs;
+    public String polygonVector = null;
 
     @Execute
     public void readFeatureCollection() throws Exception {
-        if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
-            return;
-        }
-
-        File dxfFile = new File(file);
-        File parentFolder = dxfFile.getParentFile();
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(dxfFile);
-        File prjFile = new File(parentFolder, nameWithoutExtention + ".prj");
-        if (prjFile.exists()) {
-            FileInputStream instream = null;
-            try {
-                instream = new FileInputStream(prjFile);
-                final FileChannel channel = instream.getChannel();
-                PrjFileReader reader = new PrjFileReader(channel);
-                crs = reader.getCoordinateReferenceSystem();
-            } finally {
-                if (instream != null)
-                    instream.close();
-            }
-        }
-        if (crs == null) {
-            if (pCode != null) {
-                crs = CRS.decode(pCode);
-            } else {
-                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DXF file.", this);
-            }
-        }
-
-        DxfFile dxf = DxfFile.createFromFile(dxfFile, crs);
-
-        pointsVector = dxf.getPoints();
-        lineVector = dxf.getLines();
-        polygonVector = dxf.getPolygons();
-
+        OmsDxfConverter dxfconverter = new OmsDxfConverter();
+        dxfconverter.file = file;
+        dxfconverter.pCode = pCode;
+        dxfconverter.pm = pm;
+        dxfconverter.doProcess = doProcess;
+        dxfconverter.doReset = doReset;
+        dxfconverter.readFeatureCollection();
+        dumpVector(dxfconverter.pointsVector, pointsVector);
+        dumpVector(dxfconverter.lineVector, lineVector);
+        dumpVector(dxfconverter.polygonVector, polygonVector);
     }
 
 }
