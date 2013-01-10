@@ -54,8 +54,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
@@ -72,14 +74,17 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @License(OMSTCA3D_LICENSE)
 public class OmsTca3d extends JGTModel {
     @Description(OMSTCA3D_inPit_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inPit = null;
 
     @Description(OMSTCA3D_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSTCA3D_outTca_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outTca = null;
 

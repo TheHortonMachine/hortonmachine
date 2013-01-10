@@ -36,8 +36,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -52,14 +54,17 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @License(OMSGC_LICENSE)
 public class OmsGc extends JGTModel {
     @Description(OMSGC_inSlope_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inSlope = null;
 
     @Description(OMSGC_inNetwork_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inNetwork = null;
 
     @Description(OMSGC_inCp9_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inCp9 = null;
 
@@ -68,10 +73,12 @@ public class OmsGc extends JGTModel {
     public int pTh = 0;
 
     @Description(OMSGC_outClasses_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outClasses = null;
 
     @Description(OMSGC_outAggregateClasses_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outAggregateClasses = null;
 

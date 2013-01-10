@@ -44,6 +44,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description(OMSVECTORCONVERTER_DESCRIPTION)
@@ -58,10 +59,12 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 public class OmsVectorConverter extends JGTModel {
 
     @Description(OMSVECTORCONVERTER_inGeodata_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inGeodata;
 
     @Description(OMSVECTORCONVERTER_outGeodata_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outGeodata;
 

@@ -69,14 +69,17 @@ public class DxfConverter extends JGTModel {
     public String pCode;
 
     @Description(OMSDXFCONVERTER_pointsVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String pointsVector = null;
 
     @Description(OMSDXFCONVERTER_lineVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String lineVector = null;
 
     @Description(OMSDXFCONVERTER_polygonVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String polygonVector = null;
 

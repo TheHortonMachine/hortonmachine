@@ -108,6 +108,7 @@ public class OmsLasConverter extends JGTModel {
     public String inFile;
 
     @Description(OMSLASCONVERTER_inPolygons_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inPolygons;
 

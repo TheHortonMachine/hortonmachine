@@ -61,6 +61,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -72,6 +73,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -97,6 +99,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 public class OmsVectorizer extends JGTModel {
 
     @Description(OMSVECTORIZER_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -117,6 +120,7 @@ public class OmsVectorizer extends JGTModel {
     public boolean doRegioncheck = false;
 
     @Description(OMSVECTORIZER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector = null;
 

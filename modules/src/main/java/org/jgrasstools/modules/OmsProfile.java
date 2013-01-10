@@ -48,10 +48,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.coverage.ProfilePoint;
@@ -74,6 +76,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsProfile extends JGTModel {
 
     @Description(OMSPROFILE_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -82,6 +85,7 @@ public class OmsProfile extends JGTModel {
     public String inCoordinates;
 
     @Description(OMSPROFILE_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 

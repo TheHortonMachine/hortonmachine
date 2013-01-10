@@ -76,10 +76,12 @@ public class ExtractBasin extends JGTModel {
     public double pValue = 1.0;
 
     @Description(OMSEXTRACTBASIN_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow;
 
     @Description(OMSEXTRACTBASIN_inNetwork_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inNetwork;
 
@@ -100,14 +102,17 @@ public class ExtractBasin extends JGTModel {
     public double outArea = 0;
 
     @Description(OMSEXTRACTBASIN_outBasin_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outBasin = null;
 
     @Description(OMSEXTRACTBASIN_outOutlet_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outOutlet = null;
 
     @Description(OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outVectorBasin = null;
 

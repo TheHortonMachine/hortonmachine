@@ -68,7 +68,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("_" + OMSFILEITERATOR_NAME)
 @Status(OMSFILEITERATOR_STATUS)
 @License(OMSFILEITERATOR_LICENSE)
-public class OmsFileIterator extends JGTModel {
+public class FileIterator extends JGTModel {
 
     @Description(OMSFILEITERATOR_inFolder_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -167,7 +167,7 @@ public class OmsFileIterator extends JGTModel {
      * @throws Exception
      */
     public static void addPrj( String folder, String epsg ) throws Exception {
-        OmsFileIterator fiter = new OmsFileIterator();
+        FileIterator fiter = new FileIterator();
         fiter.inFolder = folder;
         fiter.pCode = epsg;
         fiter.process();

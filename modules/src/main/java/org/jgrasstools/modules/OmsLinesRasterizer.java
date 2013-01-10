@@ -93,6 +93,7 @@ import com.vividsolutions.jts.geom.LineString;
 public class OmsLinesRasterizer extends JGTModel {
 
     @Description(OMSLINESRASTERIZER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector = null;
 
@@ -135,6 +136,7 @@ public class OmsLinesRasterizer extends JGTModel {
     public Integer pCols = null;
 
     @Description(OMSLINESRASTERIZER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster;
 

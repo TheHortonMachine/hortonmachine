@@ -41,8 +41,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.OmsDebrisTriggerCnr;
 
@@ -56,14 +58,17 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debristriggers.O
 public class DebrisTriggerCnr extends JGTModel {
 
     @Description(OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inNet = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTca = null;
 
@@ -78,6 +83,7 @@ public class DebrisTriggerCnr extends JGTModel {
     public double pGradthres = 38;
 
     @Description(OMSDEBRISTRIGGERCNR_outTriggers_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outTriggers = null;
 

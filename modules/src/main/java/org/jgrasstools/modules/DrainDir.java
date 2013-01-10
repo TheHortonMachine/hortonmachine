@@ -44,7 +44,9 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 
@@ -59,14 +61,17 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir;
 public class DrainDir extends JGTModel {
 
     @Description(OMSDRAINDIR_inPit_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPit = null;
 
     @Description(OMSDRAINDIR_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow = null;
 
     @Description(OMSDRAINDIR_inFlownet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlownet = null;
 
@@ -79,10 +84,12 @@ public class DrainDir extends JGTModel {
     public boolean doLad = true;
 
     @Description(OMSDRAINDIR_outFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outFlow = null;
 
     @Description(OMSDRAINDIR_outTca_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outTca = null;
 

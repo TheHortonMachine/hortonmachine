@@ -45,6 +45,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -66,10 +67,12 @@ import org.opengis.geometry.DirectPosition;
 public class OmsRaster2Xyz extends JGTModel {
 
     @Description(OMSRASTER2XYZ_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
     @Description(OMSRASTER2XYZ_inFile_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String inFile;
 

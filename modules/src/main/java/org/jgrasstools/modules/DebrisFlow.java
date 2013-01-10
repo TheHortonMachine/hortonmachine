@@ -44,8 +44,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.OmsDebrisFlow;
 
@@ -58,6 +60,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.OmsDe
 @License(OMSDEBRISFLOW_LICENSE)
 public class DebrisFlow extends JGTModel {
     @Description(OMSDEBRISFLOW_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev = null;
 
@@ -91,10 +94,12 @@ public class DebrisFlow extends JGTModel {
     public int pMontecarlo = 50;
 
     @Description(OMSDEBRISFLOW_outMcs_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outMcs = null;
 
     @Description(OMSDEBRISFLOW_outDepo_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outDepo = null;
 

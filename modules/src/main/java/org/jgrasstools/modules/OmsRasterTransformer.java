@@ -103,6 +103,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 @License(OMSRASTERTRANSFORMER_LICENSE)
 public class OmsRasterTransformer extends JGTModel {
     @Description(OMSRASTERTRANSFORMER_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -153,10 +154,12 @@ public class OmsRasterTransformer extends JGTModel {
     public Double pAngle;
 
     @Description(OMSRASTERTRANSFORMER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster = null;
 
     @Description(OMSRASTERTRANSFORMER_outBounds_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outBounds = null;
 

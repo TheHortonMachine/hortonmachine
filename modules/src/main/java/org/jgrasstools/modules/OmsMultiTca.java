@@ -33,6 +33,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -51,18 +52,22 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 @License(OMSMULTITCA_LICENSE)
 public class OmsMultiTca extends JGTModel {
     @Description(OMSMULTITCA_inPit_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inPit = null;
 
     @Description(OMSMULTITCA_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSMULTITCA_inCp9_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inCp9 = null;
 
     @Description(OMSMULTITCA_outMultiTca_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outMultiTca = null;
 

@@ -94,6 +94,7 @@ public class OmsXyz2Raster extends JGTModel {
     public String pSeparator;
 
     @Description(OMSXYZ2RASTER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster;
 

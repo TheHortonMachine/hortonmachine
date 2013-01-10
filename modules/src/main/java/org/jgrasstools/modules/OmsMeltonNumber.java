@@ -44,11 +44,13 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
@@ -71,10 +73,12 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsMeltonNumber extends JGTModel {
 
     @Description(OMSMELTONNUMBER_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inElev = null;
 
     @Description(OMSMELTONNUMBER_inFans_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inFans = null;
 

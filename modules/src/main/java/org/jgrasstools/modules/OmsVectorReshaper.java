@@ -86,6 +86,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsVectorReshaper extends JGTModel {
 
     @Description(OMSVECTORRESHAPER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -99,6 +100,7 @@ public class OmsVectorReshaper extends JGTModel {
     public String pRemove = null;
 
     @Description(OMSVECTORRESHAPER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector;
 

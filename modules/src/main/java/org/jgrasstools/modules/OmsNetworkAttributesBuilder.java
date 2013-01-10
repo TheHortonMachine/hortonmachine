@@ -50,6 +50,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -80,14 +81,17 @@ import com.vividsolutions.jts.geom.LineString;
 public class OmsNetworkAttributesBuilder extends JGTModel {
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inNet = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTca = null;
 
@@ -96,10 +100,12 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
     public boolean doHack = false;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outNet = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outHack = null;
 

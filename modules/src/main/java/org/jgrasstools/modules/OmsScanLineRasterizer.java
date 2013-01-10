@@ -99,6 +99,7 @@ import com.vividsolutions.jts.geom.LineString;
 public class OmsScanLineRasterizer extends JGTModel {
 
     @Description(OMSSCANLINERASTERIZER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector = null;
 
@@ -145,6 +146,7 @@ public class OmsScanLineRasterizer extends JGTModel {
     public Integer pMaxThreads = 4;
 
     @Description(OMSSCANLINERASTERIZER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster;
 

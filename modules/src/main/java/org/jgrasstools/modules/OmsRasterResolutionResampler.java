@@ -53,6 +53,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -68,6 +69,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 public class OmsRasterResolutionResampler extends JGTModel {
 
     @Description(OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inGeodata;
 
@@ -85,6 +87,7 @@ public class OmsRasterResolutionResampler extends JGTModel {
     public Double pYres;
 
     @Description(OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outGeodata;
 

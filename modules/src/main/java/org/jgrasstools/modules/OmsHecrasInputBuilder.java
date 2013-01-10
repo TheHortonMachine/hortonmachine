@@ -84,18 +84,22 @@ import com.vividsolutions.jts.geom.LineString;
 public class OmsHecrasInputBuilder extends JGTModel {
 
     @Description(OMSHECRASINPUTBUILDER_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inElev = null;
 
     @Description(OMSHECRASINPUTBUILDER_inRiver_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inRiver = null;
 
     @Description(OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inBridges = null;
 
     @Description(OMSHECRASINPUTBUILDER_inSections_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inSections = null;
 
@@ -125,10 +129,12 @@ public class OmsHecrasInputBuilder extends JGTModel {
     public String inHecras = null;
 
     @Description(OMSHECRASINPUTBUILDER_outSections_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outSections = null;
 
     @Description(OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outSectionPoints = null;
 

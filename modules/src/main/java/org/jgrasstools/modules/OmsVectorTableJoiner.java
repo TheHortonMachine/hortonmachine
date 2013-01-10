@@ -46,10 +46,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.opengis.feature.simple.SimpleFeature;
@@ -65,6 +67,7 @@ import org.opengis.feature.simple.SimpleFeature;
 public class OmsVectorTableJoiner extends JGTModel {
 
     @Description(OMSVECTORTABLEJOINER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -81,6 +84,7 @@ public class OmsVectorTableJoiner extends JGTModel {
     public String pFields = null;
 
     @Description(OMSVECTORTABLEJOINER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector;
 

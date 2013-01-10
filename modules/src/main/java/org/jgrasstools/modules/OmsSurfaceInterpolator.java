@@ -93,14 +93,17 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 public class OmsSurfaceInterpolator extends JGTModel {
 
     @Description(OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
     @Description(OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridGeometry2D inGrid = null;
 
     @Description(OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inMask = null;
 
@@ -123,6 +126,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
     public int pMaxThreads = 1;
 
     @Description(OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster = null;
 

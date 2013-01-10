@@ -46,6 +46,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -54,6 +55,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.opengis.feature.simple.SimpleFeature;
@@ -75,6 +77,7 @@ import com.vividsolutions.jts.geom.Point;
 public class OmsPointsVectorizer extends JGTModel {
 
     @Description(OMSPOINTSVECTORIZER_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -83,6 +86,7 @@ public class OmsPointsVectorizer extends JGTModel {
     public String fDefault = "value";
 
     @Description(OMSPOINTSVECTORIZER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector = null;
 

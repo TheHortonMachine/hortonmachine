@@ -64,6 +64,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class OmsRasterCorrector extends JGTModel {
 
     @Description(OMSRASTERCORRECTOR_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -73,6 +74,7 @@ public class OmsRasterCorrector extends JGTModel {
     public String pCorrections;
 
     @Description(OMSRASTERCORRECTOR_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster;
 

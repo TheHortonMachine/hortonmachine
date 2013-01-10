@@ -102,10 +102,12 @@ import com.vividsolutions.jts.geom.Point;
 public class OmsGridsGenerator extends JGTModel {
 
     @Description(OMSGRIDSGENERATOR_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector = null;
 
     @Description(OMSGRIDSGENERATOR_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster = null;
 
@@ -147,6 +149,7 @@ public class OmsGridsGenerator extends JGTModel {
     public String pCode;
 
     @Description(OMSGRIDSGENERATOR_outMap_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outMap = null;
 

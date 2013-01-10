@@ -50,6 +50,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -60,6 +61,7 @@ import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
@@ -81,10 +83,12 @@ import com.vividsolutions.jts.geom.Point;
 public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector = null;
 
@@ -97,6 +101,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
     public String pPos = MIDDLE;
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector = null;
 

@@ -55,6 +55,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jaitools.media.jai.zonalstats.Result;
@@ -76,6 +77,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 public class OmsRasterSummary extends JGTModel {
 
     @Description(OMSRASTERSUMMARY_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 

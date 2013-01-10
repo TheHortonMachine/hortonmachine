@@ -64,11 +64,13 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -87,6 +89,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @License(OMSLEASTCOSTFLOWDIRECTIONS_LICENSE)
 public class OmsLeastCostFlowDirections extends JGTModel {
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inElev = null;
 
@@ -103,18 +106,22 @@ public class OmsLeastCostFlowDirections extends JGTModel {
     public boolean doAspect = true;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outFlow = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outTca = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outAspect_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outAspect = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outSlope = null;
 

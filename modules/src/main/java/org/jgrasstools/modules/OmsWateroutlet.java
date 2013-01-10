@@ -78,10 +78,12 @@ public class OmsWateroutlet extends JGTModel {
     public double pEast = -1.0;
 
     @Description(OMSWATEROUTLET_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow;
 
     @Description(OMSWATEROUTLET_outBasin_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outBasin = null;
 

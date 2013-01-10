@@ -98,6 +98,7 @@ public class OmsGridGeometryReader extends JGTModel {
     public String pCode;
 
     @Description(OMSGRIDGEOMETRYREADER_outGridgeom_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridGeometry2D outGridgeom = null;
 

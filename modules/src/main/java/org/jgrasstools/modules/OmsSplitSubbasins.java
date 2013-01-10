@@ -50,6 +50,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -70,10 +71,12 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 @License(OMSSPLITSUBBASINS_LICENSE)
 public class OmsSplitSubbasins extends JGTModel {
     @Description(OMSSPLITSUBBASINS_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSSPLITSUBBASINS_inHack_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inHack = null;
 
@@ -82,10 +85,12 @@ public class OmsSplitSubbasins extends JGTModel {
     public Double pHackorder = null;
 
     @Description(OMSSPLITSUBBASINS_outNetnum_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outNetnum = null;
 
     @Description(OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outSubbasins = null;
 

@@ -66,9 +66,11 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.ConstantRandomIter;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -83,14 +85,17 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class OmsShalstab extends JGTModel {
 
     @Description(OMSSHALSTAB_inSlope_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inSlope = null;
 
     @Description(OMSSHALSTAB_inTca_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSSHALSTAB_inTrasmissivity_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("m^2/day")
     @In
     public GridCoverage2D inTrasmissivity = null;
@@ -101,6 +106,7 @@ public class OmsShalstab extends JGTModel {
     public double pTrasmissivity = -1.0;
 
     @Description(OMSSHALSTAB_inTgphi_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTgphi = null;
 
@@ -109,6 +115,7 @@ public class OmsShalstab extends JGTModel {
     public double pTgphi = -1.0;
 
     @Description(OMSSHALSTAB_inCohesion_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("Pa")
     @In
     public GridCoverage2D inCohesion = null;
@@ -119,6 +126,7 @@ public class OmsShalstab extends JGTModel {
     public double pCohesion = -1.0;
 
     @Description(OMSSHALSTAB_inSdepth_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("m")
     @In
     public GridCoverage2D inSdepth = null;
@@ -129,6 +137,7 @@ public class OmsShalstab extends JGTModel {
     public double pSdepth = -1.0;
 
     @Description(OMSSHALSTAB_inQ_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("mm/day")
     @In
     public GridCoverage2D inQ = null;
@@ -139,6 +148,7 @@ public class OmsShalstab extends JGTModel {
     public double pQ = -1.0;
 
     @Description(OMSSHALSTAB_inRho_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRho = null;
 
@@ -151,10 +161,12 @@ public class OmsShalstab extends JGTModel {
     public double pRock = -9999.0;
 
     @Description(OMSSHALSTAB_outQcrit_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outQcrit = null;
 
     @Description(OMSSHALSTAB_outShalstab_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outShalstab = null;
 

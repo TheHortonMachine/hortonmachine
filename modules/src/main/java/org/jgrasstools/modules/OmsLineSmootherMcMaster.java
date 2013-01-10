@@ -49,11 +49,13 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.modules.v.smoothing.FeatureSlidingAverage;
@@ -81,6 +83,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 public class OmsLineSmootherMcMaster extends JGTModel {
 
     @Description(OMSLINESMOOTHERMCMASTER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -105,6 +108,7 @@ public class OmsLineSmootherMcMaster extends JGTModel {
     public Double pSimplify = null;
 
     @Description(OMSLINESMOOTHERMCMASTER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector;
 

@@ -51,10 +51,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -69,11 +71,13 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class OmsIntensityClassifier extends JGTModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("[m]")
     @In
     public GridCoverage2D inWaterDepth;
 
     @Description(OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("[m/s]")
     @In
     public GridCoverage2D inVelocity;
@@ -99,6 +103,7 @@ public class OmsIntensityClassifier extends JGTModel {
     public Double pLowerThresVelocityWaterdepth = 0.5;
 
     @Description(OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outIntensity = null;
 

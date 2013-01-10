@@ -76,6 +76,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class OmsRasterReprojector extends JGTModel {
 
     @Description(OMSRASTERREPROJECTOR_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRaster;
 
@@ -120,6 +121,7 @@ public class OmsRasterReprojector extends JGTModel {
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
     @Description(OMSRASTERREPROJECTOR_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster = null;
 

@@ -43,7 +43,9 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 
@@ -58,10 +60,12 @@ import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 public class CutOut extends JGTModel {
 
     @Description(OMSCUTOUT_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster;
 
     @Description(OMSCUTOUT_inMask_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inMask;
 
@@ -78,6 +82,7 @@ public class CutOut extends JGTModel {
     public boolean doInverse = false;
 
     @Description(OMSCUTOUT_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outRaster = null;
 

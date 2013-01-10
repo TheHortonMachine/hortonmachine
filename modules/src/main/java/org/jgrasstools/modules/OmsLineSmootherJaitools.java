@@ -44,10 +44,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.jaitools.jts.LineSmoother;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -70,6 +72,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 public class OmsLineSmootherJaitools extends JGTModel {
 
     @Description(OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -78,6 +81,7 @@ public class OmsLineSmootherJaitools extends JGTModel {
     public double pAlpha = 0;
 
     @Description(OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector;
 

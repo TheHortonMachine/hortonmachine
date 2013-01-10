@@ -66,6 +66,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -76,6 +77,7 @@ import org.geotools.feature.SchemaException;
 import org.geotools.geometry.DirectPosition2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -101,6 +103,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsKriging extends JGTModel {
 
     @Description(OMSKRIGING_inStations_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inStations = null;
 
@@ -117,6 +120,7 @@ public class OmsKriging extends JGTModel {
     public HashMap<Integer, double[]> inData = null;
 
     @Description(OMSKRIGING_inInterpolate_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public SimpleFeatureCollection inInterpolate = null;
 

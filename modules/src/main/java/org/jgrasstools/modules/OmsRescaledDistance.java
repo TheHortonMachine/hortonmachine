@@ -53,10 +53,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -72,14 +74,17 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 public class OmsRescaledDistance extends JGTModel {
 
     @Description(OMSRESCALEDDISTANCE_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSRESCALEDDISTANCE_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inNet = null;
 
     @Description(OMSRESCALEDDISTANCE_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inElev = null;
 
@@ -88,6 +93,7 @@ public class OmsRescaledDistance extends JGTModel {
     public double pRatio = 0;
 
     @Description(OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRescaled = null;
 

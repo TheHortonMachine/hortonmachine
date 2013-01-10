@@ -72,26 +72,32 @@ public class DwgConverter extends JGTModel {
     public String pCode;
 
     @Description(OMSDWGCONVERTER_pointsVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String pointsVector = null;
 
     @Description(OMSDWGCONVERTER_lineVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String lineVector = null;
 
     @Description(OMSDWGCONVERTER_polygonVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String polygonVector = null;
 
     @Description(OMSDWGCONVERTER_textVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String textVector;
 
     @Description(OMSDWGCONVERTER_attributesVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String attributesVector;
 
     @Description(OMSDWGCONVERTER_contourVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String contourVector;
 

@@ -65,6 +65,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class OmsVectorReprojector extends JGTModel {
 
     @Description(OMSVECTORREPROJECTOR_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -87,6 +88,7 @@ public class OmsVectorReprojector extends JGTModel {
     public boolean doLenient = true;
 
     @Description(OMSVECTORREPROJECTOR_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector = null;
 

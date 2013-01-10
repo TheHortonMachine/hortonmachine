@@ -48,6 +48,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -73,14 +74,17 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsStrahlerRatios extends JGTModel {
 
     @Description(OMSSTRAHLERRATIOS_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSSTRAHLERRATIOS_inStrahler_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inStrahler = null;
 
     @Description(OMSSTRAHLERRATIOS_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inNet = null;
 

@@ -42,12 +42,14 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
 import org.opengis.feature.simple.SimpleFeature;
@@ -67,6 +69,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsVectorTransformer extends JGTModel {
 
     @Description(OMSVECTORTRANSFORMER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector;
 
@@ -79,6 +82,7 @@ public class OmsVectorTransformer extends JGTModel {
     public double pTransY;
 
     @Description(OMSVECTORTRANSFORMER_outVector_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outVector = null;
 

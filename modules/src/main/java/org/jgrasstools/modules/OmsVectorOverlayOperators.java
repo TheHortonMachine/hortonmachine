@@ -56,6 +56,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -82,10 +83,12 @@ import com.vividsolutions.jts.geom.Polygon;
 public class OmsVectorOverlayOperators extends JGTModel {
 
     @Description(OMSVECTOROVERLAYOPERATORS_inMap1_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inMap1 = null;
 
     @Description(OMSVECTOROVERLAYOPERATORS_inMap2_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inMap2 = null;
 
@@ -95,6 +98,7 @@ public class OmsVectorOverlayOperators extends JGTModel {
     public String pType = INTERSECTION;
 
     @Description(OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outMap = null;
 

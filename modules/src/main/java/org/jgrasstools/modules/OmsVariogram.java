@@ -50,9 +50,11 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -71,6 +73,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsVariogram extends JGTModel {
 
     @Description(OMSVARIOGRAM_inStations_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inStations = null;
 

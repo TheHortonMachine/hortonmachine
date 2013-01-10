@@ -65,6 +65,7 @@ import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.mosaic.OmsMosaic;
 
 @Description(OMSMOSAIC12_DESCRIPTION)
 @Documentation(OMSMOSAIC12_DOCUMENTATION)
@@ -74,7 +75,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Name("_" + OMSMOSAIC12_NAME)
 @Status(OMSMOSAIC12_STATUS)
 @License(OMSMOSAIC12_LICENSE)
-public class OmsMosaic12 extends JGTModel {
+public class Mosaic12 extends JGTModel {
 
     @Description(OMSMOSAIC12_inMap1_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -148,12 +149,9 @@ public class OmsMosaic12 extends JGTModel {
 
     public GridCoverage2D outRaster;
 
-    public boolean testmode = false;
-
     @Execute
     public void process() throws Exception {
-        if (!testmode)
-            checkNull(outMap);
+        checkNull(outMap);
 
         List<File> filesList = new ArrayList<File>();
         checkMap(filesList, inMap1);
@@ -179,8 +177,7 @@ public class OmsMosaic12 extends JGTModel {
         mosaic.process();
 
         outRaster = mosaic.outRaster;
-        if (!testmode)
-            OmsRasterWriter.writeRaster(outMap, outRaster);
+        OmsRasterWriter.writeRaster(outMap, outRaster);
     }
 
     private void checkMap( List<File> filesList, String inMap ) {

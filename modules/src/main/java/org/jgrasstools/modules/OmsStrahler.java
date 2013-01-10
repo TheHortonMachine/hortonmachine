@@ -48,6 +48,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -68,14 +69,17 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class OmsStrahler extends JGTModel {
 
     @Description(OMSSTRAHLER_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSSTRAHLER_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inNet = null;
 
     @Description(OMSSTRAHLER_outStrahler_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outStrahler = null;
 

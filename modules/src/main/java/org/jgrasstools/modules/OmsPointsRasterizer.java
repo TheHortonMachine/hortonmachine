@@ -49,6 +49,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -81,10 +82,12 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsPointsRasterizer extends JGTModel {
 
     @Description(OMSPOINTSRASTERIZER_inVector_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inVector = null;
 
     @Description(OMSPOINTSRASTERIZER_inGrid_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridGeometry2D inGrid;
 
@@ -93,6 +96,7 @@ public class OmsPointsRasterizer extends JGTModel {
     public String fCat;
 
     @Description(OMSPOINTSRASTERIZER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outRaster;
 

@@ -55,11 +55,13 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -80,18 +82,22 @@ import com.vividsolutions.jts.geom.Geometry;
 public class OmsNetNumbering extends JGTModel {
 
     @Description(OMSNETNUMBERING_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSNETNUMBERING_inTca_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSNETNUMBERING_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inNet = null;
 
     @Description(OMSNETNUMBERING_inPoints_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inPoints = null;
 
@@ -108,10 +114,12 @@ public class OmsNetNumbering extends JGTModel {
     public String fPointId = null;
 
     @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outNetnum = null;
 
     @Description(OMSNETNUMBERING_outBasins_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outBasins = null;
 

@@ -41,7 +41,9 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures;
 
@@ -55,19 +57,23 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatu
 @License(OMSCURVATURES_LICENSE)
 public class Curvatures extends JGTModel {
     @Description(OMSCURVATURES_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev = null;
 
     // output
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outPlan = null;
 
     @Description(OMSCURVATURES_outTang_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outTang = null;
 

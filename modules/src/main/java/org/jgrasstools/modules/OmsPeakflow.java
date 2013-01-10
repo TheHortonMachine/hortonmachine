@@ -59,10 +59,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
@@ -112,18 +114,22 @@ public class OmsPeakflow extends JGTModel {
     public double pSat = -1f;
 
     @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTopindex = null;
 
     @Description(OMSPEAKFLOW_inSat_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inSat = null;
 
     @Description(OMSPEAKFLOW_inRescaledsup_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRescaledsup = null;
 
     @Description(OMSPEAKFLOW_inRescaledsub_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inRescaledsub = null;
 

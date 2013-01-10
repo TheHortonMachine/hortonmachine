@@ -48,8 +48,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre.OmsDebrisVandre;
 
@@ -63,27 +65,33 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisvandre.Oms
 public class DebrisVandre extends JGTModel {
 
     @Description(OMSDEBRISVANDRE_inElev_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev = null;
 
     @Description(OMSDEBRISVANDRE_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow = null;
 
     @Description(OMSDEBRISVANDRE_inSlope_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @Unit("degree")
     @In
     public String inSlope = null;
 
     @Description(OMSDEBRISVANDRE_inTriggers_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inTriggers = null;
 
     @Description(OMSDEBRISVANDRE_inSoil_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inSoil = null;
 
     @Description(OMSDEBRISVANDRE_inNet_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inNet = null;
 
@@ -105,14 +113,17 @@ public class DebrisVandre extends JGTModel {
     public int pMode = 0;
 
     @Description(OMSDEBRISVANDRE_outPaths_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outPaths = null;
 
     @Description(OMSDEBRISVANDRE_outIndexedTriggers_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outIndexedTriggers = null;
 
     @Description(OMSDEBRISVANDRE_outSoil_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outSoil = null;
 

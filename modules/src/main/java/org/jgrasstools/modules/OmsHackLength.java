@@ -51,10 +51,12 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -71,18 +73,22 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 public class OmsHackLength extends JGTModel {
 
     @Description(OMSHACKLENGTH_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSHACKLENGTH_inTca_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSHACKLENGTH_inElevation_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inElevation = null;
 
     @Description(OMSHACKLENGTH_outHacklength_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outHacklength = null;
 

@@ -49,11 +49,13 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -76,10 +78,12 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 public class OmsVectorClipper extends JGTModel {
 
     @Description(OMSVECTORCLIPPER_inMap_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inMap = null;
 
     @Description(OMSVECTORCLIPPER_inClipper_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public SimpleFeatureCollection inClipper = null;
 
@@ -88,6 +92,7 @@ public class OmsVectorClipper extends JGTModel {
     public int pMaxThreads = 1;
 
     @Description(OMSVECTORCLIPPER_outMap_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public SimpleFeatureCollection outMap = null;
 

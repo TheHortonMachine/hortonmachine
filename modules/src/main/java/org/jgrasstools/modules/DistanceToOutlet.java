@@ -38,7 +38,9 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.network.distancetooutlet.OmsDistanceToOutlet;
 
@@ -52,10 +54,12 @@ import org.jgrasstools.hortonmachine.modules.network.distancetooutlet.OmsDistanc
 public class DistanceToOutlet extends JGTModel {
 
     @Description(OMSDISTANCETOOUTLET_inPit_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPit = null;
 
     @Description(OMSDISTANCETOOUTLET_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow = null;
 
@@ -64,6 +68,7 @@ public class DistanceToOutlet extends JGTModel {
     public int pMode;
 
     @Description(OMSDISTANCETOOUTLET_outDistance_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
     public String outDistance = null;
 
