@@ -57,7 +57,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
 @Keywords(OMSPITFILLER_KEYWORDS)
 @Label(OMSPITFILLER_LABEL)
-@Name(OMSPITFILLER_NAME)
+@Name("_" + OMSPITFILLER_NAME)
 @Status(OMSPITFILLER_STATUS)
 @License(OMSPITFILLER_LICENSE)
 public class OmsPitfiller extends JGTModel {

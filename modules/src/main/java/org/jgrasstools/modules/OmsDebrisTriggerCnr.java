@@ -64,7 +64,7 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 @Author(name = OMSDEBRISTRIGGERCNR_AUTHORNAMES, contact = OMSDEBRISTRIGGERCNR_AUTHORCONTACTS)
 @Keywords(OMSDEBRISTRIGGERCNR_KEYWORDS)
 @Label(OMSDEBRISTRIGGERCNR_LABEL)
-@Name(OMSDEBRISTRIGGERCNR_NAME)
+@Name("_" + OMSDEBRISTRIGGERCNR_NAME)
 @Status(OMSDEBRISTRIGGERCNR_STATUS)
 @License(OMSDEBRISTRIGGERCNR_LICENSE)
 public class OmsDebrisTriggerCnr extends JGTModel {

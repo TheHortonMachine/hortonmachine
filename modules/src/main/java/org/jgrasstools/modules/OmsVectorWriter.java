@@ -56,7 +56,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Author(name = OMSVECTORWRITER_AUTHORNAMES, contact = OMSVECTORWRITER_AUTHORCONTACTS)
 @Keywords(OMSVECTORWRITER_KEYWORDS)
 @Label(OMSVECTORWRITER_LABEL)
-@Name(OMSVECTORWRITER_NAME)
+@Name("_" + OMSVECTORWRITER_NAME)
 @Status(OMSVECTORWRITER_STATUS)
 @License(OMSVECTORWRITER_LICENSE)
 public class OmsVectorWriter extends JGTModel {

@@ -91,7 +91,7 @@ import com.vividsolutions.jts.geom.util.AffineTransformation;
 @Author(name = OMSVECTORIZER_AUTHORNAMES, contact = OMSVECTORIZER_AUTHORCONTACTS)
 @Keywords(OMSVECTORIZER_KEYWORDS)
 @Label(OMSVECTORIZER_LABEL)
-@Name(OMSVECTORIZER_NAME)
+@Name("_" + OMSVECTORIZER_NAME)
 @Status(OMSVECTORIZER_STATUS)
 @License(OMSVECTORIZER_LICENSE)
 public class OmsVectorizer extends JGTModel {

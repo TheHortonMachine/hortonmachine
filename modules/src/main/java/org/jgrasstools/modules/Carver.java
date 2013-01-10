@@ -54,7 +54,7 @@ import org.jgrasstools.gears.modules.r.carver.OmsCarver;
 @Author(name = OMSCARVER_AUTHORNAMES, contact = OMSCARVER_AUTHORCONTACTS)
 @Keywords(OMSCARVER_KEYWORDS)
 @Label(OMSCARVER_LABEL)
-@Name(OMSCARVER_NAME)
+@Name("_" + OMSCARVER_NAME)
 @Status(OMSCARVER_STATUS)
 @License(OMSCARVER_LICENSE)
 public class Carver extends JGTModel {

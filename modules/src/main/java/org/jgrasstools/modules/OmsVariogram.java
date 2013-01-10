@@ -65,7 +65,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = OMSVARIOGRAM_AUTHORNAMES, contact = OMSVARIOGRAM_AUTHORCONTACTS)
 @Keywords(OMSVARIOGRAM_KEYWORDS)
 @Label(OMSVARIOGRAM_LABEL)
-@Name(OMSVARIOGRAM_NAME)
+@Name("_" + OMSVARIOGRAM_NAME)
 @Status(OMSVARIOGRAM_STATUS)
 @License(OMSVARIOGRAM_LICENSE)
 public class OmsVariogram extends JGTModel {

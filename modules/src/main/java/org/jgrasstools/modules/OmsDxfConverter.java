@@ -64,7 +64,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = OMSDXFCONVERTER_AUTHORNAMES, contact = OMSDXFCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSDXFCONVERTER_KEYWORDS)
 @Label(OMSDXFCONVERTER_LABEL)
-@Name(OMSDXFCONVERTER_NAME)
+@Name("_" + OMSDXFCONVERTER_NAME)
 @Status(OMSDXFCONVERTER_STATUS)
 @License(OMSDXFCONVERTER_LICENSE)
 public class OmsDxfConverter extends JGTModel {

@@ -77,7 +77,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSSHALSTAB_AUTHORNAMES, contact = OMSSHALSTAB_AUTHORCONTACTS)
 @Keywords(OMSSHALSTAB_KEYWORDS)
 @Label(OMSSHALSTAB_LABEL)
-@Name(OMSSHALSTAB_NAME)
+@Name("_" + OMSSHALSTAB_NAME)
 @Status(OMSSHALSTAB_STATUS)
 @License(OMSSHALSTAB_LICENSE)
 public class OmsShalstab extends JGTModel {

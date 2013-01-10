@@ -60,7 +60,7 @@ import org.opengis.geometry.DirectPosition;
 @Author(name = OMSRASTER2XYZ_AUTHORNAMES, contact = OMSRASTER2XYZ_AUTHORCONTACTS)
 @Keywords(OMSRASTER2XYZ_KEYWORDS)
 @Label(OMSRASTER2XYZ_LABEL)
-@Name(OMSRASTER2XYZ_NAME)
+@Name("_" + OMSRASTER2XYZ_NAME)
 @Status(OMSRASTER2XYZ_STATUS)
 @License(OMSRASTER2XYZ_LICENSE)
 public class OmsRaster2Xyz extends JGTModel {

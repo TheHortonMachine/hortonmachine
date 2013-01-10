@@ -71,7 +71,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Author(name = OMSMOSAIC12_AUTHORNAMES, contact = OMSMOSAIC12_AUTHORCONTACTS)
 @Keywords(OMSMOSAIC12_KEYWORDS)
 @Label(OMSMOSAIC12_LABEL)
-@Name(OMSMOSAIC12_NAME)
+@Name("_" + OMSMOSAIC12_NAME)
 @Status(OMSMOSAIC12_STATUS)
 @License(OMSMOSAIC12_LICENSE)
 public class OmsMosaic12 extends JGTModel {

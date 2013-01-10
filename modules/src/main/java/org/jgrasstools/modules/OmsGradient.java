@@ -68,7 +68,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
 @Keywords(OMSGRADIENT_KEYWORDS)
 @Label(OMSGRADIENT_LABEL)
-@Name(OMSGRADIENT_NAME)
+@Name("_" + OMSGRADIENT_NAME)
 @Status(OMSGRADIENT_STATUS)
 @License(OMSGRADIENT_LICENSE)
 public class OmsGradient extends JGTModel {

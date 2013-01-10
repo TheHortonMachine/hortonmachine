@@ -66,7 +66,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSHILLSHADE_AUTHORNAMES, contact = OMSHILLSHADE_AUTHORCONTACTS)
 @Keywords(OMSHILLSHADE_KEYWORDS)
 @Label(OMSHILLSHADE_LABEL)
-@Name(OMSHILLSHADE_NAME)
+@Name("_" + OMSHILLSHADE_NAME)
 @Status(OMSHILLSHADE_STATUS)
 @License(OMSHILLSHADE_LICENSE)
 public class OmsHillshade extends JGTModel {

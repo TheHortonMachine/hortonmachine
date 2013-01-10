@@ -61,7 +61,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSNETDIFF_AUTHORNAMES, contact = OMSNETDIFF_AUTHORCONTACTS)
 @Keywords(OMSNETDIFF_KEYWORDS)
 @Label(OMSNETDIFF_LABEL)
-@Name(OMSNETDIFF_NAME)
+@Name("_" + OMSNETDIFF_NAME)
 @Status(OMSNETDIFF_STATUS)
 @License(OMSNETDIFF_LICENSE)
 public class OmsNetDiff extends JGTModel {

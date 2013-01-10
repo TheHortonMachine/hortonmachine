@@ -68,7 +68,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
 @Keywords(OMSDRAINDIR_KEYWORDS)
 @Label(OMSDRAINDIR_LABEL)
-@Name(OMSDRAINDIR_NAME)
+@Name("_" + OMSDRAINDIR_NAME)
 @Status(OMSDRAINDIR_STATUS)
 @License(OMSDRAINDIR_LICENSE)
 public class OmsDrainDir extends JGTModel {

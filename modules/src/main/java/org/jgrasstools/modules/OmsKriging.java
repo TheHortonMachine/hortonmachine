@@ -95,7 +95,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = OMSKRIGING_AUTHORNAMES, contact = OMSKRIGING_AUTHORCONTACTS)
 @Keywords(OMSKRIGING_KEYWORDS)
 @Label(OMSKRIGING_LABEL)
-@Name(OMSKRIGING_NAME)
+@Name("_" + OMSKRIGING_NAME)
 @Status(OMSKRIGING_STATUS)
 @License(OMSKRIGING_LICENSE)
 public class OmsKriging extends JGTModel {

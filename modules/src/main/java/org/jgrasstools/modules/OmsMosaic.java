@@ -77,7 +77,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = OMSMOSAIC_AUTHORNAMES, contact = OMSMOSAIC_AUTHORCONTACTS)
 @Keywords(OMSMOSAIC_KEYWORDS)
 @Label(OMSMOSAIC_LABEL)
-@Name(OMSMOSAIC_NAME)
+@Name("_" + OMSMOSAIC_NAME)
 @Status(OMSMOSAIC_STATUS)
 @License(OMSMOSAIC_LICENSE)
 public class OmsMosaic extends JGTModel {

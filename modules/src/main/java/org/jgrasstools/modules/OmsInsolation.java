@@ -75,7 +75,7 @@ import com.vividsolutions.jts.geom.Point;
 @Author(name = OMSINSOLATION_AUTHORNAMES, contact = OMSINSOLATION_AUTHORCONTACTS)
 @Keywords(OMSINSOLATION_KEYWORDS)
 @Label(OMSINSOLATION_LABEL)
-@Name(OMSINSOLATION_NAME)
+@Name("_" + OMSINSOLATION_NAME)
 @Status(OMSINSOLATION_STATUS)
 @License(OMSINSOLATION_LICENSE)
 public class OmsInsolation extends JGTModel {

@@ -53,7 +53,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.debrisflow.OmsDe
 @Author(name = OMSDEBRISFLOW_AUTHORNAMES, contact = OMSDEBRISFLOW_AUTHORCONTACTS)
 @Keywords(OMSDEBRISFLOW_KEYWORDS)
 @Label(OMSDEBRISFLOW_LABEL)
-@Name(OMSDEBRISFLOW_NAME)
+@Name("_" + OMSDEBRISFLOW_NAME)
 @Status(OMSDEBRISFLOW_STATUS)
 @License(OMSDEBRISFLOW_LICENSE)
 public class DebrisFlow extends JGTModel {

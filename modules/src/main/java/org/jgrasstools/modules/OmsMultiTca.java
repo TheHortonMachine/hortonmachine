@@ -46,7 +46,7 @@ import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 @Author(name = OMSMULTITCA_AUTHORNAMES, contact = OMSMULTITCA_AUTHORCONTACTS)
 @Keywords(OMSMULTITCA_KEYWORDS)
 @Label(OMSMULTITCA_LABEL)
-@Name(OMSMULTITCA_NAME)
+@Name("_" + OMSMULTITCA_NAME)
 @Status(OMSMULTITCA_STATUS)
 @License(OMSMULTITCA_LICENSE)
 public class OmsMultiTca extends JGTModel {

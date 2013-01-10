@@ -58,7 +58,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @Author(name = OMSVECTORMERGER_AUTHORNAMES, contact = OMSVECTORMERGER_AUTHORCONTACTS)
 @Keywords(OMSVECTORMERGER_KEYWORDS)
 @Label(OMSVECTORMERGER_LABEL)
-@Name(OMSVECTORMERGER_NAME)
+@Name("_" + OMSVECTORMERGER_NAME)
 @Status(OMSVECTORMERGER_STATUS)
 @License(OMSVECTORMERGER_LICENSE)
 public class OmsVectorMerger extends JGTModel {

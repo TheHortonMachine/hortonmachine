@@ -56,7 +56,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSSUMDOWNSTREAM_AUTHORNAMES, contact = OMSSUMDOWNSTREAM_AUTHORCONTACTS)
 @Keywords(OMSSUMDOWNSTREAM_KEYWORDS)
 @Label(OMSSUMDOWNSTREAM_LABEL)
-@Name(OMSSUMDOWNSTREAM_NAME)
+@Name("_" + OMSSUMDOWNSTREAM_NAME)
 @Status(OMSSUMDOWNSTREAM_STATUS)
 @License(OMSSUMDOWNSTREAM_LICENSE)
 public class OmsSumDownStream extends JGTModel {

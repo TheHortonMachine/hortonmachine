@@ -74,7 +74,7 @@ import org.opengis.parameter.ParameterValueGroup;
 @Author(name = OMSRASTERWRITER_AUTHORNAMES, contact = OMSRASTERWRITER_AUTHORCONTACTS)
 @Keywords(OMSRASTERWRITER_KEYWORDS)
 @Label(OMSRASTERWRITER_LABEL)
-@Name(OMSRASTERWRITER_NAME)
+@Name("_" + OMSRASTERWRITER_NAME)
 @Status(OMSRASTERWRITER_STATUS)
 @License(OMSRASTERWRITER_LICENSE)
 public class OmsRasterWriter extends JGTModel {

@@ -58,7 +58,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSTOPINDEX_AUTHORNAMES, contact = OMSTOPINDEX_AUTHORCONTACTS)
 @Keywords(OMSTOPINDEX_KEYWORDS)
 @Label(OMSTOPINDEX_LABEL)
-@Name(OMSTOPINDEX_NAME)
+@Name("_" + OMSTOPINDEX_NAME)
 @Status(OMSTOPINDEX_STATUS)
 @License(OMSTOPINDEX_LICENSE)
 public class OmsTopIndex extends JGTModel {

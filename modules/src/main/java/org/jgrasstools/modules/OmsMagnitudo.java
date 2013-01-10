@@ -59,7 +59,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSMAGNITUDO_AUTHORNAMES, contact = OMSMAGNITUDO_AUTHORCONTACTS)
 @Keywords(OMSMAGNITUDO_KEYWORDS)
 @Label(OMSMAGNITUDO_LABEL)
-@Name(OMSMAGNITUDO_NAME)
+@Name("_" + OMSMAGNITUDO_NAME)
 @Status(OMSMAGNITUDO_STATUS)
 @License(OMSMAGNITUDO_LICENSE)
 public class OmsMagnitudo extends JGTModel {

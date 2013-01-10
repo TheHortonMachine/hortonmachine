@@ -59,7 +59,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Author(name = OMSVECTORREADER_AUTHORNAMES, contact = OMSVECTORREADER_AUTHORCONTACTS)
 @Keywords(OMSVECTORREADER_KEYWORDS)
 @Label(OMSVECTORREADER_LABEL)
-@Name(OMSVECTORREADER_NAME)
+@Name("_" + OMSVECTORREADER_NAME)
 @Status(OMSVECTORREADER_STATUS)
 @License(OMSVECTORREADER_LICENSE)
 public class OmsVectorReader extends JGTModel {

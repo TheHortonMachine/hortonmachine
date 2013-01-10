@@ -62,7 +62,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSSTRAHLER_AUTHORNAMES, contact = OMSSTRAHLER_AUTHORCONTACTS)
 @Keywords(OMSSTRAHLER_KEYWORDS)
 @Label(OMSSTRAHLER_LABEL)
-@Name(OMSSTRAHLER_NAME)
+@Name("_" + OMSSTRAHLER_NAME)
 @Status(OMSSTRAHLER_STATUS)
 @License(OMSSTRAHLER_LICENSE)
 public class OmsStrahler extends JGTModel {

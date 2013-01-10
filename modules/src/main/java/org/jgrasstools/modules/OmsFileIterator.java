@@ -65,7 +65,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Author(name = OMSFILEITERATOR_AUTHORNAMES, contact = OMSFILEITERATOR_AUTHORCONTACTS)
 @Keywords(OMSFILEITERATOR_KEYWORDS)
 @Label(OMSFILEITERATOR_LABEL)
-@Name(OMSFILEITERATOR_NAME)
+@Name("_" + OMSFILEITERATOR_NAME)
 @Status(OMSFILEITERATOR_STATUS)
 @License(OMSFILEITERATOR_LICENSE)
 public class OmsFileIterator extends JGTModel {

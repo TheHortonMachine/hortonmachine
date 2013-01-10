@@ -49,7 +49,7 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 @Author(name = OMSAB_AUTHORNAMES, contact = OMSAB_AUTHORCONTACTS)
 @Keywords(OMSAB_KEYWORDS)
 @Label(OMSAB_LABEL)
-@Name(OMSAB_NAME)
+@Name("_" + OMSAB_NAME)
 @Status(OMSAB_STATUS)
 @License(OMSAB_LICENSE)
 public class Ab extends OmsAb {

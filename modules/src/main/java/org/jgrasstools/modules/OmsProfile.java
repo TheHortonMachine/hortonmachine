@@ -68,7 +68,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Author(name = OMSPROFILE_AUTHORNAMES, contact = OMSPROFILE_AUTHORCONTACTS)
 @Keywords(OMSPROFILE_KEYWORDS)
 @Label(OMSPROFILE_LABEL)
-@Name(OMSPROFILE_NAME)
+@Name("_" + OMSPROFILE_NAME)
 @Status(OMSPROFILE_STATUS)
 @License(OMSPROFILE_LICENSE)
 public class OmsProfile extends JGTModel {

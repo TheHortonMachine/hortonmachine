@@ -97,7 +97,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Author(name = OMSLASCONVERTER_AUTHORNAMES, contact = OMSLASCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSLASCONVERTER_KEYWORDS)
 @Label(OMSLASCONVERTER_LABEL)
-@Name(OMSLASCONVERTER_NAME)
+@Name("_" + OMSLASCONVERTER_NAME)
 @Status(OMSLASCONVERTER_STATUS)
 @License(OMSLASCONVERTER_LICENSE)
 public class OmsLasConverter extends JGTModel {

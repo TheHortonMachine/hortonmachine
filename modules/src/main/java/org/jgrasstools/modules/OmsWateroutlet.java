@@ -63,7 +63,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSWATEROUTLET_AUTHORNAMES, contact = OMSWATEROUTLET_AUTHORCONTACTS)
 @Keywords(OMSWATEROUTLET_KEYWORDS)
 @Label(OMSWATEROUTLET_LABEL)
-@Name(OMSWATEROUTLET_NAME)
+@Name("_" + OMSWATEROUTLET_NAME)
 @Status(OMSWATEROUTLET_STATUS)
 @License(OMSWATEROUTLET_LICENSE)
 public class OmsWateroutlet extends JGTModel {

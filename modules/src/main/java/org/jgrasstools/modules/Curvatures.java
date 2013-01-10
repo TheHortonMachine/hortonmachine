@@ -50,7 +50,7 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatu
 @Author(name = OMSCURVATURES_AUTHORNAMES, contact = OMSCURVATURES_AUTHORCONTACTS)
 @Keywords(OMSCURVATURES_KEYWORDS)
 @Label(OMSCURVATURES_LABEL)
-@Name(OMSCURVATURES_NAME)
+@Name("_" + OMSCURVATURES_NAME)
 @Status(OMSCURVATURES_STATUS)
 @License(OMSCURVATURES_LICENSE)
 public class Curvatures extends JGTModel {

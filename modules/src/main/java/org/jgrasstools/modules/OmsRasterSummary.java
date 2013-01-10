@@ -70,7 +70,7 @@ import org.jgrasstools.gears.utils.math.CoupledFieldsMoments;
 @Author(name = OMSRASTERSUMMARY_AUTHORNAMES, contact = OMSRASTERSUMMARY_AUTHORCONTACTS)
 @Keywords(OMSRASTERSUMMARY_KEYWORDS)
 @Label(OMSRASTERSUMMARY_LABEL)
-@Name(OMSRASTERSUMMARY_NAME)
+@Name("_" + OMSRASTERSUMMARY_NAME)
 @Status(OMSRASTERSUMMARY_STATUS)
 @License(OMSRASTERSUMMARY_LICENSE)
 public class OmsRasterSummary extends JGTModel {

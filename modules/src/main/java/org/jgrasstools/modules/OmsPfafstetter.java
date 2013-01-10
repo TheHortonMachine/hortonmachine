@@ -90,7 +90,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 @Author(name = OMSPFAFSTETTER_AUTHORNAMES, contact = OMSPFAFSTETTER_AUTHORCONTACTS)
 @Keywords(OMSPFAFSTETTER_KEYWORDS)
 @Label(OMSPFAFSTETTER_LABEL)
-@Name(OMSPFAFSTETTER_NAME)
+@Name("_" + OMSPFAFSTETTER_NAME)
 @Status(OMSPFAFSTETTER_STATUS)
 @License(OMSPFAFSTETTER_LICENSE)
 public class OmsPfafstetter extends JGTModel {

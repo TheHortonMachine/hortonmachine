@@ -61,7 +61,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSH2CD_AUTHORNAMES, contact = OMSH2CD_AUTHORCONTACTS)
 @Keywords(OMSH2CD_KEYWORDS)
 @Label(OMSH2CD_LABEL)
-@Name(OMSH2CD_NAME)
+@Name("_" + OMSH2CD_NAME)
 @Status(OMSH2CD_STATUS)
 @License(OMSH2CD_LICENSE)
 public class OmsH2cd extends JGTModel {

@@ -65,7 +65,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSHACKLENGTH_AUTHORNAMES, contact = OMSHACKLENGTH_AUTHORCONTACTS)
 @Keywords(OMSHACKLENGTH_KEYWORDS)
 @Label(OMSHACKLENGTH_LABEL)
-@Name(OMSHACKLENGTH_NAME)
+@Name("_" + OMSHACKLENGTH_NAME)
 @Status(OMSHACKLENGTH_STATUS)
 @License(OMSHACKLENGTH_LICENSE)
 public class OmsHackLength extends JGTModel {

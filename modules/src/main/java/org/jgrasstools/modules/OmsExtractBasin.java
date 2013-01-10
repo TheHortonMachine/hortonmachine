@@ -107,7 +107,7 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 @Author(name = OMSEXTRACTBASIN_AUTHORNAMES, contact = OMSEXTRACTBASIN_AUTHORCONTACTS)
 @Keywords(OMSEXTRACTBASIN_KEYWORDS)
 @Label(OMSEXTRACTBASIN_LABEL)
-@Name(OMSEXTRACTBASIN_NAME)
+@Name("_" + OMSEXTRACTBASIN_NAME)
 @Status(OMSEXTRACTBASIN_STATUS)
 @License(OMSEXTRACTBASIN_LICENSE)
 public class OmsExtractBasin extends JGTModel {

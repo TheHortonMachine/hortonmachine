@@ -70,7 +70,7 @@ import com.vividsolutions.jts.geom.Envelope;
 @Author(name = OMSXYZ2RASTER_AUTHORNAMES, contact = OMSXYZ2RASTER_AUTHORCONTACTS)
 @Keywords(OMSXYZ2RASTER_KEYWORDS)
 @Label(OMSXYZ2RASTER_LABEL)
-@Name(OMSXYZ2RASTER_NAME)
+@Name("_" + OMSXYZ2RASTER_NAME)
 @Status(OMSXYZ2RASTER_STATUS)
 @License(OMSXYZ2RASTER_LICENSE)
 public class OmsXyz2Raster extends JGTModel {

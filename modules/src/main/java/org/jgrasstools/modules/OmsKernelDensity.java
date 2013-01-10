@@ -63,7 +63,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSKERNELDENSITY_AUTHORNAMES, contact = OMSKERNELDENSITY_AUTHORCONTACTS)
 @Keywords(OMSKERNELDENSITY_KEYWORDS)
 @Label(OMSKERNELDENSITY_LABEL)
-@Name(OMSKERNELDENSITY_NAME)
+@Name("_" + OMSKERNELDENSITY_NAME)
 @Status(OMSKERNELDENSITY_STATUS)
 @License(OMSKERNELDENSITY_LICENSE)
 public class OmsKernelDensity extends JGTModel {

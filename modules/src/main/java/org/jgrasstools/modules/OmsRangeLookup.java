@@ -62,7 +62,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSRANGELOOKUP_AUTHORNAMES, contact = OMSRANGELOOKUP_AUTHORCONTACTS)
 @Keywords(OMSRANGELOOKUP_KEYWORDS)
 @Label(OMSRANGELOOKUP_LABEL)
-@Name(OMSRANGELOOKUP_NAME)
+@Name("_" + OMSRANGELOOKUP_NAME)
 @Status(OMSRANGELOOKUP_STATUS)
 @License(OMSRANGELOOKUP_LICENSE)
 public class OmsRangeLookup extends JGTModel {

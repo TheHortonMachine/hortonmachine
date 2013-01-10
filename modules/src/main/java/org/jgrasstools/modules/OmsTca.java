@@ -63,7 +63,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSTCA_AUTHORNAMES, contact = OMSTCA_AUTHORCONTACTS)
 @Keywords(OMSTCA_KEYWORDS)
 @Label(OMSTCA_LABEL)
-@Name(OMSTCA_NAME)
+@Name("_" + OMSTCA_NAME)
 @Status(OMSTCA_STATUS)
 @License(OMSTCA_LICENSE)
 public class OmsTca extends JGTModel {

@@ -64,7 +64,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSSLOPE_AUTHORNAMES, contact = OMSSLOPE_AUTHORCONTACTS)
 @Keywords(OMSSLOPE_KEYWORDS)
 @Label(OMSSLOPE_LABEL)
-@Name(OMSSLOPE_NAME)
+@Name("_" + OMSSLOPE_NAME)
 @Status(OMSSLOPE_STATUS)
 @License(OMSSLOPE_LICENSE)
 public class OmsSlope extends JGTModel {

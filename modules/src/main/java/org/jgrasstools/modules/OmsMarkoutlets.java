@@ -55,7 +55,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSMARKOUTLETS_AUTHORNAMES, contact = OMSMARKOUTLETS_AUTHORCONTACTS)
 @Keywords(OMSMARKOUTLETS_KEYWORDS)
 @Label(OMSMARKOUTLETS_LABEL)
-@Name(OMSMARKOUTLETS_NAME)
+@Name("_" + OMSMARKOUTLETS_NAME)
 @Status(OMSMARKOUTLETS_STATUS)
 @License(OMSMARKOUTLETS_LICENSE)
 public class OmsMarkoutlets extends JGTModel {

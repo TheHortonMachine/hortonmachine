@@ -52,7 +52,7 @@ import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 @Author(name = OMSCUTOUT_AUTHORNAMES, contact = OMSCUTOUT_AUTHORCONTACTS)
 @Keywords(OMSCUTOUT_KEYWORDS)
 @Label(OMSCUTOUT_LABEL)
-@Name(OMSCUTOUT_NAME)
+@Name("_" + OMSCUTOUT_NAME)
 @Status(OMSCUTOUT_STATUS)
 @License(OMSCUTOUT_LICENSE)
 public class CutOut extends JGTModel {

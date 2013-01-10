@@ -48,7 +48,7 @@ import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect;
 @Author(name = OMSASPECT_AUTHORNAMES, contact = OMSASPECT_AUTHORCONTACTS)
 @Keywords(OMSASPECT_KEYWORDS)
 @Label(OMSASPECT_LABEL)
-@Name(OMSASPECT_NAME)
+@Name("_" + OMSASPECT_NAME)
 @Status(OMSASPECT_STATUS)
 @License(OMSASPECT_LICENSE)
 public class Aspect extends JGTModel {

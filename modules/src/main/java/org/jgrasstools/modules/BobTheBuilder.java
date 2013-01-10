@@ -57,7 +57,7 @@ import org.jgrasstools.gears.modules.r.bobthebuilder.OmsBobTheBuilder;
 @Author(name = OMSBOBTHEBUILDER_AUTHORNAMES, contact = OMSBOBTHEBUILDER_AUTHORCONTACTS)
 @Keywords(OMSBOBTHEBUILDER_KEYWORDS)
 @Label(OMSBOBTHEBUILDER_LABEL)
-@Name(OMSBOBTHEBUILDER_NAME)
+@Name("_" + OMSBOBTHEBUILDER_NAME)
 @Status(OMSBOBTHEBUILDER_STATUS)
 @License(OMSBOBTHEBUILDER_LICENSE)
 public class BobTheBuilder extends JGTModel {

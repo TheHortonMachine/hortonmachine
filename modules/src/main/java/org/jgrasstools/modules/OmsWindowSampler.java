@@ -68,7 +68,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSWINDOWSAMPLER_AUTHORNAMES, contact = OMSWINDOWSAMPLER_AUTHORCONTACTS)
 @Keywords(OMSWINDOWSAMPLER_KEYWORDS)
 @Label(OMSWINDOWSAMPLER_LABEL)
-@Name(OMSWINDOWSAMPLER_NAME)
+@Name("_" + OMSWINDOWSAMPLER_NAME)
 @Status(OMSWINDOWSAMPLER_STATUS)
 @License(OMSWINDOWSAMPLER_LICENSE)
 public class OmsWindowSampler extends JGTModel {

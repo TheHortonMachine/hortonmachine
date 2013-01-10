@@ -47,7 +47,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSGC_AUTHORNAMES, contact = OMSGC_AUTHORCONTACTS)
 @Keywords(OMSGC_KEYWORDS)
 @Label(OMSGC_LABEL)
-@Name(OMSGC_NAME)
+@Name("_" + OMSGC_NAME)
 @Status(OMSGC_STATUS)
 @License(OMSGC_LICENSE)
 public class OmsGc extends JGTModel {

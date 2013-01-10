@@ -82,7 +82,7 @@ import org.joda.time.DateTime;
 @Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)
 @Keywords(OMSPEAKFLOW_KEYWORDS)
 @Label(OMSPEAKFLOW_LABEL)
-@Name(OMSPEAKFLOW_NAME)
+@Name("_" + OMSPEAKFLOW_NAME)
 @Status(OMSPEAKFLOW_STATUS)
 @License(OMSPEAKFLOW_LICENSE)
 public class OmsPeakflow extends JGTModel {

@@ -62,7 +62,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSTC_AUTHORNAMES, contact = OMSTC_AUTHORCONTACTS)
 @Keywords(OMSTC_KEYWORDS)
 @Label(OMSTC_LABEL)
-@Name(OMSTC_NAME)
+@Name("_" + OMSTC_NAME)
 @Status(OMSTC_STATUS)
 @License(OMSTC_LICENSE)
 public class OmsTc extends JGTModel {

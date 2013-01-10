@@ -51,7 +51,7 @@ import org.jgrasstools.hortonmachine.modules.statistics.cb.OmsCb;
 @Author(name = OMSCB_AUTHORNAMES, contact = OMSCB_AUTHORCONTACTS)
 @Keywords(OMSCB_KEYWORDS)
 @Label(OMSCB_LABEL)
-@Name(OMSCB_NAME)
+@Name("_" + OMSCB_NAME)
 @Status(OMSCB_STATUS)
 @License(OMSCB_LICENSE)
 public class Cb extends JGTModel {

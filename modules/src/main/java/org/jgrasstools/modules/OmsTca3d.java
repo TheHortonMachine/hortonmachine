@@ -67,7 +67,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSTCA3D_AUTHORNAMES, contact = OMSTCA3D_AUTHORCONTACTS)
 @Keywords(OMSTCA3D_KEYWORDS)
 @Label(OMSTCA3D_LABEL)
-@Name(OMSTCA3D_NAME)
+@Name("_" + OMSTCA3D_NAME)
 @Status(OMSTCA3D_STATUS)
 @License(OMSTCA3D_LICENSE)
 public class OmsTca3d extends JGTModel {

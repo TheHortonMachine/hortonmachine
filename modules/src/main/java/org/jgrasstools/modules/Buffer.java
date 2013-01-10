@@ -60,7 +60,7 @@ import org.jgrasstools.gears.modules.v.vectoroperations.OmsBuffer;
 @Author(name = OMSBUFFER_AUTHORNAMES, contact = OMSBUFFER_AUTHORCONTACTS)
 @Keywords(OMSBUFFER_KEYWORDS)
 @Label(OMSBUFFER_LABEL)
-@Name(OMSBUFFER_NAME)
+@Name("_" + OMSBUFFER_NAME)
 @Status(OMSBUFFER_STATUS)
 @License(OMSBUFFER_LICENSE)
 public class Buffer extends JGTModel {

@@ -62,7 +62,7 @@ import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 @Author(name = OMSSKYVIEW_AUTHORNAMES, contact = OMSSKYVIEW_AUTHORCONTACTS)
 @Keywords(OMSSKYVIEW_KEYWORDS)
 @Label(OMSSKYVIEW_LABEL)
-@Name(OMSSKYVIEW_NAME)
+@Name("_" + OMSSKYVIEW_NAME)
 @Status(OMSSKYVIEW_STATUS)
 @License(OMSSKYVIEW_LICENSE)
 public class OmsSkyview extends JGTModel {
