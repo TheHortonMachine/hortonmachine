@@ -46,12 +46,9 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.io.gridgeometryreader.OmsGridGeometryReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSGRIDGEOMETRYREADER_DESCRIPTION)
 @Author(name = OMSGRIDGEOMETRYREADER_AUTHORNAMES, contact = OMSGRIDGEOMETRYREADER_AUTHORCONTACTS)
@@ -60,7 +57,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("_" + OMSGRIDGEOMETRYREADER_NAME)
 @Status(OMSGRIDGEOMETRYREADER_STATUS)
 @License(OMSGRIDGEOMETRYREADER_LICENSE)
-public class OmsGridGeometryReader extends JGTModel {
+public class GridGeometryReader extends JGTModel {
 
     @Description(OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -104,12 +101,19 @@ public class OmsGridGeometryReader extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(pNorth, pSouth, pWest, pEast, pXres, pYres, pCode);
-
-        JGTProcessingRegion region = new JGTProcessingRegion(pWest, pEast, pSouth, pNorth, pXres, pYres);
-        CoordinateReferenceSystem crs = CRS.decode(pCode);
-        outGridgeom = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, region.getCols(),
-                region.getRows(), crs);
+        OmsGridGeometryReader gridgeometryreader = new OmsGridGeometryReader();
+        gridgeometryreader.pNorth = pNorth;
+        gridgeometryreader.pSouth = pSouth;
+        gridgeometryreader.pWest = pWest;
+        gridgeometryreader.pEast = pEast;
+        gridgeometryreader.pXres = pXres;
+        gridgeometryreader.pYres = pYres;
+        gridgeometryreader.pCode = pCode;
+        gridgeometryreader.pm = pm;
+        gridgeometryreader.doProcess = doProcess;
+        gridgeometryreader.doReset = doReset;
+        gridgeometryreader.process();
+        outGridgeom = gridgeometryreader.outGridgeom;
     }
 
 }

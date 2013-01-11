@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_DESCRIPTION;
@@ -30,14 +29,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inAttrib
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inFlow_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_inNet_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSH2CA_outAttribute_DESCRIPTION;
-
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -50,13 +41,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 
 @Description(OMSH2CA_DESCRIPTION)
 @Author(name = OMSH2CA_AUTHORNAMES, contact = OMSH2CA_AUTHORCONTACTS)
@@ -65,70 +52,38 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("_" + OMSH2CA_NAME)
 @Status(OMSH2CA_STATUS)
 @License(OMSH2CA_LICENSE)
-public class OmsH2cA extends JGTModel {
+public class H2cA extends JGTModel {
     @Description(OMSH2CA_inFlow_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inFlow = null;
+    public String inFlow = null;
 
     @Description(OMSH2CA_inNet_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inNet = null;
+    public String inNet = null;
 
     @Description(OMSH2CA_inAttribute_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inAttribute = null;
+    public String inAttribute = null;
 
     @Description(OMSH2CA_outAttribute_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outAttribute = null;
+    public String outAttribute = null;
 
     @Execute
-    public void process() {
-        if (!concatOr(outAttribute == null, doReset)) {
-            return;
-        }
-        checkNull(inFlow, inNet, inAttribute);
-
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        RandomIter attributeIter = CoverageUtilities.getRandomIterator(inAttribute);
-        RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
-
-        pm.beginTask("Marking the network...", rows); //$NON-NLS-1$
-        /*
-         * mark network as outlet, in order to easier stop on the net 
-         * while going downstream
-         */
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                if (netIter.getSampleDouble(i, j, 0) == FlowNode.NETVALUE)
-                    flowIter.setSample(i, j, 0, FlowNode.OUTLET);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        netIter.done();
-
-        WritableRaster h2caWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
-        WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
-
-        ModelsEngine.markHillSlopeWithLinkValue(flowIter, attributeIter, h2caIter, cols, rows, pm);
-
-        h2caIter.done();
-        attributeIter.done();
-        flowIter.done();
-
-        outAttribute = CoverageUtilities.buildCoverage("h2ca", h2caWR, regionMap, inFlow.getCoordinateReferenceSystem());
-
+    public void process() throws Exception {
+        OmsH2cA h2ca = new OmsH2cA();
+        h2ca.inFlow = getRaster(inFlow);
+        h2ca.inNet = getRaster(inNet);
+        h2ca.inAttribute = getRaster(inAttribute);
+        h2ca.pm = pm;
+        h2ca.doProcess = doProcess;
+        h2ca.doReset = doReset;
+        h2ca.process();
+        dumpRaster(h2ca.outAttribute, outAttribute);
     }
 
 }

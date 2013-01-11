@@ -27,9 +27,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LIC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION;
-
-import java.io.File;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -42,10 +39,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 
 @Description(OMSIMAGEMOSAICCREATOR_DESCRIPTION)
 @Documentation(OMSIMAGEMOSAICCREATOR_DOCUMENTATION)
@@ -55,7 +51,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Name("_" + OMSIMAGEMOSAICCREATOR_NAME)
 @Status(OMSIMAGEMOSAICCREATOR_STATUS)
 @License(OMSIMAGEMOSAICCREATOR_LICENSE)
-public class OmsImageMosaicCreator extends JGTModel {
+public class ImageMosaicCreator extends JGTModel {
 
     @Description(OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -64,15 +60,11 @@ public class OmsImageMosaicCreator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFolder);
-
-        pm.beginTask("Generating mosaic... this might take some time depending on the number of images...",
-                IJGTProgressMonitor.UNKNOWN);
-
-        ImageMosaicFormat imageMosaicFormat = new ImageMosaicFormat();
-        File imageryFolder = new File(inFolder);
-        imageMosaicFormat.getReader(imageryFolder);
-
-        pm.done();
+        OmsImageMosaicCreator imagemosaiccreator = new OmsImageMosaicCreator();
+        imagemosaiccreator.inFolder = inFolder;
+        imagemosaiccreator.pm = pm;
+        imagemosaiccreator.doProcess = doProcess;
+        imagemosaiccreator.doReset = doReset;
+        imagemosaiccreator.process();
     }
 }
