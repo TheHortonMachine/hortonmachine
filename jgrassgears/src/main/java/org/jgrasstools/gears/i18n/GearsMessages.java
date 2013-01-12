@@ -424,6 +424,8 @@ public class GearsMessages {
     public static final String OMSVECTORMERGER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSVECTORMERGER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSVECTORMERGER_inVectors_DESCRIPTION = "The input vectors to be merged.";
+    public static final String OMSVECTORMERGER_inVector1_DESCRIPTION = "The first vector to be merged.";
+    public static final String OMSVECTORMERGER_inVector2_DESCRIPTION = "The second vector to be merged.";
     public static final String OMSVECTORMERGER_outVector_DESCRIPTION = "The output vector.";
 
     public static final String OMSDATETIME2VALUEMAPWRITER_DESCRIPTION = "Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].";

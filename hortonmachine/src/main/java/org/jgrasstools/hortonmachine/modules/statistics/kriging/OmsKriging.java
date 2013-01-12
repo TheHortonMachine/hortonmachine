@@ -231,7 +231,7 @@ public class OmsKriging extends JGTModel {
      */
 
     @Execute
-    public void executeKriging() throws Exception {
+    public void process() throws Exception {
         verifyInput();
 
         List<Double> xStationList = new ArrayList<Double>();

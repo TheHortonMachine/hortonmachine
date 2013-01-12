@@ -133,7 +133,7 @@ public class OmsPeakflow extends JGTModel {
     @Out
     public HashMap<DateTime, double[]> outDischarge;
 
-    public double oututstepArg = 100;
+    public double outputStepArg = 100;
 
     // private int basinStatus = 0; // dry/normal/wet
     // private double phi = -1d;
@@ -308,7 +308,7 @@ public class OmsPeakflow extends JGTModel {
             pm.message("Maximum discharge value: " + qtotal.calculateQmax());
 
             for( int i = 0; i < calculateQ.length; i++ ) {
-                if (i % oututstepArg != 0)
+                if (i % outputStepArg != 0)
                     continue;
                 DateTime tmpDate = dummyDate.plusSeconds((int) calculateQ[i][0]);
                 double[] value = new double[1];
@@ -337,7 +337,7 @@ public class OmsPeakflow extends JGTModel {
             // pm.message("Maximum discharge value: " + qtotal.calculateQmax());
             DateTime firstDate = jeffC.getFirstDate();
             for( int i = 0; i < calculateQ.length; i++ ) {
-                if (i % oututstepArg != 0)
+                if (i % outputStepArg != 0)
                     continue;
                 DateTime tmpDate = firstDate.plusSeconds((int) calculateQ[i][0]);
                 double[] value = new double[1];

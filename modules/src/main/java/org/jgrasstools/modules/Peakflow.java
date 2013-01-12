@@ -1,0 +1,140 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.jgrasstools.modules;
+
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRainfall_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsub_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsup_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inSat_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inTopindex_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_outDischarge_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pA_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pCelerity_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pN_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pSat_DESCRIPTION;
+
+import java.util.HashMap;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow;
+import org.joda.time.DateTime;
+
+@Description(OMSPEAKFLOW_DESCRIPTION)
+@Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)
+@Keywords(OMSPEAKFLOW_KEYWORDS)
+@Label(OMSPEAKFLOW_LABEL)
+@Name("_" + OMSPEAKFLOW_NAME)
+@Status(OMSPEAKFLOW_STATUS)
+@License(OMSPEAKFLOW_LICENSE)
+public class Peakflow extends JGTModel {
+
+    @Description(OMSPEAKFLOW_pA_DESCRIPTION)
+    @Unit("mm/h^m")
+    @In
+    public double pA = -1f;
+
+    @Description(OMSPEAKFLOW_pN_DESCRIPTION)
+    @In
+    public double pN = -1f;
+
+    @Description(OMSPEAKFLOW_pCelerity_DESCRIPTION)
+    @Unit("m/s")
+    @In
+    public double pCelerity = -1f;
+
+    @Description(OMSPEAKFLOW_pDiffusion_DESCRIPTION)
+    @Unit("m2/s")
+    @In
+    public double pDiffusion = -1f;
+
+    @Description(OMSPEAKFLOW_pSat_DESCRIPTION)
+    @Unit("%")
+    @In
+    public double pSat = -1f;
+
+    @Description(OMSPEAKFLOW_inTopindex_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inTopindex = null;
+
+    @Description(OMSPEAKFLOW_inSat_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inSat = null;
+
+    @Description(OMSPEAKFLOW_inRescaledsup_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inRescaledsup = null;
+
+    @Description(OMSPEAKFLOW_inRescaledsub_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inRescaledsub = null;
+
+    @Description(OMSPEAKFLOW_inRainfall_DESCRIPTION)
+    @In
+    public HashMap<DateTime, double[]> inRainfall;
+
+    @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
+    @Out
+    public HashMap<DateTime, double[]> outDischarge;
+
+    @Execute
+    public void process() throws Exception {
+        OmsPeakflow peakflow = new OmsPeakflow();
+        peakflow.pA = pA;
+        peakflow.pN = pN;
+        peakflow.pCelerity = pCelerity;
+        peakflow.pDiffusion = pDiffusion;
+        peakflow.pSat = pSat;
+        peakflow.inTopindex = getRaster(inTopindex);
+        peakflow.inSat = getRaster(inSat);
+        peakflow.inRescaledsup = getRaster(inRescaledsup);
+        peakflow.inRescaledsub = getRaster(inRescaledsub);
+        peakflow.inRainfall = inRainfall;
+        peakflow.pm = pm;
+        peakflow.doProcess = doProcess;
+        peakflow.doReset = doReset;
+        peakflow.process();
+        outDischarge = peakflow.outDischarge;
+    }
+}
