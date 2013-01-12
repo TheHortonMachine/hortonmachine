@@ -34,9 +34,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMP
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
-
-import javax.media.jai.Interpolation;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -50,13 +47,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.processing.Operations;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.JGTProcessingRegion;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.modules.r.transformer.OmsRasterResolutionResampler;
 
 @Description(OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION)
 @Documentation(OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION)
@@ -66,12 +59,12 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 @Name("_" + OMSRASTERRESOLUTIONRESAMPLER_NAME)
 @Status(OMSRASTERRESOLUTIONRESAMPLER_STATUS)
 @License(OMSRASTERRESOLUTIONRESAMPLER_LICENSE)
-public class OmsRasterResolutionResampler extends JGTModel {
+public class RasterResolutionResampler extends JGTModel {
 
     @Description(OMSRASTERRESOLUTIONRESAMPLER_inGeodata_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inGeodata;
+    public String inGeodata;
 
     @Description(OMSRASTERRESOLUTIONRESAMPLER_pInterpolation_DESCRIPTION)
     @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
@@ -89,32 +82,19 @@ public class OmsRasterResolutionResampler extends JGTModel {
     @Description(OMSRASTERRESOLUTIONRESAMPLER_outGeodata_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outGeodata;
+    public String outGeodata;
 
-    @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        checkNull(inGeodata, pXres);
-        if (pYres == null) {
-            pYres = pXres;
-        }
-        JGTProcessingRegion region = new JGTProcessingRegion(inGeodata);
-        region.setWEResolution(pXres);
-        region.setNSResolution(pYres);
-
-        GridGeometry2D newGridGeometry = region.getGridGeometry(inGeodata.getCoordinateReferenceSystem());
-
-        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        if (pInterpolation.equals(BILINEAR)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        } else if (pInterpolation.equals(BICUBIC)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-        }
-
-        pm.beginTask("Resampling...", IJGTProgressMonitor.UNKNOWN);
-        outGeodata = (GridCoverage2D) Operations.DEFAULT.resample(inGeodata, inGeodata.getCoordinateReferenceSystem(),
-                newGridGeometry, interpolation);
-        pm.done();
+        OmsRasterResolutionResampler rasterresolutionresampler = new OmsRasterResolutionResampler();
+        rasterresolutionresampler.inGeodata = getRaster(inGeodata);
+        rasterresolutionresampler.pInterpolation = pInterpolation;
+        rasterresolutionresampler.pXres = pXres;
+        rasterresolutionresampler.pYres = pYres;
+        rasterresolutionresampler.pm = pm;
+        rasterresolutionresampler.doProcess = doProcess;
+        rasterresolutionresampler.doReset = doReset;
+        rasterresolutionresampler.process();
+        dumpRaster(rasterresolutionresampler.outGeodata, outGeodata);
     }
-
 }

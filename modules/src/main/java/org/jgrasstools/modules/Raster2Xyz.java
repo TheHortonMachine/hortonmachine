@@ -29,12 +29,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_doRemovenv_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inFile_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inRaster_DESCRIPTION;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-
-import javax.media.jai.iterator.RandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -47,14 +41,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.geometry.DirectPosition;
+import org.jgrasstools.gears.modules.r.raster2xyz.OmsRaster2Xyz;
 
 @Description(OMSRASTER2XYZ_DESCRIPTION)
 @Documentation(OMSRASTER2XYZ_DOCUMENTATION)
@@ -64,12 +53,12 @@ import org.opengis.geometry.DirectPosition;
 @Name("_" + OMSRASTER2XYZ_NAME)
 @Status(OMSRASTER2XYZ_STATUS)
 @License(OMSRASTER2XYZ_LICENSE)
-public class OmsRaster2Xyz extends JGTModel {
+public class Raster2Xyz extends JGTModel {
 
     @Description(OMSRASTER2XYZ_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTER2XYZ_inFile_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -83,42 +72,13 @@ public class OmsRaster2Xyz extends JGTModel {
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster);
-
-        RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        GridGeometry2D gridGeometry = inRaster.getGridGeometry();
-
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-
-        BufferedWriter writer = null;
-        try {
-            writer = new BufferedWriter(new FileWriter(inFile));
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    double elevation = rasterIter.getSampleDouble(c, r, 0);
-                    if (doRemovenv && JGTConstants.isNovalue(elevation)) {
-                        continue;
-                    }
-                    DirectPosition position = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
-                    double[] coordinate = position.getCoordinate();
-
-                    StringBuilder sb = new StringBuilder();
-                    sb.append(coordinate[0]);
-                    sb.append("\t");
-                    sb.append(coordinate[1]);
-                    sb.append("\t");
-                    sb.append(elevation);
-                    sb.append("\n");
-                    writer.write(sb.toString());
-                }
-            }
-        } finally {
-            if (writer != null)
-                writer.close();
-        }
-
+        OmsRaster2Xyz raster2xyz = new OmsRaster2Xyz();
+        raster2xyz.inRaster = getRaster(inRaster);
+        raster2xyz.inFile = inFile;
+        raster2xyz.doRemovenv = doRemovenv;
+        raster2xyz.pm = pm;
+        raster2xyz.doProcess = doProcess;
+        raster2xyz.doReset = doReset;
+        raster2xyz.process();
     }
-
 }

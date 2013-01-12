@@ -30,13 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_inRaster_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pClasses_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRANGELOOKUP_pRanges_DESCRIPTION;
-
-import java.awt.image.RenderedImage;
-import java.util.HashMap;
-
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -50,13 +43,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jaitools.media.jai.rangelookup.RangeLookupTable;
-import org.jaitools.numeric.Range;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 
 @Description(OMSRANGELOOKUP_DESCRIPTION)
 @Documentation(OMSRANGELOOKUP_DOCUMENTATION)
@@ -66,12 +55,12 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("_" + OMSRANGELOOKUP_NAME)
 @Status(OMSRANGELOOKUP_STATUS)
 @License(OMSRANGELOOKUP_LICENSE)
-public class OmsRangeLookup extends JGTModel {
+public class RangeLookup extends JGTModel {
 
     @Description(OMSRANGELOOKUP_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRANGELOOKUP_pRanges_DESCRIPTION)
     @In
@@ -84,65 +73,19 @@ public class OmsRangeLookup extends JGTModel {
     @Description(OMSRANGELOOKUP_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster = null;
+    public String outRaster = null;
 
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outRaster == null, doReset)) {
-            return;
-        }
-
-        checkNull(inRaster, pRanges, pClasses);
-
-        RenderedImage inRI = inRaster.getRenderedImage();
-
-        RangeLookupTable<Double, Double> table = new RangeLookupTable<Double, Double>(JGTConstants.doubleNovalue);
-
-        String[] rangesSplit = pRanges.trim().split(",");
-        String[] classesSplit = pClasses.trim().split(",");
-        if (rangesSplit.length != classesSplit.length) {
-            throw new ModelsIllegalargumentException("Ranges and classes must be in pairs!", this);
-        }
-        for( int i = 0; i < rangesSplit.length; i++ ) {
-            String classStr = classesSplit[i].trim();
-            double classNum = Double.parseDouble(classStr);
-
-            String range = rangesSplit[i].trim();
-            boolean minIncluded = false;
-            boolean maxIncluded = false;
-            if (range.startsWith("[")) {
-                minIncluded = true;
-            }
-            if (range.endsWith("]")) {
-                maxIncluded = true;
-            }
-            String rangeNoBrac = range.replaceAll("\\[|\\]|\\(|\\)", "");
-            String[] split = rangeNoBrac.trim().split("\\s+");
-
-            Double min = null;
-            try {
-                min = Double.parseDouble(split[0]);
-            } catch (Exception e) {
-                // can be null
-            }
-            Double max = null;
-            try {
-                max = Double.parseDouble(split[1]);
-            } catch (Exception e) {
-                // can be null
-            }
-
-            Range<Double> r = new Range<Double>(min, minIncluded, max, maxIncluded);
-            table.add(r, classNum);
-        }
-
-        ParameterBlockJAI pb = new ParameterBlockJAI("RangeLookup");
-        pb.setSource("source0", inRI);
-        pb.setParameter("table", table);
-        RenderedImage lookupImg = JAI.create("RangeLookup", pb);
-
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        outRaster = CoverageUtilities.buildCoverage("rangelookup", lookupImg, regionMap, inRaster.getCoordinateReferenceSystem());
+        OmsRangeLookup rangelookup = new OmsRangeLookup();
+        rangelookup.inRaster = getRaster(inRaster);
+        rangelookup.pRanges = pRanges;
+        rangelookup.pClasses = pClasses;
+        rangelookup.pm = pm;
+        rangelookup.doProcess = doProcess;
+        rangelookup.doReset = doReset;
+        rangelookup.process();
+        dumpRaster(rangelookup.outRaster, outRaster);
     }
 }

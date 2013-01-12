@@ -29,11 +29,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_STATUS
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_pCorrections_DESCRIPTION;
-
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-import java.util.HashMap;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -47,11 +42,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector;
 
 @Description(OMSRASTERCORRECTOR_DESCRIPTION)
 @Documentation(OMSRASTERCORRECTOR_DOCUMENTATION)
@@ -61,12 +54,12 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("_" + OMSRASTERCORRECTOR_NAME)
 @Status(OMSRASTERCORRECTOR_STATUS)
 @License(OMSRASTERCORRECTOR_LICENSE)
-public class OmsRasterCorrector extends JGTModel {
+public class RasterCorrector extends JGTModel {
 
     @Description(OMSRASTERCORRECTOR_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTERCORRECTOR_pCorrections_DESCRIPTION)
     @UI(JGTConstants.EASTINGNORTHING_UI_HINT)
@@ -76,31 +69,17 @@ public class OmsRasterCorrector extends JGTModel {
     @Description(OMSRASTERCORRECTOR_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster;
+    public String outRaster;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster, pCorrections);
-
-        String[] correctionSplit = pCorrections.split(","); //$NON-NLS-1$
-        if (correctionSplit.length % 3 != 0) {
-            throw new ModelsIllegalargumentException(
-                    "the format of the correction values is: col1,row1,value1,col2,row2,value2...", this);
-        }
-
-        RenderedImage inRI = inRaster.getRenderedImage();
-        WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(inRI, false);
-
-        for( int i = 0; i < correctionSplit.length; i = i + 3 ) {
-            int col = Integer.parseInt(correctionSplit[i].trim());
-            int row = Integer.parseInt(correctionSplit[i + 1].trim());
-            double value = Double.parseDouble(correctionSplit[i + 2].trim());
-
-            outWR.setSample(col, row, 0, value);
-        }
-
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        outRaster = CoverageUtilities.buildCoverage("corrected", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
+        OmsRasterCorrector rastercorrector = new OmsRasterCorrector();
+        rastercorrector.inRaster = getRaster(inRaster);
+        rastercorrector.pCorrections = pCorrections;
+        rastercorrector.pm = pm;
+        rastercorrector.doProcess = doProcess;
+        rastercorrector.doReset = doReset;
+        rastercorrector.process();
+        dumpRaster(rastercorrector.outRaster, outRaster);
     }
-
 }

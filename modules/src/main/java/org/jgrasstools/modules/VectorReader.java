@@ -28,9 +28,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_file_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_outVector_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREADER_pType_DESCRIPTION;
 
-import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
@@ -47,10 +45,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader;
-import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
@@ -64,11 +59,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @License(OMSVECTORREADER_LICENSE)
 public class VectorReader extends JGTModel {
 
-    @Description(OMSVECTORREADER_pType_DESCRIPTION)
-    @In
-    // currently not used, for future compatibility
-    public String pType = null;
-
     @Description(OMSVECTORREADER_file_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -80,65 +70,12 @@ public class VectorReader extends JGTModel {
 
     @Execute
     public void process() throws IOException {
-        if (!concatOr(outVector == null, doReset)) {
-            return;
-        }
-
-        checkNull(file);
-
-        File vectorFile = new File(file);
-        String name = vectorFile.getName();
-        if (name.toLowerCase().endsWith("shp")) {
-            OmsShapefileFeatureReader reader = new OmsShapefileFeatureReader();
-            reader.file = vectorFile.getAbsolutePath();
-            reader.pm = pm;
-            reader.readFeatureCollection();
-            outVector = reader.geodata;
-        } else if (name.toLowerCase().endsWith("properties")) {
-            outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
-        } else {
-            throw new IOException("Format is currently not supported for file: " + name);
-        }
+        OmsVectorReader vectorreader = new OmsVectorReader();
+        vectorreader.file = file;
+        vectorreader.pm = pm;
+        vectorreader.doProcess = doProcess;
+        vectorreader.doReset = doReset;
+        vectorreader.process();
+        outVector = vectorreader.outVector;
     }
-
-    /**
-     * Fast read access mode. 
-     * 
-     * @param path the vector file path.
-     * @return the read {@link FeatureCollection}.
-     * @throws IOException
-     */
-    public static SimpleFeatureCollection readVector( String path ) throws IOException {
-        SimpleFeatureCollection fc = getFC(path);
-        return fc;
-    }
-
-    private static SimpleFeatureCollection getFC( String path ) throws IOException {
-        VectorReader reader = new VectorReader();
-        reader.file = path;
-        reader.process();
-        SimpleFeatureCollection fc = reader.outVector;
-        return fc;
-    }
-
-    /**
-     * Fast reading of the bounds of a vector dataset.
-     * 
-     * @param path the vector file path.
-     * @return the array containing the bounds as [n, s, e, w].
-     * @throws IOException
-     */
-    public static double[] readBounds( String path ) throws IOException {
-        SimpleFeatureCollection fc = getFC(path);
-        ReferencedEnvelope bounds = fc.getBounds();
-
-        double[] nsew = {//
-        bounds.getMaxY(), //
-                bounds.getMinY(), //
-                bounds.getMaxX(), //
-                bounds.getMinX() //
-        };
-        return nsew;
-    }
-
 }

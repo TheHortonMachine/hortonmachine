@@ -41,9 +41,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.rasterconverter.OmsRasterConverter;
 
 @Description(OMSRASTERCONVERTER_DESCRIPTION)
 @Documentation(OMSRASTERCONVERTER_DOCUMENTATION)
@@ -53,22 +53,26 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Name("_" + OMSRASTERCONVERTER_NAME)
 @Status(OMSRASTERCONVERTER_STATUS)
 @License(OMSRASTERCONVERTER_LICENSE)
-public class OmsRasterConverter extends JGTModel {
+public class RasterConverter extends JGTModel {
 
     @Description(OMSRASTERCONVERTER_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTERCONVERTER_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster;
+    public String outRaster;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster);
-        outRaster = inRaster;
+        OmsRasterConverter rasterconverter = new OmsRasterConverter();
+        rasterconverter.inRaster = getRaster(inRaster);
+        rasterconverter.pm = pm;
+        rasterconverter.doProcess = doProcess;
+        rasterconverter.doReset = doReset;
+        rasterconverter.process();
+        dumpRaster(rasterconverter.outRaster, outRaster);
     }
-
 }

@@ -30,12 +30,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_outSummed_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_pLowerThres_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION;
-
-import java.awt.image.WritableRaster;
-import java.util.HashMap;
-
-import javax.media.jai.iterator.RandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -48,11 +42,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.modules.ModelsEngine;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.hortonmachine.modules.statistics.sumdownstream.OmsSumDownStream;
 
 @Description(OMSSUMDOWNSTREAM_DESCRIPTION)
 @Author(name = OMSSUMDOWNSTREAM_AUTHORNAMES, contact = OMSSUMDOWNSTREAM_AUTHORCONTACTS)
@@ -61,17 +53,17 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("_" + OMSSUMDOWNSTREAM_NAME)
 @Status(OMSSUMDOWNSTREAM_STATUS)
 @License(OMSSUMDOWNSTREAM_LICENSE)
-public class OmsSumDownStream extends JGTModel {
+public class SumDownStream extends JGTModel {
 
     @Description(OMSSUMDOWNSTREAM_inFlow_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inFlow = null;
+    public String inFlow = null;
 
     @Description(OMSSUMDOWNSTREAM_inToSum_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inToSum = null;
+    public String inToSum = null;
 
     @Description(OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION)
     @In
@@ -84,29 +76,19 @@ public class OmsSumDownStream extends JGTModel {
     @Description(OMSSUMDOWNSTREAM_outSummed_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outSummed = null;
+    public String outSummed = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outSummed == null, doReset)) {
-            return;
-        }
-
-        checkNull(inFlow, inToSum);
-
-        RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
-        RandomIter toSumIter = CoverageUtilities.getRandomIterator(inToSum);
-
-        int[] colsRows = CoverageUtilities.getRegionColsRows(inFlow);
-
-        WritableRaster summedWR = ModelsEngine.sumDownstream(flowIter, toSumIter, colsRows[0], colsRows[1], pUpperThres,
-                pLowerThres, pm);
-
-        flowIter.done();
-        toSumIter.done();
-
-        HashMap<String, Double> params = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        outSummed = CoverageUtilities.buildCoverage("summeddownstream", summedWR, params, inFlow.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        OmsSumDownStream sumdownstream = new OmsSumDownStream();
+        sumdownstream.inFlow = getRaster(inFlow);
+        sumdownstream.inToSum = getRaster(inToSum);
+        sumdownstream.pUpperThres = pUpperThres;
+        sumdownstream.pLowerThres = pLowerThres;
+        sumdownstream.pm = pm;
+        sumdownstream.doProcess = doProcess;
+        sumdownstream.doReset = doReset;
+        sumdownstream.process();
+        dumpRaster(sumdownstream.outSummed, outSummed);
     }
-
 }

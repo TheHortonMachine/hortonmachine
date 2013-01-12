@@ -30,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_file_DESC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_inVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_pType_DESCRIPTION;
 
-import java.io.File;
 import java.io.IOException;
 
 import oms3.annotations.Author;
@@ -46,8 +45,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
@@ -77,33 +75,13 @@ public class VectorWriter extends JGTModel {
 
     @Execute
     public void process() throws IOException {
-        checkNull(file);
-
-        File vectorFile = new File(file);
-        if (inVector.size() == 0) {
-            pm.message("Warning, not writing an empty vector to file: " + vectorFile.getName());
-            return;
-        }
-        String name = vectorFile.getName();
-        if (name.toLowerCase().endsWith("shp") || (pType != null && pType.equals(JGTConstants.SHP))) {
-            OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);
-        } else {
-            throw new IOException("Format is currently not supported for file: " + name);
-        }
+        OmsVectorWriter vectorwriter = new OmsVectorWriter();
+        vectorwriter.inVector = inVector;
+        vectorwriter.pType = pType;
+        vectorwriter.file = file;
+        vectorwriter.pm = pm;
+        vectorwriter.doProcess = doProcess;
+        vectorwriter.doReset = doReset;
+        vectorwriter.process();
     }
-
-    /**
-     * Fast write access mode. 
-     * 
-     * @param path the vector file path.
-     * @param featureCollection the {@link FeatureCollection} to write.
-     * @throws IOException
-     */
-    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
-        VectorWriter writer = new VectorWriter();
-        writer.file = path;
-        writer.inVector = featureCollection;
-        writer.process();
-    }
-
 }

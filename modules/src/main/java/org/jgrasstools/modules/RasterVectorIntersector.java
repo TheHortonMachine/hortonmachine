@@ -30,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getGeometryType;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -44,18 +43,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
-import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.GeometryType;
+import org.jgrasstools.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector;
 
 @Description(OMSRASTERVECTORINTERSECTOR_DESCRIPTION)
 @Documentation(OMSRASTERVECTORINTERSECTOR_DOCUMENTATION)
@@ -65,17 +55,17 @@ import org.opengis.feature.type.GeometryType;
 @Name("_" + OMSRASTERVECTORINTERSECTOR_NAME)
 @Status(OMSRASTERVECTORINTERSECTOR_STATUS)
 @License(OMSRASTERVECTORINTERSECTOR_LICENSE)
-public class OmsRasterVectorIntersector extends JGTModel {
+public class RasterVectorIntersector extends JGTModel {
 
     @Description(OMSRASTERVECTORINTERSECTOR_inVector_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public SimpleFeatureCollection inVector = null;
+    public String inVector = null;
 
     @Description(OMSRASTERVECTORINTERSECTOR_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTERVECTORINTERSECTOR_doInverse_DESCRIPTION)
     @In
@@ -84,37 +74,18 @@ public class OmsRasterVectorIntersector extends JGTModel {
     @Description(OMSRASTERVECTORINTERSECTOR_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster;
+    public String outRaster;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster, inVector);
-
-        SimpleFeatureType schema = inVector.getSchema();
-        GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != GEOMETRYTYPE.POLYGON && getGeometryType(type) != GEOMETRYTYPE.MULTIPOLYGON) {
-            throw new ModelsRuntimeException("The module works only with polygon vectors.", this);
-        }
-
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
-        raster.inVector = inVector;
-        raster.pCols = regionMap.getCols();
-        raster.pRows = regionMap.getRows();
-        raster.pNorth = regionMap.getNorth();
-        raster.pSouth = regionMap.getSouth();
-        raster.pEast = regionMap.getEast();
-        raster.pWest = regionMap.getWest();
-        raster.pValue = 1.0;
-        raster.process();
-        GridCoverage2D rasterizedVector = raster.outRaster;
-
-        OmsCutOut cutout = new OmsCutOut();
-        cutout.pm = pm;
-        cutout.inRaster = inRaster;
-        cutout.inMask = rasterizedVector;
-        cutout.doInverse = doInverse;
-        cutout.process();
-        outRaster = cutout.outRaster;
+        OmsRasterVectorIntersector rastervectorintersector = new OmsRasterVectorIntersector();
+        rastervectorintersector.inVector = getVector(inVector);
+        rastervectorintersector.inRaster = getRaster(inRaster);
+        rastervectorintersector.doInverse = doInverse;
+        rastervectorintersector.pm = pm;
+        rastervectorintersector.doProcess = doProcess;
+        rastervectorintersector.doReset = doReset;
+        rastervectorintersector.process();
+        dumpRaster(rastervectorintersector.outRaster, outRaster);
     }
 }

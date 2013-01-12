@@ -29,15 +29,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STA
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-
-import java.awt.image.WritableRaster;
-import java.text.DecimalFormat;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -51,11 +42,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
 
 @Description(OMSRASTERVALUEROUNDER_DESCRIPTION)
 @Documentation(OMSRASTERVALUEROUNDER_DOCUMENTATION)
@@ -65,12 +54,12 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("_" + OMSRASTERVALUEROUNDER_NAME)
 @Status(OMSRASTERVALUEROUNDER_STATUS)
 @License(OMSRASTERVALUEROUNDER_LICENSE)
-public class OmsRasterValueRounder extends JGTModel {
+public class RasterValueRounder extends JGTModel {
 
     @Description(OMSRASTERVALUEROUNDER_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION)
     @In
@@ -79,50 +68,17 @@ public class OmsRasterValueRounder extends JGTModel {
     @Description(OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster;
-
-    private DecimalFormat formatter = null;
+    public String outRaster;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outRaster == null, doReset)) {
-            return;
-        }
-
-        checkNull(inRaster, pPattern);
-
-        formatter = new DecimalFormat(pPattern);
-
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int rows = regionMap.getRows();
-        int cols = regionMap.getCols();
-
-        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        RandomIter inRasterIter = CoverageUtilities.getRandomIterator(inRaster);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        pm.beginTask("Rounding data...", cols);
-        for( int c = 0; c < cols; c++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int r = 0; r < rows; r++ ) {
-                double value = inRasterIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value)) {
-                    String formatted = formatter.format(value);
-                    value = Double.parseDouble(formatted);
-                    outIter.setSample(c, r, 0, value);
-                } else {
-                    outIter.setSample(c, r, 0, doubleNovalue);
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        outIter.done();
-
-        outRaster = CoverageUtilities.buildCoverage("rounded", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
+        OmsRasterValueRounder rastervaluerounder = new OmsRasterValueRounder();
+        rastervaluerounder.inRaster = getRaster(inRaster);
+        rastervaluerounder.pPattern = pPattern;
+        rastervaluerounder.pm = pm;
+        rastervaluerounder.doProcess = doProcess;
+        rastervaluerounder.doReset = doReset;
+        rastervaluerounder.process();
+        dumpRaster(rastervaluerounder.outRaster, outRaster);
     }
-
 }

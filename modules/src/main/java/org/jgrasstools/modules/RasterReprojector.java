@@ -39,9 +39,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_pWes
 import static org.jgrasstools.gears.libs.modules.Variables.BICUBIC;
 import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
-
-import javax.media.jai.Interpolation;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -55,15 +52,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.processing.Operations;
-import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 
 @Description(OMSRASTERREPROJECTOR_DESCRIPTION)
 @Documentation(OMSRASTERREPROJECTOR_DOCUMENTATION)
@@ -73,12 +64,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("_" + OMSRASTERREPROJECTOR_NAME)
 @Status(OMSRASTERREPROJECTOR_STATUS)
 @License(OMSRASTERREPROJECTOR_LICENSE)
-public class OmsRasterReprojector extends JGTModel {
+public class RasterReprojector extends JGTModel {
 
     @Description(OMSRASTERREPROJECTOR_inRaster_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inRaster;
+    public String inRaster;
 
     @Description(OMSRASTERREPROJECTOR_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -123,36 +114,24 @@ public class OmsRasterReprojector extends JGTModel {
     @Description(OMSRASTERREPROJECTOR_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public GridCoverage2D outRaster = null;
+    public String outRaster = null;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(outRaster == null, doReset)) {
-            return;
-        }
-
-        CoordinateReferenceSystem targetCrs = CRS.decode(pCode);
-
-        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        if (pInterpolation.equals(BILINEAR)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        } else if (pInterpolation.equals(BICUBIC)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
-        }
-
-        GridGeometry2D gridGeometry = null;
-        if (pNorth != null && pSouth != null && pWest != null && pEast != null && pRows != null && pCols != null) {
-            gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, targetCrs);
-            pm.message("Using supplied gridgeometry: " + gridGeometry);
-        }
-        pm.beginTask("Reprojecting...", IJGTProgressMonitor.UNKNOWN);
-        if (gridGeometry == null) {
-            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolation);
-        } else {
-            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolation);
-        }
-        pm.done();
-
+        OmsRasterReprojector rasterreprojector = new OmsRasterReprojector();
+        rasterreprojector.inRaster = getRaster(inRaster);
+        rasterreprojector.pNorth = pNorth;
+        rasterreprojector.pSouth = pSouth;
+        rasterreprojector.pWest = pWest;
+        rasterreprojector.pEast = pEast;
+        rasterreprojector.pRows = pRows;
+        rasterreprojector.pCols = pCols;
+        rasterreprojector.pCode = pCode;
+        rasterreprojector.pInterpolation = pInterpolation;
+        rasterreprojector.pm = pm;
+        rasterreprojector.doProcess = doProcess;
+        rasterreprojector.doReset = doReset;
+        rasterreprojector.process();
+        dumpRaster(rasterreprojector.outRaster, outRaster);
     }
-
 }
