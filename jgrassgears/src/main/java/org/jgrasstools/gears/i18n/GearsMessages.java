@@ -18,7 +18,7 @@
  */
 package org.jgrasstools.gears.i18n;
 
-
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 /**
  * Messages for the JGrassGears.
  * 
@@ -28,7 +28,7 @@ public class GearsMessages {
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
     public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";
     public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";
-    public static final String OMSLINESMOOTHERMCMASTER_LABEL = "Vector Processing";
+    public static final String OMSLINESMOOTHERMCMASTER_LABEL = VECTORPROCESSING;
     public static final String OMSLINESMOOTHERMCMASTER_NAME = "linesmoother";
     public static final int OMSLINESMOOTHERMCMASTER_STATUS = 40;
     public static final String OMSLINESMOOTHERMCMASTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -45,7 +45,7 @@ public class GearsMessages {
     public static final String OMSVECTORCONVERTER_DESCRIPTION = "A simple middleman module to do feature conversion.";
     public static final String OMSVECTORCONVERTER_DOCUMENTATION = "";
     public static final String OMSVECTORCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
-    public static final String OMSVECTORCONVERTER_LABEL = "Vector Processing";
+    public static final String OMSVECTORCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORCONVERTER_NAME = "vconvert";
     public static final int OMSVECTORCONVERTER_STATUS = 5;
     public static final String OMSVECTORCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -58,7 +58,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESITERATORWRITER_DESCRIPTION = "Utility class for writing a id2values map to a OMS formatted csv file.";
     public static final String OMSTIMESERIESITERATORWRITER_DOCUMENTATION = "OmsTimeSeriesIteratorWriter.html";
     public static final String OMSTIMESERIESITERATORWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSTIMESERIESITERATORWRITER_LABEL = "HashMap Data Writer";
+    public static final String OMSTIMESERIESITERATORWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSTIMESERIESITERATORWRITER_NAME = "tsitwriter";
     public static final int OMSTIMESERIESITERATORWRITER_STATUS = 40;
     public static final String OMSTIMESERIESITERATORWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -74,7 +74,7 @@ public class GearsMessages {
     public static final String OMSLINESRASTERIZER_DESCRIPTION = "Module to convert vector lines to raster.";
     public static final String OMSLINESRASTERIZER_DOCUMENTATION = "";
     public static final String OMSLINESRASTERIZER_KEYWORDS = "Raster, Vector, Lines";
-    public static final String OMSLINESRASTERIZER_LABEL = "Raster Processing";
+    public static final String OMSLINESRASTERIZER_LABEL = RASTERPROCESSING;
     public static final String OMSLINESRASTERIZER_NAME = "rasterizelines";
     public static final int OMSLINESRASTERIZER_STATUS = 5;
     public static final String OMSLINESRASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -94,7 +94,7 @@ public class GearsMessages {
     public static final String OMSCONTOURLINESLABELER_DESCRIPTION = "Generates a layer of point features with a given label text and angle, following reference lines intersecting them with a layer of countourlines.";
     public static final String OMSCONTOURLINESLABELER_DOCUMENTATION = "";
     public static final String OMSCONTOURLINESLABELER_KEYWORDS = "Contourlines, Vector";
-    public static final String OMSCONTOURLINESLABELER_LABEL = "Vector Processing";
+    public static final String OMSCONTOURLINESLABELER_LABEL = VECTORPROCESSING;
     public static final String OMSCONTOURLINESLABELER_NAME = "";
     public static final int OMSCONTOURLINESLABELER_STATUS = 5;
     public static final String OMSCONTOURLINESLABELER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -109,7 +109,7 @@ public class GearsMessages {
     public static final String EXIFREADER_DESCRIPTION = "Utility class for reading exif tags in jpegs.";
     public static final String EXIFREADER_DOCUMENTATION = "";
     public static final String EXIFREADER_KEYWORDS = "IO, Jpeg, Exif, Reading";
-    public static final String EXIFREADER_LABEL = "Generic Reader";
+    public static final String EXIFREADER_LABEL = GENERICREADER;
     public static final String EXIFREADER_NAME = "";
     public static final int EXIFREADER_STATUS = 10;
     public static final String EXIFREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -121,7 +121,7 @@ public class GearsMessages {
     public static final String OMSGRASSLEGACYREADER_DESCRIPTION = "Legacy class for reading grass data the old way.";
     public static final String OMSGRASSLEGACYREADER_DOCUMENTATION = "";
     public static final String OMSGRASSLEGACYREADER_KEYWORDS = "IO, Grass, Raster, Reading";
-    public static final String OMSGRASSLEGACYREADER_LABEL = "Raster Reader";
+    public static final String OMSGRASSLEGACYREADER_LABEL = RASTERREADER;
     public static final String OMSGRASSLEGACYREADER_NAME = "";
     public static final int OMSGRASSLEGACYREADER_STATUS = 40;
     public static final String OMSGRASSLEGACYREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -137,7 +137,7 @@ public class GearsMessages {
     public static final String OMSMATRIXCHARTER_DESCRIPTION = "Utility class for charting matrix data.";
     public static final String OMSMATRIXCHARTER_DOCUMENTATION = "";
     public static final String OMSMATRIXCHARTER_KEYWORDS = "Viewer, UI, Chart";
-    public static final String OMSMATRIXCHARTER_LABEL = "";
+    public static final String OMSMATRIXCHARTER_LABEL = OTHER;
     public static final String OMSMATRIXCHARTER_NAME = "matrixcharter";
     public static final int OMSMATRIXCHARTER_STATUS = 5;
     public static final String OMSMATRIXCHARTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -166,7 +166,7 @@ public class GearsMessages {
     public static final String OMSRASTERVECTORINTERSECTOR_DESCRIPTION = "Module for raster with polygon vector intersection.";
     public static final String OMSRASTERVECTORINTERSECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERVECTORINTERSECTOR_KEYWORDS = "Raster, Vector, Intersect";
-    public static final String OMSRASTERVECTORINTERSECTOR_LABEL = "Raster Processing";
+    public static final String OMSRASTERVECTORINTERSECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERVECTORINTERSECTOR_NAME = "rvintersector";
     public static final int OMSRASTERVECTORINTERSECTOR_STATUS = 5;
     public static final String OMSRASTERVECTORINTERSECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -180,7 +180,7 @@ public class GearsMessages {
     public static final String OMSPOINTSVECTORIZER_DESCRIPTION = "Module that creates a points vector layer from raster values.";
     public static final String OMSPOINTSVECTORIZER_DOCUMENTATION = "";
     public static final String OMSPOINTSVECTORIZER_KEYWORDS = "Raster, Vector";
-    public static final String OMSPOINTSVECTORIZER_LABEL = "Vector Processing";
+    public static final String OMSPOINTSVECTORIZER_LABEL = VECTORPROCESSING;
     public static final String OMSPOINTSVECTORIZER_NAME = "pvectorizer";
     public static final int OMSPOINTSVECTORIZER_STATUS = 5;
     public static final String OMSPOINTSVECTORIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -193,7 +193,7 @@ public class GearsMessages {
     public static final String OMSVECTORREADER_DESCRIPTION = "Vectors features reader module.";
     public static final String OMSVECTORREADER_DOCUMENTATION = "OmsVectorReader.html";
     public static final String OMSVECTORREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
-    public static final String OMSVECTORREADER_LABEL = "Vector Reader";
+    public static final String OMSVECTORREADER_LABEL = FEATUREREADER;
     public static final String OMSVECTORREADER_NAME = "vectorreader";
     public static final int OMSVECTORREADER_STATUS = 40;
     public static final String OMSVECTORREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -206,7 +206,7 @@ public class GearsMessages {
     public static final String OMSRASTERWRITER_DESCRIPTION = "Raster writer module.";
     public static final String OMSRASTERWRITER_DOCUMENTATION = "OmsRasterWriter.html";
     public static final String OMSRASTERWRITER_KEYWORDS = "IO, Grass, Coverage, Raster, Writing";
-    public static final String OMSRASTERWRITER_LABEL = "Raster Writer";
+    public static final String OMSRASTERWRITER_LABEL = RASTERWRITER;
     public static final String OMSRASTERWRITER_NAME = "rasterwriter";
     public static final int OMSRASTERWRITER_STATUS = 40;
     public static final String OMSRASTERWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -218,7 +218,7 @@ public class GearsMessages {
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_DESCRIPTION = "A module to calculate world file coefficients from set of GCPs";
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_DOCUMENTATION = "";
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_KEYWORDS = "gcp, wld";
-    public static final String OMSGROUNDCONTROLPOINTS2WORLD_LABEL = "";
+    public static final String OMSGROUNDCONTROLPOINTS2WORLD_LABEL = OTHER;
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_NAME = "gcps2wld";
     public static final int OMSGROUNDCONTROLPOINTS2WORLD_STATUS = 5;
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -247,7 +247,7 @@ public class GearsMessages {
     public static final String OMSWINDOWSAMPLER_DESCRIPTION = "Module to do coverage downsampling on defined windows.";
     public static final String OMSWINDOWSAMPLER_DOCUMENTATION = "";
     public static final String OMSWINDOWSAMPLER_KEYWORDS = "IO, Coverage, Raster, Downsampling, Interpolation";
-    public static final String OMSWINDOWSAMPLER_LABEL = "Raster Processing";
+    public static final String OMSWINDOWSAMPLER_LABEL = RASTERPROCESSING;
     public static final String OMSWINDOWSAMPLER_NAME = "winsampler";
     public static final int OMSWINDOWSAMPLER_STATUS = 5;
     public static final String OMSWINDOWSAMPLER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -264,7 +264,7 @@ public class GearsMessages {
     public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
     public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
     public static final String OMSRASTERREADER_KEYWORDS = "IO, Coverage, Raster, Reading";
-    public static final String OMSRASTERREADER_LABEL = "Raster Reader";
+    public static final String OMSRASTERREADER_LABEL = RASTERREADER;
     public static final String OMSRASTERREADER_NAME = "rasterreader";
     public static final int OMSRASTERREADER_STATUS = 40;
     public static final String OMSRASTERREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -287,7 +287,7 @@ public class GearsMessages {
     public static final String OMSGRASSLEGACYWRITER_DESCRIPTION = "Legacy class for writing grass rasters.";
     public static final String OMSGRASSLEGACYWRITER_DOCUMENTATION = "";
     public static final String OMSGRASSLEGACYWRITER_KEYWORDS = "IO, Grass, Raster, Writing";
-    public static final String OMSGRASSLEGACYWRITER_LABEL = "Raster Writer";
+    public static final String OMSGRASSLEGACYWRITER_LABEL = RASTERWRITER;
     public static final String OMSGRASSLEGACYWRITER_NAME = "";
     public static final int OMSGRASSLEGACYWRITER_STATUS = 40;
     public static final String OMSGRASSLEGACYWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -301,7 +301,7 @@ public class GearsMessages {
     public static final String OMSEIENERGYWRITER_DESCRIPTION = "Utility class for writing energy data to csv files.";
     public static final String OMSEIENERGYWRITER_DOCUMENTATION = "";
     public static final String OMSEIENERGYWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSEIENERGYWRITER_LABEL = "List Data Writer";
+    public static final String OMSEIENERGYWRITER_LABEL = LIST_WRITER;
     public static final String OMSEIENERGYWRITER_NAME = "";
     public static final int OMSEIENERGYWRITER_STATUS = 40;
     public static final String OMSEIENERGYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -314,7 +314,7 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].";
     public static final String OMSID2VALUEARRAYREADER_DOCUMENTATION = "";
     public static final String OMSID2VALUEARRAYREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSID2VALUEARRAYREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSID2VALUEARRAYREADER_LABEL = HASHMAP_READER;
     public static final String OMSID2VALUEARRAYREADER_NAME = "";
     public static final int OMSID2VALUEARRAYREADER_STATUS = 5;
     public static final String OMSID2VALUEARRAYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -330,7 +330,7 @@ public class GearsMessages {
     public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Module for raster reprojection.";
     public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "OmsRasterConverter.html";
     public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader";
-    public static final String OMSRASTERREPROJECTOR_LABEL = "Raster Processing";
+    public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
     public static final int OMSRASTERREPROJECTOR_STATUS = 40;
     public static final String OMSRASTERREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -350,7 +350,7 @@ public class GearsMessages {
     public static final String OMSEIAREASREADER_DESCRIPTION = "Utility class for reading area data (for EICalculator) from csv files.";
     public static final String OMSEIAREASREADER_DOCUMENTATION = "";
     public static final String OMSEIAREASREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSEIAREASREADER_LABEL = "List Data Reader";
+    public static final String OMSEIAREASREADER_LABEL = LIST_READER;
     public static final String OMSEIAREASREADER_NAME = "";
     public static final int OMSEIAREASREADER_STATUS = 40;
     public static final String OMSEIAREASREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -363,7 +363,7 @@ public class GearsMessages {
     public static final String ADIGEBOUNDARYCONDITIONWRITER_DESCRIPTION = "Utility class for writing the final boundary conditions of the model adige to an OMS formatted csv file.";
     public static final String ADIGEBOUNDARYCONDITIONWRITER_DOCUMENTATION = "";
     public static final String ADIGEBOUNDARYCONDITIONWRITER_KEYWORDS = "IO, Writing";
-    public static final String ADIGEBOUNDARYCONDITIONWRITER_LABEL = "Generic Writer";
+    public static final String ADIGEBOUNDARYCONDITIONWRITER_LABEL = GENERICWRITER;
     public static final String ADIGEBOUNDARYCONDITIONWRITER_NAME = "";
     public static final int ADIGEBOUNDARYCONDITIONWRITER_STATUS = 40;
     public static final String ADIGEBOUNDARYCONDITIONWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -376,7 +376,7 @@ public class GearsMessages {
     public static final String OMSEIENERGYREADER_DESCRIPTION = "Utility class for reading energy data from csv files.";
     public static final String OMSEIENERGYREADER_DOCUMENTATION = "";
     public static final String OMSEIENERGYREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSEIENERGYREADER_LABEL = "List Data Reader";
+    public static final String OMSEIENERGYREADER_LABEL = LIST_READER;
     public static final String OMSEIENERGYREADER_NAME = "";
     public static final int OMSEIENERGYREADER_STATUS = 40;
     public static final String OMSEIENERGYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -389,7 +389,7 @@ public class GearsMessages {
     public static final String OMSVECTORTRANSFORMER_DESCRIPTION = "Module for vector tranforms. Currently only translation is supported.";
     public static final String OMSVECTORTRANSFORMER_DOCUMENTATION = "";
     public static final String OMSVECTORTRANSFORMER_KEYWORDS = "Transform, Vector";
-    public static final String OMSVECTORTRANSFORMER_LABEL = "Vector Processing";
+    public static final String OMSVECTORTRANSFORMER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORTRANSFORMER_NAME = "vtrans";
     public static final int OMSVECTORTRANSFORMER_STATUS = 40;
     public static final String OMSVECTORTRANSFORMER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -403,7 +403,7 @@ public class GearsMessages {
     public static final String OMSVECTORFIELDROUNDER_DESCRIPTION = "Module that rounds a defined field attribute.";
     public static final String OMSVECTORFIELDROUNDER_DOCUMENTATION = "OmsVectorFieldRounder.html";
     public static final String OMSVECTORFIELDROUNDER_KEYWORDS = "Round, VectorFieldJoiner";
-    public static final String OMSVECTORFIELDROUNDER_LABEL = "Vector Processing";
+    public static final String OMSVECTORFIELDROUNDER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORFIELDROUNDER_NAME = "vround";
     public static final int OMSVECTORFIELDROUNDER_STATUS = 40;
     public static final String OMSVECTORFIELDROUNDER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -417,7 +417,7 @@ public class GearsMessages {
     public static final String OMSVECTORMERGER_DESCRIPTION = "Module for merging vecotrs into one single.";
     public static final String OMSVECTORMERGER_DOCUMENTATION = "OmsVectorMerger.html";
     public static final String OMSVECTORMERGER_KEYWORDS = "IO, Feature, Vector, Merge";
-    public static final String OMSVECTORMERGER_LABEL = "Vector Processing";
+    public static final String OMSVECTORMERGER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORMERGER_NAME = "vmerge";
     public static final int OMSVECTORMERGER_STATUS = 40;
     public static final String OMSVECTORMERGER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -431,7 +431,7 @@ public class GearsMessages {
     public static final String OMSDATETIME2VALUEMAPWRITER_DESCRIPTION = "Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].";
     public static final String OMSDATETIME2VALUEMAPWRITER_DOCUMENTATION = "";
     public static final String OMSDATETIME2VALUEMAPWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSDATETIME2VALUEMAPWRITER_LABEL = "HashMap Data Writer";
+    public static final String OMSDATETIME2VALUEMAPWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSDATETIME2VALUEMAPWRITER_NAME = "";
     public static final int OMSDATETIME2VALUEMAPWRITER_STATUS = 5;
     public static final String OMSDATETIME2VALUEMAPWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -446,7 +446,7 @@ public class GearsMessages {
     public static final String VEGETATIONLIBRARYREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file assumed to be containing the Vegetation library data.";
     public static final String VEGETATIONLIBRARYREADER_DOCUMENTATION = "";
     public static final String VEGETATIONLIBRARYREADER_KEYWORDS = "IO, Reading";
-    public static final String VEGETATIONLIBRARYREADER_LABEL = "Generic Reader";
+    public static final String VEGETATIONLIBRARYREADER_LABEL = GENERICREADER;
     public static final String VEGETATIONLIBRARYREADER_NAME = "";
     public static final int VEGETATIONLIBRARYREADER_STATUS = 40;
     public static final String VEGETATIONLIBRARYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -458,7 +458,7 @@ public class GearsMessages {
     public static final String OMSLINESPOLYGONIZER_DESCRIPTION = "Polygonizes a layer of lines.";
     public static final String OMSLINESPOLYGONIZER_DOCUMENTATION = "";
     public static final String OMSLINESPOLYGONIZER_KEYWORDS = "Vector, Polygonize";
-    public static final String OMSLINESPOLYGONIZER_LABEL = "Vector Processing";
+    public static final String OMSLINESPOLYGONIZER_LABEL = VECTORPROCESSING;
     public static final String OMSLINESPOLYGONIZER_NAME = "";
     public static final int OMSLINESPOLYGONIZER_STATUS = 10;
     public static final String OMSLINESPOLYGONIZER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -473,7 +473,7 @@ public class GearsMessages {
     public static final String OMSMAPSVIEWER_DESCRIPTION = "A simple geodata viewer.";
     public static final String OMSMAPSVIEWER_DOCUMENTATION = "OmsMapsViewer.html";
     public static final String OMSMAPSVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
-    public static final String OMSMAPSVIEWER_LABEL = "";
+    public static final String OMSMAPSVIEWER_LABEL = OTHER;
     public static final String OMSMAPSVIEWER_NAME = "mapsviewer";
     public static final int OMSMAPSVIEWER_STATUS = 40;
     public static final String OMSMAPSVIEWER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -489,7 +489,7 @@ public class GearsMessages {
     public static final String OMSGRIDSGENERATOR_DESCRIPTION = "Generates grid of lines or polygons.";
     public static final String OMSGRIDSGENERATOR_DOCUMENTATION = "";
     public static final String OMSGRIDSGENERATOR_KEYWORDS = "Vector, Grid";
-    public static final String OMSGRIDSGENERATOR_LABEL = "Vector Processing";
+    public static final String OMSGRIDSGENERATOR_LABEL = VECTORPROCESSING;
     public static final String OMSGRIDSGENERATOR_NAME = "gridgenerator";
     public static final int OMSGRIDSGENERATOR_STATUS = 40;
     public static final String OMSGRIDSGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -511,7 +511,7 @@ public class GearsMessages {
     public static final String OMSRASTERCORRECTOR_DESCRIPTION = "Raster corrector module.";
     public static final String OMSRASTERCORRECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERCORRECTOR_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
-    public static final String OMSRASTERCORRECTOR_LABEL = "Raster Processing";
+    public static final String OMSRASTERCORRECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERCORRECTOR_NAME = "rcorrect";
     public static final int OMSRASTERCORRECTOR_STATUS = 5;
     public static final String OMSRASTERCORRECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -524,7 +524,7 @@ public class GearsMessages {
     public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
     public static final String OMSVECTOROVERLAYOPERATORS_DOCUMENTATION = "";
     public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
-    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = "Vector Processing";
+    public static final String OMSVECTOROVERLAYOPERATORS_LABEL = VECTORPROCESSING;
     public static final String OMSVECTOROVERLAYOPERATORS_NAME = "overlay";
     public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 5;
     public static final String OMSVECTOROVERLAYOPERATORS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -538,7 +538,7 @@ public class GearsMessages {
     public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
     public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
     public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
-    public static final String OMSSCANLINERASTERIZER_LABEL = "Raster Processing";
+    public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
     public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
     public static final int OMSSCANLINERASTERIZER_STATUS = 40;
     public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -559,7 +559,7 @@ public class GearsMessages {
     public static final String OMSFILEITERATOR_DESCRIPTION = "A module that iterates over files in a folder";
     public static final String OMSFILEITERATOR_DOCUMENTATION = "";
     public static final String OMSFILEITERATOR_KEYWORDS = "Iterator, File";
-    public static final String OMSFILEITERATOR_LABEL = "List Data Reader";
+    public static final String OMSFILEITERATOR_LABEL = LIST_READER;
     public static final String OMSFILEITERATOR_NAME = "fileiterator";
     public static final int OMSFILEITERATOR_STATUS = 10;
     public static final String OMSFILEITERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -576,7 +576,7 @@ public class GearsMessages {
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Module to do coverage resolution resampling.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS = "IO, Coverage, Raster, Convert";
-    public static final String OMSRASTERRESOLUTIONRESAMPLER_LABEL = "Raster Processing";
+    public static final String OMSRASTERRESOLUTIONRESAMPLER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERRESOLUTIONRESAMPLER_NAME = "rresolresampler";
     public static final int OMSRASTERRESOLUTIONRESAMPLER_STATUS = 5;
     public static final String OMSRASTERRESOLUTIONRESAMPLER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -591,7 +591,7 @@ public class GearsMessages {
     public static final String OMSVECTORTABLEJOINER_DESCRIPTION = "Module that joins attributes from one vector into another based on a common field.";
     public static final String OMSVECTORTABLEJOINER_DOCUMENTATION = "OmsVectorTableJoiner.html";
     public static final String OMSVECTORTABLEJOINER_KEYWORDS = "Join, OmsVectorFieldRounder";
-    public static final String OMSVECTORTABLEJOINER_LABEL = "Vector Processing";
+    public static final String OMSVECTORTABLEJOINER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORTABLEJOINER_NAME = "vjoin";
     public static final int OMSVECTORTABLEJOINER_STATUS = 40;
     public static final String OMSVECTORTABLEJOINER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -606,7 +606,7 @@ public class GearsMessages {
     public static final String OMSMAPCALC_DESCRIPTION = "Module for doing raster map algebra.";
     public static final String OMSMAPCALC_DOCUMENTATION = "OmsMapcalc.html";
     public static final String OMSMAPCALC_KEYWORDS = "OmsMapcalc, Raster, OmsCutOut";
-    public static final String OMSMAPCALC_LABEL = "Raster Processing";
+    public static final String OMSMAPCALC_LABEL = RASTERPROCESSING;
     public static final String OMSMAPCALC_NAME = "mapcalc";
     public static final int OMSMAPCALC_STATUS = 40;
     public static final String OMSMAPCALC_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -619,7 +619,7 @@ public class GearsMessages {
     public static final String OMSMOSAIC12_DESCRIPTION = "Module for patching max 12 rasters.";
     public static final String OMSMOSAIC12_DOCUMENTATION = "";
     public static final String OMSMOSAIC12_KEYWORDS = "OmsMosaic, Raster";
-    public static final String OMSMOSAIC12_LABEL = "Raster Processing";
+    public static final String OMSMOSAIC12_LABEL = RASTERPROCESSING;
     public static final String OMSMOSAIC12_NAME = "mosaic12";
     public static final int OMSMOSAIC12_STATUS = 40;
     public static final String OMSMOSAIC12_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -643,7 +643,7 @@ public class GearsMessages {
     public static final String OMSBUFFER_DESCRIPTION = "A module that performs a buffer operation on a vector layer.";
     public static final String OMSBUFFER_DOCUMENTATION = "";
     public static final String OMSBUFFER_KEYWORDS = "JTS, OmsBuffer";
-    public static final String OMSBUFFER_LABEL = "Vector Processing";
+    public static final String OMSBUFFER_LABEL = VECTORPROCESSING;
     public static final String OMSBUFFER_NAME = "vbuffer";
     public static final int OMSBUFFER_STATUS = 5;
     public static final String OMSBUFFER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -659,7 +659,7 @@ public class GearsMessages {
     public static final String OMSVECTORFILTER_DESCRIPTION = "Module that creates a subset of a vector based on a filtered vector.";
     public static final String OMSVECTORFILTER_DOCUMENTATION = "OmsVectorFilter.html";
     public static final String OMSVECTORFILTER_KEYWORDS = "Filter, Vector, OmsVectorReshaper";
-    public static final String OMSVECTORFILTER_LABEL = "Vector Processing";
+    public static final String OMSVECTORFILTER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORFILTER_NAME = "vfilter";
     public static final int OMSVECTORFILTER_STATUS = 40;
     public static final String OMSVECTORFILTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -672,7 +672,7 @@ public class GearsMessages {
     public static final String OMSCARVER_DESCRIPTION = "Carves a raster using a vector map.";
     public static final String OMSCARVER_DOCUMENTATION = "";
     public static final String OMSCARVER_KEYWORDS = "Carve, Raster";
-    public static final String OMSCARVER_LABEL = "Raster Processing";
+    public static final String OMSCARVER_LABEL = RASTERPROCESSING;
     public static final String OMSCARVER_NAME = "carver";
     public static final int OMSCARVER_STATUS = 5;
     public static final String OMSCARVER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -690,7 +690,7 @@ public class GearsMessages {
     public static final String OMSCUTOUT_DESCRIPTION = "Module for raster thresholding and masking.";
     public static final String OMSCUTOUT_DOCUMENTATION = "OmsCutOut.html";
     public static final String OMSCUTOUT_KEYWORDS = "Raster, Threshold, OmsMapcalc";
-    public static final String OMSCUTOUT_LABEL = "Raster Processing";
+    public static final String OMSCUTOUT_LABEL = RASTERPROCESSING;
     public static final String OMSCUTOUT_NAME = "cutout";
     public static final int OMSCUTOUT_STATUS = 40;
     public static final String OMSCUTOUT_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -706,7 +706,7 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREWRITER_DESCRIPTION = "Utility class for writing geotools featurecollections to shapefile.";
     public static final String OMSSHAPEFILEFEATUREWRITER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
-    public static final String OMSSHAPEFILEFEATUREWRITER_LABEL = "Vector Writer";
+    public static final String OMSSHAPEFILEFEATUREWRITER_LABEL = FEATUREWRITER;
     public static final String OMSSHAPEFILEFEATUREWRITER_NAME = "";
     public static final int OMSSHAPEFILEFEATUREWRITER_STATUS = 40;
     public static final String OMSSHAPEFILEFEATUREWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -721,7 +721,7 @@ public class GearsMessages {
     public static final String OMSXYZ2RASTER_DESCRIPTION = "Convert evenly spaced XYZ triplets to regular raster grid.";
     public static final String OMSXYZ2RASTER_DOCUMENTATION = "";
     public static final String OMSXYZ2RASTER_KEYWORDS = "Raster, Conversion";
-    public static final String OMSXYZ2RASTER_LABEL = "Raster Processing";
+    public static final String OMSXYZ2RASTER_LABEL = RASTERPROCESSING;
     public static final String OMSXYZ2RASTER_NAME = "xyz2raster";
     public static final int OMSXYZ2RASTER_STATUS = 40;
     public static final String OMSXYZ2RASTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -736,7 +736,7 @@ public class GearsMessages {
     public static final String OMSDWGCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
     public static final String OMSDWGCONVERTER_DOCUMENTATION = "OmsDwgConverter.html";
     public static final String OMSDWGCONVERTER_KEYWORDS = "IO, OmsDxfConverter, Feature, Vector, Reading";
-    public static final String OMSDWGCONVERTER_LABEL = "Vector Processing";
+    public static final String OMSDWGCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSDWGCONVERTER_NAME = "dwgimport";
     public static final int OMSDWGCONVERTER_STATUS = 5;
     public static final String OMSDWGCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -754,7 +754,7 @@ public class GearsMessages {
     public static final String OMSEIAREASWRITER_DESCRIPTION = "Utility class for writing area data (for EICalculator) to csv files.";
     public static final String OMSEIAREASWRITER_DOCUMENTATION = "";
     public static final String OMSEIAREASWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSEIAREASWRITER_LABEL = "List Data Writer";
+    public static final String OMSEIAREASWRITER_LABEL = LIST_WRITER;
     public static final String OMSEIAREASWRITER_NAME = "";
     public static final int OMSEIAREASWRITER_STATUS = 40;
     public static final String OMSEIAREASWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -767,7 +767,7 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYWRITER_DESCRIPTION = "Utility class for writing data to csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].";
     public static final String OMSID2VALUEARRAYWRITER_DOCUMENTATION = "";
     public static final String OMSID2VALUEARRAYWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSID2VALUEARRAYWRITER_LABEL = "HashMap Data Writer";
+    public static final String OMSID2VALUEARRAYWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSID2VALUEARRAYWRITER_NAME = "";
     public static final int OMSID2VALUEARRAYWRITER_STATUS = 40;
     public static final String OMSID2VALUEARRAYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -782,7 +782,7 @@ public class GearsMessages {
     public static final String OMSONLINETILESDOWNLOADER_DESCRIPTION = "Module for the downloading of map tiles.";
     public static final String OMSONLINETILESDOWNLOADER_DOCUMENTATION = "";
     public static final String OMSONLINETILESDOWNLOADER_KEYWORDS = "Raster, Vector, TMS, Tiles";
-    public static final String OMSONLINETILESDOWNLOADER_LABEL = "Raster Processing";
+    public static final String OMSONLINETILESDOWNLOADER_LABEL = RASTERPROCESSING;
     public static final String OMSONLINETILESDOWNLOADER_NAME = "tmsdownloader";
     public static final int OMSONLINETILESDOWNLOADER_STATUS = 10;
     public static final String OMSONLINETILESDOWNLOADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -805,7 +805,7 @@ public class GearsMessages {
     public static final String OMSINTERSECTIONFINDER_DESCRIPTION = "Finds intersection geometries in feature collections";
     public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
     public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
-    public static final String OMSINTERSECTIONFINDER_LABEL = "Vector Processing";
+    public static final String OMSINTERSECTIONFINDER_LABEL = VECTORPROCESSING;
     public static final String OMSINTERSECTIONFINDER_NAME = "";
     public static final int OMSINTERSECTIONFINDER_STATUS = 10;
     public static final String OMSINTERSECTIONFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -818,7 +818,7 @@ public class GearsMessages {
     public static final String OMSRANGELOOKUP_DESCRIPTION = "Module for raster rangelookup.";
     public static final String OMSRANGELOOKUP_DOCUMENTATION = "OmsRangeLookup.html";
     public static final String OMSRANGELOOKUP_KEYWORDS = "Raster, Rangelookup";
-    public static final String OMSRANGELOOKUP_LABEL = "Raster Processing";
+    public static final String OMSRANGELOOKUP_LABEL = RASTERPROCESSING;
     public static final String OMSRANGELOOKUP_NAME = "rrangelookup";
     public static final int OMSRANGELOOKUP_STATUS = 40;
     public static final String OMSRANGELOOKUP_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -832,7 +832,7 @@ public class GearsMessages {
     public static final String OMSTMSGENERATOR_DESCRIPTION = "Module for the generation of map tiles.";
     public static final String OMSTMSGENERATOR_DOCUMENTATION = "";
     public static final String OMSTMSGENERATOR_KEYWORDS = "Raster, Vector, TMS, Tiles";
-    public static final String OMSTMSGENERATOR_LABEL = "Raster Processing";
+    public static final String OMSTMSGENERATOR_LABEL = RASTERPROCESSING;
     public static final String OMSTMSGENERATOR_NAME = "tmsgenerator";
     public static final int OMSTMSGENERATOR_STATUS = 10;
     public static final String OMSTMSGENERATOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -860,7 +860,7 @@ public class GearsMessages {
     public static final String OMSVECTORSIMPLIFIER_DESCRIPTION = "Collection of vector simplification algorithms.";
     public static final String OMSVECTORSIMPLIFIER_DOCUMENTATION = "OmsVectorSimplifier.html";
     public static final String OMSVECTORSIMPLIFIER_KEYWORDS = "Simplify, OmsLineSmootherMcMaster, OmsLineSmootherJaitools";
-    public static final String OMSVECTORSIMPLIFIER_LABEL = "Vector Processing";
+    public static final String OMSVECTORSIMPLIFIER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORSIMPLIFIER_NAME = "vsimplify";
     public static final int OMSVECTORSIMPLIFIER_STATUS = 40;
     public static final String OMSVECTORSIMPLIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -874,7 +874,7 @@ public class GearsMessages {
     public static final String OMSCOVERAGELISTER_DESCRIPTION = "A module that reads rasters.";
     public static final String OMSCOVERAGELISTER_DOCUMENTATION = "";
     public static final String OMSCOVERAGELISTER_KEYWORDS = "Iterator, Raster";
-    public static final String OMSCOVERAGELISTER_LABEL = "List Data Reader";
+    public static final String OMSCOVERAGELISTER_LABEL = LIST_READER;
     public static final String OMSCOVERAGELISTER_NAME = "rasterlister";
     public static final int OMSCOVERAGELISTER_STATUS = 40;
     public static final String OMSCOVERAGELISTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -896,7 +896,7 @@ public class GearsMessages {
     public static final String OMSVECTORIZER_DESCRIPTION = "Module for raster to vector conversion.";
     public static final String OMSVECTORIZER_DOCUMENTATION = "OmsVectorizer.html";
     public static final String OMSVECTORIZER_KEYWORDS = "Raster, Vector, OmsScanLineRasterizer";
-    public static final String OMSVECTORIZER_LABEL = "Vector Processing";
+    public static final String OMSVECTORIZER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORIZER_NAME = "vectorizer";
     public static final int OMSVECTORIZER_STATUS = 40;
     public static final String OMSVECTORIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -912,7 +912,7 @@ public class GearsMessages {
     public static final String OMSRASTER2XYZ_DESCRIPTION = "Convert a raster to XYZ triplets.";
     public static final String OMSRASTER2XYZ_DOCUMENTATION = "";
     public static final String OMSRASTER2XYZ_KEYWORDS = "Raster, Conversion";
-    public static final String OMSRASTER2XYZ_LABEL = "Raster Processing";
+    public static final String OMSRASTER2XYZ_LABEL = RASTERPROCESSING;
     public static final String OMSRASTER2XYZ_NAME = "raster2xyz";
     public static final int OMSRASTER2XYZ_STATUS = 40;
     public static final String OMSRASTER2XYZ_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -925,7 +925,7 @@ public class GearsMessages {
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION = "Module that extracts raster categories and adds them to a feature collection.";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = "OmsRasterCatToFeatureAttribute.html";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS = "Raster, Vector";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LABEL = "Vector Processing";
+    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LABEL = VECTORPROCESSING;
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_NAME = "rat2featureattr";
     public static final int OMSRASTERCATTOFEATUREATTRIBUTE_STATUS = 40;
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -940,7 +940,7 @@ public class GearsMessages {
     public static final String OMSPLAINID2VALUEREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.";
     public static final String OMSPLAINID2VALUEREADER_DOCUMENTATION = "";
     public static final String OMSPLAINID2VALUEREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSPLAINID2VALUEREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSPLAINID2VALUEREADER_LABEL = HASHMAP_READER;
     public static final String OMSPLAINID2VALUEREADER_NAME = "";
     public static final int OMSPLAINID2VALUEREADER_STATUS = 5;
     public static final String OMSPLAINID2VALUEREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -956,7 +956,7 @@ public class GearsMessages {
     public static final String OMSVECTORCLIPPER_DESCRIPTION = "A vector clipping module.";
     public static final String OMSVECTORCLIPPER_DOCUMENTATION = "";
     public static final String OMSVECTORCLIPPER_KEYWORDS = "JTS, Clip, Vector";
-    public static final String OMSVECTORCLIPPER_LABEL = "";
+    public static final String OMSVECTORCLIPPER_LABEL = OTHER;
     public static final String OMSVECTORCLIPPER_NAME = "clipper";
     public static final int OMSVECTORCLIPPER_STATUS = 5;
     public static final String OMSVECTORCLIPPER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -970,7 +970,7 @@ public class GearsMessages {
     public static final String OMSRASTERSUMMARY_DESCRIPTION = "Calculate a summary of the map with base statistics.";
     public static final String OMSRASTERSUMMARY_DOCUMENTATION = "OmsRasterSummary.html";
     public static final String OMSRASTERSUMMARY_KEYWORDS = "Statistics, Raster, OmsMapcalc";
-    public static final String OMSRASTERSUMMARY_LABEL = "Raster Processing";
+    public static final String OMSRASTERSUMMARY_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERSUMMARY_NAME = "rsummary";
     public static final int OMSRASTERSUMMARY_STATUS = 40;
     public static final String OMSRASTERSUMMARY_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -990,7 +990,7 @@ public class GearsMessages {
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION = "Utility class for converting from 'id1 value1[]' to 'id1 value1' by averaging.";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DOCUMENTATION = "";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_KEYWORDS = "IO, Reading";
-    public static final String IDVALUESARRAY2IDVALUESCONVERTER_LABEL = "";
+    public static final String IDVALUESARRAY2IDVALUESCONVERTER_LABEL = OTHER;
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_NAME = "";
     public static final int IDVALUESARRAY2IDVALUESCONVERTER_STATUS = 10;
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1002,7 +1002,7 @@ public class GearsMessages {
     public static final String OMSDBFTABLEREADER_DESCRIPTION = "Utility class for reading dbf tables.";
     public static final String OMSDBFTABLEREADER_DOCUMENTATION = "";
     public static final String OMSDBFTABLEREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
-    public static final String OMSDBFTABLEREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSDBFTABLEREADER_LABEL = HASHMAP_READER;
     public static final String OMSDBFTABLEREADER_NAME = "dbfreader";
     public static final int OMSDBFTABLEREADER_STATUS = 10;
     public static final String OMSDBFTABLEREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1014,7 +1014,7 @@ public class GearsMessages {
     public static final String OMSPROPERTIESFEATUREREADER_DESCRIPTION = "Utility class for reading properties files to geotools featurecollections.";
     public static final String OMSPROPERTIESFEATUREREADER_DOCUMENTATION = "";
     public static final String OMSPROPERTIESFEATUREREADER_KEYWORDS = "IO, Properties, Feature, Vector, Reading";
-    public static final String OMSPROPERTIESFEATUREREADER_LABEL = "Vector Reader";
+    public static final String OMSPROPERTIESFEATUREREADER_LABEL = FEATUREREADER;
     public static final String OMSPROPERTIESFEATUREREADER_NAME = "";
     public static final int OMSPROPERTIESFEATUREREADER_STATUS = 40;
     public static final String OMSPROPERTIESFEATUREREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1027,7 +1027,7 @@ public class GearsMessages {
     public static final String OMSSURFACEINTERPOLATOR_DESCRIPTION = "";
     public static final String OMSSURFACEINTERPOLATOR_DOCUMENTATION = "";
     public static final String OMSSURFACEINTERPOLATOR_KEYWORDS = "Interpolation, Raster, Spline";
-    public static final String OMSSURFACEINTERPOLATOR_LABEL = "";
+    public static final String OMSSURFACEINTERPOLATOR_LABEL = OTHER;
     public static final String OMSSURFACEINTERPOLATOR_NAME = "surfaceinterpolator";
     public static final int OMSSURFACEINTERPOLATOR_STATUS = 10;
     public static final String OMSSURFACEINTERPOLATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1045,7 +1045,7 @@ public class GearsMessages {
     public static final String OMSDATETIME2VALUEMAPREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].";
     public static final String OMSDATETIME2VALUEMAPREADER_DOCUMENTATION = "";
     public static final String OMSDATETIME2VALUEMAPREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSDATETIME2VALUEMAPREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSDATETIME2VALUEMAPREADER_LABEL = HASHMAP_READER;
     public static final String OMSDATETIME2VALUEMAPREADER_NAME = "";
     public static final int OMSDATETIME2VALUEMAPREADER_STATUS = 5;
     public static final String OMSDATETIME2VALUEMAPREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1061,7 +1061,7 @@ public class GearsMessages {
     public static final String GRASSMOSAICLEGACY_DESCRIPTION = "Module for GRASS raster patching.";
     public static final String GRASSMOSAICLEGACY_DOCUMENTATION = "GrassMosaicLegacy.html";
     public static final String GRASSMOSAICLEGACY_KEYWORDS = "OmsMosaic, Raster";
-    public static final String GRASSMOSAICLEGACY_LABEL = "";
+    public static final String GRASSMOSAICLEGACY_LABEL = OTHER;
     public static final String GRASSMOSAICLEGACY_NAME = "grassmosaic";
     public static final int GRASSMOSAICLEGACY_STATUS = 5;
     public static final String GRASSMOSAICLEGACY_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1075,7 +1075,7 @@ public class GearsMessages {
     public static final String OMSMOSAIC_DESCRIPTION = "Module for raster patching.";
     public static final String OMSMOSAIC_DOCUMENTATION = "OmsMosaic.html";
     public static final String OMSMOSAIC_KEYWORDS = "OmsMosaic, Raster";
-    public static final String OMSMOSAIC_LABEL = "Raster Processing";
+    public static final String OMSMOSAIC_LABEL = RASTERPROCESSING;
     public static final String OMSMOSAIC_NAME = "mosaic";
     public static final int OMSMOSAIC_STATUS = 40;
     public static final String OMSMOSAIC_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1088,7 +1088,7 @@ public class GearsMessages {
     public static final String EXIFGPSWRITER_DESCRIPTION = "Utility class for writing exif tags in jpegs.";
     public static final String EXIFGPSWRITER_DOCUMENTATION = "";
     public static final String EXIFGPSWRITER_KEYWORDS = "IO, Jpeg, Exif, Reading";
-    public static final String EXIFGPSWRITER_LABEL = "";
+    public static final String EXIFGPSWRITER_LABEL = OTHER;
     public static final String EXIFGPSWRITER_NAME = "";
     public static final int EXIFGPSWRITER_STATUS = 10;
     public static final String EXIFGPSWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1105,7 +1105,7 @@ public class GearsMessages {
     public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
     public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
     public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
-    public static final String OMSCONTOUREXTRACTOR_LABEL = "Vector Processing";
+    public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
     public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";
     public static final int OMSCONTOUREXTRACTOR_STATUS = 5;
     public static final String OMSCONTOUREXTRACTOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1120,7 +1120,7 @@ public class GearsMessages {
     public static final String OMSCSVMATRIXREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file to a double matrix (dates are saved as longs).";
     public static final String OMSCSVMATRIXREADER_DOCUMENTATION = "";
     public static final String OMSCSVMATRIXREADER_KEYWORDS = "IO, Reading, csv";
-    public static final String OMSCSVMATRIXREADER_LABEL = "Matrix Reader";
+    public static final String OMSCSVMATRIXREADER_LABEL = MATRIXREADER;
     public static final String OMSCSVMATRIXREADER_NAME = "csvmatrixreader";
     public static final int OMSCSVMATRIXREADER_STATUS = 5;
     public static final String OMSCSVMATRIXREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1141,7 +1141,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESWRITER_DESCRIPTION = "Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file.";
     public static final String OMSTIMESERIESWRITER_DOCUMENTATION = "OmsTimeSeriesWriter.html";
     public static final String OMSTIMESERIESWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSTIMESERIESWRITER_LABEL = "HashMap Data Writer";
+    public static final String OMSTIMESERIESWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSTIMESERIESWRITER_NAME = "tswriter";
     public static final int OMSTIMESERIESWRITER_STATUS = 40;
     public static final String OMSTIMESERIESWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1157,7 +1157,7 @@ public class GearsMessages {
     public static final String OMSDXFCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
     public static final String OMSDXFCONVERTER_DOCUMENTATION = "OmsDxfConverter.html";
     public static final String OMSDXFCONVERTER_KEYWORDS = "IO, OmsDwgConverter, Feature, Vector, Reading";
-    public static final String OMSDXFCONVERTER_LABEL = "Vector Processing";
+    public static final String OMSDXFCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSDXFCONVERTER_NAME = "dxfimport";
     public static final int OMSDXFCONVERTER_STATUS = 40;
     public static final String OMSDXFCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1172,7 +1172,7 @@ public class GearsMessages {
     public static final String OMSGRIDGEOMETRYREADER_DESCRIPTION = "GridGeometry reader module.";
     public static final String OMSGRIDGEOMETRYREADER_DOCUMENTATION = "";
     public static final String OMSGRIDGEOMETRYREADER_KEYWORDS = "IO, GridGeometry, Raster, Reading";
-    public static final String OMSGRIDGEOMETRYREADER_LABEL = "Grid Geometry Reader";
+    public static final String OMSGRIDGEOMETRYREADER_LABEL = GRIDGEOMETRYREADER;
     public static final String OMSGRIDGEOMETRYREADER_NAME = "gridgeomreader";
     public static final int OMSGRIDGEOMETRYREADER_STATUS = 40;
     public static final String OMSGRIDGEOMETRYREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1190,7 +1190,7 @@ public class GearsMessages {
     public static final String OMSRASTERVALUEROUNDER_DESCRIPTION = "Module that rounds the values of a raster map.";
     public static final String OMSRASTERVALUEROUNDER_DOCUMENTATION = "";
     public static final String OMSRASTERVALUEROUNDER_KEYWORDS = "Round, Raster";
-    public static final String OMSRASTERVALUEROUNDER_LABEL = "Raster Processing";
+    public static final String OMSRASTERVALUEROUNDER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERVALUEROUNDER_NAME = "rround";
     public static final int OMSRASTERVALUEROUNDER_STATUS = 40;
     public static final String OMSRASTERVALUEROUNDER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1203,7 +1203,7 @@ public class GearsMessages {
     public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
     public static final String OMSLASCONVERTER_DOCUMENTATION = "";
     public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
-    public static final String OMSLASCONVERTER_LABEL = "Vector Processing";
+    public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSLASCONVERTER_NAME = "lasconverter";
     public static final int OMSLASCONVERTER_STATUS = 5;
     public static final String OMSLASCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1228,7 +1228,7 @@ public class GearsMessages {
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION = "Module for raster to vector conversion";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS = "Raster, Vector";
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_LABEL = "Vector Processing";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_LABEL = VECTORPROCESSING;
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_NAME = "";
     public static final int OMSMARCHINGSQUARESVECTORIALIZER_STATUS = 10;
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1244,7 +1244,7 @@ public class GearsMessages {
     public static final String OMSRASTERTRANSFORMER_DESCRIPTION = "Module for raster tranforms.";
     public static final String OMSRASTERTRANSFORMER_DOCUMENTATION = "";
     public static final String OMSRASTERTRANSFORMER_KEYWORDS = "Transform, Raster";
-    public static final String OMSRASTERTRANSFORMER_LABEL = "Raster Processing";
+    public static final String OMSRASTERTRANSFORMER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERTRANSFORMER_NAME = "rtrans";
     public static final int OMSRASTERTRANSFORMER_STATUS = 10;
     public static final String OMSRASTERTRANSFORMER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1267,7 +1267,7 @@ public class GearsMessages {
     public static final String OMSLINESMOOTHERJAITOOLS_DESCRIPTION = "The line smoother from the jaitools project.";
     public static final String OMSLINESMOOTHERJAITOOLS_DOCUMENTATION = "OmsLineSmootherJaitools.html";
     public static final String OMSLINESMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
-    public static final String OMSLINESMOOTHERJAITOOLS_LABEL = "Vector Processing";
+    public static final String OMSLINESMOOTHERJAITOOLS_LABEL = VECTORPROCESSING;
     public static final String OMSLINESMOOTHERJAITOOLS_NAME = "linesmootherjai";
     public static final int OMSLINESMOOTHERJAITOOLS_STATUS = 40;
     public static final String OMSLINESMOOTHERJAITOOLS_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1280,7 +1280,7 @@ public class GearsMessages {
     public static final String OMSFEATURESLISTER_DESCRIPTION = "A module that reads vectors.";
     public static final String OMSFEATURESLISTER_DOCUMENTATION = "";
     public static final String OMSFEATURESLISTER_KEYWORDS = "Iterator, Vector";
-    public static final String OMSFEATURESLISTER_LABEL = "List Data Reader";
+    public static final String OMSFEATURESLISTER_LABEL = LIST_READER;
     public static final String OMSFEATURESLISTER_NAME = "vectorlister";
     public static final int OMSFEATURESLISTER_STATUS = 40;
     public static final String OMSFEATURESLISTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1292,7 +1292,7 @@ public class GearsMessages {
     public static final String OMSVECTORWRITER_DESCRIPTION = "Vectors features writer to file module.";
     public static final String OMSVECTORWRITER_DOCUMENTATION = "OmsVectorWriter.html";
     public static final String OMSVECTORWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
-    public static final String OMSVECTORWRITER_LABEL = "Vector Writer";
+    public static final String OMSVECTORWRITER_LABEL = FEATUREWRITER;
     public static final String OMSVECTORWRITER_NAME = "vectorwriter";
     public static final int OMSVECTORWRITER_STATUS = 40;
     public static final String OMSVECTORWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1305,7 +1305,7 @@ public class GearsMessages {
     public static final String OMSRASTERCONVERTER_DESCRIPTION = "Raster conversion module.";
     public static final String OMSRASTERCONVERTER_DOCUMENTATION = "OmsRasterConverter.html";
     public static final String OMSRASTERCONVERTER_KEYWORDS = "IO, Coverage, Raster, Convert, OmsRasterReader";
-    public static final String OMSRASTERCONVERTER_LABEL = "Raster Processing";
+    public static final String OMSRASTERCONVERTER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERCONVERTER_NAME = "rconvert";
     public static final int OMSRASTERCONVERTER_STATUS = 40;
     public static final String OMSRASTERCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1317,7 +1317,7 @@ public class GearsMessages {
     public static final String OMSCOVERAGEVIEWER_DESCRIPTION = "Utility class for viewing coverages.";
     public static final String OMSCOVERAGEVIEWER_DOCUMENTATION = "";
     public static final String OMSCOVERAGEVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
-    public static final String OMSCOVERAGEVIEWER_LABEL = "";
+    public static final String OMSCOVERAGEVIEWER_LABEL = OTHER;
     public static final String OMSCOVERAGEVIEWER_NAME = "";
     public static final int OMSCOVERAGEVIEWER_STATUS = 40;
     public static final String OMSCOVERAGEVIEWER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1329,7 +1329,7 @@ public class GearsMessages {
     public static final String OMSIMAGEMOSAICCREATOR_DESCRIPTION = "Module for creating an mosaic shapefile for images.";
     public static final String OMSIMAGEMOSAICCREATOR_DOCUMENTATION = "";
     public static final String OMSIMAGEMOSAICCREATOR_KEYWORDS = "Imagemosaic, Raster";
-    public static final String OMSIMAGEMOSAICCREATOR_LABEL = "Raster Processing";
+    public static final String OMSIMAGEMOSAICCREATOR_LABEL = RASTERPROCESSING;
     public static final String OMSIMAGEMOSAICCREATOR_NAME = "imagemosaic";
     public static final int OMSIMAGEMOSAICCREATOR_STATUS = 40;
     public static final String OMSIMAGEMOSAICCREATOR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1340,7 +1340,7 @@ public class GearsMessages {
     public static final String OMSPROFILE_DESCRIPTION = "Module creating profiles over rasters.";
     public static final String OMSPROFILE_DOCUMENTATION = "";
     public static final String OMSPROFILE_KEYWORDS = "OmsProfile, Raster";
-    public static final String OMSPROFILE_LABEL = "Raster Processing";
+    public static final String OMSPROFILE_LABEL = RASTERPROCESSING;
     public static final String OMSPROFILE_NAME = "profile";
     public static final int OMSPROFILE_STATUS = 5;
     public static final String OMSPROFILE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1356,7 +1356,7 @@ public class GearsMessages {
     public static final String OMSEIALTIMETRYREADER_DESCRIPTION = "Utility class for reading altimetry data from csv files.";
     public static final String OMSEIALTIMETRYREADER_DOCUMENTATION = "";
     public static final String OMSEIALTIMETRYREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSEIALTIMETRYREADER_LABEL = "List Data Reader";
+    public static final String OMSEIALTIMETRYREADER_LABEL = LIST_READER;
     public static final String OMSEIALTIMETRYREADER_NAME = "";
     public static final int OMSEIALTIMETRYREADER_STATUS = 40;
     public static final String OMSEIALTIMETRYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1369,7 +1369,7 @@ public class GearsMessages {
     public static final String OMSEIALTIMETRYWRITER_DESCRIPTION = "Utility class for writing altimetry data to csv files.";
     public static final String OMSEIALTIMETRYWRITER_DOCUMENTATION = "";
     public static final String OMSEIALTIMETRYWRITER_KEYWORDS = "IO, Writing";
-    public static final String OMSEIALTIMETRYWRITER_LABEL = "List Data Writer";
+    public static final String OMSEIALTIMETRYWRITER_LABEL = LIST_WRITER;
     public static final String OMSEIALTIMETRYWRITER_NAME = "";
     public static final int OMSEIALTIMETRYWRITER_STATUS = 40;
     public static final String OMSEIALTIMETRYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1382,7 +1382,7 @@ public class GearsMessages {
     public static final String ADIGEBOUNDARYCONDITIONREADER_DESCRIPTION = "Utility class for reading the initial boundary conditions of the model adige from an OMS formatted csv file.";
     public static final String ADIGEBOUNDARYCONDITIONREADER_DOCUMENTATION = "";
     public static final String ADIGEBOUNDARYCONDITIONREADER_KEYWORDS = "IO, Reading";
-    public static final String ADIGEBOUNDARYCONDITIONREADER_LABEL = "Generic Reader";
+    public static final String ADIGEBOUNDARYCONDITIONREADER_LABEL = GENERICREADER;
     public static final String ADIGEBOUNDARYCONDITIONREADER_NAME = "";
     public static final int ADIGEBOUNDARYCONDITIONREADER_STATUS = 40;
     public static final String ADIGEBOUNDARYCONDITIONREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1394,7 +1394,7 @@ public class GearsMessages {
     public static final String OMSBOBTHEBUILDER_DESCRIPTION = "Builds rasterized artifacts on a raster.";
     public static final String OMSBOBTHEBUILDER_DOCUMENTATION = "";
     public static final String OMSBOBTHEBUILDER_KEYWORDS = "Build, Raster";
-    public static final String OMSBOBTHEBUILDER_LABEL = "Raster Processing";
+    public static final String OMSBOBTHEBUILDER_LABEL = RASTERPROCESSING;
     public static final String OMSBOBTHEBUILDER_NAME = "bobbuilder";
     public static final int OMSBOBTHEBUILDER_STATUS = 5;
     public static final String OMSBOBTHEBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1413,7 +1413,7 @@ public class GearsMessages {
     public static final String OMSPOINTSRASTERIZER_DESCRIPTION = "Module to convert vector points to raster. Currently this does simply put the point in the nearest cell, without check.";
     public static final String OMSPOINTSRASTERIZER_DOCUMENTATION = "";
     public static final String OMSPOINTSRASTERIZER_KEYWORDS = "Raster, Vector, Points";
-    public static final String OMSPOINTSRASTERIZER_LABEL = "Raster Processing";
+    public static final String OMSPOINTSRASTERIZER_LABEL = RASTERPROCESSING;
     public static final String OMSPOINTSRASTERIZER_NAME = "rasterizepoints";
     public static final int OMSPOINTSRASTERIZER_STATUS = 5;
     public static final String OMSPOINTSRASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1427,7 +1427,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.";
     public static final String OMSTIMESERIESREADER_DOCUMENTATION = "OmsTimeSeriesReader.html";
     public static final String OMSTIMESERIESREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSTIMESERIESREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSTIMESERIESREADER_LABEL = HASHMAP_READER;
     public static final String OMSTIMESERIESREADER_NAME = "tsreader";
     public static final int OMSTIMESERIESREADER_STATUS = 40;
     public static final String OMSTIMESERIESREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1441,7 +1441,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESITERATORREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.";
     public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "OmsTimeSeriesIteratorReader.html";
     public static final String OMSTIMESERIESITERATORREADER_KEYWORDS = "IO, Reading";
-    public static final String OMSTIMESERIESITERATORREADER_LABEL = "HashMap Data Reader";
+    public static final String OMSTIMESERIESITERATORREADER_LABEL = HASHMAP_READER;
     public static final String OMSTIMESERIESITERATORREADER_NAME = "tsitreader";
     public static final int OMSTIMESERIESITERATORREADER_STATUS = 40;
     public static final String OMSTIMESERIESITERATORREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1463,7 +1463,7 @@ public class GearsMessages {
     public static final String OMSPOINTDIRECTIONCALCULATOR_DESCRIPTION = "Calculates the direction of maximum slope for a source point on a dem.";
     public static final String OMSPOINTDIRECTIONCALCULATOR_DOCUMENTATION = "";
     public static final String OMSPOINTDIRECTIONCALCULATOR_KEYWORDS = "Raster, Vector";
-    public static final String OMSPOINTDIRECTIONCALCULATOR_LABEL = "Vector Processing";
+    public static final String OMSPOINTDIRECTIONCALCULATOR_LABEL = VECTORPROCESSING;
     public static final String OMSPOINTDIRECTIONCALCULATOR_NAME = "";
     public static final int OMSPOINTDIRECTIONCALCULATOR_STATUS = 10;
     public static final String OMSPOINTDIRECTIONCALCULATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1477,7 +1477,7 @@ public class GearsMessages {
     public static final String OMSLINEINTERSECTIONCORRECTOR_DESCRIPTION = "Collection of Smoothing Algorithms. Type 0: McMasters Sliding Averaging Algorithm. The new position of each point is the average of the pLookahead  points around. Parameter pSlide is used for linear interpolation between old and new position.";
     public static final String OMSLINEINTERSECTIONCORRECTOR_DOCUMENTATION = "";
     public static final String OMSLINEINTERSECTIONCORRECTOR_KEYWORDS = "Smoothing, Vector";
-    public static final String OMSLINEINTERSECTIONCORRECTOR_LABEL = "Vector Processing";
+    public static final String OMSLINEINTERSECTIONCORRECTOR_LABEL = VECTORPROCESSING;
     public static final String OMSLINEINTERSECTIONCORRECTOR_NAME = "";
     public static final int OMSLINEINTERSECTIONCORRECTOR_STATUS = 10;
     public static final String OMSLINEINTERSECTIONCORRECTOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1495,7 +1495,7 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREREADER_DESCRIPTION = "Utility class for reading shapefiles to geotools featurecollections.";
     public static final String OMSSHAPEFILEFEATUREREADER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
-    public static final String OMSSHAPEFILEFEATUREREADER_LABEL = "Vector Reader";
+    public static final String OMSSHAPEFILEFEATUREREADER_LABEL = FEATUREREADER;
     public static final String OMSSHAPEFILEFEATUREREADER_NAME = "";
     public static final int OMSSHAPEFILEFEATUREREADER_STATUS = 40;
     public static final String OMSSHAPEFILEFEATUREREADER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1508,7 +1508,7 @@ public class GearsMessages {
     public static final String OMSVECTORRESHAPER_DESCRIPTION = "Module to reshape a vector.";
     public static final String OMSVECTORRESHAPER_DOCUMENTATION = "OmsVectorReshaper.html";
     public static final String OMSVECTORRESHAPER_KEYWORDS = "Reshape, Vector, OmsVectorFilter";
-    public static final String OMSVECTORRESHAPER_LABEL = "Vector Processing";
+    public static final String OMSVECTORRESHAPER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORRESHAPER_NAME = "reshape";
     public static final int OMSVECTORRESHAPER_STATUS = 40;
     public static final String OMSVECTORRESHAPER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1522,7 +1522,7 @@ public class GearsMessages {
     public static final String OMSVECTORREPROJECTOR_DESCRIPTION = "Module for vector reprojection.";
     public static final String OMSVECTORREPROJECTOR_DOCUMENTATION = "OmsVectorReprojector.html";
     public static final String OMSVECTORREPROJECTOR_KEYWORDS = "CRS, Reprojection, Vector";
-    public static final String OMSVECTORREPROJECTOR_LABEL = "Vector Processing";
+    public static final String OMSVECTORREPROJECTOR_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORREPROJECTOR_NAME = "vreproject";
     public static final int OMSVECTORREPROJECTOR_STATUS = 40;
     public static final String OMSVECTORREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";

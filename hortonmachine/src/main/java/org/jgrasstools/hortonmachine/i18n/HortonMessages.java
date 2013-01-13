@@ -18,6 +18,7 @@
  */
 package org.jgrasstools.hortonmachine.i18n;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 /**
  * Messages for the Horton machine.
  * 
@@ -27,7 +28,7 @@ public class HortonMessages {
     public static final String DUFFYINPUTS_DESCRIPTION = "Inputs for the duffy model";
     public static final String DUFFYINPUTS_DOCUMENTATION = "";
     public static final String DUFFYINPUTS_KEYWORDS = "Hydrology";
-    public static final String DUFFYINPUTS_LABEL = "";
+    public static final String DUFFYINPUTS_LABEL = OTHER;
     public static final String DUFFYINPUTS_NAME = "";
     public static final int DUFFYINPUTS_STATUS = 10;
     public static final String DUFFYINPUTS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -64,7 +65,7 @@ public class HortonMessages {
     public static final String OMSWATEROUTLET_DESCRIPTION = "Extract the watershed for a defined outlet (ported from GRASS r.wateroutlet).";
     public static final String OMSWATEROUTLET_DOCUMENTATION = "OmsWateroutlet.html";
     public static final String OMSWATEROUTLET_KEYWORDS = "Dem manipulation, Geomorphology, OmsFlowDirections";
-    public static final String OMSWATEROUTLET_LABEL = "HortonMachine/Dem Manipulation";
+    public static final String OMSWATEROUTLET_LABEL = DEMMANIPULATION;
     public static final String OMSWATEROUTLET_NAME = "wateroutlet";
     public static final int OMSWATEROUTLET_STATUS = 40;
     public static final String OMSWATEROUTLET_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -79,7 +80,7 @@ public class HortonMessages {
     public static final String OMSDEBRISVANDRE_DESCRIPTION = "Implementation of the Vandre methodology for Debris handling.";
     public static final String OMSDEBRISVANDRE_DOCUMENTATION = "";
     public static final String OMSDEBRISVANDRE_KEYWORDS = "Debris, Raster";
-    public static final String OMSDEBRISVANDRE_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSDEBRISVANDRE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISVANDRE_NAME = "debrisvandre";
     public static final int OMSDEBRISVANDRE_STATUS = 5;
     public static final String OMSDEBRISVANDRE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -102,7 +103,7 @@ public class HortonMessages {
     public static final String OMSKRIGING_DESCRIPTION = "Ordinary kriging algorithm.";
     public static final String OMSKRIGING_DOCUMENTATION = "OmsKriging.html";
     public static final String OMSKRIGING_KEYWORDS = "OmsKriging, Hydrology";
-    public static final String OMSKRIGING_LABEL = "HortonMachine/Statistics";
+    public static final String OMSKRIGING_LABEL = STATISTICS;
     public static final String OMSKRIGING_NAME = "kriging";
     public static final int OMSKRIGING_STATUS = 5;
     public static final String OMSKRIGING_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -131,7 +132,7 @@ public class HortonMessages {
     public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
     public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
     public static final String OMSNETNUMBERING_KEYWORDS = "Network, SplitSubbasins";
-    public static final String OMSNETNUMBERING_LABEL = "HortonMachine/Network";
+    public static final String OMSNETNUMBERING_LABEL = NETWORK;
     public static final String OMSNETNUMBERING_NAME = "netnum";
     public static final int OMSNETNUMBERING_STATUS = 40;
     public static final String OMSNETNUMBERING_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -150,7 +151,7 @@ public class HortonMessages {
     public static final String OMSTC_DESCRIPTION = "Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ";
     public static final String OMSTC_DOCUMENTATION = "OmsTc.html";
     public static final String OMSTC_KEYWORDS = "Hillslope, OmsCurvatures";
-    public static final String OMSTC_LABEL = "HortonMachine/Hillslope";
+    public static final String OMSTC_LABEL = HILLSLOPE;
     public static final String OMSTC_NAME = "tc";
     public static final int OMSTC_STATUS = 40;
     public static final String OMSTC_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -166,7 +167,7 @@ public class HortonMessages {
     public static final String OMSPITFILLER_DESCRIPTION = "It fills the depression points present within a DEM.";
     public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
     public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, OmsDrainDir";
-    public static final String OMSPITFILLER_LABEL = "HortonMachine/Dem Manipulation";
+    public static final String OMSPITFILLER_LABEL = DEMMANIPULATION;
     public static final String OMSPITFILLER_NAME = "pit";
     public static final int OMSPITFILLER_STATUS = 40;
     public static final String OMSPITFILLER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -178,7 +179,7 @@ public class HortonMessages {
     public static final String OMSSKYVIEW_DESCRIPTION = "Calculates the skyview factor.";
     public static final String OMSSKYVIEW_DOCUMENTATION = "OmsSkyview.html";
     public static final String OMSSKYVIEW_KEYWORDS = "Hydrology, Radiation, OmsInsolation, OmsHillshade";
-    public static final String OMSSKYVIEW_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSSKYVIEW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSSKYVIEW_NAME = "skyview";
     public static final int OMSSKYVIEW_STATUS = 40;
     public static final String OMSSKYVIEW_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -190,7 +191,7 @@ public class HortonMessages {
     public static final String OMSSHALSTAB_DESCRIPTION = "A version of the OmsShalstab stability model.";
     public static final String OMSSHALSTAB_DOCUMENTATION = "OmsShalstab.html";
     public static final String OMSSHALSTAB_KEYWORDS = "OmsShalstab, Hydrology, Trasmissivity";
-    public static final String OMSSHALSTAB_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSSHALSTAB_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSSHALSTAB_NAME = "shalstab";
     public static final int OMSSHALSTAB_STATUS = 40;
     public static final String OMSSHALSTAB_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -217,7 +218,7 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSTIME_DESCRIPTION = "The time related parameters of the epanet inp file";
     public static final String OMSEPANETPARAMETERSTIME_DOCUMENTATION = "";
     public static final String OMSEPANETPARAMETERSTIME_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANETPARAMETERSTIME_LABEL = "";
+    public static final String OMSEPANETPARAMETERSTIME_LABEL = OTHER;
     public static final String OMSEPANETPARAMETERSTIME_NAME = "";
     public static final int OMSEPANETPARAMETERSTIME_STATUS = 10;
     public static final String OMSEPANETPARAMETERSTIME_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -237,7 +238,7 @@ public class HortonMessages {
     public static final String OMSPFAFSTETTER_DESCRIPTION = "Creates a hierarchial form of the network.";
     public static final String OMSPFAFSTETTER_DOCUMENTATION = "OmsPfafstetter.html";
     public static final String OMSPFAFSTETTER_KEYWORDS = "Network, OmsPfafstetter";
-    public static final String OMSPFAFSTETTER_LABEL = "HortonMachine/Network";
+    public static final String OMSPFAFSTETTER_LABEL = NETWORK;
     public static final String OMSPFAFSTETTER_NAME = "pfafstetter";
     public static final int OMSPFAFSTETTER_STATUS = 5;
     public static final String OMSPFAFSTETTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -255,7 +256,7 @@ public class HortonMessages {
     public static final String OMSHACKLENGTH_DESCRIPTION = "Assigned a point in a basin calculates the distance from the watershed measured along the net (until it exists) and then, again from valley upriver, along the maximal slope.";
     public static final String OMSHACKLENGTH_DOCUMENTATION = "OmsHackLength.html";
     public static final String OMSHACKLENGTH_KEYWORDS = "Network, HackLength3D, HackStream";
-    public static final String OMSHACKLENGTH_LABEL = "HortonMachine/Network";
+    public static final String OMSHACKLENGTH_LABEL = NETWORK;
     public static final String OMSHACKLENGTH_NAME = "hacklength";
     public static final int OMSHACKLENGTH_STATUS = 40;
     public static final String OMSHACKLENGTH_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -269,7 +270,7 @@ public class HortonMessages {
     public static final String OMSH2CD_DESCRIPTION = "It calculates for each hillslope pixel its distance from the river networks, following the steepest descent.";
     public static final String OMSH2CD_DOCUMENTATION = "OmsH2cd.html";
     public static final String OMSH2CD_KEYWORDS = "Hillslope, Outlet, Distance";
-    public static final String OMSH2CD_LABEL = "HortonMachine/Hillslope";
+    public static final String OMSH2CD_LABEL = HILLSLOPE;
     public static final String OMSH2CD_NAME = "h2cd";
     public static final int OMSH2CD_STATUS = 40;
     public static final String OMSH2CD_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -284,7 +285,7 @@ public class HortonMessages {
     public static final String OMSSPLITSUBBASINS_DESCRIPTION = "A tool for labeling the subbasins of a basin. Given the Hacks number of the channel network, the subbasin up to a selected order are labeled. If Hack order 2 was selected, the subbasins of Hack order 1 and 2 and the network of the same order are extracted.";
     public static final String OMSSPLITSUBBASINS_DOCUMENTATION = "";
     public static final String OMSSPLITSUBBASINS_KEYWORDS = "Subbasins, Dem, Raster";
-    public static final String OMSSPLITSUBBASINS_LABEL = "HortonMachine/Dem Manipulation";
+    public static final String OMSSPLITSUBBASINS_LABEL = DEMMANIPULATION;
     public static final String OMSSPLITSUBBASINS_NAME = "splitsubbasins";
     public static final int OMSSPLITSUBBASINS_STATUS = 5;
     public static final String OMSSPLITSUBBASINS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -299,7 +300,7 @@ public class HortonMessages {
     public static final String OMSDEBRISTRIGGERCNR_DESCRIPTION = "Module for extraction of debris trigger points along the network following the CNR methodology.";
     public static final String OMSDEBRISTRIGGERCNR_DOCUMENTATION = "";
     public static final String OMSDEBRISTRIGGERCNR_KEYWORDS = "Debris, Trigger, Raster";
-    public static final String OMSDEBRISTRIGGERCNR_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSDEBRISTRIGGERCNR_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISTRIGGERCNR_NAME = "debristrigger";
     public static final int OMSDEBRISTRIGGERCNR_STATUS = 5;
     public static final String OMSDEBRISTRIGGERCNR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -315,7 +316,7 @@ public class HortonMessages {
     public static final String OMSTRENTOP_DESCRIPTION = "Calculates the diameters of a sewer net or verify the discharge for each pipe.";
     public static final String OMSTRENTOP_DOCUMENTATION = "OmsTrentoP.html";
     public static final String OMSTRENTOP_KEYWORDS = "Sewer network";
-    public static final String OMSTRENTOP_LABEL = "";
+    public static final String OMSTRENTOP_LABEL = OTHER;
     public static final String OMSTRENTOP_NAME = "";
     public static final int OMSTRENTOP_STATUS = 10;
     public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -360,7 +361,7 @@ public class HortonMessages {
     public static final String OMSNETSHAPE2FLOW_DESCRIPTION = "Transforms the network shape to a flow map.";
     public static final String OMSNETSHAPE2FLOW_DOCUMENTATION = "OmsNetshape2Flow.html";
     public static final String OMSNETSHAPE2FLOW_KEYWORDS = "Network, Flowdirections";
-    public static final String OMSNETSHAPE2FLOW_LABEL = "HortonMachine/Network";
+    public static final String OMSNETSHAPE2FLOW_LABEL = NETWORK;
     public static final String OMSNETSHAPE2FLOW_NAME = "net2flow";
     public static final int OMSNETSHAPE2FLOW_STATUS = 5;
     public static final String OMSNETSHAPE2FLOW_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -377,7 +378,7 @@ public class HortonMessages {
     public static final String OMSGC_DESCRIPTION = "Subdivides the sites of a basin in 11 topographic classes.";
     public static final String OMSGC_DOCUMENTATION = "OmsGc.html";
     public static final String OMSGC_KEYWORDS = "Geomorphology, OmsTc, OmsSlope, OmsExtractNetwork";
-    public static final String OMSGC_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSGC_LABEL = GEOMORPHOLOGY;
     public static final String OMSGC_NAME = "gc";
     public static final int OMSGC_STATUS = 40;
     public static final String OMSGC_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -393,7 +394,7 @@ public class HortonMessages {
     public static final String OMSHILLSHADE_DESCRIPTION = "This class evalutate the hillshade of a DEM.";
     public static final String OMSHILLSHADE_DOCUMENTATION = "OmsHillshade.html";
     public static final String OMSHILLSHADE_KEYWORDS = "Hydrology, Radiation, SkyviewFactor, OmsInsolation";
-    public static final String OMSHILLSHADE_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSHILLSHADE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSHILLSHADE_NAME = "hillshade";
     public static final int OMSHILLSHADE_STATUS = 40;
     public static final String OMSHILLSHADE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -408,7 +409,7 @@ public class HortonMessages {
     public static final String OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION = "Generates the base shapefiles for an epanet run.";
     public static final String OMSEPANETPROJECTFILESGENERATOR_DOCUMENTATION = "";
     public static final String OMSEPANETPROJECTFILESGENERATOR_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANETPROJECTFILESGENERATOR_LABEL = "";
+    public static final String OMSEPANETPROJECTFILESGENERATOR_LABEL = OTHER;
     public static final String OMSEPANETPROJECTFILESGENERATOR_NAME = "";
     public static final int OMSEPANETPROJECTFILESGENERATOR_STATUS = 10;
     public static final String OMSEPANETPROJECTFILESGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -420,7 +421,7 @@ public class HortonMessages {
     public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering the zero toward the north and the rotation angle counterclockwise.";
     public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
     public static final String OMSASPECT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSASPECT_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
     public static final String OMSASPECT_NAME = "aspect";
     public static final int OMSASPECT_STATUS = 40;
     public static final String OMSASPECT_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -434,7 +435,7 @@ public class HortonMessages {
     public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream following the flowdirections.";
     public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "OmsSumDownStream.html";
     public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Sumdownstream, Statistic, OmsExtractNetwork";
-    public static final String OMSSUMDOWNSTREAM_LABEL = "HortonMachine/Statistics";
+    public static final String OMSSUMDOWNSTREAM_LABEL = STATISTICS;
     public static final String OMSSUMDOWNSTREAM_NAME = "sumdownstream";
     public static final int OMSSUMDOWNSTREAM_STATUS = 40;
     public static final String OMSSUMDOWNSTREAM_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -449,7 +450,7 @@ public class HortonMessages {
     public static final String OMSSLOPE_DESCRIPTION = "Calculates the slope in each point of the map.";
     public static final String OMSSLOPE_DOCUMENTATION = "OmsSlope.html";
     public static final String OMSSLOPE_KEYWORDS = "Geomorphology, OmsGradient";
-    public static final String OMSSLOPE_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSSLOPE_LABEL = GEOMORPHOLOGY;
     public static final String OMSSLOPE_NAME = "slope";
     public static final int OMSSLOPE_STATUS = 20;
     public static final String OMSSLOPE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -463,7 +464,7 @@ public class HortonMessages {
     public static final String OMSEPANET_DESCRIPTION = "The main OmsEpanet module";
     public static final String OMSEPANET_DOCUMENTATION = "";
     public static final String OMSEPANET_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANET_LABEL = "";
+    public static final String OMSEPANET_LABEL = OTHER;
     public static final String OMSEPANET_NAME = "";
     public static final int OMSEPANET_STATUS = 10;
     public static final String OMSEPANET_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -484,7 +485,7 @@ public class HortonMessages {
     public static final String OMSFAOETPMODEL_DESCRIPTION = "Calculates evapotranspiration.";
     public static final String OMSFAOETPMODEL_DOCUMENTATION = "";
     public static final String OMSFAOETPMODEL_KEYWORDS = "Evapotranspiration, Hydrologic";
-    public static final String OMSFAOETPMODEL_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSFAOETPMODEL_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSFAOETPMODEL_NAME = "";
     public static final int OMSFAOETPMODEL_STATUS = 5;
     public static final String OMSFAOETPMODEL_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -507,7 +508,7 @@ public class HortonMessages {
     public static final String HYMODINPUTS_DESCRIPTION = "The HyMod model.";
     public static final String HYMODINPUTS_DOCUMENTATION = "";
     public static final String HYMODINPUTS_KEYWORDS = "Hydrology";
-    public static final String HYMODINPUTS_LABEL = "";
+    public static final String HYMODINPUTS_LABEL = OTHER;
     public static final String HYMODINPUTS_NAME = "";
     public static final int HYMODINPUTS_STATUS = 10;
     public static final String HYMODINPUTS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -524,7 +525,7 @@ public class HortonMessages {
     public static final String OMSH2CA_DESCRIPTION = "Select a hillslope or some of its property from the DEM";
     public static final String OMSH2CA_DOCUMENTATION = "OmsH2cA.html";
     public static final String OMSH2CA_KEYWORDS = "Geomorphology, OmsDrainDir";
-    public static final String OMSH2CA_LABEL = "HortonMachine/Hillslope";
+    public static final String OMSH2CA_LABEL = HILLSLOPE;
     public static final String OMSH2CA_NAME = "OmsH2cA";
     public static final int OMSH2CA_STATUS = 40;
     public static final String OMSH2CA_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -538,7 +539,7 @@ public class HortonMessages {
     public static final String OMSTCA3D_DESCRIPTION = "Calculates the contributing areas considering also the elevation (3D), that represent the areas (in number of pixels) afferent to each point.";
     public static final String OMSTCA3D_DOCUMENTATION = "OmsTca3d.html";
     public static final String OMSTCA3D_KEYWORDS = "Geomorphology, OmsDrainDir, OmsTca, OmsAb, Multitca";
-    public static final String OMSTCA3D_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSTCA3D_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA3D_NAME = "tca3d";
     public static final int OMSTCA3D_STATUS = 40;
     public static final String OMSTCA3D_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -551,7 +552,7 @@ public class HortonMessages {
     public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient in each point of the map.";
     public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
     public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures";
-    public static final String OMSGRADIENT_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
     public static final String OMSGRADIENT_NAME = "gradient";
     public static final int OMSGRADIENT_STATUS = 40;
     public static final String OMSGRADIENT_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -565,7 +566,7 @@ public class HortonMessages {
     public static final String OMSINSOLATION_DESCRIPTION = "Calculate the amount of power incident on a surface in a period of time.";
     public static final String OMSINSOLATION_DOCUMENTATION = "OmsInsolation.html";
     public static final String OMSINSOLATION_KEYWORDS = "Hydrology, Radiation, SkyviewFactor, OmsHillshade";
-    public static final String OMSINSOLATION_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSINSOLATION_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINSOLATION_NAME = "insolation";
     public static final int OMSINSOLATION_STATUS = 40;
     public static final String OMSINSOLATION_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -579,7 +580,7 @@ public class HortonMessages {
     public static final String OMSMELTONNUMBER_DESCRIPTION = "Melton number calculator";
     public static final String OMSMELTONNUMBER_DOCUMENTATION = "";
     public static final String OMSMELTONNUMBER_KEYWORDS = "Melton, Raster, Vector";
-    public static final String OMSMELTONNUMBER_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSMELTONNUMBER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSMELTONNUMBER_NAME = "meltonnum";
     public static final int OMSMELTONNUMBER_STATUS = 5;
     public static final String OMSMELTONNUMBER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -593,7 +594,7 @@ public class HortonMessages {
     public static final String OMSPRESTEYTAYLORETPMODEL_DESCRIPTION = "Calculates evapotranspiration based on the Prestey-Taylor model.";
     public static final String OMSPRESTEYTAYLORETPMODEL_DOCUMENTATION = "OmsPresteyTaylorEtpModel.html";
     public static final String OMSPRESTEYTAYLORETPMODEL_KEYWORDS = "Evapotranspiration, Hydrologic";
-    public static final String OMSPRESTEYTAYLORETPMODEL_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSPRESTEYTAYLORETPMODEL_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPRESTEYTAYLORETPMODEL_NAME = "ptetp";
     public static final int OMSPRESTEYTAYLORETPMODEL_STATUS = 5;
     public static final String OMSPRESTEYTAYLORETPMODEL_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -618,7 +619,7 @@ public class HortonMessages {
     public static final String OMSVALIDATEDOUBLESTATION_DESCRIPTION = "Verify if there is a double station into the data. If the double station have different value then it is possible calculating the mean of two value ";
     public static final String OMSVALIDATEDOUBLESTATION_DOCUMENTATION = "";
     public static final String OMSVALIDATEDOUBLESTATION_KEYWORDS = "Hydrology, statistic";
-    public static final String OMSVALIDATEDOUBLESTATION_LABEL = "";
+    public static final String OMSVALIDATEDOUBLESTATION_LABEL = OTHER;
     public static final String OMSVALIDATEDOUBLESTATION_NAME = "";
     public static final int OMSVALIDATEDOUBLESTATION_STATUS = 10;
     public static final String OMSVALIDATEDOUBLESTATION_LICENSE = "http://www.gnu.org/licenses/";
@@ -634,7 +635,7 @@ public class HortonMessages {
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions following the least cost method.";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION = "";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Flowdirections, Least cost";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_NAME = "flowlc";
     public static final int OMSLEASTCOSTFLOWDIRECTIONS_STATUS = 5;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -652,7 +653,7 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_DESCRIPTION = "Calculates evapotranspiration at daily timestep.";
     public static final String OMSFAOETPDAILY_DOCUMENTATION = "";
     public static final String OMSFAOETPDAILY_KEYWORDS = "Evapotranspiration, Hydrologic";
-    public static final String OMSFAOETPDAILY_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSFAOETPDAILY_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSFAOETPDAILY_NAME = "";
     public static final int OMSFAOETPDAILY_STATUS = 5;
     public static final String OMSFAOETPDAILY_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -676,7 +677,7 @@ public class HortonMessages {
     public static final String OMSCURVATURES_DESCRIPTION = "It estimates the longitudinal, normal and planar curvatures.";
     public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
     public static final String OMSCURVATURES_KEYWORDS = "Geomorphology";
-    public static final String OMSCURVATURES_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
     public static final String OMSCURVATURES_NAME = "curvatures";
     public static final int OMSCURVATURES_STATUS = 40;
     public static final String OMSCURVATURES_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -690,7 +691,7 @@ public class HortonMessages {
     public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
     public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
     public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";
-    public static final String OMSRESCALEDDISTANCE_LABEL = "HortonMachine/Basin";
+    public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
     public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";
     public static final int OMSRESCALEDDISTANCE_STATUS = 40;
     public static final String OMSRESCALEDDISTANCE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -705,7 +706,7 @@ public class HortonMessages {
     public static final String OMSBASINSHAPE_DESCRIPTION = "Creates a Feature collection of the subbasins created with the netnumbering module.";
     public static final String OMSBASINSHAPE_DOCUMENTATION = "OmsBasinShape.html";
     public static final String OMSBASINSHAPE_KEYWORDS = "Basin, Geomorphology";
-    public static final String OMSBASINSHAPE_LABEL = "HortonMachine/Basin";
+    public static final String OMSBASINSHAPE_LABEL = BASIN;
     public static final String OMSBASINSHAPE_NAME = "basinshape";
     public static final int OMSBASINSHAPE_STATUS = 40;
     public static final String OMSBASINSHAPE_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -718,7 +719,7 @@ public class HortonMessages {
     public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
     public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_LABEL = "HortonMachine/Network";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_LABEL = NETWORK;
     public static final String OMSNETWORKATTRIBUTESBUILDER_NAME = "extractvectornet";
     public static final int OMSNETWORKATTRIBUTESBUILDER_STATUS = 40;
     public static final String OMSNETWORKATTRIBUTESBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -734,7 +735,7 @@ public class HortonMessages {
     public static final String OMSMAGNITUDO_DESCRIPTION = "It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.";
     public static final String OMSMAGNITUDO_DOCUMENTATION = "OmsMagnitudo.html";
     public static final String OMSMAGNITUDO_KEYWORDS = "";
-    public static final String OMSMAGNITUDO_LABEL = "HortonMachine/Network";
+    public static final String OMSMAGNITUDO_LABEL = NETWORK;
     public static final String OMSMAGNITUDO_NAME = "magnitudo";
     public static final int OMSMAGNITUDO_STATUS = 40;
     public static final String OMSMAGNITUDO_LICENSE = "GPL3";
@@ -746,7 +747,7 @@ public class HortonMessages {
     public static final String OMSJAMI_DESCRIPTION = "OmsJami - Just another meteo interpolator";
     public static final String OMSJAMI_DOCUMENTATION = "";
     public static final String OMSJAMI_KEYWORDS = "Meteo, Hydrology";
-    public static final String OMSJAMI_LABEL = "HortonMachine/Statistics";
+    public static final String OMSJAMI_LABEL = STATISTICS;
     public static final String OMSJAMI_NAME = "jami";
     public static final int OMSJAMI_STATUS = 5;
     public static final String OMSJAMI_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -778,7 +779,7 @@ public class HortonMessages {
     public static final String OMSMARKOUTLETS_DESCRIPTION = "Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.";
     public static final String OMSMARKOUTLETS_DOCUMENTATION = "OmsMarkoutlets.html";
     public static final String OMSMARKOUTLETS_KEYWORDS = "Outlets, Dem, Raster, OmsFlowDirections, OmsDrainDir";
-    public static final String OMSMARKOUTLETS_LABEL = "HortonMachine/Dem Manipulation";
+    public static final String OMSMARKOUTLETS_LABEL = DEMMANIPULATION;
     public static final String OMSMARKOUTLETS_NAME = "markoutlets";
     public static final int OMSMARKOUTLETS_STATUS = 20;
     public static final String OMSMARKOUTLETS_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -790,7 +791,7 @@ public class HortonMessages {
     public static final String OMSNETDIFF_DESCRIPTION = "Calculates the difference between the value of a quantity in one point and the value of the same quantity in another point across a basin";
     public static final String OMSNETDIFF_DOCUMENTATION = "OmsNetDiff.html";
     public static final String OMSNETDIFF_KEYWORDS = "Network, Pitfiller, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSNETDIFF_LABEL = "HortonMachine/Network";
+    public static final String OMSNETDIFF_LABEL = NETWORK;
     public static final String OMSNETDIFF_NAME = "netdiff";
     public static final int OMSNETDIFF_STATUS = 40;
     public static final String OMSNETDIFF_LICENSE = "GPL3";
@@ -804,7 +805,7 @@ public class HortonMessages {
     public static final String OMSFAOETP_DESCRIPTION = "Calculates evapotranspiration.";
     public static final String OMSFAOETP_DOCUMENTATION = "";
     public static final String OMSFAOETP_KEYWORDS = "Evapotranspiration, Hydrologic";
-    public static final String OMSFAOETP_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSFAOETP_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSFAOETP_NAME = "";
     public static final int OMSFAOETP_STATUS = 5;
     public static final String OMSFAOETP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -826,7 +827,7 @@ public class HortonMessages {
     public static final String OMSPEAKFLOW_DESCRIPTION = "The OmsPeakflow semidistributed hydrologic model.";
     public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
     public static final String OMSPEAKFLOW_KEYWORDS = "OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance";
-    public static final String OMSPEAKFLOW_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSPEAKFLOW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPEAKFLOW_NAME = "peakflow";
     public static final int OMSPEAKFLOW_STATUS = 40;
     public static final String OMSPEAKFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -847,7 +848,7 @@ public class HortonMessages {
     public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
     public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
     public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
-    public static final String OMSDRAINDIR_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
     public static final String OMSDRAINDIR_NAME = "draindir";
     public static final int OMSDRAINDIR_STATUS = 40;
     public static final String OMSDRAINDIR_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -864,7 +865,7 @@ public class HortonMessages {
     public static final String OMSADIGE_DESCRIPTION = "The OmsAdige model.";
     public static final String OMSADIGE_DOCUMENTATION = "";
     public static final String OMSADIGE_KEYWORDS = "Hydrology";
-    public static final String OMSADIGE_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSADIGE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSADIGE_NAME = "";
     public static final int OMSADIGE_STATUS = 5;
     public static final String OMSADIGE_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -918,7 +919,7 @@ public class HortonMessages {
     public static final String OMSSTRAHLERRATIOS_DESCRIPTION = "Calculates the OmsStrahler ratios.";
     public static final String OMSSTRAHLERRATIOS_DOCUMENTATION = "";
     public static final String OMSSTRAHLERRATIOS_KEYWORDS = "Network, OmsStrahler";
-    public static final String OMSSTRAHLERRATIOS_LABEL = "HortonMachine/Network";
+    public static final String OMSSTRAHLERRATIOS_LABEL = NETWORK;
     public static final String OMSSTRAHLERRATIOS_NAME = "strahlerratio";
     public static final int OMSSTRAHLERRATIOS_STATUS = 5;
     public static final String OMSSTRAHLERRATIOS_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -934,7 +935,7 @@ public class HortonMessages {
     public static final String OMSOLDTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
     public static final String OMSOLDTCA_DOCUMENTATION = "OmsTca.html";
     public static final String OMSOLDTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
-    public static final String OMSOLDTCA_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSOLDTCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSOLDTCA_NAME = "oldtca";
     public static final int OMSOLDTCA_STATUS = 40;
     public static final String OMSOLDTCA_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -947,7 +948,7 @@ public class HortonMessages {
     public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
     public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
     public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
-    public static final String OMSFLOWDIRECTIONS_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSFLOWDIRECTIONS_NAME = "flow";
     public static final int OMSFLOWDIRECTIONS_STATUS = 40;
     public static final String OMSFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -959,7 +960,7 @@ public class HortonMessages {
     public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the raster network from an elevation model.";
     public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
     public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
-    public static final String OMSEXTRACTNETWORK_LABEL = "HortonMachine/Network";
+    public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
     public static final String OMSEXTRACTNETWORK_NAME = "extractnet";
     public static final int OMSEXTRACTNETWORK_STATUS = 40;
     public static final String OMSEXTRACTNETWORK_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -977,7 +978,7 @@ public class HortonMessages {
     public static final String OMSSTRAHLER_DESCRIPTION = "Calculates the OmsStrahler order on a basin.";
     public static final String OMSSTRAHLER_DOCUMENTATION = "";
     public static final String OMSSTRAHLER_KEYWORDS = "Network, OmsStrahler";
-    public static final String OMSSTRAHLER_LABEL = "HortonMachine/Network";
+    public static final String OMSSTRAHLER_LABEL = NETWORK;
     public static final String OMSSTRAHLER_NAME = "strahler";
     public static final int OMSSTRAHLER_STATUS = 5;
     public static final String OMSSTRAHLER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -990,7 +991,7 @@ public class HortonMessages {
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";
     public static final String OMSVARIOGRAM_KEYWORDS = "Experimental semivariogram, OmsKriging, Hydrology";
-    public static final String OMSVARIOGRAM_LABEL = "HortonMachine/Statistics";
+    public static final String OMSVARIOGRAM_LABEL = STATISTICS;
     public static final String OMSVARIOGRAM_NAME = "variogram";
     public static final int OMSVARIOGRAM_STATUS = 40;
     public static final String OMSVARIOGRAM_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1007,7 +1008,7 @@ public class HortonMessages {
     public static final String OMSDISTANCETOOUTLET_DESCRIPTION = "Calculates the projection on the plane of the distance of each pixel from the outlet.";
     public static final String OMSDISTANCETOOUTLET_DOCUMENTATION = "OmsDistanceToOutlet.html";
     public static final String OMSDISTANCETOOUTLET_KEYWORDS = "Geomorphology, OmsDrainDir";
-    public static final String OMSDISTANCETOOUTLET_LABEL = "HortonMachine/Network";
+    public static final String OMSDISTANCETOOUTLET_LABEL = NETWORK;
     public static final String OMSDISTANCETOOUTLET_NAME = "d2o";
     public static final int OMSDISTANCETOOUTLET_STATUS = 40;
     public static final String OMSDISTANCETOOUTLET_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1021,7 +1022,7 @@ public class HortonMessages {
     public static final String OMSEPANETFEATURESSYNCHRONIZER_DESCRIPTION = "Synchronizes the features of the different epanet layers.";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_DOCUMENTATION = "";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANETFEATURESSYNCHRONIZER_LABEL = "";
+    public static final String OMSEPANETFEATURESSYNCHRONIZER_LABEL = OTHER;
     public static final String OMSEPANETFEATURESSYNCHRONIZER_NAME = "";
     public static final int OMSEPANETFEATURESSYNCHRONIZER_STATUS = 10;
     public static final String OMSEPANETFEATURESSYNCHRONIZER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1040,7 +1041,7 @@ public class HortonMessages {
     public static final String OMSTOPINDEX_DESCRIPTION = "Topographic index calculator.";
     public static final String OMSTOPINDEX_DOCUMENTATION = "OmsTopIndex.html";
     public static final String OMSTOPINDEX_KEYWORDS = "Hydrology";
-    public static final String OMSTOPINDEX_LABEL = "HortonMachine/Basin";
+    public static final String OMSTOPINDEX_LABEL = BASIN;
     public static final String OMSTOPINDEX_NAME = "topindex";
     public static final int OMSTOPINDEX_STATUS = 40;
     public static final String OMSTOPINDEX_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1053,7 +1054,7 @@ public class HortonMessages {
     public static final String OMSTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
     public static final String OMSTCA_DOCUMENTATION = "";
     public static final String OMSTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
-    public static final String OMSTCA_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSTCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA_NAME = "tca";
     public static final int OMSTCA_STATUS = 5;
     public static final String OMSTCA_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1066,7 +1067,7 @@ public class HortonMessages {
     public static final String OMSENERGYBALANCE_DESCRIPTION = "The module for calculating the energybalance";
     public static final String OMSENERGYBALANCE_DOCUMENTATION = "";
     public static final String OMSENERGYBALANCE_KEYWORDS = "Snow, Energybalance";
-    public static final String OMSENERGYBALANCE_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSENERGYBALANCE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSENERGYBALANCE_NAME = "energybalance";
     public static final int OMSENERGYBALANCE_STATUS = 5;
     public static final String OMSENERGYBALANCE_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1107,7 +1108,7 @@ public class HortonMessages {
     public static final String OMSAB_DESCRIPTION = "Calculates the draining area per length unit.";
     public static final String OMSAB_DOCUMENTATION = "OmsAb.html";
     public static final String OMSAB_KEYWORDS = "Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections";
-    public static final String OMSAB_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSAB_LABEL = GEOMORPHOLOGY;
     public static final String OMSAB_NAME = "ab";
     public static final int OMSAB_STATUS = 40;
     public static final String OMSAB_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1121,7 +1122,7 @@ public class HortonMessages {
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Generates the input shapefiles for a OmsTrentoP simulation.";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = "OmsTrentoPProjectFilesGenerator.html";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS = "OmsTrentoP";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LABEL = "";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LABEL = OTHER;
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_NAME = "";
     public static final int OMSTRENTOPPROJECTFILESGENERATOR_STATUS = 10;
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1138,7 +1139,7 @@ public class HortonMessages {
     public static final String OMSPENMANETP_DESCRIPTION = "Calculates the daily evapotranspiration using the combination equation.";
     public static final String OMSPENMANETP_DOCUMENTATION = "";
     public static final String OMSPENMANETP_KEYWORDS = "Evapotranspiration, Penman, Hydrologic";
-    public static final String OMSPENMANETP_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSPENMANETP_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPENMANETP_NAME = "";
     public static final int OMSPENMANETP_STATUS = 5;
     public static final String OMSPENMANETP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1159,7 +1160,7 @@ public class HortonMessages {
     public static final String OMSENERGYINDEXCALCULATOR_DESCRIPTION = "The OmsAdige model.";
     public static final String OMSENERGYINDEXCALCULATOR_DOCUMENTATION = "";
     public static final String OMSENERGYINDEXCALCULATOR_KEYWORDS = "Hydrology, Energy";
-    public static final String OMSENERGYINDEXCALCULATOR_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSENERGYINDEXCALCULATOR_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSENERGYINDEXCALCULATOR_NAME = "eicalculator";
     public static final int OMSENERGYINDEXCALCULATOR_STATUS = 5;
     public static final String OMSENERGYINDEXCALCULATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1180,7 +1181,7 @@ public class HortonMessages {
     public static final String OMSEPANETINPGENERATOR_DESCRIPTION = "Generates the inp file for an epanet run.";
     public static final String OMSEPANETINPGENERATOR_DOCUMENTATION = "";
     public static final String OMSEPANETINPGENERATOR_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANETINPGENERATOR_LABEL = "";
+    public static final String OMSEPANETINPGENERATOR_LABEL = OTHER;
     public static final String OMSEPANETINPGENERATOR_NAME = "";
     public static final int OMSEPANETINPGENERATOR_STATUS = 10;
     public static final String OMSEPANETINPGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1219,7 +1220,7 @@ public class HortonMessages {
     public static final String OMSDEBRISFLOW_DESCRIPTION = "Debris flow area and deposit calculator on fans.";
     public static final String OMSDEBRISFLOW_DOCUMENTATION = "";
     public static final String OMSDEBRISFLOW_KEYWORDS = "Debris, Raster";
-    public static final String OMSDEBRISFLOW_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSDEBRISFLOW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISFLOW_NAME = "debrisflow";
     public static final int OMSDEBRISFLOW_STATUS = 5;
     public static final String OMSDEBRISFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1238,7 +1239,7 @@ public class HortonMessages {
     public static final String OMSHECRASINPUTBUILDER_DESCRIPTION = "Module that prepares data for Hecras.";
     public static final String OMSHECRASINPUTBUILDER_DOCUMENTATION = "";
     public static final String OMSHECRASINPUTBUILDER_KEYWORDS = "Hecras, Raster, Vector, Hydraulic";
-    public static final String OMSHECRASINPUTBUILDER_LABEL = "HortonMachine/Hydro-Geomorphology";
+    public static final String OMSHECRASINPUTBUILDER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSHECRASINPUTBUILDER_NAME = "inhecras";
     public static final int OMSHECRASINPUTBUILDER_STATUS = 5;
     public static final String OMSHECRASINPUTBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1260,7 +1261,7 @@ public class HortonMessages {
     public static final String OMSMULTITCA_DESCRIPTION = "It calculates the contributing areas differently in convex and concave areas";
     public static final String OMSMULTITCA_DOCUMENTATION = "OmsMultiTca.html";
     public static final String OMSMULTITCA_KEYWORDS = "Geomorphology, OmsDrainDir, Pitfiller, OmsAb";
-    public static final String OMSMULTITCA_LABEL = "HortonMachine/Geomorphology";
+    public static final String OMSMULTITCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSMULTITCA_NAME = "multitca";
     public static final int OMSMULTITCA_STATUS = 5;
     public static final String OMSMULTITCA_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1274,7 +1275,7 @@ public class HortonMessages {
     public static final String OMSCB_DESCRIPTION = "Calculates the histogram of a set of data contained in a matrix with respect to the set of data contained in another matrix.";
     public static final String OMSCB_DOCUMENTATION = "OmsCb.html";
     public static final String OMSCB_KEYWORDS = "Histogram, Geomorphology, Statistic";
-    public static final String OMSCB_LABEL = "HortonMachine/Statistics";
+    public static final String OMSCB_LABEL = STATISTICS;
     public static final String OMSCB_NAME = "cb";
     public static final int OMSCB_STATUS = 40;
     public static final String OMSCB_LICENSE = "General Public License Version 3 (GPLv3)";
@@ -1307,7 +1308,7 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSOPTIONS_DESCRIPTION = "The options parameters of the epanet inp file";
     public static final String OMSEPANETPARAMETERSOPTIONS_DOCUMENTATION = "";
     public static final String OMSEPANETPARAMETERSOPTIONS_KEYWORDS = "OmsEpanet";
-    public static final String OMSEPANETPARAMETERSOPTIONS_LABEL = "";
+    public static final String OMSEPANETPARAMETERSOPTIONS_LABEL = OTHER;
     public static final String OMSEPANETPARAMETERSOPTIONS_NAME = "";
     public static final int OMSEPANETPARAMETERSOPTIONS_STATUS = 10;
     public static final String OMSEPANETPARAMETERSOPTIONS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1332,7 +1333,7 @@ public class HortonMessages {
     public static final String OMSEXTRACTBASIN_DESCRIPTION = "Extract a basin from a map of flowdirections.";
     public static final String OMSEXTRACTBASIN_DOCUMENTATION = "";
     public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, OmsFlowDirections";
-    public static final String OMSEXTRACTBASIN_LABEL = "HortonMachine/Dem Manipulation";
+    public static final String OMSEXTRACTBASIN_LABEL = DEMMANIPULATION;
     public static final String OMSEXTRACTBASIN_NAME = "extractbasin";
     public static final int OMSEXTRACTBASIN_STATUS = 5;
     public static final String OMSEXTRACTBASIN_LICENSE = "General Public License Version 3 (GPLv3)";

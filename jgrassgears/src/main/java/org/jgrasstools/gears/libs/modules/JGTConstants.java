@@ -238,6 +238,7 @@ public class JGTConstants {
     /*
      * modules categories
      */
+    public static final String OTHER = "Other";
     // IO
     public static final String MATRIXREADER = "Matrix Reader";
     public static final String GENERICREADER = "Generic Reader";
