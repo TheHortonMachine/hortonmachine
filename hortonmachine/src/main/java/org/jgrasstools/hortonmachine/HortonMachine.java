@@ -244,6 +244,11 @@ public class HortonMachine {
 
     public static void main( String[] args ) throws IOException {
         HortonMachine hm = HortonMachine.getInstance();
+        Set<Entry<String, Class< ? >>> cls = hm.moduleName2Class.entrySet();
+        for( Entry<String, Class< ? >> cl : cls ) {
+            System.out.println(cl.getValue().getCanonicalName());
+        }
+        if(true)return;
 
         LinkedHashMap<String, List<ClassField>> moduleName2Fields = hm.moduleName2Fields;
         LinkedHashMap<String, Class< ? >> moduleName2Class = hm.moduleName2Class;

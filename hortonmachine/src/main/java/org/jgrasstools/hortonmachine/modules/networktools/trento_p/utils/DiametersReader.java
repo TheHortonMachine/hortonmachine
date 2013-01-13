@@ -39,6 +39,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @Description("Utility class for reading data from csv file that have the form: id1 value1[] id2 value2[] ... idn valuen[].")
@@ -48,7 +49,7 @@ import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 @UI(JGTConstants.HIDE_UI_HINT)
 @Status(Status.EXPERIMENTAL)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class DiametersReader {
+public class DiametersReader extends JGTModel {
     @Description("The csv file to read from.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In

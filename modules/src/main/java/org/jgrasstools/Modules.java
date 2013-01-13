@@ -1,22 +1,4 @@
-/*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- * (C) HydroloGIS - www.hydrologis.com 
- * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
- */
-package org.jgrasstools.gears;
+package org.jgrasstools;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -43,37 +25,31 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.jgrasstools.gears.JGrassGears;
 import org.jgrasstools.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
 
-/**
- * Class presenting modules names and classes.
- * 
- * @author Andrea Antonello (www.hydrologis.com)
- * @since 0.7.0
- */
-@SuppressWarnings("nls")
-public class JGrassGears {
+public class Modules {
 
-    private static JGrassGears jgrassGears = null;
+    private static Modules modules = null;
 
     private URL baseclassUrl;
-    private JGrassGears( URL baseclassUrl ) {
+    private Modules( URL baseclassUrl ) {
         this.baseclassUrl = baseclassUrl;
     }
 
     /**
-     * Retrieves the {@link JGrassGears}. If it exists, that instance is returned.
+     * Retrieves the {@link Modules}. If it exists, that instance is returned.
      * 
-     * @return the JGrassGears annotations class.
+     * @return the Modules annotations class.
      */
-    public synchronized static JGrassGears getInstance() {
-        if (jgrassGears == null) {
-            jgrassGears = new JGrassGears(null);
-            jgrassGears.gatherInformations();
+    public synchronized static Modules getInstance() {
+        if (modules == null) {
+            modules = new Modules(null);
+            modules.gatherInformations();
         }
-        return jgrassGears;
+        return modules;
     }
 
     /**
@@ -90,10 +66,10 @@ public class JGrassGears {
      * 
      * @return the JGrassGears annotations class.
      */
-    public static JGrassGears getInstance( URL baseclassUrl ) {
-        jgrassGears = new JGrassGears(baseclassUrl);
-        jgrassGears.gatherInformations();
-        return jgrassGears;
+    public static Modules getInstance( URL baseclassUrl ) {
+        modules = new Modules(baseclassUrl);
+        modules.gatherInformations();
+        return modules;
     }
 
     /**
@@ -120,7 +96,7 @@ public class JGrassGears {
 
         try {
             if (baseclassUrl == null) {
-                baseclassUrl = ClasspathUrlFinder.findClassBase(JGrassGears.class);
+                baseclassUrl = ClasspathUrlFinder.findClassBase(Modules.class);
             }
             AnnotationDB db = new AnnotationDB();
             db.scanArchives(baseclassUrl);
@@ -128,7 +104,7 @@ public class JGrassGears {
             Map<String, Set<String>> annotationIndex = db.getAnnotationIndex();
             Set<String> simpleClasses = annotationIndex.get(Execute.class.getName());
             for( String className : simpleClasses ) {
-                if (!className.startsWith("org.jgrasstools.gears")) {
+                if (!className.startsWith("org.jgrasstools.modules")) {
                     continue;
                 }
                 int lastDot = className.lastIndexOf('.');
@@ -246,15 +222,16 @@ public class JGrassGears {
     }
 
     public static void main( String[] args ) throws IOException {
-        JGrassGears jgr = getInstance();
+        Modules mod = getInstance();
 
-        Set<Entry<String, Class< ? >>> cls = jgr.moduleName2Class.entrySet();
+        Set<Entry<String, Class< ? >>> cls = mod.moduleName2Class.entrySet();
         for( Entry<String, Class< ? >> cl : cls ) {
             System.out.println(cl.getValue().getCanonicalName());
         }
-        if(true)return;
-        LinkedHashMap<String, List<ClassField>> moduleName2Fields = jgr.moduleName2Fields;
-        LinkedHashMap<String, Class< ? >> moduleName2Class = jgr.moduleName2Class;
+        if (true)
+            return;
+        LinkedHashMap<String, List<ClassField>> moduleName2Fields = mod.moduleName2Fields;
+        LinkedHashMap<String, Class< ? >> moduleName2Class = mod.moduleName2Class;
 
         Set<Entry<String, List<ClassField>>> entrySet = moduleName2Fields.entrySet();
         for( Entry<String, List<ClassField>> entry : entrySet ) {
@@ -358,5 +335,12 @@ public class JGrassGears {
         // System.out.println(fieldName);
         // }
     }
+
+    // public static void main( String[] args ) {
+    // ServiceLoader<JGTModel> load = ServiceLoader.load(JGTModel.class);
+    // for( JGTModel omsSpi : load ) {
+    // System.out.println(omsSpi);
+    // }
+    // }
 
 }
