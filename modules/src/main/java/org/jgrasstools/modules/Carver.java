@@ -43,7 +43,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -88,7 +87,7 @@ public class Carver extends JGTModel {
     public double pDepthPolygons = 6.0;
 
     @Description(OMSCARVER_outRaster_DESCRIPTION)
-    @Out
+    @In
     public String outRaster = null;
 
     @Execute

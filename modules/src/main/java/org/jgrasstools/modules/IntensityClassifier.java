@@ -40,7 +40,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
@@ -92,7 +91,7 @@ public class IntensityClassifier extends JGTModel {
 
     @Description(OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outIntensity = null;
 
     @Execute

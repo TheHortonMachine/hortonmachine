@@ -103,17 +103,17 @@ public class ExtractBasin extends JGTModel {
 
     @Description(OMSEXTRACTBASIN_outBasin_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outBasin = null;
 
     @Description(OMSEXTRACTBASIN_outOutlet_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outOutlet = null;
 
     @Description(OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outVectorBasin = null;
 
     @Execute

@@ -47,7 +47,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -124,7 +123,7 @@ public class RasterReader extends JGTModel {
     public Boolean doLegacyGrass = false;
 
     @Description(OMSRASTERREADER_outRaster_DESCRIPTION)
-    @Out
+    @In
     public GridCoverage2D outRaster = null;
 
     /**

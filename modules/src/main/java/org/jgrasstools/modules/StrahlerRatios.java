@@ -39,7 +39,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -72,15 +71,15 @@ public class StrahlerRatios extends JGTModel {
     public String inNet = null;
 
     @Description(OMSSTRAHLERRATIOS_outBisfurcation_DESCRIPTION)
-    @Out
+    @In
     public double outBisfurcation;
 
     @Description(OMSSTRAHLERRATIOS_outArea_DESCRIPTION)
-    @Out
+    @In
     public double outArea;
 
     @Description(OMSSTRAHLERRATIOS_outLength_DESCRIPTION)
-    @Out
+    @In
     public double outLength;
 
     @Execute

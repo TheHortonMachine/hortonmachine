@@ -172,7 +172,7 @@ public class Kriging extends JGTModel {
     public double pNug;
 
     @Description(OMSKRIGING_outGrid_DESCRIPTION)
-    @Out
+    @In
     public String outGrid = null;
 
     @Description(OMSKRIGING_outData_DESCRIPTION)

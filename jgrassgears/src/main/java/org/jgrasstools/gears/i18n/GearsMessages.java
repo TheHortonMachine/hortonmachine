@@ -956,7 +956,7 @@ public class GearsMessages {
     public static final String OMSVECTORCLIPPER_DESCRIPTION = "A vector clipping module.";
     public static final String OMSVECTORCLIPPER_DOCUMENTATION = "";
     public static final String OMSVECTORCLIPPER_KEYWORDS = "JTS, Clip, Vector";
-    public static final String OMSVECTORCLIPPER_LABEL = OTHER;
+    public static final String OMSVECTORCLIPPER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORCLIPPER_NAME = "clipper";
     public static final int OMSVECTORCLIPPER_STATUS = 5;
     public static final String OMSVECTORCLIPPER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
@@ -1024,23 +1024,23 @@ public class GearsMessages {
     public static final String OMSPROPERTIESFEATUREREADER_file_DESCRIPTION = "The properties file.";
     public static final String OMSPROPERTIESFEATUREREADER_geodata_DESCRIPTION = "The read feature collection.";
 
-    public static final String OMSSURFACEINTERPOLATOR_DESCRIPTION = "";
+    public static final String OMSSURFACEINTERPOLATOR_DESCRIPTION = "Thin Plate Spline and IWD Interpolators";
     public static final String OMSSURFACEINTERPOLATOR_DOCUMENTATION = "";
     public static final String OMSSURFACEINTERPOLATOR_KEYWORDS = "Interpolation, Raster, Spline";
-    public static final String OMSSURFACEINTERPOLATOR_LABEL = OTHER;
+    public static final String OMSSURFACEINTERPOLATOR_LABEL = RASTERPROCESSING;
     public static final String OMSSURFACEINTERPOLATOR_NAME = "surfaceinterpolator";
     public static final int OMSSURFACEINTERPOLATOR_STATUS = 10;
     public static final String OMSSURFACEINTERPOLATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSSURFACEINTERPOLATOR_AUTHORNAMES = "Jan Jezek, Andrea Antonello";
     public static final String OMSSURFACEINTERPOLATOR_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION = "";
-    public static final String OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION = "";
+    public static final String OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION = "The input vector map of points.";
+    public static final String OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION = "The grid on which to interpolate.";
+    public static final String OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION = "A mask raster map. Values will be computed only where the mask has values.";
+    public static final String OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION = "Field from which to take the category value.";
+    public static final String OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION = "Interpolation mode.";
+    public static final String OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION = "The buffer to use for interpolation.";
+    public static final String OMSSURFACEINTERPOLATOR_pMaxThreads_DESCRIPTION = "Max threads to use.";
+    public static final String OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION = "The interpolated raster";
 
     public static final String OMSDATETIME2VALUEMAPREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].";
     public static final String OMSDATETIME2VALUEMAPREADER_DOCUMENTATION = "";

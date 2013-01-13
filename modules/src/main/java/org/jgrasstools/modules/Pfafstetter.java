@@ -41,9 +41,10 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.network.pfafstetter.OmsPfafstetter;
 
@@ -57,26 +58,32 @@ import org.jgrasstools.hortonmachine.modules.network.pfafstetter.OmsPfafstetter;
 public class Pfafstetter extends JGTModel {
 
     @Description(OMSPFAFSTETTER_inPit_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPit = null;
 
     @Description(OMSPFAFSTETTER_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow = null;
 
     @Description(OMSPFAFSTETTER_inHackstream_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inHackstream = null;
 
     @Description(OMSPFAFSTETTER_inNetnum_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inNetnum = null;
 
     @Description(OMSPFAFSTETTER_inChannel_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inChannel = null;
 
     @Description(OMSPFAFSTETTER_inChannelfeatures_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inChannelfeatures = null;
 
@@ -85,7 +92,8 @@ public class Pfafstetter extends JGTModel {
     public double pMode = 0;
 
     @Description(OMSPFAFSTETTER_outPfaf_DESCRIPTION)
-    @Out
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
     public String outPfaf = null;
 
     @Execute

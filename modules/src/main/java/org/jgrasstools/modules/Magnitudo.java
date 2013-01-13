@@ -35,7 +35,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -59,7 +58,7 @@ public class Magnitudo extends JGTModel {
 
     @Description(OMSMAGNITUDO_outMag_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outMag = null;
 
     @Execute

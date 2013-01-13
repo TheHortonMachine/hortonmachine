@@ -71,7 +71,7 @@ public class Wateroutlet extends JGTModel {
 
     @Description(OMSWATEROUTLET_outBasin_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outBasin = null;
 
     @Description(OMSWATEROUTLET_outArea_DESCRIPTION)
