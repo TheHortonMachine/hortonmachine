@@ -18,6 +18,14 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import java.lang.reflect.Field;
+import java.util.Collection;
+
+import oms3.Access;
+import oms3.annotations.Description;
+import oms3.annotations.Status;
+import oms3.annotations.Unit;
+
 /**
  * <p>
  * Facility methods and constants used by the console engine
@@ -211,4 +219,47 @@ public class ModelsSupporter {
 
     public static final String RESOLUTION = "resolution";
 
+    public static String getStatusString( int statusValue ) {
+        switch( statusValue ) {
+        case Status.CERTIFIED:
+            return "CERTIFIED";
+        case Status.DRAFT:
+            return "DRAFT";
+        case Status.EXPERIMENTAL:
+            return "EXPERIMENTAL";
+        case Status.TESTED:
+            return "TESTED";
+        case Status.VALIDATED:
+            return "VALIDATED";
+        }
+        return "DRAFT";
+    }
+
+    public static void collectParameters( StringBuilder sbTmp, Collection<Access> accessList, String pre ) throws Exception {
+        for( Access access : accessList ) {
+            Field field = access.getField();
+            String fieldName = field.getName();
+            Description descriptionAnnot = field.getAnnotation(Description.class);
+
+            if (fieldName.equals("pm")) {
+                // ignore progress monitor
+                continue;
+            }
+            String fieldDescription = " - ";
+            if (descriptionAnnot != null) {
+                fieldDescription = descriptionAnnot.value();
+                if (fieldDescription == null) {
+                    fieldDescription = " - ";
+                }
+
+                Unit unitAnn = field.getAnnotation(Unit.class);
+                if (unitAnn != null) {
+                    fieldDescription = fieldDescription + " [" + unitAnn.value() + "]";
+                }
+            }
+
+            sbTmp.append(pre).append(fieldName).append(": ");
+            sbTmp.append(fieldDescription).append("\n");
+        }
+    }
 }

@@ -159,4 +159,15 @@ public class RasterReader extends JGTModel {
         outRaster = rasterreader.outRaster;
         originalEnvelope = rasterreader.originalEnvelope;
     }
+
+    /**
+     * Utility method to quickly read a grid in default mode.
+     * 
+     * @param path the path to the file.
+     * @return the read coverage.
+     * @throws Exception
+     */
+    public static GridCoverage2D readRaster( String path ) throws Exception {
+        return OmsRasterReader.readRaster(path);
+    }
 }

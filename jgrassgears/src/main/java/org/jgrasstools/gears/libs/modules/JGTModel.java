@@ -26,11 +26,16 @@ import java.util.Map;
 
 import oms3.Access;
 import oms3.ComponentAccess;
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -226,6 +231,108 @@ public class JGTModel implements Process {
         if (vector == null)
             return;
         OmsVectorWriter.writeVector(source, vector);
+    }
+
+    public void help() throws Exception {
+
+        Class< ? > moduleClass = getClass();
+
+        StringBuilder sb = new StringBuilder();
+
+        // try with module description
+        Description description = moduleClass.getAnnotation(Description.class);
+        String descriptionStr = description.value();
+        String NEWLINE = "\n";
+        if (description != null) {
+            sb.append("Description").append(NEWLINE);
+            sb.append("-----------").append(NEWLINE);
+            sb.append(NEWLINE);
+            sb.append(descriptionStr);
+            sb.append(NEWLINE);
+            sb.append(NEWLINE);
+        }
+        // general info
+        sb.append("General Information").append(NEWLINE);
+        sb.append("-------------------").append(NEWLINE);
+        sb.append(NEWLINE);
+        // general info: status
+        Status status = moduleClass.getAnnotation(Status.class);
+        if (status != null) {
+            sb.append("Module status: " + ModelsSupporter.getStatusString(status.value())).append(NEWLINE);
+        }
+
+        // general info: script name
+        Name name = moduleClass.getAnnotation(Name.class);
+        if (name != null) {
+            String nameStr = name.value();
+            sb.append("Name to use in an OMS3 script: " + nameStr + "").append(NEWLINE);
+        }
+        // general info: authors
+        Author author = moduleClass.getAnnotation(Author.class);
+        if (author != null) {
+            String authorNameStr = author.name();
+            String[] authorNameSplit = authorNameStr.split(",");
+
+            String authorContactStr = author.contact();
+            String[] authorContactSplit = authorContactStr.split(",");
+
+            sb.append("Authors").append(NEWLINE);
+            for( String authorName : authorNameSplit ) {
+                sb.append("* ").append(authorName.trim()).append(NEWLINE);
+            }
+            sb.append(NEWLINE);
+            sb.append("Contacts: ").append(NEWLINE);
+            for( String authorContact : authorContactSplit ) {
+                sb.append("* ").append(authorContact.trim()).append(NEWLINE);
+            }
+            sb.append(NEWLINE);
+        }
+        // general info: license
+        License license = moduleClass.getAnnotation(License.class);
+        if (license != null) {
+            String licenseStr = license.value();
+            sb.append("License: " + licenseStr).append(NEWLINE);
+        }
+        // general info: keywords
+        Keywords keywords = moduleClass.getAnnotation(Keywords.class);
+        if (keywords != null) {
+            String keywordsStr = keywords.value();
+            sb.append("Keywords: " + keywordsStr).append(NEWLINE);
+        }
+        sb.append(NEWLINE);
+
+        // gather input fields
+        Object annotatedObject = moduleClass.newInstance();
+        ComponentAccess cA = new ComponentAccess(annotatedObject);
+
+        // parameters
+        sb.append("Parameters").append(NEWLINE);
+        sb.append("----------").append(NEWLINE);
+        sb.append(NEWLINE);
+        // parameters: fields
+        Collection<Access> inputs = cA.inputs();
+        StringBuilder sbTmp = new StringBuilder();
+        ModelsSupporter.collectParameters(sbTmp, inputs, "\t");
+        String params = sbTmp.toString();
+        if (params.trim().length() > 0) {
+            sb.append("\tInput Parameters").append(NEWLINE);
+            sb.append("\t----------------").append(NEWLINE);
+            sb.append(params);
+            sb.append(NEWLINE);
+        }
+        Collection<Access> outputs = cA.outputs();
+        sbTmp = new StringBuilder();
+        ModelsSupporter.collectParameters(sbTmp, outputs, "\t");
+        params = sbTmp.toString();
+        if (params.trim().length() > 0) {
+            sb.append("\tOutput Parameters").append(NEWLINE);
+            sb.append("\t-----------------").append(NEWLINE);
+            sb.append(params);
+            sb.append(NEWLINE);
+        }
+        sb.append(NEWLINE);
+
+        pm.message(sb.toString());
     }
 
 }

@@ -71,4 +71,8 @@ public class RasterWriter extends JGTModel {
         rasterwriter.doReset = doReset;
         rasterwriter.process();
     }
+
+    public static void writeRaster( String path, GridCoverage2D coverage ) throws Exception {
+        OmsRasterWriter.writeRaster(path, coverage);
+    }
 }
