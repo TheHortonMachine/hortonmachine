@@ -26,16 +26,11 @@ import java.util.Map;
 
 import oms3.Access;
 import oms3.ComponentAccess;
-import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
-import oms3.annotations.Keywords;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -235,6 +230,11 @@ public class JGTModel implements Process {
 
     public void help() throws Exception {
         String help = ModelsSupporter.generateHelp(this);
+        pm.message(help);
+    }
+
+    public void template() throws Exception {
+        String help = ModelsSupporter.generateTemplate(this);
         pm.message(help);
     }
 

@@ -28,6 +28,7 @@ import oms3.annotations.Description;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
@@ -367,6 +368,52 @@ public class ModelsSupporter {
         }
         sb.append(NEWLINE);
 
+        return sb.toString();
+    }
+
+    public static String generateTemplate( Object parent ) {
+        Class< ? > class1 = parent.getClass();
+        String name = class1.getSimpleName();
+        StringBuilder sb = new StringBuilder();
+        String newName = name;
+        String varName = name.toLowerCase();
+        sb.append(newName).append(" ").append(varName).append(" = new ");
+        sb.append(newName).append("();\n");
+        java.lang.reflect.Field[] fields = class1.getFields();
+        for( java.lang.reflect.Field field : fields ) {
+            String fname = field.getName();
+            if (fname.equals("pm") || fname.equals("doProcess") || fname.equals("doReset")) {
+                continue;
+            }
+             Class< ? > cl = field.getType();
+            Out out = field.getAnnotation(Out.class);
+            if (out != null) {
+                continue;
+            }
+            if (cl.isAssignableFrom(String.class)) {
+                sb.append(varName).append(".").append(fname).append(" = \"\";\n");
+            }else{
+                sb.append(varName).append(".").append(fname).append(" = ?;\n");
+            }
+        }
+        sb.append(varName).append(".process();\n");
+
+        // outputs
+        // for( java.lang.reflect.Field field : fields ) {
+        // String fname = field.getName();
+        // Class< ? > cl = field.getType();
+        // Out out = field.getAnnotation(Out.class);
+        // if (out == null) {
+        // continue;
+        // }
+        // if (cl.isAssignableFrom(org.geotools.coverage.grid.GridCoverage2D.class)) {
+        // sb.append("dumpRaster(").append(varName).append(".").append(fname).append(", ").append(fname).append(");\n");
+        // } else if (cl.isAssignableFrom(org.geotools.data.simple.SimpleFeatureCollection.class)) {
+        // sb.append("dumpVector(").append(varName).append(".").append(fname).append(", ").append(fname).append(");\n");
+        // } else {
+        // System.err.println("Unrecognised: " + fname);
+        // }
+        // }
         return sb.toString();
     }
 }
