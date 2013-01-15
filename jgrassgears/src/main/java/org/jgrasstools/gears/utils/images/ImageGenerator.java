@@ -72,6 +72,7 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.filter.expression.Expression;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -373,18 +374,12 @@ public class ImageGenerator {
         if (buffer > 0.0)
             ref.expandBy(buffer, buffer);
 
-        double envW = ref.getWidth();
-        double envH = ref.getHeight();
+        Rectangle2D refRect = new Rectangle2D.Double(ref.getMinX(), ref.getMinY(), ref.getWidth(), ref.getHeight());
+        Rectangle2D imageRect = new Rectangle2D.Double(0, 0, imageWidth, imageHeight);
 
-        if (envW < envH) {
-            double newEnvW = envH * (double) imageWidth / (double) imageHeight;
-            double delta = newEnvW - envW;
-            ref.expandBy(delta / 2, 0);
-        } else {
-            double newEnvH = envW * (double) imageHeight / (double) imageWidth;
-            double delta = newEnvH - envH;
-            ref.expandBy(0, delta / 2.0);
-        }
+        GeometryUtilities.scaleToRatio(imageRect, refRect, false);
+
+        ReferencedEnvelope newRef = new ReferencedEnvelope(refRect, ref.getCoordinateReferenceSystem());
 
         Rectangle imageBounds = new Rectangle(0, 0, imageWidth, imageHeight);
         BufferedImage dumpImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_INT_RGB);
@@ -393,12 +388,11 @@ public class ImageGenerator {
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         synchronized (renderer) {
-            renderer.paint(g2d, imageBounds, ref);
+            renderer.paint(g2d, imageBounds, newRef);
         }
 
         return dumpImage;
     }
-
     /**
      * Draw the map on an image creating a new MapContent.
      * 
