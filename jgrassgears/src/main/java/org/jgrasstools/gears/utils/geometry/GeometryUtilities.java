@@ -24,6 +24,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -760,4 +761,46 @@ public class GeometryUtilities {
         }
         return newPolygons;
     }
+
+    /**
+     * Extends or shrinks a rectangle following the ration of a fixed one.
+     * 
+     * <p>This keeps the center point of the rectangle fixed.</p>
+     * 
+     * @param fixed the fixed {@link Rectangle2D} to use for the ratio.
+     * @param toScale the {@link Rectangle2D} to adapt to the ratio of the fixed one. 
+     * @param doShrink if <code>true</code>, the adapted rectangle is shrinked as 
+     *          opposed to extended.
+     */
+    public static void scaleToRatio( Rectangle2D fixed, Rectangle2D toScale, boolean doShrink ) {
+        double origWidth = fixed.getWidth();
+        double origHeight = fixed.getHeight();
+        double toAdaptWidth = toScale.getWidth();
+        double toAdaptHeight = toScale.getHeight();
+
+        double scaleWidth = 0;
+        double scaleHeight = 0;
+
+        scaleWidth = toAdaptWidth / origWidth;
+        scaleHeight = toAdaptHeight / origHeight;
+        double scaleFactor;
+        if (doShrink) {
+            scaleFactor = Math.min(scaleWidth, scaleHeight);
+        } else {
+            scaleFactor = Math.max(scaleWidth, scaleHeight);
+        }
+
+        double newWidth = origWidth * scaleFactor;
+        double newHeight = origHeight * scaleFactor;
+
+        double dw = (toAdaptWidth - newWidth) / 2.0;
+        double dh = (toAdaptHeight - newHeight) / 2.0;
+
+        double newX = toScale.getX() + dw;
+        double newY = toScale.getY() + dh;
+        double newW = toAdaptWidth - 2 * dw;
+        double newH = toAdaptHeight - 2 * dh;
+        toScale.setRect(newX, newY, newW, newH);
+    }
+
 }

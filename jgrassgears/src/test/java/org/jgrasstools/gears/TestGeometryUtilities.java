@@ -1,14 +1,13 @@
 package org.jgrasstools.gears;
 
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -194,6 +193,32 @@ public class TestGeometryUtilities extends HMTestCase {
         assertTrue(GeometryUtilities.isPoint(pointType.getGeometryDescriptor()));
         assertFalse(GeometryUtilities.isLine(pointType.getGeometryDescriptor()));
         assertFalse(GeometryUtilities.isPolygon(pointType.getGeometryDescriptor()));
+    }
+
+    public void testRectangleAdaptor() {
+        Rectangle2D r1 = new Rectangle2D.Double(0, 0, 100, 50);
+        Rectangle2D r2 = new Rectangle2D.Double(0, 0, 10, 10);
+
+        GeometryUtilities.scaleToRatio(r1, r2, false);
+        assertEquals(20, (int) r2.getWidth());
+        assertEquals(-5, (int) r2.getX());
+        assertEquals(10, (int) r2.getHeight());
+        assertEquals(0, (int) r2.getY());
+
+        r2 = new Rectangle2D.Double(0, 0, 10, 10);
+        GeometryUtilities.scaleToRatio(r1, r2, true);
+        assertEquals(10, (int) r2.getWidth());
+        assertEquals(0, (int) r2.getX());
+        assertEquals(5, (int) r2.getHeight());
+        assertEquals(2.5, r2.getY());
+
+        Rectangle2D r11 = new Rectangle2D.Double(0, 0, 20, 60);
+        Rectangle2D r22 = new Rectangle2D.Double(0, 0, 10, 10);
+        GeometryUtilities.scaleToRatio(r11, r22, false);
+        assertEquals(10, (int) r22.getWidth());
+        assertEquals(0, (int) r22.getX());
+        assertEquals(30, (int) r22.getHeight());
+        assertEquals(-10, (int) r22.getY());
     }
 
 }
