@@ -328,7 +328,7 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYREADER_data_DESCRIPTION = "The read map of ids and values arrays.";
 
     public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Module for raster reprojection.";
-    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "OmsRasterConverter.html";
+    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "";
     public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader";
     public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
