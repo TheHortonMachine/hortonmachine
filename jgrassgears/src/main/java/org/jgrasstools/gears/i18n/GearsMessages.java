@@ -1200,6 +1200,20 @@ public class GearsMessages {
     public static final String OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION = "The rounding pattern.";
     public static final String OMSRASTERVALUEROUNDER_outRaster_DESCRIPTION = "The rounded raster.";
 
+    public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
+    public static final String OMSRASTERNULL_DOCUMENTATION = "";
+    public static final String OMSRASTERNULL_KEYWORDS = "NUll, Raster";
+    public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERNULL_NAME = "rnull";
+    public static final int OMSRASTERNULL_STATUS = 40;
+    public static final String OMSRASTERNULL_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERNULL_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERNULL_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERNULL_inRaster_DESCRIPTION = "The raster to modify.";
+    public static final String OMSRASTERNULL_pValue_DESCRIPTION = "The value to set to null.";
+    public static final String OMSRASTERNULL_pNull_DESCRIPTION = "The the null value to set (else it is guessed).";
+    public static final String OMSRASTERNULL_outRaster_DESCRIPTION = "The new raster.";
+
     public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
     public static final String OMSLASCONVERTER_DOCUMENTATION = "";
     public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
