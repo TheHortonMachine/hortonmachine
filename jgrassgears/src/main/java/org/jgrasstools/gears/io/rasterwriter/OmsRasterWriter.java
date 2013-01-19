@@ -88,13 +88,9 @@ public class OmsRasterWriter extends JGTModel {
     @In
     public String file = null;
 
-    private boolean hasWritten = false;
 
     @Execute
     public void process() throws Exception {
-        if (!concatOr(!hasWritten, doReset)) {
-            return;
-        }
         checkNull(inRaster);
 
         if (inRaster.getName().toString().equals("dummy")) {
@@ -127,7 +123,6 @@ public class OmsRasterWriter extends JGTModel {
             } else {
                 throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
             }
-            hasWritten = true;
         } finally {
             pm.done();
         }

@@ -19,6 +19,7 @@ package org.jgrasstools.modules;
 
 import java.awt.image.WritableRaster;
 
+import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -37,18 +38,29 @@ public class Raster {
 
     private RegionMap regionMap;
     private CoordinateReferenceSystem crs;
-    private WritableRandomIter newIter;
+    private RandomIter iter;
     private int cols;
     private int rows;
     private WritableRaster newWR;
+    private boolean makeNew;
 
-    public Raster( GridCoverage2D template ) {
-        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
-        crs = template.getCoordinateReferenceSystem();
+    public Raster( GridCoverage2D raster ) {
+        this(raster, false);
+    }
+
+    public Raster( GridCoverage2D raster, boolean makeNew ) {
+        this.makeNew = makeNew;
+        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+        crs = raster.getCoordinateReferenceSystem();
         cols = regionMap.getCols();
         rows = regionMap.getRows();
-        newWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
-        newIter = RandomIterFactory.createWritable(newWR, null);
+
+        if (makeNew) {
+            newWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+            iter = RandomIterFactory.createWritable(newWR, null);
+        } else {
+            iter = RandomIterFactory.create(raster.getRenderedImage(), null);
+        }
     }
 
     public int getRows() {
@@ -61,7 +73,7 @@ public class Raster {
 
     public double valueAt( int col, int row ) {
         if (isInRaster(col, row)) {
-            double value = newIter.getSampleDouble(col, row, 0);
+            double value = iter.getSampleDouble(col, row, 0);
             return value;
         }
         return JGTConstants.doubleNovalue;
@@ -72,14 +84,30 @@ public class Raster {
     }
 
     public void setValueAt( int col, int row, double value ) {
-        if (isInRaster(col, row)) {
-            newIter.setSample(col, row, 0, value);
+        if (makeNew) {
+            if (isInRaster(col, row)) {
+                ((WritableRandomIter) iter).setSample(col, row, 0, value);
+            }
+        } else {
+            throw new RuntimeException("Writing not allowed.");
         }
     }
 
     public GridCoverage2D buildRaster() {
-        GridCoverage2D coverage = CoverageUtilities.buildCoverage("raster", newWR, regionMap, crs);
-        return coverage;
+        if (makeNew) {
+            GridCoverage2D coverage = CoverageUtilities.buildCoverage("raster", newWR, regionMap, crs);
+            return coverage;
+        } else {
+            throw new RuntimeException("The raster is readonly, so no new raster can be built.");
+        }
+    }
+
+    public void dumpRaster( String path ) throws Exception {
+        if (makeNew) {
+            RasterWriter.writeRaster(path, buildRaster());
+        } else {
+            throw new RuntimeException("Only new rasters can be dumped.");
+        }
     }
 
     private boolean isInRaster( int col, int row ) {
