@@ -120,27 +120,25 @@ public class OmsExtractNetwork extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFlow, inTca);
-        if (!concatOr(outNet == null, doReset)) {
-            return;
-        }
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        checkNull(inTca);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inTca);
         cols = regionMap.getCols();
         rows = regionMap.getRows();
 
-        RenderedImage flowRI = inFlow.getRenderedImage();
         RenderedImage tcaRI = inTca.getRenderedImage();
 
         WritableRaster networkWR = null;
         if (pMode.equals(TCA)) {
-            checkNull(flowRI, tcaRI);
-            networkWR = extractNetTcaThreshold(flowRI, tcaRI);
+            checkNull(tcaRI);
+            networkWR = extractNetTcaThreshold(tcaRI);
         } else if (pMode.equals(TCA_SLOPE)) {
             checkNull(inSlope);
+            RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
             networkWR = extractNetMode1(flowRI, tcaRI, slopeRI);
         } else if (pMode.equals(TCA_CONVERGENT)) {
             checkNull(inSlope, inTc3);
+            RenderedImage flowRI = inFlow.getRenderedImage();
             RenderedImage classRI = inTc3.getRenderedImage();
             RenderedImage slopeRI = inSlope.getRenderedImage();
             networkWR = extractNetMode2(flowRI, tcaRI, classRI, slopeRI);
@@ -148,15 +146,15 @@ public class OmsExtractNetwork extends JGTModel {
         if (isCanceled(pm)) {
             return;
         }
-        outNet = CoverageUtilities.buildCoverage("network", networkWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        outNet = CoverageUtilities.buildCoverage("network", networkWR, regionMap, inTca.getCoordinateReferenceSystem());
 
     }
+
     /**
      * this method calculates the network using a threshold value on the
      * contributing areas or on magnitudo
      */
-    private WritableRaster extractNetTcaThreshold( RenderedImage flowRI, RenderedImage tcaRI ) {
-        // create new RasterData for the network matrix
+    private WritableRaster extractNetTcaThreshold( RenderedImage tcaRI ) {
         RandomIter tcaIter = RandomIterFactory.create(tcaRI, null);
         WritableRaster netWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter netIter = RandomIterFactory.createWritable(netWR, null);

@@ -66,6 +66,7 @@ public class ExtractNetwork extends JGTModel {
     public String inTca = null;
 
     @Description(OMSEXTRACTNETWORK_inFlow_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inFlow = null;
 

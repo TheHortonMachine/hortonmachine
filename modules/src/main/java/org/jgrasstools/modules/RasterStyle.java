@@ -49,14 +49,15 @@ public class RasterStyle {
 
     public String style( String colorTableName ) throws Exception {
         ColorTables[] colorTables = ColorTables.values();
-        for( ColorTables colorTable : colorTables ) {
-            if (colorTable.name().equals(colorTableName.toLowerCase().trim())) {
-                String createStyleForColortable = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max, null,
-                        alpha);
-                return createStyleForColortable;
+        if (colorTableName != null) {
+            for( ColorTables colorTable : colorTables ) {
+                if (colorTable.name().equals(colorTableName.toLowerCase().trim())) {
+                    String createStyleForColortable = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max,
+                            null, alpha);
+                    return createStyleForColortable;
+                }
             }
         }
-
         StringBuilder sb = new StringBuilder();
         sb.append("The colortable ");
         sb.append(colorTableName);
