@@ -27,7 +27,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYr
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LICENSE;
@@ -44,7 +43,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.IDW;
 import static org.jgrasstools.gears.libs.modules.Variables.TPS;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -62,7 +60,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.interpolation2d.OmsSurfaceInterpolator;
 
 @Description(OMSSURFACEINTERPOLATOR_DESCRIPTION)
-@Documentation(OMSSURFACEINTERPOLATOR_DOCUMENTATION)
 @Author(name = OMSSURFACEINTERPOLATOR_AUTHORNAMES, contact = OMSSURFACEINTERPOLATOR_AUTHORCONTACTS)
 @Keywords(OMSSURFACEINTERPOLATOR_KEYWORDS)
 @Label(OMSSURFACEINTERPOLATOR_LABEL)

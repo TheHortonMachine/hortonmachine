@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERREPROJECTOR_LICENSE;
@@ -41,7 +40,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,7 +54,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 
 @Description(OMSRASTERREPROJECTOR_DESCRIPTION)
-@Documentation(OMSRASTERREPROJECTOR_DOCUMENTATION)
 @Author(name = OMSRASTERREPROJECTOR_AUTHORNAMES, contact = OMSRASTERREPROJECTOR_AUTHORCONTACTS)
 @Keywords(OMSRASTERREPROJECTOR_KEYWORDS)
 @Label(OMSRASTERREPROJECTOR_LABEL)

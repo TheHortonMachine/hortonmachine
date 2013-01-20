@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LICENSE;
@@ -33,7 +32,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_pointsVec
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_polygonVector_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,7 +46,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter;
 
 @Description(OMSDXFCONVERTER_DESCRIPTION)
-@Documentation(OMSDXFCONVERTER_DOCUMENTATION)
 @Author(name = OMSDXFCONVERTER_AUTHORNAMES, contact = OMSDXFCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSDXFCONVERTER_KEYWORDS)
 @Label(OMSDXFCONVERTER_LABEL)

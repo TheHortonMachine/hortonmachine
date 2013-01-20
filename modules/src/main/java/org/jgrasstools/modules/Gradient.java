@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outS
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient;
 
 @Description(OMSGRADIENT_DESCRIPTION)
-@Documentation(OMSGRADIENT_DOCUMENTATION)
 @Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
 @Keywords(OMSGRADIENT_KEYWORDS)
 @Label(OMSGRADIENT_LABEL)

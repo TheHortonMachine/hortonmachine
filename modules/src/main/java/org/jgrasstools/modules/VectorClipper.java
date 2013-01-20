@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_outMap_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCLIPPER_pMaxThreads_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorclipper.OmsVectorClipper;
 
 @Description(OMSVECTORCLIPPER_DESCRIPTION)
-@Documentation(OMSVECTORCLIPPER_DOCUMENTATION)
 @Author(name = OMSVECTORCLIPPER_AUTHORNAMES, contact = OMSVECTORCLIPPER_AUTHORCONTACTS)
 @Keywords(OMSVECTORCLIPPER_KEYWORDS)
 @Label(OMSVECTORCLIPPER_LABEL)

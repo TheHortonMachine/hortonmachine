@@ -21,7 +21,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_inGeod
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORCONVERTER_outGeodata_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorconverter.OmsVectorConverter;
 
 @Description(OMSVECTORCONVERTER_DESCRIPTION)
-@Documentation(OMSVECTORCONVERTER_DOCUMENTATION)
 @Author(name = OMSVECTORCONVERTER_AUTHORNAMES, contact = OMSVECTORCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSVECTORCONVERTER_KEYWORDS)
 @Label(OMSVECTORCONVERTER_LABEL)

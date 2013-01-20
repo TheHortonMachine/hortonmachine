@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LICENSE;
@@ -34,7 +33,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pCod
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_pForceCode_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,7 +47,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)
-@Documentation(OMSVECTORREPROJECTOR_DOCUMENTATION)
 @Author(name = OMSVECTORREPROJECTOR_AUTHORNAMES, contact = OMSVECTORREPROJECTOR_AUTHORCONTACTS)
 @Keywords(OMSVECTORREPROJECTOR_KEYWORDS)
 @Label(OMSVECTORREPROJECTOR_LABEL)

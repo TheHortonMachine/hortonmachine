@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LICENSE;
@@ -29,7 +28,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_STA
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_inFolder_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,7 +42,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 
 @Description(OMSIMAGEMOSAICCREATOR_DESCRIPTION)
-@Documentation(OMSIMAGEMOSAICCREATOR_DOCUMENTATION)
 @Author(name = OMSIMAGEMOSAICCREATOR_AUTHORNAMES, contact = OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS)
 @Keywords(OMSIMAGEMOSAICCREATOR_KEYWORDS)
 @Label(OMSIMAGEMOSAICCREATOR_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LICENSE;
@@ -35,7 +34,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_p
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_pSlide_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -50,7 +48,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 
 @Description(OMSLINESMOOTHERMCMASTER_DESCRIPTION)
-@Documentation(OMSLINESMOOTHERMCMASTER_DOCUMENTATION)
 @Author(name = OMSLINESMOOTHERMCMASTER_AUTHORNAMES, contact = OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS)
 @Keywords(OMSLINESMOOTHERMCMASTER_KEYWORDS)
 @Label(OMSLINESMOOTHERMCMASTER_LABEL)

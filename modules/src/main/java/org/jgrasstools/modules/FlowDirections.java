@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LICENSE;
@@ -30,7 +29,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTION
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,7 +43,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections;
 
 @Description(OMSFLOWDIRECTIONS_DESCRIPTION)
-@Documentation(OMSFLOWDIRECTIONS_DOCUMENTATION)
 @Author(name = OMSFLOWDIRECTIONS_AUTHORNAMES, contact = OMSFLOWDIRECTIONS_AUTHORCONTACTS)
 @Keywords(OMSFLOWDIRECTIONS_KEYWORDS)
 @Label(OMSFLOWDIRECTIONS_LABEL)

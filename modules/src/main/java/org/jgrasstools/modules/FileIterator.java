@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSFILEITERATOR_LICENSE;
@@ -41,7 +40,6 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
@@ -61,7 +59,6 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSFILEITERATOR_DESCRIPTION)
-@Documentation(OMSFILEITERATOR_DOCUMENTATION)
 @Author(name = OMSFILEITERATOR_AUTHORNAMES, contact = OMSFILEITERATOR_AUTHORCONTACTS)
 @Keywords(OMSFILEITERATOR_KEYWORDS)
 @Label(OMSFILEITERATOR_LABEL)

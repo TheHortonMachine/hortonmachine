@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_LICENSE;
@@ -36,7 +35,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_polygonVe
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSDWGCONVERTER_textVector_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +49,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorconverter.OmsDwgConverter;
 
 @Description(OMSDWGCONVERTER_DESCRIPTION)
-@Documentation(OMSDWGCONVERTER_DOCUMENTATION)
 @Author(name = OMSDWGCONVERTER_AUTHORNAMES, contact = OMSDWGCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSDWGCONVERTER_KEYWORDS)
 @Label(OMSDWGCONVERTER_LABEL)

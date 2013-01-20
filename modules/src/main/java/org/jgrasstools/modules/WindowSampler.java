@@ -21,7 +21,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_LICENSE;
@@ -36,7 +35,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pXstep_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSWINDOWSAMPLER_pYstep_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +49,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.windowsampler.OmsWindowSampler;
 
 @Description(OMSWINDOWSAMPLER_DESCRIPTION)
-@Documentation(OMSWINDOWSAMPLER_DOCUMENTATION)
 @Author(name = OMSWINDOWSAMPLER_AUTHORNAMES, contact = OMSWINDOWSAMPLER_AUTHORCONTACTS)
 @Keywords(OMSWINDOWSAMPLER_KEYWORDS)
 @Label(OMSWINDOWSAMPLER_LABEL)

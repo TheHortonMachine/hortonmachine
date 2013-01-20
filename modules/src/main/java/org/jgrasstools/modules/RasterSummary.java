@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_LICENSE;
@@ -38,7 +37,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_outSum_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERSUMMARY_pBins_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -54,7 +52,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 
 @Description(OMSRASTERSUMMARY_DESCRIPTION)
-@Documentation(OMSRASTERSUMMARY_DOCUMENTATION)
 @Author(name = OMSRASTERSUMMARY_AUTHORNAMES, contact = OMSRASTERSUMMARY_AUTHORCONTACTS)
 @Keywords(OMSRASTERSUMMARY_KEYWORDS)
 @Label(OMSRASTERSUMMARY_LABEL)

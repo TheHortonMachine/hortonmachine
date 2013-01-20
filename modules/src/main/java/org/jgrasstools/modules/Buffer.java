@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBUFFER_LICENSE;
@@ -40,7 +39,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.JOIN_MITRE;
 import static org.jgrasstools.gears.libs.modules.Variables.JOIN_ROUND;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -55,7 +53,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectoroperations.OmsBuffer;
 
 @Description(OMSBUFFER_DESCRIPTION)
-@Documentation(OMSBUFFER_DOCUMENTATION)
 @Author(name = OMSBUFFER_AUTHORNAMES, contact = OMSBUFFER_AUTHORCONTACTS)
 @Keywords(OMSBUFFER_KEYWORDS)
 @Label(OMSBUFFER_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_outRas
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCORRECTOR_pCorrections_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,7 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector;
 
 @Description(OMSRASTERCORRECTOR_DESCRIPTION)
-@Documentation(OMSRASTERCORRECTOR_DOCUMENTATION)
 @Author(name = OMSRASTERCORRECTOR_AUTHORNAMES, contact = OMSRASTERCORRECTOR_AUTHORCONTACTS)
 @Keywords(OMSRASTERCORRECTOR_KEYWORDS)
 @Label(OMSRASTERCORRECTOR_LABEL)

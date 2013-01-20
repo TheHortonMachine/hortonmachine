@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_inPit_D
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSLOPE_outSlope_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.slope.OmsSlope;
 
 @Description(OMSSLOPE_DESCRIPTION)
-@Documentation(OMSSLOPE_DOCUMENTATION)
 @Author(name = OMSSLOPE_AUTHORNAMES, contact = OMSSLOPE_AUTHORCONTACTS)
 @Keywords(OMSSLOPE_KEYWORDS)
 @Label(OMSSLOPE_LABEL)

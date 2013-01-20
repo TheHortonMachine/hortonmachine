@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LICENSE;
@@ -33,7 +32,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_inPoi
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_outMap_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,7 +46,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer;
 
 @Description(OMSLINESPOLYGONIZER_DESCRIPTION)
-@Documentation(OMSLINESPOLYGONIZER_DOCUMENTATION)
 @Author(name = OMSLINESPOLYGONIZER_AUTHORNAMES, contact = OMSLINESPOLYGONIZER_AUTHORCONTACTS)
 @Keywords(OMSLINESPOLYGONIZER_KEYWORDS)
 @Label(OMSLINESPOLYGONIZER_LABEL)

@@ -3,7 +3,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_LICENSE;
@@ -15,7 +14,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_inPi
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSMULTITCA_outMultiTca_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -30,7 +28,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.multitca.OmsMultiTca;
 
 @Description(OMSMULTITCA_DESCRIPTION)
-@Documentation(OMSMULTITCA_DOCUMENTATION)
 @Author(name = OMSMULTITCA_AUTHORNAMES, contact = OMSMULTITCA_AUTHORCONTACTS)
 @Keywords(OMSMULTITCA_KEYWORDS)
 @Label(OMSMULTITCA_LABEL)

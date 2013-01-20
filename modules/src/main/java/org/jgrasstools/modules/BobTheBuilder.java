@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_LICENSE;
@@ -37,7 +36,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_outRaste
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_pMaxbuffer_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -52,7 +50,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.bobthebuilder.OmsBobTheBuilder;
 
 @Description(OMSBOBTHEBUILDER_DESCRIPTION)
-@Documentation(OMSBOBTHEBUILDER_DOCUMENTATION)
 @Author(name = OMSBOBTHEBUILDER_AUTHORNAMES, contact = OMSBOBTHEBUILDER_AUTHORCONTACTS)
 @Keywords(OMSBOBTHEBUILDER_KEYWORDS)
 @Label(OMSBOBTHEBUILDER_LABEL)

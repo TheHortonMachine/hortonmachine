@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_LICENSE;
@@ -34,7 +33,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_outFolder_DESC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPROFILE_outProfile_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -50,7 +48,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.profile.OmsProfile;
 
 @Description(OMSPROFILE_DESCRIPTION)
-@Documentation(OMSPROFILE_DOCUMENTATION)
 @Author(name = OMSPROFILE_AUTHORNAMES, contact = OMSPROFILE_AUTHORCONTACTS)
 @Keywords(OMSPROFILE_KEYWORDS)
 @Label(OMSPROFILE_LABEL)

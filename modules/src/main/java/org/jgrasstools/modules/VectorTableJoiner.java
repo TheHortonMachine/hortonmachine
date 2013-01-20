@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTABLEJOINER_LICENSE;
@@ -37,7 +36,6 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -52,7 +50,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectortablejoiner.OmsVectorTableJoiner;
 
 @Description(OMSVECTORTABLEJOINER_DESCRIPTION)
-@Documentation(OMSVECTORTABLEJOINER_DOCUMENTATION)
 @Author(name = OMSVECTORTABLEJOINER_AUTHORNAMES, contact = OMSVECTORTABLEJOINER_AUTHORCONTACTS)
 @Keywords(OMSVECTORTABLEJOINER_KEYWORDS)
 @Label(OMSVECTORTABLEJOINER_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inFile_DESC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTER2XYZ_inRaster_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,7 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.raster2xyz.OmsRaster2Xyz;
 
 @Description(OMSRASTER2XYZ_DESCRIPTION)
-@Documentation(OMSRASTER2XYZ_DOCUMENTATION)
 @Author(name = OMSRASTER2XYZ_AUTHORNAMES, contact = OMSRASTER2XYZ_AUTHORCONTACTS)
 @Keywords(OMSRASTER2XYZ_KEYWORDS)
 @Label(OMSRASTER2XYZ_LABEL)

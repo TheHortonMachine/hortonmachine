@@ -27,7 +27,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYr
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
@@ -38,7 +37,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_inVec
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_outRaster_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -55,7 +53,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.pointsrasterizer.OmsPointsRasterizer;
 
 @Description(OMSPOINTSRASTERIZER_DESCRIPTION)
-@Documentation(OMSPOINTSRASTERIZER_DOCUMENTATION)
 @Author(name = OMSPOINTSRASTERIZER_AUTHORNAMES, contact = OMSPOINTSRASTERIZER_AUTHORCONTACTS)
 @Keywords(OMSPOINTSRASTERIZER_KEYWORDS)
 @Label(OMSPOINTSRASTERIZER_LABEL)

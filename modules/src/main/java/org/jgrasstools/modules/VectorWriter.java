@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORWRITER_LICENSE;
@@ -34,7 +33,6 @@ import java.io.IOException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -50,7 +48,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description(OMSVECTORWRITER_DESCRIPTION)
-@Documentation(OMSVECTORWRITER_DOCUMENTATION)
 @Author(name = OMSVECTORWRITER_AUTHORNAMES, contact = OMSVECTORWRITER_AUTHORCONTACTS)
 @Keywords(OMSVECTORWRITER_KEYWORDS)
 @Label(OMSVECTORWRITER_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_LICENSE;
@@ -39,7 +38,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pVa
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pWest_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -54,7 +52,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 
 @Description(OMSSCANLINERASTERIZER_DESCRIPTION)
-@Documentation(OMSSCANLINERASTERIZER_DOCUMENTATION)
 @Author(name = OMSSCANLINERASTERIZER_AUTHORNAMES, contact = OMSSCANLINERASTERIZER_AUTHORCONTACTS)
 @Keywords(OMSSCANLINERASTERIZER_KEYWORDS)
 @Label(OMSSCANLINERASTERIZER_LABEL)

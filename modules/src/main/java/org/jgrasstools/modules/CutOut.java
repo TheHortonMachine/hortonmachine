@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_LICENSE;
@@ -34,7 +33,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMax_DESCRIPTIO
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCUTOUT_pMin_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,7 +47,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 
 @Description(OMSCUTOUT_DESCRIPTION)
-@Documentation(OMSCUTOUT_DOCUMENTATION)
 @Author(name = OMSCUTOUT_AUTHORNAMES, contact = OMSCUTOUT_AUTHORCONTACTS)
 @Keywords(OMSCUTOUT_KEYWORDS)
 @Label(OMSCUTOUT_LABEL)

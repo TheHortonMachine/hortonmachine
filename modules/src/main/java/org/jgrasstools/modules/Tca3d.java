@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_inPit_D
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSTCA3D_outTca_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,7 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.geomorphology.tca3d.OmsTca3d;
 
 @Description(OMSTCA3D_DESCRIPTION)
-@Documentation(OMSTCA3D_DOCUMENTATION)
 @Author(name = OMSTCA3D_AUTHORNAMES, contact = OMSTCA3D_AUTHORCONTACTS)
 @Keywords(OMSTCA3D_KEYWORDS)
 @Label(OMSTCA3D_LABEL)

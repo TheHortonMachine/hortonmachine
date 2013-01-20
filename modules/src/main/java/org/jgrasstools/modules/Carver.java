@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_LICENSE;
@@ -36,7 +35,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthLines_DES
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCARVER_pDepthPolygons_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,7 +47,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.carver.OmsCarver;
 
 @Description(OMSCARVER_DESCRIPTION)
-@Documentation(OMSCARVER_DOCUMENTATION)
 @Author(name = OMSCARVER_AUTHORNAMES, contact = OMSCARVER_AUTHORCONTACTS)
 @Keywords(OMSCARVER_KEYWORDS)
 @Label(OMSCARVER_LABEL)

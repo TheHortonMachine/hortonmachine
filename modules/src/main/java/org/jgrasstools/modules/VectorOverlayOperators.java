@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTOROVERLAYOPERATORS_LICENSE;
@@ -36,7 +35,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.SYMDIFFERENCE;
 import static org.jgrasstools.gears.libs.modules.Variables.UNION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +49,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectoroverlayoperators.OmsVectorOverlayOperators;
 
 @Description(OMSVECTOROVERLAYOPERATORS_DESCRIPTION)
-@Documentation(OMSVECTOROVERLAYOPERATORS_DOCUMENTATION)
 @Author(name = OMSVECTOROVERLAYOPERATORS_AUTHORNAMES, contact = OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS)
 @Keywords(OMSVECTOROVERLAYOPERATORS_KEYWORDS)
 @Label(OMSVECTOROVERLAYOPERATORS_LABEL)

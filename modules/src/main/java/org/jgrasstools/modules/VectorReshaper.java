@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pCql_DE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORRESHAPER_pRemove_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorreshaper.OmsVectorReshaper;
 
 @Description(OMSVECTORRESHAPER_DESCRIPTION)
-@Documentation(OMSVECTORRESHAPER_DOCUMENTATION)
 @Author(name = OMSVECTORRESHAPER_AUTHORNAMES, contact = OMSVECTORRESHAPER_AUTHORCONTACTS)
 @Keywords(OMSVECTORRESHAPER_KEYWORDS)
 @Label(OMSVECTORRESHAPER_LABEL)

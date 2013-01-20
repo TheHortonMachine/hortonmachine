@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_LICENSE;
@@ -30,7 +29,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_inRast
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCONVERTER_outRaster_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,7 +43,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rasterconverter.OmsRasterConverter;
 
 @Description(OMSRASTERCONVERTER_DESCRIPTION)
-@Documentation(OMSRASTERCONVERTER_DOCUMENTATION)
 @Author(name = OMSRASTERCONVERTER_AUTHORNAMES, contact = OMSRASTERCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSRASTERCONVERTER_KEYWORDS)
 @Label(OMSRASTERCONVERTER_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_outVector
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFILTER_pCql_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,7 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorfilter.OmsVectorFilter;
 
 @Description(OMSVECTORFILTER_DESCRIPTION)
-@Documentation(OMSVECTORFILTER_DOCUMENTATION)
 @Author(name = OMSVECTORFILTER_AUTHORNAMES, contact = OMSVECTORFILTER_AUTHORCONTACTS)
 @Keywords(OMSVECTORFILTER_KEYWORDS)
 @Label(OMSVECTORFILTER_LABEL)

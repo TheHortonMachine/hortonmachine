@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERRESOLUTIONRESAMPLER_LICENSE;
@@ -36,7 +35,6 @@ import static org.jgrasstools.gears.libs.modules.Variables.BILINEAR;
 import static org.jgrasstools.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,7 +49,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.transformer.OmsRasterResolutionResampler;
 
 @Description(OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION)
-@Documentation(OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION)
 @Author(name = OMSRASTERRESOLUTIONRESAMPLER_AUTHORNAMES, contact = OMSRASTERRESOLUTIONRESAMPLER_AUTHORCONTACTS)
 @Keywords(OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS)
 @Label(OMSRASTERRESOLUTIONRESAMPLER_LABEL)

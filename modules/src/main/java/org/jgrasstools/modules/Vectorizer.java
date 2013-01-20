@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LICENSE;
@@ -34,7 +33,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pThres_DESC
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_pValue_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,7 +47,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 
 @Description(OMSVECTORIZER_DESCRIPTION)
-@Documentation(OMSVECTORIZER_DOCUMENTATION)
 @Author(name = OMSVECTORIZER_AUTHORNAMES, contact = OMSVECTORIZER_AUTHORCONTACTS)
 @Keywords(OMSVECTORIZER_KEYWORDS)
 @Label(OMSVECTORIZER_LABEL)

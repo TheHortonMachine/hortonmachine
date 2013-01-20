@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_LICENSE;
@@ -40,7 +39,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pType_D
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDSGENERATOR_pWidth_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -55,7 +53,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator;
 
 @Description(OMSGRIDSGENERATOR_DESCRIPTION)
-@Documentation(OMSGRIDSGENERATOR_DOCUMENTATION)
 @Author(name = OMSGRIDSGENERATOR_AUTHORNAMES, contact = OMSGRIDSGENERATOR_AUTHORCONTACTS)
 @Keywords(OMSGRIDSGENERATOR_KEYWORDS)
 @Label(OMSGRIDSGENERATOR_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_out
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_pPattern_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder;
 
 @Description(OMSVECTORFIELDROUNDER_DESCRIPTION)
-@Documentation(OMSVECTORFIELDROUNDER_DOCUMENTATION)
 @Author(name = OMSVECTORFIELDROUNDER_AUTHORNAMES, contact = OMSVECTORFIELDROUNDER_AUTHORCONTACTS)
 @Keywords(OMSVECTORFIELDROUNDER_KEYWORDS)
 @Label(OMSVECTORFIELDROUNDER_LABEL)

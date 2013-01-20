@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_LICENSE;
@@ -32,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pTole
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORSIMPLIFIER_pType_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +45,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.vectorsimplifier.OmsVectorSimplifier;
 
 @Description(OMSVECTORSIMPLIFIER_DESCRIPTION)
-@Documentation(OMSVECTORSIMPLIFIER_DOCUMENTATION)
 @Author(name = OMSVECTORSIMPLIFIER_AUTHORNAMES, contact = OMSVECTORSIMPLIFIER_AUTHORCONTACTS)
 @Keywords(OMSVECTORSIMPLIFIER_KEYWORDS)
 @Label(OMSVECTORSIMPLIFIER_LABEL)

@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_LICENSE;
@@ -33,7 +32,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMax_
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSCONTOUREXTRACTOR_pMin_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,7 +46,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor;
 
 @Description(OMSCONTOUREXTRACTOR_DESCRIPTION)
-@Documentation(OMSCONTOUREXTRACTOR_DOCUMENTATION)
 @Author(name = OMSCONTOUREXTRACTOR_AUTHORNAMES, contact = OMSCONTOUREXTRACTOR_AUTHORCONTACTS)
 @Keywords(OMSCONTOUREXTRACTOR_KEYWORDS)
 @Label(OMSCONTOUREXTRACTOR_LABEL)

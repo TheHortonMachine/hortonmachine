@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE;
@@ -33,7 +32,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTR
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERCATTOFEATUREATTRIBUTE_pPos_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,7 +46,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute;
 
 @Description(OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION)
-@Documentation(OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION)
 @Author(name = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES, contact = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS)
 @Keywords(OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS)
 @Label(OMSRASTERCATTOFEATUREATTRIBUTE_LABEL)

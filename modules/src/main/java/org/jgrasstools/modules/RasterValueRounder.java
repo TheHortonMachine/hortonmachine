@@ -20,7 +20,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DOCUMENTATION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_KEYWORDS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_out
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_pPattern_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,7 +44,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
 
 @Description(OMSRASTERVALUEROUNDER_DESCRIPTION)
-@Documentation(OMSRASTERVALUEROUNDER_DOCUMENTATION)
 @Author(name = OMSRASTERVALUEROUNDER_AUTHORNAMES, contact = OMSRASTERVALUEROUNDER_AUTHORCONTACTS)
 @Keywords(OMSRASTERVALUEROUNDER_KEYWORDS)
 @Label(OMSRASTERVALUEROUNDER_LABEL)

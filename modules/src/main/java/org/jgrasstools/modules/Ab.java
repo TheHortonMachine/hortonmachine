@@ -19,7 +19,6 @@ package org.jgrasstools.modules;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_DOCUMENTATION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_LICENSE;
@@ -31,7 +30,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outAb_DESC
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSAB_outB_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
-import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,7 +43,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb;
 
 @Description(OMSAB_DESCRIPTION)
-@Documentation(OMSAB_DOCUMENTATION)
 @Author(name = OMSAB_AUTHORNAMES, contact = OMSAB_AUTHORCONTACTS)
 @Keywords(OMSAB_KEYWORDS)
 @Label(OMSAB_LABEL)
