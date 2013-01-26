@@ -302,7 +302,7 @@ public class OmsExtractBasin extends JGTModel {
             LineString lineString = gf.createLineString(polygon.getCoordinates());
 
             SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-            newCollection.add(FeatureUtilities.toDummyFeature(lineString));
+            newCollection.add(FeatureUtilities.toDummyFeature(lineString, null));
 
             OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
             smoother.inVector = newCollection;

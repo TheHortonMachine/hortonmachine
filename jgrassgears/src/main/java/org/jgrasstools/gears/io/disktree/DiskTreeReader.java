@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 
-import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
-
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.index.quadtree.Quadtree;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
  * Reader for the quadtree disk index.
@@ -52,7 +52,7 @@ public class DiskTreeReader implements IDiskTree {
     }
 
     /**
-     * Reads the {@link Quadtree} object from the file.
+     * Reads the {@link STRtree} object from the file.
      * 
      * @return the quadtree, holding envelops and geometry positions in the file.
      * @throws Exception

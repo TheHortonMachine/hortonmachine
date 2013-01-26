@@ -55,6 +55,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 import com.vividsolutions.jts.index.chain.MonotoneChain;
+import com.vividsolutions.jts.index.quadtree.Quadtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.noding.IntersectionAdder;
@@ -707,6 +708,14 @@ public class GeometryUtilities {
      */
     public static STRtree geometriesToSRTree( List<Geometry> geometries ) {
         STRtree tree = new STRtree(geometries.size());
+        for( Geometry geometry : geometries ) {
+            tree.insert(geometry.getEnvelopeInternal(), geometry);
+        }
+        return tree;
+    }
+
+    public static Quadtree geometriesToQuadTree( List<Geometry> geometries ) {
+        Quadtree tree = new Quadtree();
         for( Geometry geometry : geometries ) {
             tree.insert(geometry.getEnvelopeInternal(), geometry);
         }

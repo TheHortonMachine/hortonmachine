@@ -695,11 +695,12 @@ public class FeatureUtilities {
         return polygons;
     }
 
-    public static SimpleFeature toDummyFeature( Geometry geom ) {
+    public static SimpleFeature toDummyFeature( Geometry geom, CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("dummy");
-        // b.setCRS(crs);
-        b.add("the_geom", Geometry.class);
+        if (crs != null)
+            b.setCRS(crs);
+        b.add("the_geom", geom.getClass());
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Object[] values = new Object[]{geom};

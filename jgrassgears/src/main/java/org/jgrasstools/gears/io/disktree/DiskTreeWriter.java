@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 
-import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
-
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.index.quadtree.Quadtree;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
  * Writer for the quadtree disk index.
@@ -71,12 +71,12 @@ public class DiskTreeWriter implements IDiskTree {
             raf.seek(geometriesStart);
             System.out.println("geometriesStart: " + geometriesStart);
 
-            Quadtree tree = new Quadtree();
-
             long fileIndex = geometriesStart;
-
+            Quadtree tree = new Quadtree();
             for( int i = 0; i < geometries.length; i++ ) {
                 Geometry geometry = geometries[i];
+
+
                 if (geometry.isEmpty()) {
                     continue;
                 }

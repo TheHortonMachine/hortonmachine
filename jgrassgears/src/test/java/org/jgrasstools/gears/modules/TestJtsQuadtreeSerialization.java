@@ -7,11 +7,11 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 
-import org.jgrasstools.gears.io.disktree.jtstmp.Quadtree;
 import org.jgrasstools.gears.utils.HMTestCase;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.index.quadtree.Quadtree;
 import com.vividsolutions.jts.io.WKTReader;
 
 /**
