@@ -148,9 +148,9 @@ public class LasReader_1_0 extends AbstractLasReader {
             sb.append("Z Range: [").append(zMin).append(", ").append(zMax).append("]\n");
 
             header = sb.toString();
-            
+
             dataEnvelope = new ReferencedEnvelope(xMin, xMax, yMin, yMax, crs);
-            
+
             /*
              * move to the data position
              */
@@ -159,8 +159,6 @@ public class LasReader_1_0 extends AbstractLasReader {
             e.printStackTrace();
         }
     }
-    
-    
 
     @Override
     public boolean hasNextLasDot() {
@@ -214,6 +212,73 @@ public class LasReader_1_0 extends AbstractLasReader {
 
         readRecords++;
         return dot;
+    }
+
+    /**
+     * Reads a dot at a given address.
+     * 
+     * <p>the file position is set back to the one before reading.</p>
+     * 
+     * @param address the file address of the record to read.
+     * @return the read record.
+     * @throws IOException
+     */
+    public LasRecord readLasDotAtAddress( long address ) throws IOException {
+        long oldPosition = fc.position();
+        fc.position(address);
+
+        int read = 0;
+        long x = getLong4Bytes();
+        long y = getLong4Bytes();
+        long z = getLong4Bytes();
+        double xd = x * xScale + xOffset;
+        double yd = y * yScale + yOffset;
+        double zd = z * zScale + zOffset;
+
+        read = read + 12;
+        short intensity = getShort2Bytes();
+        read = read + 2;
+        byte b = get();
+        int returnNumber = getReturnNumber(b);
+        int numberOfReturns = getNumberOfReturns(b);
+        read = read + 1;
+        byte classification = get();
+        read = read + 1;
+
+        LasRecord dot = new LasRecord();
+        dot.x = xd;
+        dot.y = yd;
+        dot.z = zd;
+        dot.intensity = intensity;
+        dot.classification = classification;
+        dot.returnNumber = returnNumber;
+        dot.numberOfReturns = numberOfReturns;
+
+        fc.position(oldPosition);
+
+        return dot;
+    }
+
+    /**
+     * Reads the position and the record address in the file of the next point.
+     * 
+     * @return the array containing [x, y, address].
+     * @throws IOException
+     */
+    public double[] readNextLasXYAddress() throws IOException {
+        long position = fc.position();
+        int read = 0;
+        long x = getLong4Bytes();
+        long y = getLong4Bytes();
+        double xd = x * xScale + xOffset;
+        double yd = y * yScale + yOffset;
+        read = read + 8;
+
+        int skip = recordLength - read;
+        skip(skip);
+
+        readRecords++;
+        return new double[]{xd, yd, position};
     }
 
     @Override
