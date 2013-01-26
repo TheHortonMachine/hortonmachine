@@ -26,7 +26,6 @@ import java.io.RandomAccessFile;
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.index.quadtree.Quadtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
@@ -72,10 +71,9 @@ public class DiskTreeWriter implements IDiskTree {
             System.out.println("geometriesStart: " + geometriesStart);
 
             long fileIndex = geometriesStart;
-            Quadtree tree = new Quadtree();
+            STRtree tree = new STRtree(geometries.length);
             for( int i = 0; i < geometries.length; i++ ) {
                 Geometry geometry = geometries[i];
-
 
                 if (geometry.isEmpty()) {
                     continue;

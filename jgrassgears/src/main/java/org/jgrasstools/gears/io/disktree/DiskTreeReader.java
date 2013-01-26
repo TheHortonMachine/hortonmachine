@@ -25,11 +25,10 @@ import java.io.RandomAccessFile;
 
 import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.index.quadtree.Quadtree;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
 /**
- * Reader for the quadtree disk index.
+ * Reader for the Sort-Tile-Recursive disk index.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @see IDiskTree
@@ -38,7 +37,7 @@ public class DiskTreeReader implements IDiskTree {
 
     private final String path;
 
-    private Quadtree indexObj;
+    private STRtree indexObj;
 
     private RandomAccessFile raf = null;
 
@@ -57,7 +56,7 @@ public class DiskTreeReader implements IDiskTree {
      * @return the quadtree, holding envelops and geometry positions in the file.
      * @throws Exception
      */
-    public Quadtree readIndex() throws Exception {
+    public STRtree readIndex() throws Exception {
 
         File file = new File(path);
         raf = new RandomAccessFile(file, "r");
@@ -80,7 +79,7 @@ public class DiskTreeReader implements IDiskTree {
         }
 
         ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(indexBytes));
-        indexObj = (Quadtree) in.readObject();
+        indexObj = (STRtree) in.readObject();
         return indexObj;
     }
 
