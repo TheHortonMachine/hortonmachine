@@ -81,4 +81,8 @@ public class VectorWriter extends JGTModel {
         vectorwriter.doReset = doReset;
         vectorwriter.process();
     }
+
+    public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws IOException {
+        OmsVectorWriter.writeVector(path, featureCollection);
+    }
 }

@@ -1160,18 +1160,40 @@ public class CoverageUtilities {
     /**
      * Simple method to get a value from a single band raster.
      * 
+     * <p>Note that this method does always return a value. If invalid, a novalue is returned.</p>
+     * 
      * @param raster the single band raster.
      * @param col the column.
      * @param row the row.
      * @return the value in the [col, row] of the first band.
      */
     public static double getValue( GridCoverage2D raster, int col, int row ) {
-        double[] values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
+        double[] values = null;
+        try {
+            values = raster.evaluate(new GridCoordinates2D(col, row), (double[]) null);
+        } catch (Exception e) {
+            return doubleNovalue;
+        }
         return values[0];
     }
 
+    /**
+     * Simple method to get a value from a single band raster.
+     * 
+     * <p>Note that this method does always return a value. If invalid, a novalue is returned.</p>
+     * 
+     * @param raster
+     * @param easting
+     * @param northing
+     * @return
+     */
     public static double getValue( GridCoverage2D raster, double easting, double northing ) {
-        double[] values = raster.evaluate(new Point2D.Double(easting, northing), (double[]) null);
+        double[] values = null;
+        try {
+            values = raster.evaluate(new Point2D.Double(easting, northing), (double[]) null);
+        } catch (Exception e) {
+            return doubleNovalue;
+        }
         return values[0];
     }
 

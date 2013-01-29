@@ -224,7 +224,7 @@ public class LasReader_1_0 extends AbstractLasReader {
      * @throws IOException
      */
     public LasRecord readLasDotAtAddress( long address ) throws IOException {
-        long oldPosition = fc.position();
+        // long oldPosition = fc.position();
         fc.position(address);
 
         int read = 0;
@@ -254,7 +254,7 @@ public class LasReader_1_0 extends AbstractLasReader {
         dot.returnNumber = returnNumber;
         dot.numberOfReturns = numberOfReturns;
 
-        fc.position(oldPosition);
+        // fc.position(oldPosition);
 
         return dot;
     }
