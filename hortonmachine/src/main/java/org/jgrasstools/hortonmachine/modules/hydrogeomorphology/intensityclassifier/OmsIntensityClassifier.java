@@ -148,9 +148,9 @@ public class OmsIntensityClassifier extends JGTModel {
                     double vh = v * h;
                     if (h > maxWD || vh > maxVWD) {
                         value = INTENSITY_HIGH;
-                    } else if ((h > minWD && h < maxWD) || (vh > minVWD && vh < maxVWD)) {
+                    } else if ((h > minWD && h <= maxWD) || (vh > minVWD && vh <= maxVWD)) {
                         value = INTENSITY_MEDIUM;
-                    } else if (h < minWD && vh < minVWD) {
+                    } else if (h <= minWD && vh <= minVWD) {
                         value = INTENSITY_LOW;
                     } else {
                         throw new ModelsIllegalargumentException("No intensity could be calculated for h = " + h + " and v = "
