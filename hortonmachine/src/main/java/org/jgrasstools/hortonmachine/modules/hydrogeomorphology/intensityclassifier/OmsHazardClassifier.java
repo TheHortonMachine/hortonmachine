@@ -47,7 +47,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Description("Hazard classifier.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("Raster, Flooding, Hazard")
-@Label("Raster Processing")
+@Label("HortonMachine/Hydro-Geomorphology")
 @Name("hazardclassifier")
 @Status(5)
 @License("General Public License Version 3 (GPLv3)")

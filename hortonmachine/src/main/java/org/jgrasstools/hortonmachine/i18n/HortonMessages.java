@@ -1291,7 +1291,7 @@ public class HortonMessages {
     public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the flooding intensity.";
     public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
     public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
-    public static final String OMSINTENSITYCLASSIFIER_LABEL = "Raster Processing";
+    public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifier";
     public static final int OMSINTENSITYCLASSIFIER_STATUS = 5;
     public static final String OMSINTENSITYCLASSIFIER_LICENSE = "General Public License Version 3 (GPLv3)";

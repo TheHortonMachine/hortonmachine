@@ -27,6 +27,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -81,6 +82,14 @@ public class Raster {
 
     public boolean isNoValue( double value ) {
         return JGTConstants.isNovalue(value);
+    }
+
+    public double novalue() {
+        return JGTConstants.doubleNovalue;
+    }
+
+    public static boolean valuesEqual( double value1, double value2 ) {
+        return NumericsUtilities.dEq(value1, value2);
     }
 
     public void setValueAt( int col, int row, double value ) {
