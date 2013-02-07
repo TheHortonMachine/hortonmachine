@@ -133,7 +133,11 @@ public class HecrasInputBuilder extends JGTModel {
         hecrasinputbuilder.doProcess = doProcess;
         hecrasinputbuilder.doReset = doReset;
         hecrasinputbuilder.process();
-        dumpVector(hecrasinputbuilder.outSections, outSections);
-        dumpVector(hecrasinputbuilder.outSectionPoints, outSectionPoints);
+        if (outSections != null) {
+            dumpVector(hecrasinputbuilder.outSections, outSections);
+        }
+        if (outSectionPoints != null) {
+            dumpVector(hecrasinputbuilder.outSectionPoints, outSectionPoints);
+        }
     }
 }
