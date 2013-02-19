@@ -563,6 +563,19 @@ public class HortonMessages {
     public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "The output type, if false = tan of the angle (default), if true = degrees";
     public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of gradient.";
 
+    public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla in each point of the map.";
+    public static final String OMSNABLA_DOCUMENTATION = "";
+    public static final String OMSNABLA_KEYWORDS = "Geomorphology, Nabla, Gradient";
+    public static final String OMSNABLA_LABEL = GEOMORPHOLOGY;
+    public static final String OMSNABLA_NAME = "nabla";
+    public static final int OMSNABLA_STATUS = 40;
+    public static final String OMSNABLA_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSNABLA_AUTHORNAMES = "Antonello Andrea, Daniele Andreis, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
+    public static final String OMSNABLA_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSNABLA_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
+    public static final String OMSNABLA_pThres_DESCRIPTION = "An optional threshold on the nabla value.";
+    public static final String OMSNABLA_outNabla_DESCRIPTION = "The map of nabla.";
+
     public static final String OMSINSOLATION_DESCRIPTION = "Calculate the amount of power incident on a surface in a period of time.";
     public static final String OMSINSOLATION_DOCUMENTATION = "OmsInsolation.html";
     public static final String OMSINSOLATION_KEYWORDS = "Hydrology, Radiation, SkyviewFactor, OmsHillshade";
