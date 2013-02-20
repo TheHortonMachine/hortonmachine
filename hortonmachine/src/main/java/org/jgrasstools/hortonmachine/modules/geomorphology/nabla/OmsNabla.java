@@ -125,8 +125,8 @@ public class OmsNabla extends JGTModel {
         grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(grid[1] * grid[1] + grid[3] * grid[3]);
 
         pm.beginTask("Processing nabla...", nCols * 2);
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
+        for( int c = 1; c < nCols - 1; c++ ) {
+            for( int r = 1; r < nRows - 1; r++ ) {
                 z[0] = elevationIter.getSampleDouble(c, r, 0);
                 if (!isNovalue((z[0]))) {
                     y = 1;
@@ -141,11 +141,10 @@ public class OmsNabla extends JGTModel {
                     if (y == 0) {
                         nablaRaster.setSample(c, r, 0, doubleNovalue);
                     } else {
-                        nablaRaster.setSample(c, r, 0,
-                                0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1]) + (z[3] + z[7] - 2 * z[0])
-                                        / (grid[3] * grid[3])));
-                        nablaRaster.setSample(c, r, 0, nablaRaster.getSample(c, r, 0) + 0.5
-                                * ((z[2] + z[4] + z[6] + z[8] - 4 * z[0]) / (grid[6] * grid[6])));
+                        double derivata = 0.5 * ((z[1] + z[5] - 2 * z[0]) / (grid[1] * grid[1]) + (z[3] + z[7] - 2 * z[0])
+                                / (grid[3] * grid[3]));
+                        double derivata2 = derivata + 0.5 * ((z[2] + z[4] + z[6] + z[8] - 4 * z[0]) / (grid[6] * grid[6]));
+                        nablaRaster.setSample(c, r, 0, derivata2);
                     }
                 } else {
                     nablaRaster.setSample(c, r, 0, doubleNovalue);
@@ -207,8 +206,8 @@ public class OmsNabla extends JGTModel {
         grid[2] = grid[4] = grid[6] = grid[8] = Math.sqrt(grid[1] * grid[1] + grid[3] * grid[3]);
 
         pm.beginTask("Processing nabla...", nCols * 2);
-        for( int c = 0; c < nCols; c++ ) {
-            for( int r = 0; r < nRows; r++ ) {
+        for( int c = 1; c < nCols - 1; c++ ) {
+            for( int r = 1; r < nRows - 1; r++ ) {
                 z[0] = elevationIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(z[0])) {
                     y = 1;

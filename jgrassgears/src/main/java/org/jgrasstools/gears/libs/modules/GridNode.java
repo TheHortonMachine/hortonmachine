@@ -41,6 +41,7 @@ public class GridNode {
     private RandomIter elevationIter;
     private int cols;
     private int rows;
+    private boolean isPit = false;
     private boolean isOutlet = false;
     private boolean touchesBound = false;
 
@@ -79,6 +80,7 @@ public class GridNode {
             elevation = doubleNovalue;
         }
 
+        double tmpMin = Double.POSITIVE_INFINITY;
         int index = -1;
         for( int c = -1; c <= 1; c++ ) {
             for( int r = -1; r <= 1; r++ ) {
@@ -128,8 +130,15 @@ public class GridNode {
 
                 if (JGTConstants.isNovalue(tmp)) {
                     touchesBound = true;
+                } else {
+                    if (tmp < tmpMin) {
+                        tmpMin = tmp;
+                    }
                 }
             }
+        }
+        if (elevation < tmpMin) {
+            isPit = true;
         }
     }
 
@@ -176,6 +185,44 @@ public class GridNode {
      */
     public boolean touchesBound() {
         return touchesBound;
+    }
+
+    /**
+     * @return <code>true</code> if all cells around the node are higher than the current.
+     */
+    public boolean isPit() {
+        return isPit;
+    }
+
+    /**
+     * Get a window of values surrounding the current node.
+     * 
+     * <p>Notes:</p>
+     * <ul>
+     *  <li>the size has to be odd, so that the current node can be in the center. 
+     *      If the size is even, size+1 will be used.</li>
+     *  <li>values outside the boundaries of the raster will be set to novalue.
+     *      No exception is thrown.</li>
+     * </ul>
+     * 
+     * @param size the size of the window. The window will be a matrix window[size][size].
+     * @return the read window.
+     */
+    public double[][] getWindow( int size ) {
+        if (size % 2 == 0) {
+            size++;
+        }
+        double[][] window = new double[size][size];
+        int delta = (size - 1) / 2;
+        for( int c = -delta; c <= delta; c++ ) {
+            int tmpCol = col + c;
+            for( int r = -delta; r <= delta; r++ ) {
+                int tmpRow = row + r;
+                GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                window[r + delta][c + delta] = n.elevation;
+            }
+        }
+        return window;
     }
 
     /**
@@ -274,6 +321,29 @@ public class GridNode {
         }
         return nodes;
     }
+
+    /**
+     * Gets only the valid surrounding {@link GridNode nodes}, starting from the most eastern.
+     * 
+     * @return the valid nodes surrounding the current node. 
+     */
+    public List<GridNode> getValidSurroundingNodes() {
+        List<GridNode> nodes = new ArrayList<GridNode>();
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        for( int i = 0; i < orderedDirs.length; i++ ) {
+            Direction direction = orderedDirs[i];
+            int newCol = col + direction.col;
+            int newRow = row + direction.row;
+            if (isInRaster(newCol, newRow)) {
+                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                if (node.isValid()) {
+                    nodes.add(node);
+                }
+            }
+        }
+        return nodes;
+    }
+
     /**
      * Gets all surrounding {@link GridNode nodes} that <b>DO</b> flow into this node by steepest path rule.
      * 

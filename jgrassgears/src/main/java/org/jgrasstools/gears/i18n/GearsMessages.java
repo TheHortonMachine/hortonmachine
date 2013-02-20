@@ -190,6 +190,19 @@ public class GearsMessages {
     public static final String OMSPOINTSVECTORIZER_fDefault_DESCRIPTION = "The field name to use as a name for the raster value in the vector.";
     public static final String OMSPOINTSVECTORIZER_outVector_DESCRIPTION = "The extracted vector.";
 
+    public static final String OMSLINESVECTORIZER_DESCRIPTION = "Module that creates a lines vector layer from a thinned raster.";
+    public static final String OMSLINESVECTORIZER_DOCUMENTATION = "";
+    public static final String OMSLINESVECTORIZER_KEYWORDS = "Raster, Vector";
+    public static final String OMSLINESVECTORIZER_LABEL = VECTORPROCESSING;
+    public static final String OMSLINESVECTORIZER_NAME = "lvectorizer";
+    public static final int OMSLINESVECTORIZER_STATUS = 5;
+    public static final String OMSLINESVECTORIZER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSLINESVECTORIZER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLINESVECTORIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSLINESVECTORIZER_inRaster_DESCRIPTION = "The raster that has to be converted.";
+    public static final String OMSLINESVECTORIZER_fDefault_DESCRIPTION = "The field name to use as a name for the raster value in the vector.";
+    public static final String OMSLINESVECTORIZER_outVector_DESCRIPTION = "The extracted vector.";
+
     public static final String OMSVECTORREADER_DESCRIPTION = "Vectors features reader module.";
     public static final String OMSVECTORREADER_DOCUMENTATION = "OmsVectorReader.html";
     public static final String OMSVECTORREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";

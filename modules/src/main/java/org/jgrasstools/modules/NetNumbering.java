@@ -117,4 +117,22 @@ public class NetNumbering extends JGTModel {
         dumpRaster(omsnetnumbering.outNetnum, outNetnum);
         dumpRaster(omsnetnumbering.outBasins, outBasins);
     }
+
+    public static void main( String[] args ) throws Exception {
+        NetNumbering omsnetnumbering = new NetNumbering();
+        omsnetnumbering.inFlow = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_flow.tif";
+        omsnetnumbering.inTca = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_tca.tif";
+        omsnetnumbering.inNet = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_net100.tif";
+        // omsnetnumbering.inPoints = getVector(inPoints);
+        omsnetnumbering.pMode = 1;
+        omsnetnumbering.pThres = 170;
+        // omsnetnumbering.fPointId = fPointId;
+        // omsnetnumbering.pm = pm;
+        // omsnetnumbering.doProcess = doProcess;
+        // omsnetnumbering.doReset = doReset;
+        omsnetnumbering.outNetnum = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_netnum170.tif";
+        omsnetnumbering.outBasins = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_sub170.tif";
+        omsnetnumbering.process();
+    }
+
 }

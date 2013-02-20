@@ -82,7 +82,10 @@ import com.vividsolutions.jts.geom.MultiLineString;
  */
 @SuppressWarnings("unchecked")
 public class ModelsEngine {
-    private static int[][] DIR = ModelsSupporter.DIR;
+    /**
+     * @deprecated this should not be used. Use the {@link FlowNode} concept instead.
+     */
+    public static int[][] DIR = ModelsSupporter.DIR;
 
     private static int[][] dirIn = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
@@ -1186,7 +1189,11 @@ public class ModelsEngine {
                      */
                     double attributeValue = doubleNovalue;
                     FlowNode runningNode = flowNode.goDownstream();
+                    int runningRow = -1;
+                    int runningCol = -1;
                     while( runningNode != null && runningNode.isValid() ) {
+                        runningRow = runningNode.row;
+                        runningCol = runningNode.col;
                         if (runningNode.isMarkedAsOutlet()) {
                             attributeValue = runningNode.getValueFromMap(attributeIter);
                             break;
@@ -1204,8 +1211,9 @@ public class ModelsEngine {
                             runningNode = runningNode.goDownstream();
                         }
                     } else {
-                        throw new ModelsIllegalargumentException("Could not find a value of the attributes map in the channel.",
-                                "MODELSENGINE");
+                        throw new ModelsIllegalargumentException(
+                                "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
+                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?", "MODELSENGINE");
                     }
                 }
             }

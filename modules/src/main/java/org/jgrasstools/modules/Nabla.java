@@ -66,7 +66,7 @@ public class Nabla extends JGTModel {
 
     @Description(OMSNABLA_outNabla_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outNabla = null;
 
     @Execute

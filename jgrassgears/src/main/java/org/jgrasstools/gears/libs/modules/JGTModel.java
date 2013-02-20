@@ -180,7 +180,7 @@ public class JGTModel implements Process {
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
-    protected GridCoverage2D getRaster( String source ) throws Exception {
+    public static GridCoverage2D getRaster( String source ) throws Exception {
         if (source == null)
             return null;
         return OmsRasterReader.readRaster(source);
@@ -196,7 +196,7 @@ public class JGTModel implements Process {
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
-    protected SimpleFeatureCollection getVector( String source ) throws Exception {
+    public static SimpleFeatureCollection getVector( String source ) throws Exception {
         if (source == null)
             return null;
         return OmsVectorReader.readVector(source);
@@ -209,7 +209,7 @@ public class JGTModel implements Process {
      * @param source the source to which to write to.
      * @throws Exception
      */
-    protected void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
+    public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null)
             return;
         OmsRasterWriter.writeRaster(source, raster);
@@ -222,7 +222,7 @@ public class JGTModel implements Process {
      * @param source the source to which to write to.
      * @throws Exception
      */
-    protected void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
+    public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
         if (vector == null)
             return;
         OmsVectorWriter.writeVector(source, vector);
