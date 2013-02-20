@@ -25,6 +25,8 @@ import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+
 /**
  * A node in the grid environment of a digital elevation model. 
  * 
@@ -206,20 +208,40 @@ public class GridNode {
      * </ul>
      * 
      * @param size the size of the window. The window will be a matrix window[size][size].
+     * @param doCircular if <code>true</code> the window values are set to novalue
+     *              were necessary to make it circular.
      * @return the read window.
      */
-    public double[][] getWindow( int size ) {
+    public double[][] getWindow( int size, boolean doCircular ) {
         if (size % 2 == 0) {
             size++;
         }
         double[][] window = new double[size][size];
         int delta = (size - 1) / 2;
-        for( int c = -delta; c <= delta; c++ ) {
-            int tmpCol = col + c;
-            for( int r = -delta; r <= delta; r++ ) {
-                int tmpRow = row + r;
-                GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
-                window[r + delta][c + delta] = n.elevation;
+        if (!doCircular) {
+            for( int c = -delta; c <= delta; c++ ) {
+                int tmpCol = col + c;
+                for( int r = -delta; r <= delta; r++ ) {
+                    int tmpRow = row + r;
+                    GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                    window[r + delta][c + delta] = n.elevation;
+                }
+            }
+        } else {
+            double radius = delta; // rows + half cell
+            for( int c = -delta; c <= delta; c++ ) {
+                int tmpCol = col + c;
+                for( int r = -delta; r <= delta; r++ ) {
+                    int tmpRow = row + r;
+
+                    double distance = sqrt(c * c + r * r);
+                    if (distance <= radius) {
+                        GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                        window[r + delta][c + delta] = n.elevation;
+                    } else {
+                        window[r + delta][c + delta] = doubleNovalue;
+                    }
+                }
             }
         }
         return window;

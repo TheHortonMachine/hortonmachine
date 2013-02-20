@@ -2,6 +2,7 @@ package org.jgrasstools.gears;
 
 import static java.lang.Double.NaN;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -54,7 +55,7 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testGridNodeWindow() throws Exception {
         GridNode n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 0, 0);
-        double[][] window = n.getWindow(4);
+        double[][] window = n.getWindow(4, false);
 
         double[][] expected = new double[][]{//
         /*    */{NaN, NaN, NaN, NaN, NaN},//
@@ -66,13 +67,23 @@ public class TestFlowUtils extends HMTestCase {
         checkMatrixEqual(expected, window, DELTA);
 
         n = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 4, 5);
-        window = n.getWindow(5);
+        window = n.getWindow(5, false);
         expected = new double[][]{//
         /*    */{650.0, 700.0, 750.0, 800.0, 850.0},//
                 {430.0, 500.0, 600.0, 700.0, 800.0},//
                 {700.0, 750.0, 760.0, 770.0, 850.0},//
                 {750.0, 800.0, 780.0, 790.0, 1000.0},//
                 {980.0, 1001.0, 1150.0, 1200.0, 1250.0}//
+        };
+        checkMatrixEqual(expected, window, DELTA);
+
+        window = n.getWindow(5, true);
+        expected = new double[][]{//
+        /*    */{NaN, NaN, 750.0, NaN, NaN},//
+                {NaN, 500.0, 600.0, 700.0, NaN},//
+                {700.0, 750.0, 760.0, 770.0, 850.0},//
+                {NaN, 800.0, 780.0, 790.0, NaN},//
+                {NaN, NaN, 1150.0, NaN, NaN}//
         };
         checkMatrixEqual(expected, window, DELTA);
 
