@@ -712,6 +712,31 @@ public class CoverageUtilities {
     }
 
     /**
+     * Transform a double values rendered image in its byte array.
+     * 
+     * <p>No check is done if the double value fits in a byte.</p> 
+     * 
+     * @param renderedImage the rendered image to transform.
+     * @return the array holding the data.
+     */
+    public static byte[] renderedImage2ByteArray( RenderedImage renderedImage ) {
+        int width = renderedImage.getWidth();
+        int height = renderedImage.getHeight();
+
+        byte[] values = new byte[width * height];
+        RandomIter imageIter = RandomIterFactory.create(renderedImage, null);
+        int index = 0;;
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                double sample = imageIter.getSampleDouble(x, y, 0);
+                values[index++] = (byte) sample;
+            }
+        }
+        imageIter.done();
+        return values;
+    }
+
+    /**
      * Transforms an array of integer values into a {@link WritableRaster}.
      * 
      * @param array the values to transform.
