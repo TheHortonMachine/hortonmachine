@@ -1,4 +1,5 @@
 org.jgrasstools.modules.RasterCorrector
+org.jgrasstools.modules.RasterDiff
 org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.CutOut
 org.jgrasstools.modules.VectorFilter

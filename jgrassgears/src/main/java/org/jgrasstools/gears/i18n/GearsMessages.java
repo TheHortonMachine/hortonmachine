@@ -534,6 +534,20 @@ public class GearsMessages {
     public static final String OMSRASTERCORRECTOR_pCorrections_DESCRIPTION = "The values to correct as a CSV list of triplets (format is col1,row1,value1,col2,row2,value2...).";
     public static final String OMSRASTERCORRECTOR_outRaster_DESCRIPTION = "The output raster.";
 
+    public static final String OMSRASTERDIFF_DESCRIPTION = "Raster diff module.";
+    public static final String OMSRASTERDIFF_DOCUMENTATION = "";
+    public static final String OMSRASTERDIFF_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
+    public static final String OMSRASTERDIFF_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERDIFF_NAME = "rdiff";
+    public static final int OMSRASTERDIFF_STATUS = 5;
+    public static final String OMSRASTERDIFF_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERDIFF_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERDIFF_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERDIFF_inRaster1_DESCRIPTION = "The input raster.";
+    public static final String OMSRASTERDIFF_inRaster2_DESCRIPTION = "The raster to subtract.";
+    public static final String OMSRASTERDIFF_pThreshold_DESCRIPTION = "The threshold, under which to set novalue.";
+    public static final String OMSRASTERDIFF_outRaster_DESCRIPTION = "The output raster.";
+
     public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
     public static final String OMSVECTOROVERLAYOPERATORS_DOCUMENTATION = "";
     public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
