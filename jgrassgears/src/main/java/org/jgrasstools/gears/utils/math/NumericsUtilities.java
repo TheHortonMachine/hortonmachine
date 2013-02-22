@@ -313,4 +313,17 @@ public class NumericsUtilities {
         return exp(logGamma(x));
     }
 
+    /**
+     * Normalizes a value for a given normalization max (assuming the lower is 0).
+     * 
+     * @param max the max of the sampling values.
+     * @param min the min of the sampling values.
+     * @param value the current value from the sampling values to be normalized.
+     * @param normMax the normalization maximum to use.
+     * @return the normalized value.
+     */
+    public static double normalize( double max, double min, double value, double normMax ) {
+        return normMax / (1 + ((max - value) / (value - min)));
+    }
+
 }

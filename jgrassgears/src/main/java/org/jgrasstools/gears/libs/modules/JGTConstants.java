@@ -264,6 +264,8 @@ public class JGTConstants {
     public static final String NETWORK = "HortonMachine/Network";
     public static final String STATISTICS = "HortonMachine/Statistics";
 
+    public static final String GPL3_LICENSE = "General Public License Version 3 (GPLv3)";
+    
     /*
      * vars ui hints
      */

@@ -115,6 +115,8 @@ public class OmsRasterSummary extends JGTModel {
     @Out
     public double[][] outCb = null;
 
+    private Statistic[] stats;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outMin == null, doReset)) {
@@ -129,7 +131,9 @@ public class OmsRasterSummary extends JGTModel {
         pb.setSource("dataImage", inRI);
         // pb.setSource("zoneImage", null);
 
-        Statistic[] stats = {Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SDEV, Statistic.RANGE, Statistic.SUM};
+        if (stats == null) {
+            stats = new Statistic[]{Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SDEV, Statistic.RANGE, Statistic.SUM};
+        }
         pb.setParameter("stats", stats);
 
         RenderedOp op = JAI.create("ZonalStats", pb);
@@ -190,6 +194,18 @@ public class OmsRasterSummary extends JGTModel {
 
         }
 
+    }
+
+    public static double[] getMinMax( GridCoverage2D raster ) throws Exception {
+        OmsRasterSummary summary = new OmsRasterSummary();
+        summary.inRaster = raster;
+        summary.doHistogram = false;
+        summary.stats = new Statistic[]{Statistic.MIN, Statistic.MAX};
+        summary.process();
+
+        double min = summary.outMin;
+        double max = summary.outMax;
+        return new double[]{min, max};
     }
 
 }

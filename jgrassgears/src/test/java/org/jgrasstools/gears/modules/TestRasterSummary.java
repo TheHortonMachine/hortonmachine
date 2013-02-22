@@ -61,6 +61,10 @@ public class TestRasterSummary extends HMTestCase {
         assertEquals(0.0, range);
         assertEquals(18.0, sum);
 
+        double[] minMax = OmsRasterSummary.getMinMax(inCoverage);
+        assertEquals(2.0, minMax[0]);
+        assertEquals(2.0, minMax[1]);
+
         double[][] cb = summary.outCb;
         // for( int i = 0; i < cb.length; i++ ) {
         // System.out.println(cb[i][0] + "\t" + cb[i][1] + "\t" + cb[i][2] + "%");
