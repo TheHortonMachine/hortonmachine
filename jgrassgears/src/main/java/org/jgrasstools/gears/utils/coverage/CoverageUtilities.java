@@ -500,6 +500,31 @@ public class CoverageUtilities {
         return writableRaster;
     }
 
+    public static WritableRaster createWritableRasterFromMatrix( int[][] matrix, boolean matrixIsRowCol ) {
+        int height = matrix.length;
+        int width = matrix[0].length;
+        if (!matrixIsRowCol) {
+            int tmp = height;
+            height = width;
+            width = tmp;
+        }
+        WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
+        
+        WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
+        for( int x = 0; x < width; x++ ) {
+            for( int y = 0; y < height; y++ ) {
+                if (matrixIsRowCol) {
+                    disckRandomIter.setSample(x, y, 0, matrix[y][x]);
+                } else {
+                    disckRandomIter.setSample(x, y, 0, matrix[x][y]);
+                }
+            }
+        }
+        disckRandomIter.done();
+        
+        return writableRaster;
+    }
+
     /**
      * Create a {@link WritableRaster} from a int array.
      * 
@@ -551,6 +576,12 @@ public class CoverageUtilities {
      * @return the {@link GridCoverage2D coverage}.
      */
     public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix, HashMap<String, Double> envelopeParams,
+            CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
+        WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
+        return buildCoverage(name, writableRaster, envelopeParams, crs);
+    }
+
+    public static GridCoverage2D buildCoverage( String name, int[][] dataMatrix, HashMap<String, Double> envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverage(name, writableRaster, envelopeParams, crs);
@@ -717,19 +748,29 @@ public class CoverageUtilities {
      * <p>No check is done if the double value fits in a byte.</p> 
      * 
      * @param renderedImage the rendered image to transform.
+     * @param doRowsThenCols if <code>true</code>, rows are processed in the outer loop.
      * @return the array holding the data.
      */
-    public static byte[] renderedImage2ByteArray( RenderedImage renderedImage ) {
+    public static byte[] renderedImage2ByteArray( RenderedImage renderedImage, boolean doRowsThenCols ) {
         int width = renderedImage.getWidth();
         int height = renderedImage.getHeight();
 
         byte[] values = new byte[width * height];
         RandomIter imageIter = RandomIterFactory.create(renderedImage, null);
-        int index = 0;;
-        for( int x = 0; x < width; x++ ) {
+        int index = 0;
+        if (doRowsThenCols) {
             for( int y = 0; y < height; y++ ) {
-                double sample = imageIter.getSampleDouble(x, y, 0);
-                values[index++] = (byte) sample;
+                for( int x = 0; x < width; x++ ) {
+                    double sample = imageIter.getSampleDouble(x, y, 0);
+                    values[index++] = (byte) sample;
+                }
+            }
+        } else {
+            for( int x = 0; x < width; x++ ) {
+                for( int y = 0; y < height; y++ ) {
+                    double sample = imageIter.getSampleDouble(x, y, 0);
+                    values[index++] = (byte) sample;
+                }
             }
         }
         imageIter.done();
