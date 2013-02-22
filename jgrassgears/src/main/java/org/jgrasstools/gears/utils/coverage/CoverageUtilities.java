@@ -68,9 +68,11 @@ import org.jgrasstools.gears.io.grasslegacy.utils.Window;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -509,7 +511,7 @@ public class CoverageUtilities {
             width = tmp;
         }
         WritableRaster writableRaster = createDoubleWritableRaster(width, height, null, null, null);
-        
+
         WritableRandomIter disckRandomIter = RandomIterFactory.createWritable(writableRaster, null);
         for( int x = 0; x < width; x++ ) {
             for( int y = 0; y < height; y++ ) {
@@ -521,7 +523,7 @@ public class CoverageUtilities {
             }
         }
         disckRandomIter.done();
-        
+
         return writableRaster;
     }
 
@@ -1265,6 +1267,28 @@ public class CoverageUtilities {
 
     public static double getValue( GridCoverage2D raster, Coordinate coordinate ) {
         return getValue(raster, coordinate.x, coordinate.y);
+    }
+
+    public static GridCoverage2D invert( GridCoverage2D raster, double max ) {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+
+        RandomIter rasterIter = CoverageUtilities.getRandomIterator(raster);
+
+        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                double value = rasterIter.getSampleDouble(c, r, 0);
+                if (!isNovalue(value)) {
+                    outIter.setSample(c, r, 0, max - value);
+                }
+            }
+        }
+        GridCoverage2D invertedRaster = CoverageUtilities.buildCoverage("inverted", outWR, regionMap,
+                raster.getCoordinateReferenceSystem());
+        return invertedRaster;
     }
 
 }
