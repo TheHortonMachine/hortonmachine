@@ -97,9 +97,9 @@ public class LeastCostFlowDirections extends JGTModel {
     public void process() throws Exception {
         OmsLeastCostFlowDirections leastcostflowdirections = new OmsLeastCostFlowDirections();
         leastcostflowdirections.inElev = getRaster(inElev);
-        leastcostflowdirections.doTca = doTca;
-        leastcostflowdirections.doSlope = doSlope;
-        leastcostflowdirections.doAspect = doAspect;
+        leastcostflowdirections.doTca = outTca != null;
+        leastcostflowdirections.doSlope = outSlope != null;
+        leastcostflowdirections.doAspect = outAspect != null;
         leastcostflowdirections.pm = pm;
         leastcostflowdirections.doProcess = doProcess;
         leastcostflowdirections.doReset = doReset;
