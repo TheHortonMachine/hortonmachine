@@ -37,12 +37,19 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
 
 /**
  * A simple raster wrapper for scripting environment.
@@ -64,6 +71,7 @@ public class Raster {
     private final double north;
     private final double xRes;
     private final double yRes;
+    private GridGeometry2D gridGeometry;
 
     /**
      * Create a raster for reading purposes.
@@ -208,6 +216,10 @@ public class Raster {
         return yRes;
     }
 
+    public double getRes() {
+        return xRes;
+    }
+
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
@@ -225,6 +237,34 @@ public class Raster {
             return value;
         }
         return JGTConstants.doubleNovalue;
+    }
+
+    /**
+     * Get world position from col, row.
+     * 
+     * @param col
+     * @param row
+     * @return the [x, y] position or <code>null</code> if outside the bounds.
+     */
+    public double[] positionAt( int col, int row ) {
+        if (isInRaster(col, row)) {
+            GridGeometry2D gridGeometry = getGridGeometry();
+            Coordinate coordinate = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
+            return new double[]{coordinate.x, coordinate.y};
+        }
+        return null;
+    }
+
+    /**
+     * Get grid col and row from a world coordinate.
+     * 
+     * @param x
+     * @param y
+     * @return the col and row.
+     */
+    public int[] gridAt( double x, double y ) {
+        int[] colRowFromCoordinate = CoverageUtilities.colRowFromCoordinate(new Coordinate(x, y), gridGeometry, null);
+        return colRowFromCoordinate;
     }
 
     /**
@@ -278,6 +318,15 @@ public class Raster {
 
     public static boolean valuesEqual( double value1, double value2 ) {
         return NumericsUtilities.dEq(value1, value2);
+    }
+
+    public GridGeometry2D getGridGeometry() {
+        if (gridGeometry == null) {
+            Envelope envelope = new Envelope2D(crs, west, south, east - west, north - south);
+            GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
+            gridGeometry = new GridGeometry2D(gridRange, envelope);
+        }
+        return gridGeometry;
     }
 
     /**
