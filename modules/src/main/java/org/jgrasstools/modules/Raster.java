@@ -17,21 +17,35 @@
  */
 package org.jgrasstools.modules;
 
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.COLS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.EAST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.NORTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.ROWS;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.SOUTH;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.WEST;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.XRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.YRES;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.buildCoverage;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.createDoubleWritableRaster;
+import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
+
 import java.awt.image.WritableRaster;
+import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * A simple raster for scripting environment.
+ * A simple raster wrapper for scripting environment.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -40,28 +54,127 @@ public class Raster {
     private RegionMap regionMap;
     private CoordinateReferenceSystem crs;
     private RandomIter iter;
-    private int cols;
-    private int rows;
     private WritableRaster newWR;
-    private boolean makeNew;
+    private final boolean makeNew;
+    private final int cols;
+    private final int rows;
+    private final double west;
+    private final double south;
+    private final double east;
+    private final double north;
+    private final double xRes;
+    private final double yRes;
 
+    /**
+     * Create a raster for reading purposes.
+     * 
+     * @param raster the raster to access.
+     */
     public Raster( GridCoverage2D raster ) {
         this(raster, false);
     }
 
+    /**
+     * Create a new raster using a given raster as template.
+     * 
+     * @param coverage
+     * @param makeNew
+     */
     public Raster( GridCoverage2D raster, boolean makeNew ) {
         this.makeNew = makeNew;
-        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+
         crs = raster.getCoordinateReferenceSystem();
+        regionMap = getRegionParamsFromGridCoverage(raster);
         cols = regionMap.getCols();
         rows = regionMap.getRows();
+        west = regionMap.getWest();
+        south = regionMap.getSouth();
+        east = regionMap.getEast();
+        north = regionMap.getNorth();
+        xRes = (east - west) / cols;
+        yRes = (north - south) / rows;
 
         if (makeNew) {
-            newWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+            newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
             iter = RandomIterFactory.createWritable(newWR, null);
         } else {
             iter = RandomIterFactory.create(raster.getRenderedImage(), null);
         }
+    }
+
+    /**
+     * Create a new raster using a given raster as template.
+     * 
+     * @param raster the raster to copy the properties from.
+     */
+    public Raster( Raster raster ) {
+        makeNew = true;
+
+        crs = raster.getCrs();
+        cols = raster.getCols();
+        rows = raster.getRows();
+        west = raster.getWest();
+        south = raster.getSouth();
+        east = raster.getEast();
+        north = raster.getNorth();
+        xRes = (east - west) / cols;
+        yRes = (north - south) / rows;
+
+        regionMap = new RegionMap();
+        regionMap.put(NORTH, north);
+        regionMap.put(SOUTH, south);
+        regionMap.put(WEST, west);
+        regionMap.put(EAST, east);
+        regionMap.put(XRES, xRes);
+        regionMap.put(YRES, yRes);
+        regionMap.put(ROWS, (double) rows);
+        regionMap.put(COLS, (double) cols);
+
+        newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        iter = RandomIterFactory.createWritable(newWR, null);
+    }
+
+    /**
+     * Create a new raster based on the region properties.
+     * 
+     * @param cols
+     * @param rows
+     * @param res
+     * @param ulEasting
+     * @param ulNorthing
+     * @param epsg
+     */
+    public Raster( int cols, int rows, double res, double ulEasting, double ulNorthing, String epsg ) {
+        this.cols = cols;
+        this.rows = rows;
+        xRes = res;
+        yRes = res;
+        try {
+            crs = CRS.decode(epsg);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to get CRS from the given epsg: " + epsg);
+        }
+
+        double width = cols * res;
+        double height = rows * res;
+        west = ulEasting;
+        east = ulEasting + width;
+        north = ulNorthing;
+        south = ulNorthing - height;
+
+        regionMap = new RegionMap();
+        regionMap.put(NORTH, north);
+        regionMap.put(SOUTH, south);
+        regionMap.put(WEST, west);
+        regionMap.put(EAST, east);
+        regionMap.put(XRES, res);
+        regionMap.put(YRES, res);
+        regionMap.put(ROWS, (double) rows);
+        regionMap.put(COLS, (double) cols);
+
+        makeNew = true;
+        newWR = createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
+        iter = RandomIterFactory.createWritable(newWR, null);
     }
 
     public int getRows() {
@@ -72,12 +185,87 @@ public class Raster {
         return cols;
     }
 
+    public double getNorth() {
+        return north;
+    }
+
+    public double getSouth() {
+        return south;
+    }
+
+    public double getWest() {
+        return west;
+    }
+    public double getEast() {
+        return east;
+    }
+
+    public double getxRes() {
+        return xRes;
+    }
+
+    public double getyRes() {
+        return yRes;
+    }
+
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
+    }
+
+    /**
+     * Get the raster value at a given col/row.
+     * 
+     * @param col
+     * @param row
+     * @return the value.
+     */
     public double valueAt( int col, int row ) {
         if (isInRaster(col, row)) {
             double value = iter.getSampleDouble(col, row, 0);
             return value;
         }
         return JGTConstants.doubleNovalue;
+    }
+
+    /**
+     * Sets a raster value if the raster is writable.
+     * 
+     * @param col
+     * @param row
+     * @param value
+     */
+    public void setValueAt( int col, int row, double value ) {
+        if (makeNew) {
+            if (isInRaster(col, row)) {
+                ((WritableRandomIter) iter).setSample(col, row, 0, value);
+            }
+        } else {
+            throw new RuntimeException("Writing not allowed.");
+        }
+    }
+
+    /**
+     * Get the values of the surrounding cells.
+     * 
+     * <b>The order of the values is [E, EN, N, NW, W, WS, S, SE].</b>
+     * 
+     * @param col the col of the center cell.
+     * @param row the row of the center cell.
+     * @return the array of cell values around them as [E, EN, N, NW, W, WS, S, SE].
+     */
+    public double[] surrounding( int col, int row ) {
+        GridNode node = new GridNode(iter, cols, rows, xRes, yRes, col, row);
+        List<GridNode> surroundingNodes = node.getSurroundingNodes();
+        double[] surr = new double[8];
+        for( int i = 0; i < surroundingNodes.size(); i++ ) {
+            GridNode gridNode = surroundingNodes.get(i);
+            if (gridNode != null) {
+                surr[i] = gridNode.elevation;
+            } else {
+                surr[i] = JGTConstants.doubleNovalue;
+            }
+        }
+        return surr;
     }
 
     public boolean isNoValue( double value ) {
@@ -92,31 +280,45 @@ public class Raster {
         return NumericsUtilities.dEq(value1, value2);
     }
 
-    public void setValueAt( int col, int row, double value ) {
-        if (makeNew) {
-            if (isInRaster(col, row)) {
-                ((WritableRandomIter) iter).setSample(col, row, 0, value);
-            }
-        } else {
-            throw new RuntimeException("Writing not allowed.");
-        }
-    }
-
+    /**
+     * Creates a {@link GridCoverage2D} from the {@link Raster}.
+     * 
+     * @return the coverage.
+     */
     public GridCoverage2D buildRaster() {
         if (makeNew) {
-            GridCoverage2D coverage = CoverageUtilities.buildCoverage("raster", newWR, regionMap, crs);
+            GridCoverage2D coverage = buildCoverage("raster", newWR, regionMap, crs);
             return coverage;
         } else {
             throw new RuntimeException("The raster is readonly, so no new raster can be built.");
         }
     }
 
-    public void dumpRaster( String path ) throws Exception {
+    /**
+     * Write the raster to file.
+     * 
+     * @param path th epath to write to.
+     * @throws Exception
+     */
+    public void write( String path ) throws Exception {
         if (makeNew) {
             RasterWriter.writeRaster(path, buildRaster());
         } else {
             throw new RuntimeException("Only new rasters can be dumped.");
         }
+    }
+
+    /**
+     * Read a raster from file.
+     * 
+     * @param path the path to the raster to read.
+     * @return the read raster in readonly mode.
+     * @throws Exception
+     */
+    public static Raster read( String path ) throws Exception {
+        GridCoverage2D coverage2d = RasterReader.readRaster(path);
+        Raster raster = new Raster(coverage2d);
+        return raster;
     }
 
     private boolean isInRaster( int col, int row ) {
