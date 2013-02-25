@@ -386,9 +386,12 @@ public class GridNode extends Node {
      * @return the slope.
      */
     public double getSlopeTo( GridNode node ) {
-        double slope = (elevation - node.elevation)
-                / (sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0)));
+        double slope = (elevation - node.elevation) / getDistance(node);
         return slope;
+    }
+
+    public double getDistance( GridNode node ) {
+        return sqrt(pow((node.col - col) * xRes, 2.0) + pow((node.row - row) * yRes, 2.0));
     }
 
     public double getEastElev() {
