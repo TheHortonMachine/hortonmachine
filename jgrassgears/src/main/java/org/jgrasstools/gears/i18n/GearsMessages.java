@@ -287,10 +287,8 @@ public class GearsMessages {
     public static final String OMSMAXIMAFINDER_inGeodata_DESCRIPTION = "The input coverage.";
     public static final String OMSMAXIMAFINDER_pMode_DESCRIPTION = "The mode to use: average (0 = default), sum (1), max (2), min (3).";
     public static final String OMSMAXIMAFINDER_pSize_DESCRIPTION = "The windows size to use for cutom mode(default is 3).";
-    public static final String OMSMAXIMAFINDER_pMinvalid_DESCRIPTION = "Minimum percentage of valid surrounding cells needed to validate the maximum.";
-    public static final String OMSMAXIMAFINDER_pXstep_DESCRIPTION = "The cols to move the window forward (default is = pCols).";
-    public static final String OMSMAXIMAFINDER_pYstep_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
-    public static final String OMSMAXIMAFINDER_outGeodata_DESCRIPTION = "The output coverage.";
+    public static final String OMSMAXIMAFINDER_outMaxima_DESCRIPTION = "The maxima vector.";
+    public static final String OMSMAXIMAFINDER_outCircles_DESCRIPTION = "The maxima related areas vector.";
 
     public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
     public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
