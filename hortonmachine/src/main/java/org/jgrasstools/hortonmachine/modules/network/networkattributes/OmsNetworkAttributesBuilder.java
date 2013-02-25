@@ -60,6 +60,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.Node;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -158,7 +159,7 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
                     exitsList.add(flowNode);
                 } else if (flowNode.touchesBound() && flowNode.isValid()) {
                     // check if the flow exits
-                    FlowNode goDownstream = flowNode.goDownstream();
+                    Node goDownstream = flowNode.goDownstream();
                     if (goDownstream == null) {
                         // flowNode is exit
                         exitsList.add(flowNode);

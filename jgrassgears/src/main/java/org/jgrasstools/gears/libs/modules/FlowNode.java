@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
 
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
@@ -33,7 +32,7 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
  * @author Andrea Antonello (www.hydrologis.com)
  * @since 0.7.6
  */
-public class FlowNode {
+public class FlowNode extends Node {
     /**
      * The outlet value of flow.
      */
@@ -43,20 +42,11 @@ public class FlowNode {
      */
     public static double NETVALUE = 2.0;
 
-    public final int row;
-    public final int col;
     public final double flow;
 
-    private RandomIter flowIter;
-    private int cols;
-    private int rows;
-
-    private final boolean isValid;
     private boolean isMarkedAsOutlet = false;
     private boolean isHeadingOutside = false;
     private boolean wasHeadingOutsideChecked = false;
-    private boolean touchesBound = false;
-
     private double eFlow;
     private double enFlow;
     private double nFlow;
@@ -78,17 +68,13 @@ public class FlowNode {
      * @param row the row of the current {@link FlowNode node}.
      */
     public FlowNode( RandomIter flowIter, int cols, int rows, int col, int row ) {
-        this.flowIter = flowIter;
-        this.cols = cols;
-        this.rows = rows;
-        this.col = col;
-        this.row = row;
+        super(flowIter, cols, rows, col, row);
 
         if (!isInRaster(col, row)) {
             isValid = false;
             flow = doubleNovalue;
         } else {
-            flow = flowIter.getSampleDouble(col, row, 0);
+            flow = gridIter.getSampleDouble(col, row, 0);
             if (JGTConstants.isNovalue(flow)) {
                 isValid = false;
             } else {
@@ -113,7 +99,7 @@ public class FlowNode {
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
                 } else {
-                    tmp = flowIter.getSampleDouble(newC, newR, 0);
+                    tmp = gridIter.getSampleDouble(newC, newR, 0);
                 }
 
                 switch( index ) {
@@ -165,21 +151,6 @@ public class FlowNode {
     }
 
     /**
-     * Checks if the node is valid.
-     * 
-     * <p>A node is valid if</p>
-     * <ul>
-     *  <li>it is placed inside the raster bounds</li>
-     *  <li>its value is not novalue</li>
-     * </ul>
-     * 
-     * @return <code>true</code> if the node is valid.
-     */
-    public boolean isValid() {
-        return isValid;
-    }
-
-    /**
      * @return <code>true</code> if this node has a {@value #OUTLET} value in the flow map. 
      */
     public boolean isMarkedAsOutlet() {
@@ -192,7 +163,7 @@ public class FlowNode {
     public boolean isHeadingOutside() {
         if (!wasHeadingOutsideChecked) {
             if (touchesBound) {
-                FlowNode goDownstream = goDownstream();
+                Node goDownstream = goDownstream();
                 if (goDownstream == null || !goDownstream.isValid()) {
                     isHeadingOutside = true;
                 } else {
@@ -217,13 +188,6 @@ public class FlowNode {
         }
         List<FlowNode> enteringNodes = getEnteringNodes();
         return enteringNodes.size() == 0;
-    }
-
-    /**
-     * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
-     */
-    public boolean touchesBound() {
-        return touchesBound;
     }
 
     /**
@@ -264,7 +228,7 @@ public class FlowNode {
         if (isValid) {
             Direction direction = Direction.forFlow((int) flow);
             if (direction != null) {
-                FlowNode nextNode = new FlowNode(flowIter, cols, rows, col + direction.col, row + direction.row);
+                FlowNode nextNode = new FlowNode(gridIter, cols, rows, col + direction.col, row + direction.row);
                 if (nextNode.isValid) {
                     return nextNode;
                 }
@@ -273,39 +237,6 @@ public class FlowNode {
         return null;
     }
 
-    /**
-     * Get the value of another map in the current node position.
-     * 
-     * @param map the map from which to get the value. 
-     * @return the double value or a novalue.
-     */
-    public double getValueFromMap( RandomIter map ) {
-        try {
-            double value = map.getSampleDouble(col, row, 0);
-            return value;
-        } catch (Exception e) {
-            // ignore and return novalue
-            return JGTConstants.doubleNovalue;
-        }
-    }
-
-    /**
-     * Utility method to set the value of a certain map in the current node position.
-     * 
-     * @param map the map to set the value in. if <code>null</code>, it is ignored.
-     * @param value the value to set.
-     */
-    public void setValueInMap( WritableRandomIter map, double value ) {
-        if (map == null) {
-            return;
-        }
-        try {
-            map.setSample(col, row, 0, value);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-    
     /**
      * Gets all surrounding {@link FlowNode nodes} that <b>DO</b> flow into this node.
      * 
@@ -321,7 +252,7 @@ public class FlowNode {
                     if ((int) eFlow == Direction.E.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -329,7 +260,7 @@ public class FlowNode {
                     if ((int) nFlow == Direction.N.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -337,7 +268,7 @@ public class FlowNode {
                     if ((int) wFlow == Direction.W.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -345,7 +276,7 @@ public class FlowNode {
                     if ((int) sFlow == Direction.S.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -353,7 +284,7 @@ public class FlowNode {
                     if ((int) enFlow == Direction.EN.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -361,7 +292,7 @@ public class FlowNode {
                     if ((int) nwFlow == Direction.NW.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -369,7 +300,7 @@ public class FlowNode {
                     if ((int) wsFlow == Direction.WS.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -377,7 +308,7 @@ public class FlowNode {
                     if ((int) seFlow == Direction.SE.getEnteringFlow()) {
                         int newCol = col + direction.col;
                         int newRow = row + direction.row;
-                        FlowNode node = new FlowNode(flowIter, cols, rows, newCol, newRow);
+                        FlowNode node = new FlowNode(gridIter, cols, rows, newCol, newRow);
                         enteringNodes.add(node);
                     }
                     break;
@@ -468,7 +399,7 @@ public class FlowNode {
                 throw new IllegalArgumentException();
             }
             if (isInRaster(newCol, newRow)) {
-                double flowValue = flowIter.getSampleDouble(newCol, newRow, 0);
+                double flowValue = gridIter.getSampleDouble(newCol, newRow, 0);
                 if (JGTConstants.isNovalue(flowValue)) {
                     continue;
                 }
@@ -500,7 +431,7 @@ public class FlowNode {
         if (!gotOne) {
             return null;
         }
-        FlowNode node = new FlowNode(flowIter, cols, rows, maxCol, maxRow);
+        FlowNode node = new FlowNode(gridIter, cols, rows, maxCol, maxRow);
         return node;
     }
 
@@ -538,7 +469,5 @@ public class FlowNode {
             return false;
         return true;
     }
-
- 
 
 }

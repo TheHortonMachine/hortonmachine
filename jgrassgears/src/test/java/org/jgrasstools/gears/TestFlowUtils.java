@@ -2,7 +2,6 @@ package org.jgrasstools.gears;
 
 import static java.lang.Double.NaN;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeSet;
@@ -15,6 +14,7 @@ import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.GridNodeElevationToLeastComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.Node;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -169,10 +169,12 @@ public class TestFlowUtils extends HMTestCase {
 
     public void testTouchesBound() throws Exception {
         GridNode node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 2, 2);
-        assertTrue(node1.touchesBound());
+        boolean touchesBound = node1.touchesBound();
+        assertTrue(touchesBound);
 
         node1 = new GridNode(elevationIter, nCols, nRows, xRes, yRes, 1, 5);
-        assertFalse(node1.touchesBound());
+        touchesBound = node1.touchesBound();
+        assertFalse(touchesBound);
     }
 
     public void testElevationSort() throws Exception {
@@ -200,7 +202,7 @@ public class TestFlowUtils extends HMTestCase {
         FlowNode node = new FlowNode(flowIter, nCols, nRows, 2, 2);
 
         List<FlowNode> enteringNodes = node.getEnteringNodes();
-        FlowNode flowNode = enteringNodes.get(0);
+        Node flowNode = enteringNodes.get(0);
         assertEquals(flowNode.col, 3);
         assertEquals(flowNode.row, 1);
 

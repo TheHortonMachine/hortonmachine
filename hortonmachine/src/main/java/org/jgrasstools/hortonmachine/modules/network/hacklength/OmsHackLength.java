@@ -56,6 +56,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.Node;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -217,7 +218,7 @@ public class OmsHackLength extends JGTModel {
             double maxDistance ) {
 
         List<FlowNode> enteringNodes = flowNode.getEnteringNodes();
-        for( FlowNode node : enteringNodes ) {
+        for( Node node : enteringNodes ) {
             double tca = node.getValueFromMap(tcaIter);
             if (tca >= maxTca) {
                 if (NumericsUtilities.dEq(tca, maxTca)) {

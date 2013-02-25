@@ -64,6 +64,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.modules.Node;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -220,7 +221,7 @@ public class OmsExtractNetwork extends JGTModel {
                                 netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                 break;
                             } else if (runningNode.touchesBound()) {
-                                FlowNode goDownstream = runningNode.goDownstream();
+                                Node goDownstream = runningNode.goDownstream();
                                 if (goDownstream == null || !goDownstream.isValid()) {
                                     netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                     break;
@@ -280,7 +281,7 @@ public class OmsExtractNetwork extends JGTModel {
                                 netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                 break;
                             } else if (runningNode.touchesBound()) {
-                                FlowNode goDownstream = runningNode.goDownstream();
+                                Node goDownstream = runningNode.goDownstream();
                                 if (goDownstream == null || !goDownstream.isValid()) {
                                     netRandomIter.setSample(rCol, rRow, 0, NETVALUE);
                                     break;

@@ -17,35 +17,28 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import static java.lang.Math.*;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-
 /**
  * A node in the grid environment of a digital elevation model. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GridNode {
+public class GridNode extends Node {
 
-    public final int row;
-    public final int col;
     public final double elevation;
     public final double xRes;
     public final double yRes;
 
-    private RandomIter elevationIter;
-    private int cols;
-    private int rows;
     private boolean isPit = false;
     private boolean isOutlet = false;
-    private boolean touchesBound = false;
 
     private double eElev;
     private double enElev;
@@ -68,18 +61,21 @@ public class GridNode {
      * @param row the row of the current {@link GridNode node}.
      */
     public GridNode( RandomIter elevationIter, int cols, int rows, double xRes, double yRes, int col, int row ) {
-        this.elevationIter = elevationIter;
-        this.cols = cols;
-        this.rows = rows;
+        super(elevationIter, cols, rows, col, row);
+
         this.xRes = xRes;
         this.yRes = yRes;
-        this.col = col;
-        this.row = row;
 
         if (isInRaster(col, row)) {
-            elevation = elevationIter.getSampleDouble(col, row, 0);
+            elevation = gridIter.getSampleDouble(col, row, 0);
+            if (JGTConstants.isNovalue(elevation)) {
+                isValid = false;
+            } else {
+                isValid = true;
+            }
         } else {
             elevation = doubleNovalue;
+            isValid = false;
         }
 
         double tmpMin = Double.POSITIVE_INFINITY;
@@ -96,7 +92,7 @@ public class GridNode {
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
                 } else {
-                    tmp = elevationIter.getSampleDouble(newC, newR, 0);
+                    tmp = gridIter.getSampleDouble(newC, newR, 0);
                 }
 
                 switch( index ) {
@@ -155,38 +151,10 @@ public class GridNode {
     }
 
     /**
-     * Checks if the node is valid.
-     * 
-     * <p>A node is valid if</p>
-     * <ul>
-     *  <li>it is placed inside the raster bounds</li>
-     *  <li>its elevation value is not novalue</li>
-     * </ul>
-     * 
-     * @return <code>true</code> if the node is valid.
-     */
-    public boolean isValid() {
-        if (JGTConstants.isNovalue(elevation)) {
-            return false;
-        } else if (!isInRaster(col, row)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
      * @return <code>true</code> if this node can't flow anywhere following the steepest path downstream. 
      */
     public boolean isOutlet() {
         return isOutlet;
-    }
-
-    /**
-     * @return <code>true</code> if this node touches a boundary, i.e. any novalue or raster limit.
-     */
-    public boolean touchesBound() {
-        return touchesBound;
     }
 
     /**
@@ -223,7 +191,7 @@ public class GridNode {
                 int tmpCol = col + c;
                 for( int r = -delta; r <= delta; r++ ) {
                     int tmpRow = row + r;
-                    GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                    GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
                     window[r + delta][c + delta] = n.elevation;
                 }
             }
@@ -236,7 +204,7 @@ public class GridNode {
 
                     double distance = sqrt(c * c + r * r);
                     if (distance <= radius) {
-                        GridNode n = new GridNode(elevationIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
+                        GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow);
                         window[r + delta][c + delta] = n.elevation;
                     } else {
                         window[r + delta][c + delta] = doubleNovalue;
@@ -290,7 +258,7 @@ public class GridNode {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
                 if (node.isValid()) {
                     double slopeTo = getSlopeTo(node);
                     if (slopeTo > 0 && slopeTo > maxSlope) {
@@ -331,7 +299,7 @@ public class GridNode {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
                 if (node.isValid()) {
                     nodes.add(node);
                 } else {
@@ -357,7 +325,7 @@ public class GridNode {
             int newCol = col + direction.col;
             int newRow = row + direction.row;
             if (isInRaster(newCol, newRow)) {
-                GridNode node = new GridNode(elevationIter, cols, rows, xRes, yRes, newCol, newRow);
+                GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
                 if (node.isValid()) {
                     nodes.add(node);
                 }
