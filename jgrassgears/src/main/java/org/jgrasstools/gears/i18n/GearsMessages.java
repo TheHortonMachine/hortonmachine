@@ -270,9 +270,27 @@ public class GearsMessages {
     public static final String OMSWINDOWSAMPLER_pMode_DESCRIPTION = "The mode to use: average (0 = default), sum (1), max (2), min (3).";
     public static final String OMSWINDOWSAMPLER_pRows_DESCRIPTION = "The windows rows to use (default is 3).";
     public static final String OMSWINDOWSAMPLER_pCols_DESCRIPTION = "The window cols to use (default is 3).";
+    public static final String OMSWINDOWSAMPLER_pMinvalid_DESCRIPTION = "Minimum percentage of valid surrounding cells needed to validate the maximum.";
     public static final String OMSWINDOWSAMPLER_pXstep_DESCRIPTION = "The cols to move the window forward (default is = pCols).";
     public static final String OMSWINDOWSAMPLER_pYstep_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
     public static final String OMSWINDOWSAMPLER_outGeodata_DESCRIPTION = "The output coverage.";
+
+    public static final String OMSMAXIMAFINDER_DESCRIPTION = "Module to find local maxima.";
+    public static final String OMSMAXIMAFINDER_DOCUMENTATION = "";
+    public static final String OMSMAXIMAFINDER_KEYWORDS = "IO, Coverage, Raster, Downsampling, Interpolation";
+    public static final String OMSMAXIMAFINDER_LABEL = RASTERPROCESSING;
+    public static final String OMSMAXIMAFINDER_NAME = "winsampler";
+    public static final int OMSMAXIMAFINDER_STATUS = 5;
+    public static final String OMSMAXIMAFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSMAXIMAFINDER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSMAXIMAFINDER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSMAXIMAFINDER_inGeodata_DESCRIPTION = "The input coverage.";
+    public static final String OMSMAXIMAFINDER_pMode_DESCRIPTION = "The mode to use: average (0 = default), sum (1), max (2), min (3).";
+    public static final String OMSMAXIMAFINDER_pSize_DESCRIPTION = "The windows size to use for cutom mode(default is 3).";
+    public static final String OMSMAXIMAFINDER_pMinvalid_DESCRIPTION = "Minimum percentage of valid surrounding cells needed to validate the maximum.";
+    public static final String OMSMAXIMAFINDER_pXstep_DESCRIPTION = "The cols to move the window forward (default is = pCols).";
+    public static final String OMSMAXIMAFINDER_pYstep_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
+    public static final String OMSMAXIMAFINDER_outGeodata_DESCRIPTION = "The output coverage.";
 
     public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
     public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
