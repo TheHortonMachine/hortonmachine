@@ -75,16 +75,13 @@ public class CrsUtilities {
      * Reads a {@link CoordinateReferenceSystem} from a prj file.
      * 
      * @param filePath the path to the regarding data or prj file.
-     * @param extention the extention of the data file. If <code>null</code>, the crs is written to filePath directly.
+     * @param extention the extention of the data file. If <code>null</code> it is assumed to be prj.
      * @return the read {@link CoordinateReferenceSystem}. 
      * @throws Exception
      */
     @SuppressWarnings("nls")
     public static CoordinateReferenceSystem readProjectionFile( String filePath, String extention ) throws Exception {
         CoordinateReferenceSystem crs = null;
-        /*
-         * fill a prj file
-         */
         String prjPath = null;
         if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
             int dotLoc = filePath.lastIndexOf(".");

@@ -143,6 +143,11 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public String pEpsg;
 
+    @Description("An optional prj file to use instead of teh epsg code.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inPrj;
+
     @Description(OMSTMSGENERATOR_doLenient_DESCRIPTION)
     @In
     public boolean doLenient = true;
@@ -174,7 +179,7 @@ public class OmsTmsGenerator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inPath, pEpsg, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+        checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
         String ext = "png";
         if (pImagetype == 1) {
@@ -193,7 +198,17 @@ public class OmsTmsGenerator extends JGTModel {
             throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this);
         }
 
-        CoordinateReferenceSystem boundsCrs = CRS.decode(pEpsg);
+        if (pEpsg == null && inPrj == null) {
+            throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
+        }
+
+        CoordinateReferenceSystem boundsCrs;
+        if (pEpsg != null) {
+            boundsCrs = CRS.decode(pEpsg);
+        }else{
+            String wkt = FileUtilities.readFile(inPrj);
+            boundsCrs = CRS.parseWKT(wkt);
+        }
 
         final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
         CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
