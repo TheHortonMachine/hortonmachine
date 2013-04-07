@@ -156,6 +156,10 @@ public class OmsMatrixCharter extends JGTModel {
     @In
     public boolean doNormalize;
 
+    @Description("Make chart horizontal.")
+    @In
+    public boolean doHorizontal;
+
     @Description(OMSMATRIXCHARTER_pWidth_DESCRIPTION)
     @In
     public int pWidth = 800;
@@ -257,8 +261,12 @@ public class OmsMatrixCharter extends JGTModel {
     private JFreeChart doBarChart() {
         XYSeriesCollection collection = getSeriesCollection();
         XYBarDataset xyBarDataset = new XYBarDataset(collection, minInterval);
-        JFreeChart chart = ChartFactory.createHistogram(inTitle, inLabels[0], inLabels[1], xyBarDataset,
-                PlotOrientation.VERTICAL, doLegend, true, false);
+        PlotOrientation orientation = PlotOrientation.VERTICAL;
+        if (doHorizontal) {
+            orientation = PlotOrientation.HORIZONTAL;
+        }
+        JFreeChart chart = ChartFactory.createHistogram(inTitle, inLabels[0], inLabels[1], xyBarDataset, orientation, doLegend,
+                true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
         plot.setForegroundAlpha(0.85f);
         NumberAxis yAxis = (NumberAxis) plot.getRangeAxis();
@@ -301,9 +309,20 @@ public class OmsMatrixCharter extends JGTModel {
     @SuppressWarnings("deprecation")
     private JFreeChart doLineChart() {
         XYSeriesCollection collection = getSeriesCollection();
-        JFreeChart chart = ChartFactory.createXYLineChart(inTitle, inLabels[0], inLabels[1], collection,
-                PlotOrientation.VERTICAL, doLegend, true, false);
+        PlotOrientation orientation = PlotOrientation.VERTICAL;
+        if (doHorizontal) {
+            orientation = PlotOrientation.HORIZONTAL;
+        }
+
+        JFreeChart chart = ChartFactory.createXYLineChart(inTitle, inLabels[0], inLabels[1], collection, orientation, doLegend,
+                true, false);
         XYPlot plot = (XYPlot) chart.getPlot();
+
+        // plot.setDomainGridlinePaint(Color.red);
+        // plot.setRangeGridlinePaint(Color.cyan);
+        // plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        plot.setDomainCrosshairVisible(true);
+        plot.setRangeCrosshairVisible(true);
 
         XYItemRenderer plotRenderer = plot.getRenderer();
         if (plotRenderer instanceof XYLineAndShapeRenderer) {
