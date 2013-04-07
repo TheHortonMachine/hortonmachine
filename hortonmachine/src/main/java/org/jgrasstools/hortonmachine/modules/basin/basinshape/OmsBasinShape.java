@@ -271,7 +271,7 @@ public class OmsBasinShape extends JGTModel {
                 values[2] = geometry.getLength();
 
                 Point centroid = geometry.getCentroid();
-                if (centroid == null) {
+                if (centroid == null || centroid.isEmpty()) {
                     pm.errorMessage("Unable to extract basin: " + num);
                     continue;
                 }
