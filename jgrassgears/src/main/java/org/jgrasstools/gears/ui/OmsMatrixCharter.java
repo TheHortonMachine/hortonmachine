@@ -137,7 +137,7 @@ public class OmsMatrixCharter extends JGTModel {
 
     @Description(OMSMATRIXCHARTER_pType_DESCRIPTION)
     @In
-    public int pType = 0;;
+    public int pType = 0;
 
     @Description(OMSMATRIXCHARTER_doChart_DESCRIPTION)
     @In
@@ -230,6 +230,7 @@ public class OmsMatrixCharter extends JGTModel {
 
     private XYSeriesCollection getSeriesCollection() {
         XYSeriesCollection collection = new XYSeriesCollection();
+
         for( int i = 0; i < inSeries.length; i++ ) {
             int col = i + 1;
             if (inDataXY != null) {
@@ -252,6 +253,7 @@ public class OmsMatrixCharter extends JGTModel {
                 }
                 x[j] = inData[j][0];
                 y[j] = value;
+
                 max = Math.max(max, value);
                 min = Math.min(min, value);
                 previous = value;
