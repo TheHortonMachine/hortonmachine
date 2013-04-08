@@ -47,9 +47,11 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_pType_DE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSMATRIXCHARTER_pWidth_DESCRIPTION;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 
@@ -82,6 +84,7 @@ import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.ui.ApplicationFrame;
 import org.jfree.ui.RefineryUtilities;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
@@ -99,6 +102,10 @@ public class OmsMatrixCharter extends JGTModel {
     @Description(OMSMATRIXCHARTER_inData_DESCRIPTION)
     @In
     public double[][] inData;
+
+    @Description("A list of data to chart, in the case the xy data ar different for each series.")
+    @In
+    public List<double[][]> inDataXY;
 
     @Description(OMSMATRIXCHARTER_inTitle_DESCRIPTION)
     @In
@@ -178,7 +185,9 @@ public class OmsMatrixCharter extends JGTModel {
 
     @Execute
     public void chart() throws Exception {
-        checkNull((Object) inData);
+        if (inData == null && inDataXY == null) {
+            throw new ModelsIllegalargumentException("At least one of the datasets need to be valid.", this);
+        }
 
         if (doDump) {
             checkNull(inChartPath);
@@ -212,6 +221,7 @@ public class OmsMatrixCharter extends JGTModel {
 
             ApplicationFrame af = new ApplicationFrame("");
             af.setContentPane(cp);
+            af.setPreferredSize(new Dimension(pWidth, pHeight));
             af.pack();
             af.setVisible(true);
             RefineryUtilities.centerFrameOnScreen(af);
@@ -221,6 +231,12 @@ public class OmsMatrixCharter extends JGTModel {
     private XYSeriesCollection getSeriesCollection() {
         XYSeriesCollection collection = new XYSeriesCollection();
         for( int i = 0; i < inSeries.length; i++ ) {
+            int col = i + 1;
+            if (inDataXY != null) {
+                inData = inDataXY.get(i);
+                col = 1;
+            }
+
             String seriesName = inSeries[i];
             XYSeries series = new XYSeries(seriesName);
 
@@ -230,9 +246,9 @@ public class OmsMatrixCharter extends JGTModel {
             for( int j = 0; j < inData.length; j++ ) {
                 double value;
                 if (!doCumulate) {
-                    value = inData[j][i + 1];
+                    value = inData[j][col];
                 } else {
-                    value = previous + inData[j][i + 1];
+                    value = previous + inData[j][col];
                 }
                 x[j] = inData[j][0];
                 y[j] = value;
