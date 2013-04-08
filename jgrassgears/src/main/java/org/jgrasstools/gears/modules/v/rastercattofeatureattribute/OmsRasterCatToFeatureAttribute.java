@@ -61,10 +61,17 @@ import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -108,13 +115,17 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
 
     private GridGeometry2D gridGeometry;
 
+    private CoordinateReferenceSystem crs;
+
+    private RegionMap regionMap;
+
     @Execute
     public void process() throws Exception {
         if (inIter == null) {
             RenderedImage inputRI = inRaster.getRenderedImage();
             inIter = RandomIterFactory.create(inputRI, null);
 
-            // HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inCoverage);
+            regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
             // height = regionMap.get(ROWS).intValue();
             // width = regionMap.get(COLS).intValue();
             // xRes = regionMap.get(XRES);
@@ -127,8 +138,9 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
         }
 
         SimpleFeatureType featureType = inVector.getSchema();
+        crs = inVector.getSchema().getCoordinateReferenceSystem();
 
-        FeatureExtender fExt = new FeatureExtender(featureType, new String[]{fNew}, new Class< ? >[]{Double.class});
+        FeatureExtender fExt = null;
 
         Envelope2D inCoverageEnvelope = inRaster.getEnvelope2D();
         outVector = FeatureCollections.newCollection();
@@ -143,6 +155,18 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
             Coordinate[] coordinates = geometry.getCoordinates();
             if (getGeometryType(geometry) == GEOMETRYTYPE.POINT || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOINT) {
                 c = coordinates[0];
+                if (!inCoverageEnvelope.contains(c.x, c.y)) {
+                    continue;
+                }
+                value = getRasterValue(c);
+
+                if (fExt == null)
+                    fExt = new FeatureExtender(featureType, //
+                            new String[]{fNew}, //
+                            new Class< ? >[]{Double.class});
+
+                SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
+                outVector.add(extendedFeature);
             } else if (getGeometryType(geometry) == GEOMETRYTYPE.LINE || getGeometryType(geometry) == GEOMETRYTYPE.MULTILINE) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
@@ -151,37 +175,74 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                 } else {// (pPos.trim().equalsIgnoreCase(MIDDLE)) {
                     c = coordinates[coordinates.length / 2];
                 }
+                if (!inCoverageEnvelope.contains(c.x, c.y)) {
+                    continue;
+                }
+                value = getRasterValue(c);
+                if (fExt == null)
+                    fExt = new FeatureExtender(featureType, //
+                            new String[]{fNew}, //
+                            new Class< ? >[]{Double.class});
+                SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
+                outVector.add(extendedFeature);
             } else if (getGeometryType(geometry) == GEOMETRYTYPE.POLYGON
                     || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOLYGON) {
-                Point centroid = geometry.getCentroid();
-                if (geometry.contains(centroid)) {
-                    c = centroid.getCoordinate();
-                } else {
-                    c = coordinates[0];
+                if (fExt == null) {
+                    String max = fNew + "_max";
+                    String min = fNew + "_min";
+                    String sum = fNew + "_sum";
+                    String avg = fNew + "_avg";
+                    fExt = new FeatureExtender(featureType, //
+                            new String[]{min, max, sum, avg}, //
+                            new Class< ? >[]{Double.class, Double.class, Double.class, Double.class});
                 }
+
+                SimpleFeature singleFeature = FeatureUtilities.toDummyFeature(geometry, crs);
+                SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+                newCollection.add(singleFeature);
+                OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
+                raster.inVector = newCollection;
+                raster.inRaster = inRaster;
+                // raster.pCols = regionMap.getCols();
+                // raster.pRows = regionMap.getRows();
+                // raster.pNorth = regionMap.getNorth();
+                // raster.pSouth = regionMap.getSouth();
+                // raster.pEast = regionMap.getEast();
+                // raster.pWest = regionMap.getWest();
+                raster.pValue = 1.0;
+                raster.process();
+                GridCoverage2D rasterizedVector = raster.outRaster;
+
+                double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(rasterizedVector);
+                // Point centroid = geometry.getCentroid();
+                // if (geometry.contains(centroid)) {
+                // c = centroid.getCoordinate();
+                // } else {
+                // c = coordinates[0];
+                // }
+                SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{minMaxAvgSum[0], minMaxAvgSum[1],
+                        minMaxAvgSum[2], minMaxAvgSum[3]});
+                outVector.add(extendedFeature);
             } else {
                 throw new ModelsIllegalargumentException("The Geometry type is not supported.", this);
             }
 
-            if (!inCoverageEnvelope.contains(c.x, c.y)) {
-                continue;
-            }
-
-            GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
-            value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
-
-            // TODO make this better
-            if (isNovalue(value) || value >= Float.MAX_VALUE || value <= -Float.MAX_VALUE) {
-                value = -9999.0;
-            }
-
-            SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
-
-            outVector.add(extendedFeature);
             pm.worked(1);
         }
         featureIterator.close();
         pm.done();
 
+    }
+
+    private double getRasterValue( Coordinate c ) throws TransformException {
+        double value;
+        GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
+        value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
+
+        // TODO make this better
+        if (isNovalue(value) || value >= Float.MAX_VALUE || value <= -Float.MAX_VALUE) {
+            value = -9999.0;
+        }
+        return value;
     }
 }

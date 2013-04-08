@@ -208,4 +208,18 @@ public class OmsRasterSummary extends JGTModel {
         return new double[]{min, max};
     }
 
+    public static double[] getMinMaxAvgSum( GridCoverage2D raster ) throws Exception {
+        OmsRasterSummary summary = new OmsRasterSummary();
+        summary.inRaster = raster;
+        summary.doHistogram = false;
+        summary.stats = new Statistic[]{Statistic.MIN, Statistic.MAX, Statistic.MEAN, Statistic.SUM};
+        summary.process();
+
+        double min = summary.outMin;
+        double max = summary.outMax;
+        double avg = summary.outMean;
+        double sum = summary.outSum;
+        return new double[]{min, max, sum, avg};
+    }
+
 }

@@ -35,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestRasterCatToFeatureAttribute extends HMTestCase {
-    public void testMapcalc() throws Exception {
+    public void testRasterCatToFeatureAttribute() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
@@ -70,6 +70,48 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
             }
         }
 
+    }
+
+    public void testRasterCatToFeatureAttributePolygon() throws Exception {
+
+        double[][] elevationData = HMTestMaps.outPitData;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
+
+        SimpleFeatureCollection inFC = HMTestMaps.testLeftFC;
+
+        OmsRasterCatToFeatureAttribute rc2fa = new OmsRasterCatToFeatureAttribute();
+        rc2fa.pm = pm;
+        rc2fa.inRaster = elevationCoverage;
+        rc2fa.inVector = inFC;
+        rc2fa.fNew = "elev";
+        rc2fa.process();
+
+        SimpleFeatureCollection outMap = rc2fa.outVector;
+
+        FeatureIterator<SimpleFeature> features = outMap.features();
+        while( features.hasNext() ) {
+            SimpleFeature feature = features.next();
+            String attr = "elev_min";
+            double value = getAttr(feature, attr);
+            System.out.println(value);
+            attr = "elev_max";
+            value = getAttr(feature, attr);
+            System.out.println(value);
+            attr = "elev_avg";
+            value = getAttr(feature, attr);
+            System.out.println(value);
+            attr = "elev_sum";
+            value = getAttr(feature, attr);
+            System.out.println(value);
+        }
+    }
+
+    private double getAttr( SimpleFeature feature, String attr ) {
+        Object attribute = feature.getAttribute(attr);
+        double value = ((Number) attribute).doubleValue();
+        return value;
     }
 
 }

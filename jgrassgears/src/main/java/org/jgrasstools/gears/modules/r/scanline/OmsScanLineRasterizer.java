@@ -48,6 +48,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.media.jai.iterator.RandomIter;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -140,6 +142,10 @@ public class OmsScanLineRasterizer extends JGTModel {
     @In
     public Integer pCols = null;
 
+    @Description("An optional raster to take the values and region from.")
+    @In
+    public GridCoverage2D inRaster;
+
     @Description(OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION)
     @In
     public Integer pMaxThreads = 4;
@@ -160,6 +166,8 @@ public class OmsScanLineRasterizer extends JGTModel {
 
     private double xRes;
 
+    private RandomIter inIter;
+
     @Execute
     public void process() throws Exception {
         checkNull(inVector);
@@ -167,14 +175,33 @@ public class OmsScanLineRasterizer extends JGTModel {
             throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
         }
         if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
-            throw new ModelsIllegalargumentException(
-                    "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
-                    this);
+            if (inRaster == null) {
+                throw new ModelsIllegalargumentException(
+                        "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
+                        this);
+            }
+        }
+
+        if (inRaster != null) {
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+            pNorth = regionMap.getNorth();
+            pSouth = regionMap.getSouth();
+            pWest = regionMap.getWest();
+            pEast = regionMap.getEast();
+            pRows = regionMap.getRows();
+            pCols = regionMap.getCols();
+
+            inIter = CoverageUtilities.getRandomIterator(inRaster);
         }
 
         SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        GridGeometry2D pGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
+        GridGeometry2D pGrid;
+        if (inRaster != null) {
+            pGrid = inRaster.getGridGeometry();
+        } else {
+            pGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
+        }
         if (outWR == null) {
             paramsMap = gridGeometry2RegionParamsMap(pGrid);
             height = paramsMap.getRows();
@@ -263,7 +290,12 @@ public class OmsScanLineRasterizer extends JGTModel {
                                                  * the part in between has to be filled
                                                  */
                                                 for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                                    outWR.setSample(k, r, 0, value);
+                                                    if (inIter != null) {
+                                                        double v = inIter.getSampleDouble(k, r, 0);
+                                                        outWR.setSample(k, r, 0, v);
+                                                    } else {
+                                                        outWR.setSample(k, r, 0, value);
+                                                    }
                                                 }
                                             }
                                         } else {
