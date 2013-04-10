@@ -5,7 +5,11 @@ import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.fEq;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.isBetween;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.jgrasstools.gears.utils.HMTestCase;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 /**
  * Test numerics.
@@ -63,5 +67,16 @@ public class TestNumericUtilities extends HMTestCase {
         ranges = new double[]{0.0, 1.0, -3.5, 6.7, 1.2, 2.0};
         assertFalse(isBetween(a, ranges));
 
+    }
+
+    public void testRanges() throws Exception {
+        double[] x = {1, 2, -1, -4, 6, 2, 2, 3, -1, -2, -4};
+        List<int[]> negativeRanges = NumericsUtilities.getNegativeRanges(x);
+        int[] i1 = negativeRanges.get(0);
+        assertEquals(i1[0], 2);
+        assertEquals(i1[1], 3);
+        int[] i2 = negativeRanges.get(1);
+        assertEquals(i2[0], 8);
+        assertEquals(i2[1], 10);
     }
 }

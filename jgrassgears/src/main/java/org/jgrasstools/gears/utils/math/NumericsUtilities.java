@@ -22,6 +22,9 @@ import static java.lang.Math.*;
 import static java.lang.Float.*;
 import static java.lang.Double.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Class to help out with numeric issues, mostly due to floating point usage.
  * 
@@ -324,6 +327,40 @@ public class NumericsUtilities {
      */
     public static double normalize( double max, double min, double value, double normMax ) {
         return normMax / (1 + ((max - value) / (value - min)));
+    }
+
+    /**
+     * Get the range index for which x is negative. 
+     * 
+     * @param x
+     * @return
+     */
+    public static List<int[]> getNegativeRanges( double[] x ) {
+        int firstNegative = -1;
+        int lastNegative = -1;
+        List<int[]> rangeList = new ArrayList<int[]>();
+
+        for( int i = 0; i < x.length; i++ ) {
+            double xValue = x[i];
+            if (firstNegative == -1 && xValue < 0) {
+                firstNegative = i;
+            } else if (firstNegative != -1 && lastNegative == -1 && xValue > 0) {
+                lastNegative = i - 1;
+            }
+
+            if (i == x.length - 1 && firstNegative != -1 && lastNegative == -1) {
+                // need to close the range with the last value available, even if negative
+                lastNegative = i;
+            }
+
+            if (firstNegative != -1 && lastNegative != -1) {
+                rangeList.add(new int[]{firstNegative, lastNegative});
+                firstNegative = -1;
+                lastNegative = -1;
+            }
+        }
+
+        return rangeList;
     }
 
 }
