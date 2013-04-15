@@ -45,21 +45,29 @@ public class TestCoverageUtilities extends HMTestCase {
         assertEquals(1.0, paramsMap.getYres());
         assertEquals(1, paramsMap.getCols());
         assertEquals(1, paramsMap.getRows());
+        assertEquals(1.0, paramsMap.getHeight(), DELTA);
+        assertEquals(1.0, paramsMap.getWidth(), DELTA);
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
+        RegionMap eP = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 
         paramsMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevationCoverage);
-        assertEquals(eP.get(CoverageUtilities.NORTH), paramsMap.getNorth());
-        assertEquals(eP.get(CoverageUtilities.SOUTH), paramsMap.getSouth());
-        assertEquals(eP.get(CoverageUtilities.WEST), paramsMap.getWest());
-        assertEquals(eP.get(CoverageUtilities.EAST), paramsMap.getEast());
-        assertEquals(eP.get(CoverageUtilities.XRES), paramsMap.getXres());
-        assertEquals(eP.get(CoverageUtilities.YRES), paramsMap.getYres());
-        assertEquals(eP.get(CoverageUtilities.COLS).intValue(), paramsMap.getCols());
-        assertEquals(eP.get(CoverageUtilities.ROWS).intValue(), paramsMap.getRows());
+        double north = eP.getNorth();
+        assertEquals(north, paramsMap.getNorth());
+        double south = eP.getSouth();
+        assertEquals(south, paramsMap.getSouth());
+        double west = eP.getWest();
+        assertEquals(west, paramsMap.getWest());
+        double east = eP.getEast();
+        assertEquals(east, paramsMap.getEast());
+        assertEquals(eP.getXres(), paramsMap.getXres());
+        assertEquals(eP.getYres(), paramsMap.getYres());
+        assertEquals(eP.getCols(), paramsMap.getCols());
+        assertEquals(eP.getRows(), paramsMap.getRows());
+        assertEquals(north - south, paramsMap.getHeight(), DELTA);
+        assertEquals(east - west, paramsMap.getWidth(), DELTA);
     }
 
     public void testHypsographic() throws Exception {

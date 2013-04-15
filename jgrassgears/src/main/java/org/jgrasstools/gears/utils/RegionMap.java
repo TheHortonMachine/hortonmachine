@@ -147,6 +147,24 @@ public class RegionMap extends HashMap<String, Double> {
     }
 
     /**
+     * Getter for the region width.
+     * 
+     * @return the region's width or {@link JGTConstants#doubleNovalue}
+     */
+    public double getWidth() {
+        return getEast() - getWest();
+    }
+
+    /**
+     * Getter for the region height.
+     * 
+     * @return the region's height or {@link JGTConstants#doubleNovalue}
+     */
+    public double getHeight() {
+        return getNorth() - getSouth();
+    }
+
+    /**
      * Snaps a geographic point to be on the region grid.
      * 
      * <p>
