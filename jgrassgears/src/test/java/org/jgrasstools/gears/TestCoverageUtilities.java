@@ -20,6 +20,7 @@ package org.jgrasstools.gears;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
@@ -32,6 +33,36 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestCoverageUtilities extends HMTestCase {
+
+    private RegionMap eP;
+    private GridCoverage2D elevationCoverage;
+    private double north;
+    private double south;
+    private double west;
+    private double east;
+    private double xres;
+    private double yres;
+    private int cols;
+    private int rows;
+    private CoordinateReferenceSystem crs;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        double[][] elevationData = HMTestMaps.mapData;
+        eP = HMTestMaps.envelopeParams;
+        crs = HMTestMaps.crs;
+        elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
+        north = eP.getNorth();
+        south = eP.getSouth();
+        west = eP.getWest();
+        east = eP.getEast();
+        xres = eP.getXres();
+        yres = eP.getYres();
+        rows = eP.getRows();
+        cols = eP.getCols();
+    }
 
     @SuppressWarnings("nls")
     public void testCoverageUtilities() throws Exception {
@@ -48,26 +79,43 @@ public class TestCoverageUtilities extends HMTestCase {
         assertEquals(1.0, paramsMap.getHeight(), DELTA);
         assertEquals(1.0, paramsMap.getWidth(), DELTA);
 
-        double[][] elevationData = HMTestMaps.mapData;
-        RegionMap eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
-
         paramsMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevationCoverage);
-        double north = eP.getNorth();
         assertEquals(north, paramsMap.getNorth());
-        double south = eP.getSouth();
         assertEquals(south, paramsMap.getSouth());
-        double west = eP.getWest();
         assertEquals(west, paramsMap.getWest());
-        double east = eP.getEast();
         assertEquals(east, paramsMap.getEast());
-        assertEquals(eP.getXres(), paramsMap.getXres());
-        assertEquals(eP.getYres(), paramsMap.getYres());
-        assertEquals(eP.getCols(), paramsMap.getCols());
-        assertEquals(eP.getRows(), paramsMap.getRows());
+        assertEquals(xres, paramsMap.getXres());
+        assertEquals(yres, paramsMap.getYres());
+        assertEquals(cols, paramsMap.getCols());
+        assertEquals(rows, paramsMap.getRows());
         assertEquals(north - south, paramsMap.getHeight(), DELTA);
         assertEquals(east - west, paramsMap.getWidth(), DELTA);
+    }
+
+    public void testCoverageSubregionLoop() throws Exception {
+        Envelope2D env = new Envelope2D();
+        env.setRect(west, south, east - west, north - south);
+        int[] loopColsRowsForSubregion1 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
+        assertEquals(0, loopColsRowsForSubregion1[0]);
+        assertEquals(cols, loopColsRowsForSubregion1[1]);
+        assertEquals(0, loopColsRowsForSubregion1[2]);
+        assertEquals(rows, loopColsRowsForSubregion1[3]);
+
+        env = new Envelope2D();
+        env.setRect(west + xres, south + yres, east - west - 2 * xres, north - south - 2 * yres);
+        int[] loopColsRowsForSubregion2 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
+        assertEquals(1, loopColsRowsForSubregion2[0]);
+        assertEquals(cols - 1, loopColsRowsForSubregion2[1]);
+        assertEquals(1, loopColsRowsForSubregion2[2]);
+        assertEquals(rows - 1, loopColsRowsForSubregion2[3]);
+
+        env = new Envelope2D();
+        env.setRect(west + 2 * xres, south + yres, east - west - 3 * xres, north - south - 2 * yres);
+        int[] loopColsRowsForSubregion3 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
+        assertEquals(2, loopColsRowsForSubregion3[0]);
+        assertEquals(cols - 1, loopColsRowsForSubregion3[1]);
+        assertEquals(1, loopColsRowsForSubregion3[2]);
+        assertEquals(rows - 1, loopColsRowsForSubregion3[3]);
     }
 
     public void testHypsographic() throws Exception {

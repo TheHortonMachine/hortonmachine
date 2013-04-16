@@ -216,6 +216,41 @@ public class CoverageUtilities {
     }
 
     /**
+     * Creates a new {@link GridCoverage2D} using an existing as template.
+     * 
+     * @param template the template to use.
+     * @param value the value to set the new raster to, if not <code>null</code>.
+     * @return the new coverage.
+     */
+    public static GridCoverage2D createCoverageFromTemplate( GridCoverage2D template, Double value ) {
+        RegionMap regionMap = getRegionParamsFromGridCoverage(template);
+
+        double west = regionMap.getWest();
+        double south = regionMap.getSouth();
+        double east = regionMap.getEast();
+        double north = regionMap.getNorth();
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
+
+        WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);
+        if (value != null) {
+            // autobox only once
+            double v = value;
+            for( int y = 0; y < rows; y++ ) {
+                for( int x = 0; x < cols; x++ ) {
+                    raster.setSample(x, y, 0, v);
+                }
+            }
+        }
+        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west, north
+                - south);
+        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
+        GridCoverage2D coverage2D = factory.create("newraster", raster, writeEnvelope);
+        return coverage2D;
+    }
+
+    /**
      * Get the parameters of the region covered by the {@link GridCoverage2D coverage}. 
      * 
      * @param gridCoverage the coverage.
@@ -293,6 +328,24 @@ public class CoverageUtilities {
         int width = gridRange.width;
         int[] params = new int[]{width, height};
         return params;
+    }
+
+    /**
+     * Get the cols and rows ranges to use to loop the original gridcoverage.
+     * 
+     * @param gridCoverage the coverage.
+     * @param subregion the sub region of the coverage to get the cols and rows to loop on.
+     * @return the array of looping values in the form [minCol, maxCol, minRow, maxRow].
+     * @throws Exception
+     */
+    public static int[] getLoopColsRowsForSubregion( GridCoverage2D gridCoverage, Envelope2D subregion ) throws Exception {
+        GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
+        GridEnvelope2D subRegionGrid = gridGeometry.worldToGrid(subregion);
+        int minCol = subRegionGrid.x;
+        int maxCol = subRegionGrid.x + subRegionGrid.width;
+        int minRow = subRegionGrid.y;
+        int maxRow = subRegionGrid.y + subRegionGrid.height;
+        return new int[]{minCol, maxCol, minRow, maxRow};
     }
 
     public static HashMap<String, Double> generalParameterValues2RegionParamsMap( GeneralParameterValue[] params ) {
