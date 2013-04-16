@@ -66,6 +66,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.interpolation2d.core.IDWInterpolator;
@@ -73,7 +74,9 @@ import org.jgrasstools.gears.modules.r.interpolation2d.core.ISurfaceInterpolator
 import org.jgrasstools.gears.modules.r.interpolation2d.core.TPSInterpolator;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
 
@@ -131,6 +134,11 @@ public class OmsSurfaceInterpolator extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inVector, inGrid, fCat);
+
+        GeometryDescriptor geometryDescriptor = inVector.getSchema().getGeometryDescriptor();
+        if (!GeometryUtilities.isPoint(geometryDescriptor)) {
+            throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this);
+        }
 
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
         final int cols = regionMap.getCols();
