@@ -251,6 +251,52 @@ public class CoverageUtilities {
     }
 
     /**
+     * Create a subcoverage given a template coverage and an envelope.
+     * 
+     * @param template the template coverage used for the resolution.
+     * @param subregion the envelope to extract to the new coverage. This should
+     *                  be snapped on the resolution of the coverage, in order to avoid 
+     *                  shifts.
+     * @param value the value to set the new raster to, if not <code>null</code>. 
+     * @param writableRasterHolder an array of length 1 to place the writable raster in, that 
+     *                  was can be used to populate the coverage. If <code>null</code>, it is ignored.
+     * @return the new coverage.
+     */
+    public static GridCoverage2D createSubCoverageFromTemplate( GridCoverage2D template, Envelope2D subregion, Double value,
+            WritableRaster[] writableRasterHolder ) {
+        RegionMap regionMap = getRegionParamsFromGridCoverage(template);
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
+
+        double west = subregion.getMinX();
+        double south = subregion.getMinY();
+        double east = subregion.getMaxX();
+        double north = subregion.getMaxY();
+
+        int cols = (int) ((east - west) / xRes);
+        int rows = (int) ((north - south) / yRes);
+        ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
+
+        WritableRaster writableRaster = RasterFactory.createWritableRaster(sampleModel, null);
+        if (value != null) {
+            // autobox only once
+            double v = value;
+            for( int y = 0; y < rows; y++ ) {
+                for( int x = 0; x < cols; x++ ) {
+                    writableRaster.setSample(x, y, 0, v);
+                }
+            }
+        }
+        if (writableRasterHolder != null)
+            writableRasterHolder[0] = writableRaster;
+        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west, north
+                - south);
+        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
+        GridCoverage2D coverage2D = factory.create("newraster", writableRaster, writeEnvelope);
+        return coverage2D;
+    }
+
+    /**
      * Get the parameters of the region covered by the {@link GridCoverage2D coverage}. 
      * 
      * @param gridCoverage the coverage.
