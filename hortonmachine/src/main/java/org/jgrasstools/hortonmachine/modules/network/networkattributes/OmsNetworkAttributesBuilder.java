@@ -176,7 +176,8 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         b.setName("net");
         b.setCRS(inFlow.getCoordinateReferenceSystem());
         b.add("the_geom", LineString.class);
-        b.add("hack", Integer.class);
+        String hackName = NetworkChannel.HACKNAME;
+        b.add(hackName, Integer.class);
         String strahlerName = NetworkChannel.STRAHLERNAME;
         b.add(strahlerName, Integer.class);
         b.add("pfaf", String.class);
@@ -196,6 +197,9 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         outNet = FeatureCollections.newCollection();
         outNet.addAll(networkList);
 
+        /*
+         * connect channels
+         */
         channels = new ArrayList<NetworkChannel>();
         for( SimpleFeature network : networkList ) {
             channels.add(new NetworkChannel(network));
@@ -212,6 +216,67 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         }
         pm.done();
 
+        /*
+         * calculate strahler
+         */
+        calculateStrahler();
+
+        /*
+         * calculate pfaf
+         */
+        for( int i = 1; i <= maxHack; i++ ) {
+            // find a channel of that order
+            List<NetworkChannel> startChannels = new ArrayList<NetworkChannel>();
+            for( NetworkChannel channel : channels ) {
+                int hack = channel.getHack();
+                NetworkChannel nextChannel = channel.getNextChannel();
+                if (hack == i && (nextChannel == null || nextChannel.getHack() != i)) {
+                    startChannels.add(channel);
+                }
+            }
+
+            for( NetworkChannel startChannel : startChannels ) {
+                NetworkChannel nextChannel = startChannel.getNextChannel();
+                String base = "";
+                if (nextChannel != null) {
+                    base = nextChannel.getPfaf();
+                    int lastDot = base.lastIndexOf('.');
+                    if (lastDot == -1) {
+                        int lastInt = Integer.parseInt(base);
+                        lastInt = lastInt + 1;
+                        base = lastInt + ".";
+                    } else {
+                        String prefix = base.substring(0, lastDot + 1);
+                        String last = base.substring(lastDot + 1);
+                        int lastInt = Integer.parseInt(last);
+                        lastInt = lastInt + 1;
+                        base = prefix + lastInt + ".";
+                    }
+                }
+                int index = 1;
+                startChannel.setPfafstetter(base + index);
+                index = index + 2;
+                while( startChannel.getPreviousChannels().size() > 0 ) {
+                    List<NetworkChannel> previousChannels = startChannel.getPreviousChannels();
+                    for( NetworkChannel networkChannel : previousChannels ) {
+                        if (networkChannel.getHack() == i) {
+                            startChannel = networkChannel;
+                            startChannel.setPfafstetter(base + index);
+                            index = index + 2;
+                            break;
+                        }
+                    }
+                }
+
+            }
+        }
+
+        if (hackWIter != null) {
+            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        }
+    }
+
+    private void calculateStrahler() {
         // calculate Strahler
         List<NetworkChannel> sourceChannels = new ArrayList<NetworkChannel>();
         for( NetworkChannel channel : channels ) {
@@ -279,10 +344,6 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
             }
 
             sourceChannels.clear();
-        }
-
-        if (hackWIter != null) {
-            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
         }
     }
 

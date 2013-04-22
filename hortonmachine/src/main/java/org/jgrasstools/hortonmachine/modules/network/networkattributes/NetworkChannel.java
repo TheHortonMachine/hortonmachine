@@ -31,7 +31,9 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class NetworkChannel {
+    public static final String PFAFNAME = "pfaf";
     public static final String STRAHLERNAME = "strahler";
+    public static final String HACKNAME = "hack";
 
     private NetworkChannel nextChannel;
     private List<NetworkChannel> previousChannels = new ArrayList<NetworkChannel>();
@@ -51,7 +53,7 @@ public class NetworkChannel {
     public NetworkChannel getNextChannel() {
         return nextChannel;
     }
-    
+
     public List<NetworkChannel> getPreviousChannels() {
         return previousChannels;
     }
@@ -64,8 +66,30 @@ public class NetworkChannel {
         currentChannel.setAttribute(STRAHLERNAME, value);
     }
 
+    public void setPfafstetter( String value ) {
+        currentChannel.setAttribute(PFAFNAME, value);
+    }
+
     public int getStrahler() {
         Object attribute = currentChannel.getAttribute(STRAHLERNAME);
+        if (attribute == null) {
+            return -1;
+        } else {
+            return (Integer) attribute;
+        }
+    }
+
+    public String getPfaf() {
+        Object attribute = currentChannel.getAttribute(PFAFNAME);
+        if (attribute == null) {
+            return null;
+        } else {
+            return (String) attribute;
+        }
+    }
+
+    public int getHack() {
+        Object attribute = currentChannel.getAttribute(HACKNAME);
         if (attribute == null) {
             return -1;
         } else {

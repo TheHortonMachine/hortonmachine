@@ -42,7 +42,28 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class TestExtractNetwork extends HMTestCase {
 
+    public static void main( String[] args ) throws Exception {
 
+        String base = "/home/moovida/Dropbox/hydrologis/lavori/2013_04_idrologico_taggia/test_modelli/raster/";
+        String inFlow = base + "basin_merelli_mdrain.asc";
+        String inTca = base + "basin_merelli_tca.asc";
+        String inNet = base + "basin_merelli_net5000.asc";
+        String outHack = base + "basin_merelli_hack.asc";
+        String out = base + "net.shp";
+
+        OmsNetworkAttributesBuilder extract = new OmsNetworkAttributesBuilder();
+        extract.inFlow = OmsRasterReader.readRaster(inFlow);
+        extract.inTca = OmsRasterReader.readRaster(inTca);
+        extract.inNet = OmsRasterReader.readRaster(inNet);
+        extract.doHack = true;
+        extract.process();
+
+        SimpleFeatureCollection net = extract.outNet;
+        OmsVectorWriter.writeVector(out, net);
+        GridCoverage2D hack = extract.outHack;
+        OmsRasterWriter.writeRaster(outHack, hack);
+
+    }
 
     /**
     * Test module with mode=0.

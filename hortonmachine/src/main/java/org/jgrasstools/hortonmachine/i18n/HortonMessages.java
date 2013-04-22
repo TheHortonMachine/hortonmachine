@@ -988,19 +988,6 @@ public class HortonMessages {
     public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "OmsTca exponent for the mode with slope or topographic classes (default = 0.5).";
     public static final String OMSEXTRACTNETWORK_outNet_DESCRIPTION = "The extracted network raster.";
 
-    public static final String OMSSTRAHLER_DESCRIPTION = "Calculates the OmsStrahler order on a basin.";
-    public static final String OMSSTRAHLER_DOCUMENTATION = "";
-    public static final String OMSSTRAHLER_KEYWORDS = "Network, OmsStrahler";
-    public static final String OMSSTRAHLER_LABEL = NETWORK;
-    public static final String OMSSTRAHLER_NAME = "strahler";
-    public static final int OMSSTRAHLER_STATUS = 5;
-    public static final String OMSSTRAHLER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSSTRAHLER_AUTHORNAMES = "Erica Ghesla, Antonello Andrea, Rigon Riccardo";
-    public static final String OMSSTRAHLER_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSSTRAHLER_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSSTRAHLER_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSSTRAHLER_outStrahler_DESCRIPTION = "The map of the strahler order.";
-
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";
     public static final String OMSVARIOGRAM_KEYWORDS = "Experimental semivariogram, OmsKriging, Hydrology";
