@@ -220,9 +220,12 @@ public class CoverageUtilities {
      * 
      * @param template the template to use.
      * @param value the value to set the new raster to, if not <code>null</code>.
+     * @param writableRasterHolder an array of length 1 to place the writable raster in, that 
+     *                  was can be used to populate the coverage. If <code>null</code>, it is ignored.
      * @return the new coverage.
      */
-    public static GridCoverage2D createCoverageFromTemplate( GridCoverage2D template, Double value ) {
+    public static GridCoverage2D createCoverageFromTemplate( GridCoverage2D template, Double value,
+            WritableRaster[] writableRasterHolder ) {
         RegionMap regionMap = getRegionParamsFromGridCoverage(template);
 
         double west = regionMap.getWest();
@@ -243,6 +246,10 @@ public class CoverageUtilities {
                 }
             }
         }
+        if (writableRasterHolder != null) {
+            writableRasterHolder[0] = raster;
+        }
+
         Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west, north
                 - south);
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
