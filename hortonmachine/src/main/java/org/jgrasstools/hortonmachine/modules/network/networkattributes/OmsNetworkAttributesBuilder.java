@@ -122,6 +122,8 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
 
     private WritableRandomIter hackWIter;
 
+    private List<NetworkChannel> channels;
+
     @Execute
     public void process() throws Exception {
         checkNull(inFlow, inNet);
@@ -175,19 +177,16 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         b.setCRS(inFlow.getCoordinateReferenceSystem());
         b.add("the_geom", LineString.class);
         b.add("hack", Integer.class);
-        b.add("strahler", Integer.class);
+        String strahlerName = NetworkChannel.STRAHLERNAME;
+        b.add(strahlerName, Integer.class);
         b.add("pfaf", String.class);
         SimpleFeatureType type = b.buildFeatureType();
         networkBuilder = new SimpleFeatureBuilder(type);
 
-        /*
-         * now start from every exit and run up the flowdirections
-         */
         pm.beginTask("Extract vectors...", exitsList.size());
         for( FlowNode exitNode : exitsList ) {
             /*
              * - first hack order is 1
-             * 
              */
             handleTrail(exitNode, null, 1);
             pm.worked(1);
@@ -196,6 +195,91 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
 
         outNet = FeatureCollections.newCollection();
         outNet.addAll(networkList);
+
+        channels = new ArrayList<NetworkChannel>();
+        for( SimpleFeature network : networkList ) {
+            channels.add(new NetworkChannel(network));
+        }
+        pm.beginTask("Connect channels...", channels.size());
+        for( NetworkChannel channel : channels ) {
+            for( NetworkChannel checkChannel : channels ) {
+                if (channel.equals(checkChannel)) {
+                    continue;
+                }
+                channel.checkAndAdd(checkChannel);
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        // calculate Strahler
+        List<NetworkChannel> sourceChannels = new ArrayList<NetworkChannel>();
+        for( NetworkChannel channel : channels ) {
+            if (channel.isSource()) {
+                sourceChannels.add(channel);
+                // set start
+                channel.setStrahler(1);
+            }
+        }
+
+        List<NetworkChannel> nextsList = new ArrayList<NetworkChannel>();
+        List<NetworkChannel> toKeepList = new ArrayList<NetworkChannel>();
+        while( true ) {
+            sourceChannels.addAll(nextsList);
+            nextsList.clear();
+            sourceChannels.addAll(toKeepList);
+            toKeepList.clear();
+            for( NetworkChannel sourceChannel : sourceChannels ) {
+                NetworkChannel nextChannel = sourceChannel.getNextChannel();
+                if (nextChannel != null) {
+                    if (!nextsList.contains(nextChannel))
+                        nextsList.add(nextChannel);
+                }
+            }
+            if (nextsList.size() == 0) {
+                break;
+            }
+
+            for( NetworkChannel networkChannel : nextsList ) {
+                List<NetworkChannel> previousChannels = networkChannel.getPreviousChannels();
+                if (previousChannels.size() == 0) {
+                    throw new RuntimeException();
+                }
+                int maxStrahler = 0;
+                boolean allEqual = true;
+                int previousStrahler = -1;
+                boolean doContinue = false;
+                for( NetworkChannel channel : previousChannels ) {
+                    int strahler = channel.getStrahler();
+                    if (strahler < 0) {
+                        // has not been set yet, keep it
+                        toKeepList.add(channel);
+                        doContinue = true;
+                        break;
+                    } else {
+                        if (strahler > maxStrahler)
+                            maxStrahler = strahler;
+                        if (previousStrahler > 0) {
+                            // was set already
+                            if (previousStrahler != strahler) {
+                                allEqual = false;
+                            }
+                        }
+                        previousStrahler = strahler;
+                    }
+                }
+                if (doContinue) {
+                    continue;
+                }
+                if (allEqual) {
+                    networkChannel.setStrahler(maxStrahler + 1);
+                } else {
+                    networkChannel.setStrahler(maxStrahler);
+                }
+            }
+
+            sourceChannels.clear();
+        }
 
         if (hackWIter != null) {
             outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
@@ -207,8 +291,10 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         if (startCoordinate != null) {
             lineCoordinatesList.add(startCoordinate);
             // write hack if needed
-            runningNode.setValueInMap(hackWIter, hackIndex);
+            if (doHack)
+                runningNode.setValueInMap(hackWIter, hackIndex);
         }
+        // if there are entering nodes
         while( runningNode.getEnteringNodes().size() > 0 ) {
             int col = runningNode.col;
             int row = runningNode.row;
@@ -219,7 +305,8 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
                 // if a net value is available, then it needs to be vector net
                 lineCoordinatesList.add(coord);
                 // write hack if needed
-                runningNode.setValueInMap(hackWIter, hackIndex);
+                if (doHack)
+                    runningNode.setValueInMap(hackWIter, hackIndex);
             } else {
                 /*
                  * the line is finished 

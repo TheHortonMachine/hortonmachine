@@ -17,14 +17,24 @@
  */
 package org.jgrasstools.hortonmachine.models.hm;
 
+import java.util.HashMap;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.Variables;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
+import org.jgrasstools.hortonmachine.utils.HMTestMaps;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Geometry;
 /**
  * It test the {@link OmsExtractNetwork} module.
  * 
@@ -32,117 +42,90 @@ import org.jgrasstools.hortonmachine.utils.HMTestCase;
  */
 public class TestExtractNetwork extends HMTestCase {
 
-    public static void main( String[] args ) throws Exception {
 
-        String base = "D:/Dropbox/hydrologis/lavori/2012_03_27_finland_forestry/data/grassdata/tm35fin/lidar/cell/";
-        String inFlow = base + "flow";
-        String inTca = base + "tca";
-        String inNet = base + "net_200";
-        String outHack = base + "hack";
-        String out = "D:/TMP/net.shp";
 
-        OmsNetworkAttributesBuilder extract = new OmsNetworkAttributesBuilder();
-        extract.inFlow = OmsRasterReader.readRaster(inFlow);
-        extract.inTca = OmsRasterReader.readRaster(inTca);
-        extract.inNet = OmsRasterReader.readRaster(inNet);
-        extract.process();
+    /**
+    * Test module with mode=0.
+    */
+    public void testExtractNetwork0() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
 
-        SimpleFeatureCollection net = extract.outNet;
-        OmsVectorWriter.writeVector(out, net);
-        GridCoverage2D hack = extract.outHack;
-        OmsRasterWriter.writeRaster(outHack, hack);
+        double[][] flowData = HMTestMaps.flowData;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] tcaData = HMTestMaps.tcaData;
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
 
+        OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
+        extractNetwork.pm = pm;
+        extractNetwork.inFlow = flowCoverage;
+        extractNetwork.inTca = tcaCoverage;
+        extractNetwork.pMode = Variables.TCA;
+        extractNetwork.pThres = 5;
+        extractNetwork.process();
+
+        GridCoverage2D networkCoverage = extractNetwork.outNet;
+        checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet0Data, 0.01);
     }
 
-    // /**
-    // * Test module with mode=0.
-    // */
-    // public void testExtractNetwork0() throws Exception {
-    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-    // CoordinateReferenceSystem crs = HMTestMaps.crs;
-    //
-    // double[][] flowData = HMTestMaps.flowData;
-    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-    // envelopeParams, crs, true);
-    // double[][] tcaData = HMTestMaps.tcaData;
-    // GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams,
-    // crs, true);
-    //
-    // OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
-    // extractNetwork.pm = pm;
-    // extractNetwork.inFlow = flowCoverage;
-    // extractNetwork.inTca = tcaCoverage;
-    // extractNetwork.pMode = Variables.TCA;
-    // extractNetwork.pThres = 5;
-    // extractNetwork.process();
-    //
-    // GridCoverage2D networkCoverage = extractNetwork.outNet;
-    // checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet0Data, 0.01);
-    // }
-    //
-    // /**
-    // * Test module with mode=1.
-    // */
-    // public void testExtractNetwork1() throws Exception {
-    //
-    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-    // CoordinateReferenceSystem crs = HMTestMaps.crs;
-    //
-    // double[][] flowData = HMTestMaps.flowData;
-    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-    // envelopeParams, crs, true);
-    // double[][] tcaData = HMTestMaps.tcaData;
-    // GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams,
-    // crs, true);
-    // double[][] slopeData = HMTestMaps.slopeData;
-    // GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData,
-    // envelopeParams, crs, true);
-    //
-    // OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
-    // extractNetwork.pm = pm;
-    // extractNetwork.inFlow = flowCoverage;
-    // extractNetwork.inTca = tcaCoverage;
-    // extractNetwork.inSlope = slopeCoverage;
-    // extractNetwork.pMode = Variables.TCA_SLOPE;
-    // extractNetwork.pThres = 8;
-    // extractNetwork.process();
-    //
-    // GridCoverage2D networkCoverage = extractNetwork.outNet;
-    //
-    // checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
-    // }
-    //
-    // public void testExtractVectorNetwork() throws Exception {
-    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-    // CoordinateReferenceSystem crs = HMTestMaps.crs;
-    //
-    // double[][] flowData = HMTestMaps.flowData;
-    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-    // envelopeParams, crs, true);
-    // double[][] netData = HMTestMaps.extractNet0Data;
-    // GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams,
-    // crs, true);
-    //
-    // OmsNetworkAttributesBuilder extractNetwork = new OmsNetworkAttributesBuilder();
-    // extractNetwork.pm = pm;
-    // extractNetwork.inFlow = flowCoverage;
-    // extractNetwork.inNet = netCoverage;
-    // extractNetwork.process();
-    // SimpleFeatureCollection networkFC = extractNetwork.outNet;
-    //
-    // FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
-    // while( featureIterator.hasNext() ) {
-    // SimpleFeature feature = featureIterator.next();
-    // Geometry geometry = (Geometry) feature.getDefaultGeometry();
-    // if (geometry.getCoordinates().length > 2) {
-    // assertTrue(geometry
-    // .toText()
-    // .equals("LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)"));
-    // } else {
-    // assertTrue(geometry.toText().startsWith("LINESTRING (1640845 5139885, 1640875 "));
-    // }
-    // }
-    // featureIterator.close();
-    // }
+    /**
+    * Test module with mode=1.
+    */
+    public void testExtractNetwork1() throws Exception {
+
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+
+        double[][] flowData = HMTestMaps.flowData;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] tcaData = HMTestMaps.tcaData;
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
+        double[][] slopeData = HMTestMaps.slopeData;
+        GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs, true);
+
+        OmsExtractNetwork extractNetwork = new OmsExtractNetwork();
+        extractNetwork.pm = pm;
+        extractNetwork.inFlow = flowCoverage;
+        extractNetwork.inTca = tcaCoverage;
+        extractNetwork.inSlope = slopeCoverage;
+        extractNetwork.pMode = Variables.TCA_SLOPE;
+        extractNetwork.pThres = 8;
+        extractNetwork.process();
+
+        GridCoverage2D networkCoverage = extractNetwork.outNet;
+
+        checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
+    }
+
+    public void testExtractVectorNetwork() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+
+        double[][] flowData = HMTestMaps.flowData;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] netData = HMTestMaps.extractNet0Data;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
+
+        OmsNetworkAttributesBuilder extractNetwork = new OmsNetworkAttributesBuilder();
+        extractNetwork.pm = pm;
+        extractNetwork.inFlow = flowCoverage;
+        extractNetwork.inNet = netCoverage;
+        extractNetwork.process();
+        SimpleFeatureCollection networkFC = extractNetwork.outNet;
+
+        FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            if (geometry.getCoordinates().length > 2) {
+                assertTrue(geometry
+                        .toText()
+                        .equals("LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)"));
+            } else {
+                assertTrue(geometry.toText().startsWith("LINESTRING (1640845 5139885, 1640875 "));
+            }
+        }
+        featureIterator.close();
+    }
 
 }
