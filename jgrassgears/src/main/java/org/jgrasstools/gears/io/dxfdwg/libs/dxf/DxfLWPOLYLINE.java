@@ -52,8 +52,8 @@ public class DxfLWPOLYLINE extends DxfENTITY {
         super("DEFAULT");
     }
 
-    public static DxfGroup readEntity( RandomAccessFile raf,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> entities ) throws IOException {
+    public static DxfGroup readEntity( RandomAccessFile raf, FeatureCollection<SimpleFeatureType, SimpleFeature> entities )
+            throws IOException {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(DxfFile.DXF_LINESCHEMA);
         String layer = "";
         String ltype = "";
@@ -110,10 +110,10 @@ public class DxfLWPOLYLINE extends DxfENTITY {
                     group = DxfGroup.readGroup(raf);
                 }
             }
-            if (geomType.equals("LineString")) {
+            if (geomType.equals("LineString") || coordList.size() < 4) {
                 LineString lineString = gF.createLineString(coordList.toCoordinateArray());
-                Object[] values = new Object[]{lineString, layer, ltype, elevation, thickness,
-                        color, text, text_height, text_style};
+                Object[] values = new Object[]{lineString, layer, ltype, elevation, thickness, color, text, text_height,
+                        text_style};
                 builder.addAll(values);
                 StringBuilder featureId = new StringBuilder();
                 featureId.append(DxfFile.DXF_LINESCHEMA.getTypeName());
@@ -123,10 +123,8 @@ public class DxfLWPOLYLINE extends DxfENTITY {
                 entities.add(feature);
             } else if (geomType.equals("Polygon")) {
                 coordList.closeRing();
-                Polygon polygon = gF.createPolygon(gF.createLinearRing(coordList
-                        .toCoordinateArray()), null);
-                Object[] values = new Object[]{polygon, layer, ltype, elevation, thickness, color,
-                        text, text_height, text_style};
+                Polygon polygon = gF.createPolygon(gF.createLinearRing(coordList.toCoordinateArray()), null);
+                Object[] values = new Object[]{polygon, layer, ltype, elevation, thickness, color, text, text_height, text_style};
                 builder.addAll(values);
                 StringBuilder featureId = new StringBuilder();
                 featureId.append(DxfFile.DXF_LINESCHEMA.getTypeName());
@@ -135,6 +133,7 @@ public class DxfLWPOLYLINE extends DxfENTITY {
                 SimpleFeature feature = builder.buildFeature(featureId.toString());
                 entities.add(feature);
             } else {
+                System.out.println("Can't handle geometry type: " + geomType);
             }
         } catch (IOException ioe) {
             throw ioe;
