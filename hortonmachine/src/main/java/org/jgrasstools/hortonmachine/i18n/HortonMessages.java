@@ -235,24 +235,6 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSTIME_inFile_DESCRIPTION = "Properties file containing the time options.";
     public static final String OMSEPANETPARAMETERSTIME_outProperties_DESCRIPTION = "The Properties needed for epanet.";
 
-    public static final String OMSPFAFSTETTER_DESCRIPTION = "Creates a hierarchial form of the network.";
-    public static final String OMSPFAFSTETTER_DOCUMENTATION = "OmsPfafstetter.html";
-    public static final String OMSPFAFSTETTER_KEYWORDS = "Network, OmsPfafstetter";
-    public static final String OMSPFAFSTETTER_LABEL = NETWORK;
-    public static final String OMSPFAFSTETTER_NAME = "pfafstetter";
-    public static final int OMSPFAFSTETTER_STATUS = 5;
-    public static final String OMSPFAFSTETTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSPFAFSTETTER_AUTHORNAMES = "Erica Ghesla, Andrea Antonello, Franceschi Silvia";
-    public static final String OMSPFAFSTETTER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSPFAFSTETTER_inPit_DESCRIPTION = "The map of pitfiller.";
-    public static final String OMSPFAFSTETTER_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSPFAFSTETTER_inHackstream_DESCRIPTION = "The map of hackstream.";
-    public static final String OMSPFAFSTETTER_inNetnum_DESCRIPTION = "The map of netnumbering.";
-    public static final String OMSPFAFSTETTER_inChannel_DESCRIPTION = "The map of channel numbering.";
-    public static final String OMSPFAFSTETTER_inChannelfeatures_DESCRIPTION = "The map of channel features.";
-    public static final String OMSPFAFSTETTER_pMode_DESCRIPTION = "The processing mode (0 = normal, 1 = with channel and channelfeatures map.";
-    public static final String OMSPFAFSTETTER_outPfaf_DESCRIPTION = "The OmsPfafstetter feature collection of the network.";
-
     public static final String OMSHACKLENGTH_DESCRIPTION = "Assigned a point in a basin calculates the distance from the watershed measured along the net (until it exists) and then, again from valley upriver, along the maximal slope.";
     public static final String OMSHACKLENGTH_DOCUMENTATION = "OmsHackLength.html";
     public static final String OMSHACKLENGTH_KEYWORDS = "Network, HackLength3D, HackStream";
