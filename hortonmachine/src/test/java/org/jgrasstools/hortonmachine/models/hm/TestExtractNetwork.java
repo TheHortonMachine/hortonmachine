@@ -18,6 +18,7 @@
 package org.jgrasstools.hortonmachine.models.hm;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -27,7 +28,10 @@ import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureMate;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.hortonmachine.modules.network.extractnetwork.OmsExtractNetwork;
+import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
 import org.jgrasstools.hortonmachine.utils.HMTestMaps;
@@ -118,35 +122,59 @@ public class TestExtractNetwork extends HMTestCase {
         checkMatrixEqual(networkCoverage.getRenderedImage(), HMTestMaps.extractNet1Data, 0.01);
     }
 
-    public void testExtractVectorNetwork() throws Exception {
+    public void testOmsNetworkAttributesBuilder() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
 
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] tcaData = HMTestMaps.tcaData;
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet0Data;
         GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
 
         OmsNetworkAttributesBuilder extractNetwork = new OmsNetworkAttributesBuilder();
         extractNetwork.pm = pm;
         extractNetwork.inFlow = flowCoverage;
+        extractNetwork.inTca = tcaCoverage;
         extractNetwork.inNet = netCoverage;
         extractNetwork.process();
         SimpleFeatureCollection networkFC = extractNetwork.outNet;
 
-        FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
-        while( featureIterator.hasNext() ) {
-            SimpleFeature feature = featureIterator.next();
-            Geometry geometry = (Geometry) feature.getDefaultGeometry();
-            if (geometry.getCoordinates().length > 2) {
-                assertTrue(geometry
-                        .toText()
-                        .equals("LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)"));
+        List<FeatureMate> matesList = FeatureUtilities.featureCollectionToMatesList(networkFC);
+        for( FeatureMate featureMate : matesList ) {
+            if (featureMate.getAttribute(NetworkChannel.PFAFNAME, String.class).equals("1")) {
+                assertEquals(1, featureMate.getAttribute(NetworkChannel.HACKNAME, Integer.class).intValue());
+                assertEquals(2, featureMate.getAttribute(NetworkChannel.STRAHLERNAME, Integer.class).intValue());
+                assertEquals(
+                        "LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)",
+                        featureMate.getGeometry().toText());
+            } else if (featureMate.getAttribute(NetworkChannel.PFAFNAME, String.class).equals("3")) {
+                assertEquals(1, featureMate.getAttribute(NetworkChannel.HACKNAME, Integer.class).intValue());
+                assertEquals(1, featureMate.getAttribute(NetworkChannel.STRAHLERNAME, Integer.class).intValue());
+                assertEquals("LINESTRING (1640845 5139885, 1640875 5139885)", featureMate.getGeometry().toText());
+            } else if (featureMate.getAttribute(NetworkChannel.PFAFNAME, String.class).equals("2.1")) {
+                assertEquals(2, featureMate.getAttribute(NetworkChannel.HACKNAME, Integer.class).intValue());
+                assertEquals(1, featureMate.getAttribute(NetworkChannel.STRAHLERNAME, Integer.class).intValue());
+                assertEquals("LINESTRING (1640845 5139885, 1640875 5139915)", featureMate.getGeometry().toText());
             } else {
-                assertTrue(geometry.toText().startsWith("LINESTRING (1640845 5139885, 1640875 "));
+                throw new RuntimeException();
             }
         }
-        featureIterator.close();
+
+        // FeatureIterator<SimpleFeature> featureIterator = networkFC.features();
+        // while( featureIterator.hasNext() ) {
+        // SimpleFeature feature = featureIterator.next();
+        // Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        // if (geometry.getCoordinates().length > 2) {
+        // assertTrue(geometry
+        // .toText()
+        // .equals("LINESTRING (1640695 5139915, 1640725 5139885, 1640755 5139885, 1640785 5139885, 1640815 5139885, 1640845 5139885)"));
+        // } else {
+        // assertTrue(geometry.toText().startsWith("LINESTRING (1640845 5139885, 1640875 "));
+        // }
+        // }
+        // featureIterator.close();
     }
 
 }

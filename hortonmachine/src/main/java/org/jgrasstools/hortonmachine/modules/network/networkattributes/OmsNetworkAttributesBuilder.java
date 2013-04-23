@@ -126,7 +126,7 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFlow, inNet);
+        checkNull(inFlow, inNet, inTca);
         if (!concatOr(outNet == null, doReset)) {
             return;
         }
@@ -136,9 +136,7 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         gridGeometry = inFlow.getGridGeometry();
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlow);
-        if (inTca != null) {
-            tcaIter = CoverageUtilities.getRandomIterator(inTca);
-        }
+        tcaIter = CoverageUtilities.getRandomIterator(inTca);
         netIter = CoverageUtilities.getRandomIterator(inNet);
 
         WritableRaster hackWR = null;
@@ -224,6 +222,14 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         /*
          * calculate pfaf
          */
+        calculatePfafstetter();
+
+        if (hackWIter != null) {
+            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        }
+    }
+
+    private void calculatePfafstetter() {
         for( int i = 1; i <= maxHack; i++ ) {
             // find a channel of that order
             List<NetworkChannel> startChannels = new ArrayList<NetworkChannel>();
@@ -269,10 +275,6 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
                 }
 
             }
-        }
-
-        if (hackWIter != null) {
-            outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
         }
     }
 
