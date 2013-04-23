@@ -723,6 +723,7 @@ public class HortonMessages {
     public static final String OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION = "The network raster map.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION = "The map of flowdirections.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION = "The map of tca.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION = "The optional map of elevation to add start/end elevation.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION = "Flag to also create the hack map.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION = "The vector of the network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION = "The map of hack numbering.";

@@ -115,10 +115,10 @@ public class NetworkChannel {
         Coordinate currentFirst = currentCoordinates[0];
         Coordinate currentLast = currentCoordinates[currentCoordinates.length - 1];
 
-        if (first.equals(currentLast)) {
+        if (last.equals(currentFirst)) {
             addPrevious(checkChannel);
         }
-        if (last.equals(currentFirst)) {
+        if (first.equals(currentLast)) {
             setNext(checkChannel);
         }
     }

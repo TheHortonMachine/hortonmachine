@@ -27,12 +27,14 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIB
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_STATUS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION;
 
+import java.awt.geom.Point2D;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +63,7 @@ import org.jgrasstools.gears.libs.modules.FlowNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.Node;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
@@ -70,6 +73,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 
 @Description(OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION)
 @Author(name = OMSNETWORKATTRIBUTESBUILDER_AUTHORNAMES, contact = OMSNETWORKATTRIBUTESBUILDER_AUTHORCONTACTS)
@@ -91,6 +95,10 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
     @Description(OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION)
     @In
     public GridCoverage2D inTca = null;
+
+    @Description(OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION)
+    @In
+    public GridCoverage2D inDem = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION)
     @In
@@ -178,7 +186,11 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         b.add(hackName, Integer.class);
         String strahlerName = NetworkChannel.STRAHLERNAME;
         b.add(strahlerName, Integer.class);
-        b.add("pfaf", String.class);
+        b.add(NetworkChannel.PFAFNAME, String.class);
+        if (inDem != null) {
+            b.add("startelev", Double.class);
+            b.add("endelev", Double.class);
+        }
         SimpleFeatureType type = b.buildFeatureType();
         networkBuilder = new SimpleFeatureBuilder(type);
 
@@ -217,12 +229,16 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         /*
          * calculate strahler
          */
+        pm.beginTask("Calculate Strahler...", IJGTProgressMonitor.UNKNOWN);
         calculateStrahler();
+        pm.done();
 
         /*
          * calculate pfaf
          */
+        pm.beginTask("Calculate Pfafstetter...", IJGTProgressMonitor.UNKNOWN);
         calculatePfafstetter();
+        pm.done();
 
         if (hackWIter != null) {
             outHack = CoverageUtilities.buildCoverage("hack", hackWR, regionMap, inFlow.getCoordinateReferenceSystem());
@@ -436,7 +452,23 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
             maxHack = hackindex;
         }
         LineString newNetLine = gf.createLineString(lineCoordinatesList.toArray(new Coordinate[0]));
-        Object[] values = new Object[]{newNetLine, hackindex, 0, "-"};
+        newNetLine = (LineString) newNetLine.reverse();
+        Object[] values;
+        if (inDem == null) {
+            values = new Object[]{newNetLine, hackindex, 0, "-"};
+        } else {
+            Point startPoint = newNetLine.getStartPoint();
+            Point endPoint = newNetLine.getEndPoint();
+            Point2D p = new Point2D.Double();
+            double[] value = new double[1];
+            p.setLocation(startPoint.getX(), startPoint.getY());
+            inDem.evaluate(p, value);
+            double startElev = value[0];
+            p.setLocation(endPoint.getX(), endPoint.getY());
+            inDem.evaluate(p, value);
+            double endElev = value[0];
+            values = new Object[]{newNetLine, hackindex, 0, "-", startElev, endElev};
+        }
         networkBuilder.addAll(values);
         SimpleFeature netFeature = networkBuilder.buildFeature(null);
         synchronized (networkList) {
