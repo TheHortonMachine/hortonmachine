@@ -76,6 +76,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
@@ -275,7 +276,8 @@ public class OmsAdige extends JGTModel {
             outSubdischarge = new HashMap<Integer, double[]>();
 
             startTimestamp = adigeFormatter.parseDateTime(tStart);
-            endTimestamp = adigeFormatter.parseDateTime(tEnd);
+            if (tEnd != null)
+                endTimestamp = adigeFormatter.parseDateTime(tEnd);
 
             currentTimstamp = startTimestamp;
 
@@ -289,7 +291,7 @@ public class OmsAdige extends JGTModel {
                 }
             }
 
-            if (pPfafids == null) {
+            if (pfaffsList == null) {
                 // first time link basins with network
                 linkBasinWithNetwork();
             }
@@ -430,7 +432,11 @@ public class OmsAdige extends JGTModel {
             SimpleFeatureIterator netFeatures = inNetwork.features();
             while( netFeatures.hasNext() ) {
                 SimpleFeature nFeature = netFeatures.next();
-                LineString nLine = (LineString) nFeature.getDefaultGeometry();
+                Geometry geometry = (Geometry) nFeature.getDefaultGeometry();
+                if (geometry.getNumGeometries() != 1) {
+                    throw new ModelsRuntimeException("The network geometries have to be single lines.", this);
+                }
+                LineString nLine = (LineString) geometry.getGeometryN(0);
                 Point startPoint = nLine.getStartPoint();
                 if (preparedHGeometry.contains(startPoint)) {
                     SimpleFeature extendFeature = fExt.extendFeature(nFeature, new Object[]{netNum});
