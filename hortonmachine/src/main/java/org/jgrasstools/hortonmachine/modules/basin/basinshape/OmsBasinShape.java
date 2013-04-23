@@ -66,6 +66,7 @@ import org.jgrasstools.gears.libs.modules.ModelsSupporter;
 import org.jgrasstools.gears.modules.v.vectorize.OmsVectorizer;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -147,14 +148,16 @@ public class OmsBasinShape extends JGTModel {
         // add some properties
         b.add("area", Float.class); //$NON-NLS-1$
         b.add("perimeter", Float.class); //$NON-NLS-1$
-        b.add("netnum", Integer.class); //$NON-NLS-1$
-        b.add("maxZ", Float.class); //$NON-NLS-1$
-        b.add("minZ", Float.class); //$NON-NLS-1$
-        b.add("avgZ", Float.class); //$NON-NLS-1$
-        b.add("height", Float.class); //$NON-NLS-1$
+        b.add(NetworkChannel.NETNUMNAME, Integer.class); //$NON-NLS-1$
+        b.add("maxelev", Float.class); //$NON-NLS-1$
+        b.add("minelev", Float.class); //$NON-NLS-1$
+        b.add("avgelev", Float.class); //$NON-NLS-1$
+        b.add(NetworkChannel.BARICENTERELEVNAME, Float.class); //$NON-NLS-1$
 
         // build the type
         SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        
         outBasins = FeatureCollections.newCollection();
 
         // for each stream correct problems with basins and create geometries
@@ -293,8 +296,6 @@ public class OmsBasinShape extends JGTModel {
                 subbasinIter.done();
                 subbasinsWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-                // create the feature
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                 // add the values
                 builder.addAll(values);
                 // build the feature with provided ID

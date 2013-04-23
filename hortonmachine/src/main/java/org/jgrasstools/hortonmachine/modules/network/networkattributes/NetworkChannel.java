@@ -34,6 +34,10 @@ public class NetworkChannel {
     public static final String PFAFNAME = "pfaf";
     public static final String STRAHLERNAME = "strahler";
     public static final String HACKNAME = "hack";
+    public static final String STARTELEVNAME = "startelev";
+    public static final String ENDELEVNAME = "endelev";
+    public static final String NETNUMNAME = "netnum";
+    public static final String BARICENTERELEVNAME = "height"; // TODO
 
     private NetworkChannel nextChannel;
     private List<NetworkChannel> previousChannels = new ArrayList<NetworkChannel>();

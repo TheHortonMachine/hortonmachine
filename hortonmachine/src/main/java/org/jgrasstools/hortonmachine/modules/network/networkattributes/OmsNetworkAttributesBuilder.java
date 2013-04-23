@@ -188,8 +188,8 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         b.add(strahlerName, Integer.class);
         b.add(NetworkChannel.PFAFNAME, String.class);
         if (inDem != null) {
-            b.add("startelev", Double.class);
-            b.add("endelev", Double.class);
+            b.add(NetworkChannel.STARTELEVNAME, Double.class);
+            b.add(NetworkChannel.ENDELEVNAME, Double.class);
         }
         SimpleFeatureType type = b.buildFeatureType();
         networkBuilder = new SimpleFeatureBuilder(type);

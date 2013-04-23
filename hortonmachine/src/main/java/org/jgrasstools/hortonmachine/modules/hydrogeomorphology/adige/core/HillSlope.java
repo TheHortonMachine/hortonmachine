@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -55,28 +56,13 @@ public class HillSlope implements IHillSlope {
 
     private double baricenterElevation = -1;
 
-    private int baricenterElevationAttributeIndex = -1;
-    private int linkStartElevationAttributeIndex = -1;
-    private int linkEndElevationAttributeIndex = -1;
 
-    public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature, PfafstetterNumber pfafNumber, int hillslopeId,
-            int baricenterElevationFieldIndex, int linkStartElevationFieldIndex, int linkEndElevationFieldIndex ) {
+    public HillSlope( SimpleFeature netFeature, SimpleFeature basinFeature, PfafstetterNumber pfafNumber, int hillslopeId ) {
 
         this.hillslopeId = hillslopeId;
         this.hillslopeFeature = basinFeature;
         this.linkFeature = netFeature;
         this.pfafstetterNumber = pfafNumber;
-        this.baricenterElevationAttributeIndex = baricenterElevationFieldIndex;
-        this.linkStartElevationAttributeIndex = linkStartElevationFieldIndex;
-        this.linkEndElevationAttributeIndex = linkEndElevationFieldIndex;
-
-        if (baricenterElevationAttributeIndex == -1) {
-            throw new IllegalArgumentException("The baricenter field index can't be -1.");
-        }
-        // HashMap<Integer, Double> laiMap,
-        // HashMap<Integer, Double> displacementMap,
-        // HashMap<Integer, Double> roughnessMap,
-        // double RGL, double ra, double rs, double rarc
 
         rn = new Random();
     }
@@ -111,8 +97,8 @@ public class HillSlope implements IHillSlope {
     public double getLinkSlope() {
         if ((int) linkSlope == -1) {
             // hillslopeFeature.getAttribute(baricenterElevationAttribute);
-            double startElev = (Double) linkFeature.getAttribute(linkStartElevationAttributeIndex);
-            double endElev = (Double) linkFeature.getAttribute(linkEndElevationAttributeIndex);
+            double startElev = (Double) linkFeature.getAttribute(NetworkChannel.STARTELEVNAME);
+            double endElev = (Double) linkFeature.getAttribute(NetworkChannel.ENDELEVNAME);
             linkSlope = (startElev - endElev) / getLinkLength();
 
             if (linkSlope <= 0) {
@@ -168,7 +154,7 @@ public class HillSlope implements IHillSlope {
      */
     public double getBaricenterElevation() {
         if (baricenterElevation == -1) {
-            baricenterElevation = (Double) hillslopeFeature.getAttribute(baricenterElevationAttributeIndex);
+            baricenterElevation = (Double) hillslopeFeature.getAttribute(NetworkChannel.BARICENTERELEVNAME);
         }
         return baricenterElevation;
     }

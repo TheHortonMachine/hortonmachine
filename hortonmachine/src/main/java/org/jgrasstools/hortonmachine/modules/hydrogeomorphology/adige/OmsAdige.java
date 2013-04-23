@@ -28,12 +28,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_LICENSE
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_STATUS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_doLog_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fBaricenter_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fMonpointid_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetelevend_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetelevstart_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fNetnum_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_fPfaff_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDams_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDamsdata_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSADIGE_inDuffyInput_DESCRIPTION;
@@ -77,10 +72,13 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.features.FeatureExtender;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Dams;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Hydrometers;
@@ -94,10 +92,16 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.Duff
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodAdigeEngine;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.hymod.HymodInputs;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
+import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description(OMSADIGE_DESCRIPTION)
 @Author(name = OMSADIGE_AUTHORNAMES, contact = OMSADIGE_AUTHORCONTACTS)
@@ -111,14 +115,6 @@ public class OmsAdige extends JGTModel {
     @Description(OMSADIGE_inHillslope_DESCRIPTION)
     @In
     public SimpleFeatureCollection inHillslope;
-
-    @Description(OMSADIGE_fNetnum_DESCRIPTION)
-    @In
-    public String fNetnum = null;
-
-    @Description(OMSADIGE_fBaricenter_DESCRIPTION)
-    @In
-    public String fBaricenter = null;
 
     @Description(OMSADIGE_pRainintensity_DESCRIPTION)
     @Unit("mm/h")
@@ -179,18 +175,6 @@ public class OmsAdige extends JGTModel {
     @Description(OMSADIGE_inNetwork_DESCRIPTION)
     @In
     public SimpleFeatureCollection inNetwork;
-
-    @Description(OMSADIGE_fPfaff_DESCRIPTION)
-    @In
-    public String fPfaff = null;
-
-    @Description(OMSADIGE_fNetelevstart_DESCRIPTION)
-    @In
-    public String fNetelevstart = null;
-
-    @Description(OMSADIGE_fNetelevend_DESCRIPTION)
-    @In
-    public String fNetelevend = null;
 
     @Description(OMSADIGE_inEtp_DESCRIPTION)
     @In
@@ -284,6 +268,7 @@ public class OmsAdige extends JGTModel {
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
+        checkNull(inHillslope, inNetwork);
 
         if (startTimestamp == null) {
             outDischarge = new HashMap<Integer, double[]>();
@@ -304,165 +289,17 @@ public class OmsAdige extends JGTModel {
                 }
             }
 
-            if (fNetnum == null || fNetnum.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing net num attribute name.", this.getClass().getSimpleName());
-            }
-            if (fPfaff == null || fPfaff.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing pfafstetter attribute name.", this);
-            }
-            if (fMonpointid == null || fMonpointid.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing monitoring point id attribute name.", this.getClass()
-                        .getSimpleName());
-            }
-            if (fBaricenter == null || fBaricenter.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing basin centroid attribute name.", this);
-            }
-            if (fNetelevstart == null || fNetelevstart.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing start net elevation attribute name.", this.getClass()
-                        .getSimpleName());
-            }
-            if (fNetelevend == null || fNetelevend.length() < 1) {
-                throw new ModelsIllegalargumentException("Missing start net elevation attribute name.", this.getClass()
-                        .getSimpleName());
+            if (pPfafids == null) {
+                // first time link basins with network
+                linkBasinWithNetwork();
             }
 
-            // hydrometers
-            if (inHydrometers != null && inHydrometerdata != null) {
-                if (hydrometersHandler == null) {
-                    pm.message("Reading hydrometers geometries and mapping them to the network...");
-                    hydrometer_pfaff2idMap = new HashMap<String, Integer>();
-                    hydrometersHandler = new Hydrometers(hydrometer_pfaff2idMap);
-
-                    FeatureIterator<SimpleFeature> hydrometersIterator = inHydrometers.features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( hydrometersIterator.hasNext() ) {
-                        SimpleFeature hydrometer = hydrometersIterator.next();
-                        if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = hydrometer.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the pafaffstetter attribute field: " + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The hydrometer features are missing the id attribute field: " + fMonpointid, this);
-                            }
-                        }
-
-                        String pNumberStr = (String) hydrometer.getAttribute(pfaffIndex);
-                        int id = ((Number) hydrometer.getAttribute(monIdIndex)).intValue();
-                        hydrometer_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-            }
-
-            // dams
-            if (inDams != null && inDamsdata != null) {
-                if (damsHandler == null) {
-                    pm.message("Reading dams geometries and mapping them to the network...");
-                    dams_pfaff2idMap = new HashMap<String, Integer>();
-                    damsHandler = new Dams(dams_pfaff2idMap);
-
-                    FeatureIterator<SimpleFeature> damsIterator = inDams.features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( damsIterator.hasNext() ) {
-                        SimpleFeature dam = damsIterator.next();
-                        if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = dam.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The dams features are missing the pfaffstetter attribute field: " + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException("The dams features are missing the id attribute field: "
-                                        + fMonpointid, this);
-                            }
-                        }
-
-                        String pNumberStr = (String) dam.getAttribute(pfaffIndex);
-                        int id = ((Number) dam.getAttribute(monIdIndex)).intValue();
-                        dams_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-            }
-
-            // tributary
-            if (inTributary != null && inTributarydata != null) {
-                if (tributaryHandler == null) {
-                    pm.message("Reading tributary geometries and mapping them to the network...");
-                    tributary_pfaff2idMap = new HashMap<String, Integer>();
-                    tributaryHandler = new Tributaries(tributary_pfaff2idMap);
-
-                    FeatureIterator<SimpleFeature> tributaryIterator = inTributary.features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( tributaryIterator.hasNext() ) {
-                        SimpleFeature tributary = tributaryIterator.next();
-                        if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = tributary.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the pfaffstetter attribute field: " + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The tributary features are missing the id attribute field: " + fMonpointid, this);
-                            }
-                        }
-
-                        String pNumberStr = (String) tributary.getAttribute(pfaffIndex);
-                        int id = ((Number) tributary.getAttribute(monIdIndex)).intValue();
-                        tributary_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-            }
-
-            // offtakes
-            if (inOfftakes != null && inOfftakesdata != null) {
-                if (offtakesHandler == null) {
-                    pm.message("Reading offtakes geometries and mapping them to the network...");
-                    offtakes_pfaff2idMap = new HashMap<String, Integer>();
-                    offtakesHandler = new Offtakes(offtakes_pfaff2idMap, pm);
-
-                    FeatureIterator<SimpleFeature> offtakesIterator = inOfftakes.features();
-                    int pfaffIndex = -1;
-                    int monIdIndex = -1;
-                    while( offtakesIterator.hasNext() ) {
-                        SimpleFeature offtakes = offtakesIterator.next();
-                        if (pfaffIndex == -1) {
-                            SimpleFeatureType featureType = offtakes.getFeatureType();
-                            pfaffIndex = featureType.indexOf(fPfaff);
-                            if (pfaffIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the pfaffstetter attribute field: " + fPfaff, this);
-                            }
-                            monIdIndex = featureType.indexOf(fMonpointid);
-                            if (monIdIndex == -1) {
-                                throw new ModelsIllegalargumentException(
-                                        "The offtakes features are missing the id attribute field: " + fMonpointid, this);
-                            }
-                        }
-
-                        String pNumberStr = (String) offtakes.getAttribute(pfaffIndex);
-                        int id = ((Number) offtakes.getAttribute(monIdIndex)).intValue();
-                        offtakes_pfaff2idMap.put(pNumberStr, id);
-                    }
-                }
-            }
+            prepareMonitoringPoints();
 
             hillsSlopeNum = inHillslope.size();
 
             // at the first round create the hillslopes and network hierarchy
-            orderedHillslopes = AdigeUtilities.generateHillSlopes(inNetwork, inHillslope, fNetnum, fPfaff, fNetelevstart,
-                    fNetelevend, fBaricenter, pm);
+            orderedHillslopes = AdigeUtilities.generateHillSlopes(inNetwork, inHillslope, pm);
             if (inDuffyInput != null) {
                 List<IHillSlope> duffyHillslopes = new ArrayList<IHillSlope>();
                 for( IHillSlope hillSlope : orderedHillslopes ) {
@@ -576,6 +413,112 @@ public class OmsAdige extends JGTModel {
 
         initialConditions = adigeEngine.solve(currentTimstamp, tTimestep, 1, initialConditions, rainArray, etpArray);
 
+    }
+
+    private void linkBasinWithNetwork() throws Exception {
+        FeatureExtender fExt = new FeatureExtender(inNetwork.getSchema(), new String[]{NetworkChannel.NETNUMNAME},
+                new Class[]{Integer.class});
+
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+
+        SimpleFeatureIterator hillslopeFeatures = inHillslope.features();
+        while( hillslopeFeatures.hasNext() ) {
+            SimpleFeature hFeature = hillslopeFeatures.next();
+            Object netNum = hFeature.getAttribute(NetworkChannel.NETNUMNAME);
+            Geometry hGeometry = (Geometry) hFeature.getDefaultGeometry();
+            PreparedGeometry preparedHGeometry = PreparedGeometryFactory.prepare(hGeometry);
+            SimpleFeatureIterator netFeatures = inNetwork.features();
+            while( netFeatures.hasNext() ) {
+                SimpleFeature nFeature = netFeatures.next();
+                LineString nLine = (LineString) nFeature.getDefaultGeometry();
+                Point startPoint = nLine.getStartPoint();
+                if (preparedHGeometry.contains(startPoint)) {
+                    SimpleFeature extendFeature = fExt.extendFeature(nFeature, new Object[]{netNum});
+                    newCollection.add(extendFeature);
+                    break;
+                }
+            }
+        }
+        inNetwork = newCollection;
+    }
+
+    private void prepareMonitoringPoints() {
+        if (inHydrometers != null || inDams != null || inTributary != null || inOfftakes != null) {
+            if (fMonpointid == null || fMonpointid.length() < 1) {
+                throw new ModelsIllegalargumentException("Missing monitoring point id attribute name.", this.getClass()
+                        .getSimpleName());
+            }
+        }
+
+        // hydrometers
+        if (inHydrometers != null && inHydrometerdata != null) {
+            if (hydrometersHandler == null) {
+                pm.message("Reading hydrometers geometries and mapping them to the network...");
+                hydrometer_pfaff2idMap = new HashMap<String, Integer>();
+                hydrometersHandler = new Hydrometers(hydrometer_pfaff2idMap);
+
+                FeatureIterator<SimpleFeature> hydrometersIterator = inHydrometers.features();
+                while( hydrometersIterator.hasNext() ) {
+                    SimpleFeature hydrometer = hydrometersIterator.next();
+
+                    String pNumberStr = (String) hydrometer.getAttribute(NetworkChannel.PFAFNAME);
+                    int id = ((Number) hydrometer.getAttribute(fMonpointid)).intValue();
+                    hydrometer_pfaff2idMap.put(pNumberStr, id);
+                }
+            }
+        }
+
+        // dams
+        if (inDams != null && inDamsdata != null) {
+            if (damsHandler == null) {
+                pm.message("Reading dams geometries and mapping them to the network...");
+                dams_pfaff2idMap = new HashMap<String, Integer>();
+                damsHandler = new Dams(dams_pfaff2idMap);
+
+                FeatureIterator<SimpleFeature> damsIterator = inDams.features();
+                while( damsIterator.hasNext() ) {
+                    SimpleFeature dam = damsIterator.next();
+
+                    String pNumberStr = (String) dam.getAttribute(NetworkChannel.PFAFNAME);
+                    int id = ((Number) dam.getAttribute(fMonpointid)).intValue();
+                    dams_pfaff2idMap.put(pNumberStr, id);
+                }
+            }
+        }
+
+        // tributary
+        if (inTributary != null && inTributarydata != null) {
+            if (tributaryHandler == null) {
+                pm.message("Reading tributary geometries and mapping them to the network...");
+                tributary_pfaff2idMap = new HashMap<String, Integer>();
+                tributaryHandler = new Tributaries(tributary_pfaff2idMap);
+
+                FeatureIterator<SimpleFeature> tributaryIterator = inTributary.features();
+                while( tributaryIterator.hasNext() ) {
+                    SimpleFeature tributary = tributaryIterator.next();
+                    String pNumberStr = (String) tributary.getAttribute(NetworkChannel.PFAFNAME);
+                    int id = ((Number) tributary.getAttribute(fMonpointid)).intValue();
+                    tributary_pfaff2idMap.put(pNumberStr, id);
+                }
+            }
+        }
+
+        // offtakes
+        if (inOfftakes != null && inOfftakesdata != null) {
+            if (offtakesHandler == null) {
+                pm.message("Reading offtakes geometries and mapping them to the network...");
+                offtakes_pfaff2idMap = new HashMap<String, Integer>();
+                offtakesHandler = new Offtakes(offtakes_pfaff2idMap, pm);
+
+                FeatureIterator<SimpleFeature> offtakesIterator = inOfftakes.features();
+                while( offtakesIterator.hasNext() ) {
+                    SimpleFeature offtakes = offtakesIterator.next();
+                    String pNumberStr = (String) offtakes.getAttribute(NetworkChannel.PFAFNAME);
+                    int id = ((Number) offtakes.getAttribute(fMonpointid)).intValue();
+                    offtakes_pfaff2idMap.put(pNumberStr, id);
+                }
+            }
+        }
     }
 
     private void setDataArray( HashMap<Integer, double[]> dataMap, double[] endArray ) {

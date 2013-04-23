@@ -1513,8 +1513,8 @@ public class GearsMessages {
     public static final String OMSTIMESERIESITERATORREADER_tCurrent_DESCRIPTION = "The current time read (format: yyyy-MM-dd HH:mm ).";
     public static final String OMSTIMESERIESITERATORREADER_tPrevious_DESCRIPTION = "The previous time read (format: yyyy-MM-dd HH:mm ).";
     public static final String OMSTIMESERIESITERATORREADER_outData_DESCRIPTION = "The read map of ids and values.";
-    public static final String OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION = "The time at which start to read (format: yyyy-MM-dd HH:mm ).";
-    public static final String OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION = "The time at which end to read (format: yyyy-MM-dd HH:mm ).";
+    public static final String OMSTIMESERIESITERATORREADER_tStart_DESCRIPTION = "The optional time at which start to read (format: yyyy-MM-dd HH:mm ).";
+    public static final String OMSTIMESERIESITERATORREADER_tEnd_DESCRIPTION = "The optional time at which end to read (format: yyyy-MM-dd HH:mm ).";
     public static final String OMSTIMESERIESITERATORREADER_tTimestep_DESCRIPTION = "The reading timestep in minutes.";
 
     public static final String OMSPOINTDIRECTIONCALCULATOR_DESCRIPTION = "Calculates the direction of maximum slope for a source point on a dem.";

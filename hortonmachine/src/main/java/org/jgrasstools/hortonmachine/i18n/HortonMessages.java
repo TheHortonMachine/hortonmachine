@@ -868,8 +868,6 @@ public class HortonMessages {
     public static final String OMSADIGE_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSADIGE_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSADIGE_inHillslope_DESCRIPTION = "The hillslope data.";
-    public static final String OMSADIGE_fNetnum_DESCRIPTION = "The field name of the netnum attribute in the hillslope data.";
-    public static final String OMSADIGE_fBaricenter_DESCRIPTION = "The a field name of the baricenter elevation attribute in the hillslope data.";
     public static final String OMSADIGE_inRain_DESCRIPTION = "The rainfall data.";
     public static final String OMSADIGE_inHydrometers_DESCRIPTION = "The hydrometers monitoring points.";
     public static final String OMSADIGE_inHydrometerdata_DESCRIPTION = "The hydrometers data.";
@@ -882,9 +880,6 @@ public class HortonMessages {
     public static final String OMSADIGE_pPfafids_DESCRIPTION = "Comma separated list of pfafstetter ids, in which to generate the output";
     public static final String OMSADIGE_fMonpointid_DESCRIPTION = "The field name of the monitoring point's id attribute in the monitoring points data.";
     public static final String OMSADIGE_inNetwork_DESCRIPTION = "The network data.";
-    public static final String OMSADIGE_fPfaff_DESCRIPTION = "The field name of the pfafstetter enumeration attribute in the network data.";
-    public static final String OMSADIGE_fNetelevstart_DESCRIPTION = "The field name of the elevation of the starting point of a link in the network data.";
-    public static final String OMSADIGE_fNetelevend_DESCRIPTION = "The field name of the elevation of the end point of a link in the network data.";
     public static final String OMSADIGE_inEtp_DESCRIPTION = "The evapotranspiration data.";
     public static final String OMSADIGE_doLog_DESCRIPTION = "Switch to activate additional logging to file.";
     public static final String OMSADIGE_tTimestep_DESCRIPTION = "The timestep in minutes.";
