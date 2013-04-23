@@ -101,7 +101,6 @@
 //        reader.tTimestep = 60;
 //        // reader.tEnd = "2000-01-01 00:00";
 //        reader.fileNovalue = "-9999";
-//
 //        reader.initProcess();
 //
 //        OmsKriging kriging = new OmsKriging();

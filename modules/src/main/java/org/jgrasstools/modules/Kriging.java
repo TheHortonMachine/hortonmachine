@@ -59,10 +59,12 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.feature.FeatureCollection;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsKriging;
 
 @Description(OMSKRIGING_DESCRIPTION)
@@ -79,6 +81,21 @@ public class Kriging extends JGTModel {
     @In
     public String inStations = null;
 
+    @Description(OMSKRIGING_inData_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inData = null;
+
+    @Description(OMSKRIGING_inInterpolate_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inInterpolate = null;
+
+    @Description(OMSKRIGING_inInterpolationGrid_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inInterpolationGrid = null;
+
     @Description(OMSKRIGING_fStationsid_DESCRIPTION)
     @In
     public String fStationsid = null;
@@ -86,15 +103,6 @@ public class Kriging extends JGTModel {
     @Description(OMSKRIGING_fStationsZ_DESCRIPTION)
     @In
     public String fStationsZ = null;
-
-    @Description(OMSKRIGING_inData_DESCRIPTION)
-    @In
-    public HashMap<Integer, double[]> inData = null;
-
-    @Description(OMSKRIGING_inInterpolate_DESCRIPTION)
-    @UI(JGTConstants.FILEOUT_UI_HINT)
-    @In
-    public String inInterpolate = null;
 
     @Description(OMSKRIGING_fInterpolateid_DESCRIPTION)
     @In
@@ -145,10 +153,6 @@ public class Kriging extends JGTModel {
     @In
     public boolean doLogarithmic = false;
 
-    @Description(OMSKRIGING_inInterpolationGrid_DESCRIPTION)
-    @In
-    public GridGeometry2D inInterpolationGrid = null;
-
     public int defaultVariogramMode = 0;
 
     @Description(OMSKRIGING_pSemivariogramType_DESCRIPTION)
@@ -172,20 +176,31 @@ public class Kriging extends JGTModel {
     public double pNug;
 
     @Description(OMSKRIGING_outGrid_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outGrid = null;
 
     @Description(OMSKRIGING_outData_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Out
-    public HashMap<Integer, double[]> outData = null;
+    public String outData = null;
 
     @Execute
     public void process() throws Exception {
+
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
+        reader.file = inData;
+        reader.idfield = fStationsid;
+        // reader.tStart = "2000-01-01 00:00";
+        // reader.tTimestep = 60;
+        // reader.tEnd = "2000-01-01 00:00";
+        reader.fileNovalue = "-9999";
+        reader.initProcess();
+
         OmsKriging kriging = new OmsKriging();
         kriging.inStations = getVector(inStations);
         kriging.fStationsid = fStationsid;
         kriging.fStationsZ = fStationsZ;
-        kriging.inData = inData;
         kriging.inInterpolate = getVector(inInterpolate);
         kriging.fInterpolateid = fInterpolateid;
         kriging.fPointZ = fPointZ;
@@ -193,7 +208,10 @@ public class Kriging extends JGTModel {
         kriging.pIntegralscale = pIntegralscale;
         kriging.pVariance = pVariance;
         kriging.doLogarithmic = doLogarithmic;
-        kriging.inInterpolationGrid = inInterpolationGrid;
+        GridCoverage2D interpolationGrid = getRaster(inInterpolationGrid);
+        if (interpolationGrid != null) {
+            kriging.inInterpolationGrid = interpolationGrid.getGridGeometry();
+        }
         kriging.defaultVariogramMode = defaultVariogramMode;
         kriging.pSemivariogramType = pSemivariogramType;
         kriging.doIncludezero = doIncludezero;
@@ -203,8 +221,37 @@ public class Kriging extends JGTModel {
         kriging.pm = pm;
         kriging.doProcess = doProcess;
         kriging.doReset = doReset;
-        kriging.process();
-        dumpRaster(kriging.outGrid, outGrid);
-        outData = kriging.outData;
+
+        OmsTimeSeriesIteratorWriter writer = null;
+
+        pm.beginTask("Processing...", IJGTProgressMonitor.UNKNOWN);
+        while( reader.doProcess ) {
+            reader.nextRecord();
+
+            if (writer == null) {
+                writer = new OmsTimeSeriesIteratorWriter();
+                writer.file = outData;
+                writer.tStart = reader.tStart;
+                writer.tTimestep = reader.tTimestep;
+            }
+            pm.message("timestep: " + reader.tCurrent);
+
+            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+            kriging.inData = id2ValueMap;
+            kriging.process();
+
+            // write csv data
+            writer.inData = kriging.outData;
+            writer.writeNextLine();
+
+            // write raster data
+            dumpRaster(kriging.outGrid, outGrid);
+        }
+        pm.done();
+
+        reader.close();
+        writer.close();
     }
+
+
 }

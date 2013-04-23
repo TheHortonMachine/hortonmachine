@@ -250,7 +250,15 @@ public class OmsKriging extends JGTModel {
         try {
             while( stationsIter.hasNext() ) {
                 SimpleFeature feature = stationsIter.next();
-                int id = ((Number) feature.getAttribute(fStationsid)).intValue();
+                Object stationId = feature.getAttribute(fStationsid);
+                int id;
+                if (stationId instanceof Number) {
+                    id = ((Number) stationId).intValue();
+                } else if (stationId instanceof String) {
+                    id = (int) Double.parseDouble((String) stationId);
+                } else {
+                    throw new ModelsIllegalargumentException("Unreadable type found for the station id.", this);
+                }
                 double z = 0;
                 if (fStationsZ != null) {
                     try {
@@ -397,7 +405,6 @@ public class OmsKriging extends JGTModel {
 
             if (!areAllEquals && n1 > 1) {
                 // pm.beginTask(msg.message("kriging.working"),inInterpolate.size());
-                pm.beginTask(msg.message("kriging.working"), pointsToInterpolateId2Coordinates.size());
                 while( idIterator.hasNext() ) {
                     double sum = 0.;
                     int id = idIterator.next();
@@ -439,22 +446,18 @@ public class OmsKriging extends JGTModel {
                     }
 
                 }
-                pm.worked(1);
             } else if (n1 == 1 || areAllEquals) {
                 double tmp = hStation[0];
                 int k = 0;
                 pm.message(msg.message("kriging.setequalsvalue"));
-                pm.beginTask(msg.message("kriging.working"), inInterpolate.size());
                 while( idIterator.hasNext() ) {
                     int id = idIterator.next();
                     result[k] = tmp;
                     idArray[k] = id;
                     k++;
-                    pm.worked(1);
                 }
 
             }
-            pm.done();
             if (pMode == 0) {
                 storeResult(result, idArray);
             } else {
