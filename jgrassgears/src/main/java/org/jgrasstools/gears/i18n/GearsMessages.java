@@ -95,7 +95,7 @@ public class GearsMessages {
     public static final String OMSCONTOURLINESLABELER_DOCUMENTATION = "";
     public static final String OMSCONTOURLINESLABELER_KEYWORDS = "Contourlines, Vector";
     public static final String OMSCONTOURLINESLABELER_LABEL = VECTORPROCESSING;
-    public static final String OMSCONTOURLINESLABELER_NAME = "";
+    public static final String OMSCONTOURLINESLABELER_NAME = "contourlineslabeler";
     public static final int OMSCONTOURLINESLABELER_STATUS = 5;
     public static final String OMSCONTOURLINESLABELER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSCONTOURLINESLABELER_AUTHORNAMES = "Andrea Antonello";
@@ -110,7 +110,7 @@ public class GearsMessages {
     public static final String EXIFREADER_DOCUMENTATION = "";
     public static final String EXIFREADER_KEYWORDS = "IO, Jpeg, Exif, Reading";
     public static final String EXIFREADER_LABEL = GENERICREADER;
-    public static final String EXIFREADER_NAME = "";
+    public static final String EXIFREADER_NAME = "exifreader";
     public static final int EXIFREADER_STATUS = 10;
     public static final String EXIFREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String EXIFREADER_AUTHORNAMES = "Andrea Antonello";
@@ -122,7 +122,7 @@ public class GearsMessages {
     public static final String OMSGRASSLEGACYREADER_DOCUMENTATION = "";
     public static final String OMSGRASSLEGACYREADER_KEYWORDS = "IO, Grass, Raster, Reading";
     public static final String OMSGRASSLEGACYREADER_LABEL = RASTERREADER;
-    public static final String OMSGRASSLEGACYREADER_NAME = "";
+    public static final String OMSGRASSLEGACYREADER_NAME = "grasslegacyreader";
     public static final int OMSGRASSLEGACYREADER_STATUS = 40;
     public static final String OMSGRASSLEGACYREADER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSGRASSLEGACYREADER_AUTHORNAMES = "Andrea Antonello";
@@ -317,7 +317,7 @@ public class GearsMessages {
     public static final String OMSGRASSLEGACYWRITER_DOCUMENTATION = "";
     public static final String OMSGRASSLEGACYWRITER_KEYWORDS = "IO, Grass, Raster, Writing";
     public static final String OMSGRASSLEGACYWRITER_LABEL = RASTERWRITER;
-    public static final String OMSGRASSLEGACYWRITER_NAME = "";
+    public static final String OMSGRASSLEGACYWRITER_NAME = "grasslegacywriter";
     public static final int OMSGRASSLEGACYWRITER_STATUS = 40;
     public static final String OMSGRASSLEGACYWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSGRASSLEGACYWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -331,7 +331,7 @@ public class GearsMessages {
     public static final String OMSEIENERGYWRITER_DOCUMENTATION = "";
     public static final String OMSEIENERGYWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSEIENERGYWRITER_LABEL = LIST_WRITER;
-    public static final String OMSEIENERGYWRITER_NAME = "";
+    public static final String OMSEIENERGYWRITER_NAME = "eienergywriter";
     public static final int OMSEIENERGYWRITER_STATUS = 40;
     public static final String OMSEIENERGYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIENERGYWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -344,7 +344,7 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYREADER_DOCUMENTATION = "";
     public static final String OMSID2VALUEARRAYREADER_KEYWORDS = "IO, Reading";
     public static final String OMSID2VALUEARRAYREADER_LABEL = HASHMAP_READER;
-    public static final String OMSID2VALUEARRAYREADER_NAME = "";
+    public static final String OMSID2VALUEARRAYREADER_NAME = "id2valuearrayreader";
     public static final int OMSID2VALUEARRAYREADER_STATUS = 5;
     public static final String OMSID2VALUEARRAYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSID2VALUEARRAYREADER_AUTHORNAMES = "Andrea Antonello";
@@ -380,7 +380,7 @@ public class GearsMessages {
     public static final String OMSEIAREASREADER_DOCUMENTATION = "";
     public static final String OMSEIAREASREADER_KEYWORDS = "IO, Reading";
     public static final String OMSEIAREASREADER_LABEL = LIST_READER;
-    public static final String OMSEIAREASREADER_NAME = "";
+    public static final String OMSEIAREASREADER_NAME = "eiareasreader";
     public static final int OMSEIAREASREADER_STATUS = 40;
     public static final String OMSEIAREASREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIAREASREADER_AUTHORNAMES = "Andrea Antonello";
@@ -393,7 +393,7 @@ public class GearsMessages {
     public static final String ADIGEBOUNDARYCONDITIONWRITER_DOCUMENTATION = "";
     public static final String ADIGEBOUNDARYCONDITIONWRITER_KEYWORDS = "IO, Writing";
     public static final String ADIGEBOUNDARYCONDITIONWRITER_LABEL = GENERICWRITER;
-    public static final String ADIGEBOUNDARYCONDITIONWRITER_NAME = "";
+    public static final String ADIGEBOUNDARYCONDITIONWRITER_NAME = "adigeboundcondwriter";
     public static final int ADIGEBOUNDARYCONDITIONWRITER_STATUS = 40;
     public static final String ADIGEBOUNDARYCONDITIONWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String ADIGEBOUNDARYCONDITIONWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -406,7 +406,7 @@ public class GearsMessages {
     public static final String OMSEIENERGYREADER_DOCUMENTATION = "";
     public static final String OMSEIENERGYREADER_KEYWORDS = "IO, Reading";
     public static final String OMSEIENERGYREADER_LABEL = LIST_READER;
-    public static final String OMSEIENERGYREADER_NAME = "";
+    public static final String OMSEIENERGYREADER_NAME = "eienergyreader";
     public static final int OMSEIENERGYREADER_STATUS = 40;
     public static final String OMSEIENERGYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIENERGYREADER_AUTHORNAMES = "Andrea Antonello";
@@ -461,7 +461,7 @@ public class GearsMessages {
     public static final String OMSDATETIME2VALUEMAPWRITER_DOCUMENTATION = "";
     public static final String OMSDATETIME2VALUEMAPWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSDATETIME2VALUEMAPWRITER_LABEL = HASHMAP_WRITER;
-    public static final String OMSDATETIME2VALUEMAPWRITER_NAME = "";
+    public static final String OMSDATETIME2VALUEMAPWRITER_NAME = "datetime2valuemapwriter";
     public static final int OMSDATETIME2VALUEMAPWRITER_STATUS = 5;
     public static final String OMSDATETIME2VALUEMAPWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSDATETIME2VALUEMAPWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -476,7 +476,7 @@ public class GearsMessages {
     public static final String VEGETATIONLIBRARYREADER_DOCUMENTATION = "";
     public static final String VEGETATIONLIBRARYREADER_KEYWORDS = "IO, Reading";
     public static final String VEGETATIONLIBRARYREADER_LABEL = GENERICREADER;
-    public static final String VEGETATIONLIBRARYREADER_NAME = "";
+    public static final String VEGETATIONLIBRARYREADER_NAME = "vegetationlibraryreader";
     public static final int VEGETATIONLIBRARYREADER_STATUS = 40;
     public static final String VEGETATIONLIBRARYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String VEGETATIONLIBRARYREADER_AUTHORNAMES = "Andrea Antonello";
@@ -488,7 +488,7 @@ public class GearsMessages {
     public static final String OMSLINESPOLYGONIZER_DOCUMENTATION = "";
     public static final String OMSLINESPOLYGONIZER_KEYWORDS = "Vector, Polygonize";
     public static final String OMSLINESPOLYGONIZER_LABEL = VECTORPROCESSING;
-    public static final String OMSLINESPOLYGONIZER_NAME = "";
+    public static final String OMSLINESPOLYGONIZER_NAME = "linespolygonizer";
     public static final int OMSLINESPOLYGONIZER_STATUS = 10;
     public static final String OMSLINESPOLYGONIZER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSLINESPOLYGONIZER_AUTHORNAMES = "Antonio Falciano, Andrea Antonello";
@@ -750,7 +750,7 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREWRITER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
     public static final String OMSSHAPEFILEFEATUREWRITER_LABEL = FEATUREWRITER;
-    public static final String OMSSHAPEFILEFEATUREWRITER_NAME = "";
+    public static final String OMSSHAPEFILEFEATUREWRITER_NAME = "shapefilefeaturewriter";
     public static final int OMSSHAPEFILEFEATUREWRITER_STATUS = 40;
     public static final String OMSSHAPEFILEFEATUREWRITER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSSHAPEFILEFEATUREWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -798,7 +798,7 @@ public class GearsMessages {
     public static final String OMSEIAREASWRITER_DOCUMENTATION = "";
     public static final String OMSEIAREASWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSEIAREASWRITER_LABEL = LIST_WRITER;
-    public static final String OMSEIAREASWRITER_NAME = "";
+    public static final String OMSEIAREASWRITER_NAME = "eiareaswriter";
     public static final int OMSEIAREASWRITER_STATUS = 40;
     public static final String OMSEIAREASWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIAREASWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -811,7 +811,7 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYWRITER_DOCUMENTATION = "";
     public static final String OMSID2VALUEARRAYWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSID2VALUEARRAYWRITER_LABEL = HASHMAP_WRITER;
-    public static final String OMSID2VALUEARRAYWRITER_NAME = "";
+    public static final String OMSID2VALUEARRAYWRITER_NAME = "id2valuearraywriter";
     public static final int OMSID2VALUEARRAYWRITER_STATUS = 40;
     public static final String OMSID2VALUEARRAYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSID2VALUEARRAYWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -849,7 +849,7 @@ public class GearsMessages {
     public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
     public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
     public static final String OMSINTERSECTIONFINDER_LABEL = VECTORPROCESSING;
-    public static final String OMSINTERSECTIONFINDER_NAME = "";
+    public static final String OMSINTERSECTIONFINDER_NAME = "intersectionfinder";
     public static final int OMSINTERSECTIONFINDER_STATUS = 10;
     public static final String OMSINTERSECTIONFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSINTERSECTIONFINDER_AUTHORNAMES = "Andrea Antonello";
@@ -984,7 +984,7 @@ public class GearsMessages {
     public static final String OMSPLAINID2VALUEREADER_DOCUMENTATION = "";
     public static final String OMSPLAINID2VALUEREADER_KEYWORDS = "IO, Reading";
     public static final String OMSPLAINID2VALUEREADER_LABEL = HASHMAP_READER;
-    public static final String OMSPLAINID2VALUEREADER_NAME = "";
+    public static final String OMSPLAINID2VALUEREADER_NAME = "plainid2valuereader";
     public static final int OMSPLAINID2VALUEREADER_STATUS = 5;
     public static final String OMSPLAINID2VALUEREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSPLAINID2VALUEREADER_AUTHORNAMES = "Andrea Antonello";
@@ -1034,7 +1034,7 @@ public class GearsMessages {
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DOCUMENTATION = "";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_KEYWORDS = "IO, Reading";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_LABEL = OTHER;
-    public static final String IDVALUESARRAY2IDVALUESCONVERTER_NAME = "";
+    public static final String IDVALUESARRAY2IDVALUESCONVERTER_NAME = "valuesarray2idvaluesconverter";
     public static final int IDVALUESARRAY2IDVALUESCONVERTER_STATUS = 10;
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_AUTHORNAMES = "Andrea Antonello";
@@ -1058,7 +1058,7 @@ public class GearsMessages {
     public static final String OMSPROPERTIESFEATUREREADER_DOCUMENTATION = "";
     public static final String OMSPROPERTIESFEATUREREADER_KEYWORDS = "IO, Properties, Feature, Vector, Reading";
     public static final String OMSPROPERTIESFEATUREREADER_LABEL = FEATUREREADER;
-    public static final String OMSPROPERTIESFEATUREREADER_NAME = "";
+    public static final String OMSPROPERTIESFEATUREREADER_NAME = "propertiesfeaturereader";
     public static final int OMSPROPERTIESFEATUREREADER_STATUS = 40;
     public static final String OMSPROPERTIESFEATUREREADER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSPROPERTIESFEATUREREADER_AUTHORNAMES = "Andrea Antonello";
@@ -1089,7 +1089,7 @@ public class GearsMessages {
     public static final String OMSDATETIME2VALUEMAPREADER_DOCUMENTATION = "";
     public static final String OMSDATETIME2VALUEMAPREADER_KEYWORDS = "IO, Reading";
     public static final String OMSDATETIME2VALUEMAPREADER_LABEL = HASHMAP_READER;
-    public static final String OMSDATETIME2VALUEMAPREADER_NAME = "";
+    public static final String OMSDATETIME2VALUEMAPREADER_NAME = "datetime2valuemapreader";
     public static final int OMSDATETIME2VALUEMAPREADER_STATUS = 5;
     public static final String OMSDATETIME2VALUEMAPREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSDATETIME2VALUEMAPREADER_AUTHORNAMES = "Andrea Antonello";
@@ -1132,7 +1132,7 @@ public class GearsMessages {
     public static final String EXIFGPSWRITER_DOCUMENTATION = "";
     public static final String EXIFGPSWRITER_KEYWORDS = "IO, Jpeg, Exif, Reading";
     public static final String EXIFGPSWRITER_LABEL = OTHER;
-    public static final String EXIFGPSWRITER_NAME = "";
+    public static final String EXIFGPSWRITER_NAME = "exifgpswriter";
     public static final int EXIFGPSWRITER_STATUS = 10;
     public static final String EXIFGPSWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String EXIFGPSWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -1286,7 +1286,7 @@ public class GearsMessages {
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS = "Raster, Vector";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_LABEL = VECTORPROCESSING;
-    public static final String OMSMARCHINGSQUARESVECTORIALIZER_NAME = "";
+    public static final String OMSMARCHINGSQUARESVECTORIALIZER_NAME = "marchingsquaresvectorizer";
     public static final int OMSMARCHINGSQUARESVECTORIALIZER_STATUS = 10;
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_AUTHORNAMES = "Andrea Antonello, Daniele Andreis";
@@ -1375,7 +1375,7 @@ public class GearsMessages {
     public static final String OMSCOVERAGEVIEWER_DOCUMENTATION = "";
     public static final String OMSCOVERAGEVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
     public static final String OMSCOVERAGEVIEWER_LABEL = OTHER;
-    public static final String OMSCOVERAGEVIEWER_NAME = "";
+    public static final String OMSCOVERAGEVIEWER_NAME = "coverageviewer";
     public static final int OMSCOVERAGEVIEWER_STATUS = 40;
     public static final String OMSCOVERAGEVIEWER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCOVERAGEVIEWER_AUTHORNAMES = "Andrea Antonello";
@@ -1414,7 +1414,7 @@ public class GearsMessages {
     public static final String OMSEIALTIMETRYREADER_DOCUMENTATION = "";
     public static final String OMSEIALTIMETRYREADER_KEYWORDS = "IO, Reading";
     public static final String OMSEIALTIMETRYREADER_LABEL = LIST_READER;
-    public static final String OMSEIALTIMETRYREADER_NAME = "";
+    public static final String OMSEIALTIMETRYREADER_NAME = "eialtimetryreader";
     public static final int OMSEIALTIMETRYREADER_STATUS = 40;
     public static final String OMSEIALTIMETRYREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIALTIMETRYREADER_AUTHORNAMES = "Andrea Antonello";
@@ -1424,10 +1424,10 @@ public class GearsMessages {
     public static final String OMSEIALTIMETRYREADER_outAltimetry_DESCRIPTION = "The read data.";
 
     public static final String OMSEIALTIMETRYWRITER_DESCRIPTION = "Utility class for writing altimetry data to csv files.";
-    public static final String OMSEIALTIMETRYWRITER_DOCUMENTATION = "";
+    public static final String OMSEIALTIMETRYWRITER_DOCUMENTATION = "eialtimetrywriter";
     public static final String OMSEIALTIMETRYWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSEIALTIMETRYWRITER_LABEL = LIST_WRITER;
-    public static final String OMSEIALTIMETRYWRITER_NAME = "";
+    public static final String OMSEIALTIMETRYWRITER_NAME = "eialtimetrywriter";
     public static final int OMSEIALTIMETRYWRITER_STATUS = 40;
     public static final String OMSEIALTIMETRYWRITER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSEIALTIMETRYWRITER_AUTHORNAMES = "Andrea Antonello";
@@ -1440,7 +1440,7 @@ public class GearsMessages {
     public static final String ADIGEBOUNDARYCONDITIONREADER_DOCUMENTATION = "";
     public static final String ADIGEBOUNDARYCONDITIONREADER_KEYWORDS = "IO, Reading";
     public static final String ADIGEBOUNDARYCONDITIONREADER_LABEL = GENERICREADER;
-    public static final String ADIGEBOUNDARYCONDITIONREADER_NAME = "";
+    public static final String ADIGEBOUNDARYCONDITIONREADER_NAME = "adigeboundcondreader";
     public static final int ADIGEBOUNDARYCONDITIONREADER_STATUS = 40;
     public static final String ADIGEBOUNDARYCONDITIONREADER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String ADIGEBOUNDARYCONDITIONREADER_AUTHORNAMES = "Andrea Antonello";
@@ -1521,7 +1521,7 @@ public class GearsMessages {
     public static final String OMSPOINTDIRECTIONCALCULATOR_DOCUMENTATION = "";
     public static final String OMSPOINTDIRECTIONCALCULATOR_KEYWORDS = "Raster, Vector";
     public static final String OMSPOINTDIRECTIONCALCULATOR_LABEL = VECTORPROCESSING;
-    public static final String OMSPOINTDIRECTIONCALCULATOR_NAME = "";
+    public static final String OMSPOINTDIRECTIONCALCULATOR_NAME = "pointdirectioncalculator";
     public static final int OMSPOINTDIRECTIONCALCULATOR_STATUS = 10;
     public static final String OMSPOINTDIRECTIONCALCULATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSPOINTDIRECTIONCALCULATOR_AUTHORNAMES = "Andrea Antonello";
@@ -1535,7 +1535,7 @@ public class GearsMessages {
     public static final String OMSLINEINTERSECTIONCORRECTOR_DOCUMENTATION = "";
     public static final String OMSLINEINTERSECTIONCORRECTOR_KEYWORDS = "Smoothing, Vector";
     public static final String OMSLINEINTERSECTIONCORRECTOR_LABEL = VECTORPROCESSING;
-    public static final String OMSLINEINTERSECTIONCORRECTOR_NAME = "";
+    public static final String OMSLINEINTERSECTIONCORRECTOR_NAME = "lineintersectioncorrector";
     public static final int OMSLINEINTERSECTIONCORRECTOR_STATUS = 10;
     public static final String OMSLINEINTERSECTIONCORRECTOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSLINEINTERSECTIONCORRECTOR_AUTHORNAMES = "Andrea Antonello";
@@ -1553,7 +1553,7 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREREADER_DOCUMENTATION = "";
     public static final String OMSSHAPEFILEFEATUREREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
     public static final String OMSSHAPEFILEFEATUREREADER_LABEL = FEATUREREADER;
-    public static final String OMSSHAPEFILEFEATUREREADER_NAME = "";
+    public static final String OMSSHAPEFILEFEATUREREADER_NAME = "shapefilefeaturereader";
     public static final int OMSSHAPEFILEFEATUREREADER_STATUS = 40;
     public static final String OMSSHAPEFILEFEATUREREADER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSSHAPEFILEFEATUREREADER_AUTHORNAMES = "Andrea Antonello";
