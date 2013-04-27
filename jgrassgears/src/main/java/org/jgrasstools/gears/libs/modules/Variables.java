@@ -28,6 +28,7 @@ public interface Variables {
     public String DEFAULT = "default";
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
+    
     public String TPS = "TPS";
     public String IDW = "IDW";
 
@@ -52,5 +53,10 @@ public interface Variables {
     public String JOIN_ROUND = "round";
     public String JOIN_MITRE = "mitre";
     public String JOIN_BEVEL = "bevel";
-
+    
+    public String DILATE = "dilate";
+    public String ERODE = "erode";
+    public String SKELETONIZE = "skeletonize";
+    public String OPEN = "open";
+    public String CLOSE = "close";
 }

@@ -17,6 +17,11 @@
 package org.jgrasstools.gears.modules.r.morpher;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
+import static org.jgrasstools.gears.libs.modules.Variables.CLOSE;
+import static org.jgrasstools.gears.libs.modules.Variables.DILATE;
+import static org.jgrasstools.gears.libs.modules.Variables.ERODE;
+import static org.jgrasstools.gears.libs.modules.Variables.OPEN;
+import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -35,8 +40,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -69,9 +76,10 @@ public class Morpher extends JGTModel {
     @In
     public double pValid = 0.0;
 
-    @Description("The operation type to perform (0 = dilate, 1 = erode, 2 = skeletonize, 3 = open, 4 = close)")
+    @Description("The operation type to perform (dilate, erode, skeletonize, open, close)")
+    @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE + "," + OPEN + "," + CLOSE)
     @In
-    public int pType = 0;
+    public String pMode = DILATE;
 
     @Description("The number of iterations to perform (default is 1)")
     @In
@@ -124,35 +132,24 @@ public class Morpher extends JGTModel {
 
         BinaryFast binaryData = new BinaryFast(data);
 
-        switch( pType ) {
-        case 0:
+        if (pMode.equals(DILATE)) {
             dilate(binaryData);
-            break;
-        case 1:
+        } else if (pMode.equals(ERODE)) {
             erode(binaryData);
-            break;
-        case 2:
+        } else if (pMode.equals(SKELETONIZE)) {
             skeletonize(binaryData);
-            break;
-        case 3:
+        } else if (pMode.equals(OPEN)) {
             open(binaryData);
-            break;
-        case 4:
+        } else if (pMode.equals(CLOSE)) {
             close(binaryData);
-            break;
-
-        default:
-            break;
+        } else {
+            throw new ModelsIllegalargumentException("Could not recognize mode.", this);
         }
 
         int[] values = binaryData.getValues();
-        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height,
-                values);
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inMap);
-        outMap = CoverageUtilities.buildCoverage(
-                "morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
-
+        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, values);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
+        outMap = CoverageUtilities.buildCoverage("morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
 
     private void dilate( BinaryFast binaryData ) {

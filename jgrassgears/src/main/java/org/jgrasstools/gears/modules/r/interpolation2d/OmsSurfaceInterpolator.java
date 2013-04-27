@@ -114,7 +114,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
     @Description(OMSSURFACEINTERPOLATOR_pMode_DESCRIPTION)
     @UI("combo:" + TPS + "," + IDW)
     @In
-    public String pMode = "TPS";
+    public String pMode = TPS;
 
     @Description(OMSSURFACEINTERPOLATOR_pBuffer_DESCRIPTION)
     @Unit("m")

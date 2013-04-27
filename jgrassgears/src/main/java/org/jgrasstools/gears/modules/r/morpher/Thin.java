@@ -22,7 +22,6 @@ import java.util.Iterator;
 
 import org.jgrasstools.gears.modules.utils.BinaryFast;
 
-
 /*
  
  R. B. Fisher, K. Koryllos,
@@ -31,7 +30,6 @@ in Text'', Int. J. of Pattern Recognition and Artificial Intelligence,
 Vol 12, No 8, pp 1095-1123, 1998.
  
  */
-
 
 /**
  * Thin is an algorithm to thin a binary image using a 3x3 kernel.
@@ -83,8 +81,7 @@ public class Thin {
             // check if new foreground pixels are exposed as edges
             for( int j = -1; j < 2; ++j ) {
                 for( int k = -1; k < 2; ++k ) {
-                    if (p.x + j >= 0 && p.y + k > 0 && p.x + j < b.getWidth()
-                            && p.y + k < b.getHeight()
+                    if (p.x + j >= 0 && p.y + k > 0 && p.x + j < b.getWidth() && p.y + k < b.getHeight()
                             && pixels[p.x + j][p.y + k] == BinaryFast.FOREGROUND) {
                         Point p2 = new Point(p.x + j, p.y + k);
                         b.getForegroundEdgePixels().add(p2);
@@ -104,16 +101,21 @@ public class Thin {
      */
     public void process( BinaryFast binary, int[][] kernel ) {
         if (kernel == null) {
-            kernel = new int[][]{{0, 0, 0, 2, 1, 2, 1, 1, 1}, {2, 0, 0, 1, 1, 0, 2, 1, 2},
-                    {1, 2, 0, 1, 1, 0, 1, 2, 0}, {2, 1, 2, 1, 1, 0, 2, 0, 0},
-                    {1, 1, 1, 2, 1, 2, 0, 0, 0}, {2, 1, 2, 0, 1, 1, 0, 0, 2},
-                    {0, 2, 1, 0, 1, 1, 0, 2, 1}, {0, 0, 2, 0, 1, 1, 2, 1, 2}};
+            kernel = new int[][]{//
+            /*    */{0, 0, 0, 2, 1, 2, 1, 1, 1}, //
+                    {2, 0, 0, 1, 1, 0, 2, 1, 2}, //
+                    {1, 2, 0, 1, 1, 0, 1, 2, 0}, //
+                    {2, 1, 2, 1, 1, 0, 2, 0, 0}, //
+                    {1, 1, 1, 2, 1, 2, 0, 0, 0}, //
+                    {2, 1, 2, 0, 1, 1, 0, 0, 2}, //
+                    {0, 2, 1, 0, 1, 1, 0, 2, 1}, //
+                    {0, 0, 2, 0, 1, 1, 2, 1, 2} //
+            };
         }
 
         int oldForeEdge = 0;
         int oldBackEdge = 0;
-        while( !(binary.getForegroundEdgePixels().size() == oldForeEdge && binary
-                .getBackgroundEdgePixels().size() == oldBackEdge) ) {
+        while( !(binary.getForegroundEdgePixels().size() == oldForeEdge && binary.getBackgroundEdgePixels().size() == oldBackEdge) ) {
             oldForeEdge = binary.getForegroundEdgePixels().size();
             oldBackEdge = binary.getBackgroundEdgePixels().size();
             for( int i = 0; i < 8; ++i ) {

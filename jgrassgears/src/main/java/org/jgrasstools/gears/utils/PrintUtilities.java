@@ -62,6 +62,37 @@ public class PrintUtilities {
     }
 
     /**
+     * Print data of a {@link GridCoverage2D} as java matrix definition.
+     * 
+     * @param coverage the coverage.
+     */
+    public static void printCoverageDataAsMatrix( GridCoverage2D coverage ) {
+        printer.println("double[][] matrix = new double[][]{//");
+        RenderedImage renderedImage = coverage.getRenderedImage();
+        RandomIter renderedImageIterator = RandomIterFactory.create(renderedImage, null);
+        int[] colsRows = CoverageUtilities.getRegionColsRows(coverage);
+        for( int r = 0; r < colsRows[1]; r++ ) {
+            if (r == 0) {
+                printer.print("/*    */{");
+            }else{
+                printer.print("{");
+            }
+            for( int c = 0; c < colsRows[0]; c++ ) {
+                printer.print(renderedImageIterator.getSampleDouble(c, r, 0));
+                if (c < colsRows[0] - 1) {
+                    printer.print(", ");
+                } 
+            }
+            if (r < colsRows[1] - 1) {
+                printer.println("}, //");
+            } else {
+                printer.println("} //");
+            }
+        }
+        printer.println("};");
+    }
+
+    /**
      * Print data from a {@link RenderedImage}.
      * 
      * @param renderedImage the image.
