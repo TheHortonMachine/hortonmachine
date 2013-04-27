@@ -161,21 +161,24 @@ public class Morpher extends JGTModel {
     }
 
     private void erode( BinaryFast binaryData ) {
-        new Erode().process(binaryData, null, pIter);
+        new Erode().process(binaryData, pKernel, pIter);
     }
 
     private void skeletonize( BinaryFast binaryData ) {
-        new Thin().process(binaryData, null);
+        if (pKernel != null) {
+            pm.errorMessage("Thinning doesn't permit for custom kernels. Using standard kernel.");
+        }
+        new Thin().process(binaryData);
     }
 
     private void open( BinaryFast binaryData ) {
-        new Dilate().process(binaryData, null, pIter);
-        new Erode().process(binaryData, null, pIter);
+        new Dilate().process(binaryData, pKernel, pIter);
+        new Erode().process(binaryData, pKernel, pIter);
     }
 
     private void close( BinaryFast binaryData ) {
-        new Erode().process(binaryData, null, pIter);
-        new Dilate().process(binaryData, null, pIter);
+        new Erode().process(binaryData, pKernel, pIter);
+        new Dilate().process(binaryData, pKernel, pIter);
     }
 
 }

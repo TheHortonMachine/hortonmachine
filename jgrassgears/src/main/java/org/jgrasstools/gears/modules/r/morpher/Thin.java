@@ -36,13 +36,7 @@ Vol 12, No 8, pp 1095-1123, 1998.
  * @author Simon Horne.
  */
 
-public class Thin {
-
-    /**
-     * The default constructor with no parameters. 
-     */
-    public Thin() {
-    }
+public class Thin extends MorpherHelp {
 
     /**
      * Takes an image and a kernel and thins it once.
@@ -52,11 +46,10 @@ public class Thin {
      * @return the thinned BinaryFast image
      */
     private BinaryFast thinBinaryRep( BinaryFast b, int[] kernel ) {
-        HitMiss hitMiss = new HitMiss();
         Point p;
         HashSet<Point> inputHashSet = new HashSet<Point>();
         int[][] pixels = b.getPixels();
-        if (hitMiss.kernelNo0s(kernel)) {
+        if (kernelNo0s(kernel)) {
             for( int j = 0; j < b.getHeight(); ++j ) {
                 for( int i = 0; i < b.getWidth(); ++i ) {
                     if (pixels[i][j] == BinaryFast.FOREGROUND) {
@@ -70,7 +63,7 @@ public class Thin {
                 inputHashSet.add(it.next());
             }
         }
-        HashSet<Point> result = hitMiss.hitMissHashSet(b, inputHashSet, kernel);
+        HashSet<Point> result = hitMissHashSet(b, inputHashSet, kernel);
         Iterator<Point> it = result.iterator();
         while( it.hasNext() ) {
             p = new Point(it.next());
@@ -96,22 +89,9 @@ public class Thin {
      * Takes an image and a kernel and thins it the specified number of times.
      *
      * @param b the BinaryFast input image
-     * @param kernel the array of thinning kernels
      * @return the thinned BinaryFast image
      */
-    public void process( BinaryFast binary, int[][] kernel ) {
-        if (kernel == null) {
-            kernel = new int[][]{//
-            /*    */{0, 0, 0, 2, 1, 2, 1, 1, 1}, //
-                    {2, 0, 0, 1, 1, 0, 2, 1, 2}, //
-                    {1, 2, 0, 1, 1, 0, 1, 2, 0}, //
-                    {2, 1, 2, 1, 1, 0, 2, 0, 0}, //
-                    {1, 1, 1, 2, 1, 2, 0, 0, 0}, //
-                    {2, 1, 2, 0, 1, 1, 0, 0, 2}, //
-                    {0, 2, 1, 0, 1, 1, 0, 2, 1}, //
-                    {0, 0, 2, 0, 1, 1, 2, 1, 2} //
-            };
-        }
+    public void process( BinaryFast binary ) {
 
         int oldForeEdge = 0;
         int oldBackEdge = 0;
@@ -119,9 +99,68 @@ public class Thin {
             oldForeEdge = binary.getForegroundEdgePixels().size();
             oldBackEdge = binary.getBackgroundEdgePixels().size();
             for( int i = 0; i < 8; ++i ) {
-                binary = thinBinaryRep(binary, kernel[i]);
+                binary = thinBinaryRep(binary, DEFAULT_THIN_KERNEL[i]);
                 binary.generateBackgroundEdgeFromForegroundEdge();
             }
         }
+    }
+
+    /**
+     *Returns true if the 8 neighbours of p match the kernel
+     *0 is background
+     *1 is foreground
+     *2 is don't care.
+     *
+     * @param p the point at the centre of the 
+     * 9 pixel neighbourhood
+     * @param pixels the 2D array of the image
+     * @param w the width of the image
+     * @param h the height of the image
+     * @param kernel the array of the kernel values
+     * @return True if the kernel and image match.
+     */
+    private boolean kernelMatch( Point p, int[][] pixels, int w, int h, int[] kernel ) {
+        int matched = 0;
+        for( int j = -1; j < 2; ++j ) {
+            for( int i = -1; i < 2; ++i ) {
+                if (kernel[((j + 1) * 3) + (i + 1)] == 2) {
+                    ++matched;
+                } else if ((p.x + i >= 0)
+                        && (p.x + i < w)
+                        && (p.y + j >= 0)
+                        && (p.y + j < h)
+                        && (((pixels[p.x + i][p.y + j] == BinaryFast.FOREGROUND) && (kernel[((j + 1) * 3) + (i + 1)] == 1)) || ((pixels[p.x
+                                + i][p.y + j] == BinaryFast.BACKGROUND) && (kernel[((j + 1) * 3) + (i + 1)] == 0)))) {
+                    ++matched;
+                }
+            }
+        }
+        if (matched == 9) {
+            return true;
+        } else
+            return false;
+    }
+
+    /**
+     * Applies the hitmiss operation to a set of pixels
+     * stored in a hash table.
+     *
+     * @param b the BinaryFast input image
+     * @param input the set of pixels requiring matching
+     * @param kernel the kernel to match them with
+     * @return A hash table containing all the successful matches.
+     */
+    private HashSet<Point> hitMissHashSet( BinaryFast b, HashSet<Point> input, int[] kernel ) {
+        HashSet<Point> output = new HashSet<Point>();
+        Iterator<Point> it = input.iterator();
+        while( it.hasNext() ) {
+            Point p = it.next();
+            if (kernelMatch(p, b.getPixels(), b.getWidth(), b.getHeight(), kernel)) {
+                // System.out.println("Match "+p.x+" "+p.y);
+                output.add(p);
+            }
+        }
+        // System.out.println(output.size());
+        return output;
     }
 }

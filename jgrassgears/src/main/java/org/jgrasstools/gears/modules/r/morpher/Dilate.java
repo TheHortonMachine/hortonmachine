@@ -85,7 +85,7 @@ public class Dilate extends MorpherHelp {
         }
 
         int i = 0;
-        int center = getCenterIndex(kernel);
+        int center = getArrayCenterIndex(kernel);
         kernel[center] = 1;// Ignore centre pixel value in kernel (stops whiteout).
         while( i < iterations ) {
             binary = dilateSingleIteration(binary, kernel);

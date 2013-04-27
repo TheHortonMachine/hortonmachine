@@ -24,10 +24,8 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.morpher.Morpher;
-import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -84,6 +82,79 @@ public class TestMorpher extends HMTestCase {
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
         checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
+
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pValid = 1.0;
+        morpher.pKernel = new int[]{//
+        /*    */0, 1, 0, //
+                1, 1, 1, //
+                0, 1, 0, //
+        };
+        morpher.pMode = Variables.DILATE;
+        morpher.process();
+        morphed = morpher.outMap;
+        dilated = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
+
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pValid = 1.0;
+        morpher.pKernel = new int[]{//
+        /*    */0, 1, 1, //
+                1, 1, 1, //
+                1, 1, 0, //
+        };
+        morpher.pMode = Variables.DILATE;
+        morpher.process();
+        morphed = morpher.outMap;
+        dilated = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+                {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
+
+        // morpher = new Morpher();
+        // morpher.inMap = raster;
+        // morpher.pValid = 1.0;
+        // morpher.pKernel = new int[]{//
+        // /* */0, 0, 1, 0, 0,//
+        // 0, 0, 1, 0, 0,//
+        // 1, 1, 1, 1, 1, //
+        // 0, 0, 1, 0, 0, //
+        // 0, 0, 1, 0, 0 //
+        // };
+        // morpher.pMode = Variables.DILATE;
+        // morpher.process();
+        // morphed = morpher.outMap;
+        // PrintUtilities.printCoverageDataAsMatrix(morphed);
+        // dilated = new double[][]{//
+        // /* */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+        // {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+        // {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+        // {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+        // {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+        // {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
+        // {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+        // {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        // };
+        // checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
+
     }
 
     public void testErode() throws Exception {
@@ -104,6 +175,31 @@ public class TestMorpher extends HMTestCase {
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
         checkMatrixEqual(morphed.getRenderedImage(), eroded, DELTA);
+
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pValid = 1.0;
+        morpher.pMode = Variables.ERODE;
+        morpher.pKernel = new int[]{//
+        /*    */0, 1, 0, //
+                1, 1, 1, //
+                0, 1, 0, //
+        };
+        morpher.process();
+        morphed = morpher.outMap;
+        eroded = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+
+        checkMatrixEqual(morphed.getRenderedImage(), eroded, DELTA);
+
     }
 
     public void testSkeletonize() throws Exception {
@@ -144,6 +240,29 @@ public class TestMorpher extends HMTestCase {
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
         checkMatrixEqual(morphed.getRenderedImage(), opened, DELTA);
+
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pValid = 1.0;
+        morpher.pMode = Variables.OPEN;
+        morpher.pKernel = new int[]{//
+        /*    */0, 1, 0, //
+                1, 1, 1, //
+                0, 1, 0, //
+        };
+        morpher.process();
+        morphed = morpher.outMap;
+        opened = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), opened, DELTA);
     }
 
     public void testClose() throws Exception {
@@ -160,6 +279,30 @@ public class TestMorpher extends HMTestCase {
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), closed, DELTA);
+
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pValid = 1.0;
+        morpher.pMode = Variables.CLOSE;
+        morpher.pKernel = new int[]{//
+        /*    */0, 1, 0, //
+                1, 1, 1, //
+                0, 1, 0, //
+        };
+        morpher.process();
+        morphed = morpher.outMap;
+
+        closed = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
