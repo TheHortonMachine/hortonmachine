@@ -76,6 +76,10 @@ public class Morpher extends JGTModel {
     @In
     public double pValid = 0.0;
 
+    @Description("A kernel to use instead of the default.")
+    @In
+    public int[] pKernel = null;
+
     @Description("The operation type to perform (dilate, erode, skeletonize, open, close)")
     @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE + "," + OPEN + "," + CLOSE)
     @In
@@ -153,7 +157,7 @@ public class Morpher extends JGTModel {
     }
 
     private void dilate( BinaryFast binaryData ) {
-        new Dilate().process(binaryData, null, pIter);
+        new Dilate().process(binaryData, pKernel, pIter);
     }
 
     private void erode( BinaryFast binaryData ) {
