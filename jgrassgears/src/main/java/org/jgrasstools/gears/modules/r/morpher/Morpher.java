@@ -107,13 +107,13 @@ public class Morpher extends JGTModel {
             outMap = CoverageUtilities.createCoverageFromTemplate(inMap, doubleNovalue, wrHolder);
             WritableRaster outWR = wrHolder[0];
             if (pMode.equals(DILATE)) {
-                dilate(inWR, regionMap, outWR, pKernel);
+                dilate(inWR, regionMap, outWR, pKernel, doBinary);
             } else if (pMode.equals(ERODE)) {
                 erode(inWR, regionMap, outWR, pKernel);
             } else if (pMode.equals(OPEN)) {
-                open(inWR, regionMap, outWR, pKernel);
+                open(inWR, regionMap, outWR, pKernel, doBinary);
             } else if (pMode.equals(CLOSE)) {
-                close(inWR, regionMap, outWR, pKernel);
+                close(inWR, regionMap, outWR, pKernel, doBinary);
             } else {
                 throw new ModelsIllegalargumentException("Could not recognize mode.", this);
             }
@@ -121,7 +121,16 @@ public class Morpher extends JGTModel {
 
     }
 
-    private void dilate( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
+    /**
+     * Morphologically dilates an input raster by a given kernel. 
+     * 
+     * @param inWR the input raster.
+     * @param regionMap the {@link RegionMap}.
+     * @param outWR the raster to modify.
+     * @param kernelArray the kernel to use.
+     * @param binary if <code>true</code>, binary mode is used.
+     */
+    public static void dilate( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xres = regionMap.getXres();
@@ -148,7 +157,7 @@ public class Morpher extends JGTModel {
                                 if (!isNovalue(nodeNeighbours[kr][kc]) && nodeNeighbours[kr][kc] > max) {
                                     max = nodeNeighbours[kr][kc];
                                     set = true;
-                                    if (doBinary) {
+                                    if (binary) {
                                         break;
                                     }
                                 }
@@ -171,7 +180,15 @@ public class Morpher extends JGTModel {
         }
     }
 
-    private void erode( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
+    /**
+     * Morphologically erodes an input raster by a given kernel. 
+     * 
+     * @param inWR the input raster.
+     * @param regionMap the {@link RegionMap}.
+     * @param outWR the raster to modify.
+     * @param kernelArray the kernel to use.
+     */
+    public static void erode( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xres = regionMap.getXres();
@@ -220,6 +237,38 @@ public class Morpher extends JGTModel {
         }
     }
 
+    /**
+     * Morphologically opens an input raster by a given kernel. 
+     * 
+     * @param inWR the input raster.
+     * @param regionMap the {@link RegionMap}.
+     * @param outWR the raster to modify.
+     * @param kernelArray the kernel to use.
+     * @param binary if <code>true</code>, binary mode is used.
+     */
+    public static void open( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
+        erode(inWR, regionMap, outWR, kernelArray);
+        inWR.setDataElements(0, 0, outWR);
+        clearRaster(regionMap, outWR);
+        dilate(inWR, regionMap, outWR, kernelArray, binary);
+    }
+
+    /**
+     * Morphologically closes an input raster by a given kernel. 
+     * 
+     * @param inWR the input raster.
+     * @param regionMap the {@link RegionMap}.
+     * @param outWR the raster to modify.
+     * @param kernelArray the kernel to use.
+     * @param binary if <code>true</code>, binary mode is used.
+     */
+    public static void close( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
+        dilate(inWR, regionMap, outWR, kernelArray, binary);
+        inWR.setDataElements(0, 0, outWR);
+        clearRaster(regionMap, outWR);
+        erode(inWR, regionMap, outWR, kernelArray);
+    }
+
     private void skeletonize() {
         final RenderedImage renderedImage = inMap.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
@@ -249,21 +298,7 @@ public class Morpher extends JGTModel {
         outMap = CoverageUtilities.buildCoverage("morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
 
-    private void open( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
-        erode(inWR, regionMap, outWR, kernelArray);
-        inWR.setDataElements(0, 0, outWR);
-        clearRaster(regionMap, outWR);
-        dilate(inWR, regionMap, outWR, kernelArray);
-    }
-
-    private void close( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
-        dilate(inWR, regionMap, outWR, kernelArray);
-        inWR.setDataElements(0, 0, outWR);
-        clearRaster(regionMap, outWR);
-        erode(inWR, regionMap, outWR, kernelArray);
-    }
-
-    private void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
+    private static void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
         // clear raster
         for( int c = 0; c < regionMap.getCols(); c++ ) {
             for( int r = 0; r < regionMap.getRows(); r++ ) {
