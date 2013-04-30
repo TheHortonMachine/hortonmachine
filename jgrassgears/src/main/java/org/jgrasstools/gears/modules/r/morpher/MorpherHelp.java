@@ -66,7 +66,7 @@ public class MorpherHelp {
                     2, 1, 2} //
     };
 
-    protected int getSquareKernelSide( int[] kernel ) {
+    public static int getSquareKernelSide( int[] kernel ) {
         double side = Math.sqrt(kernel.length);
         if (side % (int) side != 0) {
             throw new IllegalArgumentException("The kernel has to be square.");
@@ -138,6 +138,22 @@ public class MorpherHelp {
 
     protected int getArrayCenterIndex( int[] kernel ) {
         return (int) Math.floor(kernel.length / 2.0);
+    }
+    
+    public static int getMatrixCenterIndex( int[][] kernel ) {
+        return (int) Math.floor(kernel.length / 2.0);
+    }
+    
+    public static int[][] getSquareKernelMatrix(int[] squareKernelArray){
+        int squareKernelSide = getSquareKernelSide(squareKernelArray);
+        int index = 0;
+        int[][] kernelMatrix = new int[squareKernelSide][squareKernelSide];
+        for( int r = 0; r < squareKernelSide; r++ ) {
+            for( int c = 0; c < squareKernelSide; c++ ) {
+                kernelMatrix[r][c] = squareKernelArray[index++];
+            }
+        }
+        return kernelMatrix;
     }
 
 }

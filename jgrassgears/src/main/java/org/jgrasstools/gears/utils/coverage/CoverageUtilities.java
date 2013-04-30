@@ -71,6 +71,7 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.features.FastLiteShape;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
@@ -1395,4 +1396,34 @@ public class CoverageUtilities {
         return invertedRaster;
     }
 
+    /**
+     * Checks two rasters for equality of content.
+     * 
+     * @param wr1 the first raster.
+     * @param wr2 the second raster.
+     * @return <code>true</code>, if the rasters contain the same values.
+     */
+    public static boolean equals( WritableRaster wr1, WritableRaster wr2 ) {
+        int w1 = wr1.getWidth();
+        int h1 = wr1.getHeight();
+        int w2 = wr2.getWidth();
+        int h2 = wr2.getHeight();
+
+        if (w1 != w2 || h1 != h2) {
+            return false;
+        }
+        for( int c = 0; c < w1; c++ ) {
+            for( int r = 0; r < h1; r++ ) {
+                double v1 = wr1.getSampleDouble(c, r, 0);
+                double v2 = wr2.getSampleDouble(c, r, 0);
+                if (isNovalue(v1) && isNovalue(v2)) {
+                    continue;
+                }
+                if (!NumericsUtilities.dEq(v1, v2)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }

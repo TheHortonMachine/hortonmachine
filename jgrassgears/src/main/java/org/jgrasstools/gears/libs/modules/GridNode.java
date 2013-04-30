@@ -145,7 +145,7 @@ public class GridNode extends Node {
         return "GridNode [\n\tcol=" + col + //
                 ", \n\trow=" + row + //
                 ", \n\televation=" + elevation + //
-                ", \n\ttisValid=" + isValid() + //
+                ", \n\tisValid=" + isValid() + //
                 ", \n\ttouchesBounds=" + touchesBound + //
                 "\n]";
     }

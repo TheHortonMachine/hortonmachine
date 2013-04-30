@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears;
 
+import java.awt.image.WritableRaster;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -90,6 +91,13 @@ public class TestCoverageUtilities extends HMTestCase {
         assertEquals(rows, paramsMap.getRows());
         assertEquals(north - south, paramsMap.getHeight(), DELTA);
         assertEquals(east - west, paramsMap.getWidth(), DELTA);
+
+        WritableRaster wr1 = CoverageUtilities.renderedImage2WritableRaster(elevationCoverage.getRenderedImage(), false);
+        WritableRaster wr2 = CoverageUtilities.renderedImage2WritableRaster(elevationCoverage.getRenderedImage(), false);
+        assertTrue(CoverageUtilities.equals(wr1, wr2));
+        
+        wr2.setSample(3, 3, 0, -1.0);
+        assertFalse(CoverageUtilities.equals(wr1, wr2));
     }
 
     public void testCoverageSubregionLoop() throws Exception {

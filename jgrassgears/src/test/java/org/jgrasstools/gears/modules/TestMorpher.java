@@ -26,6 +26,7 @@ import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.morpher.Morpher;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -67,7 +68,6 @@ public class TestMorpher extends HMTestCase {
 
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.DILATE;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
@@ -85,7 +85,6 @@ public class TestMorpher extends HMTestCase {
 
         morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 0, //
                 1, 1, 1, //
@@ -108,7 +107,6 @@ public class TestMorpher extends HMTestCase {
 
         morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 1, //
                 1, 1, 1, //
@@ -127,40 +125,37 @@ public class TestMorpher extends HMTestCase {
                 {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
+
         checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
 
-        // morpher = new Morpher();
-        // morpher.inMap = raster;
-        // morpher.pValid = 1.0;
-        // morpher.pKernel = new int[]{//
-        // /* */0, 0, 1, 0, 0,//
-        // 0, 0, 1, 0, 0,//
-        // 1, 1, 1, 1, 1, //
-        // 0, 0, 1, 0, 0, //
-        // 0, 0, 1, 0, 0 //
-        // };
-        // morpher.pMode = Variables.DILATE;
-        // morpher.process();
-        // morphed = morpher.outMap;
-        // PrintUtilities.printCoverageDataAsMatrix(morphed);
-        // dilated = new double[][]{//
-        // /* */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-        // {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-        // {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
-        // {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
-        // {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
-        // {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN}, //
-        // {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-        // {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
-        // };
-        // checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
-
+        morpher = new Morpher();
+        morpher.inMap = raster;
+        morpher.pKernel = new int[]{//
+        /* */0, 0, 1, 0, 0,//
+                0, 0, 1, 0, 0,//
+                1, 1, 1, 1, 1, //
+                0, 0, 1, 0, 0, //
+                0, 0, 1, 0, 0 //
+        };
+        morpher.pMode = Variables.DILATE;
+        morpher.process();
+        morphed = morpher.outMap;
+        dilated = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN}, //
+                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN}, //
+                {NaN, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN}, //
+                {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, NaN}, //
+                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
     }
 
     public void testErode() throws Exception {
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.ERODE;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
@@ -178,7 +173,6 @@ public class TestMorpher extends HMTestCase {
 
         morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.ERODE;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 0, //
@@ -205,7 +199,6 @@ public class TestMorpher extends HMTestCase {
     public void testSkeletonize() throws Exception {
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.SKELETONIZE;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
@@ -225,17 +218,16 @@ public class TestMorpher extends HMTestCase {
     public void testOpen() throws Exception {
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.OPEN;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
         double[][] opened = new double[][]{//
         /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
@@ -243,7 +235,6 @@ public class TestMorpher extends HMTestCase {
 
         morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.OPEN;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 0, //
@@ -255,10 +246,10 @@ public class TestMorpher extends HMTestCase {
         opened = new double[][]{//
         /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, 1.0, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
@@ -268,17 +259,16 @@ public class TestMorpher extends HMTestCase {
     public void testClose() throws Exception {
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.CLOSE;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
         double[][] closed = new double[][]{//
         /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
@@ -286,7 +276,6 @@ public class TestMorpher extends HMTestCase {
 
         morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pValid = 1.0;
         morpher.pMode = Variables.CLOSE;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 0, //
@@ -299,10 +288,10 @@ public class TestMorpher extends HMTestCase {
         closed = new double[][]{//
         /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, 1.0, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, 1.0, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
