@@ -54,7 +54,7 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         eiCalculator.pEs = 2;
         eiCalculator.pm = pm;
 
-        eiCalculator.executeEnergyIndexCalculator();
+        eiCalculator.process();
 
         List<EIAltimetry> altimetricValues = eiCalculator.outAltimetry;
         List<EIEnergy> energeticValues = eiCalculator.outEnergy;

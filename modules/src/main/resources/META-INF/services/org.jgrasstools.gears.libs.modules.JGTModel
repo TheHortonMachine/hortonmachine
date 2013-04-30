@@ -15,7 +15,6 @@ org.jgrasstools.modules.TmsGenerator
 org.jgrasstools.modules.Hillshade
 org.jgrasstools.modules.SumDownStream
 org.jgrasstools.modules.VectorOverlayOperators
-org.jgrasstools.modules.Strahler
 org.jgrasstools.modules.IntersectionFinder
 org.jgrasstools.modules.RasterWriter
 org.jgrasstools.modules.GridGeometryReader
@@ -64,7 +63,6 @@ org.jgrasstools.modules.Insolation
 org.jgrasstools.modules.DxfConverter
 org.jgrasstools.modules.TopIndex
 org.jgrasstools.modules.VectorMerger
-org.jgrasstools.modules.Pfafstetter
 org.jgrasstools.modules.SplitSubbasins
 org.jgrasstools.modules.LineSmootherJaitools
 org.jgrasstools.modules.KernelDensity
@@ -99,6 +97,7 @@ org.jgrasstools.modules.DrainDir
 org.jgrasstools.modules.WindowSampler
 org.jgrasstools.modules.SurfaceInterpolator
 org.jgrasstools.modules.RasterConverter
+org.jgrasstools.modules.EnergyIndexCalculator
 org.jgrasstools.modules.PointsRasterizer
 org.jgrasstools.modules.Ab
 org.jgrasstools.modules.Aspect

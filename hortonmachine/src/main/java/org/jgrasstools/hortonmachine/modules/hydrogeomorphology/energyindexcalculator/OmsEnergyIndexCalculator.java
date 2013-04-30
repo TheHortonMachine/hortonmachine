@@ -172,7 +172,7 @@ public class OmsEnergyIndexCalculator extends JGTModel {
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     @Execute
-    public void executeEnergyIndexCalculator() throws Exception {
+    public void process() throws Exception {
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
         rows = regionMap.get(CoverageUtilities.ROWS).intValue();
