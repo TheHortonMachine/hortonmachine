@@ -66,7 +66,7 @@ public abstract class AbstractLasReader {
     protected short recordLength;
     protected String header;
     protected boolean isOpen;
-    protected final CoordinateReferenceSystem crs;
+    protected CoordinateReferenceSystem crs;
     protected ReferencedEnvelope dataEnvelope;
 
     public AbstractLasReader( File lasFile, CoordinateReferenceSystem crs ) {

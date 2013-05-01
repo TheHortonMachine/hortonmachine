@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -149,6 +150,9 @@ public class LasReader_1_0 extends AbstractLasReader {
 
             header = sb.toString();
 
+            if (crs != null) {
+                crs = DefaultGeographicCRS.WGS84;
+            }
             dataEnvelope = new ReferencedEnvelope(xMin, xMax, yMin, yMax, crs);
 
             /*
