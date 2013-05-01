@@ -36,7 +36,7 @@ Vol 12, No 8, pp 1095-1123, 1998.
  * @author Simon Horne.
  */
 
-public class Thin extends MorpherHelp {
+public class Thin {
 
     /**
      * Takes an image and a kernel and thins it once.
@@ -99,7 +99,7 @@ public class Thin extends MorpherHelp {
             oldForeEdge = binary.getForegroundEdgePixels().size();
             oldBackEdge = binary.getBackgroundEdgePixels().size();
             for( int i = 0; i < 8; ++i ) {
-                binary = thinBinaryRep(binary, DEFAULT_THIN_KERNEL[i]);
+                binary = thinBinaryRep(binary, MorpherHelp.DEFAULT_THIN_KERNEL[i]);
                 binary.generateBackgroundEdgeFromForegroundEdge();
             }
         }
@@ -162,5 +162,19 @@ public class Thin extends MorpherHelp {
         }
         // System.out.println(output.size());
         return output;
+    }
+
+    /**
+     * Returns true if the kernel has no 0s.
+     *
+     * @param kernel the array storing the kernel values.
+     * @return True if no 0s (false otherwise)
+     */
+    private boolean kernelNo0s( int[] kernel ) {
+        for( int i = 0; i < kernel.length; ++i ) {
+            if (kernel[i] == 0)
+                return false;
+        }
+        return true;
     }
 }
