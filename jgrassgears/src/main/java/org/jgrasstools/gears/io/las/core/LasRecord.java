@@ -17,6 +17,8 @@
  */
 package org.jgrasstools.gears.io.las.core;
 
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+
 /**
  * Object containing the las record content plus some additional info.
  * 
@@ -86,5 +88,10 @@ public class LasRecord {
                 .append(TAB).append("classification = ").append(this.classification).append(CR).append(" )");
 
         return retValue.toString();
+    }
+
+    public double distance( LasRecord other ) {
+        double distance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
+        return distance;
     }
 }
