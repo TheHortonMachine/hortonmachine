@@ -105,7 +105,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Status(OMSJAMI_STATUS)
 @License(OMSJAMI_LICENSE)
 public class OmsJami extends JGTModel {
-
+    
     @Description(OMSJAMI_inStations_DESCRIPTION)
     @In
     public SimpleFeatureCollection inStations;
@@ -322,7 +322,7 @@ public class OmsJami extends JGTModel {
     @Execute
     public void process() throws Exception {
 
-        System.out.println("OmsJami processing " + tCurrent + " " + pType);
+        pm.message("processing " + tCurrent + " " + pType);
 
         checkNull(inAltimetry, inAreas, inMeteo, inStations);
 

@@ -59,7 +59,6 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.FeatureCollection;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -112,43 +111,18 @@ public class Kriging extends JGTModel {
     @In
     public String fPointZ = null;
 
-    /**
-     * Define the mode. It is possible 4 alternatives: <li>mode ==0, the value
-     * to calculate are in a non-regular grid (the coordinates are stored in a
-     * {@link FeatureCollection}, pointsToInterpolate. This is a 2-D
-     * interpolation, so the z coordinates are null. <li>mode ==1, the value to
-     * calculate are in a non-regular grid (the coordinates are stored in a
-     * {@link FeatureCollection}, pointsToInterpolate. This is a 3-D
-     * interpolation.. <li>mode ==2, the value to calculate are in a regular
-     * grid (the coordinates are stored in a {@link GridCoverage2D},
-     * gridToInterpolate. This is a 2-D interpolation. <li>mode ==3, the value
-     * to calculate are in a regular grid (the coordinates are stored in a
-     * {@link GridCoverage2D}, gridToInterpolate. This is a 3-D interpolation,
-     * so the grid have to contains a dem.
-     */
     @Description(OMSKRIGING_pMode_DESCRIPTION)
     @In
     public int pMode = 0;
 
-    /**
-     * The integral scale, this is necessary to calculate the variogram if the
-     * program use {@link Kriging2.variogram(rx,ry,rz)}.
-     */
     @Description(OMSKRIGING_pIntegralscale_DESCRIPTION)
     @In
     public double[] pIntegralscale = null;
 
-    /**
-     * Variance of the measure field.
-     */
     @Description(OMSKRIGING_pVariance_DESCRIPTION)
     @In
     public double pVariance = 0;
 
-    /**
-     * The logarithm selector, if it's true then the models runs with the log of
-     * the data.
-     */
     @Description(OMSKRIGING_doLogarithmic_DESCRIPTION)
     @In
     public boolean doLogarithmic = false;
