@@ -740,7 +740,7 @@ public class HortonMessages {
     public static final String OMSMAGNITUDO_inFlow_DESCRIPTION = "The map of flowdirections.";
     public static final String OMSMAGNITUDO_outMag_DESCRIPTION = "The map of magnitudo.";
 
-    public static final String OMSJAMI_DESCRIPTION = "OmsJami - Just another meteo interpolator";
+    public static final String OMSJAMI_DESCRIPTION = "Jami - Just another meteo interpolator";
     public static final String OMSJAMI_DOCUMENTATION = "";
     public static final String OMSJAMI_KEYWORDS = "Meteo, Hydrology";
     public static final String OMSJAMI_LABEL = STATISTICS;
@@ -756,7 +756,7 @@ public class HortonMessages {
     public static final String OMSJAMI_pNum_DESCRIPTION = "The minimum number of stations required at a certain level, to perform interpolation.";
     public static final String OMSJAMI_inInterpolate_DESCRIPTION = "The features representing the points in which the meteo data will be interpolated to. The baricenter of the basin is used to place the result ofthe interpolation. These can be of any shape, the baricenter will be used anyways.";
     public static final String OMSJAMI_fBasinid_DESCRIPTION = "The field name of the attribute table that holds the basin id.";
-    public static final String OMSJAMI_pType_DESCRIPTION = "The meteo type that will be handled for interpolation.";
+    public static final String OMSJAMI_pType_DESCRIPTION = "The meteo type that will be handled for interpolation [0 = temp, 1 = pressure, 2 = humidity, 3 = wind, 4 = DTDAY, 5 = DTMONTH].";
     public static final String OMSJAMI_defaultRh_DESCRIPTION = "The default value for relative humidity: 70%";
     public static final String OMSJAMI_defaultW_DESCRIPTION = "The default value for wind speed: 1 m/s";
     public static final String OMSJAMI_pHtmin_DESCRIPTION = "The hour of the day in which Tmin is supposed to happen.";
@@ -769,8 +769,8 @@ public class HortonMessages {
     public static final String OMSJAMI_inAltimetry_DESCRIPTION = "The list of altimetric bands information, into which the basin is divided.";
     public static final String OMSJAMI_inAreas_DESCRIPTION = "The list of altimetric/energetic bands areas.";
     public static final String OMSJAMI_inMeteo_DESCRIPTION = "The map of meteo data to interpolate. Every value is associated to the id of the station.";
-    public static final String OMSJAMI_outInterpolatedBand_DESCRIPTION = "The map of interpolated meteo data for every band and point. Every value is associated to the id of the interpolation point.";
-    public static final String OMSJAMI_outInterpolated_DESCRIPTION = "The map of interpolated meteo data for every point. Every value is associated to the id of the interpolation point.";
+    public static final String OMSJAMI_outInterpolatedBand_DESCRIPTION = "Output interpolated meteo data for every band and point. Every value is associated to the id of the interpolation point.";
+    public static final String OMSJAMI_outInterpolated_DESCRIPTION = "Output interpolated meteo data for every point. Every value is associated to the id of the interpolation point.";
 
     public static final String OMSMARKOUTLETS_DESCRIPTION = "Marks all the outlets of the considered region on the drainage directions map with the conventional value 10.";
     public static final String OMSMARKOUTLETS_DOCUMENTATION = "OmsMarkoutlets.html";
@@ -1135,7 +1135,7 @@ public class HortonMessages {
     public static final String OMSPENMANETP_tCurrent_DESCRIPTION = "The current timestamp (format: yyyy-MM-dd HH:mm ).";
     public static final String OMSPENMANETP_outEtp_DESCRIPTION = "Daily evapotranspiration.";
 
-    public static final String OMSENERGYINDEXCALCULATOR_DESCRIPTION = "The OmsAdige model.";
+    public static final String OMSENERGYINDEXCALCULATOR_DESCRIPTION = "The Adige model.";
     public static final String OMSENERGYINDEXCALCULATOR_DOCUMENTATION = "";
     public static final String OMSENERGYINDEXCALCULATOR_KEYWORDS = "Hydrology, Energy";
     public static final String OMSENERGYINDEXCALCULATOR_LABEL = HYDROGEOMORPHOLOGY;
@@ -1145,16 +1145,16 @@ public class HortonMessages {
     public static final String OMSENERGYINDEXCALCULATOR_AUTHORNAMES = "Stefano Endrizzi, Silvia Franceschi, Andrea Antonello";
     public static final String OMSENERGYINDEXCALCULATOR_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSENERGYINDEXCALCULATOR_inElev_DESCRIPTION = "The digital elevation model (DEM).";
-    public static final String OMSENERGYINDEXCALCULATOR_inBasins_DESCRIPTION = "The map of basins with the id as category.";
-    public static final String OMSENERGYINDEXCALCULATOR_inCurvatures_DESCRIPTION = "The map of curvatures.";
+    public static final String OMSENERGYINDEXCALCULATOR_inBasins_DESCRIPTION = "The map of subbasins with the id as category.";
+    public static final String OMSENERGYINDEXCALCULATOR_inCurvatures_DESCRIPTION = "The map of curvatures [nabla classes].";
     public static final String OMSENERGYINDEXCALCULATOR_inAspect_DESCRIPTION = "The map of aspect in radiants.";
     public static final String OMSENERGYINDEXCALCULATOR_inSlope_DESCRIPTION = "The map of slope in radiants.";
     public static final String OMSENERGYINDEXCALCULATOR_pEs_DESCRIPTION = "Number of altimetric bands.";
     public static final String OMSENERGYINDEXCALCULATOR_pEi_DESCRIPTION = "Number of energetic bands.";
-    public static final String OMSENERGYINDEXCALCULATOR_pDt_DESCRIPTION = "Aggregation interval of the data.";
-    public static final String OMSENERGYINDEXCALCULATOR_outAltimetry_DESCRIPTION = "The list of altimetric bands information.";
-    public static final String OMSENERGYINDEXCALCULATOR_outEnergy_DESCRIPTION = "The list of energetic bands information.";
-    public static final String OMSENERGYINDEXCALCULATOR_outArea_DESCRIPTION = "The list of areas of the energetic and altimetric bands.";
+    public static final String OMSENERGYINDEXCALCULATOR_pDt_DESCRIPTION = "Aggregation interval of the data [h].";
+    public static final String OMSENERGYINDEXCALCULATOR_outAltimetry_DESCRIPTION = "Output list of altimetric bands information.";
+    public static final String OMSENERGYINDEXCALCULATOR_outEnergy_DESCRIPTION = "Output list of energetic bands information.";
+    public static final String OMSENERGYINDEXCALCULATOR_outArea_DESCRIPTION = "Output list of areas of the energetic and altimetric bands.";
 
     public static final String OMSEPANETINPGENERATOR_DESCRIPTION = "Generates the inp file for an epanet run.";
     public static final String OMSEPANETINPGENERATOR_DOCUMENTATION = "";
