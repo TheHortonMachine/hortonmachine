@@ -48,7 +48,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -66,7 +65,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalcu
 @Author(name = OMSENERGYINDEXCALCULATOR_AUTHORNAMES, contact = OMSENERGYINDEXCALCULATOR_AUTHORCONTACTS)
 @Keywords(OMSENERGYINDEXCALCULATOR_KEYWORDS)
 @Label(OMSENERGYINDEXCALCULATOR_LABEL)
-@Name(OMSENERGYINDEXCALCULATOR_NAME)
+@Name("_" + OMSENERGYINDEXCALCULATOR_NAME)
 @Status(OMSENERGYINDEXCALCULATOR_STATUS)
 @License(OMSENERGYINDEXCALCULATOR_LICENSE)
 public class EnergyIndexCalculator extends JGTModel {

@@ -597,9 +597,10 @@ public class HortonMessages {
     public static final String OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSPRESTEYTAYLORETPMODEL_UI = "iterator";
     public static final String OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION = "The net Radiation at the grass surface in W/m2 for the current hour.";
-    public static final String OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
-    public static final String OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION = "The net Radiation default value in case of missing data.";
+    public static final String OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION = "The daily net Radiation default value in case of missing data.";
+    public static final String OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION = "The hourly net Radiation default value in case of missing data.";
     public static final String OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION = "Switch that defines if it is hourly.";
+    public static final String OMSPRESTEYTAYLORETPMODEL_fDataID_DESCRIPTION = "The common id name for the data reading.";
     public static final String OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION = "The mean hourly air temperature.";
     public static final String OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION = "The alpha.";
     public static final String OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION = "The g morning.";
@@ -608,7 +609,6 @@ public class HortonMessages {
     public static final String OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION = "The atmospheric pressure in KPa.";
     public static final String OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION = "The current time.";
-    public static final String OMSPRESTEYTAYLORETPMODEL_fId_DESCRIPTION = "Station id field.";
     public static final String OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION = "The reference evapotranspiration.";
 
     public static final String OMSVALIDATEDOUBLESTATION_DESCRIPTION = "Verify if there is a double station into the data. If the double station have different value then it is possible calculating the mean of two value ";

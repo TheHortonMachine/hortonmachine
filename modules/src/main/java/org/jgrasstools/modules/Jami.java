@@ -46,7 +46,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pHtmax_D
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pHtmin_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pNum_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_pType_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSJAMI_tCurrent_DESCRIPTION;
 
 import java.util.HashMap;
 import java.util.List;
@@ -78,7 +77,7 @@ import org.jgrasstools.hortonmachine.modules.statistics.jami.OmsJami;
 @Author(name = OMSJAMI_AUTHORNAMES, contact = OMSJAMI_AUTHORCONTACTS)
 @Keywords(OMSJAMI_KEYWORDS)
 @Label(OMSJAMI_LABEL)
-@Name(OMSJAMI_NAME)
+@Name("_" + OMSJAMI_NAME)
 @Status(OMSJAMI_STATUS)
 @License(OMSJAMI_LICENSE)
 public class Jami extends JGTModel {
@@ -157,10 +156,6 @@ public class Jami extends JGTModel {
     @In
     public double defaultTolltmax = 2.0;
 
-    @Description(OMSJAMI_tCurrent_DESCRIPTION)
-    @In
-    public String tCurrent = null;
-
     @Description(OMSJAMI_inAltimetry_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -231,7 +226,6 @@ public class Jami extends JGTModel {
         omsjami.defaultDtmonth = defaultDtmonth;
         omsjami.defaultTolltmin = defaultTolltmin;
         omsjami.defaultTolltmax = defaultTolltmax;
-        omsjami.tCurrent = tCurrent;
         omsjami.inAltimetry = altimList;
         omsjami.inAreas = areasList;
         omsjami.pm = pm;
@@ -262,8 +256,6 @@ public class Jami extends JGTModel {
             omsjami.tCurrent = dataReader.tCurrent;
             HashMap<Integer, double[]> id2ValueMap = dataReader.outData;
             omsjami.inMeteo = id2ValueMap;
-            // Unrecognised: outInterpolatedBand
-            // Unrecognised: outInterpolated
             omsjami.process();
 
             // write csv data

@@ -15,9 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp;
+package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_DESCRIPTION;
@@ -30,6 +29,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLOR
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_fDataID_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION;
@@ -39,11 +39,9 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLOR
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION;
 
+import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -53,30 +51,32 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel;
 
 @Description(OMSPRESTEYTAYLORETPMODEL_DESCRIPTION)
 @Author(name = OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES, contact = OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS)
 @Keywords(OMSPRESTEYTAYLORETPMODEL_KEYWORDS)
 @Label(OMSPRESTEYTAYLORETPMODEL_LABEL)
-@Name(OMSPRESTEYTAYLORETPMODEL_NAME)
+@Name("_" + OMSPRESTEYTAYLORETPMODEL_NAME)
 @Status(OMSPRESTEYTAYLORETPMODEL_STATUS)
 @License(OMSPRESTEYTAYLORETPMODEL_LICENSE)
 @UI(OMSPRESTEYTAYLORETPMODEL_UI)
-public class OmsPresteyTaylorEtpModel extends JGTModel {
+public class PresteyTaylorEtpModel extends JGTModel {
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     @Unit("Watt m-2 ")
-    public HashMap<Integer, double[]> inNetradiation;
+    public String inNetradiation;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
     @In
@@ -92,10 +92,15 @@ public class OmsPresteyTaylorEtpModel extends JGTModel {
     @In
     public boolean doHourly;
 
+    @Description(OMSPRESTEYTAYLORETPMODEL_fDataID_DESCRIPTION)
+    @In
+    public String fDataID;
+
     @Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     @Unit("C")
-    public HashMap<Integer, double[]> inTemp;
+    public String inTemp;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
     @In
@@ -116,116 +121,99 @@ public class OmsPresteyTaylorEtpModel extends JGTModel {
     public double defaultTemp = 15.0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     @Unit("KPa")
-    public HashMap<Integer, double[]> inPressure;
+    public String inPressure;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
     @In
     @Unit("KPa")
-    public double defaultPressure = 100.0;
-
-    @Description(OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION)
-    @In
-    public String tCurrent;
+    public double defaultPressure = 101.3;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @Unit("mm hour-1")
-    @Out
-    public HashMap<Integer, double[]> outPTEtp;
-
-    private DateTimeFormatter formatter = JGTConstants.utcDateFormatterYYYYMMDDHHMM;
+    @In
+    public String outPTEtp;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inTemp);
 
-        outPTEtp = new HashMap<Integer, double[]>();
-        Set<Entry<Integer, double[]>> entrySet = inTemp.entrySet();
-        for( Entry<Integer, double[]> entry : entrySet ) {
-            Integer basinId = entry.getKey();
+        OmsTimeSeriesIteratorReader tempReader = getTimeseriesReader(inTemp, fDataID);
 
-            double temp = defaultTemp;
-            double t = entry.getValue()[0];
-            if (!isNovalue(t)) {
-                temp = t;
+        OmsTimeSeriesIteratorReader pressReader = null;
+        if (inPressure != null)
+            pressReader = getTimeseriesReader(inPressure, fDataID);
+        OmsTimeSeriesIteratorReader netradReader = null;
+        if (inNetradiation != null)
+            netradReader = getTimeseriesReader(inNetradiation, fDataID);
+
+        OmsPresteyTaylorEtpModel omspresteytayloretpmodel = new OmsPresteyTaylorEtpModel();
+        omspresteytayloretpmodel.defaultPressure = defaultPressure;
+        omspresteytayloretpmodel.pAlpha = pAlpha;
+        omspresteytayloretpmodel.pGmorn = pGmorn;
+        omspresteytayloretpmodel.pGnight = pGnight;
+        omspresteytayloretpmodel.doHourly = doHourly;
+        omspresteytayloretpmodel.pm = pm;
+        omspresteytayloretpmodel.defaultDailyNetradiation = defaultDailyNetradiation;
+        omspresteytayloretpmodel.defaultHourlyNetradiation = defaultHourlyNetradiation;
+        omspresteytayloretpmodel.defaultTemp = defaultTemp;
+
+        OmsTimeSeriesIteratorWriter writerCalculatedEtp = null;
+
+        pm.beginTask("Processing...", IJGTProgressMonitor.UNKNOWN);
+        while( tempReader.doProcess ) {
+            tempReader.nextRecord();
+
+            HashMap<Integer, double[]> id2ValueMap = tempReader.outData;
+            omspresteytayloretpmodel.inTemp = id2ValueMap;
+            omspresteytayloretpmodel.tCurrent = tempReader.tCurrent;
+
+            if (writerCalculatedEtp == null) {
+                writerCalculatedEtp = new OmsTimeSeriesIteratorWriter();
+                writerCalculatedEtp.file = outPTEtp;
+                writerCalculatedEtp.tStart = tempReader.tStart;
+                writerCalculatedEtp.tTimestep = tempReader.tTimestep;
             }
 
-            double netradiation = 0;
-            if (doHourly == true) {
-                netradiation = defaultHourlyNetradiation * 0.0864 / 24.0;
-            } else {
-                netradiation = defaultDailyNetradiation * 0.0864;
-            }
-            if (inNetradiation != null) {
-                double n = inNetradiation.get(basinId)[0];
-                if (!isNovalue(n)) {
-                    if (doHourly == true) {
-                        netradiation = n * 0.0864 / 24.0;
-                    } else {
-                        netradiation = n * 0.0864;
-                    }
-                }
+            pm.message("timestep: " + tempReader.tCurrent);
+
+            if (pressReader != null) {
+                pressReader.nextRecord();
+                id2ValueMap = pressReader.outData;
+                omspresteytayloretpmodel.inPressure = id2ValueMap;
             }
 
-            double pressure = defaultPressure;
-            if (inPressure != null) {
-                double p = inPressure.get(basinId)[0];
-                if (isNovalue(p)) {
-                    pressure = defaultPressure;
-                } else {
-                    pressure = p;
-                }
+            if (netradReader != null) {
+                netradReader.nextRecord();
+                id2ValueMap = netradReader.outData;
+                omspresteytayloretpmodel.inNetradiation = id2ValueMap;
             }
-
-            DateTime currentDatetime = formatter.parseDateTime(tCurrent);
-            int ora = currentDatetime.getHourOfDay();
-            boolean isLigth = false;
-            if (ora > 6 && ora < 18) {
-                isLigth = true;
-            }
-
-            double etp = compute(pGmorn, pGnight, pAlpha, netradiation, temp, pressure, isLigth, doHourly);
-            outPTEtp.put(basinId, new double[]{etp});
+            omspresteytayloretpmodel.process();
+            HashMap<Integer, double[]> outEtp = omspresteytayloretpmodel.outPTEtp;
+            // write csv data
+            writerCalculatedEtp.inData = outEtp;
+            writerCalculatedEtp.writeNextLine();
         }
+        pm.done();
+
+        tempReader.close();
+        if (pressReader != null)
+            pressReader.close();
+        if (netradReader != null)
+            netradReader.close();
+        writerCalculatedEtp.close();
+
     }
 
-    private double compute( double ggm, double ggn, double alpha, double NetRad, double AirTem, double AtmPres, boolean islight,
-            boolean ishourlyo ) {
-        double result = 0;
-        if (ishourlyo == true) {
-            double den_Delta = (AirTem + 237.3) * (AirTem + 237.3);
-            double exp_Delta = (17.27 * AirTem) / (AirTem + 237.3);
-            double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
-            double Delta = num_Delta / den_Delta;
-
-            double lambda = 2.501 - 0.002361 * AirTem;
-            double gamma = 0.001013 * AtmPres / (0.622 * lambda);
-
-            double coeff_G;
-            if (islight == true) {
-                coeff_G = ggm;
-            } else {
-                coeff_G = ggn;
-            }
-
-            double G = coeff_G * NetRad;
-
-            result = (alpha) * Delta * (NetRad - G) / ((gamma + Delta) * lambda);
-
-        } else {
-            double den_Delta = (AirTem + 237.3) * (AirTem + 237.3);
-            double exp_Delta = (17.27 * AirTem) / (AirTem + 237.3);
-            double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
-            double Delta = num_Delta / den_Delta;
-
-            double lambda = 2.501 - 0.002361 * AirTem;
-            double gamma = 0.001013 * AtmPres / (0.622 * lambda);
-
-            result = (alpha) * Delta * (NetRad) / ((gamma + Delta) * lambda);
-
-        }
-        return result;
+    private OmsTimeSeriesIteratorReader getTimeseriesReader( String path, String id ) throws URISyntaxException {
+        OmsTimeSeriesIteratorReader reader = new OmsTimeSeriesIteratorReader();
+        reader.file = path;
+        reader.idfield = id;
+        reader.fileNovalue = "-9999";
+        reader.initProcess();
+        return reader;
     }
 
 }

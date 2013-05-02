@@ -73,6 +73,7 @@ org.jgrasstools.modules.Raster2Xyz
 org.jgrasstools.modules.RasterTransformer
 org.jgrasstools.modules.Slope
 org.jgrasstools.modules.MeltonNumber
+org.jgrasstools.modules.PresteyTaylorEtpModel
 org.jgrasstools.modules.DwgConverter
 org.jgrasstools.modules.ContourExtractor
 org.jgrasstools.modules.HackLength

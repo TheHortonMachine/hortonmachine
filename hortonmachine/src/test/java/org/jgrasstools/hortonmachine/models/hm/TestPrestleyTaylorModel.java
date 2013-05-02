@@ -45,7 +45,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
             HashMap<Integer, double[]> id2ValueMap = tempReader.outData;
             PTEtp.inTemp = id2ValueMap;
 
-            PTEtp.time = tempReader.tCurrent;
+            PTEtp.tCurrent = tempReader.tCurrent;
 
             pressReader.nextRecord();
             id2ValueMap = pressReader.outData;
@@ -89,7 +89,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
             HashMap<Integer, double[]> id2ValueMap = tempReader.outData;
             PTEtp.inTemp = id2ValueMap;
 
-            PTEtp.time = tempReader.tCurrent;
+            PTEtp.tCurrent = tempReader.tCurrent;
 
             pressReader.nextRecord();
             id2ValueMap = pressReader.outData;
