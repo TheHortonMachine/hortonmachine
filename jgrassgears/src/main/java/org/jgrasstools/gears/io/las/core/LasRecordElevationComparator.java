@@ -24,19 +24,40 @@ import java.util.Comparator;
  * Comparator for {@link LasRecord}s.
  * 
  * <p>The default use in {@link Collections#sort(java.util.List)} orders 
- * the points in descending order of elevation.
+ * the points from the lowest to the highest elevation.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasRecordElevationComparator implements Comparator<LasRecord> {
+
+    private boolean doReverse;
+
+    public LasRecordElevationComparator() {
+        this(false);
+    }
+
+    public LasRecordElevationComparator( boolean doReverse ) {
+        this.doReverse = doReverse;
+    }
+
     @Override
     public int compare( LasRecord o1, LasRecord o2 ) {
-        if (o1.z < o2.z) {
-            return -1;
-        } else if (o1.z > o2.z) {
-            return 1;
+        if (doReverse) {
+            if (o1.z < o2.z) {
+                return 1;
+            } else if (o1.z > o2.z) {
+                return -1;
+            } else {
+                return 0;
+            }
         } else {
-            return 0;
+            if (o1.z < o2.z) {
+                return -1;
+            } else if (o1.z > o2.z) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
     }
 }
