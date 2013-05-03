@@ -47,6 +47,8 @@ import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.LogProgressMonitor;
 import org.opengis.util.ProgressListener;
 
+import com.vividsolutions.jts.geom.GeometryFactory;
+
 /**
  * Superclass for modules.
  * 
@@ -60,6 +62,8 @@ public class JGTModel implements Process {
     )
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
+
+    public GeometryFactory gf = new GeometryFactory();
 
     /**
      * Variable that defines if time is still available or run out.

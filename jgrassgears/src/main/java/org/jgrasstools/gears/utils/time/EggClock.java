@@ -23,6 +23,15 @@ import java.util.Date;
 /**
  * A simple time print utility.
  * 
+ * <pre>
+ * EggClock timer = new EggClock("Time check: ", " min\n");
+ * timer.start();
+ * 
+ * -> do some stuff here
+ *
+ * timer.printTimePassedInMinutes(System.err);
+ * </pre>
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  * @since 0.7.6
  */
