@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-import com.vividsolutions.jts.operation.buffer.BufferParameters;
 
 /**
  * Variable names that also need translations and used in the modules.
@@ -28,7 +27,7 @@ public interface Variables {
     public String DEFAULT = "default";
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
-    
+
     public String TPS = "TPS";
     public String IDW = "IDW";
 
@@ -53,10 +52,26 @@ public interface Variables {
     public String JOIN_ROUND = "round";
     public String JOIN_MITRE = "mitre";
     public String JOIN_BEVEL = "bevel";
-    
+
     public String DILATE = "dilate";
     public String ERODE = "erode";
     public String SKELETONIZE = "skeletonize";
     public String OPEN = "open";
     public String CLOSE = "close";
+
+    public String CUSTOM = "custom";
+    public String DECIDUOUS = "deciduous";
+    public String CONIFER = "conifer";
+    public String MIXED_PINES_AND_DECIDUOUS = "mixed pines and deciduous trees";
+
+    public String BINARY = "binary";
+    public String COSINE = "cosine";
+    public String DISTANCE = "distance";
+    public String EPANECHNIKOV = "epanechnikov";
+    public String GAUSSIAN = "gaussian";
+    public String INVERSE_DISTANCE = "inverse_distance";
+    public String QUARTIC = "quartic";
+    public String TRIANGULAR = "triangular";
+    public String TRIWEIGHT = "triweight";
+
 }

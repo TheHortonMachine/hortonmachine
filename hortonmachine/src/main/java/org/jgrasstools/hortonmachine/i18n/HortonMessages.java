@@ -902,8 +902,8 @@ public class HortonMessages {
     public static final String OMSKERNELDENSITY_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSKERNELDENSITY_AUTHORCONTACTS = "http://jaitools.org, www.hydrologis.com";
     public static final String OMSKERNELDENSITY_inMap_DESCRIPTION = "The input map.";
-    public static final String OMSKERNELDENSITY_pKernel_DESCRIPTION = "The kernel to use (binary=0, cosine=1, distance=2, epanechnikov=3 (default), gaussian=4, inverse_distance=5, quartic=6, triangular=7, triweight=8).";
-    public static final String OMSKERNELDENSITY_pRadius_DESCRIPTION = "The kernel radius to use (default = 10).";
+    public static final String OMSKERNELDENSITY_pKernel_DESCRIPTION = "The kernel to use.";
+    public static final String OMSKERNELDENSITY_pRadius_DESCRIPTION = "The kernel radius to use in cells (default = 10).";
     public static final String OMSKERNELDENSITY_doConstant_DESCRIPTION = "Use a constant value for the existing input map values instead of the real map value (default = false).";
     public static final String OMSKERNELDENSITY_outDensity_DESCRIPTION = "The kernel density estimation.";
 
