@@ -63,7 +63,22 @@ public class JGTModel implements Process {
     @In
     public IJGTProgressMonitor pm = new LogProgressMonitor();
 
+    /**
+     * The default geometry factory.
+     */
     public GeometryFactory gf = new GeometryFactory();
+
+    /**
+     * Get the default number of threads.
+     * 
+     * <p>At the moment this gives the number of processors.</p> 
+     * 
+     * @return the default number of threads.
+     */
+    public static int getDefaultThreadsNum() {
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        return availableProcessors;
+    }
 
     /**
      * Variable that defines if time is still available or run out.
