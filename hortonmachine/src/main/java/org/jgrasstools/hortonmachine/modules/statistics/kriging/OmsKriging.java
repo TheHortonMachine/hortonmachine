@@ -540,7 +540,7 @@ public class OmsKriging extends JGTModel {
     private void storeResult( double[] result2, int[] id ) throws SchemaException {
         outData = new HashMap<Integer, double[]>();
         for( int i = 0; i < result2.length; i++ ) {
-            outData.put(id[i], new double[]{result2[i]});
+            outData.put(id[i], new double[]{checkResultValue(result2[i])});
         }
     }
 
@@ -568,7 +568,7 @@ public class OmsKriging extends JGTModel {
             int x = (int) gridCoord[0];
             int y = (int) gridCoord[1];
 
-            outIter.setSample(x, y, 0, interpolatedValues[c]);
+            outIter.setSample(x, y, 0, checkResultValue(interpolatedValues[c]));
             c++;
 
         }
@@ -578,6 +578,13 @@ public class OmsKriging extends JGTModel {
         outGrid = CoverageUtilities
                 .buildCoverage("gridded", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());
 
+    }
+
+    private double checkResultValue( double resultValue ) {
+        if (resultValue < 0) {
+            return 0.0;
+        }
+        return resultValue;
     }
 
     private LinkedHashMap<Integer, Coordinate> getCoordinate( GridGeometry2D grid ) {
