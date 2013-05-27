@@ -146,10 +146,6 @@ public class TmsGenerator extends JGTModel {
     @In
     public String inPath;
 
-    @Description(OMSTMSGENERATOR_pMaxThreads_DESCRIPTION)
-    @In
-    public Integer pMaxThreads = 1;
-
     @Execute
     public void process() throws Exception {
         OmsTmsGenerator tmsgenerator = new OmsTmsGenerator();
@@ -170,7 +166,6 @@ public class TmsGenerator extends JGTModel {
         tmsgenerator.pCheckcolor = pCheckcolor;
         tmsgenerator.doLegacyGrass = doLegacyGrass;
         tmsgenerator.inPath = inPath;
-        tmsgenerator.pMaxThreads = pMaxThreads;
         tmsgenerator.pm = pm;
         tmsgenerator.doProcess = doProcess;
         tmsgenerator.doReset = doReset;

@@ -31,6 +31,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_inVe
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_outVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransX_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_pTransY_DESCRIPTION;
+
+import java.awt.geom.AffineTransform;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -47,6 +50,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -78,6 +82,10 @@ public class OmsVectorTransformer extends JGTModel {
     @In
     public double pTransY;
 
+    @Description("The rotation angle in clockwise degrees.")
+    @In
+    public Double pRotate;
+
     @Description(OMSVECTORTRANSFORMER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
@@ -90,16 +98,31 @@ public class OmsVectorTransformer extends JGTModel {
 
         outVector = FeatureCollections.newCollection();
         SimpleFeatureType featureType = inVector.getSchema();
-
+        ReferencedEnvelope vectorBounds = inVector.getBounds();
+        double centerX = vectorBounds.getMinX() + (vectorBounds.getMaxX() - vectorBounds.getMinX()) / 2.0;
+        double centerY = vectorBounds.getMinY() + (vectorBounds.getMaxY() - vectorBounds.getMinY()) / 2.0;
+        double pAngle = 0;
+        MathTransform rotationTransform = null;
+        if (pRotate != null) {
+            pAngle = pRotate;
+            AffineTransform rotationAT = new AffineTransform();
+            rotationAT.translate(centerX, centerY);
+            rotationAT.rotate(Math.toRadians(-pAngle));
+            rotationAT.translate(-centerX, -centerY);
+            rotationTransform = new AffineTransform2D(rotationAT);
+        }
         FeatureGeometrySubstitutor substitutor = new FeatureGeometrySubstitutor(featureType);
 
         FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
-        int id = 0;
         pm.beginTask("Transforming geometries...", inVector.size());
         while( inFeatureIterator.hasNext() ) {
             // copy the contents of each feature and transform the geometry
             SimpleFeature feature = inFeatureIterator.next();
             Geometry geometry = (Geometry) feature.getDefaultGeometry();
+
+            if (pRotate != null) {
+                geometry = JTS.transform(geometry, rotationTransform);
+            }
 
             // m00 the X coordinate scaling element of the 3x3 matrix
             // m10 the Y coordinate shearing element of the 3x3 matrix

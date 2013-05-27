@@ -168,10 +168,6 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public String inPath;
 
-    @Description(OMSTMSGENERATOR_pMaxThreads_DESCRIPTION)
-    @In
-    public Integer pMaxThreads = 1;
-
     private static final String EPSG_MERCATOR = "EPSG:3857";
     private static final String EPSG_LATLONG = "EPSG:4326";
 
@@ -180,6 +176,8 @@ public class OmsTmsGenerator extends JGTModel {
     @Execute
     public void process() throws Exception {
         checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+
+        int threads = getDefaultThreadsNum() * 5;
 
         String ext = "png";
         if (pImagetype == 1) {
@@ -202,24 +200,21 @@ public class OmsTmsGenerator extends JGTModel {
             throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
         }
 
-        CoordinateReferenceSystem boundsCrs;
+        CoordinateReferenceSystem dataCrs;
         if (pEpsg != null) {
-            boundsCrs = CRS.decode(pEpsg);
-        }else{
+            dataCrs = CRS.decode(pEpsg);
+        } else {
             String wkt = FileUtilities.readFile(inPrj);
-            boundsCrs = CRS.parseWKT(wkt);
+            dataCrs = CRS.parseWKT(wkt);
         }
 
         final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
-        CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
-        ReferencedEnvelope inBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, boundsCrs);
-        MathTransform in2MercatorTransform = CRS.findMathTransform(boundsCrs, mercatorCrs);
-        Envelope mercatorEnvelope = JTS.transform(inBounds, in2MercatorTransform);
-        ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
-        MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-        Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
-        Coordinate latLongCentre = latLongBounds.centre();
+        ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
+        MathTransform data2MercatorTransform = CRS.findMathTransform(dataCrs, mercatorCrs);
+
+        Envelope mercatorEnvelope = JTS.transform(dataBounds, data2MercatorTransform);
+        ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
         File inFolder = new File(inPath);
         final File baseFolder = new File(inFolder, pName);
@@ -277,7 +272,7 @@ public class OmsTmsGenerator extends JGTModel {
 
             final ReferencedEnvelope levelBounds = new ReferencedEnvelope(mercatorCrs);
 
-            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
+            ExecutorService fixedThreadPool = Executors.newFixedThreadPool(threads);
 
             pm.beginTask("Generating tiles at zoom level: " + z, (endXTile - startXTile + 1) * (endYTile - startYTile + 1));
             for( int i = startXTile; i <= endXTile; i++ ) {
@@ -344,6 +339,11 @@ public class OmsTmsGenerator extends JGTModel {
             // pm.message("Total boundary wanted: " + mercatorBounds);
 
         }
+
+        CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+        MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
+        Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
+        Coordinate latLongCentre = latLongBounds.centre();
 
         StringBuilder properties = new StringBuilder();
 

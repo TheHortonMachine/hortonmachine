@@ -84,4 +84,5 @@ public class VectorTransformer extends JGTModel {
         vectortransformer.process();
         dumpVector(vectortransformer.outVector, outVector);
     }
+
 }
