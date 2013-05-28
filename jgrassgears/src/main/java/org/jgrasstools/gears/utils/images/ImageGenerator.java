@@ -48,6 +48,7 @@ import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.wms.WebMapServer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
+import org.geotools.gce.grassraster.GrassCoverageReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -231,6 +232,9 @@ public class ImageGenerator {
                     // first try a format that gives back a reader
                     AbstractGridFormat format = GridFormatFinder.findFormat(file);
                     reader = format.getReader(file);
+                    if (reader instanceof GrassCoverageReader) {
+						reader = null;
+					}
                 } catch (Exception e1) {
                     // ignore and try others
                 }

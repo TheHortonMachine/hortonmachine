@@ -652,6 +652,31 @@ public class FeatureUtilities {
         Polygon polygon = gf.createPolygon(linearRing, null);
         return polygon;
     }
+    
+    /**
+     * Create a {@link Polygon} from an {@link Envelope}.
+     * 
+     * @param envelope the envelope to convert.
+     * @return the created polygon.
+     */
+    public static Polygon envelopeToPolygon( Envelope envelope ) {
+    	double w = envelope.getMinX();
+    	double e = envelope.getMaxX();
+    	double s = envelope.getMinY();
+    	double n = envelope.getMaxY();
+    	
+    	Coordinate[] coords = new Coordinate[5];
+    	coords[0] = new Coordinate(w, n);
+    	coords[1] = new Coordinate(e, n);
+    	coords[2] = new Coordinate(e, s);
+    	coords[3] = new Coordinate(w, s);
+    	coords[4] = new Coordinate(w, n);
+    	
+    	GeometryFactory gf = GeometryUtilities.gf();
+    	LinearRing linearRing = gf.createLinearRing(coords);
+    	Polygon polygon = gf.createPolygon(linearRing, null);
+    	return polygon;
+    }
 
     /**
      * Helper function to run the Vectorize operation with given parameters and

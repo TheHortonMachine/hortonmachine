@@ -63,20 +63,30 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.jfree.chart.renderer.xy.VectorRenderer;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
 @Description(OMSTMSGENERATOR_DESCRIPTION)
 @Documentation(OMSTMSGENERATOR_DOCUMENTATION)
@@ -147,6 +157,15 @@ public class OmsTmsGenerator extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPrj;
+    
+    @Description("A shapefile to use to draw maps on zoom levels higher than pZoomLimit. Everything outside is not drawn.")
+    @In
+    public String inZoomLimitVector;
+
+    @Description("The zoom limit above which the inZoomLimitVector is considered.")
+    @In
+    public double pZoomLimit = 17;
+    
 
     @Description(OMSTMSGENERATOR_doLenient_DESCRIPTION)
     @In
@@ -173,6 +192,8 @@ public class OmsTmsGenerator extends JGTModel {
 
     private int TILESIZE = 256;
 
+	private PreparedGeometry zoomLimitGeometry;
+
     @Execute
     public void process() throws Exception {
         checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
@@ -183,7 +204,7 @@ public class OmsTmsGenerator extends JGTModel {
         if (pImagetype == 1) {
             ext = "jpg";
         }
-
+        
         List<String> inVectors = null;
         if (inVectorFile != null && new File(inVectorFile).exists())
             inVectors = FileUtilities.readFileToLinesList(new File(inVectorFile));
@@ -195,7 +216,7 @@ public class OmsTmsGenerator extends JGTModel {
         if (inRasters == null && inVectors == null) {
             throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this);
         }
-
+        
         if (pEpsg == null && inPrj == null) {
             throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
         }
@@ -216,6 +237,20 @@ public class OmsTmsGenerator extends JGTModel {
         Envelope mercatorEnvelope = JTS.transform(dataBounds, data2MercatorTransform);
         ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
+        if (inZoomLimitVector!=null) {
+			SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
+			List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
+			if (geoms.size()==1) {
+				Geometry tmpGeom = geoms.get(0);
+				// convert to mercator
+				tmpGeom = JTS.transform(tmpGeom, data2MercatorTransform);
+				zoomLimitGeometry = PreparedGeometryFactory.prepare(tmpGeom);
+			}else{
+				pm.errorMessage("At the moment only a single zoom limiting geometry is supported.");
+			}
+        }
+        
+        
         File inFolder = new File(inPath);
         final File baseFolder = new File(inFolder, pName);
 
@@ -278,7 +313,7 @@ public class OmsTmsGenerator extends JGTModel {
             for( int i = startXTile; i <= endXTile; i++ ) {
 
                 for( int j = startYTile; j <= endYTile; j++ ) {
-                    tileNum++;
+                    
                     double[] bounds = mercator.TileBounds(i, j, z);
                     double west = bounds[0];
                     double south = bounds[1];
@@ -287,6 +322,18 @@ public class OmsTmsGenerator extends JGTModel {
 
                     final ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
                     levelBounds.expandToInclude(tmpBounds);
+                    
+                    // if there is a zoom level geometry limitation, apply it
+                    if (zoomLimitGeometry!=null && z > pZoomLimit) {
+                    	double safeExtend = tmpBounds.getWidth()>tmpBounds.getHeight()?tmpBounds.getWidth():tmpBounds.getHeight();
+                    	final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
+                    	tmp.expandBy(safeExtend);
+						Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
+						if (!zoomLimitGeometry.intersects(polygon)) {
+                    		pm.worked(1);
+							continue;
+						}
+					}
 
                     File imageFolder = new File(baseFolder, z + "/" + i);
                     if (!imageFolder.exists()) {
@@ -303,6 +350,7 @@ public class OmsTmsGenerator extends JGTModel {
                         pm.worked(1);
                         continue;
                     }
+                    tileNum++;
                     final String imagePath = imageFile.getAbsolutePath();
                     final ReferencedEnvelope finalBounds = tmpBounds;
                     Runnable runner = new Runnable(){
