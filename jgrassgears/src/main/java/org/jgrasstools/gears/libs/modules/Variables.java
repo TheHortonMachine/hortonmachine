@@ -17,7 +17,6 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
-
 /**
  * Variable names that also need translations and used in the modules.
  * 
@@ -59,19 +58,58 @@ public interface Variables {
     public String OPEN = "open";
     public String CLOSE = "close";
 
+    /**
+     * Custom keyword. 
+     */
     public String CUSTOM = "custom";
+    /**
+     * Windows mode for deciduous. 
+     */
     public String DECIDUOUS = "deciduous";
+    /**
+     * Windows mode for conifer. 
+     */
     public String CONIFER = "conifer";
-    public String MIXED_PINES_AND_DECIDUOUS = "mixed pines and deciduous trees";
+    /**
+     * Windows mode for mixed pines and deciduous. 
+     */
+    public String MIXED_PINES_AND_DECIDUOUS = "mixed_pines_and_deciduous_trees";
 
+    /**
+     * Kernel type binary.
+     */
     public String BINARY = "binary";
+    /**
+     * Kernel type cosine.
+     */
     public String COSINE = "cosine";
+    /**
+     * Kernel type distance.
+     */
     public String DISTANCE = "distance";
+    /**
+     * Kernel type epanechnikov.
+     */
     public String EPANECHNIKOV = "epanechnikov";
+    /**
+     * Kernel type gaussian.
+     */
     public String GAUSSIAN = "gaussian";
+    /**
+     * Kernel type inverse_distance.
+     */
     public String INVERSE_DISTANCE = "inverse_distance";
+    /**
+     * Kernel type quartic.
+     */
     public String QUARTIC = "quartic";
+    /**
+     * Kernel type triangular.
+     */
     public String TRIANGULAR = "triangular";
+    /**
+     * Kernel type triweight.
+     */
     public String TRIWEIGHT = "triweight";
 
 }
