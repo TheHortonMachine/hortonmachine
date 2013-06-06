@@ -30,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_inV
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pCols_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pNorth_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pRows_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pSouth_DESCRIPTION;
@@ -103,10 +102,6 @@ public class ScanLineRasterizer extends JGTModel {
     @In
     public Integer pCols = null;
 
-    @Description(OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION)
-    @In
-    public Integer pMaxThreads = 4;
-
     @Description(OMSSCANLINERASTERIZER_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
@@ -124,7 +119,6 @@ public class ScanLineRasterizer extends JGTModel {
         scanlinerasterizer.pEast = pEast;
         scanlinerasterizer.pRows = pRows;
         scanlinerasterizer.pCols = pCols;
-        scanlinerasterizer.pMaxThreads = pMaxThreads;
         scanlinerasterizer.pm = pm;
         scanlinerasterizer.doProcess = doProcess;
         scanlinerasterizer.doReset = doReset;

@@ -31,7 +31,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_inV
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_outRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pCols_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pNorth_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pRows_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSCANLINERASTERIZER_pSouth_DESCRIPTION;
@@ -146,10 +145,6 @@ public class OmsScanLineRasterizer extends JGTModel {
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSSCANLINERASTERIZER_pMaxThreads_DESCRIPTION)
-    @In
-    public Integer pMaxThreads = 4;
-
     @Description(OMSSCANLINERASTERIZER_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
@@ -233,7 +228,7 @@ public class OmsScanLineRasterizer extends JGTModel {
         pm.beginTask("Rasterizing features...", size);
         FeatureIterator<SimpleFeature> featureIterator = inVector.features();
 
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pMaxThreads);
+        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(getDefaultThreadsNum());
 
         while( featureIterator.hasNext() ) {
             final SimpleFeature feature = featureIterator.next();
