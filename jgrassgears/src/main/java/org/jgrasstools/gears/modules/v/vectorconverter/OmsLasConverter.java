@@ -46,6 +46,7 @@ import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -428,7 +429,7 @@ public class OmsLasConverter extends JGTModel {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }
     }
-    private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata ) {
+    private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata ) throws IOException {
         final ReferencedEnvelope envelope = lasReader.getEnvelope();
         final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(envelope));
 
@@ -444,6 +445,7 @@ public class OmsLasConverter extends JGTModel {
         builder.addAll(values);
         final SimpleFeature feature = builder.buildFeature(null);
         outGeodata.add(feature);
+        OmsVectorWriter.writeVector(outFile, outGeodata);
     }
 
     @Finalize

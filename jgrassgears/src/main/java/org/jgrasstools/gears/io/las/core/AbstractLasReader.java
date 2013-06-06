@@ -102,11 +102,9 @@ public abstract class AbstractLasReader {
         AbstractLasReader lasRecordReader = null;
         if (version.equals("1.0")) {
             lasRecordReader = new LasReader_1_0(lasFile, crs);
-        } else if (version.equals("1.1")) {
-            // TODO
-            throw new UnsupportedImplementationException("1.1 not supported.");
-        } else {
-            // try with the highest and hope for compatibility
+        } else  {
+            System.err.println("Found unsopported las file version. Trying to use the current 1.0 las reader anyways.");
+            lasRecordReader = new LasReader_1_0(lasFile, crs);
         }
         return lasRecordReader;
     }
