@@ -23,6 +23,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.distance3d;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getAngleInTriangle;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -812,4 +814,85 @@ public class GeometryUtilities {
         toScale.setRect(newX, newY, newW, newH);
     }
 
+    /**
+     * Calculates the coeffs of the plane equation: ax+by+cz+d=0 given 3 coordinates.
+     * 
+     * @param c1 coordinate 1.
+     * @param c2 coordinate 2.
+     * @param c3 coordinate 3.
+     * @return the array of the coeffs [a, b, c, d]
+     */
+    public static double[] getPlaneCoefficientsFrom3Points( Coordinate c1, Coordinate c2, Coordinate c3 ) {
+        double a = (c2.y - c1.y) * (c3.z - c1.z) - (c3.y - c1.y) * (c2.z - c1.z);
+        double b = (c2.z - c1.z) * (c3.x - c1.x) - (c3.z - c1.z) * (c2.x - c1.x);
+        double c = (c2.x - c1.x) * (c3.y - c1.y) - (c3.x - c1.x) * (c2.y - c1.y);
+        double d = -1.0 * (a * c1.x + b * c1.y + c * c1.z);
+        return new double[]{a, b, c, d};
+    }
+
+    /**
+     * Get the intersection coordinate between a line and plane.
+     * 
+     * <p>The line is defined by 2 3d coordinates and the plane by 3 3d coordinates.</p>
+     * 
+     * <p>from http://paulbourke.net/geometry/pointlineplane/</p>
+     * 
+     * @param lC1 line coordinate 1.
+     * @param lC2 line coordinate 2.
+     * @param pC1 plane coordinate 1.
+     * @param pC2 plane coordinate 2.
+     * @param pC3 plane coordinate 3.
+     * @return the intersection coordinate or <code>null</code> if the line is parallel to the plane.
+     */
+    public static Coordinate getLineWithPlaneIntersection( Coordinate lC1, Coordinate lC2, Coordinate pC1, Coordinate pC2,
+            Coordinate pC3 ) {
+        double[] p = getPlaneCoefficientsFrom3Points(pC1, pC2, pC3);
+
+        double denominator = p[0] * (lC1.x - lC2.x) + p[1] * (lC1.y - lC2.y) + p[2] * (lC1.z - lC2.z);
+        if (denominator == 0.0) {
+            return null;
+        }
+        double u = (p[0] * lC1.x + p[1] * lC1.y + p[2] * lC1.z + p[3]) / //
+                denominator;
+        double x = lC1.x + (lC2.x - lC1.x) * u;
+        double y = lC1.y + (lC2.y - lC1.y) * u;
+        double z = lC1.z + (lC2.z - lC1.z) * u;
+        return new Coordinate(x, y, z);
+    }
+    
+    /**
+     * Uses the cosine rule to find an angle in radiants of a triangle defined by the length of its sides. 
+     * 
+     * <p>The calculated angle is the one between the two adjacent sides a and b.</p> 
+     * 
+     * @param a adjacent side 1 length.
+     * @param b adjacent side 2 length.
+     * @param c opposite side length.
+     * @return the angle in radiants.
+     */
+    public static double getAngleInTriangle(double a, double b, double c){
+        double angle = Math.acos((a*a + b*b -c*c)/(2.0*a*b));
+        return angle;
+    }
+    
+    /**
+     * Calculates the angle in degrees between 3 3D coordinates.
+     * 
+     * <p>The calculated angle is the one placed in vertex c2.</p>
+     * 
+     * @param c1 first 3D point.
+     * @param c2 central 3D point.
+     * @param c3 last 3D point.
+     * @return the angle between the coordinates in degrees.
+     */
+    public static double angleBetween3D(Coordinate c1, Coordinate c2, Coordinate c3) {
+        double a = distance3d(c2, c1, null);
+        double b = distance3d(c2, c3, null);
+        double c = distance3d(c1, c3, null);
+        
+        double angleInTriangle = getAngleInTriangle(a, b, c);
+        double degrees = toDegrees(angleInTriangle);
+        return degrees;
+    }
+    
 }

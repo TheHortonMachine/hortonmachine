@@ -10,6 +10,8 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import static java.lang.Math.toDegrees;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -219,6 +221,64 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(0, (int) r22.getX());
         assertEquals(30, (int) r22.getHeight());
         assertEquals(-10, (int) r22.getY());
+    }
+
+    public void testPlaneCoeffs() {
+        Coordinate c1 = new Coordinate(1, 2, -2);
+        Coordinate c2 = new Coordinate(3, -2, 1);
+        Coordinate c3 = new Coordinate(5, 1, -4);
+
+        double[] coeffs = GeometryUtilities.getPlaneCoefficientsFrom3Points(c1, c2, c3);
+        assertEquals(11.0, coeffs[0], DELTA);
+        assertEquals(16.0, coeffs[1], DELTA);
+        assertEquals(14.0, coeffs[2], DELTA);
+        assertEquals(-15.0, coeffs[3], DELTA);
+    }
+
+    public void testLinePlaneIntersection() {
+        Coordinate pC1 = new Coordinate(0, 0, 0);
+        Coordinate pC2 = new Coordinate(2, 0, 0);
+        Coordinate pC3 = new Coordinate(0, 2, 0);
+
+        Coordinate lC1 = new Coordinate(0, 0, 1);
+        Coordinate lC2 = new Coordinate(1, 1, -1);
+
+        Coordinate lineWithPlaneIntersection = GeometryUtilities.getLineWithPlaneIntersection(lC1, lC2, pC1, pC2, pC3);
+        assertEquals(0.5, lineWithPlaneIntersection.x, DELTA);
+        assertEquals(0.5, lineWithPlaneIntersection.y, DELTA);
+        assertEquals(0.0, lineWithPlaneIntersection.z, DELTA);
+
+        pC1 = new Coordinate(0, 0, 0);
+        pC2 = new Coordinate(2, 0, 1);
+        pC3 = new Coordinate(0, 2, 1);
+
+        lC1 = new Coordinate(0, 0, 1);
+        lC2 = new Coordinate(1, 1, -1);
+
+        lineWithPlaneIntersection = GeometryUtilities.getLineWithPlaneIntersection(lC1, lC2, pC1, pC2, pC3);
+        double expected = 1.0 / 3.0;
+        assertEquals(expected, lineWithPlaneIntersection.x, DELTA);
+        assertEquals(expected, lineWithPlaneIntersection.y, DELTA);
+        assertEquals(expected, lineWithPlaneIntersection.z, DELTA);
+
+        pC1 = new Coordinate(0, 0, 0);
+        pC2 = new Coordinate(2, 0, 0);
+        pC3 = new Coordinate(0, 2, 0);
+
+        lC1 = new Coordinate(0, 0, 1);
+        lC2 = new Coordinate(1, 1, 1);
+
+        lineWithPlaneIntersection = GeometryUtilities.getLineWithPlaneIntersection(lC1, lC2, pC1, pC2, pC3);
+        assertNull(lineWithPlaneIntersection);
+    }
+
+    public void testTriangleAngle() {
+        Coordinate pC1 = new Coordinate(2, 0, 0);
+        Coordinate pC2 = new Coordinate(0, 0, 0);
+        Coordinate pC3 = new Coordinate(0, 2, 0);
+
+        double angleBetween3D = angleBetween3D(pC1, pC2, pC3);
+        assertEquals(90.0, angleBetween3D, DELTA);
     }
 
 }
