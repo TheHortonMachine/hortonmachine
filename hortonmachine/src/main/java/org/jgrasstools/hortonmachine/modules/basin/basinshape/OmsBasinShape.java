@@ -219,7 +219,7 @@ public class OmsBasinShape extends JGTModel {
                 // min, max and average
                 values[3] = num;
                 values[4] = maxZ;
-                values[5] = maxZ;
+                values[5] = minZ;
                 values[6] = averageZ / numPixel;
 
                 numPixel = 0;
