@@ -24,8 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.util.UnsupportedImplementationException;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.joda.time.format.DateTimeFormat;
@@ -67,7 +66,7 @@ public abstract class AbstractLasReader {
     protected String header;
     protected boolean isOpen;
     protected CoordinateReferenceSystem crs;
-    protected ReferencedEnvelope dataEnvelope;
+    protected ReferencedEnvelope3D dataEnvelope;
 
     public AbstractLasReader( File lasFile, CoordinateReferenceSystem crs ) {
         this.lasFile = lasFile;
@@ -169,7 +168,7 @@ public abstract class AbstractLasReader {
 
     public abstract String getHeader();
 
-    public ReferencedEnvelope getEnvelope(){
+    public ReferencedEnvelope3D getEnvelope(){
         checkOpen();
         return dataEnvelope;
     }

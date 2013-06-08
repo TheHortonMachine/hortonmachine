@@ -20,7 +20,7 @@ package org.jgrasstools.gears.io.las.core;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -153,7 +153,7 @@ public class LasReader_1_0 extends AbstractLasReader {
             if (crs != null) {
                 crs = DefaultGeographicCRS.WGS84;
             }
-            dataEnvelope = new ReferencedEnvelope(xMin, xMax, yMin, yMax, crs);
+            dataEnvelope = new ReferencedEnvelope3D(xMin, xMax, yMin, yMax, zMin, zMax, crs);
 
             /*
              * move to the data position
