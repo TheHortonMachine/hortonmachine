@@ -224,12 +224,15 @@ public class JGTModel implements Process {
     /**
      * Fast default writing of raster to source. 
      * 
+     * <p>Mind that if either raster or source are <code>null</code>, the method will
+     * return without warning.</p>
+     * 
      * @param raster the {@link GridCoverage2D} to write.
      * @param source the source to which to write to.
      * @throws Exception
      */
     public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
-        if (raster == null)
+        if (raster == null || source == null)
             return;
         OmsRasterWriter.writeRaster(source, raster);
     }
@@ -237,12 +240,15 @@ public class JGTModel implements Process {
     /**
      * Fast default writing of vector to source. 
      * 
+     * <p>Mind that if either vector or source are <code>null</code>, the method will
+     * return without warning.</p>
+     * 
      * @param vector the {@link SimpleFeatureCollection} to write.
      * @param source the source to which to write to.
      * @throws Exception
      */
     public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
-        if (vector == null)
+        if (vector == null || source == null)
             return;
         OmsVectorWriter.writeVector(source, vector);
     }

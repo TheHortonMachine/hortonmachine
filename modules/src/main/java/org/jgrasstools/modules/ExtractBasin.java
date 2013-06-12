@@ -134,7 +134,7 @@ public class ExtractBasin extends JGTModel {
         dumpRaster(extractbasin.outBasin, outBasin);
         dumpVector(extractbasin.outOutlet, outOutlet);
         dumpVector(extractbasin.outVectorBasin, outVectorBasin);
-        pm.message("Basin Area = " + outArea);
+        outArea = extractbasin.outArea;
+        pm.message("Basin Area = " + extractbasin.outArea);
     }
-
 }
