@@ -18,9 +18,12 @@
  */
 package org.jgrasstools.gears.utils.geometry;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.acos;
 import static java.lang.Math.atan;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
@@ -856,6 +859,36 @@ public class GeometryUtilities {
         double y = lC1.y + (lC2.y - lC1.y) * u;
         double z = lC1.z + (lC2.z - lC1.z) * u;
         return new Coordinate(x, y, z);
+    }
+
+    /**
+     * Calculates the angle between line and plane.
+     * 
+     * http://geogebrawiki.wikispaces.com/3D+Geometry
+     * 
+     * @param a the 3d point.
+     * @param d the point of intersection between line and plane.
+     * @param b the second plane coordinate.
+     * @param c the third plane coordinate.
+     * @return the angle in degrees between line and plane.
+     */
+    public static double getAngleBetweenLinePlane( Coordinate a, Coordinate d, Coordinate b, Coordinate c ) {
+
+        double[] rAD = {d.x - a.x, d.y - a.y, d.z - a.z};
+        double[] rDB = {b.x - d.x, b.y - d.y, b.z - d.z};
+        double[] rDC = {c.x - d.x, c.y - d.y, c.z - d.z};
+
+        double[] n = {//
+        /*    */rDB[1] * rDC[2] - rDC[1] * rDB[2], //
+                -1 * (rDB[0] * rDC[2] - rDC[0] * rDB[2]),//
+                rDB[0] * rDC[1] - rDC[0] * rDB[1]//
+        };
+
+        double cosNum = n[0] * rAD[0] + n[1] * rAD[1] + n[2] * rAD[2];
+        double cosDen = sqrt(n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) * sqrt(rAD[0] * rAD[0] + rAD[1] * rAD[1] + rAD[2] * rAD[2]);
+        double cos90MinAlpha = abs(cosNum / cosDen);
+        double alpha = 90.0 - toDegrees(acos(cos90MinAlpha));
+        return alpha;
     }
 
     /**

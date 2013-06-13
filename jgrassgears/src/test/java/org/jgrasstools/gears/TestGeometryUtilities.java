@@ -273,6 +273,17 @@ public class TestGeometryUtilities extends HMTestCase {
         assertNull(lineWithPlaneIntersection);
     }
 
+    public void testLinePlaneAngle() {
+        Coordinate p = new Coordinate(1, 2, 3);
+        Coordinate iC1 = new Coordinate(1, -2, 0);
+        Coordinate c2 = new Coordinate(2, 2, -1);
+        Coordinate c3 = new Coordinate(-3, 1, -2);
+
+        double angleBetweenLinePlane = GeometryUtilities.getAngleBetweenLinePlane(p, iC1, c2, c3);
+        assertEquals(52.0, (int) angleBetweenLinePlane, DELTA);
+
+    }
+
     public void testShortestDistanceFromPlane() {
         Coordinate pC1 = new Coordinate(0, 0, 0);
         Coordinate pC2 = new Coordinate(2, 0, 0);
