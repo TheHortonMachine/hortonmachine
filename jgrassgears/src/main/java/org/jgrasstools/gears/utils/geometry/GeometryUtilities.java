@@ -23,8 +23,6 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.distance3d;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.getAngleInTriangle;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -859,7 +857,22 @@ public class GeometryUtilities {
         double z = lC1.z + (lC2.z - lC1.z) * u;
         return new Coordinate(x, y, z);
     }
-    
+
+    /**
+     * Get shortest distance from a point in 3d to a plane defined by 3 coordinates.
+     * 
+     * @param c the point in 3d.
+     * @param pC1 plane coordinate 1.
+     * @param pC2 plane coordinate 2.
+     * @param pC3 plane coordinate 3.
+     * @return the shortest distance from the point to the plane.
+     */
+    public static double getShortestDistanceFromTriangle( Coordinate c, Coordinate pC1, Coordinate pC2, Coordinate pC3 ) {
+        double[] p = getPlaneCoefficientsFrom3Points(pC1, pC2, pC3);
+        double result = (p[0] * c.x + p[1] * c.y + p[2] * c.z + p[3]) / Math.sqrt(p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
+        return result;
+    }
+
     /**
      * Uses the cosine rule to find an angle in radiants of a triangle defined by the length of its sides. 
      * 
@@ -870,11 +883,11 @@ public class GeometryUtilities {
      * @param c opposite side length.
      * @return the angle in radiants.
      */
-    public static double getAngleInTriangle(double a, double b, double c){
-        double angle = Math.acos((a*a + b*b -c*c)/(2.0*a*b));
+    public static double getAngleInTriangle( double a, double b, double c ) {
+        double angle = Math.acos((a * a + b * b - c * c) / (2.0 * a * b));
         return angle;
     }
-    
+
     /**
      * Calculates the angle in degrees between 3 3D coordinates.
      * 
@@ -885,14 +898,14 @@ public class GeometryUtilities {
      * @param c3 last 3D point.
      * @return the angle between the coordinates in degrees.
      */
-    public static double angleBetween3D(Coordinate c1, Coordinate c2, Coordinate c3) {
+    public static double angleBetween3D( Coordinate c1, Coordinate c2, Coordinate c3 ) {
         double a = distance3d(c2, c1, null);
         double b = distance3d(c2, c3, null);
         double c = distance3d(c1, c3, null);
-        
+
         double angleInTriangle = getAngleInTriangle(a, b, c);
         double degrees = toDegrees(angleInTriangle);
         return degrees;
     }
-    
+
 }

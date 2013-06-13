@@ -1,5 +1,7 @@
 package org.jgrasstools.gears;
 
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.angleBetween3D;
+
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,8 +12,6 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import static java.lang.Math.toDegrees;
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -158,6 +158,7 @@ public class TestGeometryUtilities extends HMTestCase {
 
     }
 
+    @SuppressWarnings("nls")
     public void testGeomChecks() {
 
         Polygon dummyPolygon = GeometryUtilities.createDummyPolygon();
@@ -272,13 +273,44 @@ public class TestGeometryUtilities extends HMTestCase {
         assertNull(lineWithPlaneIntersection);
     }
 
+    public void testShortestDistanceFromPlane() {
+        Coordinate pC1 = new Coordinate(0, 0, 0);
+        Coordinate pC2 = new Coordinate(2, 0, 0);
+        Coordinate pC3 = new Coordinate(0, 2, 0);
+
+        Coordinate lC1 = new Coordinate(0, 5, 1);
+
+        double distance = GeometryUtilities.getShortestDistanceFromTriangle(lC1, pC1, pC2, pC3);
+        assertEquals(1.0, distance, DELTA);
+
+        pC1 = new Coordinate(0, 0, 1);
+        pC2 = new Coordinate(2, 0, 0);
+        pC3 = new Coordinate(0, 2, 0);
+
+        lC1 = new Coordinate(1, 1, 1);
+
+        distance = GeometryUtilities.getShortestDistanceFromTriangle(lC1, pC1, pC2, pC3);
+        assertEquals(0.8164965809277261, distance, DELTA);
+    }
+
     public void testTriangleAngle() {
         Coordinate pC1 = new Coordinate(2, 0, 0);
         Coordinate pC2 = new Coordinate(0, 0, 0);
         Coordinate pC3 = new Coordinate(0, 2, 0);
-
         double angleBetween3D = angleBetween3D(pC1, pC2, pC3);
         assertEquals(90.0, angleBetween3D, DELTA);
+
+        pC1 = new Coordinate(0, 0, 0);
+        pC2 = new Coordinate(2, 0, 0);
+        pC3 = new Coordinate(1, 1, 0);
+        angleBetween3D = angleBetween3D(pC1, pC2, pC3);
+        assertEquals(45.0, angleBetween3D, DELTA);
+
+        pC1 = new Coordinate(0, 0, 0);
+        pC2 = new Coordinate(2, 0, 0);
+        pC3 = new Coordinate(4, 2, 0);
+        angleBetween3D = angleBetween3D(pC1, pC2, pC3);
+        assertEquals(135.0, angleBetween3D, DELTA);
     }
 
 }
