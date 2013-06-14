@@ -1,6 +1,6 @@
 package org.jgrasstools.gears;
 
-import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.angleBetween3D;
+import static org.jgrasstools.gears.utils.geometry.GeometryUtilities.*;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -322,6 +322,17 @@ public class TestGeometryUtilities extends HMTestCase {
         pC3 = new Coordinate(4, 2, 0);
         angleBetween3D = angleBetween3D(pC1, pC2, pC3);
         assertEquals(135.0, angleBetween3D, DELTA);
+    }
+
+    public void testTriangleWindingrule() {
+        Coordinate pC1 = new Coordinate(2, 1, 0);
+        Coordinate pC2 = new Coordinate(0, 0, 0);
+        Coordinate pC3 = new Coordinate(2, -1, 0);
+        int windingRule = getTriangleWindingRule(pC1, pC2, pC3);
+        assertEquals(1, windingRule);
+
+        windingRule = getTriangleWindingRule(pC1, pC3, pC2);
+        assertEquals(-1, windingRule);
     }
 
 }

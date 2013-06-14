@@ -941,4 +941,26 @@ public class GeometryUtilities {
         return degrees;
     }
 
+    /**
+     * Get the winding rule of a triangle by their coordinates (given in digitized order).
+     * 
+     * @param A coordinate 1.
+     * @param B coordinate 2.
+     * @param C coordinate 3.
+     * @return -1 if the digitalization is clock wise, else 1.
+     */
+    public static int getTriangleWindingRule( Coordinate A, Coordinate B, Coordinate C ) {
+        double[] rBA = {B.x - A.x, B.y - A.y, B.z - A.z};
+        double[] rCA = {C.x - A.x, C.y - A.y, C.z - A.z};
+
+        double[] crossProduct = {//
+        /*    */rBA[1] * rCA[2] - rBA[2] * rCA[1], //
+                -1 * (rBA[0] * rCA[2] - rBA[2] * rCA[0]),//
+                rBA[0] * rCA[1] - rBA[1] * rCA[0] //
+        };
+
+        return crossProduct[2] > 0 ? 1 : -1;
+
+    }
+
 }
