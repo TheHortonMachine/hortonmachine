@@ -335,4 +335,13 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(-1, windingRule);
     }
 
+    public void testTriangleCentroid() {
+        Coordinate pC1 = new Coordinate(-1, -3, 0);
+        Coordinate pC2 = new Coordinate(2, 1, 0);
+        Coordinate pC3 = new Coordinate(8, -4, 0);
+        Coordinate centroid = getTriangleCentroid(pC1, pC2, pC3);
+        assertEquals(3.0, centroid.x, DELTA);
+        assertEquals(-2.0, centroid.y, DELTA);
+        assertEquals(0.0, centroid.z, DELTA);
+    }
 }

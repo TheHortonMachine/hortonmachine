@@ -960,7 +960,21 @@ public class GeometryUtilities {
         };
 
         return crossProduct[2] > 0 ? 1 : -1;
+    }
 
+    /**
+     * Get the 3d centroid {@link Coordinate} of a triangle.
+     * 
+     * @param A coordinate 1.
+     * @param B coordinate 2.
+     * @param C coordinate 3.
+     * @return the centroid coordinate.
+     */
+    public static Coordinate getTriangleCentroid( Coordinate A, Coordinate B, Coordinate C ) {
+        double cx = (A.x + B.x + C.x) / 3.0;
+        double cy = (A.y + B.y + C.y) / 3.0;
+        double cz = (A.z + B.z + C.z) / 3.0;
+        return new Coordinate(cx, cy, cz);
     }
 
 }
