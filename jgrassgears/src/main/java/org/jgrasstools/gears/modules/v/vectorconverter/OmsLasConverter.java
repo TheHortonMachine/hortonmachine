@@ -68,6 +68,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
@@ -430,8 +431,9 @@ public class OmsLasConverter extends JGTModel {
         }
     }
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata ) throws IOException {
-        final ReferencedEnvelope envelope = lasReader.getEnvelope();
-        final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(envelope));
+        final ReferencedEnvelope3D envelope = lasReader.getEnvelope();
+        ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
+        final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(env2d));
 
         final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("lasdataenvelope");
