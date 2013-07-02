@@ -17,38 +17,29 @@
  */
 package org.jgrasstools.gears.io.las.core;
 
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
 /**
- * Utilities for Las handling classes.
+ * Las header interface. 
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasUtils {
-    public enum POINTTYPE {
-        UNCLASSIFIED(1, "UNCLASSIFIED"), //
-        GROUND(2, "GROUND"), //
-        VEGETATION_MIN(3, "LOW VEGETATION"), //
-        VEGETATION_MED(4, "MEDIUM VEGETATION"), //
-        VEGETATION_MAX(5, "HIGH VEGETATION"), //
-        BUILDING(6, "BUILDING"), //
-        LOW_POINT(7, "LOW POINT (NOISE)"), //
-        MASS_POINT(8, "MODEL KEY-POINT (MASS)"), //
-        WATER(9, "WATER"), //
-        OVERLAP(12, "OVERLAP");
+public interface ILasHeader {
 
-        private String label;
-        private int value;
+    /**
+     * @return the version of the las file as major.minor.
+     */
+    public abstract String getVersion();
 
-        POINTTYPE( int value, String label ) {
-            this.value = value;
-            this.label = label;
-        }
+    /**
+     * @return the {@link CoordinateReferenceSystem crs} of the file.
+     */
+    public abstract CoordinateReferenceSystem getCrs();
 
-        public String getLabel() {
-            return label;
-        }
+    /**
+     * @return the 3D data envelope of the file.
+     */
+    public abstract ReferencedEnvelope3D getDataEnvelope();
 
-        public int getValue() {
-            return value;
-        }
-    }
 }

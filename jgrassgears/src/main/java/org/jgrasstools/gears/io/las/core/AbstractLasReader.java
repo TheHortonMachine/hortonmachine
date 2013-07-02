@@ -25,6 +25,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.joda.time.format.DateTimeFormat;
@@ -59,14 +60,12 @@ public abstract class AbstractLasReader {
     protected final File lasFile;
     protected FileChannel fc;
     protected FileInputStream fis;
-    protected String version;
     protected long offset;
     protected long records;
     protected short recordLength;
     protected String header;
     protected boolean isOpen;
     protected CoordinateReferenceSystem crs;
-    protected ReferencedEnvelope3D dataEnvelope;
 
     public AbstractLasReader( File lasFile, CoordinateReferenceSystem crs ) {
         this.lasFile = lasFile;
@@ -109,7 +108,7 @@ public abstract class AbstractLasReader {
     }
 
     /**
-     * Read the version bytes from a las file.
+     * Read just the version bytes from a las file.
      * 
      * <p>This can be handy is one needs to choose version reader.
      * 
@@ -166,11 +165,11 @@ public abstract class AbstractLasReader {
 
     protected abstract void parseHeader() throws Exception;
 
-    public abstract String getHeader();
+    public abstract ILasHeader getHeader();
 
     public ReferencedEnvelope3D getEnvelope(){
         checkOpen();
-        return dataEnvelope;
+        return getHeader().getDataEnvelope();
     }
 
     /**

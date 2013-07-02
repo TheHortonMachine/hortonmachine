@@ -15,10 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.las.core;
+package org.jgrasstools.gears.io.las.utils;
 
 import java.util.Collections;
 import java.util.Comparator;
+
+import org.jgrasstools.gears.io.las.core.LasRecord;
 
 /**
  * Comparator for {@link LasRecord}s.

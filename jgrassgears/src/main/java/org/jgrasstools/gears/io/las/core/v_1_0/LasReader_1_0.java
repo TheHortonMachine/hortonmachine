@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.las.core;
+package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.joda.time.DateTime;
+import org.jgrasstools.gears.io.las.core.AbstractLasReader;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -41,6 +41,8 @@ public class LasReader_1_0 extends AbstractLasReader {
     private double zMax;
     private double zMin;
 
+    private LasHeader_1_0 header;
+
     public LasReader_1_0( File lasFile, CoordinateReferenceSystem crs ) {
         super(lasFile, crs);
     }
@@ -49,111 +51,87 @@ public class LasReader_1_0 extends AbstractLasReader {
     protected void parseHeader() throws Exception {
 
         try {
-            StringBuilder sb = new StringBuilder();
-            // file signature (LASF)
-            String signature = getString(4);
-            sb.append("File signature: ").append(signature).append("\n");
+            header = new LasHeader_1_0();
 
-            // file source ID
+            String signature = getString(4);
+            header.signature = signature;
+
             short fileSourceId = getShort2Bytes();
-            sb.append("File source ID: ").append(fileSourceId).append("\n");
+            header.fileSourceId = fileSourceId;
 
             // reserved (optional)
             getShort2Bytes();
 
-            // Project ID - data 1 (optional)
             long projectIdGuidData1 = getLong4Bytes();
-            sb.append("Project ID - data 1: ").append(projectIdGuidData1).append("\n");
-
-            // Project ID - data 2 (optional)
+            header.projectIdGuidData1 = projectIdGuidData1;
             short projectIdGuidData2 = getShort2Bytes();
-            sb.append("Project ID - data 2: ").append(projectIdGuidData2).append("\n");
-
-            // Project ID - data 3 (optional)
+            header.projectIdGuidData2 = projectIdGuidData2;
             short projectIdGuidData3 = getShort2Bytes();
-            sb.append("Project ID - data 3: ").append(projectIdGuidData3).append("\n");
-
-            // Project ID - data 4 (optional)
+            header.projectIdGuidData3 = projectIdGuidData3;
             String projectIdGuidData4 = getString(8);
-            sb.append("Project ID - data 4: ").append(projectIdGuidData4).append("\n");
+            header.projectIdGuidData4 = projectIdGuidData4;
 
-            // Version Major
             byte versionMajor = get();
-            // Version Minor
             byte versionMinor = get();
-            version = versionMajor + "." + versionMinor;
-            sb.append("Version: ").append(versionMajor).append(".").append(versionMinor).append("\n");
+            header.versionMajor = versionMajor;
+            header.versionMinor = versionMinor;
 
-            // System identifier
             String systemIdentifier = getString(32);
-            sb.append("System identifier: ").append(systemIdentifier).append("\n");
+            header.systemIdentifier = systemIdentifier;
 
-            // generating software
             String generatingSoftware = getString(32);
-            sb.append("Generating software: ").append(generatingSoftware).append("\n");
+            header.generatingSoftware = generatingSoftware;
 
-            // File creation Day of Year (optional)
             short dayOfYear = getShort2Bytes();
+            header.dayOfYear = dayOfYear;
 
-            // File creation Year (optional)
             short year = getShort2Bytes();
+            header.year = year;
 
-            if (dayOfYear != 0 && year != 0) {
-                DateTime dateTime = new DateTime();
-                dateTime = dateTime.withYear(year).withDayOfYear(dayOfYear);
-                String dtString = dateTime.toString(dateTimeFormatterYYYYMMDD);
-                sb.append("File creation date: ").append(dtString).append("\n");
-            } else {
-                sb.append("File creation Day of Year: ").append(dayOfYear).append("\n");
-                sb.append("File creation Year: ").append(year).append("\n");
-            }
-
-            // header size
             short headerSize = getShort2Bytes();
-            sb.append("Header size: ").append(headerSize).append("\n");
+            header.headerSize = headerSize;
 
-            // offset to point data
             offset = getLong4Bytes();
+            header.offset = offset;
 
-            // Number of variable length records
             long variableLengthRecordNum = getLong4Bytes();
-            sb.append("Variable length records: ").append(variableLengthRecordNum).append("\n");
+            header.variableLengthRecordNum = variableLengthRecordNum;
 
-            // point data format ID (0-99 for spec)
             byte pointDataFormat = get();
-            sb.append("Point data format ID (0-99 for spec): ").append(pointDataFormat).append("\n");
+            header.pointDataFormat = pointDataFormat;
 
             recordLength = getShort2Bytes();
+            header.recordLength = recordLength;
 
-            // Number of point records
             records = getLong4Bytes();
-
-            sb.append("Number of point records: ").append(records).append("\n");
+            header.records = records;
 
             fc.position(fc.position() + 20); // skip
 
             xScale = getDouble8Bytes();
+            header.xScale = xScale;
             yScale = getDouble8Bytes();
+            header.yScale = yScale;
             zScale = getDouble8Bytes();
+            header.zScale = zScale;
             xOffset = getDouble8Bytes();
+            header.xOffset = xOffset;
             yOffset = getDouble8Bytes();
+            header.yOffset = yOffset;
             zOffset = getDouble8Bytes();
+            header.zOffset = zOffset;
             xMax = getDouble8Bytes();
+            header.xMax = xMax;
             xMin = getDouble8Bytes();
+            header.xMin = xMin;
             yMax = getDouble8Bytes();
+            header.yMax = yMax;
             yMin = getDouble8Bytes();
+            header.yMin = yMin;
             zMax = getDouble8Bytes();
+            header.zMax = zMax;
             zMin = getDouble8Bytes();
-            sb.append("X Range: [").append(xMin).append(", ").append(xMax).append("]\n");
-            sb.append("Y Range: [").append(yMin).append(", ").append(yMax).append("]\n");
-            sb.append("Z Range: [").append(zMin).append(", ").append(zMax).append("]\n");
-
-            header = sb.toString();
-
-            if (crs != null) {
-                crs = DefaultGeographicCRS.WGS84;
-            }
-            dataEnvelope = new ReferencedEnvelope3D(xMin, xMax, yMin, yMax, zMin, zMax, crs);
+            header.zMin = zMin;
 
             /*
              * move to the data position
@@ -292,9 +270,22 @@ public class LasReader_1_0 extends AbstractLasReader {
     }
 
     @Override
-    public String getHeader() {
+    public ILasHeader getHeader() {
         checkOpen();
         return header;
+    }
+
+    public static void main( String[] args ) throws Exception {
+        CoordinateReferenceSystem crs = null;
+        // File file = new File("/home/moovida/data/lidardata/Trento000228.las");
+        File file = new File("/home/moovida/test.las");
+        LasReader_1_0 reader = new LasReader_1_0(file, crs);
+        System.out.println(reader.getHeader());
+        while( reader.hasNextLasDot() ) {
+            LasRecord readNextLasDot = reader.readNextLasDot();
+            System.out.println(readNextLasDot);
+        }
+        reader.close();
     }
 
 }
