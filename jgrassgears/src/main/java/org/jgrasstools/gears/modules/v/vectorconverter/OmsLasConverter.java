@@ -220,7 +220,7 @@ public class OmsLasConverter extends JGTModel {
         lasReader.open();
 
         if (doHeader) {
-            final String header = lasReader.getHeader();
+            final String header = lasReader.getHeader().toString();
             pm.message(header);
             if (!doInfo)
                 return;
