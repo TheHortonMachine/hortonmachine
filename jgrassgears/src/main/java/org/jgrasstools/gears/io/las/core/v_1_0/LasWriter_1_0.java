@@ -261,7 +261,7 @@ public class LasWriter_1_0 {
 
     public static void main( String[] args ) throws Exception {
         CoordinateReferenceSystem crs = CRS.decode("EPSG:32632");
-        File file = new File("/home/moovida/data/lidardata/Trento000228.las");
+        File file = new File("/home/moovida/data/serviziogeologico_tn/ServizioGeologico/datigrezzi28100/Trento000091.las");
         LasReader_1_0 reader = new LasReader_1_0(file, crs);
         System.out.println(reader.getHeader());
 
@@ -274,7 +274,7 @@ public class LasWriter_1_0 {
             LasRecord readNextLasDot = reader.readNextLasDot();
             recordsList.add(readNextLasDot);
             System.out.println(readNextLasDot);
-            if (++count > 5) {
+            if (++count > 1) {
                 break;
             }
         }
