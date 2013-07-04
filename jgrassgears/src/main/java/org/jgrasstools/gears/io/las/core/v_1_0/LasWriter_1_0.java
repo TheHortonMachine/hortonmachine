@@ -30,7 +30,6 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -54,6 +53,9 @@ public class LasWriter_1_0 {
     private CoordinateReferenceSystem crs;
     private FileOutputStream fos;
     private File prjFile;
+    private double xScale = 0.01;
+    private double yScale = 0.01;
+    private double zScale = 0.001;
 
     public LasWriter_1_0( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
@@ -65,6 +67,12 @@ public class LasWriter_1_0 {
         doubleBb.order(ByteOrder.LITTLE_ENDIAN);
         longBb.order(ByteOrder.LITTLE_ENDIAN);
         shortBb.order(ByteOrder.LITTLE_ENDIAN);
+    }
+
+    public void setScales( double xScale, double yScale, double zScale ) {
+        this.xScale = xScale;
+        this.yScale = yScale;
+        this.zScale = zScale;
     }
 
     public void writerecords( List<LasRecord> recordsList ) throws IOException {
@@ -132,7 +140,7 @@ public class LasWriter_1_0 {
         // point data format
         fos.write(1);
 
-        short recordLength = 26;
+        short recordLength = 20;
         fos.write(getShort(recordLength));
 
         int recordsNum = recordsList.size();
@@ -142,13 +150,10 @@ public class LasWriter_1_0 {
         fos.write(new byte[20]);
 
         // xscale
-        double xScale = 0.01;
         fos.write(getDouble(xScale));
         // yscale
-        double yScale = 0.01;
         fos.write(getDouble(yScale));
         // zscale
-        double zScale = 0.001;
         fos.write(getDouble(zScale));
 
         double xMin = Double.POSITIVE_INFINITY;
@@ -182,14 +187,16 @@ public class LasWriter_1_0 {
         fos.write(getDouble(zMin));
 
         for( LasRecord record : recordsList ) {
+            int length = 0;
             int x = (int) ((record.x - xMin) / xScale);
             int y = (int) ((record.y - yMin) / yScale);
             int z = (int) ((record.z - zMin) / zScale);
-
             fos.write(getLong(x));
             fos.write(getLong(y));
             fos.write(getLong(z));
+            length = length + 12;
             fos.write(getShort(record.intensity));
+            length = length + 2;
 
             // 001 | 001 | 11 -> bits for return num, num of ret, scan dir flag, edge of flight line
 
@@ -208,13 +215,20 @@ public class LasWriter_1_0 {
             b.set(7, false);
             byte[] bb = ByteUtilities.bitSetToByteArray(b);
             fos.write(bb[0]);
+            length = length + 1;
+
             // class
             byte c = (byte) record.classification;
             fos.write(c);
+            length = length + 1;
+
             // scan angle rank
             fos.write(1);
+            length = length + 1;
             fos.write(0);
+            length = length + 1;
             fos.write(new byte[2]);
+            length = length + 2;
         }
 
         /*
@@ -230,12 +244,12 @@ public class LasWriter_1_0 {
         return array;
     }
 
-    private byte[] getLong( double num ) {
-        longBb.clear();
-        longBb.putDouble(num);
-        byte[] array = longBb.array();
-        return array;
-    }
+    // private byte[] getLong( double num ) {
+    // longBb.clear();
+    // longBb.putDouble(num);
+    // byte[] array = longBb.array();
+    // return array;
+    // }
 
     private byte[] getDouble( double num ) {
         doubleBb.clear();
@@ -261,7 +275,9 @@ public class LasWriter_1_0 {
 
     public static void main( String[] args ) throws Exception {
         CoordinateReferenceSystem crs = CRS.decode("EPSG:32632");
-        File file = new File("/home/moovida/data/serviziogeologico_tn/ServizioGeologico/datigrezzi28100/Trento000091.las");
+        // File file = new
+        // File("/home/moovida/data/serviziogeologico_tn/ServizioGeologico/datigrezzi28100/Trento000091.las");
+        File file = new File("/home/moovida/data-mega/las/uni_bz_49.las");
         LasReader_1_0 reader = new LasReader_1_0(file, crs);
         System.out.println(reader.getHeader());
 
@@ -274,7 +290,7 @@ public class LasWriter_1_0 {
             LasRecord readNextLasDot = reader.readNextLasDot();
             recordsList.add(readNextLasDot);
             System.out.println(readNextLasDot);
-            if (++count > 1) {
+            if (++count > 5) {
                 break;
             }
         }

@@ -18,33 +18,73 @@
 // */
 //package org.jgrasstools.gears.modules;
 //
-//import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.jgrasstools.gears.io.las.OmsLasConverter;
-//import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+//import java.io.File;
+//import java.util.ArrayList;
+//import java.util.List;
+//
+//import org.jgrasstools.gears.io.las.core.LasRecord;
+//import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
+//import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter_1_0;
 //import org.jgrasstools.gears.utils.HMTestCase;
+//import org.jgrasstools.gears.utils.HMTestMaps;
+//import org.opengis.referencing.crs.CoordinateReferenceSystem;
 //@SuppressWarnings("nls")
 //public class TestLasConverter extends HMTestCase {
 //    public void testLasConverter() throws Exception {
 //
-//        String baseFolder = "/some/basefolder/";
-//        String polygonFilter = baseFolder + "filter_polygons.shp";
+//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        File tmpFile = File.createTempFile("jgt-", ".las");
 //
-//        String lasFile1 = baseFolder + "001059_1.las";
-//        String outCsv = baseFolder + "ground.csv";
-//        String outputShpfile1 = baseFolder + "points_001059_1.shp";
+//        LasWriter_1_0 w = new LasWriter_1_0(tmpFile, crs);
+//        w.open();
 //
-//        SimpleFeatureCollection polygons = OmsVectorReader.readVector(polygonFilter);
+//        List<LasRecord> list = new ArrayList<LasRecord>();
+//        LasRecord r1 = new LasRecord();
+//        r1.x = 724765.28;
+//        r1.y = 5207440.54;
+//        r1.z = 1168.81;
+//        r1.intensity = 65;
+//        r1.returnNumber = 1;
+//        r1.numberOfReturns = 2;
+//        r1.classification = 3;
+//        list.add(r1);
+//        LasRecord r2 = new LasRecord();
+//        r2.x = 724765.28;
+//        r2.y = 5207439.57;
+//        r2.z = 1169.3700000000001;
+//        r2.intensity = 180;
+//        r2.returnNumber = 1;
+//        r2.numberOfReturns = 1;
+//        r2.classification = 3;
+//        list.add(r2);
 //
-//        OmsLasConverter v = new OmsLasConverter();
-//        v.inFile = lasFile1;
-//        v.outFile = outputShpfile1;
-//        v.pCode = "EPSG:32632";
-//        v.pClasses = "2";
-//        // v.pImpulses = "1";
-//        // v.pIndexrange = range;
-//        // v.doInfo = true;
-//        v.inPolygons = polygons;
-//        v.pm = pm;
-//        v.process();
+//        w.writerecords(list);
+//        w.close();
+//
+//        LasReader_1_0 r = new LasReader_1_0(tmpFile, crs);
+//        r.open();
+//        r.getHeader();
+//        assertTrue(r.hasNextLasDot());
+//        LasRecord lr1 = r.readNextLasDot();
+//        System.out.println(r1);
+//        System.out.println(lr1);
+//        assertEquals(r1.x, lr1.x, DELTA);
+//        assertEquals(r1.y, lr1.y, DELTA);
+//        assertEquals(r1.z, lr1.z, DELTA);
+//        assertEquals(r1.intensity, lr1.intensity, DELTA);
+//        assertEquals(r1.returnNumber, lr1.returnNumber, DELTA);
+//        assertEquals(r1.numberOfReturns, lr1.numberOfReturns, DELTA);
+//        assertEquals(r1.classification, lr1.classification, DELTA);
+//        assertTrue(r.hasNextLasDot());
+//        LasRecord lr2 = r.readNextLasDot();
+//        assertEquals(r2.x, lr2.x, DELTA);
+//        assertEquals(r2.y, lr2.y, DELTA);
+//        assertEquals(r2.z, lr2.z, DELTA);
+//        assertEquals(r2.intensity, lr2.intensity, DELTA);
+//        assertEquals(r2.returnNumber, lr2.returnNumber, DELTA);
+//        assertEquals(r2.numberOfReturns, lr2.numberOfReturns, DELTA);
+//        assertEquals(r2.classification, lr2.classification, DELTA);
+//
+//        r.close();
 //    }
 //}
