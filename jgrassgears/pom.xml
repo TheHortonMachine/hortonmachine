@@ -1,25 +1,26 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.jgrasstools</groupId>
-    <artifactId>jgrasstools</artifactId>
-    <version>0.7.7-SNAPSHOT</version>
-  </parent>
+	<parent>
+		<groupId>org.jgrasstools</groupId>
+		<artifactId>jgrasstools</artifactId>
+		<version>0.7.7-SNAPSHOT</version>
+	</parent>
 
 
-    <groupId>org.jgrasstools</groupId>
+	<groupId>org.jgrasstools</groupId>
 	<artifactId>jgt-jgrassgears</artifactId>
-    <version>0.7.7-SNAPSHOT</version>
+	<version>0.7.7-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>JGrass Gears</name>
-	
+
 	<!-- "internal" deps -->
 	<dependencies>
 		<dependency>
 			<groupId>org.jgrasstools</groupId>
 			<artifactId>jgt-oms3</artifactId>
-            <version>0.7.7-SNAPSHOT</version>
+			<version>0.7.7-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Java Advanced Imaging (JAI) -->
@@ -38,31 +39,26 @@
 			<artifactId>jai_imageio</artifactId>
 			<version>1.1</version>
 		</dependency>
-		
-		<!-- other stuff -->
-		
-        <dependency>
-            <groupId>net.sf.scannotation</groupId>
-            <artifactId>scannotation</artifactId>
-            <version>1.0.2</version>
-        </dependency>
 
-        <!--
-        <dependency>
-            <groupId>geoscript</groupId>
-            <artifactId>geoscript-groovy</artifactId>
-            <version>0.9</version>
-        </dependency>
-        -->
+		<!-- other stuff -->
+
+		<dependency>
+			<groupId>net.sf.scannotation</groupId>
+			<artifactId>scannotation</artifactId>
+			<version>1.0.2</version>
+		</dependency>
+
+		<!-- <dependency> <groupId>geoscript</groupId> <artifactId>geoscript-groovy</artifactId> 
+			<version>0.9</version> </dependency> -->
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.5</version>
 			<scope>test</scope>
-		</dependency>		
-		
-		<!-- GeoTools 	-->
+		</dependency>
+
+		<!-- GeoTools -->
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-data</artifactId>
@@ -91,7 +87,7 @@
 					<groupId>org.jaitools</groupId>
 					<artifactId>jt-zonalstats</artifactId>
 				</exclusion>
-			</exclusions> 
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -174,9 +170,22 @@
 					<groupId>org.jaitools</groupId>
 					<artifactId>jt-utils</artifactId>
 				</exclusion>
-			</exclusions> 
+			</exclusions>
+		</dependency>
+
+		<!-- geopap -->
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.7.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20090211</version>
 		</dependency>
 	</dependencies>
-    
+
 
 </project>

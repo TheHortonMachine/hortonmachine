@@ -26,8 +26,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -45,6 +50,7 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
@@ -52,6 +58,8 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -99,6 +107,9 @@ public class OmsGeopaparazziConverter extends JGTModel {
     @In
     public String outData = null;
 
+    private static final String TAG_KEY = "key";
+    private static final String TAG_VALUE = "value";
+
     private final DefaultGeographicCRS crs = DefaultGeographicCRS.WGS84;
     private static boolean hasDriver = false;
 
@@ -137,9 +148,10 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 /*
                  * import notes as shapefile
                  */
-                if (doNotes)
+                if (doNotes) {
                     simpleNotesToShapefile(connection, outputFolderFile, pm);
-
+                    complexNotesToShapefile(connection, outputFolderFile, pm);
+                }
                 /*
                  * import gps logs as shapefiles, once as lines and once as points
                  */
@@ -151,7 +163,8 @@ public class OmsGeopaparazziConverter extends JGTModel {
             mediaToShapeFile(geopapFolderFile, outputFolderFile, pm);
 
         } catch (Exception e) {
-            throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi.", this);
+            throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
+                    this);
         } finally {
             try {
                 if (connection != null)
@@ -168,7 +181,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
         File outputShapeFile = new File(outputFolderFile, "simplenotes.shp");
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("geopaparazzisimlenotes"); //$NON-NLS-1$
+        b.setName("geopaparazzisimplenotes"); //$NON-NLS-1$
         b.setCRS(crs);
         b.add("the_geom", Point.class); //$NON-NLS-1$
         b.add("DESCRIPTION", String.class);
@@ -187,7 +200,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
             while( rs.next() ) {
                 String form = rs.getString("form");
-                if (form != null || form.trim().length() > 0) {
+                if (form == null || form.trim().length() == 0) {
                     continue;
                 }
 
@@ -210,15 +223,148 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
                 newCollection.add(feature);
-                pm.worked(1);
             }
 
-            OmsVectorWriter.writeVector(outputShapeFile.getAbsolutePath(), newCollection);
         } finally {
             pm.done();
             if (statement != null)
                 statement.close();
         }
+        OmsVectorWriter.writeVector(outputShapeFile.getAbsolutePath(), newCollection);
+    }
+
+    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+        pm.beginTask("Import complex notes...", -1);
+
+        HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<String, BuilderAndCollectionPair>();
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
+            while( rs.next() ) {
+                String formString = rs.getString("form");
+                if (formString == null || formString.trim().length() == 0) {
+                    continue;
+                }
+
+                double lat = rs.getDouble("lat");
+                double lon = rs.getDouble("lon");
+                double altim = rs.getDouble("altim");
+                String dateTimeString = rs.getString("ts");
+                // String text = rs.getString("text");
+
+                if (lat == 0 || lon == 0) {
+                    continue;
+                }
+
+                // and then create the features
+                Coordinate c = new Coordinate(lon, lat);
+                Point point = gf.createPoint(c);
+
+                JSONObject sectionObject = new JSONObject(formString);
+                String sectionName = sectionObject.getString("sectionname");
+                sectionName = sectionName.replaceAll("\\s+", "_");
+                List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
+
+                LinkedHashMap<String, String> valuesMap = new LinkedHashMap<String, String>();
+                for( String formName : formNames4Section ) {
+                    JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+                    JSONArray formItems = Utilities.getFormItems(form4Name);
+
+                    int length = formItems.length();
+                    for( int i = 0; i < length; i++ ) {
+                        JSONObject jsonObject = formItems.getJSONObject(i);
+
+                        if (!jsonObject.has(TAG_KEY)) {
+                            continue;
+                        }
+                        String key = jsonObject.getString(TAG_KEY).trim();
+
+                        String value = null;
+                        if (jsonObject.has(TAG_VALUE)) {
+                            value = jsonObject.getString(TAG_VALUE).trim();
+                        }
+
+                        if (key != null && value != null)
+                            valuesMap.put(key, value);
+                    }
+                }
+
+                Set<Entry<String, String>> entrySet = valuesMap.entrySet();
+                // check if there is a builder already
+                BuilderAndCollectionPair builderAndCollectionPair = forms2PropertiesMap.get(sectionName);
+                if (builderAndCollectionPair == null) {
+                    SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+                    b.setName(sectionName); //$NON-NLS-1$
+                    b.setCRS(crs);
+                    b.add("the_geom", Point.class); //$NON-NLS-1$
+                    b.add("ts", String.class); //$NON-NLS-1$
+                    b.add("altim", String.class); //$NON-NLS-1$
+                    for( Entry<String, String> entry : entrySet ) {
+                        String key = entry.getKey();
+                        key = key.replaceAll("\\s+", "_");
+                        if (key.length() > 10) {
+                            pm.errorMessage("Need to trim key: " + key);
+                            key = key.substring(0, 10);
+                        }
+                        b.add(key, String.class);
+                    }
+                    SimpleFeatureType featureType = b.buildFeatureType();
+                    SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+
+                    SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+                    builderAndCollectionPair = new BuilderAndCollectionPair();
+                    builderAndCollectionPair.builder = builder;
+                    builderAndCollectionPair.collection = newCollection;
+
+                    forms2PropertiesMap.put(sectionName, builderAndCollectionPair);
+                }
+
+                int size = entrySet.size();
+                Object[] values = new Object[size + 3];
+                values[0] = point;
+                values[1] = dateTimeString;
+                values[2] = "" + altim;
+                int i = 3;
+                for( Entry<String, String> entry : entrySet ) {
+                    String value = entry.getValue();
+                    if (value.toLowerCase().endsWith(".jpg") || value.toLowerCase().endsWith(".png")) {
+                        int lastIndexOf = value.lastIndexOf("media");
+                        value = value.substring(lastIndexOf);
+                    }
+                    if (value.length() > 253) {
+                        pm.errorMessage("Need to trim value: " + value);
+                        value = value.substring(0, 252);
+                    }
+                    values[i] = value;
+                    i++;
+                }
+                builderAndCollectionPair.builder.addAll(values);
+                SimpleFeature feature = builderAndCollectionPair.builder.buildFeature(null);
+                builderAndCollectionPair.collection.add(feature);
+            }
+
+            Set<Entry<String, BuilderAndCollectionPair>> entrySet = forms2PropertiesMap.entrySet();
+            for( Entry<String, BuilderAndCollectionPair> entry : entrySet ) {
+                String name = entry.getKey();
+                SimpleFeatureCollection collection = entry.getValue().collection;
+
+                File outFile = new File(outputFolderFile, name + ".shp");
+                OmsVectorWriter.writeVector(outFile.getAbsolutePath(), collection);
+            }
+        } finally {
+            pm.done();
+            if (statement != null)
+                statement.close();
+        }
+    }
+
+    private static class BuilderAndCollectionPair {
+        SimpleFeatureBuilder builder;
+        SimpleFeatureCollection collection;
     }
 
     private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
@@ -294,7 +440,6 @@ public class OmsGeopaparazziConverter extends JGTModel {
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to lines...", logsList.size());
             SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-            int index = 0;
             for( GpsLog log : logsList ) {
                 List<GpsPoint> points = log.points;
 
@@ -399,7 +544,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 if (name.endsWith("jpg") || imageFile.getName().endsWith("JPG") || imageFile.getName().endsWith("png")
                         || imageFile.getName().endsWith("PNG") || imageFile.getName().endsWith("3gp")) {
 
-                    String[] nameSplit = name.split("[_\\|.]"); //$NON-NLS-1$
+                    String[] nameSplit = name.split("[_//|.]"); //$NON-NLS-1$
                     String dateString = nameSplit[1];
                     String timeString = nameSplit[2];
 
@@ -439,6 +584,9 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
                     String imageRelativePath = imageFolderName + "/" + imageFile.getName();
                     File newImageFile = new File(outputFolderFile, imageRelativePath);
+                    if (!newImageFile.getParentFile().exists()) {
+                        newImageFile.getParentFile().mkdir();
+                    }
                     FileUtilities.copyFile(imageFile, newImageFile);
 
                     String dateTime = dateString + timeString;
@@ -460,9 +608,9 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         if (nonTakenFilesList.size() > 0) {
             final StringBuilder sB = new StringBuilder();
-            sB.append("For the following media no *.properties file could be found:\n");
+            sB.append("For the following media no *.properties file could be found:/n");
             for( String p : nonTakenFilesList ) {
-                sB.append(p).append("\n");
+                sB.append(p).append("/n");
             }
             pm.errorMessage(sB.toString());
         } else {
@@ -536,4 +684,5 @@ public class OmsGeopaparazziConverter extends JGTModel {
         public List<GpsPoint> points = new ArrayList<GpsPoint>();
 
     }
+
 }
