@@ -130,19 +130,24 @@ public class OmsGradient extends JGTModel {
     * Computes the gradient algorithm. p=f_{x}^{2}+f_{y}^{2}
     *  
     * The derivatives can be calculate with the  the horn formula:
-    * 
-    * f<sub>x</sub>=(2*f(x+1,y)+f(x+1,y-1)+f(x+1,y+1)-2*f(x-1,y)-f(x-1,y+1)-f(x-1,y-1))/(8 &#916 x) 
-    * f<sub>y</sub>=(2*f(x,y+1)+f(x+1,y+1)+f(x-1,y+1)-2*f(x,y-1)-f(x+1,y-1)+f(x-1,y-1))/(8 &#916 y)
+    * <p>
+    * f<sub>x</sub>=(2*f<sub>(x+1,y)</sub>+f<sub>(x+1,y-1)</sub>+
+    *   f<sub>(x+1,y+1)</sub>-2*f<sub>(x-1,y)</sub>-f<sub>(x-1,y+1)</sub>-
+    *   f<sub>(x-1,y-1)</sub>)/(8 &#916 x)
+    * <br> 
+    * f<sub>y</sub>=(2*f<sub>(x,y+1)</sub>+f<sub>(x+1,y+1)</sub>+
+    * f<sub>(x-1,y+1)</sub>-2*f<sub>(x,y-1)</sub>-f<sub>(x+1,y-1)</sub>+
+    * f<sub>(x-1,y-1)</sub>)/(8 &#916 y)
     * <p>
     * The kernel is compound of 9 cell (8 around the central pixel) and the numeration is:
-    * 
+    * <pre>
     * 1   2   3
     * 4   5   6
     * 7   8   9
+    * </pre>
     * 
+    * <p>
     * This numeration is used to extract the appropriate elevation value (es elev1 an so on)
-    * 
-    * </p>
     */
     private WritableRaster gradientHorn( RandomIter elevationIter ) {
 

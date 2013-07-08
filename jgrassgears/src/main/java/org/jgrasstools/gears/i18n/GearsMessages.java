@@ -25,6 +25,12 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GearsMessages {
+    public static final String OMSHYDRO_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSHYDRO_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
+    public static final String OMSHYDRO_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final int OMSHYDRO_DRAFT = 10;
+    public static final int OMSHYDRO_CERTIFIED = 40;
+    
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
     public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";
     public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";

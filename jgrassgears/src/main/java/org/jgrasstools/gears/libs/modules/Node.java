@@ -31,7 +31,7 @@ public class Node {
     public final int col;
     public final int cols;
     public final int rows;
-    public boolean isValid;
+    protected boolean isValid;
     protected boolean touchesBound = false;
     protected final RandomIter gridIter;
 
