@@ -19,6 +19,7 @@ package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.Math.round;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -188,9 +189,9 @@ public class LasWriter_1_0 {
 
         for( LasRecord record : recordsList ) {
             int length = 0;
-            int x = (int) ((record.x - xMin) / xScale);
-            int y = (int) ((record.y - yMin) / yScale);
-            int z = (int) ((record.z - zMin) / zScale);
+            int x = (int) round((record.x - xMin) / xScale);
+            int y = (int) round((record.y - yMin) / yScale);
+            int z = (int) round((record.z - zMin) / zScale);
             fos.write(getLong(x));
             fos.write(getLong(y));
             fos.write(getLong(z));
