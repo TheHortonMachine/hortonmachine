@@ -68,6 +68,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -75,6 +76,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -82,6 +84,7 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
@@ -201,17 +204,33 @@ public class OmsTmsGenerator extends JGTModel {
     public void process() throws Exception {
         checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
+        CoordinateReferenceSystem dataCrs;
+        if (pEpsg != null) {
+            dataCrs = CRS.decode(pEpsg);
+        } else {
+            String wkt = FileUtilities.readFile(inPrj);
+            dataCrs = CRS.parseWKT(wkt);
+        }
+
         String format = null;
         if (doMbtiles) {
             mbtilesHelper = new MBTilesHelper();
             File dbFolder = new File(inPath);
             File dbFile = new File(dbFolder, pName + ".mbtiles");
 
+            ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
+            MathTransform data2LLTransform = CRS.findMathTransform(dataCrs, DefaultGeographicCRS.WGS84);
+
+            Envelope llEnvelope = JTS.transform(dataBounds, data2LLTransform);
+            float n = (float) llEnvelope.getMaxY();
+            float s = (float) llEnvelope.getMinY();
+            float w = (float) llEnvelope.getMinX();
+            float e = (float) llEnvelope.getMaxX();
+
             format = pImagetype == 0 ? "png" : "jpg";
             mbtilesHelper.open(dbFile);
             mbtilesHelper.createTables();
-            mbtilesHelper.fillMetadata(pNorth.floatValue(), pSouth.floatValue(), pWest.floatValue(), pEast.floatValue(), pName,
-                    format, pMinzoom, pMaxzoom);
+            mbtilesHelper.fillMetadata(n, s, w, e, pName, format, pMinzoom, pMaxzoom);
         }
 
         int threads = getDefaultThreadsNum() * 5;
@@ -237,14 +256,6 @@ public class OmsTmsGenerator extends JGTModel {
             throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
         }
 
-        CoordinateReferenceSystem dataCrs;
-        if (pEpsg != null) {
-            dataCrs = CRS.decode(pEpsg);
-        } else {
-            String wkt = FileUtilities.readFile(inPrj);
-            dataCrs = CRS.parseWKT(wkt);
-        }
-
         final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);
 
         ReferencedEnvelope dataBounds = new ReferencedEnvelope(pWest, pEast, pSouth, pNorth, dataCrs);
@@ -256,14 +267,10 @@ public class OmsTmsGenerator extends JGTModel {
         if (inZoomLimitVector != null) {
             SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
             List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
-            if (geoms.size() == 1) {
-                Geometry tmpGeom = geoms.get(0);
-                // convert to mercator
-                tmpGeom = JTS.transform(tmpGeom, data2MercatorTransform);
-                zoomLimitGeometry = PreparedGeometryFactory.prepare(tmpGeom);
-            } else {
-                pm.errorMessage("At the moment only a single zoom limiting geometry is supported.");
-            }
+            MultiPolygon multiPolygon = gf.createMultiPolygon(geoms.toArray(GeometryUtilities.TYPE_POLYGON));
+            // convert to mercator
+            Geometry multiPolygonGeom = JTS.transform(multiPolygon, data2MercatorTransform);
+            zoomLimitGeometry = PreparedGeometryFactory.prepare(multiPolygonGeom);
         }
 
         File inFolder = new File(inPath);

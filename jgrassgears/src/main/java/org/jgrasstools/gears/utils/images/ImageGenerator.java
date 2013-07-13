@@ -490,7 +490,7 @@ public class ImageGenerator {
      */
     public void dumpJpgImage( String imagePath, ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
             int[] rgbCheck ) throws IOException {
-        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        BufferedImage dumpImage = drawImageWithNewMapContent(bounds, imageWidth, imageHeight, buffer);
         boolean dumpIt = true;
         if (rgbCheck != null)
             dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
@@ -512,7 +512,7 @@ public class ImageGenerator {
      */
     public BufferedImage getImageWithCheck( ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
             int[] rgbCheck ) throws IOException {
-        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        BufferedImage dumpImage = drawImageWithNewMapContent(bounds, imageWidth, imageHeight, buffer);
         boolean dumpIt = true;
         if (rgbCheck != null)
             dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
