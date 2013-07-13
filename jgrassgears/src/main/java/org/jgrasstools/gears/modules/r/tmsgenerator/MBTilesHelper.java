@@ -45,7 +45,7 @@ public class MBTilesHelper {
     public final static String COL_METADATA_VALUE = "value";
 
     private final static String CREATE_METADATA = //
-    "CREATE TABLE" + TABLE_METADATA + "( " + //
+    "CREATE TABLE " + TABLE_METADATA + "( " + //
             COL_METADATA_NAME + " TEXT, " + //
             COL_METADATA_VALUE + " TEXT " + //
             ")";
@@ -57,17 +57,17 @@ public class MBTilesHelper {
     private Connection connection;
 
     public void open( File dbFile ) throws SQLException {
+        // create a database connection
+        connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
+    }
+
+    public void close() {
         try {
-            // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath());
-        } finally {
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException e) {
-                // connection close failed.
-                throw new ModelsRuntimeException("An error occurred while closing the database connection.", this);
-            }
+            if (connection != null)
+                connection.close();
+        } catch (SQLException e) {
+            // connection close failed.
+            throw new ModelsRuntimeException("An error occurred while closing the database connection.", this);
         }
     }
 
@@ -75,6 +75,8 @@ public class MBTilesHelper {
         Statement statement = null;
         try {
             statement = connection.createStatement();
+            statement.addBatch("DROP TABLE IF EXISTS " + TABLE_TILES);
+            statement.addBatch("DROP TABLE IF EXISTS " + TABLE_METADATA);
             statement.addBatch(CREATE_TILES);
             statement.addBatch(CREATE_METADATA);
             statement.addBatch(INDEX_TILES);
@@ -127,11 +129,11 @@ public class MBTilesHelper {
         sb.append(COL_METADATA_NAME);
         sb.append(",");
         sb.append(COL_METADATA_VALUE);
-        sb.append(") values (");
+        sb.append(") values ('");
         sb.append(key);
-        sb.append(",");
+        sb.append("','");
         sb.append(value);
-        sb.append(")");
+        sb.append("')");
         String query = sb.toString();
         return query;
     }
@@ -142,7 +144,7 @@ public class MBTilesHelper {
         byte[] res = baos.toByteArray();
 
         StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO " + TABLE_METADATA + " ");
+        sb.append("INSERT INTO " + TABLE_TILES + " ");
         sb.append("(");
         sb.append(COL_TILES_ZOOM_LEVEL);
         sb.append(",");
@@ -165,8 +167,7 @@ public class MBTilesHelper {
         PreparedStatement statement = null;
         try {
             statement = connection.prepareStatement(query);
-            ByteArrayInputStream in = new ByteArrayInputStream(res);
-            statement.setBinaryStream(1, in);
+            statement.setBytes(1, res);
             statement.execute();
         } finally {
             if (statement != null)

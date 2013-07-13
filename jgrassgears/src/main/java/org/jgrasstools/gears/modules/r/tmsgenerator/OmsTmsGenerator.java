@@ -46,6 +46,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pWest_DES
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -204,7 +205,7 @@ public class OmsTmsGenerator extends JGTModel {
         if (doMbtiles) {
             mbtilesHelper = new MBTilesHelper();
             File dbFolder = new File(inPath);
-            File dbFile = new File(dbFolder, pName);
+            File dbFile = new File(dbFolder, pName + ".mbtiles");
 
             format = pImagetype == 0 ? "png" : "jpg";
             mbtilesHelper.open(dbFile);
@@ -351,9 +352,28 @@ public class OmsTmsGenerator extends JGTModel {
                     }
 
                     if (mbtilesHelper != null) {
-                        BufferedImage image = imgGen.getImageWithCheck(tmpBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
-                        mbtilesHelper.addTile(i, j, z, image, format);
-                        pm.worked(1);
+                        final int x = i;
+                        final int y = j;
+                        final int zz = z;
+                        final String fformat = format;
+                        tileNum++;
+                        Runnable runner = new Runnable(){
+                            public void run() {
+                                try {
+                                    BufferedImage image = imgGen.getImageWithCheck(tmpBounds, TILESIZE, TILESIZE, 0.0,
+                                            pCheckcolor);
+                                    if (image != null) {
+                                        mbtilesHelper.addTile(x, y, zz, image, fformat);
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    System.exit(1);
+                                }
+                                pm.worked(1);
+                            }
+                        };
+                        fixedThreadPool.execute(runner);
+
                     } else {
                         File imageFolder = new File(baseFolder, z + "/" + i);
                         if (!imageFolder.exists()) {
@@ -408,20 +428,24 @@ public class OmsTmsGenerator extends JGTModel {
 
         }
 
-        CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
-        MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
-        Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
-        Coordinate latLongCentre = latLongBounds.centre();
+        if (mbtilesHelper != null) {
+            mbtilesHelper.close();
+        } else {
+            CoordinateReferenceSystem latLongCrs = CRS.decode(EPSG_LATLONG);
+            MathTransform transform = CRS.findMathTransform(mercatorCrs, latLongCrs);
+            Envelope latLongBounds = JTS.transform(mercatorBounds, transform);
+            Coordinate latLongCentre = latLongBounds.centre();
 
-        StringBuilder properties = new StringBuilder();
+            StringBuilder properties = new StringBuilder();
 
-        properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.").append(ext).append("\n");
-        properties.append("minzoom=").append(pMinzoom).append("\n");
-        properties.append("maxzoom=").append(pMaxzoom).append("\n");
-        properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
-        properties.append("type=tms").append("\n");
+            properties.append("url=").append(pName).append("/ZZZ/XXX/YYY.").append(ext).append("\n");
+            properties.append("minzoom=").append(pMinzoom).append("\n");
+            properties.append("maxzoom=").append(pMaxzoom).append("\n");
+            properties.append("center=").append(latLongCentre.y).append(" ").append(latLongCentre.x).append("\n");
+            properties.append("type=tms").append("\n");
 
-        File propFile = new File(inFolder, pName + ".mapurl");
-        FileUtilities.writeFile(properties.toString(), propFile);
+            File propFile = new File(inFolder, pName + ".mapurl");
+            FileUtilities.writeFile(properties.toString(), propFile);
+        }
     }
 }
