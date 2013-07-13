@@ -5,8 +5,10 @@ public class ItemText implements Item {
     private String description;
     private boolean isMandatory;
     private String defaultValue;
+    private boolean isLabel;
 
-    public ItemText( String description, String defaultValue, boolean isMandatory ) {
+    public ItemText( String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
+        this.isLabel = isLabel;
         if (defaultValue == null) {
             defaultValue = "";
         }
@@ -21,6 +23,8 @@ public class ItemText implements Item {
         sb.append("             \"key\": \"").append(description).append("\",\n");
         sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
 
+        if (isLabel)
+            sb.append("             \"islabel\": \"").append("true").append("\",\n");
         String type = "string";
         sb.append("             \"type\": \"").append(type).append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");

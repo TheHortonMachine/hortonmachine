@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -200,7 +199,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
             while( rs.next() ) {
                 String form = rs.getString("form");
-                if (form == null || form.trim().length() == 0) {
+                if (form != null && form.trim().length() != 0) {
                     continue;
                 }
 

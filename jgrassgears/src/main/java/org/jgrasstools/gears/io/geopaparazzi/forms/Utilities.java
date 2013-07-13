@@ -64,7 +64,7 @@ public class Utilities {
                     value = split[3].trim();
                 }
 
-                ItemText item = new ItemText(field, value, Boolean.parseBoolean(mandatory));
+                ItemText item = new ItemText(field, value, Boolean.parseBoolean(mandatory), false);
                 currentForm.addItem(item);
             } else if (type.startsWith("textarea")) {
                 String field = split[1].trim();
@@ -74,7 +74,7 @@ public class Utilities {
                     value = split[3].trim();
                 }
 
-                ItemTextArea item = new ItemTextArea(field, value, Boolean.parseBoolean(mandatory));
+                ItemTextArea item = new ItemTextArea(field, value, Boolean.parseBoolean(mandatory), false);
                 currentForm.addItem(item);
             } else if (type.startsWith("combo")) {
                 String field = split[1].trim();

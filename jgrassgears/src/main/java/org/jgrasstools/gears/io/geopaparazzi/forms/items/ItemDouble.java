@@ -5,8 +5,10 @@ public class ItemDouble implements Item {
     private String description;
     private boolean isMandatory;
     private String defaultValueStr;
+    private boolean isLabel;
 
-    public ItemDouble( String description, Double defaultValue, boolean isMandatory ) {
+    public ItemDouble( String description, Double defaultValue, boolean isMandatory, boolean isLabel ) {
+        this.isLabel = isLabel;
         if (defaultValue == null) {
             defaultValueStr = "";
         } else {
@@ -21,12 +23,14 @@ public class ItemDouble implements Item {
         sb.append("        {\n");
         sb.append("             \"key\": \"").append(description).append("\",\n");
         sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
+        if (isLabel)
+            sb.append("             \"islabel\": \"").append("true").append("\",\n");
         sb.append("             \"type\": \"").append("double").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
     }
-    
+
     @Override
     public String getKey() {
         return description;
@@ -36,7 +40,7 @@ public class ItemDouble implements Item {
     public void setValue( String value ) {
         defaultValueStr = value;
     }
-    
+
     @Override
     public String getValue() {
         return defaultValueStr;
