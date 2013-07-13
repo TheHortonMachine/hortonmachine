@@ -233,8 +233,8 @@ public class ImageGenerator {
                     AbstractGridFormat format = GridFormatFinder.findFormat(file);
                     reader = format.getReader(file);
                     if (reader instanceof GrassCoverageReader) {
-						reader = null;
-					}
+                        reader = null;
+                    }
                 } catch (Exception e1) {
                     // ignore and try others
                 }
@@ -496,6 +496,31 @@ public class ImageGenerator {
             dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
         if (dumpIt)
             ImageIO.write(dumpImage, "jpg", new File(imagePath));
+    }
+
+    /**
+     * Draw the map on an image. 
+     * 
+     * @param bounds the area of interest.
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units. 
+     * @param rgbCheck an rgb tripled. If not <code>null</code> and the image generated is 
+     *                  composed only of that color, then the tile is not generated.
+     *                  This can be useful to avoid generation of empty tiles.
+     * @throws IOException
+     */
+    public BufferedImage getImageWithCheck( ReferencedEnvelope bounds, int imageWidth, int imageHeight, double buffer,
+            int[] rgbCheck ) throws IOException {
+        BufferedImage dumpImage = drawImage(bounds, imageWidth, imageHeight, buffer);
+        boolean dumpIt = true;
+        if (rgbCheck != null)
+            dumpIt = !isAllOfCheckColor(rgbCheck, dumpImage);
+        if (dumpIt) {
+            return dumpImage;
+        } else {
+            return null;
+        }
     }
 
     private boolean isAllOfCheckColor( int[] rgbCheck, BufferedImage dumpImage ) {

@@ -37,7 +37,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pCheckcol
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEast_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pEpsg_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pImagetype_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMaxThreads_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMaxzoom_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pMinzoom_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pName_DESCRIPTION;
@@ -45,6 +44,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pNorth_DE
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pSouth_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pWest_DESCRIPTION;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -67,7 +67,6 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
-import org.jfree.chart.renderer.xy.VectorRenderer;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -75,7 +74,6 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.images.ImageGenerator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -83,7 +81,6 @@ import org.opengis.referencing.operation.MathTransform;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
@@ -157,7 +154,7 @@ public class OmsTmsGenerator extends JGTModel {
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inPrj;
-    
+
     @Description("A shapefile to use to draw maps on zoom levels higher than pZoomLimit. Everything outside is not drawn.")
     @In
     public String inZoomLimitVector;
@@ -165,7 +162,6 @@ public class OmsTmsGenerator extends JGTModel {
     @Description("The zoom limit above which the inZoomLimitVector is considered.")
     @In
     public double pZoomLimit = 17;
-    
 
     @Description(OMSTMSGENERATOR_doLenient_DESCRIPTION)
     @In
@@ -183,6 +179,10 @@ public class OmsTmsGenerator extends JGTModel {
     @In
     public Boolean doLegacyGrass = false;
 
+    @Description("Do mbtiles database.")
+    @In
+    public boolean doMbtiles = false;
+
     @Description(OMSTMSGENERATOR_inPath_DESCRIPTION)
     @In
     public String inPath;
@@ -192,11 +192,26 @@ public class OmsTmsGenerator extends JGTModel {
 
     private int TILESIZE = 256;
 
-	private PreparedGeometry zoomLimitGeometry;
+    private PreparedGeometry zoomLimitGeometry;
+
+    private MBTilesHelper mbtilesHelper;
 
     @Execute
     public void process() throws Exception {
         checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
+
+        String format = null;
+        if (doMbtiles) {
+            mbtilesHelper = new MBTilesHelper();
+            File dbFolder = new File(inPath);
+            File dbFile = new File(dbFolder, pName);
+
+            format = pImagetype == 0 ? "png" : "jpg";
+            mbtilesHelper.open(dbFile);
+            mbtilesHelper.createTables();
+            mbtilesHelper.fillMetadata(pNorth.floatValue(), pSouth.floatValue(), pWest.floatValue(), pEast.floatValue(), pName,
+                    format, pMinzoom, pMaxzoom);
+        }
 
         int threads = getDefaultThreadsNum() * 5;
 
@@ -204,7 +219,7 @@ public class OmsTmsGenerator extends JGTModel {
         if (pImagetype == 1) {
             ext = "jpg";
         }
-        
+
         List<String> inVectors = null;
         if (inVectorFile != null && new File(inVectorFile).exists())
             inVectors = FileUtilities.readFileToLinesList(new File(inVectorFile));
@@ -216,7 +231,7 @@ public class OmsTmsGenerator extends JGTModel {
         if (inRasters == null && inVectors == null) {
             throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this);
         }
-        
+
         if (pEpsg == null && inPrj == null) {
             throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
         }
@@ -237,20 +252,19 @@ public class OmsTmsGenerator extends JGTModel {
         Envelope mercatorEnvelope = JTS.transform(dataBounds, data2MercatorTransform);
         ReferencedEnvelope mercatorBounds = new ReferencedEnvelope(mercatorEnvelope, mercatorCrs);
 
-        if (inZoomLimitVector!=null) {
-			SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
-			List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
-			if (geoms.size()==1) {
-				Geometry tmpGeom = geoms.get(0);
-				// convert to mercator
-				tmpGeom = JTS.transform(tmpGeom, data2MercatorTransform);
-				zoomLimitGeometry = PreparedGeometryFactory.prepare(tmpGeom);
-			}else{
-				pm.errorMessage("At the moment only a single zoom limiting geometry is supported.");
-			}
+        if (inZoomLimitVector != null) {
+            SimpleFeatureCollection zoomLimitVector = OmsVectorReader.readVector(inZoomLimitVector);
+            List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(zoomLimitVector, true, null);
+            if (geoms.size() == 1) {
+                Geometry tmpGeom = geoms.get(0);
+                // convert to mercator
+                tmpGeom = JTS.transform(tmpGeom, data2MercatorTransform);
+                zoomLimitGeometry = PreparedGeometryFactory.prepare(tmpGeom);
+            } else {
+                pm.errorMessage("At the moment only a single zoom limiting geometry is supported.");
+            }
         }
-        
-        
+
         File inFolder = new File(inPath);
         final File baseFolder = new File(inFolder, pName);
 
@@ -313,7 +327,7 @@ public class OmsTmsGenerator extends JGTModel {
             for( int i = startXTile; i <= endXTile; i++ ) {
 
                 for( int j = startYTile; j <= endYTile; j++ ) {
-                    
+
                     double[] bounds = mercator.TileBounds(i, j, z);
                     double west = bounds[0];
                     double south = bounds[1];
@@ -322,54 +336,60 @@ public class OmsTmsGenerator extends JGTModel {
 
                     final ReferencedEnvelope tmpBounds = new ReferencedEnvelope(west, east, south, north, mercatorCrs);
                     levelBounds.expandToInclude(tmpBounds);
-                    
-                    // if there is a zoom level geometry limitation, apply it
-                    if (zoomLimitGeometry!=null && z > pZoomLimit) {
-                    	double safeExtend = tmpBounds.getWidth()>tmpBounds.getHeight()?tmpBounds.getWidth():tmpBounds.getHeight();
-                    	final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
-                    	tmp.expandBy(safeExtend);
-						Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
-						if (!zoomLimitGeometry.intersects(polygon)) {
-                    		pm.worked(1);
-							continue;
-						}
-					}
 
-                    File imageFolder = new File(baseFolder, z + "/" + i);
-                    if (!imageFolder.exists()) {
-                        if (!imageFolder.mkdirs()) {
-                            throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
+                    // if there is a zoom level geometry limitation, apply it
+                    if (zoomLimitGeometry != null && z > pZoomLimit) {
+                        double safeExtend = tmpBounds.getWidth() > tmpBounds.getHeight() ? tmpBounds.getWidth() : tmpBounds
+                                .getHeight();
+                        final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
+                        tmp.expandBy(safeExtend);
+                        Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
+                        if (!zoomLimitGeometry.intersects(polygon)) {
+                            pm.worked(1);
+                            continue;
                         }
                     }
 
-                    File ignoreMediaFile = new File(imageFolder, ".nomedia");
-                    ignoreMediaFile.createNewFile();
-
-                    final File imageFile = new File(imageFolder, j + "." + ext);
-                    if (imageFile.exists()) {
+                    if (mbtilesHelper != null) {
+                        BufferedImage image = imgGen.getImageWithCheck(tmpBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                        mbtilesHelper.addTile(i, j, z, image, format);
                         pm.worked(1);
-                        continue;
-                    }
-                    tileNum++;
-                    final String imagePath = imageFile.getAbsolutePath();
-                    final ReferencedEnvelope finalBounds = tmpBounds;
-                    Runnable runner = new Runnable(){
-                        public void run() {
-                            try {
-                                if (pImagetype == 1) {
-                                    imgGen.dumpJpgImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
-                                } else {
-                                    imgGen.dumpPngImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
-                                }
-                                pm.worked(1);
-                            } catch (Exception ex) {
-                                ex.printStackTrace();
-                                System.exit(1);
+                    } else {
+                        File imageFolder = new File(baseFolder, z + "/" + i);
+                        if (!imageFolder.exists()) {
+                            if (!imageFolder.mkdirs()) {
+                                throw new ModelsIOException("Unable to create folder:" + imageFolder, this);
                             }
                         }
-                    };
-                    fixedThreadPool.execute(runner);
 
+                        File ignoreMediaFile = new File(imageFolder, ".nomedia");
+                        ignoreMediaFile.createNewFile();
+
+                        final File imageFile = new File(imageFolder, j + "." + ext);
+                        if (imageFile.exists()) {
+                            pm.worked(1);
+                            continue;
+                        }
+                        tileNum++;
+                        final String imagePath = imageFile.getAbsolutePath();
+                        final ReferencedEnvelope finalBounds = tmpBounds;
+                        Runnable runner = new Runnable(){
+                            public void run() {
+                                try {
+                                    if (pImagetype == 1) {
+                                        imgGen.dumpJpgImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                                    } else {
+                                        imgGen.dumpPngImage(imagePath, finalBounds, TILESIZE, TILESIZE, 0.0, pCheckcolor);
+                                    }
+                                    pm.worked(1);
+                                } catch (Exception ex) {
+                                    ex.printStackTrace();
+                                    System.exit(1);
+                                }
+                            }
+                        };
+                        fixedThreadPool.execute(runner);
+                    }
                 }
             }
             try {
