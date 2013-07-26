@@ -260,11 +260,15 @@ public class Raster {
      * 
      * @param x
      * @param y
-     * @return the col and row.
+     * @return the [col, row] or <code>null</code> if the position is outside the bounds.
      */
     public int[] gridAt( double x, double y ) {
-        int[] colRowFromCoordinate = CoverageUtilities.colRowFromCoordinate(new Coordinate(x, y), gridGeometry, null);
-        return colRowFromCoordinate;
+        if (isInRaster(x, y)) {
+            GridGeometry2D gridGeometry = getGridGeometry();
+            int[] colRowFromCoordinate = CoverageUtilities.colRowFromCoordinate(new Coordinate(x, y), gridGeometry, null);
+            return colRowFromCoordinate;
+        }
+        return null;
     }
 
     /**
@@ -278,6 +282,8 @@ public class Raster {
         if (makeNew) {
             if (isInRaster(col, row)) {
                 ((WritableRandomIter) iter).setSample(col, row, 0, value);
+            } else {
+                throw new RuntimeException("Setting value outside of raster.");
             }
         } else {
             throw new RuntimeException("Writing not allowed.");
@@ -372,6 +378,13 @@ public class Raster {
 
     private boolean isInRaster( int col, int row ) {
         if (col < 0 || col >= cols || row < 0 || row >= rows) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isInRaster( double easting, double northing ) {
+        if (easting < west || easting > east || northing < south || northing > north) {
             return false;
         }
         return true;

@@ -18,7 +18,7 @@ public class TestRaster extends HMTestCase {
     public void testRaster() throws Exception {
         RegionMap e = HMTestMaps.envelopeParams;
 
-        Raster r1 = new Raster(e.getCols(), e.getRows(), e.getXres(), e.getEast(), e.getNorth(), "EPSG:32632");
+        Raster r1 = new Raster(e.getCols(), e.getRows(), e.getXres(), e.getWest(), e.getNorth(), "EPSG:32632");
 
         double[][] elevationData = HMTestMaps.mapData;
         HashMap<String, Double> eP = HMTestMaps.envelopeParams;
@@ -41,6 +41,24 @@ public class TestRaster extends HMTestCase {
         check(5, 3, r1, r2, r3);
         check(4, 4, r1, r2, r3);
 
+    }
+
+    public void testBounds() {
+        RegionMap e = HMTestMaps.envelopeParams;
+        Raster r1 = new Raster(e.getCols(), e.getRows(), e.getXres(), e.getWest(), e.getNorth(), "EPSG:32632");
+
+        int[] gridAt1 = r1.gridAt(e.getWest(), e.getNorth());
+        assertEquals(0, gridAt1[0]);
+        assertEquals(0, gridAt1[1]);
+        int[] gridAt2 = r1.gridAt(e.getWest() - e.getXres(), e.getNorth());
+        assertNull(gridAt2);
+
+        double[] positionAt1 = r1.positionAt(e.getCols() - 1, e.getRows() - 1);
+        assertEquals(e.getEast() - e.getXres() / 2.0, positionAt1[0], DELTA);
+        assertEquals(e.getSouth() + e.getYres() / 2.0, positionAt1[1], DELTA);
+
+        double[] positionAt2 = r1.positionAt(-1, -1);
+        assertNull(positionAt2);
     }
 
     private void check( int col, int row, Raster r1, Raster r2, Raster r3 ) {
