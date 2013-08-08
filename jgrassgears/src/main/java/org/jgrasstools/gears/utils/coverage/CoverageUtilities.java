@@ -82,7 +82,10 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.linearref.LengthIndexedLine;
 import com.vividsolutions.jts.simplify.DouglasPeuckerSimplifier;
 
@@ -382,6 +385,23 @@ public class CoverageUtilities {
         int width = gridRange.width;
         int[] params = new int[]{width, height};
         return params;
+    }
+    
+    /**
+     * Create a bounds polygon of a {@link GridCoverage2D}.
+     * 
+     * @param gridCoverage the coverage to use.
+     * @return the bounding polygon.
+     */
+    public static Polygon getRegionPolygon( GridCoverage2D gridCoverage ){
+        Envelope2D env = gridCoverage.getEnvelope2D();
+        Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
+                new Coordinate(env.getMinX(), env.getMaxY()), new Coordinate(env.getMaxX(), env.getMaxY()),
+                new Coordinate(env.getMaxX(), env.getMinY()), new Coordinate(env.getMinX(), env.getMinY())};
+        GeometryFactory gf = GeometryUtilities.gf();
+        LinearRing linearRing = gf.createLinearRing(c);
+        Polygon polygon = gf.createPolygon(linearRing, null);
+        return polygon;
     }
 
     /**

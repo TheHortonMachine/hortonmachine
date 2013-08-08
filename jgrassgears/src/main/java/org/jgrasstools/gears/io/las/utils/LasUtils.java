@@ -17,6 +17,13 @@
  */
 package org.jgrasstools.gears.io.las.utils;
 
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Point;
+
 /**
  * Utilities for Las handling classes.
  * 
@@ -51,4 +58,39 @@ public class LasUtils {
             return value;
         }
     }
+
+    /**
+     * Creates a builder for las data.
+     * 
+     * The attributes are:
+     * 
+     * <ul>
+     *   <li>the_geom:  a point geometry</li>
+     *   <li>elev</li>
+     *   <li>intensity</li>
+     *   <li>classification</li>
+     *   <li>impulse</li>
+     *   <li>numimpulse</li>
+     * </ul>
+     * 
+     * 
+     * @param crs the {@link CoordinateReferenceSystem}.
+     * @return the {@link SimpleFeatureBuilder builder}.
+     */
+    public static SimpleFeatureBuilder getLasFeatureTypeBuilder( CoordinateReferenceSystem crs ) {
+        final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("lasdata");
+        b.setCRS(crs);
+        b.add("the_geom", Point.class);
+        b.add("elev", Double.class);
+        b.add("intensity", Double.class);
+        b.add("classification", Integer.class);
+        b.add("impulse", Double.class);
+        b.add("numimpulse", Double.class);
+        final SimpleFeatureType featureType = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+
+        return builder;
+    }
+
 }
