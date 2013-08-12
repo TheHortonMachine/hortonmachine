@@ -94,4 +94,45 @@ public class LasRecord {
         double distance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
         return distance;
     }
+
+    public boolean equals( Object obj ) {
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof LasRecord)) {
+            return false;
+        }
+        LasRecord r = (LasRecord) obj;
+        double delta = 0.0000001;
+        boolean check = NumericsUtilities.dEq(x, r.x, delta);
+        if (!check) {
+            return false;
+        }
+        check = NumericsUtilities.dEq(y, r.y, delta);
+        if (!check) {
+            return false;
+        }
+        check = NumericsUtilities.dEq(z, r.z, delta);
+        if (!check) {
+            return false;
+        }
+        check = intensity == r.intensity;
+        if (!check) {
+            return false;
+        }
+        check = classification == r.classification;
+        if (!check) {
+            return false;
+        }
+        check = returnNumber == r.returnNumber;
+        if (!check) {
+            return false;
+        }
+        check = numberOfReturns == r.numberOfReturns;
+        if (!check) {
+            return false;
+        }
+        return true;
+    }
+
 }
