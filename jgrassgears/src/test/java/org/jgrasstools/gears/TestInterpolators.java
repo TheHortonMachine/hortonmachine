@@ -7,6 +7,7 @@ import java.util.List;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.math.interpolation.Interpolator;
 import org.jgrasstools.gears.utils.math.interpolation.LeastSquaresInterpolator;
+import org.jgrasstools.gears.utils.math.interpolation.LinearArrayInterpolator;
 import org.jgrasstools.gears.utils.math.interpolation.LinearListInterpolator;
 import org.jgrasstools.gears.utils.math.interpolation.PolynomialInterpolator;
 /**
@@ -44,6 +45,35 @@ public class TestInterpolators extends HMTestCase {
 
         Collections.reverse(yList);
 
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(2.0);
+        assertEquals(2.0, interpolated, DELTA);
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(1.5);
+        assertEquals(2.5, interpolated, DELTA);
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(0.0);
+        assertTrue(Double.isNaN(interpolated));
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(4.0);
+        assertTrue(Double.isNaN(interpolated));
+    }
+
+    public void testArrayInterpolation() throws Exception {
+
+        double[] xarray = {1.0, 2.0, 3.0};
+        double[] yarray = {1.0, 2.0, 3.0};
+
+        LinearArrayInterpolator dischargeScaleInterpolator = new LinearArrayInterpolator(xarray, yarray);
+
+        Double interpolated = dischargeScaleInterpolator.linearInterpolateX(2.0);
+        assertEquals(2.0, interpolated, DELTA);
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(1.5);
+        assertEquals(1.5, interpolated, DELTA);
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(0.0);
+        assertTrue(Double.isNaN(interpolated));
+        interpolated = dischargeScaleInterpolator.linearInterpolateX(4.0);
+        assertTrue(Double.isNaN(interpolated));
+
+        yarray = new double[]{3.0, 2.0, 1.0};
+
+        dischargeScaleInterpolator = new LinearArrayInterpolator(xarray, yarray);
         interpolated = dischargeScaleInterpolator.linearInterpolateX(2.0);
         assertEquals(2.0, interpolated, DELTA);
         interpolated = dischargeScaleInterpolator.linearInterpolateX(1.5);
