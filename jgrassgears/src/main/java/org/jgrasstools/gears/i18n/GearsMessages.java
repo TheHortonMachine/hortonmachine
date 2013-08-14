@@ -568,6 +568,7 @@ public class GearsMessages {
     public static final String OMSRASTERDIFF_inRaster1_DESCRIPTION = "The input raster.";
     public static final String OMSRASTERDIFF_inRaster2_DESCRIPTION = "The raster to subtract.";
     public static final String OMSRASTERDIFF_pThreshold_DESCRIPTION = "The threshold, under which to set novalue.";
+    public static final String OMSRASTERDIFF_doNegatives_DESCRIPTION = "Allow negative values.";
     public static final String OMSRASTERDIFF_outRaster_DESCRIPTION = "The output raster.";
 
     public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";

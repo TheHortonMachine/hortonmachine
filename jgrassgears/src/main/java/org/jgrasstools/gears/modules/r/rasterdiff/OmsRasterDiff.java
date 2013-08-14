@@ -26,6 +26,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_doNegatives_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster1_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster2_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_outRaster_DESCRIPTION;
@@ -78,6 +79,10 @@ public class OmsRasterDiff extends JGTModel {
     @In
     public Double pThreshold;
 
+    @Description(OMSRASTERDIFF_doNegatives_DESCRIPTION)
+    @In
+    public boolean doNegatives = true;
+
     @Description(OMSRASTERDIFF_outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
@@ -110,6 +115,9 @@ public class OmsRasterDiff extends JGTModel {
                     continue;
                 }
                 double diff = r1 - r2;
+                if (!doNegatives && diff < 0) {
+                    diff = doubleNovalue;
+                }
                 if (pThreshold != null && diff < thres) {
                     diff = doubleNovalue;
                 }

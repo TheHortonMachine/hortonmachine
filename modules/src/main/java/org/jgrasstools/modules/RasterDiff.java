@@ -26,6 +26,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LABEL;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_STATUS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_doNegatives_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster1_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_inRaster2_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_outRaster_DESCRIPTION;
@@ -69,6 +70,10 @@ public class RasterDiff extends JGTModel {
     @Description(OMSRASTERDIFF_pThreshold_DESCRIPTION)
     @In
     public Double pThreshold;
+    
+    @Description(OMSRASTERDIFF_doNegatives_DESCRIPTION)
+    @In
+    public boolean doNegatives = true;
 
     @Description(OMSRASTERDIFF_outRaster_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
@@ -81,6 +86,7 @@ public class RasterDiff extends JGTModel {
         rasterdiff.inRaster1 = getRaster(inRaster1);
         rasterdiff.inRaster2 = getRaster(inRaster2);
         rasterdiff.pThreshold = pThreshold;
+        rasterdiff.doNegatives = doNegatives;
         rasterdiff.pm = pm;
         rasterdiff.doProcess = doProcess;
         rasterdiff.doReset = doReset;

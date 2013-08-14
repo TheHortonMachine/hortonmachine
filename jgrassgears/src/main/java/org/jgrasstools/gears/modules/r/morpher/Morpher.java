@@ -48,8 +48,6 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.BinaryFast;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -67,15 +65,11 @@ public class Morpher extends JGTModel {
     @In
     public GridCoverage2D inMap = null;
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
-
     @Description("A kernel to use instead of the default.")
     @In
     public int[] pKernel = null;
 
-    @Description("Process in binary mode (novalue = 0, valid value = 1.")
+    @Description("Process in binary mode.")
     @In
     public boolean doBinary = true;
 
