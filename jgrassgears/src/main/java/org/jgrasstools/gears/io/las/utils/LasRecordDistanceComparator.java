@@ -23,39 +23,43 @@ import java.util.Comparator;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 
 /**
- * Comparator for elevation in {@link LasRecord}s.
+ * Comparator for distance {@link LasRecord}s.
  * 
  * <p>The default use in {@link Collections#sort(java.util.List)} orders 
- * the points from the lowest to the highest elevation.
+ * the points from the nearest to the farest from a given point.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasRecordElevationComparator implements Comparator<LasRecord> {
+public class LasRecordDistanceComparator implements Comparator<LasRecord> {
 
     private boolean doReverse;
+    private LasRecord center;
 
-    public LasRecordElevationComparator() {
-        this(false);
+    public LasRecordDistanceComparator( LasRecord center ) {
+        this(center, false);
     }
 
-    public LasRecordElevationComparator( boolean doReverse ) {
+    public LasRecordDistanceComparator( LasRecord center, boolean doReverse ) {
+        this.center = center;
         this.doReverse = doReverse;
     }
 
     @Override
     public int compare( LasRecord o1, LasRecord o2 ) {
+        double d1 = center.distance(o1);
+        double d2 = center.distance(o2);
         if (doReverse) {
-            if (o1.z < o2.z) {
+            if (d1 < d2) {
                 return 1;
-            } else if (o1.z > o2.z) {
+            } else if (d1 > d2) {
                 return -1;
             } else {
                 return 0;
             }
         } else {
-            if (o1.z < o2.z) {
+            if (d1 < d2) {
                 return -1;
-            } else if (o1.z > o2.z) {
+            } else if (d1 > d2) {
                 return 1;
             } else {
                 return 0;
