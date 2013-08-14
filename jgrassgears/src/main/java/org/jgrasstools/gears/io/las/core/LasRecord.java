@@ -103,7 +103,7 @@ public class LasRecord {
             return false;
         }
         LasRecord r = (LasRecord) obj;
-        double delta = 0.0000001;
+        double delta = 0.000001;
         boolean check = NumericsUtilities.dEq(x, r.x, delta);
         if (!check) {
             return false;

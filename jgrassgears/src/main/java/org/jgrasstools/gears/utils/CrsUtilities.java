@@ -58,7 +58,11 @@ public class CrsUtilities {
             prjPath = filePath.substring(0, dotLoc);
             prjPath = prjPath + ".prj";
         } else {
-            prjPath = filePath + ".prj";
+            if (!filePath.endsWith(".prj")) {
+                prjPath = filePath + ".prj";
+            }else{
+                prjPath = filePath;
+            }
         }
 
         BufferedWriter bufferedWriter = null;

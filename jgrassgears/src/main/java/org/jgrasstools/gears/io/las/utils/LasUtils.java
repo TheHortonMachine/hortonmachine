@@ -25,6 +25,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -45,6 +46,7 @@ public class LasUtils {
     public static final String CLASSIFICATION = "classifica";
     public static final String IMPULSE = "impulse";
     public static final String NUM_OF_IMPULSES = "numimpulse";
+    private static SimpleFeatureBuilder lasSimpleFeatureBuilder;
 
     public enum POINTTYPE {
         UNCLASSIFIED(1, "UNCLASSIFIED"), //
@@ -93,23 +95,33 @@ public class LasUtils {
      * @param crs the {@link CoordinateReferenceSystem}.
      * @return the {@link SimpleFeatureBuilder builder}.
      */
-    public static SimpleFeatureBuilder getLasFeatureTypeBuilder( CoordinateReferenceSystem crs ) {
-        final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("lasdata");
-        b.setCRS(crs);
-        b.add(THE_GEOM, Point.class);
-        b.add(ELEVATION, Double.class);
-        b.add(INTENSITY, Double.class);
-        b.add(CLASSIFICATION, Integer.class);
-        b.add(IMPULSE, Double.class);
-        b.add(NUM_OF_IMPULSES, Double.class);
-        final SimpleFeatureType featureType = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-
-        return builder;
+    public static SimpleFeatureBuilder getLasFeatureBuilder( CoordinateReferenceSystem crs ) {
+        if (lasSimpleFeatureBuilder == null) {
+            SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+            b.setName("lasdata");
+            b.setCRS(crs);
+            b.add(THE_GEOM, Point.class);
+            b.add(ELEVATION, Double.class);
+            b.add(INTENSITY, Double.class);
+            b.add(CLASSIFICATION, Integer.class);
+            b.add(IMPULSE, Double.class);
+            b.add(NUM_OF_IMPULSES, Double.class);
+            final SimpleFeatureType featureType = b.buildFeatureType();
+            lasSimpleFeatureBuilder = new SimpleFeatureBuilder(featureType);
+        }
+        return lasSimpleFeatureBuilder;
     }
-    
-    public static List<LasRecord> getLasRecordsFromFeatureCollection(SimpleFeatureCollection lasCollection){
+
+    public static SimpleFeature tofeature( LasRecord r, CoordinateReferenceSystem crs ) {
+        final Point point = GeometryUtilities.gf().createPoint(new Coordinate(r.x, r.y));
+        final Object[] values = new Object[]{point, r.z, r.intensity, r.classification, r.returnNumber, r.numberOfReturns};
+        SimpleFeatureBuilder lasFeatureBuilder = getLasFeatureBuilder(crs);
+        lasFeatureBuilder.addAll(values);
+        final SimpleFeature feature = lasFeatureBuilder.buildFeature(null);
+        return feature;
+    }
+
+    public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection ) {
         List<SimpleFeature> featuresList = FeatureUtilities.featureCollectionToList(lasCollection);
         List<LasRecord> lasList = new ArrayList<LasRecord>();
         for( SimpleFeature lasFeature : featuresList ) {
