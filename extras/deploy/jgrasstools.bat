@@ -14,6 +14,9 @@
 :: You should have received a copy of the GNU General Public License
 :: along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
+
+setlocal
+
 set MEM="-Xmx1g"
 set cmdArgs=%1 %2 %3 %4
 if [%2]==[] (
@@ -28,3 +31,5 @@ set MODULESJARS=%MODULESJARS:~1%
 echo %MODULESJARS%
 
 java %MEM% -Doms.sim.resources="%MODULESJARS%" -cp ".\modules\*;.\libs\*" org.jgrasstools.hortonmachine.utils.oms.CLI %cmdArgs%
+
+endlocal
