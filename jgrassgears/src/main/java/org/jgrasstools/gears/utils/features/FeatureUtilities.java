@@ -652,7 +652,7 @@ public class FeatureUtilities {
         Polygon polygon = gf.createPolygon(linearRing, null);
         return polygon;
     }
-    
+
     /**
      * Create a {@link Polygon} from an {@link Envelope}.
      * 
@@ -660,22 +660,64 @@ public class FeatureUtilities {
      * @return the created polygon.
      */
     public static Polygon envelopeToPolygon( Envelope envelope ) {
-    	double w = envelope.getMinX();
-    	double e = envelope.getMaxX();
-    	double s = envelope.getMinY();
-    	double n = envelope.getMaxY();
-    	
-    	Coordinate[] coords = new Coordinate[5];
-    	coords[0] = new Coordinate(w, n);
-    	coords[1] = new Coordinate(e, n);
-    	coords[2] = new Coordinate(e, s);
-    	coords[3] = new Coordinate(w, s);
-    	coords[4] = new Coordinate(w, n);
-    	
-    	GeometryFactory gf = GeometryUtilities.gf();
-    	LinearRing linearRing = gf.createLinearRing(coords);
-    	Polygon polygon = gf.createPolygon(linearRing, null);
-    	return polygon;
+        double w = envelope.getMinX();
+        double e = envelope.getMaxX();
+        double s = envelope.getMinY();
+        double n = envelope.getMaxY();
+
+        Coordinate[] coords = new Coordinate[5];
+        coords[0] = new Coordinate(w, n);
+        coords[1] = new Coordinate(e, n);
+        coords[2] = new Coordinate(e, s);
+        coords[3] = new Coordinate(w, s);
+        coords[4] = new Coordinate(w, n);
+
+        GeometryFactory gf = GeometryUtilities.gf();
+        LinearRing linearRing = gf.createLinearRing(coords);
+        Polygon polygon = gf.createPolygon(linearRing, null);
+        return polygon;
+    }
+
+    /**
+     * Extracts a list of polygons from the cell bounds of a given {@link GridCoverage2D coverage}.
+     * 
+     * <p><b>Note that the cells are added in a rows 
+     * and cols order (for each row evaluate each column).</b></p> 
+     * 
+     * @param coverage the coverage to use.
+     * @return the list of envelope geometries.
+     */
+    public static List<Polygon> gridcoverageToCellPolygons( GridCoverage2D coverage ) {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        double west = regionMap.getWest();
+        double north = regionMap.getNorth();
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+
+        List<Polygon> polygons = new ArrayList<Polygon>();
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double w = west + xres * c;
+                double e = w + xres;
+                double n = north - yres * r;
+                double s = n - yres;
+
+                Coordinate[] coords = new Coordinate[5];
+                coords[0] = new Coordinate(w, n);
+                coords[1] = new Coordinate(e, n);
+                coords[2] = new Coordinate(e, s);
+                coords[3] = new Coordinate(w, s);
+                coords[4] = new Coordinate(w, n);
+
+                GeometryFactory gf = GeometryUtilities.gf();
+                LinearRing linearRing = gf.createLinearRing(coords);
+                Polygon polygon = gf.createPolygon(linearRing, null);
+                polygons.add(polygon);
+            }
+        }
+        return polygons;
     }
 
     /**

@@ -1,16 +1,26 @@
 package org.jgrasstools.gears;
 
+import java.util.HashMap;
+import java.util.List;
+
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.utils.HMTestCase;
+import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 /**
  * Test FeatureUtils.
  * 
@@ -35,6 +45,33 @@ public class TestFeatureUtils extends HMTestCase {
         assertEquals("test", attr.toString());
         attr = FeatureUtilities.getAttributeCaseChecked(feature, "attrnam");
         assertNull(attr);
+    }
+
+    public void testGridCellGeoms() throws Exception {
+        double[][] mapData = HMTestMaps.mapData;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, envelopeParams, crs, true); //$NON-NLS-1$
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        double east = regionMap.getEast();
+        double north = regionMap.getNorth();
+        double south = regionMap.getSouth();
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+
+        List<Polygon> cellPolygons = FeatureUtilities.gridcoverageToCellPolygons(inElev);
+        int size = nCols * nRows;
+        assertEquals(size, cellPolygons.size());
+
+        Polygon polygon = cellPolygons.get(9);
+        Envelope env = polygon.getEnvelopeInternal();
+        assertEquals(east, env.getMaxX(), DELTA);
+        assertEquals(north, env.getMaxY(), DELTA);
+
+        polygon = cellPolygons.get(size - 1);
+        env = polygon.getEnvelopeInternal();
+        assertEquals(east, env.getMaxX(), DELTA);
+        assertEquals(south, env.getMinY(), DELTA);
 
     }
 
