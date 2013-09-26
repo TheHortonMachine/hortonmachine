@@ -55,6 +55,15 @@ public class LasWriter_1_0 {
     private double xScale = 0.01;
     private double yScale = 0.01;
     private double zScale = 0.001;
+    private double xMin = 0;
+    private double yMin = 0;
+    private double zMin = 0;
+    private double xMax = 0;
+    private double yMax = 0;
+    private double zMax = 0;
+    private int recordsNum = 0;
+
+    private final short recordLength = 28;
 
     public LasWriter_1_0( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
@@ -74,7 +83,12 @@ public class LasWriter_1_0 {
         this.zScale = zScale;
     }
 
-    public void writerecords( List<LasRecord> recordsList ) throws IOException {
+    public void open() throws Exception {
+        openFile();
+        writeHeader();
+    }
+
+    private void writeHeader() throws IOException {
 
         // File signature: LASF
         // File source ID: 0
@@ -139,10 +153,8 @@ public class LasWriter_1_0 {
         // point data format
         fos.write(1);
 
-        short recordLength = 20;
         fos.write(getShort(recordLength));
 
-        int recordsNum = recordsList.size();
         fos.write(getLong(recordsNum));
 
         // num of points by return
@@ -154,22 +166,6 @@ public class LasWriter_1_0 {
         fos.write(getDouble(yScale));
         // zscale
         fos.write(getDouble(zScale));
-
-        double xMin = Double.POSITIVE_INFINITY;
-        double yMin = Double.POSITIVE_INFINITY;
-        double zMin = Double.POSITIVE_INFINITY;
-        double xMax = Double.NEGATIVE_INFINITY;
-        double yMax = Double.NEGATIVE_INFINITY;
-        double zMax = Double.NEGATIVE_INFINITY;
-
-        for( LasRecord record : recordsList ) {
-            xMin = min(xMin, record.x);
-            yMin = min(yMin, record.y);
-            zMin = min(zMin, record.z);
-            xMax = max(xMax, record.x);
-            yMax = max(yMax, record.y);
-            zMax = max(zMax, record.z);
-        }
 
         // xoff
         fos.write(getDouble(xMin));
@@ -185,58 +181,81 @@ public class LasWriter_1_0 {
         fos.write(getDouble(zMax));
         fos.write(getDouble(zMin));
 
-        for( LasRecord record : recordsList ) {
-            int length = 0;
-            int x = (int) round((record.x - xMin) / xScale);
-            int y = (int) round((record.y - yMin) / yScale);
-            int z = (int) round((record.z - zMin) / zScale);
-            fos.write(getLong(x));
-            fos.write(getLong(y));
-            fos.write(getLong(z));
-            length = length + 12;
-            fos.write(getShort(record.intensity));
-            length = length + 2;
+    }
 
-            // 001 | 001 | 11 -> bits for return num, num of ret, scan dir flag, edge of flight line
+    /**
+     * Writes a point to file.
+     * 
+     * @param record the point record.
+     * @throws IOException
+     */
+    public void addPoint( LasRecord record ) throws IOException {
+        int length = 0;
+        int x = (int) round((record.x - xMin) / xScale);
+        int y = (int) round((record.y - yMin) / yScale);
+        int z = (int) round((record.z - zMin) / zScale);
+        fos.write(getLong(x));
+        fos.write(getLong(y));
+        fos.write(getLong(z));
+        length = length + 12;
+        fos.write(getShort(record.intensity));
+        length = length + 2;
 
-            int returnNumber = record.returnNumber;
-            BitSet bitsetRN = ByteUtilities.bitsetFromByte((byte) returnNumber);
-            int numberOfReturns = record.numberOfReturns;
-            BitSet bitsetNOR = ByteUtilities.bitsetFromByte((byte) numberOfReturns);
-            BitSet b = new BitSet(7);
-            b.set(0, bitsetRN.get(0));
-            b.set(1, bitsetRN.get(1));
-            b.set(2, bitsetRN.get(2));
-            b.set(3, bitsetNOR.get(0));
-            b.set(4, bitsetNOR.get(1));
-            b.set(5, bitsetNOR.get(2));
-            b.set(6, false);
-            b.set(7, false);
-            byte[] bb = ByteUtilities.bitSetToByteArray(b);
-            fos.write(bb[0]);
-            length = length + 1;
+        // 001 | 001 | 11 -> bits for return num, num of ret, scan dir flag, edge of flight line
 
-            // class
-            byte c = (byte) record.classification;
-            fos.write(c);
-            length = length + 1;
+        int returnNumber = record.returnNumber;
+        BitSet bitsetRN = ByteUtilities.bitsetFromByte((byte) returnNumber);
+        int numberOfReturns = record.numberOfReturns;
+        BitSet bitsetNOR = ByteUtilities.bitsetFromByte((byte) numberOfReturns);
+        BitSet b = new BitSet(7);
+        b.set(0, bitsetRN.get(0));
+        b.set(1, bitsetRN.get(1));
+        b.set(2, bitsetRN.get(2));
+        b.set(3, bitsetNOR.get(0));
+        b.set(4, bitsetNOR.get(1));
+        b.set(5, bitsetNOR.get(2));
+        b.set(6, false);
+        b.set(7, false);
+        byte[] bb = ByteUtilities.bitSetToByteArray(b);
+        fos.write(bb[0]);
+        length = length + 1;
 
-            // scan angle rank
-            fos.write(1);
-            length = length + 1;
-            fos.write(0);
-            length = length + 1;
-            fos.write(new byte[2]);
-            length = length + 2;
+        // class
+        byte c = (byte) record.classification;
+        fos.write(c);
+        length = length + 1;
+
+        // scan angle rank
+        fos.write(1);
+        length = length + 1;
+        fos.write(0);
+        length = length + 1;
+        fos.write(new byte[2]);
+        length = length + 2;
+
+        fos.write(getDouble(record.gpsTime));
+        length = length + 8;
+
+        if (recordLength != length) {
+            throw new RuntimeException();
         }
+    }
+
+    public void close() throws Exception {
+        closeFile();
+
+        // TODO make this nicer
+        openFileAppend();
+        writeHeader();
+        closeFile();
 
         /*
          * write crs file
          */
         if (crs != null)
             CrsUtilities.writeProjectionFile(prjFile.getAbsolutePath(), null, crs);
-
     }
+
     private byte[] getLong( int num ) {
         longBb.clear();
         longBb.putInt(num);
@@ -264,11 +283,15 @@ public class LasWriter_1_0 {
         return shortBb.array();
     }
 
-    public void open() throws Exception {
+    private void openFile() throws Exception {
         fos = new FileOutputStream(outFile);
     }
+    
+    private void openFileAppend() throws Exception {
+        fos = new FileOutputStream(outFile, true);
+    }
 
-    public void close() throws Exception {
+    private void closeFile() throws Exception {
         if (fos != null)
             fos.close();
     }
