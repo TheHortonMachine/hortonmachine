@@ -148,6 +148,13 @@ public class LasUtils {
         return lasList;
     }
 
+    /**
+     * Converts las gps time to {@link DateTime}.
+     * 
+     * @param gpsTime the time value.
+     * @param gpsTimeType the time type (0=week.seconds, 1=adjusted standard gps time)
+     * @return the UTC date object.
+     */
     public static DateTime gpsTimeToDateTime( double gpsTime, int gpsTimeType ) {
         if (gpsTimeType == 0) {
             throw new RuntimeException("Not implemented yet.");
@@ -169,20 +176,28 @@ public class LasUtils {
             // System.out.println(dt1);
             // return dt;
         } else {
-            // DateTime javaEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC);
-            // DateTime dtGps = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
-            // long millis = javaEpoch.getMillis();
-            // long millis1 = dtGps.getMillis();
-            // DateTime withMillis = javaEpoch.withMillis(1000);
-            // long millis2 = withMillis.getMillis();
             // gps time is adjusted gps time
             double standardGpsTimeSeconds = gpsTime + 1E9;
             double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
-            // DateTime withMillis2 = javaEpoch.withMillis((long) standardGpsTimeMillis);
             DateTime dt1 = gpsEpoch.plus((long) standardGpsTimeMillis);
             return dt1;
         }
 
+    }
+
+    /**
+     * Converts an date object to standard gps time.
+     * 
+     * @param dateTime the object (UTC).
+     * @return the standard gps time in milliseconds.
+     */
+    public static double dateTimeToStandardGpsTime( DateTime dateTime ) {
+        long millis = dateTime.getMillis() - gpsEpoch.getMillis();
+        return millis;
+    }
+
+    public static void main( String[] args ) {
+        System.out.println(gpsTimeToDateTime(206990.867192313, 1));
     }
 
 }

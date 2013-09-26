@@ -330,36 +330,5 @@ public class LasReader_1_0 extends AbstractLasReader {
         return LasUtils.gpsTimeToDateTime(record.gpsTime, header.gpsTimeType);
     }
 
-    public static void main( String[] args ) throws Exception {
-        CoordinateReferenceSystem crs = null;
-        // File file = new File("/home/moovida/data/lidardata/Trento000228.las");
-        File file = new File("/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001060_1.las");
-        LasReader_1_0 reader = new LasReader_1_0(file, crs);
-        reader.setOverrideGpsTimeType(1);
-        ILasHeader h = reader.getHeader();
-        System.out.println(h);
-        int index = 0;
-
-        TreeSet<String> set = new TreeSet<String>();
-        while( reader.hasNextLasDot() ) {
-            LasRecord readNextLasDot = reader.readNextLasDot();
-            DateTime gpsTimeToDateTime = reader.getRecordDateTime(readNextLasDot);
-            String dateStr = gpsTimeToDateTime.toString();
-            // if (set.add(dateStr)) {
-            System.out.println(readNextLasDot);
-            System.out.println(gpsTimeToDateTime);
-            // }
-
-            if (index++ > 10) {
-                break;
-            }
-        }
-        reader.close();
-
-        // for( String string : set ) {
-        // System.out.println(string);
-        // }
-
-    }
 
 }
