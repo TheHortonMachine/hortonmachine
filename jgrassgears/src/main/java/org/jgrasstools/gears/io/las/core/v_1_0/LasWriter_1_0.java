@@ -26,11 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -235,7 +233,8 @@ public class LasWriter_1_0 {
         /*
          * write crs file
          */
-        CrsUtilities.writeProjectionFile(prjFile.getAbsolutePath(), null, crs);
+        if (crs != null)
+            CrsUtilities.writeProjectionFile(prjFile.getAbsolutePath(), null, crs);
 
     }
     private byte[] getLong( int num ) {
@@ -272,34 +271,6 @@ public class LasWriter_1_0 {
     public void close() throws Exception {
         if (fos != null)
             fos.close();
-    }
-
-    public static void main( String[] args ) throws Exception {
-        CoordinateReferenceSystem crs = CRS.decode("EPSG:32632");
-        // File file = new
-        // File("/home/moovida/data/serviziogeologico_tn/ServizioGeologico/datigrezzi28100/Trento000091.las");
-        File file = new File("/home/moovida/data-mega/las/uni_bz_49.las");
-        LasReader_1_0 reader = new LasReader_1_0(file, crs);
-        System.out.println(reader.getHeader());
-
-        file = new File("/home/moovida/test.las");
-        LasWriter_1_0 w = new LasWriter_1_0(file, crs);
-        w.open();
-        ArrayList<LasRecord> recordsList = new ArrayList<LasRecord>();
-        int count = 0;
-        while( reader.hasNextLasDot() ) {
-            LasRecord readNextLasDot = reader.readNextLasDot();
-            recordsList.add(readNextLasDot);
-            System.out.println(readNextLasDot);
-            if (++count > 5) {
-                break;
-            }
-        }
-
-        w.writerecords(recordsList);
-        w.close();
-
-        reader.close();
     }
 
 }
