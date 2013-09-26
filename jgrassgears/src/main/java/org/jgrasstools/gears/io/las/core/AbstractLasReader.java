@@ -100,7 +100,7 @@ public abstract class AbstractLasReader {
         AbstractLasReader lasRecordReader = null;
         if (version.equals("1.0")) {
             lasRecordReader = new LasReader_1_0(lasFile, crs);
-        } else  {
+        } else {
             System.err.println("Found unsopported las file version. Trying to use the current 1.0 las reader anyways.");
             lasRecordReader = new LasReader_1_0(lasFile, crs);
         }
@@ -167,7 +167,7 @@ public abstract class AbstractLasReader {
 
     public abstract ILasHeader getHeader();
 
-    public ReferencedEnvelope3D getEnvelope(){
+    public ReferencedEnvelope3D getEnvelope() {
         checkOpen();
         return getHeader().getDataEnvelope();
     }
@@ -221,7 +221,7 @@ public abstract class AbstractLasReader {
         double arr2Double = doubleBb.getDouble(0);
         return arr2Double;
     }
-
+    
     protected short getShort2Bytes() throws IOException {
         shortBb.clear();
         fc.read(shortBb);
@@ -247,6 +247,22 @@ public abstract class AbstractLasReader {
             }
         }
         return rn;
+    }
+
+    /**
+     * Checks the gps time type.
+     * 
+     * <p>
+     * <ul>
+     * <li>0 (not set) = GPS time in the point record fields is GPS Week Time</li>
+     * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
+     * </ul>
+     * 
+     * @param b the global enchoding byte.
+     * @return 0 or 1;
+     */
+    protected int getGpsTimeType( byte b ) {
+        return isSet(b, 0) ? 1 : 0;
     }
 
     protected int getNumberOfReturns( byte b ) {

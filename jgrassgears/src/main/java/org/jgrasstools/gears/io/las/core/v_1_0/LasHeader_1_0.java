@@ -39,6 +39,18 @@ public class LasHeader_1_0 implements ILasHeader {
      *  file source ID
      */
     protected short fileSourceId;
+
+    /**
+     * The gps time type.
+     * 
+     * <p>
+     * <ul>
+     * <li>0 (not set) = GPS time in the point record fields is GPS Week Time</li>
+     * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
+     * </ul>
+     */
+    protected int gpsTimeType;
+
     /**
      *  Project ID - data 1 (optional)
      */
@@ -137,6 +149,14 @@ public class LasHeader_1_0 implements ILasHeader {
         return dataEnvelope;
     }
 
+    public boolean hasGpsTime() {
+        return pointDataFormat == 1 || pointDataFormat == 3;
+    }
+
+    public boolean hasRGB() {
+        return pointDataFormat == 2 || pointDataFormat == 3;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("File signature: ").append(signature).append("\n");
@@ -167,6 +187,9 @@ public class LasHeader_1_0 implements ILasHeader {
         sb.append("X Range: [").append(xMin).append(", ").append(xMax).append("]\n");
         sb.append("Y Range: [").append(yMin).append(", ").append(yMax).append("]\n");
         sb.append("Z Range: [").append(zMin).append(", ").append(zMax).append("]\n");
+        sb.append("Has gps time info: ").append(hasGpsTime()).append("\n");
+        sb.append("Has color info: ").append(hasRGB()).append("\n");
+        sb.append("Gps time type: ").append(gpsTimeType).append("\n");
         return sb.toString();
     }
 

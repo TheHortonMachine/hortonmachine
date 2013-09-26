@@ -19,10 +19,13 @@ package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.TreeSet;
 
 import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -47,6 +50,11 @@ public class LasReader_1_0 extends AbstractLasReader {
         super(lasFile, crs);
     }
 
+    public void setOverrideGpsTimeType( int type ) {
+        getHeader();
+        header.gpsTimeType = type;
+    }
+
     @SuppressWarnings("nls")
     protected void parseHeader() throws Exception {
 
@@ -60,7 +68,11 @@ public class LasReader_1_0 extends AbstractLasReader {
             header.fileSourceId = fileSourceId;
 
             // reserved (optional)
-            getShort2Bytes();
+            byte globalEnchodingBitFirstHalf = get();
+            // byte globalEnchodingBitSecondHalf = get();
+            skip(1);
+            int gpsTimeType = getGpsTimeType(globalEnchodingBitFirstHalf);
+            header.gpsTimeType = gpsTimeType;
 
             long projectIdGuidData1 = getLong4Bytes();
             header.projectIdGuidData1 = projectIdGuidData1;
@@ -153,35 +165,35 @@ public class LasReader_1_0 extends AbstractLasReader {
     @Override
     public LasRecord readNextLasDot() throws IOException {
         int read = 0;
+        // x
         long x = getLong4Bytes();
+        // y
         long y = getLong4Bytes();
+        // z
         long z = getLong4Bytes();
         double xd = x * xScale + xOffset;
         double yd = y * yScale + yOffset;
         double zd = z * zScale + zOffset;
 
-        // if (!isBetween(xd, xMin, xMax)) {
-        // throw new ModelsIllegalargumentException("Data not in supposed range.", this);
-        // }
-        // if (!isBetween(yd, yMin, yMax)) {
-        // throw new ModelsIllegalargumentException("Data not in supposed range.", this);
-        // }
-        // if (!isBetween(zd, zMin, zMax)) {
-        // throw new ModelsIllegalargumentException("Data not in supposed range.", this);
-        // }
-
         read = read + 12;
+        // intensity
         short intensity = getShort2Bytes();
         read = read + 2;
+        // return number
         byte b = get();
         int returnNumber = getReturnNumber(b);
+        // number of returns (given pulse)
         int numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
+        // classification
         byte classification = get();
         read = read + 1;
-
-        int skip = recordLength - read;
-        skip(skip);
+        // skip:
+        // scan angle rank (1 byte)
+        // file marker (1 byte)
+        // Point Source ID (2 byte)
+        skip(4);
+        read = read + 4;
 
         LasRecord dot = new LasRecord();
         dot.x = xd;
@@ -191,6 +203,23 @@ public class LasReader_1_0 extends AbstractLasReader {
         dot.classification = classification;
         dot.returnNumber = returnNumber;
         dot.numberOfReturns = numberOfReturns;
+        if (header.pointDataFormat == 1) {
+            dot.gpsTime = getDouble8Bytes();
+            read = read + 8;
+        } else if (header.pointDataFormat == 2) {
+            dot.color[0] = getShort2Bytes();
+            dot.color[1] = getShort2Bytes();
+            dot.color[2] = getShort2Bytes();
+            read = read + 6;
+        } else if (header.pointDataFormat == 3) {
+            dot.gpsTime = getDouble8Bytes();
+            dot.color[0] = getShort2Bytes();
+            dot.color[1] = getShort2Bytes();
+            dot.color[2] = getShort2Bytes();
+            read = read + 14;
+        }
+        int skip = recordLength - read;
+        skip(skip);
 
         readRecords++;
         return dot;
@@ -227,6 +256,13 @@ public class LasReader_1_0 extends AbstractLasReader {
         byte classification = get();
         read = read + 1;
 
+        // skip:
+        // scan angle rank (1 byte)
+        // file marker (1 byte)
+        // Point Source ID (2 byte)
+        skip(4);
+        read = read + 4;
+
         LasRecord dot = new LasRecord();
         dot.x = xd;
         dot.y = yd;
@@ -235,8 +271,23 @@ public class LasReader_1_0 extends AbstractLasReader {
         dot.classification = classification;
         dot.returnNumber = returnNumber;
         dot.numberOfReturns = numberOfReturns;
-
-        // fc.position(oldPosition);
+        if (header.pointDataFormat == 1) {
+            dot.gpsTime = getDouble8Bytes();
+            read = read + 8;
+        } else if (header.pointDataFormat == 2) {
+            dot.color[0] = getShort2Bytes();
+            dot.color[1] = getShort2Bytes();
+            dot.color[2] = getShort2Bytes();
+            read = read + 6;
+        } else if (header.pointDataFormat == 3) {
+            dot.gpsTime = getDouble8Bytes();
+            dot.color[0] = getShort2Bytes();
+            dot.color[1] = getShort2Bytes();
+            dot.color[2] = getShort2Bytes();
+            read = read + 14;
+        }
+        // int skip = recordLength - read;
+        // skip(skip);
 
         return dot;
     }
@@ -275,17 +326,40 @@ public class LasReader_1_0 extends AbstractLasReader {
         return header;
     }
 
+    public DateTime getRecordDateTime( LasRecord record ) {
+        return LasUtils.gpsTimeToDateTime(record.gpsTime, header.gpsTimeType);
+    }
+
     public static void main( String[] args ) throws Exception {
         CoordinateReferenceSystem crs = null;
         // File file = new File("/home/moovida/data/lidardata/Trento000228.las");
-        File file = new File("/home/moovida/test.las");
+        File file = new File("/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001060_1.las");
         LasReader_1_0 reader = new LasReader_1_0(file, crs);
-        System.out.println(reader.getHeader());
+        reader.setOverrideGpsTimeType(1);
+        ILasHeader h = reader.getHeader();
+        System.out.println(h);
+        int index = 0;
+
+        TreeSet<String> set = new TreeSet<String>();
         while( reader.hasNextLasDot() ) {
             LasRecord readNextLasDot = reader.readNextLasDot();
+            DateTime gpsTimeToDateTime = reader.getRecordDateTime(readNextLasDot);
+            String dateStr = gpsTimeToDateTime.toString();
+            // if (set.add(dateStr)) {
             System.out.println(readNextLasDot);
+            System.out.println(gpsTimeToDateTime);
+            // }
+
+            if (index++ > 10) {
+                break;
+            }
         }
         reader.close();
+
+        // for( String string : set ) {
+        // System.out.println(string);
+        // }
+
     }
 
 }

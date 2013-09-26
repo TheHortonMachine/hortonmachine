@@ -17,7 +17,9 @@
  */
 package org.jgrasstools.gears.io.las.core;
 
+import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
+import org.joda.time.DateTime;
 
 /**
  * Object containing the las record content plus some additional info.
@@ -61,9 +63,14 @@ public class LasRecord {
     public int classification = -1;
 
     /**
-     * Color rgb info for styling (not contained in record and optional).
+     * Gps timestamp
      */
-    public float[] color;
+    public double gpsTime = -1;
+
+    /**
+     * Color rgb info for styling (defaults to gray).
+     */
+    public short[] color = new short[]{100, 100, 100};
 
     /**
      * Information about the ground elevation in the current point position (not contained in record and optional).
@@ -85,13 +92,33 @@ public class LasRecord {
                 .append(this.y).append(CR).append(TAB).append("z = ").append(this.z).append(CR).append(TAB)
                 .append("intensity = ").append(this.intensity).append(CR).append(TAB).append("impulse = ")
                 .append(this.returnNumber).append(CR).append(TAB).append("impulseNum = ").append(this.numberOfReturns).append(CR)
-                .append(TAB).append("classification = ").append(this.classification).append(CR).append(" )");
+                .append(TAB).append("classification = ").append(this.classification).append(CR).append(TAB).append("gpsTime = ")
+                .append(this.gpsTime).append(CR).append(" )");
 
         return retValue.toString();
     }
 
+    /**
+     * Projected distance between two points.
+     * 
+     * @param other the other point.
+     * @return the 2D distance.
+     */
     public double distance( LasRecord other ) {
         double distance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
+        return distance;
+    }
+
+    /**
+     * Distance between two points.
+     * 
+     * @param other the other point.
+     * @return the 3D distance.
+     */
+    public double distance3D( LasRecord other ) {
+        double deltaElev = Math.abs(z - other.z);
+        double projectedDistance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
+        double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
         return distance;
     }
 

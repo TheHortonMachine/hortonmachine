@@ -26,6 +26,8 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -47,6 +49,8 @@ public class LasUtils {
     public static final String IMPULSE = "impulse";
     public static final String NUM_OF_IMPULSES = "numimpulse";
     private static SimpleFeatureBuilder lasSimpleFeatureBuilder;
+
+    private static DateTime gpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
 
     public enum POINTTYPE {
         UNCLASSIFIED(1, "UNCLASSIFIED"), //
@@ -142,6 +146,43 @@ public class LasUtils {
             lasList.add(r);
         }
         return lasList;
+    }
+
+    public static DateTime gpsTimeToDateTime( double gpsTime, int gpsTimeType ) {
+        if (gpsTimeType == 0) {
+            throw new RuntimeException("Not implemented yet.");
+            // long JAN61980 = 44244;
+            // double SEC_PER_DAY = 86400.0;
+            // long JAN11901 = 15385;
+            // long longModifiedJulianDate = (long) gpsTime;
+            // long gpsWeek = (longModifiedJulianDate - JAN61980) / 7;
+            //
+            // double doubleModifiedJulianDate = gpsTime - longModifiedJulianDate;
+            // double secondsOfWeek = ((longModifiedJulianDate - JAN61980) - gpsWeek * 7 +
+            // doubleModifiedJulianDate) * SEC_PER_DAY;
+            //
+            // DateTime dt = new DateTime(1980, 1, 6, 0, 0, 0, 0);
+            // System.out.println(dt);
+            // dt = dt.plusWeeks((int) gpsWeek);
+            // System.out.println(dt);
+            // DateTime dt1 = new DateTime(longModifiedJulianDate);
+            // System.out.println(dt1);
+            // return dt;
+        } else {
+            // DateTime javaEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC);
+            // DateTime dtGps = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
+            // long millis = javaEpoch.getMillis();
+            // long millis1 = dtGps.getMillis();
+            // DateTime withMillis = javaEpoch.withMillis(1000);
+            // long millis2 = withMillis.getMillis();
+            // gps time is adjusted gps time
+            double standardGpsTimeSeconds = gpsTime + 1E9;
+            double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
+            // DateTime withMillis2 = javaEpoch.withMillis((long) standardGpsTimeMillis);
+            DateTime dt1 = gpsEpoch.plus((long) standardGpsTimeMillis);
+            return dt1;
+        }
+
     }
 
 }
