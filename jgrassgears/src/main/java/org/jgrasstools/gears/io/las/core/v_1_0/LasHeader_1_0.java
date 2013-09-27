@@ -141,6 +141,10 @@ public class LasHeader_1_0 implements ILasHeader {
         }
         return crs;
     }
+    
+    public long getRecordsNum(){
+        return records;
+    }
 
     public ReferencedEnvelope3D getDataEnvelope() {
         if (dataEnvelope == null) {

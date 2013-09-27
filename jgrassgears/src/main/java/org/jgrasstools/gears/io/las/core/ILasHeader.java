@@ -42,4 +42,8 @@ public interface ILasHeader {
      */
     public abstract ReferencedEnvelope3D getDataEnvelope();
 
+    /**
+     * @return the number of records.
+     */
+    public long getRecordsNum();
 }

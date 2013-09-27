@@ -22,6 +22,9 @@ import java.awt.Dimension;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.CategoryAxis;
+import org.jfree.chart.axis.CategoryLabelPositions;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.ui.ApplicationFrame;
@@ -76,8 +79,9 @@ public class CategoryHistogram extends ApplicationFrame {
         // URLs?
                 );
 
-        // CategoryPlot plot = (CategoryPlot) chart.getPlot();
-        // CategoryAxis rangeAxis = plot.getDomainAxis();
+        CategoryPlot plot = (CategoryPlot) chart.getPlot();
+        CategoryAxis rangeAxis = plot.getDomainAxis();
+        rangeAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_90);
 
         ChartPanel chartPanel = new ChartPanel(chart, false);
         chartPanel.setPreferredSize(new Dimension(500, 270));
