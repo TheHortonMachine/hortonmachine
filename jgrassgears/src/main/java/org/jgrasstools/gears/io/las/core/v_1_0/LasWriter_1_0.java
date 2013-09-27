@@ -27,6 +27,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.util.BitSet;
 
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -100,7 +102,7 @@ public class LasWriter_1_0 {
     }
 
     /**
-     * Possibility to set the min and mx bounds.
+     * Possibility to set the min and max bounds.
      * 
      * <p>If not set they all default to 0.</p>
      * 
@@ -118,6 +120,21 @@ public class LasWriter_1_0 {
         this.xMax = xMax;
         this.yMax = yMax;
         this.zMax = zMax;
+    }
+    
+    /**
+     * Possibility to set the min and max bounds.
+     * 
+     * @param header the las header (as read by the reader).
+     */
+    public void setBounds( ILasHeader header) {
+        ReferencedEnvelope3D env = header.getDataEnvelope();
+        this.xMin = env.getMinX();
+        this.yMin = env.getMinY();
+        this.zMin = env.getMinZ();
+        this.xMax = env.getMaxX();
+        this.yMax = env.getMaxY();
+        this.zMax = env.getMaxZ();
     }
 
     /**
