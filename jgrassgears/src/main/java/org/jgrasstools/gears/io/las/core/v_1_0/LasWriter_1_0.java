@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.gears.io.las.core.v_1_0;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
 import static java.lang.Math.round;
 
 import java.io.File;
@@ -26,8 +24,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 import java.util.BitSet;
-import java.util.List;
 
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.ByteUtilities;
@@ -64,25 +62,69 @@ public class LasWriter_1_0 {
     private int recordsNum = 0;
 
     private final short recordLength = 28;
+    private FileChannel fileChannel;
+    private int recordsNumPosition;
 
+    /**
+     * A las file writer.
+     * 
+     * @param outFile the output file.
+     * @param crs the {@link CoordinateReferenceSystem crs}. If <code>null</code>, no prj file is written.
+     */
     public LasWriter_1_0( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
         this.crs = crs;
 
-        String nameWithoutExtention = FileUtilities.getNameWithoutExtention(outFile);
-        prjFile = new File(outFile.getParent(), nameWithoutExtention + ".prj");
-
+        if (crs != null) {
+            String nameWithoutExtention = FileUtilities.getNameWithoutExtention(outFile);
+            prjFile = new File(outFile.getParent(), nameWithoutExtention + ".prj");
+        }
         doubleBb.order(ByteOrder.LITTLE_ENDIAN);
         longBb.order(ByteOrder.LITTLE_ENDIAN);
         shortBb.order(ByteOrder.LITTLE_ENDIAN);
     }
 
+    /**
+     * Possibility to define the scale for the data.
+     * 
+     * <p>If not set it defaults to 0.01,0.01,0.001.</p>
+     * 
+     * @param xScale the x scaling value.
+     * @param yScale the y scaling value.
+     * @param zScale the z scaling value.
+     */
     public void setScales( double xScale, double yScale, double zScale ) {
         this.xScale = xScale;
         this.yScale = yScale;
         this.zScale = zScale;
     }
 
+    /**
+     * Possibility to set the min and mx bounds.
+     * 
+     * <p>If not set they all default to 0.</p>
+     * 
+     * @param xMin
+     * @param xMax
+     * @param yMin
+     * @param yMax
+     * @param zMin
+     * @param zMax
+     */
+    public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
+        this.xMin = xMin;
+        this.yMin = yMin;
+        this.zMin = zMin;
+        this.xMax = xMax;
+        this.yMax = yMax;
+        this.zMax = zMax;
+    }
+
+    /**
+     * Opens the file and write the header info.
+     * 
+     * @throws Exception
+     */
     public void open() throws Exception {
         openFile();
         writeHeader();
@@ -104,25 +146,38 @@ public class LasWriter_1_0 {
         // Variable length records: 1
         // Point data format ID (0-99 for spec): 1
         // Number of point records: 20308602
+        int hLength = 0;
+        
+        // TODO handle global enchoding and proper gps time
 
         byte[] signature = "LASF".getBytes();
         fos.write(signature);
+        hLength = hLength + 4;
         byte[] reserved = new byte[4];
         fos.write(reserved);
+        hLength = hLength + 4;
         byte[] guid1 = new byte[4];
         fos.write(guid1);
+        hLength = hLength + 4;
         byte[] guid2 = new byte[2];
         fos.write(guid2);
+        hLength = hLength + 2;
         byte[] guid3 = new byte[2];
         fos.write(guid3);
+        hLength = hLength + 2;
         byte[] guid4 = new byte[8];
         fos.write(guid4);
+        hLength = hLength + 8;
         // major
         fos.write(1);
         // minor
         fos.write(0);
+        hLength = hLength + 2;
+
         byte[] systemIdentifier = new byte[32];
         fos.write(systemIdentifier);
+        hLength = hLength + 32;
+
         String jgtVersion = "jgrasstools_" + JGTVersion.CURRENT_VERSION.toString();
         if (jgtVersion.length() > 32) {
             jgtVersion = jgtVersion.substring(0, 31);
@@ -136,29 +191,42 @@ public class LasWriter_1_0 {
         }
         byte[] software = jgtVersion.getBytes();
         fos.write(software);
+        hLength = hLength + 32;
+
         byte[] flightDateJulian = new byte[2];
         fos.write(flightDateJulian);
+        hLength = hLength + 2;
+
         byte[] year = new byte[2];
         fos.write(year);
+        hLength = hLength + 2;
 
         short headersize = 226;
         fos.write(getShort(headersize));
+        hLength = hLength + 2;
 
         int offsetToData = 227;
         fos.write(getLong(offsetToData));
+        hLength = hLength + 4;
 
-        int numVerRecords = 0;
-        fos.write(getLong(numVerRecords));
+        int numVarRecords = 0;
+        fos.write(getLong(numVarRecords));
+        hLength = hLength + 4;
 
         // point data format
         fos.write(1);
+        hLength = hLength + 1;
 
         fos.write(getShort(recordLength));
+        hLength = hLength + 2;
 
+        recordsNumPosition = hLength;
         fos.write(getLong(recordsNum));
+        hLength = hLength + 4;
 
         // num of points by return
         fos.write(new byte[20]);
+        hLength = hLength + 20;
 
         // xscale
         fos.write(getDouble(xScale));
@@ -166,20 +234,25 @@ public class LasWriter_1_0 {
         fos.write(getDouble(yScale));
         // zscale
         fos.write(getDouble(zScale));
+        hLength = hLength + 3 * 8;
 
-        // xoff
+        // xoff, yoff, zoff
         fos.write(getDouble(xMin));
-        // yoff
         fos.write(getDouble(yMin));
-        // zoff
         fos.write(getDouble(zMin));
+        hLength = hLength + 3 * 8;
 
         fos.write(getDouble(xMax));
         fos.write(getDouble(xMin));
+        hLength = hLength + 2 * 8;
+
         fos.write(getDouble(yMax));
         fos.write(getDouble(yMin));
+        hLength = hLength + 2 * 8;
+
         fos.write(getDouble(zMax));
         fos.write(getDouble(zMin));
+        hLength = hLength + 3 * 8;
 
     }
 
@@ -239,14 +312,14 @@ public class LasWriter_1_0 {
         if (recordLength != length) {
             throw new RuntimeException();
         }
+
+        recordsNum++;
     }
 
     public void close() throws Exception {
-        closeFile();
+        fileChannel.position(recordsNumPosition);
+        fos.write(getLong(recordsNum));
 
-        // TODO make this nicer
-        openFileAppend();
-        writeHeader();
         closeFile();
 
         /*
@@ -285,13 +358,12 @@ public class LasWriter_1_0 {
 
     private void openFile() throws Exception {
         fos = new FileOutputStream(outFile);
-    }
-    
-    private void openFileAppend() throws Exception {
-        fos = new FileOutputStream(outFile, true);
+        fileChannel = fos.getChannel();
     }
 
     private void closeFile() throws Exception {
+        if (fileChannel != null && fileChannel.isOpen())
+            fileChannel.close();
         if (fos != null)
             fos.close();
     }

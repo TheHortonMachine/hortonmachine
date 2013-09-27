@@ -19,16 +19,11 @@ package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.utils.chart.CategoryHistogram;
 import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
