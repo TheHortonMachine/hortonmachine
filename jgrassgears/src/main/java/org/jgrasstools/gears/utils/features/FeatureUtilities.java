@@ -19,26 +19,29 @@
 package org.jgrasstools.gears.utils.features;
 
 import java.awt.geom.AffineTransform;
-import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.media.jai.JAI;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
+import javax.media.jai.iterator.RandomIter;
 
+import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureStore;
@@ -47,14 +50,15 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
+import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -78,6 +82,8 @@ import com.vividsolutions.jts.geom.MultiPoint;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.prep.PreparedGeometry;
+import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
 public class FeatureUtilities {
@@ -334,8 +340,8 @@ public class FeatureUtilities {
      * @param fet the featurecollection
      * @throws IOException 
      */
-    public static synchronized boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs,
-            SimpleFeatureCollection fet ) throws IOException {
+    public static boolean collectionToShapeFile( String shapeFilePath, CoordinateReferenceSystem crs, SimpleFeatureCollection fet )
+            throws IOException {
 
         // Create the file you want to write to
         File file = null;
@@ -380,8 +386,8 @@ public class FeatureUtilities {
      * @throws Exception 
      */
     @SuppressWarnings("nls")
-    public static synchronized ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec,
-            CoordinateReferenceSystem crs ) throws Exception {
+    public static ShapefileDataStore createShapeFileDatastore( String name, String fieldsSpec, CoordinateReferenceSystem crs )
+            throws Exception {
         // Create the file you want to write to
         File file = null;
         if (name.toLowerCase().endsWith(".shp")) {
@@ -409,43 +415,6 @@ public class FeatureUtilities {
 
         return myData;
 
-    }
-
-    /**
-     * Writes a featurecollection to a shapefile
-     * 
-     * @param data the datastore
-     * @param collection the featurecollection
-     * @throws IOException 
-     */
-    private static synchronized boolean writeToShapefile( ShapefileDataStore data, SimpleFeatureCollection collection )
-            throws IOException {
-        String featureName = data.getTypeNames()[0]; // there is only one in
-        // a shapefile
-        FeatureStore<SimpleFeatureType, SimpleFeature> store = null;
-
-        Transaction transaction = null;
-        try {
-
-            // Create the DefaultTransaction Object
-            transaction = Transaction.AUTO_COMMIT;
-
-            // Tell it the name of the shapefile it should look for in our
-            // DataStore
-            SimpleFeatureSource source = data.getFeatureSource(featureName);
-            store = (FeatureStore<SimpleFeatureType, SimpleFeature>) source;
-            store.addFeatures(collection);
-            data.getFeatureWriter(transaction);
-
-            // TODO is this needed transaction.commit();
-            return true;
-        } catch (Exception eek) {
-            eek.printStackTrace();
-            transaction.rollback();
-            return false;
-        } finally {
-            transaction.close();
-        }
     }
 
     /**
@@ -776,4 +745,88 @@ public class FeatureUtilities {
         return feature;
     }
 
+    /**
+     * Extracts the positions and values of a polygon mapped on a raster(rasterization).
+     * 
+     * <p><b>Bound checks (polygon completely covering the raster) need to be
+     * made before running this method.</b></p>
+     * 
+     * @param coverageIterator the raster from which to extract the values.
+     * @param cols the cols of the raster.
+     * @param rows the rows of the raster.
+     * @param xRes the resolution of the raster.
+     * @param gridGeometry the {@link GridGeometry2D} of the raster.
+     * @param polygon the polygon to extract.
+     * @param defaultValue a defaultvalue in case no raster is supplied.
+     * @return the list of coordinates, with the z values set to the raster or default value.
+     * @throws Exception
+     */
+    public static List<Coordinate> extractPolygonOnCoverage( RandomIter coverageIterator, int cols, int rows, double xRes,
+            GridGeometry2D gridGeometry, Polygon polygon, double defaultValue ) throws Exception {
+        GeometryFactory gf = GeometryUtilities.gf();
+        PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygon);
+        double delta = xRes / 4.0;
+
+        List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
+
+        for( int r = 0; r < rows; r++ ) {
+            // do scan line to fill the polygon
+            double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
+            double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(cols - 1, r)).getCoordinate();
+            Coordinate west = new Coordinate(westPos[0], westPos[1]);
+            Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
+            LineString line = gf.createLineString(new Coordinate[]{west, east});
+            if (preparedGeometry.intersects(line)) {
+                Geometry internalLines = polygon.intersection(line);
+                int lineNums = internalLines.getNumGeometries();
+                for( int l = 0; l < lineNums; l++ ) {
+                    Coordinate[] coords = internalLines.getGeometryN(l).getCoordinates();
+                    if (coords.length == 2) {
+                        for( int j = 0; j < coords.length; j = j + 2 ) {
+                            Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
+                            Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
+
+                            DirectPosition2D startDP;
+                            DirectPosition2D endDP;
+                            if (startC.x < endC.x) {
+                                startDP = new DirectPosition2D(startC.x, startC.x);
+                                endDP = new DirectPosition2D(endC.x, endC.x);
+                            } else {
+                                startDP = new DirectPosition2D(endC.x, endC.x);
+                                endDP = new DirectPosition2D(startC.x, startC.x);
+                            }
+                            GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
+                            GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);
+
+                            /*
+                             * the part in between has to be filled
+                             */
+                            for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
+                                double v = defaultValue;
+                                if (coverageIterator != null) {
+                                    v = coverageIterator.getSampleDouble(k, r, 0);
+                                }
+                                double[] xy = gridGeometry.gridToWorld(new GridCoordinates2D(k, r)).getCoordinate();
+                                Coordinate coordinate = new Coordinate(xy[0], xy[1], v);
+                                coordinatesList.add(coordinate);
+                            }
+                        }
+                    } else {
+                        if (coords.length == 1) {
+                            throw new ModelsIOException(
+                                    MessageFormat.format("Found a cusp in: {0}/{1}", coords[0].x, coords[0].y),
+                                    "FeatureUtilities");
+                        } else {
+                            throw new ModelsIOException(MessageFormat.format(
+                                    "Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y),
+                                    "FeatureUtilities");
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return coordinatesList;
+    }
 }

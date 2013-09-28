@@ -17,6 +17,10 @@
  */
 package org.jgrasstools.gears.modules;
 
+import java.util.List;
+
+import javax.media.jai.iterator.RandomIter;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollections;
@@ -33,6 +37,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Polygon;
 /**
  * Test for the {@link OmsScanLineRasterizer}
@@ -40,6 +45,21 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestScanLineRasterizer extends HMTestCase {
+    private CoordinateReferenceSystem crs = HMTestMaps.crs;
+    private RegionMap ep = HMTestMaps.envelopeParams;
+    private Polygon polygon;
+    private GridCoverage2D elevationCoverage;
+    private double[][] elevationData;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        elevationData = HMTestMaps.mapData;
+        elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, ep, crs, true);
+        Envelope2D envelope = elevationCoverage.getEnvelope2D();
+        polygon = FeatureUtilities.envelopeToPolygon(envelope);
+    }
 
     @SuppressWarnings("nls")
     public void testScanLineRasterizer() throws Exception {
@@ -75,12 +95,24 @@ public class TestScanLineRasterizer extends HMTestCase {
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all1Data);
     }
 
+    public void testScanLineRasterizerUtilsMethod() throws Exception {
+        RandomIter rasterIter = CoverageUtilities.getRandomIterator(elevationCoverage);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevationCoverage);
+
+        List<Coordinate> coordinates = FeatureUtilities.extractPolygonOnCoverage(rasterIter, regionMap.getCols(),
+                regionMap.getRows(), regionMap.getXres(), elevationCoverage.getGridGeometry(), polygon, 0);
+
+        int index = 0;
+        for( int r = 0; r < elevationData.length; r++ ) {
+            for( int c = 0; c < elevationData[0].length; c++ ) {
+                Coordinate coordinate = coordinates.get(index++);
+                assertEquals(elevationData[r][c], coordinate.z, DELTA);
+            }
+        }
+    }
+
     private SimpleFeatureCollection doCollection( RegionMap envelopeParams ) {
-        double[][] elevationData = HMTestMaps.mapData;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
-        Envelope2D envelope = elevationCoverage.getEnvelope2D();
-        Polygon polygon = FeatureUtilities.envelopeToPolygon(envelope);
+
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("typename");
         b.setCRS(crs);
