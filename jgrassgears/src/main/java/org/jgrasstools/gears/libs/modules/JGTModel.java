@@ -20,6 +20,7 @@ package org.jgrasstools.gears.libs.modules;
 
 import static org.jgrasstools.gears.libs.modules.Variables.PROGRESS_MONITOR_EN;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -187,6 +188,27 @@ public class JGTModel implements Process {
                         .getClass().getSimpleName());
             }
         }
+    }
+
+    /**
+     * Checks if passed path strings exist on the filesystem. If not, an Exception is thrown. 
+     * 
+     * @param existingFilePath one or more file paths that need to exist. 
+     */
+    protected void checkFileExists( String... existingFilePath ) {
+        StringBuilder sb = null;
+        for( String filePath : existingFilePath ) {
+            File file = new File(filePath);
+            if (!file.exists()) {
+                if (sb == null) {
+                    sb = new StringBuilder();
+                    sb.append("The following file doesn't seem to exist: ");
+                }
+                sb.append("\n\t").append(file.getAbsolutePath());
+            }
+        }
+        if (sb != null)
+            throw new ModelsIllegalargumentException(sb.toString(), this.getClass().getSimpleName());
     }
 
     /**
