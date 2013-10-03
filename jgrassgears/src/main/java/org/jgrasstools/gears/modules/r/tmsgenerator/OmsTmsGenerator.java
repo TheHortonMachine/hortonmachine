@@ -229,7 +229,7 @@ public class OmsTmsGenerator extends JGTModel {
 
             format = pImagetype == 0 ? "png" : "jpg";
             mbtilesHelper.open(dbFile);
-            mbtilesHelper.createTables();
+            mbtilesHelper.createTables(true);
             mbtilesHelper.fillMetadata(n, s, w, e, pName, format, pMinzoom, pMaxzoom);
         }
 

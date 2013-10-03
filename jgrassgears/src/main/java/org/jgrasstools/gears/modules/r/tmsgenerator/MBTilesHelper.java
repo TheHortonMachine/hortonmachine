@@ -71,7 +71,7 @@ public class MBTilesHelper {
         }
     }
 
-    public void createTables() throws SQLException {
+    public void createTables( boolean makeIndexes ) throws SQLException {
         Statement statement = null;
         try {
             statement = connection.createStatement();
@@ -79,6 +79,21 @@ public class MBTilesHelper {
             statement.addBatch("DROP TABLE IF EXISTS " + TABLE_METADATA);
             statement.addBatch(CREATE_TILES);
             statement.addBatch(CREATE_METADATA);
+            if (makeIndexes) {
+                statement.addBatch(INDEX_TILES);
+                statement.addBatch(INDEX_METADATA);
+            }
+            statement.executeBatch();
+        } finally {
+            if (statement != null)
+                statement.close();
+        }
+    }
+
+    public void createIndexes() throws SQLException {
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
             statement.addBatch(INDEX_TILES);
             statement.addBatch(INDEX_METADATA);
             statement.executeBatch();
