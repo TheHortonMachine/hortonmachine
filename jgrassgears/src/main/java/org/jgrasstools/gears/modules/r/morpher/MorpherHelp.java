@@ -16,7 +16,6 @@
  */
 package org.jgrasstools.gears.modules.r.morpher;
 
-
 /**
  * Some help methods.
  * 
@@ -61,6 +60,41 @@ public class MorpherHelp {
             /*    */{0, 0, 2, //
                     0, 1, 1, //
                     2, 1, 2} //
+    };
+
+    public static int[][] DEFAULT_PRUNE_KERNEL = new int[][]{//
+    /*    */{0, 0, 0, //
+            0, 1, 0, //
+            0, 2, 2}, //
+
+            /*    */{0, 0, 0, //
+                    2, 1, 0, //
+                    2, 0, 0}, //
+
+            /*    */{2, 2, 0, //
+                    0, 1, 0, //
+                    0, 0, 0}, //
+
+            /*    */{0, 0, 2, //
+                    0, 1, 2, //
+                    0, 0, 0}, //
+
+            // and reverse way
+            /*    */{0, 0, 0, //
+                    0, 1, 0, //
+                    2, 2, 0}, //
+
+            /*    */{2, 0, 0, //
+                    2, 1, 0, //
+                    0, 0, 0}, //
+
+            /*    */{0, 2, 2, //
+                    0, 1, 0, //
+                    0, 0, 0}, //
+
+            /*    */{0, 0, 0, //
+                    0, 1, 2, //
+                    0, 0, 2} //
     };
 
     public static int getSquareKernelSide( int[] kernel ) {

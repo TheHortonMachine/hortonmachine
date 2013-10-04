@@ -55,6 +55,7 @@ public interface Variables {
     public String DILATE = "dilate";
     public String ERODE = "erode";
     public String SKELETONIZE = "skeletonize";
+    public String PRUNE = "prune";
     public String OPEN = "open";
     public String CLOSE = "close";
 

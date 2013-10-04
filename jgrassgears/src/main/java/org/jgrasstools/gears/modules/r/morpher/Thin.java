@@ -88,10 +88,9 @@ public class Thin {
     /**
      * Takes an image and a kernel and thins it the specified number of times.
      *
-     * @param b the BinaryFast input image
-     * @return the thinned BinaryFast image
+     * @param binary the BinaryFast input image
      */
-    public void process( BinaryFast binary ) {
+    public void processThinning( BinaryFast binary ) {
 
         int oldForeEdge = 0;
         int oldBackEdge = 0;
@@ -100,6 +99,21 @@ public class Thin {
             oldBackEdge = binary.getBackgroundEdgePixels().size();
             for( int i = 0; i < 8; ++i ) {
                 binary = thinBinaryRep(binary, MorpherHelp.DEFAULT_THIN_KERNEL[i]);
+                binary.generateBackgroundEdgeFromForegroundEdge();
+            }
+        }
+    }
+
+    /**
+     * Apply a pruning kernel for a given number of iterations.
+     * 
+     * @param binary the BinaryFast input image.
+     * @param iterations the number of iterations.
+     */
+    public void processPruning( BinaryFast binary, int iterations ) {
+        for( int j = 0; j < iterations; j++ ) {
+            for( int i = 0; i < 8; ++i ) {
+                binary = thinBinaryRep(binary, MorpherHelp.DEFAULT_PRUNE_KERNEL[i]);
                 binary.generateBackgroundEdgeFromForegroundEdge();
             }
         }
