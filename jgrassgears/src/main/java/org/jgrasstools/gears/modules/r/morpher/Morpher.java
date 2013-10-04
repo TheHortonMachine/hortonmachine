@@ -21,13 +21,16 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.libs.modules.Variables.CLOSE;
 import static org.jgrasstools.gears.libs.modules.Variables.DILATE;
 import static org.jgrasstools.gears.libs.modules.Variables.ERODE;
-import static org.jgrasstools.gears.libs.modules.Variables.*;
-import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE;
+import static org.jgrasstools.gears.libs.modules.Variables.LINEENDINGS;
+import static org.jgrasstools.gears.libs.modules.Variables.OPEN;
+import static org.jgrasstools.gears.libs.modules.Variables.PRUNE;
+import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE1;
+import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE2;
+import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE2VAR;
+import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE3;
 
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
@@ -73,8 +76,9 @@ public class Morpher extends JGTModel {
     @In
     public boolean doBinary = true;
 
-    @Description("The operation type to perform (dilate, erode, skeletonize, prune, open, close)")
-    @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE + "," + PRUNE + "," + OPEN + "," + CLOSE)
+    @Description("The operation type to perform (dilate, erode, skeletonize(1,2,2var,3), prune, open, close, lineendings)")
+    @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE1 + "," + SKELETONIZE2 + "," + SKELETONIZE2VAR + "," + SKELETONIZE3
+            + "," + PRUNE + "," + OPEN + "," + CLOSE + "," + LINEENDINGS)
     @In
     public String pMode = DILATE;
 
@@ -96,19 +100,27 @@ public class Morpher extends JGTModel {
             pKernel = MorpherHelp.DEFAULT3X3KERNEL;
         }
 
-        if (pMode.equals(SKELETONIZE)) {
-            skeletonize();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
+        WritableRaster inWR = CoverageUtilities.renderedImage2WritableRaster(inMap.getRenderedImage(), false);
+        WritableRaster[] wrHolder = new WritableRaster[1];
+        outMap = CoverageUtilities.createCoverageFromTemplate(inMap, doubleNovalue, wrHolder);
+        WritableRaster outWR = wrHolder[0];
+        if (pMode.equals(SKELETONIZE1)) {
+            skeletonize(inWR, regionMap, outWR, MorpherHelp.SKELETON1_KERNEL);
+        } else if (pMode.equals(SKELETONIZE2)) {
+            skeletonize(inWR, regionMap, outWR, MorpherHelp.SKELETON2_KERNEL);
+        } else if (pMode.equals(SKELETONIZE2VAR)) {
+            skeletonize(inWR, regionMap, outWR, MorpherHelp.SKELETON2VARIANT_KERNEL);
+        } else if (pMode.equals(SKELETONIZE3)) {
+            skeletonize(inWR, regionMap, outWR, MorpherHelp.SKELETON3_KERNEL);
+        } else if (pMode.equals(LINEENDINGS)) {
+            lineendings(inWR, regionMap, outWR, MorpherHelp.LINEEND_KERNEL);
         } else if (pMode.equals(PRUNE)) {
             if (pIterations == 0) {
                 throw new ModelsIllegalargumentException("Number of iterations has to be > 0.", this);
             }
-            prune();
+            prune(inWR, regionMap, outWR, MorpherHelp.DEFAULT_PRUNE_KERNEL, pIterations);
         } else {
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
-            WritableRaster inWR = CoverageUtilities.renderedImage2WritableRaster(inMap.getRenderedImage(), false);
-            WritableRaster[] wrHolder = new WritableRaster[1];
-            outMap = CoverageUtilities.createCoverageFromTemplate(inMap, doubleNovalue, wrHolder);
-            WritableRaster outWR = wrHolder[0];
             if (pMode.equals(DILATE)) {
                 dilate(inWR, regionMap, outWR, pKernel, doBinary);
             } else if (pMode.equals(ERODE)) {
@@ -272,44 +284,38 @@ public class Morpher extends JGTModel {
         erode(inWR, regionMap, outWR, kernelArray);
     }
 
-    private void skeletonize() {
-        final RenderedImage renderedImage = inMap.getRenderedImage();
-        RandomIter iter = RandomIterFactory.create(renderedImage, null);
-        int width = renderedImage.getWidth();
-        int height = renderedImage.getHeight();
-        int[][] data = new int[width][height];
-        for( int c = 0; c < width; c++ ) {
-            for( int r = 0; r < height; r++ ) {
-                double value = iter.getSampleDouble(c, r, 0);
-                data[c][r] = BinaryFast.BACKGROUND;
-                if (isNovalue(value)) {
-                    continue;
-                } else {
-                    data[c][r] = BinaryFast.FOREGROUND;
-                }
-            }
-        }
+    public static void skeletonize( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
 
-        BinaryFast binaryData = new BinaryFast(data);
-        if (pKernel != null) {
-            pm.message("Thinning doesn't permit for custom kernels. Using standard kernel.");
-        }
-        new Thin().processThinning(binaryData);
-        int[] values = binaryData.getValues();
-        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, values);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
-        outMap = CoverageUtilities.buildCoverage("morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        new Thin().processSkeleton(binaryData, kernels);
+
+        fromBinaryFast(cols, rows, outIter, binaryData);
     }
 
-    private void prune() {
-        final RenderedImage renderedImage = inMap.getRenderedImage();
-        RandomIter iter = RandomIterFactory.create(renderedImage, null);
-        int width = renderedImage.getWidth();
-        int height = renderedImage.getHeight();
-        int[][] data = new int[width][height];
-        for( int c = 0; c < width; c++ ) {
-            for( int r = 0; r < height; r++ ) {
-                double value = iter.getSampleDouble(c, r, 0);
+    public static void fromBinaryFast( int cols, int rows, WritableRandomIter outIter, BinaryFast binaryData ) {
+        int[] values = binaryData.getValues();
+        int index = 0;
+        for( int y = 0; y < rows; y++ ) {
+            for( int x = 0; x < cols; x++ ) {
+                double value = (double) values[index];
+                if (value == 0) {
+                    value = doubleNovalue;
+                }
+                outIter.setSample(x, y, 0, value);
+                index++;
+            }
+        }
+    }
+
+    public static BinaryFast toBinaryFast( int cols, int rows, WritableRandomIter inIter ) {
+        int[][] data = new int[cols][rows];
+        for( int c = 0; c < cols; c++ ) {
+            for( int r = 0; r < rows; r++ ) {
+                double value = inIter.getSampleDouble(c, r, 0);
                 data[c][r] = BinaryFast.BACKGROUND;
                 if (isNovalue(value)) {
                     continue;
@@ -320,14 +326,31 @@ public class Morpher extends JGTModel {
         }
 
         BinaryFast binaryData = new BinaryFast(data);
-        if (pKernel != null) {
-            pm.message("Thinning doesn't permit for custom kernels. Using standard kernel.");
-        }
-        new Thin().processPruning(binaryData, pIterations);
-        int[] values = binaryData.getValues();
-        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, values);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
-        outMap = CoverageUtilities.buildCoverage("morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        return binaryData;
+    }
+
+    public static void prune( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels, int iterations ) {
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
+
+        new Thin().processPruning(binaryData, iterations);
+
+        fromBinaryFast(cols, rows, outIter, binaryData);
+    }
+
+    public static void lineendings( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
+
+        new Thin().processLineendings(binaryData);
+
+        fromBinaryFast(cols, rows, outIter, binaryData);
     }
 
     private static void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
