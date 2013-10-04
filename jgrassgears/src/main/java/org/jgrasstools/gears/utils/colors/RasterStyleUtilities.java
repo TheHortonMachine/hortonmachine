@@ -71,7 +71,18 @@ public class RasterStyleUtilities {
         double runningValue = min;
 
         ColorMap colorMap = sf.createColorMap();
+        
+        // add -9999 as novalue first
+        Expression whiteColorExpr = sB.colorExpression(Color.white);
+        Expression novalExpr = sB.literalExpression(-9999);
+        Expression zeroOpacityExpr = sB.literalExpression(0);
+        ColorMapEntry novalueEntry = sf.createColorMapEntry();
+        novalueEntry.setQuantity(novalExpr);
+        novalueEntry.setColor(whiteColorExpr);
+        novalueEntry.setOpacity(zeroOpacityExpr);
+        colorMap.addColorMapEntry(novalueEntry);
 
+        // add other stuff 
         for( int i = 0; i < colors.length - 1; i++ ) {
             Color fromColor = colors[i];
             Color toColor = colors[i + 1];
@@ -110,7 +121,7 @@ public class RasterStyleUtilities {
             }
             // i++;
         }
-
+        
         rasterSym.setColorMap(colorMap);
 
         /*
