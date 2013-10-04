@@ -21,7 +21,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
 
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.styling.ColorMap;
@@ -31,7 +30,6 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
 import org.geotools.styling.StyleFactory;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
@@ -73,7 +71,18 @@ public class RasterStyleUtilities {
         double runningValue = min;
 
         ColorMap colorMap = sf.createColorMap();
+        
+        // add -9999 as novalue first
+        Expression whiteColorExpr = sB.colorExpression(Color.white);
+        Expression novalExpr = sB.literalExpression(-9999);
+        Expression zeroOpacityExpr = sB.literalExpression(0);
+        ColorMapEntry novalueEntry = sf.createColorMapEntry();
+        novalueEntry.setQuantity(novalExpr);
+        novalueEntry.setColor(whiteColorExpr);
+        novalueEntry.setOpacity(zeroOpacityExpr);
+        colorMap.addColorMapEntry(novalueEntry);
 
+        // add other stuff 
         for( int i = 0; i < colors.length - 1; i++ ) {
             Color fromColor = colors[i];
             Color toColor = colors[i + 1];
@@ -112,7 +121,7 @@ public class RasterStyleUtilities {
             }
             // i++;
         }
-
+        
         rasterSym.setColorMap(colorMap);
 
         /*

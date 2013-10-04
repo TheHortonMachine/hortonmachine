@@ -18,57 +18,30 @@
 package org.jgrasstools.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
-import org.jgrasstools.gears.utils.colors.ColorTables;
-import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 
 /**
- * A simple raster styling utility for scripting environment.
+ * A wrapper for {@link org.jgrasstools.gears.utils.colors.RasterStyle} to be used in scripting.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class RasterStyle {
 
-    private double min;
-    private double max;
-    private double alpha = 1.0;
+    private org.jgrasstools.gears.utils.colors.RasterStyle rasterStyle;
 
     public RasterStyle( GridCoverage2D raster ) throws Exception {
-        OmsRasterSummary summary = new OmsRasterSummary();
-        summary.inRaster = raster;
-        summary.process();
+        rasterStyle = new org.jgrasstools.gears.utils.colors.RasterStyle(raster);
+    }
 
-        min = summary.outMin;
-        max = summary.outMax;
+    public RasterStyle( int min, int max ) throws Exception {
+        rasterStyle = new org.jgrasstools.gears.utils.colors.RasterStyle(min, max);
     }
 
     public void setAlpha( double alpha ) {
-        this.alpha = alpha;
+        rasterStyle.setAlpha(alpha);
     }
 
     public String style( String colorTableName ) throws Exception {
-        ColorTables[] colorTables = ColorTables.values();
-        if (colorTableName != null) {
-            for( ColorTables colorTable : colorTables ) {
-                if (colorTable.name().equals(colorTableName.toLowerCase().trim())) {
-                    String createStyleForColortable = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max,
-                            null, alpha);
-                    return createStyleForColortable;
-                }
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append("The colortable ");
-        sb.append(colorTableName);
-        sb.append(" could not be found in the default colortables.\n");
-        sb.append("Available colortables are:\n");
-        for( ColorTables colorTable : colorTables ) {
-            sb.append("\t");
-            sb.append(colorTable.name());
-            sb.append("\n");
-        }
-        throw new ModelsIllegalargumentException(sb.toString(), this);
+        return rasterStyle.style(colorTableName);
     }
 
 }

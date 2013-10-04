@@ -212,6 +212,19 @@ public class JGTModel implements Process {
     }
 
     /**
+     * Checks if a passed path contains the workingfolder constant. If yes it is set to null. 
+     * 
+     * @param filePath the path to check. 
+     * @return the path or null.
+     */
+    protected String checkWorkingFolderInPath( String filePath ) {
+        if (filePath.contains(JGTConstants.WORKINGFOLDER)) {
+            return null;
+        }
+        return filePath;
+    }
+
+    /**
      * Fast default reading of raster from definition. 
      * 
      * <p>If the source format is not supported, and {@link Exception} is thrown.</p>
