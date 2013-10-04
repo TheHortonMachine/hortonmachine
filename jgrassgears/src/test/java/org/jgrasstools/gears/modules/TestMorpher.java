@@ -38,6 +38,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestMorpher extends HMTestCase {
 
     private GridCoverage2D raster;
+    private GridCoverage2D skeleton;
 
     protected void setUp() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
@@ -62,6 +63,17 @@ public class TestMorpher extends HMTestCase {
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
         raster = CoverageUtilities.buildCoverage("data", map, envelopeParams, crs, true);
+        double[][] skeletonized = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, 1.0, 1.0, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, NaN, NaN, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        skeleton = CoverageUtilities.buildCoverage("data", skeletonized, envelopeParams, crs, true);
     }
 
     public void testDilate() throws Exception {
@@ -199,7 +211,7 @@ public class TestMorpher extends HMTestCase {
     public void testSkeletonize() throws Exception {
         Morpher morpher = new Morpher();
         morpher.inMap = raster;
-        morpher.pMode = Variables.SKELETONIZE;
+        morpher.pMode = Variables.SKELETONIZE2;
         morpher.process();
         GridCoverage2D morphed = morpher.outMap;
         double[][] skeletonized = new double[][]{//
@@ -298,4 +310,61 @@ public class TestMorpher extends HMTestCase {
         checkMatrixEqual(morphed.getRenderedImage(), closed, DELTA);
     }
 
+    public void testPrune() throws Exception {
+        Morpher morpher = new Morpher();
+        morpher.inMap = skeleton;
+        morpher.pMode = Variables.PRUNE;
+        morpher.pIterations = 1;
+        morpher.process();
+        GridCoverage2D morphed = morpher.outMap;
+        double[][] pruned = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), pruned, DELTA);
+    }
+
+    public void testLineendings() throws Exception {
+        Morpher morpher = new Morpher();
+        morpher.inMap = skeleton;
+        morpher.pMode = Variables.LINEENDINGS;
+        morpher.process();
+        GridCoverage2D morphed = morpher.outMap;
+        double[][] pruned = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, 1.0, NaN, NaN, NaN, 1.0, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), pruned, DELTA);
+    }
+
+    public void testJunctions() throws Exception {
+        Morpher morpher = new Morpher();
+        morpher.inMap = skeleton;
+        morpher.pMode = Variables.LINEJUNCTIONS;
+        morpher.process();
+        GridCoverage2D morphed = morpher.outMap;
+        double[][] pruned = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, 1.0, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(morphed.getRenderedImage(), pruned, DELTA);
+    }
 }

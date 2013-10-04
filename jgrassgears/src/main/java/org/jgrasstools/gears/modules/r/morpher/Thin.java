@@ -97,25 +97,25 @@ public class Thin {
         while( !(binary.getForegroundEdgePixels().size() == oldForeEdge && binary.getBackgroundEdgePixels().size() == oldBackEdge) ) {
             oldForeEdge = binary.getForegroundEdgePixels().size();
             oldBackEdge = binary.getBackgroundEdgePixels().size();
-            for( int i = 0; i < kernel[0].length; ++i ) {
+            for( int i = 0; i < kernel.length; ++i ) {
                 binary = thinBinaryRep(binary, kernel[i]);
                 binary.generateBackgroundEdgeFromForegroundEdge();
             }
         }
     }
 
-    public void processPruning( BinaryFast binary, int iterations ) {
+    public void processPruning( BinaryFast binary, int iterations, int[][] kernels ) {
         for( int j = 0; j < iterations; j++ ) {
-            for( int i = 0; i < MorpherHelp.DEFAULT_PRUNE_KERNEL.length; ++i ) {
-                binary = thinBinaryRep(binary, MorpherHelp.DEFAULT_PRUNE_KERNEL[i]);
+            for( int i = 0; i < kernels.length; ++i ) {
+                binary = thinBinaryRep(binary, kernels[i]);
                 binary.generateBackgroundEdgeFromForegroundEdge();
             }
         }
     }
 
-    public void processLineendings( BinaryFast binary ) {
-        for( int i = 0; i < MorpherHelp.LINEEND_KERNEL.length; ++i ) {
-            binary = thinBinaryRep(binary, MorpherHelp.LINEEND_KERNEL[i]);
+    public void processLineendings( BinaryFast binary, int[][] kernels ) {
+        for( int i = 0; i < kernels.length; ++i ) {
+            binary = thinBinaryRep(binary, kernels[i]);
             binary.generateBackgroundEdgeFromForegroundEdge();
         }
     }

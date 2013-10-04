@@ -59,6 +59,7 @@ public interface Variables {
     public String SKELETONIZE2VAR = "skeletonize2var";
     public String SKELETONIZE3 = "skeletonize3";
     public String LINEENDINGS = "lineendings";
+    public String LINEJUNCTIONS = "linejunctions";
     public String PRUNE = "prune";
     public String OPEN = "open";
     public String CLOSE = "close";

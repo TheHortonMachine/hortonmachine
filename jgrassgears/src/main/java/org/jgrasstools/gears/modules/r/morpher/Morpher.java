@@ -25,7 +25,7 @@ import static org.jgrasstools.gears.libs.modules.Variables.LINEENDINGS;
 import static org.jgrasstools.gears.libs.modules.Variables.OPEN;
 import static org.jgrasstools.gears.libs.modules.Variables.PRUNE;
 import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE1;
-import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE2;
+import static org.jgrasstools.gears.libs.modules.Variables.*;
 import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE2VAR;
 import static org.jgrasstools.gears.libs.modules.Variables.SKELETONIZE3;
 
@@ -76,9 +76,9 @@ public class Morpher extends JGTModel {
     @In
     public boolean doBinary = true;
 
-    @Description("The operation type to perform (dilate, erode, skeletonize(1,2,2var,3), prune, open, close, lineendings)")
+    @Description("The operation type to perform (dilate, erode, skeletonize(1,2,2var,3), prune, open, close, lineendings, linejunctions)")
     @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE1 + "," + SKELETONIZE2 + "," + SKELETONIZE2VAR + "," + SKELETONIZE3
-            + "," + PRUNE + "," + OPEN + "," + CLOSE + "," + LINEENDINGS)
+            + "," + PRUNE + "," + OPEN + "," + CLOSE + "," + LINEENDINGS + "," + LINEJUNCTIONS)
     @In
     public String pMode = DILATE;
 
@@ -115,6 +115,8 @@ public class Morpher extends JGTModel {
             skeletonize(inWR, regionMap, outWR, MorpherHelp.SKELETON3_KERNEL);
         } else if (pMode.equals(LINEENDINGS)) {
             lineendings(inWR, regionMap, outWR, MorpherHelp.LINEEND_KERNEL);
+        } else if (pMode.equals(LINEJUNCTIONS)) {
+            lineendings(inWR, regionMap, outWR, MorpherHelp.LINEJUNCTIONS_KERNEL);
         } else if (pMode.equals(PRUNE)) {
             if (pIterations == 0) {
                 throw new ModelsIllegalargumentException("Number of iterations has to be > 0.", this);
@@ -296,6 +298,53 @@ public class Morpher extends JGTModel {
         fromBinaryFast(cols, rows, outIter, binaryData);
     }
 
+    public static void prune( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels, int iterations ) {
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
+
+        new Thin().processPruning(binaryData, iterations, kernels);
+
+        fromBinaryFast(cols, rows, outIter, binaryData);
+    }
+
+    public static void lineendings( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
+
+        new Thin().processLineendings(binaryData, kernels);
+
+        int[] values = binaryData.getValues();
+        int index = 0;
+        for( int y = 0; y < rows; y++ ) {
+            for( int x = 0; x < cols; x++ ) {
+                double value = (double) values[index];
+                if (value == 0) {
+                    value = doubleNovalue;
+                }
+                double origValue = inIter.getSampleDouble(x, y, 0);
+                if (!isNovalue(origValue) && isNovalue(value)) {
+                    outIter.setSample(x, y, 0, 1);
+                }
+                index++;
+            }
+        }
+    }
+
+    private static void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
+        // clear raster
+        for( int c = 0; c < regionMap.getCols(); c++ ) {
+            for( int r = 0; r < regionMap.getRows(); r++ ) {
+                outWR.setSample(c, r, 0, doubleNovalue);
+            }
+        }
+    }
+
     public static void fromBinaryFast( int cols, int rows, WritableRandomIter outIter, BinaryFast binaryData ) {
         int[] values = binaryData.getValues();
         int index = 0;
@@ -327,39 +376,6 @@ public class Morpher extends JGTModel {
 
         BinaryFast binaryData = new BinaryFast(data);
         return binaryData;
-    }
-
-    public static void prune( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels, int iterations ) {
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
-
-        new Thin().processPruning(binaryData, iterations);
-
-        fromBinaryFast(cols, rows, outIter, binaryData);
-    }
-
-    public static void lineendings( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-        WritableRandomIter inIter = RandomIterFactory.createWritable(inWR, null);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-        BinaryFast binaryData = toBinaryFast(cols, rows, inIter);
-
-        new Thin().processLineendings(binaryData);
-
-        fromBinaryFast(cols, rows, outIter, binaryData);
-    }
-
-    private static void clearRaster( RegionMap regionMap, WritableRaster outWR ) {
-        // clear raster
-        for( int c = 0; c < regionMap.getCols(); c++ ) {
-            for( int r = 0; r < regionMap.getRows(); r++ ) {
-                outWR.setSample(c, r, 0, doubleNovalue);
-            }
-        }
     }
 
 }
