@@ -98,7 +98,7 @@ public class OmsPointsRasterizer extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inGrid, inVector, fCat);
+        checkNull(inGrid, inVector);
 
         SimpleFeatureType schema = inVector.getSchema();
         GeometryType type = schema.getGeometryDescriptor().getType();
@@ -117,11 +117,17 @@ public class OmsPointsRasterizer extends JGTModel {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         List<FeatureMate> matesList = FeatureUtilities.featureCollectionToMatesList(inVector);
+        double value = 0;
         pm.beginTask("Rasterizing points...", matesList.size());
         for( FeatureMate featureMate : matesList ) {
             Geometry geometry = featureMate.getGeometry();
 
-            Double cat = featureMate.getAttribute(fCat, Double.class);
+            if (fCat == null) {
+                Double cat = featureMate.getAttribute(fCat, Double.class);
+                if (cat != null) {
+                    value = cat;
+                }
+            }
 
             Coordinate[] coordinates = geometry.getCoordinates();
 
@@ -131,7 +137,7 @@ public class OmsPointsRasterizer extends JGTModel {
                 }
 
                 GridCoordinates2D onGrid = inGrid.worldToGrid(new DirectPosition2D(coordinate.x, coordinate.y));
-                outIter.setSample(onGrid.x, onGrid.y, 0, cat);
+                outIter.setSample(onGrid.x, onGrid.y, 0, value);
             }
             pm.worked(1);
         }

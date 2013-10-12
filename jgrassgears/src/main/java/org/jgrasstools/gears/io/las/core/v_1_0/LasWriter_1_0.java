@@ -66,6 +66,7 @@ public class LasWriter_1_0 {
     private final short recordLength = 28;
     private FileChannel fileChannel;
     private int recordsNumPosition;
+    private boolean doWriteGroundElevation;
 
     /**
      * A las file writer.
@@ -283,7 +284,12 @@ public class LasWriter_1_0 {
         int length = 0;
         int x = (int) round((record.x - xMin) / xScale);
         int y = (int) round((record.y - yMin) / yScale);
-        int z = (int) round((record.z - zMin) / zScale);
+        int z;
+        if (!doWriteGroundElevation) {
+            z = (int) round((record.z - zMin) / zScale);
+        }else{
+            z = (int) round((record.groundElevation - zMin) / zScale);
+        }
         fos.write(getLong(x));
         fos.write(getLong(y));
         fos.write(getLong(z));
@@ -383,6 +389,10 @@ public class LasWriter_1_0 {
             fileChannel.close();
         if (fos != null)
             fos.close();
+    }
+
+    public void setWriteGroundElevation( boolean doWriteGroundElevation ) {
+        this.doWriteGroundElevation = doWriteGroundElevation;
     }
 
 }
