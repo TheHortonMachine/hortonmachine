@@ -30,6 +30,7 @@ import java.util.BitSet;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.JGTVersion;
@@ -42,6 +43,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasWriter_1_0 {
+    private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
     private final byte[] longDataArray = new byte[4];
@@ -67,6 +69,7 @@ public class LasWriter_1_0 {
     private FileChannel fileChannel;
     private int recordsNumPosition;
     private boolean doWriteGroundElevation;
+    private boolean openCalled;
 
     /**
      * A las file writer.
@@ -97,6 +100,9 @@ public class LasWriter_1_0 {
      * @param zScale the z scaling value.
      */
     public void setScales( double xScale, double yScale, double zScale ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
         this.xScale = xScale;
         this.yScale = yScale;
         this.zScale = zScale;
@@ -115,6 +121,9 @@ public class LasWriter_1_0 {
      * @param zMax
      */
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
         this.xMin = xMin;
         this.yMin = yMin;
         this.zMin = zMin;
@@ -122,13 +131,16 @@ public class LasWriter_1_0 {
         this.yMax = yMax;
         this.zMax = zMax;
     }
-    
+
     /**
      * Possibility to set the min and max bounds.
      * 
      * @param header the las header (as read by the reader).
      */
-    public void setBounds( ILasHeader header) {
+    public void setBounds( ILasHeader header ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
         ReferencedEnvelope3D env = header.getDataEnvelope();
         this.xMin = env.getMinX();
         this.yMin = env.getMinY();
@@ -146,6 +158,7 @@ public class LasWriter_1_0 {
     public void open() throws Exception {
         openFile();
         writeHeader();
+        openCalled = true;
     }
 
     private void writeHeader() throws IOException {
@@ -165,7 +178,7 @@ public class LasWriter_1_0 {
         // Point data format ID (0-99 for spec): 1
         // Number of point records: 20308602
         int hLength = 0;
-        
+
         // TODO handle global enchoding and proper gps time
 
         byte[] signature = "LASF".getBytes();
@@ -280,14 +293,14 @@ public class LasWriter_1_0 {
      * @param record the point record.
      * @throws IOException
      */
-    public void addPoint( LasRecord record ) throws IOException {
+    public synchronized void addPoint( LasRecord record ) throws IOException {
         int length = 0;
         int x = (int) round((record.x - xMin) / xScale);
         int y = (int) round((record.y - yMin) / yScale);
         int z;
         if (!doWriteGroundElevation) {
             z = (int) round((record.z - zMin) / zScale);
-        }else{
+        } else {
             z = (int) round((record.groundElevation - zMin) / zScale);
         }
         fos.write(getLong(x));

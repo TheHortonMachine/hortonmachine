@@ -49,10 +49,13 @@ import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.math.Statistics.Delta;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -102,7 +105,7 @@ public class OmsIntersectionFinder extends JGTModel {
         case MULTIPOLYGON:
             throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.", this);
         default:
-            throw new ModelsIllegalargumentException("The module doesn't work for points.", this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("The module doesn't work for points.", this);
         }
 
     }
@@ -121,29 +124,44 @@ public class OmsIntersectionFinder extends JGTModel {
         SimpleFeatureType linesType = b.buildFeatureType();
 
         int size = inMap.size();
-        List<Geometry> geometriesList = new ArrayList<Geometry>();
-        FeatureIterator<SimpleFeature> linesIterator = inMap.features();
-        pm.beginTask("Collecting geometries...", size);
-        while( linesIterator.hasNext() ) {
-            SimpleFeature feature = linesIterator.next();
-            Geometry line = (Geometry) feature.getDefaultGeometry();
-            geometriesList.add(line);
-            pm.worked(1);
-        }
-        pm.done();
-        linesIterator.close();
+
+        List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inMap, true, null);
 
         int id = 0;
         pm.beginTask("Checking intersections...", size);
         for( int i = 0; i < size; i++ ) {
-            Geometry line = geometriesList.get(i);
+            LineString line = (LineString) geometriesList.get(i);
             PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
             for( int j = i + 1; j < size; j++ ) {
-                Geometry otherGeometry = geometriesList.get(j);
+                LineString otherLine = (LineString) geometriesList.get(j);
 
-                if (preparedLine.intersects(otherGeometry)) {
-                    Geometry intersection = line.intersection(otherGeometry);
+                if (preparedLine.intersects(otherLine)) {
+                    Geometry intersection = line.intersection(otherLine);
                     int numGeometries = intersection.getNumGeometries();
+                    if (numGeometries < 3) {
+                        Point start1 = line.getStartPoint();
+                        Point end1 = line.getEndPoint();
+                        Point start2 = otherLine.getStartPoint();
+                        Point end2 = otherLine.getEndPoint();
+                        if (numGeometries == 1) {
+                            // single intersection, control if it is not just two connected lines
+                            if (start1.distance(end2) < NumericsUtilities.D_TOLERANCE
+                                    || start1.distance(start2) < NumericsUtilities.D_TOLERANCE
+                                    || end1.distance(start2) < NumericsUtilities.D_TOLERANCE
+                                    || end1.distance(end2) < NumericsUtilities.D_TOLERANCE) {
+                                // it is the same point
+                                continue;
+                            }
+                        } else if (numGeometries == 2) {
+                            // could still be connected lines
+                            if ((start1.distance(end2) < NumericsUtilities.D_TOLERANCE && start2.distance(end1) < NumericsUtilities.D_TOLERANCE)
+                                    || (start1.distance(start2) < NumericsUtilities.D_TOLERANCE && end1.distance(end2) < NumericsUtilities.D_TOLERANCE)) {
+                                // it is the same point
+                                continue;
+                            }
+                        }
+                    }
+
                     for( int k = 0; k < numGeometries; k++ ) {
                         Geometry geometryN = intersection.getGeometryN(k);
 

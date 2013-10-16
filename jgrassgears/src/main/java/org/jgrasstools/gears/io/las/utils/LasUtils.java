@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.io.las.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
