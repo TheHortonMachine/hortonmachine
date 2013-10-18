@@ -19,6 +19,7 @@ package org.jgrasstools.gears;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.Envelope2D;
@@ -27,7 +28,10 @@ import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.coverage.ProfilePoint;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import com.vividsolutions.jts.geom.Coordinate;
 /**
  * Test {@link CoverageUtilities}.
  * 
@@ -95,7 +99,7 @@ public class TestCoverageUtilities extends HMTestCase {
         WritableRaster wr1 = CoverageUtilities.renderedImage2WritableRaster(elevationCoverage.getRenderedImage(), false);
         WritableRaster wr2 = CoverageUtilities.renderedImage2WritableRaster(elevationCoverage.getRenderedImage(), false);
         assertTrue(CoverageUtilities.equals(wr1, wr2));
-        
+
         wr2.setSample(3, 3, 0, -1.0);
         assertFalse(CoverageUtilities.equals(wr1, wr2));
     }
@@ -154,4 +158,62 @@ public class TestCoverageUtilities extends HMTestCase {
 
     }
 
+    public void testProfile() throws Exception {
+        double[][] elevationData = HMTestMaps.mapData;
+        RegionMap eP = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
+
+        Coordinate c1 = new Coordinate(west + xres / 2.0, north - yres / 2.0);
+        Coordinate c2 = new Coordinate(east - xres / 2.0, north - yres / 2.0);
+        List<ProfilePoint> profile = CoverageUtilities.doProfile(elevationCoverage, c1, c2);
+        double[][] expected = {//
+        /*    */{0.0, 800.0},//
+                {30.0, 900.0},//
+                {60.0, 1000.0},//
+                {90.0, 1000.0},//
+                {120.0, 1200.0},//
+                {150.0, 1250.0},//
+                {180.0, 1300.0},//
+                {210.0, 1350.0},//
+                {240.0, 1450.0},//
+                {270.0, 1500.0}//
+        };
+        checkProfile(profile, expected);
+
+        c1 = new Coordinate(west - xres * 3.0 / 2.0, north - yres * 3.0 / 2.0);
+        c2 = new Coordinate(east + xres * 3.0 / 2.0, north - yres * 3.0 / 2.0);
+        profile = CoverageUtilities.doProfile(elevationCoverage, c1, c2);
+        expected = new double[][]{//
+        /*    */{0.0, Double.NaN},//
+                {30.0, Double.NaN},//
+                {60.0, 600.0},//
+                {90.0, Double.NaN},//
+                {120.0, 750.0},//
+                {150.0, 850.0},//
+                {180.0, 860.0},//
+                {210.0, 900.0},//
+                {240.0, 1000.0},//
+                {270.0, 1200.0},//
+                {300.0, 1250.0},//
+                {330.0, 1500.0},//
+                {360.0, Double.NaN},//
+                {390.0, Double.NaN}//
+        };
+        checkProfile(profile, expected);
+
+    }
+
+    private void checkProfile( List<ProfilePoint> profile, double[][] expected ) {
+        for( int i = 0; i < expected.length; i++ ) {
+            ProfilePoint point = profile.get(i);
+            double elevation = point.getElevation();
+            assertEquals(expected[i][0], point.getProgressive());
+            if (Double.isNaN(elevation)) {
+                assertTrue(Double.isNaN(expected[i][1]));
+            } else {
+                assertEquals(expected[i][1], elevation);
+            }
+        }
+    }
 }
