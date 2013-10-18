@@ -18,6 +18,7 @@
 package org.jgrasstools.gears;
 
 import java.awt.image.WritableRaster;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -202,6 +203,23 @@ public class TestCoverageUtilities extends HMTestCase {
         };
         checkProfile(profile, expected);
 
+    }
+
+    public void testLos() throws Exception {
+        double[][] elevationData = HMTestMaps.mapData;
+        RegionMap eP = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
+
+        Coordinate c1 = new Coordinate(west + xres / 2.0, north - yres / 2.0);
+        Coordinate c2 = new Coordinate(east - xres / 2.0, north - yres / 2.0);
+        List<ProfilePoint> profile = CoverageUtilities.doProfile(elevationCoverage, c1, c2);
+        double[] losData = ProfilePoint.getLastVisiblePointData(profile);
+        double[] expected = {1200.0, 1640785.0, 5140005.0, 120.0, 16.69924423399362, 1000.0, 1640755.0, 5140005.0, 90.0,
+                24.22774531795417};
+        for( int i = 0; i < expected.length; i++ ) {
+            assertEquals(expected[i], losData[i], DELTA);
+        }
     }
 
     private void checkProfile( List<ProfilePoint> profile, double[][] expected ) {
