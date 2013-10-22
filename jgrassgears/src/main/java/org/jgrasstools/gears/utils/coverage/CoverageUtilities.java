@@ -386,14 +386,14 @@ public class CoverageUtilities {
         int[] params = new int[]{width, height};
         return params;
     }
-    
+
     /**
      * Create a bounds polygon of a {@link GridCoverage2D}.
      * 
      * @param gridCoverage the coverage to use.
      * @return the bounding polygon.
      */
-    public static Polygon getRegionPolygon( GridCoverage2D gridCoverage ){
+    public static Polygon getRegionPolygon( GridCoverage2D gridCoverage ) {
         Envelope2D env = gridCoverage.getEnvelope2D();
         Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
                 new Coordinate(env.getMinX(), env.getMaxY()), new Coordinate(env.getMaxX(), env.getMaxY()),
@@ -988,6 +988,9 @@ public class CoverageUtilities {
     /**
      * Calculates the profile of a raster map between given {@link Coordinate coordinates}.
      * 
+     * <p>Note that novalues and points outside of the given raster region are 
+     * added to the list with a {@link JGTConstants#doubleNovalue novalue} elevation.
+     * 
      * @param mapIter the {@link RandomIter map iterator}.
      * @param regionMap the region map.
      * @param gridGeometry the gridgeometry of the map.
@@ -998,7 +1001,7 @@ public class CoverageUtilities {
     public static List<ProfilePoint> doProfile( RandomIter mapIter, RegionMap regionMap, GridGeometry2D gridGeometry,
             Coordinate... coordinates ) throws TransformException {
         List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
-        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
+        // Envelope2D envelope2d = gridGeometry.getEnvelope2D();
         double xres = regionMap.getXres();
         double yres = regionMap.getYres();
         int cols = regionMap.getCols();
@@ -1016,7 +1019,8 @@ public class CoverageUtilities {
             Coordinate c = indexedLine.extractPoint(progressive);
             gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
             double value = JGTConstants.doubleNovalue;
-            if (envelope2d.contains(c.x, c.y) && isInside(cols, rows, gridCoords)) {
+            if (// envelope2d.contains(c.x, c.y) &&
+            isInside(cols - 1, rows - 1, gridCoords)) {
                 value = mapIter.getSampleDouble(gridCoords.x, gridCoords.y, 0);
             }
             ProfilePoint profilePoint = new ProfilePoint(progressive, value, c.x, c.y);

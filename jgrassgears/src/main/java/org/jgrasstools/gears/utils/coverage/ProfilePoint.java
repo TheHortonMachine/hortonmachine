@@ -17,8 +17,12 @@
  */
 package org.jgrasstools.gears.utils.coverage;
 
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+
 import java.util.List;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
@@ -41,8 +45,8 @@ import com.vividsolutions.jts.geom.Coordinate;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class ProfilePoint implements Comparable<ProfilePoint> {
-    private double progressive;
-    private double elevation;
+    private double progressive = doubleNovalue;
+    private double elevation = doubleNovalue;
     private Coordinate position;
 
     public ProfilePoint( double progressive, double elevation, Coordinate position ) {
@@ -91,6 +95,83 @@ public class ProfilePoint implements Comparable<ProfilePoint> {
         }
         meanSlope = meanSlope / num;
         return meanSlope;
+    }
+
+    /**
+     * Return last visible point data for a profile points list.
+     * 
+     * <p>For the profile the min and max angles of "sight" are
+     * calculated. The min azimuth angle represents the "upper"
+     * line of sight, as thoght from the zenith.
+     * <p>The max azimuth angle represents the "below the earth" line
+     * of sight (think of a viewer looking in direction nadir).
+     * <p>The return values are in an array of doubles containing:
+     * <ul>
+     * <li>[0] min point elev, </li>
+     * <li>[1] min point x, </li>
+     * <li>[2] min point y, </li>
+     * <li>[3] min point progressive, </li>
+     * <li>[4] min point azimuth, </li>
+     * <li>[5] max point elev, </li>
+     * <li>[6] max point x, </li>
+     * <li>[7] max point y, </li>
+     * <li>[8] max point progressive, </li>
+     * <li>[9] max point azimuth </li>
+     * </ul>
+     * 
+     * @param profile the profile to analize.
+     * @return the last visible point parameters.
+     */
+    public static double[] getLastVisiblePointData( List<ProfilePoint> profile ) {
+        if (profile.size() < 2) {
+            throw new IllegalArgumentException("A profile needs to have at least 2 points.");
+        }
+        ProfilePoint first = profile.get(0);
+        double baseElev = first.getElevation();
+        Coordinate baseCoord = new Coordinate(0, 0);
+
+        double minAzimuthAngle = Double.POSITIVE_INFINITY;
+        double maxAzimuthAngle = Double.NEGATIVE_INFINITY;
+        ProfilePoint minAzimuthPoint = null;
+        ProfilePoint maxAzimuthPoint = null;
+        for( int i = 1; i < profile.size(); i++ ) {
+            ProfilePoint currentPoint = profile.get(i);
+            double currentElev = currentPoint.getElevation();
+            if (JGTConstants.isNovalue(currentElev)) {
+                continue;
+            }
+            currentElev = currentElev - baseElev;
+            double currentProg = currentPoint.getProgressive();
+            Coordinate currentCoord = new Coordinate(currentProg, currentElev);
+
+            double azimuth = GeometryUtilities.azimuth(baseCoord, currentCoord);
+            if (azimuth <= minAzimuthAngle) {
+                minAzimuthAngle = azimuth;
+                minAzimuthPoint = currentPoint;
+            }
+            if (azimuth >= maxAzimuthAngle) {
+                maxAzimuthAngle = azimuth;
+                maxAzimuthPoint = currentPoint;
+            }
+        }
+
+        if (minAzimuthPoint == null || maxAzimuthPoint == null) {
+            return null;
+        }
+
+        return new double[]{//
+        /*    */minAzimuthPoint.elevation, //
+                minAzimuthPoint.position.x, //
+                minAzimuthPoint.position.y, //
+                minAzimuthPoint.progressive, //
+                minAzimuthAngle, //
+                maxAzimuthPoint.elevation, //
+                maxAzimuthPoint.position.x, //
+                maxAzimuthPoint.position.y, //
+                maxAzimuthPoint.progressive, //
+                maxAzimuthAngle, //
+        };
+
     }
 
     public int compareTo( ProfilePoint o ) {
