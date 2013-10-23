@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.gears.io.las.utils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -27,7 +28,10 @@ import java.util.TimeZone;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.joda.time.DateTime;
@@ -202,27 +206,16 @@ public class LasUtils {
 
     }
 
-//    /**
-//     * Converts an date object to standard gps time.
-//     * 
-//     * @param dateTime the object (UTC).
-//     * @return the standard gps time in milliseconds.
-//     */
-//    public static double dateTimeToStandardGpsTime( DateTime dateTime ) {
-//        long millis = dateTime.getMillis() - gpsEpoch.getMillis();
-//        return millis;
-//    }
-
-    public static void main( String[] args ) {
-        double gpsTime = 1622.379604;
-        System.out.println(gpsTimeToDateTime(gpsTime, 0));
-        gpsTime = 467696.521082;
-        System.out.println(gpsTimeToDateTime(gpsTime, 1));
-        // double gpsTime = 820099698.834957 - 1E9;
-        // System.out.println(gpsTimeToDateTime(gpsTime, 1));
-
-        // 12/31/05 21:28:19
-
+    /**
+     * Converts an date object to standard gps time.
+     * 
+     * @param dateTime the object (UTC).
+     * @return the standard gps time in seconds.
+     */
+    public static double dateTimeToStandardGpsTime( DateTime dateTime ) {
+        long millis = dateTime.getMillis() - gpsEpoch.getMillis();
+        return millis / 1000.0;
     }
+
 
 }

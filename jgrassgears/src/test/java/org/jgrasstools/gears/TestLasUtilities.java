@@ -12,15 +12,15 @@ import org.joda.time.DateTime;
  */
 public class TestLasUtilities extends HMTestCase {
 
-//    public void testGpsTime() throws Exception {
-//        double adjustedGpsTime = 206990.87;
-//        DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(adjustedGpsTime, 1);
-//        assertEquals("2011-09-16T11:16:30.870Z", gpsTimeToDateTime.toString());
-//
-//        double dateTimeToStandardGpsTime = LasUtils.dateTimeToStandardGpsTime(gpsTimeToDateTime);
-//        double adjusted = dateTimeToStandardGpsTime / 1000 - 1E9;
-//        assertEquals(adjustedGpsTime, adjusted, DELTA);
-//    }
+    public void testGpsTime() throws Exception {
+        double adjustedGpsTime = 206990.87;
+        DateTime gpsTimeToDateTime = LasUtils.gpsTimeToDateTime(adjustedGpsTime, 1);
+        assertEquals("2011-09-16T11:16:30.870Z", gpsTimeToDateTime.toString());
+
+        double dateTimeToStandardGpsTime = LasUtils.dateTimeToStandardGpsTime(gpsTimeToDateTime);
+        double adjusted = dateTimeToStandardGpsTime - 1E9;
+        assertEquals(adjustedGpsTime, adjusted, DELTA);
+    }
 
     public void testWeekSecondsTimeConversion() throws Exception {
         double weekSecondsTime = 1622.379604;
