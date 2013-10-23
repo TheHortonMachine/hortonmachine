@@ -18,7 +18,11 @@
 package org.jgrasstools.gears.io.las.utils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -152,30 +156,42 @@ public class LasUtils {
     /**
      * Converts las gps time to {@link DateTime}.
      * 
+     * <p>
+     * Time based on Global Encoding Bit:
+     * <pre>
+     *     LAS 1.0:
+     *     LAS 1.1:
+     *       no encoding information available
+     *   
+     *     LAS 1.2:
+     *       0: GPS Time is GPS Week Time
+     *       1: GPS Time is POSIX Time or (!!) Standard GPS Time minus 1 x 10**9
+     *   
+     *     LAS 1.3:
+     *     LAS 1.4:
+     *       0: GPS Time is GPS Week Time
+     *       1: GPS Time is Standard GPS Time minus 1 x 10**9
+     * </pre>
+     * 
+     * <p>
+     * Discussions:
+     * <ul>
+     * <li>https://groups.google.com/d/msg/lastools/ik_knw5njqY/7nAqsJfV4dUJ</li>
+     * </ul>
+     * 
      * @param gpsTime the time value.
      * @param gpsTimeType the time type (0=week.seconds, 1=adjusted standard gps time)
      * @return the UTC date object.
      */
     public static DateTime gpsTimeToDateTime( double gpsTime, int gpsTimeType ) {
         if (gpsTimeType == 0) {
-            throw new RuntimeException("Not implemented yet.");
-            // long JAN61980 = 44244;
-            // double SEC_PER_DAY = 86400.0;
-            // long JAN11901 = 15385;
-            // long longModifiedJulianDate = (long) gpsTime;
-            // long gpsWeek = (longModifiedJulianDate - JAN61980) / 7;
-            //
-            // double doubleModifiedJulianDate = gpsTime - longModifiedJulianDate;
-            // double secondsOfWeek = ((longModifiedJulianDate - JAN61980) - gpsWeek * 7 +
-            // doubleModifiedJulianDate) * SEC_PER_DAY;
-            //
-            // DateTime dt = new DateTime(1980, 1, 6, 0, 0, 0, 0);
-            // System.out.println(dt);
-            // dt = dt.plusWeeks((int) gpsWeek);
-            // System.out.println(dt);
-            // DateTime dt1 = new DateTime(longModifiedJulianDate);
-            // System.out.println(dt1);
-            // return dt;
+            String[] split = String.valueOf(gpsTime).split("\\.");
+            int week = Integer.parseInt(split[0]);
+            int seconds = Integer.parseInt(split[1]);
+            double standardGpsTimeSeconds = week * 604800 + seconds;
+            double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
+            DateTime dt = gpsEpoch.plus((long) standardGpsTimeMillis);
+            return dt;
         } else {
             // gps time is adjusted gps time
             double standardGpsTimeSeconds = gpsTime + 1E9;
@@ -186,20 +202,20 @@ public class LasUtils {
 
     }
 
-    /**
-     * Converts an date object to standard gps time.
-     * 
-     * @param dateTime the object (UTC).
-     * @return the standard gps time in milliseconds.
-     */
-    public static double dateTimeToStandardGpsTime( DateTime dateTime ) {
-        long millis = dateTime.getMillis() - gpsEpoch.getMillis();
-        return millis;
-    }
+//    /**
+//     * Converts an date object to standard gps time.
+//     * 
+//     * @param dateTime the object (UTC).
+//     * @return the standard gps time in milliseconds.
+//     */
+//    public static double dateTimeToStandardGpsTime( DateTime dateTime ) {
+//        long millis = dateTime.getMillis() - gpsEpoch.getMillis();
+//        return millis;
+//    }
 
     public static void main( String[] args ) {
-        double gpsTime = 384024.669704;
-        System.out.println(gpsTimeToDateTime(gpsTime, 1));
+        double gpsTime = 1622.379604;
+        System.out.println(gpsTimeToDateTime(gpsTime, 0));
         gpsTime = 467696.521082;
         System.out.println(gpsTimeToDateTime(gpsTime, 1));
         // double gpsTime = 820099698.834957 - 1E9;
