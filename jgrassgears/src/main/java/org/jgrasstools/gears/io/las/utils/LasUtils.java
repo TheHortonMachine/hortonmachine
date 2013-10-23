@@ -18,7 +18,6 @@
 package org.jgrasstools.gears.io.las.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -52,6 +51,7 @@ public class LasUtils {
     private static SimpleFeatureBuilder lasSimpleFeatureBuilder;
 
     private static DateTime gpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
+    private static DateTime javaEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC);
 
     public enum POINTTYPE {
         UNCLASSIFIED(1, "UNCLASSIFIED"), //
@@ -198,7 +198,15 @@ public class LasUtils {
     }
 
     public static void main( String[] args ) {
-        System.out.println(gpsTimeToDateTime(206990.867192313, 1));
+        double gpsTime = 384024.669704;
+        System.out.println(gpsTimeToDateTime(gpsTime, 1));
+        gpsTime = 467696.521082;
+        System.out.println(gpsTimeToDateTime(gpsTime, 1));
+        // double gpsTime = 820099698.834957 - 1E9;
+        // System.out.println(gpsTimeToDateTime(gpsTime, 1));
+
+        // 12/31/05 21:28:19
+
     }
 
 }
