@@ -19,6 +19,8 @@
 package org.jgrasstools.gears.i18n;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 /**
  * Messages for the JGrassGears.
  * 
@@ -30,7 +32,19 @@ public class GearsMessages {
     public static final String OMSHYDRO_AUTHORCONTACTS = "www.hydrologis.com";
     public static final int OMSHYDRO_DRAFT = 10;
     public static final int OMSHYDRO_CERTIFIED = 40;
-    
+
+    public static final String OMSGEOPAPARAZZICONVERTER_LABEL = JGTConstants.VECTORPROCESSING;
+    public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
+    public static final String OMSGEOPAPARAZZICONVERTER_NAME = "geopapconvert";
+    public static final String OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION = "The output folder";
+    public static final String OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION = "Flag to create bookmarks points";
+    public static final String OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION = "Flag to create media points";
+    public static final String OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION = "Flag to create log points";
+    public static final String OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION = "Flag to create log lines";
+    public static final String OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION = "Flag to create notes";
+    public static final String OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION = "The geopaparazzi folder";
+    public static final String OMSGEOPAPARAZZICONVERTER_DESCRIPTION = "Coverts a geopaparazzi project into shapefiles.";
+
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
     public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";
     public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";

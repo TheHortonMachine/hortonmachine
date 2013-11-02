@@ -29,6 +29,7 @@ org.jgrasstools.modules.LineSmootherMcMaster
 org.jgrasstools.modules.Curvatures
 org.jgrasstools.modules.Profile
 org.jgrasstools.modules.VectorTableJoiner
+org.jgrasstools.modules.GeopaparazziConverter
 org.jgrasstools.modules.Skyview
 org.jgrasstools.modules.ScanLineRasterizer
 org.jgrasstools.modules.VectorFieldRounder

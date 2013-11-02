@@ -247,7 +247,7 @@ public class ModelsSupporter {
             String fieldName = field.getName();
             Description descriptionAnnot = field.getAnnotation(Description.class);
 
-            if (fieldName.equals("pm")) {
+            if (fieldName.equals("pm") || fieldName.equals("gf") || fieldName.equals("doProcess") || fieldName.equals("doReset")) {
                 // ignore progress monitor
                 continue;
             }
@@ -382,17 +382,17 @@ public class ModelsSupporter {
         java.lang.reflect.Field[] fields = class1.getFields();
         for( java.lang.reflect.Field field : fields ) {
             String fname = field.getName();
-            if (fname.equals("pm") || fname.equals("doProcess") || fname.equals("doReset")) {
+            if (fname.equals("pm") || fname.equals("gf") || fname.equals("doProcess") || fname.equals("doReset")) {
                 continue;
             }
-             Class< ? > cl = field.getType();
+            Class< ? > cl = field.getType();
             Out out = field.getAnnotation(Out.class);
             if (out != null) {
                 continue;
             }
             if (cl.isAssignableFrom(String.class)) {
                 sb.append(varName).append(".").append(fname).append(" = \"\";\n");
-            }else{
+            } else {
                 sb.append(varName).append(".").append(fname).append(" = ?;\n");
             }
         }

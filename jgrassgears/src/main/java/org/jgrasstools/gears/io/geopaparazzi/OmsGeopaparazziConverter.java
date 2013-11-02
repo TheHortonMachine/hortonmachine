@@ -61,47 +61,48 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 
-@Description("Coverts a geopaparazzi project into shapefiles.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("geopaparazzi, vector")
-@Label(JGTConstants.VECTORPROCESSING)
-@Name("geopapconvert")
-@Status(Status.DRAFT)
-@License("General Public License Version 3 (GPLv3)")
+@Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
+@Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
+@Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
+@Label(OMSGEOPAPARAZZICONVERTER_LABEL)
+@Name(OMSGEOPAPARAZZICONVERTER_NAME)
+@Status(OMSHYDRO_DRAFT)
+@License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazziConverter extends JGTModel {
 
-    @Description("The geopaparazzi folder")
+    @Description(OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inGeopaparazzi = null;
 
-    @Description("Flag to create notes")
+    @Description(OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION)
     @In
     public boolean doNotes = true;
 
-    @Description("Flag to create log lines")
+    @Description(OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION)
     @In
     public boolean doLoglines = true;
 
-    @Description("Flag to create log points")
+    @Description(OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION)
     @In
     public boolean doLogpoints = false;
 
-    @Description("Flag to create media points")
+    @Description(OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION)
     @In
     public boolean doMedia = true;
 
-    @Description("Flag to create bookmarks points")
+    @Description(OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION)
     @In
     public boolean doBookmarks = true;
 
-    @Description("The output folder")
+    @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outData = null;
