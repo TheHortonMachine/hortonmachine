@@ -344,4 +344,57 @@ public class TestGeometryUtilities extends HMTestCase {
         assertEquals(-2.0, centroid.y, DELTA);
         assertEquals(0.0, centroid.z, DELTA);
     }
+
+    public void testTriangleNormalAngle() {
+        Coordinate pC1 = new Coordinate(1, 0, 0);
+        Coordinate pC2 = new Coordinate(0, 1, 0);
+        Coordinate pC3 = new Coordinate(0, 0, 0);
+        Coordinate pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        double angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(90.0, angle, DELTA);
+
+        pC1 = new Coordinate(-1, 0, 0);
+        pC2 = new Coordinate(0, 1, 0);
+        pC3 = new Coordinate(0, 0, 0);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(90.0, angle, DELTA);
+
+        pC1 = new Coordinate(-1, 0, 0);
+        pC2 = new Coordinate(0, -1, 0);
+        pC3 = new Coordinate(0, 0, 0);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(90.0, angle, DELTA);
+
+        pC1 = new Coordinate(1, 0, 0);
+        pC2 = new Coordinate(0, 1, 0);
+        pC3 = new Coordinate(0, 0, 1);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(35.26438968, angle, DELTA);
+
+        pC1 = new Coordinate(1, 0, 0);
+        pC2 = new Coordinate(0, 1, 0);
+        pC3 = new Coordinate(0, 0, -1);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(35.26438968, angle, DELTA);
+
+        pC1 = new Coordinate(1, 0, 0);
+        pC2 = new Coordinate(0, 1, 0);
+        pC3 = new Coordinate(0, 0, 2);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(19.47122063, angle, DELTA);
+
+        pC1 = new Coordinate(1, 0, 1);
+        pC2 = new Coordinate(0, 1, 1);
+        pC3 = new Coordinate(0, 0, 0);
+        pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
+        angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
+        assertEquals(35.26438968, angle, DELTA);
+
+    }
+
 }
