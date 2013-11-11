@@ -279,6 +279,10 @@ public class OmsLeastCostFlowDirections extends JGTModel {
 
         if (doSlope) {
             double slope = OmsSlope.calculateSlope(node, enteringFlow);
+            if (slope <= 0.0) {
+                // put smallest possible slope
+                slope = Double.MIN_VALUE;
+            }
             slopeIter.setSample(col, row, 0, slope);
         }
         if (doAspect) {
