@@ -75,6 +75,10 @@ public abstract class AbstractLasReader {
         shortBb.order(ByteOrder.LITTLE_ENDIAN);
     }
 
+    public File getLasFile() {
+        return lasFile;
+    }
+
     /**
      * Get a Las reader from the file based on the file version.
      * 
@@ -221,7 +225,7 @@ public abstract class AbstractLasReader {
         double arr2Double = doubleBb.getDouble(0);
         return arr2Double;
     }
-    
+
     protected short getShort2Bytes() throws IOException {
         shortBb.clear();
         fc.read(shortBb);
