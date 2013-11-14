@@ -29,6 +29,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_LICENSE;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_doRegioncheck_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_doRemoveHoles_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_fDefault_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_inRaster_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORIZER_outVector_DESCRIPTION;
@@ -83,6 +84,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
 
@@ -107,6 +109,10 @@ public class OmsVectorizer extends JGTModel {
     @Description(OMSVECTORIZER_fDefault_DESCRIPTION)
     @In
     public String fDefault = "value";
+
+    @Description(OMSVECTORIZER_doRemoveHoles_DESCRIPTION)
+    @In
+    public boolean doRemoveHoles = false;
 
     @Description(OMSVECTORIZER_pThres_DESCRIPTION)
     @In
@@ -207,6 +213,11 @@ public class OmsVectorizer extends JGTModel {
             polygon.apply(jtsTransformation);
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
+            if (doRemoveHoles) {
+                LineString exteriorRing = polygon.getExteriorRing();
+                polygon = gf.createPolygon(exteriorRing.getCoordinates());
+            }
+            
             area = polygon.getArea();
             double perim = polygon.getLength();
             com.vividsolutions.jts.geom.Point centroid = polygon.getCentroid();
