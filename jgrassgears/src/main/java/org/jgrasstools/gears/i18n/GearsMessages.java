@@ -969,6 +969,7 @@ public class GearsMessages {
     public static final String OMSVECTORIZER_inRaster_DESCRIPTION = "The raster that has to be converted.";
     public static final String OMSVECTORIZER_pValue_DESCRIPTION = "The value to use to trace the polygons. If it is null then all the value of the raster are used.";
     public static final String OMSVECTORIZER_fDefault_DESCRIPTION = "The field name to use as a name for the raster value in the vector.";
+    public static final String OMSVECTORIZER_doRemoveHoles_DESCRIPTION = "If true, wholes are removed form polygons.";
     public static final String OMSVECTORIZER_pThres_DESCRIPTION = "A threshold on cell number to filter away polygons with cells less than that.";
     public static final String OMSVECTORIZER_doRegioncheck_DESCRIPTION = "Make a check on the raster first and shrink the boundaries on the region with data.";
     public static final String OMSVECTORIZER_outVector_DESCRIPTION = "The extracted vector.";
@@ -1354,6 +1355,18 @@ public class GearsMessages {
     public static final String OMSLINESMOOTHERJAITOOLS_inVector_DESCRIPTION = "The vector containing the lines to be smoothed.";
     public static final String OMSLINESMOOTHERJAITOOLS_pAlpha_DESCRIPTION = "A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).";
     public static final String OMSLINESMOOTHERJAITOOLS_outVector_DESCRIPTION = "The smoothed features.";
+
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_DESCRIPTION = "The polygon smoother from the jaitools project.";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_LABEL = VECTORPROCESSING;
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_NAME = "polygonsmootherjai";
+    public static final int OMSPOLYGONSMOOTHERJAITOOLS_STATUS = 40;
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_inVector_DESCRIPTION = "The vector containing the polygons to be smoothed.";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_pAlpha_DESCRIPTION = "A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).";
+    public static final String OMSPOLYGONSMOOTHERJAITOOLS_outVector_DESCRIPTION = "The smoothed features.";
 
     public static final String OMSFEATURESLISTER_DESCRIPTION = "A module that reads vectors.";
     public static final String OMSFEATURESLISTER_DOCUMENTATION = "";
