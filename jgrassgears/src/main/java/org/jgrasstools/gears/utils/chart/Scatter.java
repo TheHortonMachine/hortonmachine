@@ -22,7 +22,11 @@ import java.awt.Dimension;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.util.LogFormat;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -39,6 +43,8 @@ public class Scatter extends ApplicationFrame {
     private XYDataset dataset;
     private double[] x;
     private double[] y;
+    private boolean xLog = false;
+    private boolean yLog = false;
 
     public Scatter( double[] x, double[] y ) {
         this("Scatter", x, y);
@@ -48,6 +54,11 @@ public class Scatter extends ApplicationFrame {
         super(title);
         this.x = x;
         this.y = y;
+    }
+
+    public void setLogAxes( boolean xLog, boolean yLog ) {
+        this.xLog = xLog;
+        this.yLog = yLog;
     }
 
     private void createDataset() {
@@ -78,6 +89,18 @@ public class Scatter extends ApplicationFrame {
                 false
         // URLs?
                 );
+
+        XYPlot plot = (XYPlot) chart.getPlot();
+        if (xLog) {
+            LogAxis xAxis = new LogAxis("");
+            xAxis.setBase(10);
+            plot.setDomainAxis(xAxis);
+        }
+        if (yLog) {
+            LogAxis yAxis = new LogAxis("");
+            yAxis.setBase(10);
+            plot.setRangeAxis(yAxis);
+        }
 
         ChartPanel chartPanel = new ChartPanel(chart, true);
         chartPanel.setPreferredSize(new Dimension(500, 270));
