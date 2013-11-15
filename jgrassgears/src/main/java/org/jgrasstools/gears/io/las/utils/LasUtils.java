@@ -18,31 +18,34 @@
 package org.jgrasstools.gears.io.las.utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 /**
  * Utilities for Las handling classes.
@@ -217,5 +220,53 @@ public class LasUtils {
         return millis / 1000.0;
     }
 
+    /**
+     * Dump an overview shapefile for a las folder.
+     * 
+     * @param folder the folder.
+     * @param crs the crs to use.
+     * @throws Exception
+     */
+    public static void dumpLasFolderOverview( String folder, CoordinateReferenceSystem crs ) throws Exception {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("overview");
+        b.setCRS(crs);
+        b.add("the_geom", Polygon.class);
+        b.add("name", String.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+
+        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+
+        OmsFileIterator iter = new OmsFileIterator();
+        iter.inFolder = folder;
+        iter.fileFilter = new FileFilter(){
+            public boolean accept( File pathname ) {
+                return pathname.getName().endsWith(".las");
+            }
+        };
+        iter.process();
+
+        List<File> filesList = iter.filesList;
+
+        for( File file : filesList ) {
+            LasReader_1_0 r = new LasReader_1_0(file, crs);
+            try {
+                r.open();
+                ReferencedEnvelope3D envelope = r.getEnvelope();
+                Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
+                Object[] objs = new Object[]{polygon, r.getLasFile().getName()};
+                builder.addAll(objs);
+                SimpleFeature feature = builder.buildFeature(null);
+                newCollection.add(feature);
+            } finally {
+                r.close();
+            }
+        }
+
+        File folderFile = new File(folder);
+        File outFile = new File(folder, "overview_" + folderFile.getName() + ".shp");
+        OmsVectorWriter.writeVector(outFile.getAbsolutePath(), newCollection);
+    }
 
 }

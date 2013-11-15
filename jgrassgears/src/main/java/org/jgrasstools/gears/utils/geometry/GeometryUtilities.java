@@ -45,6 +45,7 @@ import com.vividsolutions.jts.algorithm.RobustLineIntersector;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
@@ -85,7 +86,7 @@ public class GeometryUtilities {
      * Geometry types used by the utility.
      */
     public static enum GEOMETRYTYPE {
-        POINT, MULTIPOINT, LINE, MULTILINE, POLYGON, MULTIPOLYGON, UNKNOWN
+        POINT, MULTIPOINT, LINE, MULTILINE, POLYGON, MULTIPOLYGON, GEOMETRYCOLLECTION, UNKNOWN
     }
 
     private static GeometryFactory geomFactory;
@@ -266,6 +267,8 @@ public class GeometryUtilities {
             return GEOMETRYTYPE.POLYGON;
         } else if (geometry instanceof MultiPolygon) {
             return GEOMETRYTYPE.MULTIPOLYGON;
+        } else if (geometry instanceof GeometryCollection) {
+            return GEOMETRYTYPE.GEOMETRYCOLLECTION;
         } else {
             return null;
         }
