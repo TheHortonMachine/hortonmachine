@@ -46,8 +46,8 @@ public class LasRecordDistanceComparator implements Comparator<LasRecord> {
 
     @Override
     public int compare( LasRecord o1, LasRecord o2 ) {
-        double d1 = center.distance(o1);
-        double d2 = center.distance(o2);
+        double d1 = LasUtils.distance(center, o1);
+        double d2 = LasUtils.distance(center, o2);
         if (doReverse) {
             if (d1 < d2) {
                 return 1;

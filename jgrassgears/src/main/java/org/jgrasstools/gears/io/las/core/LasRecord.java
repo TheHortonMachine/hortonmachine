@@ -98,30 +98,6 @@ public class LasRecord {
         return retValue.toString();
     }
 
-    /**
-     * Projected distance between two points.
-     * 
-     * @param other the other point.
-     * @return the 2D distance.
-     */
-    public double distance( LasRecord other ) {
-        double distance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
-        return distance;
-    }
-
-    /**
-     * Distance between two points.
-     * 
-     * @param other the other point.
-     * @return the 3D distance.
-     */
-    public double distance3D( LasRecord other ) {
-        double deltaElev = Math.abs(z - other.z);
-        double projectedDistance = NumericsUtilities.pythagoras(x - other.x, y - other.y);
-        double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
-        return distance;
-    }
-
     public boolean equals( Object obj ) {
         if (obj == null) {
             return false;

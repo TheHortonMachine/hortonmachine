@@ -51,6 +51,7 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.BinaryFast;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -124,13 +125,13 @@ public class Morpher extends JGTModel {
             prune(inWR, regionMap, outWR, MorpherHelp.DEFAULT_PRUNE_KERNEL, pIterations);
         } else {
             if (pMode.equals(DILATE)) {
-                dilate(inWR, regionMap, outWR, pKernel, doBinary);
+                dilate(inWR, regionMap, outWR, pKernel, doBinary, pm);
             } else if (pMode.equals(ERODE)) {
-                erode(inWR, regionMap, outWR, pKernel);
+                erode(inWR, regionMap, outWR, pKernel, pm);
             } else if (pMode.equals(OPEN)) {
-                open(inWR, regionMap, outWR, pKernel, doBinary);
+                open(inWR, regionMap, outWR, pKernel, doBinary, pm);
             } else if (pMode.equals(CLOSE)) {
-                close(inWR, regionMap, outWR, pKernel, doBinary);
+                close(inWR, regionMap, outWR, pKernel, doBinary, pm);
             } else {
                 throw new ModelsIllegalargumentException("Could not recognize mode.", this);
             }
@@ -146,8 +147,10 @@ public class Morpher extends JGTModel {
      * @param outWR the raster to modify.
      * @param kernelArray the kernel to use.
      * @param binary if <code>true</code>, binary mode is used.
+     * @param pm 
      */
-    public static void dilate( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
+    public static void dilate( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
+            IJGTProgressMonitor pm ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xres = regionMap.getXres();
@@ -158,6 +161,7 @@ public class Morpher extends JGTModel {
 
         int[][] kernel = MorpherHelp.getSquareKernelMatrix(kernelArray);
 
+        pm.beginTask("Perform dilation...", cols);
         for( int c = 0; c < cols; c++ ) {
             for( int r = 0; r < rows; r++ ) {
                 GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
@@ -194,7 +198,9 @@ public class Morpher extends JGTModel {
                     node.setValueInMap(outIter, node.elevation);
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
     }
 
     /**
@@ -205,7 +211,8 @@ public class Morpher extends JGTModel {
      * @param outWR the raster to modify.
      * @param kernelArray the kernel to use.
      */
-    public static void erode( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray ) {
+    public static void erode( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray,
+            IJGTProgressMonitor pm ) {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         double xres = regionMap.getXres();
@@ -216,6 +223,7 @@ public class Morpher extends JGTModel {
 
         int[][] kernel = MorpherHelp.getSquareKernelMatrix(kernelArray);
 
+        pm.beginTask("Perform erosion...", cols);
         for( int c = 0; c < cols; c++ ) {
             for( int r = 0; r < rows; r++ ) {
                 GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
@@ -251,7 +259,9 @@ public class Morpher extends JGTModel {
                     continue;
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
     }
 
     /**
@@ -263,11 +273,12 @@ public class Morpher extends JGTModel {
      * @param kernelArray the kernel to use.
      * @param binary if <code>true</code>, binary mode is used.
      */
-    public static void open( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
-        erode(inWR, regionMap, outWR, kernelArray);
+    public static void open( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
+            IJGTProgressMonitor pm ) {
+        erode(inWR, regionMap, outWR, kernelArray, pm);
         inWR.setDataElements(0, 0, outWR);
         clearRaster(regionMap, outWR);
-        dilate(inWR, regionMap, outWR, kernelArray, binary);
+        dilate(inWR, regionMap, outWR, kernelArray, binary, pm);
     }
 
     /**
@@ -279,11 +290,12 @@ public class Morpher extends JGTModel {
      * @param kernelArray the kernel to use.
      * @param binary if <code>true</code>, binary mode is used.
      */
-    public static void close( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary ) {
-        dilate(inWR, regionMap, outWR, kernelArray, binary);
+    public static void close( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[] kernelArray, boolean binary,
+            IJGTProgressMonitor pm ) {
+        dilate(inWR, regionMap, outWR, kernelArray, binary, pm);
         inWR.setDataElements(0, 0, outWR);
         clearRaster(regionMap, outWR);
-        erode(inWR, regionMap, outWR, kernelArray);
+        erode(inWR, regionMap, outWR, kernelArray, pm);
     }
 
     public static void skeletonize( WritableRaster inWR, RegionMap regionMap, WritableRaster outWR, int[][] kernels ) {

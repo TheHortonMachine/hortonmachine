@@ -40,20 +40,25 @@ import org.jfree.ui.RefineryUtilities;
  */
 public class Scatter extends ApplicationFrame {
 
-    private XYDataset dataset;
-    private double[] x;
-    private double[] y;
+    private XYSeriesCollection dataset;
     private boolean xLog = false;
     private boolean yLog = false;
 
-    public Scatter( double[] x, double[] y ) {
-        this("Scatter", x, y);
+    public Scatter( String title ) {
+        super(title);
+        dataset = new XYSeriesCollection();
     }
 
-    public Scatter( String title, double[] x, double[] y ) {
-        super(title);
-        this.x = x;
-        this.y = y;
+    public Scatter() {
+        this("Scatter");
+    }
+
+    public void addSeries( String seriesName, double[] x, double[] y ) {
+        XYSeries series = new XYSeries(seriesName);
+        for( int i = 0; i < x.length; i++ ) {
+            series.add(x[i], y[i]);
+        }
+        dataset.addSeries(series);
     }
 
     public void setLogAxes( boolean xLog, boolean yLog ) {
@@ -61,16 +66,7 @@ public class Scatter extends ApplicationFrame {
         this.yLog = yLog;
     }
 
-    private void createDataset() {
-        XYSeries series = new XYSeries("asd");
-        for( int i = 0; i < x.length; i++ ) {
-            series.add(x[i], y[i]);
-        }
-        dataset = new XYSeriesCollection(series);
-    }
-
     public void plot() {
-        createDataset();
 
         JFreeChart chart = ChartFactory.createXYLineChart(getTitle(),
         // chart title
@@ -114,7 +110,8 @@ public class Scatter extends ApplicationFrame {
     public static void main( String[] args ) {
         double[] asd = {1, 2};
         double[] qwe = {1, 2};
-        Scatter scatter = new Scatter(asd, qwe);
+        Scatter scatter = new Scatter();
+        scatter.addSeries("asd", asd, qwe);
         scatter.plot();
     }
 

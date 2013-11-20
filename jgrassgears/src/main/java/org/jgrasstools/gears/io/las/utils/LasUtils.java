@@ -34,6 +34,7 @@ import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.opengis.feature.simple.SimpleFeature;
@@ -267,6 +268,32 @@ public class LasUtils {
         File folderFile = new File(folder);
         File outFile = new File(folder, "overview_" + folderFile.getName() + ".shp");
         OmsVectorWriter.writeVector(outFile.getAbsolutePath(), newCollection);
+    }
+
+    /**
+     * Projected distance between two points.
+     * 
+     * @param r1 the first point.
+     * @param r2 the second point.
+     * @return the 2D distance.
+     */
+    public static double distance( LasRecord r1, LasRecord r2 ) {
+        double distance = NumericsUtilities.pythagoras(r1.x - r2.x, r1.y - r2.y);
+        return distance;
+    }
+
+    /**
+     * Distance between two points.
+     * 
+     * @param r1 the first point.
+     * @param r2 the second point.
+     * @return the 3D distance.
+     */
+    public static double distance3D( LasRecord r1, LasRecord r2 ) {
+        double deltaElev = Math.abs(r1.z - r2.z);
+        double projectedDistance = NumericsUtilities.pythagoras(r1.x - r2.x, r1.y - r2.y);
+        double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
+        return distance;
     }
 
 }
