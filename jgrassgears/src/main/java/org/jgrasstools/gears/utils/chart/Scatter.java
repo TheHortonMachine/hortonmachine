@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.utils.chart;
 
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -26,6 +27,8 @@ import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.util.LogFormat;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
@@ -40,9 +43,13 @@ import org.jfree.ui.RefineryUtilities;
  */
 public class Scatter extends ApplicationFrame {
 
+    private String xLabel = "X";
+    private String yLabel = "Y";
     private XYSeriesCollection dataset;
     private boolean xLog = false;
     private boolean yLog = false;
+    private boolean showLines = true;
+    private boolean showShapes = true;
 
     public Scatter( String title ) {
         super(title);
@@ -66,13 +73,46 @@ public class Scatter extends ApplicationFrame {
         this.yLog = yLog;
     }
 
+    public void setShowLines( boolean showLines ) {
+        this.showLines = showLines;
+    }
+
+    public void setShowShapes( boolean showShapes ) {
+        this.showShapes = showShapes;
+    }
+
+    public void setXLabel( String xLabel ) {
+        this.xLabel = xLabel;
+    }
+
+    public void setYLabel( String yLabel ) {
+        this.yLabel = yLabel;
+    }
+
+    public BufferedImage getImage( int width, int height ) {
+        JFreeChart chart = getChart();
+        BufferedImage bufferedImage = chart.createBufferedImage(width, height);
+        return bufferedImage;
+    }
+
     public void plot() {
 
-        JFreeChart chart = ChartFactory.createXYLineChart(getTitle(),
-        // chart title
-                "X",
+        JFreeChart chart = getChart();
+
+        ChartPanel chartPanel = new ChartPanel(chart, true);
+        chartPanel.setPreferredSize(new Dimension(500, 270));
+        setContentPane(chartPanel);
+
+        pack();
+        RefineryUtilities.centerFrameOnScreen(this);
+        setVisible(true);
+    }
+
+    private JFreeChart getChart() {
+        JFreeChart chart = ChartFactory.createXYLineChart(getTitle(), // chart title
+                xLabel,
                 // domain axis label
-                "Y",
+                yLabel,
                 // range axis label
                 dataset,
                 // data
@@ -98,20 +138,23 @@ public class Scatter extends ApplicationFrame {
             plot.setRangeAxis(yAxis);
         }
 
-        ChartPanel chartPanel = new ChartPanel(chart, true);
-        chartPanel.setPreferredSize(new Dimension(500, 270));
-        setContentPane(chartPanel);
+        XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+        int seriesCount = plot.getSeriesCount();
+        for( int i = 0; i < seriesCount; i++ ) {
+            renderer.setSeriesShapesVisible(i, showShapes);
+            renderer.setSeriesLinesVisible(i, showLines);
+        }
 
-        pack();
-        RefineryUtilities.centerFrameOnScreen(this);
-        setVisible(true);
+        return chart;
     }
 
     public static void main( String[] args ) {
         double[] asd = {1, 2};
         double[] qwe = {1, 2};
-        Scatter scatter = new Scatter();
+        Scatter scatter = new Scatter("");
         scatter.addSeries("asd", asd, qwe);
+        scatter.setShowLines(false);
+        scatter.setXLabel("diameter");
         scatter.plot();
     }
 
