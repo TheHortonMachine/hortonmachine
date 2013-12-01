@@ -18,24 +18,25 @@
 package org.jgrasstools.gears.io.geopaparazzi.forms.items;
 
 /**
- * A textarea item.
+ * A double item.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class ItemTextArea implements Item {
+public class ItemInteger implements Item {
 
     private String description;
     private boolean isMandatory;
-    private String defaultValue;
+    private String defaultValueStr;
     private boolean isLabel;
 
-    public ItemTextArea( String description, String defaultValue, boolean isMandatory, boolean isLabel ) {
+    public ItemInteger( String description, Integer defaultValue, boolean isMandatory, boolean isLabel ) {
         this.isLabel = isLabel;
         if (defaultValue == null) {
-            defaultValue = "";
+            defaultValueStr = "";
+        } else {
+            this.defaultValueStr = defaultValue.toString();
         }
         this.description = description;
-        this.defaultValue = defaultValue;
         this.isMandatory = isMandatory;
     }
 
@@ -43,10 +44,10 @@ public class ItemTextArea implements Item {
         StringBuilder sb = new StringBuilder();
         sb.append("        {\n");
         sb.append("             \"key\": \"").append(description).append("\",\n");
-        sb.append("             \"value\": \"").append(defaultValue).append("\",\n");
+        sb.append("             \"value\": \"").append(defaultValueStr).append("\",\n");
         if (isLabel)
             sb.append("             \"islabel\": \"").append("true").append("\",\n");
-        sb.append("             \"type\": \"").append("string").append("\",\n");
+        sb.append("             \"type\": \"").append("integer").append("\",\n");
         sb.append("             \"mandatory\": \"").append(isMandatory ? "yes" : "no").append("\"\n");
         sb.append("        }\n");
         return sb.toString();
@@ -59,11 +60,11 @@ public class ItemTextArea implements Item {
 
     @Override
     public void setValue( String value ) {
-        defaultValue = value;
+        defaultValueStr = value;
     }
 
     @Override
     public String getValue() {
-        return defaultValue;
+        return defaultValueStr;
     }
 }
