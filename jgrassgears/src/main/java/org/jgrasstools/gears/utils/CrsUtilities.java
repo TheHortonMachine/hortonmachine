@@ -60,7 +60,7 @@ public class CrsUtilities {
         } else {
             if (!filePath.endsWith(".prj")) {
                 prjPath = filePath + ".prj";
-            }else{
+            } else {
                 prjPath = filePath;
             }
         }
@@ -78,16 +78,20 @@ public class CrsUtilities {
     /**
      * Reads a {@link CoordinateReferenceSystem} from a prj file.
      * 
-     * @param filePath the path to the regarding data or prj file.
-     * @param extention the extention of the data file. If <code>null</code> it is assumed to be prj.
+     * @param filePath the path to the prj file or the connected datafile it sidecar file for.
+     * @param extension the extension of the data file. If <code>null</code> it is assumed to be prj.
      * @return the read {@link CoordinateReferenceSystem}. 
      * @throws Exception
      */
     @SuppressWarnings("nls")
-    public static CoordinateReferenceSystem readProjectionFile( String filePath, String extention ) throws Exception {
+    public static CoordinateReferenceSystem readProjectionFile( String filePath, String extension ) throws Exception {
         CoordinateReferenceSystem crs = null;
         String prjPath = null;
-        if (extention != null && filePath.toLowerCase().endsWith("." + extention)) {
+        if (filePath.toLowerCase().endsWith(".prj")) {
+            // it is the prj file
+            prjPath = filePath;
+        } else if (extension != null && filePath.toLowerCase().endsWith("." + extension)) {
+            // datafile was supplied (substitute extension)
             int dotLoc = filePath.lastIndexOf(".");
             prjPath = filePath.substring(0, dotLoc);
             prjPath = prjPath + ".prj";

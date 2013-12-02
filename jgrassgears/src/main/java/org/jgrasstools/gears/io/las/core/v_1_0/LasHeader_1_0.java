@@ -130,6 +130,10 @@ public class LasHeader_1_0 implements ILasHeader {
 
     protected ReferencedEnvelope3D dataEnvelope;
     protected CoordinateReferenceSystem crs;
+    
+    public LasHeader_1_0(CoordinateReferenceSystem crs) {
+        this.crs = crs;
+    }
 
     public String getVersion() {
         return versionMajor + "." + versionMinor;

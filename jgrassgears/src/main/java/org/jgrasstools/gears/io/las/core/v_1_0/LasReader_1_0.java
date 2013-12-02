@@ -58,8 +58,7 @@ public class LasReader_1_0 extends AbstractLasReader {
     protected void parseHeader() throws Exception {
 
         try {
-            header = new LasHeader_1_0();
-            header.crs = crs;
+            header = new LasHeader_1_0(crs);
 
             String signature = getString(4);
             header.signature = signature;
