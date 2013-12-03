@@ -71,6 +71,10 @@ public class LasWriter_1_0 {
     private boolean doWriteGroundElevation;
     private boolean openCalled;
 
+    private int previousReturnNumber = -999;
+    private int previousNumberOfReturns = -999;
+    private byte[] previousReturnBytes = null;
+
     /**
      * A las file writer.
      * 
@@ -313,20 +317,28 @@ public class LasWriter_1_0 {
         // 001 | 001 | 11 -> bits for return num, num of ret, scan dir flag, edge of flight line
 
         int returnNumber = record.returnNumber;
-        BitSet bitsetRN = ByteUtilities.bitsetFromByte((byte) returnNumber);
         int numberOfReturns = record.numberOfReturns;
-        BitSet bitsetNOR = ByteUtilities.bitsetFromByte((byte) numberOfReturns);
-        BitSet b = new BitSet(7);
-        b.set(0, bitsetRN.get(0));
-        b.set(1, bitsetRN.get(1));
-        b.set(2, bitsetRN.get(2));
-        b.set(3, bitsetNOR.get(0));
-        b.set(4, bitsetNOR.get(1));
-        b.set(5, bitsetNOR.get(2));
-        b.set(6, false);
-        b.set(7, false);
-        byte[] bb = ByteUtilities.bitSetToByteArray(b);
-        fos.write(bb[0]);
+
+        if (returnNumber != previousReturnNumber || numberOfReturns != previousNumberOfReturns) {
+            BitSet bitsetRN = ByteUtilities.bitsetFromByte((byte) returnNumber);
+            BitSet bitsetNOR = ByteUtilities.bitsetFromByte((byte) numberOfReturns);
+            BitSet b = new BitSet(7);
+            b.set(0, bitsetRN.get(0));
+            b.set(1, bitsetRN.get(1));
+            b.set(2, bitsetRN.get(2));
+            b.set(3, bitsetNOR.get(0));
+            b.set(4, bitsetNOR.get(1));
+            b.set(5, bitsetNOR.get(2));
+            b.set(6, false);
+            b.set(7, false);
+            byte[] bb = ByteUtilities.bitSetToByteArray(b);
+            fos.write(bb[0]);
+            previousReturnBytes = bb;
+            previousReturnNumber = returnNumber;
+            previousNumberOfReturns = numberOfReturns;
+        } else {
+            fos.write(previousReturnBytes[0]);
+        }
         length = length + 1;
 
         // class
