@@ -294,23 +294,26 @@ public class LasReader_1_0 extends AbstractLasReader {
     /**
      * Reads the position and the record address in the file of the next point.
      * 
-     * @return the array containing [x, y, address].
+     * @return the array containing [x, y, z, address].
      * @throws IOException
      */
-    public double[] readNextLasXYAddress() throws IOException {
+    public double[] readNextLasXYZAddress() throws IOException {
         long position = fc.position();
         int read = 0;
         long x = getLong4Bytes();
         long y = getLong4Bytes();
+        long z = getLong4Bytes();
         double xd = x * xScale + xOffset;
         double yd = y * yScale + yOffset;
-        read = read + 8;
+        double zd = z * zScale + zOffset;
+
+        read = read + 12;
 
         int skip = recordLength - read;
         skip(skip);
 
         readRecords++;
-        return new double[]{xd, yd, position};
+        return new double[]{xd, yd, zd, position};
     }
 
     @Override

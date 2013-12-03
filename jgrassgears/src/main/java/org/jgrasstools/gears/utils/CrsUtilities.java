@@ -87,10 +87,11 @@ public class CrsUtilities {
     public static CoordinateReferenceSystem readProjectionFile( String filePath, String extension ) throws Exception {
         CoordinateReferenceSystem crs = null;
         String prjPath = null;
-        if (filePath.toLowerCase().endsWith(".prj")) {
+        String filePathLower = filePath.trim().toLowerCase();
+        if (filePathLower.endsWith(".prj")) {
             // it is the prj file
             prjPath = filePath;
-        } else if (extension != null && filePath.toLowerCase().endsWith("." + extension)) {
+        } else if (extension != null && filePathLower.endsWith("." + extension)) {
             // datafile was supplied (substitute extension)
             int dotLoc = filePath.lastIndexOf(".");
             prjPath = filePath.substring(0, dotLoc);
@@ -103,12 +104,8 @@ public class CrsUtilities {
         if (!prjFile.exists()) {
             throw new ModelsIOException("The prj file doesn't exist: " + prjPath, "CRSUTILITIES");
         }
-        try {
-            String wkt = FileUtilities.readFile(prjFile);
-            crs = CRS.parseWKT(wkt);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        String wkt = FileUtilities.readFile(prjFile);
+        crs = CRS.parseWKT(wkt);
         return crs;
     }
 
