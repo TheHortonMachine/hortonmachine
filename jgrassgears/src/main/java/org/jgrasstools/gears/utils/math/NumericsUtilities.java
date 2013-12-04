@@ -362,4 +362,57 @@ public class NumericsUtilities {
         return rangeList;
     }
 
+    /**
+     * Creates an array of equal bin from a range and the number of bins.
+     * 
+     * @param min the min value.
+     * @param max the max value.
+     * @param binsNum the number of wanted bins.
+     * @return the array of bin bounds of size [binNum+1], since it contains the min and max.
+     */
+    public static double[] range2Bins( double min, double max, int binsNum ) {
+        double delta = (max - min) / binsNum;
+        double[] bins = new double[binsNum + 1];
+        int count = 0;
+        double running = min;
+        for( int i = 0; i < binsNum; i++ ) {
+            bins[count] = running;
+            running = running + delta;
+            count++;
+        }
+        bins[binsNum] = max;
+        return bins;
+    }
+
+    /**
+     * Creates an array of bins from a range and a step to use.
+     * 
+     * <p>Note that if the step doesn't split the range exactly, the last bin will be smaller.</p>
+     * 
+     * @param min the min value.
+     * @param max the max value.
+     * @param step the wanted size of the bins.
+     * @return the array of bin bounds.
+     */
+    public static double[] range2Bins( double min, double max, double step ) {
+        double intervalsDouble = (max - min) / step;
+
+        int intervals = (int) intervalsDouble;
+        double rest = intervalsDouble - intervals;
+        if (rest > D_TOLERANCE) {
+            intervals++;
+        }
+
+        double[] bins = new double[intervals + 1];
+        int count = 0;
+        double running = min;
+        for( int i = 0; i < intervals; i++ ) {
+            bins[count] = running;
+            running = running + step;
+            count++;
+        }
+        bins[intervals] = max;
+        return bins;
+    }
+
 }
