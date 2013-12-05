@@ -419,8 +419,10 @@ public class ImageGenerator {
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);
 
-        if (buffer > 0.0)
+        if (buffer > 0.0){
+            ref = new ReferencedEnvelope(ref);
             ref.expandBy(buffer, buffer);
+        }
 
         double envW = ref.getWidth();
         double envH = ref.getHeight();
