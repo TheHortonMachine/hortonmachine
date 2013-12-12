@@ -1089,6 +1089,19 @@ public class GearsMessages {
     public static final String OMSPROPERTIESFEATUREREADER_file_DESCRIPTION = "The properties file.";
     public static final String OMSPROPERTIESFEATUREREADER_geodata_DESCRIPTION = "The read feature collection.";
 
+    public static final String OMSJSONFEATUREREADER_DESCRIPTION = "Utility class for reading JSON files to geotools featurecollections. Each line represents a json feature.";
+    public static final String OMSJSONFEATUREREADER_DOCUMENTATION = "";
+    public static final String OMSJSONFEATUREREADER_KEYWORDS = "IO, JSON, Feature, Vector, Reading";
+    public static final String OMSJSONFEATUREREADER_LABEL = FEATUREREADER;
+    public static final String OMSJSONFEATUREREADER_NAME = "jsonfeaturereader";
+    public static final int OMSJSONFEATUREREADER_STATUS = 40;
+    public static final String OMSJSONFEATUREREADER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSJSONFEATUREREADER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSJSONFEATUREREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSJSONFEATUREREADER_UI = "hide";
+    public static final String OMSJSONFEATUREREADER_file_DESCRIPTION = "The JSON file to convert (it has to contain a lat and lon attribute).";
+    public static final String OMSJSONFEATUREREADER_geodata_DESCRIPTION = "The read feature collection.";
+
     public static final String OMSSURFACEINTERPOLATOR_DESCRIPTION = "Thin Plate Spline and IWD Interpolators";
     public static final String OMSSURFACEINTERPOLATOR_DOCUMENTATION = "";
     public static final String OMSSURFACEINTERPOLATOR_KEYWORDS = "Interpolation, Raster, Spline";
