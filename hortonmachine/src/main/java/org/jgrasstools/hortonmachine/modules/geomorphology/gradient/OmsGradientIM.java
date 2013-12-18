@@ -37,6 +37,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_inEl
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outSlope_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
 
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -152,7 +153,7 @@ public class OmsGradientIM extends JGTModel {
 
         int size = boundsGeometries.size();
         int count = 0;
-
+        pm.beginTask("processing...", size);
         for( Geometry boundGeometry : boundsGeometries ) {
             count++;
             Envelope writeEnv = boundGeometry.getEnvelopeInternal();
@@ -186,43 +187,28 @@ public class OmsGradientIM extends JGTModel {
             GridCoverage2D readGC = imReader.read(readGeneralParameterValues);
             GridGeometry2D readGridGeometry = readGC.getGridGeometry();
 
-            RandomIter readIter = CoverageUtilities.getRandomIterator(readGC);
+            // read raster at once, since a randomiter is way slower
+            Raster readRaster = readGC.getRenderedImage().getData();
+
             WritableRandomIter writeIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
-            pm.beginTask("processing...", writeCols);
             for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
                 for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
-                    // long t1 = System.currentTimeMillis();
                     DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
                     GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
                     int readCol = worldToReadGrid.x;
                     int readRow = worldToReadGrid.y;
-                    // long t3 = System.currentTimeMillis();
 
-                    double read = readIter.getSampleDouble(readCol, readRow, 0);
-                    // long t4 = System.currentTimeMillis();
-
+                    double read = readRaster.getSampleDouble(readCol, readRow, 0);
                     writeIter.setSample(writeCol, writeRow, 0, read);
-                    // long t5 = System.currentTimeMillis();
-                    //
-                    // long l = t5 - t1;
-                    // if (l > 1) {
-                    // long findReadTime = t3 - t1;
-                    // long readTime = t4 - t3;
-                    // pm.message("time: " + l + " find=" + findReadTime + " read=" + readTime);
-                    // pm.message("cols: " + writeCols + " rows:" + writeRows);
-                    // pm.message("wc/wr=" + writeCol + "/" + writeRow + " rc/rr=" + readCol + "/" +
-                    // readRow);
-                    //
-                    // }
                 }
-                pm.worked(1);
             }
-            pm.done();
 
             File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
             OmsRasterWriter.writeRaster(outTileFile.getAbsolutePath(), writeGC);
+            pm.worked(1);
         }
+        pm.done();
 
         // checkNull(inElev);
         // HashMap<String, Double> regionMap =
