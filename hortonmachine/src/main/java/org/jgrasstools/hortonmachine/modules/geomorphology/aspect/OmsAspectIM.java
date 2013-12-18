@@ -58,6 +58,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
+import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.colors.ColorTables;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
@@ -102,7 +103,7 @@ public class OmsAspectIM extends JGTModelIM {
 
         processTiles();
 
-        makeStyle(ColorTables.aspect, 0, 360);
+        makeMosaicWithStyle(ColorTables.aspect, 0, 360);
     }
 
     @Override
@@ -195,11 +196,15 @@ public class OmsAspectIM extends JGTModelIM {
     }
 
     public static void main( String[] args ) throws Exception {
-        OmsAspectIM g = new OmsAspectIM();
-        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/q1swb_2008_export_043_xyz2_2m_aspect.shp";
-        g.doRadiants = false;
-        g.process();
+//        OmsAspectIM g = new OmsAspectIM();
+//        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
+//        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/q1swb_2008_export_043_xyz2_2m_aspect.shp";
+//        g.doRadiants = false;
+//        g.process();
+        
+        OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+        im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/";
+        im.process();
     }
 
 }

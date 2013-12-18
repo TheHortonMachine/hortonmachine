@@ -188,7 +188,7 @@ public abstract class JGTModelIM extends JGTModel {
 
     }
 
-    protected void makeStyle( ColorTables colorTable, double min, double max ) {
+    protected void makeMosaicWithStyle( ColorTables colorTable, double min, double max ) {
         if (colorTable == null)
             colorTable = ColorTables.extrainbow;
         try {
