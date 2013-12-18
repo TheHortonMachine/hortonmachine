@@ -46,6 +46,7 @@ import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -59,6 +60,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -66,16 +68,23 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.gce.imagemosaic.ImageMosaicFormatFactory;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.GeneralEnvelope;
+import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Envelope;
@@ -119,7 +128,13 @@ public class OmsGradientIM extends JGTModel {
     public void process() throws Exception {
         checkNull(inElev);
 
-        File propertiesFile = FileUtilities.substituteExtention(new File(inElev), "properties");
+        File inFile = new File(inElev);
+
+        File outFile = new File(outSlope);
+        File outParentFolder = outFile.getParentFile();
+        String outBaseName = FileUtilities.getNameWithoutExtention(outFile);
+
+        File propertiesFile = FileUtilities.substituteExtention(inFile, "properties");
         HashMap<String, String> propertiesMap = FileUtilities.readFileToHasMap(propertiesFile.getAbsolutePath(), null, false);
 
         String xyREs = propertiesMap.get("Levels");
@@ -134,7 +149,12 @@ public class OmsGradientIM extends JGTModel {
 
         SimpleFeatureCollection vectorBounds = OmsVectorReader.readVector(inElev);
         List<Geometry> boundsGeometries = FeatureUtilities.featureCollectionToGeometriesList(vectorBounds, true, locationField);
+
+        int size = boundsGeometries.size();
+        int count = 0;
+
         for( Geometry boundGeometry : boundsGeometries ) {
+            count++;
             Envelope writeEnv = boundGeometry.getEnvelopeInternal();
 
             double writeEast = writeEnv.getMaxX();
@@ -151,16 +171,57 @@ public class OmsGradientIM extends JGTModel {
             double readWest = readEnv.getMinX();
             double readNorth = readEnv.getMaxY();
             double readSouth = readEnv.getMinY();
-            int readCols = (int) ((readEast - readWest) / xRes);
-            int readRows = (int) ((readNorth - readSouth) / yRes);
-            
-            GridGeometry2D readGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(readNorth, readSouth, readEast, readWest, readCols, readRows, crs);
-            GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast, writeWest, writeCols, writeRows, crs);
-            
-            
-            
+            // int readCols = (int) ((readEast - readWest) / xRes);
+            // int readRows = (int) ((readNorth - readSouth) / yRes);
 
-            System.out.println();
+            GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast,
+                    writeWest, writeCols, writeRows, crs);
+            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
+                    JGTConstants.doubleNovalue);
+            RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
+            GridCoverage2D writeGC = CoverageUtilities.buildCoverage("tile", outWR, writeParams, crs);
+
+            GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
+                    readNorth, readSouth, readEast, readWest, crs);
+            GridCoverage2D readGC = imReader.read(readGeneralParameterValues);
+            GridGeometry2D readGridGeometry = readGC.getGridGeometry();
+
+            RandomIter readIter = CoverageUtilities.getRandomIterator(readGC);
+            WritableRandomIter writeIter = CoverageUtilities.getWritableRandomIterator(outWR);
+
+            pm.beginTask("processing...", writeCols);
+            for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
+                for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
+                    // long t1 = System.currentTimeMillis();
+                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
+                    GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
+                    int readCol = worldToReadGrid.x;
+                    int readRow = worldToReadGrid.y;
+                    // long t3 = System.currentTimeMillis();
+
+                    double read = readIter.getSampleDouble(readCol, readRow, 0);
+                    // long t4 = System.currentTimeMillis();
+
+                    writeIter.setSample(writeCol, writeRow, 0, read);
+                    // long t5 = System.currentTimeMillis();
+                    //
+                    // long l = t5 - t1;
+                    // if (l > 1) {
+                    // long findReadTime = t3 - t1;
+                    // long readTime = t4 - t3;
+                    // pm.message("time: " + l + " find=" + findReadTime + " read=" + readTime);
+                    // pm.message("cols: " + writeCols + " rows:" + writeRows);
+                    // pm.message("wc/wr=" + writeCol + "/" + writeRow + " rc/rr=" + readCol + "/" +
+                    // readRow);
+                    //
+                    // }
+                }
+                pm.worked(1);
+            }
+            pm.done();
+
+            File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
+            OmsRasterWriter.writeRaster(outTileFile.getAbsolutePath(), writeGC);
         }
 
         // checkNull(inElev);
@@ -191,6 +252,7 @@ public class OmsGradientIM extends JGTModel {
     public static void main( String[] args ) throws Exception {
         OmsGradientIM g = new OmsGradientIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
+        g.outSlope = "/media/lacntfs/oceandtm/testout/slopeout.shp";
         g.process();
 
     }
