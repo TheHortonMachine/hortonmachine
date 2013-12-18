@@ -69,8 +69,9 @@ import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
+import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.SldUtilities;
 import org.jgrasstools.gears.utils.colors.ColorTables;
 import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -104,14 +105,6 @@ public class OmsGradientIM extends JGTModel {
     @Description(OMSGRADIENT_doDegrees_DESCRIPTION)
     @In
     public boolean doDegrees = false;
-
-    @Description("Lower slope threshold")
-    @In
-    public double pLowerThres = 0.0;
-
-    @Description("Upper slope threshold")
-    @In
-    public double pUpperThres = 0.0;
 
     @Description(OMSGRADIENT_outSlope_DESCRIPTION)
     @Out
@@ -205,8 +198,8 @@ public class OmsGradientIM extends JGTModel {
             minX = minX + gridRange2D.x;
             maxX = maxX + gridRange2D.x;
 
-            pm.message("X range: " + minX + " -> " + maxX);
-            pm.message("Y range: " + minY + " -> " + maxY);
+            // pm.message("X range: " + minX + " -> " + maxX);
+            // pm.message("Y range: " + minY + " -> " + maxY);
 
             // read raster at once, since a randomiter is way slower
             Raster readRaster = readGC.getRenderedImage().getData();
@@ -226,8 +219,6 @@ public class OmsGradientIM extends JGTModel {
                         continue;
                     }
 
-                    // double read = readRaster.getSampleDouble(readCol, readRow, 0);
-
                     // extract the value to use for the algoritm. It is the finite difference
                     // approach.
                     double elevIJ = readRaster.getSampleDouble(x, y, 0);
@@ -243,53 +234,40 @@ public class OmsGradientIM extends JGTModel {
                         if (doDegrees) {
                             grad = transform(grad);
                         }
-                        if (grad >= pLowerThres && grad <= pUpperThres)
-                            writeIter.setSample(writeCol, writeRow, 0, grad);
+                        // if (grad >= pLowerThres && grad <= pUpperThres)
+                        writeIter.setSample(writeCol, writeRow, 0, grad);
                     }
                 }
             }
 
             File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
-            OmsRasterWriter.writeRaster(outTileFile.getAbsolutePath(), writeGC);
-            File outStyleFile = new File(outParentFolder, outBaseName + "_" + count + ".sld");
-            String styleForColortable = RasterStyleUtilities.createStyleForColortable(ColorTables.greyscaleinverse.name(),
-                    pLowerThres, pUpperThres, null, 1);
-            FileUtilities.writeFile(styleForColortable, outStyleFile);
+            OmsRasterWriter writer = new OmsRasterWriter();
+            writer.pm = new DummyProgressMonitor();
+            writer.inRaster = writeGC;
+            writer.file = outTileFile.getAbsolutePath();
+            writer.process();
             pm.worked(1);
         }
         pm.done();
 
-        // checkNull(inElev);
-        // HashMap<String, Double> regionMap =
-        // CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        // nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        // nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        // xRes = regionMap.get(CoverageUtilities.XRES);
-        // yRes = regionMap.get(CoverageUtilities.YRES);
-        //
-        // RenderedImage elevationRI = inElev.getRenderedImage();
-        // RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
-        // WritableRaster gradientWR = null;
-        // if (pMode == 1) {
-        // pm.message("Using Horn formula");
-        // gradientWR = gradientHorn(elevationIter);
-        // } else if (pMode == 2) {
-        // pm.message("Using Evans formula");
-        // gradientWR = gradientEvans(elevationIter);
-        // } else {
-        // pm.message("Using finite differences");
-        // gradientWR = gradientDiff(elevationIter);
-        // }
-        // outSlope = CoverageUtilities.buildCoverage("gradient", gradientWR, regionMap,
-        // inElev.getCoordinateReferenceSystem());
+        try {
+            OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+            im.inFolder = outParentFolder.getAbsolutePath();
+            im.process();
+
+            String name = outParentFolder.getName();
+            String style = RasterStyleUtilities.createStyleForColortable(ColorTables.extrainbow.name(), 0, 1, null, 1.0);
+            File styleFile = new File(outParentFolder, name + ".sld");
+            FileUtilities.writeFile(style, styleFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main( String[] args ) throws Exception {
         OmsGradientIM g = new OmsGradientIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
         g.outSlope = "/media/lacntfs/oceandtm/testout/q1swb_2008_export_043_xyz2_2m_gradient.shp";
-        g.pLowerThres = 0.0;
-        g.pUpperThres = 0.3;
         g.process();
 
     }
