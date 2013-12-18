@@ -198,9 +198,33 @@ public class OmsGradientIM extends JGTModel {
                     GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
                     int readCol = worldToReadGrid.x;
                     int readRow = worldToReadGrid.y;
+                    int x = readCol;
+                    int y = readRow;
 
-                    double read = readRaster.getSampleDouble(readCol, readRow, 0);
-                    writeIter.setSample(writeCol, writeRow, 0, read);
+                    // double read = readRaster.getSampleDouble(readCol, readRow, 0);
+
+                    // extract the value to use for the algoritm. It is the finite difference
+                    // approach.
+                    double elevIJ = readRaster.getSampleDouble(x, y, 0);
+                    double elevIJipre = readRaster.getSampleDouble(x - 1, y, 0);
+                    double elevIJipost = readRaster.getSampleDouble(x + 1, y, 0);
+                    double elevIJjpre = readRaster.getSampleDouble(x, y - 1, 0);
+                    double elevIJjpost = readRaster.getSampleDouble(x, y + 1, 0);
+                    if (isNovalue(elevIJ) || isNovalue(elevIJipre) || isNovalue(elevIJipost) || isNovalue(elevIJjpre)
+                            || isNovalue(elevIJjpost)) {
+                        writeIter.setSample(writeCol, writeRow, 0, doubleNovalue);
+                    } else if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
+                            && !isNovalue(elevIJjpost)) {
+                        double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
+                        double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
+                        double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+                        if (doDegrees) {
+                            grad = transform(grad);
+                        }
+                        writeIter.setSample(writeCol, writeRow, 0, grad);
+                    } else {
+                        throw new ModelsIllegalargumentException("Error in gradient", this);
+                    }
                 }
             }
 
@@ -238,7 +262,7 @@ public class OmsGradientIM extends JGTModel {
     public static void main( String[] args ) throws Exception {
         OmsGradientIM g = new OmsGradientIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outSlope = "/media/lacntfs/oceandtm/testout/slopeout.shp";
+        g.outSlope = "/media/lacntfs/oceandtm/testout/q1swb_2008_export_043_xyz2_2m_gradient.shp";
         g.process();
 
     }
