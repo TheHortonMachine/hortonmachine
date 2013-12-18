@@ -29,6 +29,7 @@ public enum ColorTables {
     net, //
     shalstab, //
     greyscale, //
+    greyscaleinverse, //
     sea, //
     slope; //
 }

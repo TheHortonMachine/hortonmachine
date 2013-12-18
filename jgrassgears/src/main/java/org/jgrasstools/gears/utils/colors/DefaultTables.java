@@ -130,6 +130,10 @@ public class DefaultTables {
                 "255 255 255\n";
         map.put(ColorTables.greyscale.name(), greyscale);
 
+        String greyscaleInverse = "255 255 255\n" + //
+                "0 0 0\n";
+        map.put(ColorTables.greyscaleinverse.name(), greyscaleInverse);
+
         String shalstab = "1.0 255 0 0 1.0 255 0 0\n" + //
                 "2.0 0 255 0 2.0 0 255 0\n" + //
                 "3.0 255 255 0 3.0 255 255 0\n" + //

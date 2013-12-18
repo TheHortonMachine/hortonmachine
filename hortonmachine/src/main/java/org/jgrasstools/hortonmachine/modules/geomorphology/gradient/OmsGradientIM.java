@@ -30,23 +30,18 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_DOCU
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_KEYWORDS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LABEL;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_LICENSE;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_STATUS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_doDegrees_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_inElev_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_outSlope_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSGRADIENT_pMode_DESCRIPTION;
 
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
@@ -66,8 +61,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.gce.imagemosaic.ImageMosaicFormat;
-import org.geotools.gce.imagemosaic.ImageMosaicFormatFactory;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.GeneralEnvelope;
@@ -77,13 +70,13 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.SldUtilities;
+import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -111,6 +104,14 @@ public class OmsGradientIM extends JGTModel {
     @Description(OMSGRADIENT_doDegrees_DESCRIPTION)
     @In
     public boolean doDegrees = false;
+
+    @Description("Lower slope threshold")
+    @In
+    public double pLowerThres = 0.0;
+
+    @Description("Upper slope threshold")
+    @In
+    public double pUpperThres = 0.0;
 
     @Description(OMSGRADIENT_outSlope_DESCRIPTION)
     @Out
@@ -147,6 +148,10 @@ public class OmsGradientIM extends JGTModel {
 
         ImageMosaicReader imReader = new ImageMosaicReader(inElev);
         CoordinateReferenceSystem crs = imReader.getCrs();
+
+        GeneralEnvelope originalEnvelope = imReader.getOriginalEnvelope();
+        double[] llCorner = originalEnvelope.getLowerCorner().getCoordinate();
+        double[] urCorner = originalEnvelope.getUpperCorner().getCoordinate();
 
         SimpleFeatureCollection vectorBounds = OmsVectorReader.readVector(inElev);
         List<Geometry> boundsGeometries = FeatureUtilities.featureCollectionToGeometriesList(vectorBounds, true, locationField);
@@ -187,6 +192,22 @@ public class OmsGradientIM extends JGTModel {
             GridCoverage2D readGC = imReader.read(readGeneralParameterValues);
             GridGeometry2D readGridGeometry = readGC.getGridGeometry();
 
+            GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
+            GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new DirectPosition2D(urCorner[0], urCorner[1]));
+            int minX = llGrid.x;
+            int maxY = llGrid.y; // y grid is inverse
+            int maxX = urGrid.x;
+            int minY = urGrid.y;
+            // is there a gridrange shift?
+            GridEnvelope2D gridRange2D = readGridGeometry.getGridRange2D();
+            minY = minY + gridRange2D.y;
+            maxY = maxY + gridRange2D.y;
+            minX = minX + gridRange2D.x;
+            maxX = maxX + gridRange2D.x;
+
+            pm.message("X range: " + minX + " -> " + maxX);
+            pm.message("Y range: " + minY + " -> " + maxY);
+
             // read raster at once, since a randomiter is way slower
             Raster readRaster = readGC.getRenderedImage().getData();
 
@@ -201,6 +222,10 @@ public class OmsGradientIM extends JGTModel {
                     int x = readCol;
                     int y = readRow;
 
+                    if (x + cellBuffer > maxX || x - cellBuffer < minX || y + cellBuffer > maxY || y - cellBuffer < minY) {
+                        continue;
+                    }
+
                     // double read = readRaster.getSampleDouble(readCol, readRow, 0);
 
                     // extract the value to use for the algoritm. It is the finite difference
@@ -210,10 +235,7 @@ public class OmsGradientIM extends JGTModel {
                     double elevIJipost = readRaster.getSampleDouble(x + 1, y, 0);
                     double elevIJjpre = readRaster.getSampleDouble(x, y - 1, 0);
                     double elevIJjpost = readRaster.getSampleDouble(x, y + 1, 0);
-                    if (isNovalue(elevIJ) || isNovalue(elevIJipre) || isNovalue(elevIJipost) || isNovalue(elevIJjpre)
-                            || isNovalue(elevIJjpost)) {
-                        writeIter.setSample(writeCol, writeRow, 0, doubleNovalue);
-                    } else if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
+                    if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
                             && !isNovalue(elevIJjpost)) {
                         double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
                         double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
@@ -221,15 +243,18 @@ public class OmsGradientIM extends JGTModel {
                         if (doDegrees) {
                             grad = transform(grad);
                         }
-                        writeIter.setSample(writeCol, writeRow, 0, grad);
-                    } else {
-                        throw new ModelsIllegalargumentException("Error in gradient", this);
+                        if (grad >= pLowerThres && grad <= pUpperThres)
+                            writeIter.setSample(writeCol, writeRow, 0, grad);
                     }
                 }
             }
 
             File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
             OmsRasterWriter.writeRaster(outTileFile.getAbsolutePath(), writeGC);
+            File outStyleFile = new File(outParentFolder, outBaseName + "_" + count + ".sld");
+            String styleForColortable = RasterStyleUtilities.createStyleForColortable(ColorTables.greyscaleinverse.name(),
+                    pLowerThres, pUpperThres, null, 1);
+            FileUtilities.writeFile(styleForColortable, outStyleFile);
             pm.worked(1);
         }
         pm.done();
@@ -263,6 +288,8 @@ public class OmsGradientIM extends JGTModel {
         OmsGradientIM g = new OmsGradientIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
         g.outSlope = "/media/lacntfs/oceandtm/testout/q1swb_2008_export_043_xyz2_2m_gradient.shp";
+        g.pLowerThres = 0.0;
+        g.pUpperThres = 0.3;
         g.process();
 
     }
