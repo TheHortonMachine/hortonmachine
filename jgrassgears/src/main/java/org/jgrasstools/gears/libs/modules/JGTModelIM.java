@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -56,8 +58,10 @@ public abstract class JGTModelIM extends JGTModel {
 
     private List<ImageMosaicReader> readers = new ArrayList<ImageMosaicReader>();
 
-    protected List<Raster> inRasters = new ArrayList<Raster>();
-    protected WritableRandomIter outDataIter;
+    protected List<RandomIter> inRasters = new ArrayList<RandomIter>();
+    protected List<WritableRandomIter> outRasters = new ArrayList<WritableRandomIter>();
+    protected List<GridCoverage2D> outGridCoverages = new ArrayList<GridCoverage2D>();
+    private List<File> outRasterFiles = new ArrayList<File>();
 
     protected String locationField;
     protected double xRes;
@@ -68,8 +72,6 @@ public abstract class JGTModelIM extends JGTModel {
     protected List<Geometry> boundsGeometries;
 
     protected int cellBuffer = 0;
-    private File outParentFolder;
-    private String outBaseName;
 
     protected void addSource( File imageMosaicSource ) throws IOException {
         ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
@@ -95,10 +97,8 @@ public abstract class JGTModelIM extends JGTModel {
         readers.add(imReader);
     }
 
-    protected void setOutput( String outputPath ) {
-        File outputFile = new File(outputPath);
-        outParentFolder = outputFile.getParentFile();
-        outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
+    protected void addDestination( File outputFile ) throws IOException {
+        outRasterFiles.add(outputFile);
     }
 
     protected void processTiles() throws Exception {
@@ -128,10 +128,16 @@ public abstract class JGTModelIM extends JGTModel {
 
             GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast,
                     writeWest, writeCols, writeRows, crs);
-            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
-                    JGTConstants.doubleNovalue);
-            RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
-            GridCoverage2D writeGC = CoverageUtilities.buildCoverage("tile", outWR, writeParams, crs);
+
+            for( File outRasterFile : outRasterFiles ) {
+                WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
+                        JGTConstants.doubleNovalue);
+                RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
+                GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
+                outGridCoverages.add(writeGC);
+                WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
+                outRasters.add(outDataIter);
+            }
 
             GridGeometry2D readGridGeometry = null;
             GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
@@ -143,7 +149,8 @@ public abstract class JGTModelIM extends JGTModel {
                 readGridGeometry = readGC.getGridGeometry();
                 // read raster at once, since a randomiter is way slower
                 Raster readRaster = readGC.getRenderedImage().getData();
-                inRasters.add(readRaster);
+                RandomIter readIter = RandomIterFactory.create(readRaster, null);
+                inRasters.add(readIter);
             }
 
             GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
@@ -154,12 +161,12 @@ public abstract class JGTModelIM extends JGTModel {
             int minY = urGrid.y;
             // is there a gridrange shift?
             GridEnvelope2D gridRange2D = readGridGeometry.getGridRange2D();
+            int readCols = gridRange2D.width;
+            int readRows = gridRange2D.height;
             minY = minY + gridRange2D.y;
             maxY = maxY + gridRange2D.y;
             minX = minX + gridRange2D.x;
             maxX = maxX + gridRange2D.x;
-
-            outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
             for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
                 for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
@@ -173,38 +180,66 @@ public abstract class JGTModelIM extends JGTModel {
                         continue;
                     }
 
-                    processCell(readCol, readRow, writeCol, writeRow);
+                    processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
                 }
             }
 
-            File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
-            OmsRasterWriter writer = new OmsRasterWriter();
-            writer.pm = new DummyProgressMonitor();
-            writer.inRaster = writeGC;
-            writer.file = outTileFile.getAbsolutePath();
-            writer.process();
+            for( int i = 0; i < outRasterFiles.size(); i++ ) {
+                File outputFile = outRasterFiles.get(i);
+                GridCoverage2D writeGC = outGridCoverages.get(i);
+
+                File outParentFolder = outputFile.getParentFile();
+                String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
+                File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
+                OmsRasterWriter writer = new OmsRasterWriter();
+                writer.pm = new DummyProgressMonitor();
+                writer.inRaster = writeGC;
+                writer.file = outTileFile.getAbsolutePath();
+                writer.process();
+            }
+
             pm.worked(1);
         }
         pm.done();
 
     }
 
-    protected void makeMosaicWithStyle( ColorTables colorTable, double min, double max ) {
-        if (colorTable == null)
-            colorTable = ColorTables.extrainbow;
-        try {
+    protected void makeMosaic() throws Exception {
+        for( int i = 0; i < outRasterFiles.size(); i++ ) {
+            File outputFile = outRasterFiles.get(i);
+            File outParentFolder = outputFile.getParentFile();
             OmsImageMosaicCreator im = new OmsImageMosaicCreator();
             im.inFolder = outParentFolder.getAbsolutePath();
             im.process();
+        }
+    }
+
+    protected void makeStyle( ColorTables colorTable, double min, double max ) throws Exception {
+        for( int i = 0; i < outRasterFiles.size(); i++ ) {
+            File outputFile = outRasterFiles.get(i);
+            File outParentFolder = outputFile.getParentFile();
+            if (colorTable == null)
+                colorTable = ColorTables.extrainbow;
             String name = outParentFolder.getName();
             String style = RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0);
             File styleFile = new File(outParentFolder, name + ".sld");
             FileUtilities.writeFile(style, styleFile);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
-    protected abstract void processCell( int readCol, int readRow, int writeCol, int writeRow );
+    /**
+     * Process one cell.
+     * 
+     * @param readCol the column of the cell to read.
+     * @param readRow  the row of the cell to read.
+     * @param writeCol the column of the cell to write.
+     * @param writeRow the row of the cell to write.
+     * @param readCols the total columns of the current handled read tile.
+     * @param readRows the total rows of the current handled read tile.
+     * @param writeCols the total columns of the current handled written tile.
+     * @param writeRows the total rows of the current handled written tile.
+     */
+    protected abstract void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows,
+            int writeCols, int writeRows );
 
 }

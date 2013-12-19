@@ -17,17 +17,6 @@
  */
 package org.jgrasstools.hortonmachine.modules.geomorphology.aspect;
 
-import static java.lang.Math.PI;
-import static java.lang.Math.abs;
-import static java.lang.Math.acos;
-import static java.lang.Math.atan;
-import static java.lang.Math.cos;
-import static java.lang.Math.pow;
-import static java.lang.Math.round;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORCONTACTS;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_AUTHORNAMES;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_DESCRIPTION;
@@ -42,8 +31,10 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRoun
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_inElev_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_outAspect_DESCRIPTION;
 
-import java.awt.image.Raster;
 import java.io.File;
+
+import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -57,8 +48,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
+import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.colors.ColorTables;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 
@@ -99,111 +90,34 @@ public class OmsAspectIM extends JGTModelIM {
 
         cellBuffer = 1;
         addSource(new File(inElev));
-        setOutput(outAspect);
+        addDestination(new File(outAspect));
 
         processTiles();
 
-        makeMosaicWithStyle(ColorTables.aspect, 0, 360);
+        makeMosaic();
+        makeStyle(ColorTables.aspect, 0, 360);
     }
 
     @Override
-    protected void processCell( int readCol, int readRow, int writeCol, int writeRow ) {
-        double aspect = doubleNovalue;
-        // the value of the x and y derivative
-        double aData = 0.0;
-        double bData = 0.0;
+    protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
+            int writeRows ) {
 
-        Raster elevRaster = inRasters.get(0);
-        double centralValue = elevRaster.getSampleDouble(readCol, readRow, 0);
-        double wValue = elevRaster.getSampleDouble(readCol - 1, readRow, 0);
-        double eValue = elevRaster.getSampleDouble(readCol + 1, readRow, 0);
-        double sValue = elevRaster.getSampleDouble(readCol, readRow - 1, 0);
-        double nValue = elevRaster.getSampleDouble(readCol, readRow + 1, 0);
-
-        // double centralValue = node.elevation;
-        // double nValue = node.getNorthElev();
-        // double sValue = node.getSouthElev();
-        // double wValue = node.getWestElev();
-        // double eValue = node.getEastElev();
-
-        if (!isNovalue(centralValue)) {
-            boolean sIsNovalue = isNovalue(sValue);
-            boolean nIsNovalue = isNovalue(nValue);
-            boolean wIsNovalue = isNovalue(wValue);
-            boolean eIsNovalue = isNovalue(eValue);
-
-            if (!sIsNovalue && !nIsNovalue) {
-                aData = atan((nValue - sValue) / (2 * yRes));
-            } else if (nIsNovalue && !sIsNovalue) {
-                aData = atan((centralValue - sValue) / (yRes));
-            } else if (!nIsNovalue && sIsNovalue) {
-                aData = atan((nValue - centralValue) / (yRes));
-            } else if (nIsNovalue && sIsNovalue) {
-                aData = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-            if (!wIsNovalue && !eIsNovalue) {
-                bData = atan((wValue - eValue) / (2 * xRes));
-            } else if (wIsNovalue && !eIsNovalue) {
-                bData = atan((centralValue - eValue) / (xRes));
-            } else if (!wIsNovalue && eIsNovalue) {
-                bData = atan((wValue - centralValue) / (xRes));
-            } else if (wIsNovalue && eIsNovalue) {
-                bData = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-
-            double delta = 0.0;
-            // calculate the aspect value
-            if (aData < 0 && bData > 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = delta * radtodeg;
-            } else if (aData > 0 && bData > 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (PI - delta) * radtodeg;
-            } else if (aData > 0 && bData < 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (PI + delta) * radtodeg;
-            } else if (aData < 0 && bData < 0) {
-                delta = acos(sin(abs(aData)) * cos(abs(bData)) / (sqrt(1 - pow(cos(aData), 2) * pow(cos(bData), 2))));
-                aspect = (2 * PI - delta) * radtodeg;
-            } else if (aData == 0 && bData > 0) {
-                aspect = (PI / 2.) * radtodeg;
-            } else if (aData == 0 && bData < 0) {
-                aspect = (PI * 3. / 2.) * radtodeg;
-            } else if (aData > 0 && bData == 0) {
-                aspect = PI * radtodeg;
-            } else if (aData < 0 && bData == 0) {
-                aspect = 2.0 * PI * radtodeg;
-            } else if (aData == 0 && bData == 0) {
-                aspect = 0.0;
-            } else if (isNovalue(aData) || isNovalue(bData)) {
-                aspect = doubleNovalue;
-            } else {
-                // can't happen
-                throw new RuntimeException();
-            }
-            if (doRound) {
-                aspect = round(aspect);
-            }
-        }
-
+        RandomIter elevIter = inRasters.get(0);
+        GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
+        double aspect = OmsAspect.calculateAspect(node, radtodeg, doRound);
+        WritableRandomIter outDataIter = outRasters.get(0);
         outDataIter.setSample(writeCol, writeRow, 0, aspect);
     }
 
     public static void main( String[] args ) throws Exception {
         OmsAspectIM g = new OmsAspectIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/q1swb_2008_export_043_xyz2_2m_aspect.shp";
+        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect_test/test.shp";
         g.doRadiants = false;
         g.process();
 
         // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/";
+        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m_aspect/";
         // im.process();
     }
 
