@@ -137,6 +137,7 @@ public abstract class JGTModelIM extends JGTModel {
             GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
                     readNorth, readSouth, readEast, readWest, crs);
 
+            inRasters.clear();
             for( ImageMosaicReader reader : readers ) {
                 GridCoverage2D readGC = reader.read(readGeneralParameterValues);
                 readGridGeometry = readGC.getGridGeometry();

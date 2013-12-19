@@ -196,15 +196,15 @@ public class OmsAspectIM extends JGTModelIM {
     }
 
     public static void main( String[] args ) throws Exception {
-//        OmsAspectIM g = new OmsAspectIM();
-//        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-//        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/q1swb_2008_export_043_xyz2_2m_aspect.shp";
-//        g.doRadiants = false;
-//        g.process();
-        
-        OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-        im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/";
-        im.process();
+        OmsAspectIM g = new OmsAspectIM();
+        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
+        g.outAspect = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/q1swb_2008_export_043_xyz2_2m_aspect.shp";
+        g.doRadiants = false;
+        g.process();
+
+        // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_aspect/";
+        // im.process();
     }
 
 }
