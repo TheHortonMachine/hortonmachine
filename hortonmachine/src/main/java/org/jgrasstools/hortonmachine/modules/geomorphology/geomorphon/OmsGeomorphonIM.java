@@ -107,16 +107,16 @@ public class OmsGeomorphonIM extends JGTModelIM {
     }
 
     public static void main( String[] args ) throws Exception {
-        OmsGeomorphonIM g = new OmsGeomorphonIM();
-        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/q1swb_2008_export_043_xyz2_2m_geomorphon_13_1.shp";
-        g.pRadius = 30.0;
-        g.pThreshold = 1.0;
-        g.process();
+//        OmsGeomorphonIM g = new OmsGeomorphonIM();
+//        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
+//        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/q1swb_2008_export_043_xyz2_2m_geomorphon_13_1.shp";
+//        g.pRadius = 30.0;
+//        g.pThreshold = 1.0;
+//        g.process();
 
-        // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1/";
-        // im.process();
+         OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+         im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/";
+         im.process();
     }
 
 }

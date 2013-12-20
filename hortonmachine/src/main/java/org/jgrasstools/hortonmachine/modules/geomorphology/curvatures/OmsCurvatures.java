@@ -101,9 +101,7 @@ public class OmsCurvatures extends JGTModel {
         WritableRaster planWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
         WritableRaster tangWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
 
-        double plan = 0.0;
-        double tang = 0.0;
-        double prof = 0.0;
+        final double[] planTangProf = new double[3];
         double disXX = Math.pow(xRes, 2.0);
         double disYY = Math.pow(yRes, 2.0);
         /*
@@ -115,48 +113,10 @@ public class OmsCurvatures extends JGTModel {
                 return;
             }
             for( int c = 1; c < nCols - 1; c++ ) {
-                double elevation = elevationIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(elevation)) {
-                    double elevRplus = elevationIter.getSampleDouble(c, r + 1, 0);
-                    double elevRminus = elevationIter.getSampleDouble(c, r - 1, 0);
-                    double elevCplus = elevationIter.getSampleDouble(c + 1, r, 0);
-                    double elevCminus = elevationIter.getSampleDouble(c - 1, r, 0);
-                    /*
-                     * first derivate
-                     */
-                    double sxValue = 0.5 * (elevRplus - elevRminus) / xRes;
-                    double syValue = 0.5 * (elevCplus - elevCminus) / yRes;
-                    double p = Math.pow(sxValue, 2.0) + Math.pow(syValue, 2.0);
-                    double q = p + 1;
-                    if (p == 0.0) {
-                        plan = 0.0;
-                        tang = 0.0;
-                        prof = 0.0;
-                    } else {
-                        double elevCplusRplus = elevationIter.getSampleDouble(c + 1, r + 1, 0);
-                        double elevCplusRminus = elevationIter.getSampleDouble(c + 1, r - 1, 0);
-                        double elevCminusRplus = elevationIter.getSampleDouble(c - 1, r + 1, 0);
-                        double elevCminusRminus = elevationIter.getSampleDouble(c - 1, r - 1, 0);
-
-                        double sxxValue = (elevRplus - 2 * elevation + elevRminus) / disXX;
-                        double syyValue = (elevCplus - 2 * elevation + elevCminus) / disYY;
-                        double sxyValue = 0.25 * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (xRes * yRes));
-
-                        plan = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
-                                * Math.pow(sxValue, 2.0))
-                                / (Math.pow(p, 1.5));
-                        tang = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
-                                * Math.pow(sxValue, 2.0))
-                                / (p * Math.pow(q, 0.5));
-                        prof = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue + syyValue
-                                * Math.pow(syValue, 2.0))
-                                / (p * Math.pow(q, 1.5));
-                    }
-
-                    profWR.setSample(c, r, 0, prof);
-                    tangWR.setSample(c, r, 0, tang);
-                    planWR.setSample(c, r, 0, plan);
-                }
+                calculateCurvatures(elevationIter, planTangProf, c, r, xRes, yRes, disXX, disYY);
+                planWR.setSample(c, r, 0, planTangProf[0]);
+                tangWR.setSample(c, r, 0, planTangProf[1]);
+                profWR.setSample(c, r, 0, planTangProf[2]);
             }
             pm.worked(1);
         }
@@ -168,5 +128,63 @@ public class OmsCurvatures extends JGTModel {
         outProf = CoverageUtilities.buildCoverage("prof_curvature", profWR, regionMap, inElev.getCoordinateReferenceSystem());
         outPlan = CoverageUtilities.buildCoverage("plan_curvature", planWR, regionMap, inElev.getCoordinateReferenceSystem());
         outTang = CoverageUtilities.buildCoverage("tang_curvature", tangWR, regionMap, inElev.getCoordinateReferenceSystem());
+    }
+
+    /**
+     * Calculate curvatures for a single cell.
+     * 
+     * @param elevationIter teh elevation map.
+     * @param planTangProf the array into which to insert the resulting [plan, tang, prof] curvatures.
+     * @param c the column the process.
+     * @param r the row the process.
+     * @param xRes 
+     * @param yRes
+     * @param disXX the diagonal size of the cell, x component.
+     * @param disYY the diagonal size of the cell, y component.
+     */
+    public static void calculateCurvatures( RandomIter elevationIter, final double[] planTangProf, int c, int r, double xRes,
+            double yRes, double disXX, double disYY ) {
+        double elevation = elevationIter.getSampleDouble(c, r, 0);
+        if (!isNovalue(elevation)) {
+            double elevRplus = elevationIter.getSampleDouble(c, r + 1, 0);
+            double elevRminus = elevationIter.getSampleDouble(c, r - 1, 0);
+            double elevCplus = elevationIter.getSampleDouble(c + 1, r, 0);
+            double elevCminus = elevationIter.getSampleDouble(c - 1, r, 0);
+            /*
+             * first derivate
+             */
+            double sxValue = 0.5 * (elevRplus - elevRminus) / xRes;
+            double syValue = 0.5 * (elevCplus - elevCminus) / yRes;
+            double p = Math.pow(sxValue, 2.0) + Math.pow(syValue, 2.0);
+            double q = p + 1;
+            if (p == 0.0) {
+                planTangProf[0] = 0.0;
+                planTangProf[1] = 0.0;
+                planTangProf[2] = 0.0;
+            } else {
+                double elevCplusRplus = elevationIter.getSampleDouble(c + 1, r + 1, 0);
+                double elevCplusRminus = elevationIter.getSampleDouble(c + 1, r - 1, 0);
+                double elevCminusRplus = elevationIter.getSampleDouble(c - 1, r + 1, 0);
+                double elevCminusRminus = elevationIter.getSampleDouble(c - 1, r - 1, 0);
+
+                double sxxValue = (elevRplus - 2 * elevation + elevRminus) / disXX;
+                double syyValue = (elevCplus - 2 * elevation + elevCminus) / disYY;
+                double sxyValue = 0.25 * ((elevCplusRplus - elevCplusRminus - elevCminusRplus + elevCminusRminus) / (xRes * yRes));
+
+                planTangProf[0] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
+                        * Math.pow(sxValue, 2.0))
+                        / (Math.pow(p, 1.5));
+                planTangProf[1] = (sxxValue * Math.pow(syValue, 2.0) - 2 * sxyValue * sxValue * syValue + syyValue
+                        * Math.pow(sxValue, 2.0))
+                        / (p * Math.pow(q, 0.5));
+                planTangProf[2] = (sxxValue * Math.pow(sxValue, 2.0) + 2 * sxyValue * sxValue * syValue + syyValue
+                        * Math.pow(syValue, 2.0))
+                        / (p * Math.pow(q, 1.5));
+            }
+        } else {
+            planTangProf[0] = doubleNovalue;
+            planTangProf[1] = doubleNovalue;
+            planTangProf[2] = doubleNovalue;
+        }
     }
 }
