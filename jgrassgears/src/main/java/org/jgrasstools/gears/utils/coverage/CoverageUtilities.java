@@ -973,13 +973,11 @@ public class CoverageUtilities {
      * @throws Exception
      */
     public static List<ProfilePoint> doProfile( GridCoverage2D coverage, Coordinate... coordinates ) throws Exception {
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
-
         GridGeometry2D gridGeometry = coverage.getGridGeometry();
         RenderedImage renderedImage = coverage.getRenderedImage();
         RandomIter iter = RandomIterFactory.create(renderedImage, null);
 
-        List<ProfilePoint> profilePointsList = doProfile(iter, regionMap, gridGeometry, coordinates);
+        List<ProfilePoint> profilePointsList = doProfile(iter, gridGeometry, coordinates);
 
         iter.done();
         return profilePointsList;
@@ -992,20 +990,22 @@ public class CoverageUtilities {
      * added to the list with a {@link JGTConstants#doubleNovalue novalue} elevation.
      * 
      * @param mapIter the {@link RandomIter map iterator}.
-     * @param regionMap the region map.
      * @param gridGeometry the gridgeometry of the map.
      * @param coordinates the {@link Coordinate}s to create the profile on.
      * @return the list of {@link ProfilePoint}s.
      * @throws TransformException
      */
-    public static List<ProfilePoint> doProfile( RandomIter mapIter, RegionMap regionMap, GridGeometry2D gridGeometry,
-            Coordinate... coordinates ) throws TransformException {
+    public static List<ProfilePoint> doProfile( RandomIter mapIter, GridGeometry2D gridGeometry, Coordinate... coordinates )
+            throws TransformException {
         List<ProfilePoint> profilePointsList = new ArrayList<ProfilePoint>();
-        // Envelope2D envelope2d = gridGeometry.getEnvelope2D();
-        double xres = regionMap.getXres();
-        double yres = regionMap.getYres();
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
+
+        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+        int rows = gridRange.height;
+        int cols = gridRange.width;
+        AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
+        double xres = XAffineTransform.getScaleX0(gridToCRS);
+        double yres = XAffineTransform.getScaleY0(gridToCRS);
+
         double step = Math.min(xres, yres);
 
         LineString line = GeometryUtilities.gf().createLineString(coordinates);

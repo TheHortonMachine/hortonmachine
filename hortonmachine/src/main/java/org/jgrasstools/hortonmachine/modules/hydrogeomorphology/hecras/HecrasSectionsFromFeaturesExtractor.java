@@ -91,7 +91,7 @@ public class HecrasSectionsFromFeaturesExtractor implements HecrasSectionsExtrac
         for( FeatureMate sectionMate : sectionsList ) {
             Coordinate[] coordinates = sectionMate.getGeometry().getCoordinates();
 
-            List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(elevIter, regionMap, gridGeometry,
+            List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(elevIter, gridGeometry,
                     coordinates[coordinates.length - 1], coordinates[0]);
             List<Coordinate> coordinate3dList = new ArrayList<Coordinate>();
             for( ProfilePoint profilePoint : profilePoints ) {
@@ -115,7 +115,7 @@ public class HecrasSectionsFromFeaturesExtractor implements HecrasSectionsExtrac
 
         // add also the river coordinates that do not have sections
         Coordinate[] coordinates = riverLine.getCoordinates();
-        List<ProfilePoint> riverPprofile = CoverageUtilities.doProfile(elevIter, regionMap, gridGeometry, coordinates);
+        List<ProfilePoint> riverPprofile = CoverageUtilities.doProfile(elevIter, gridGeometry, coordinates);
         for( ProfilePoint profilePoint : riverPprofile ) {
             Coordinate position = profilePoint.getPosition();
             position.z = profilePoint.getElevation();

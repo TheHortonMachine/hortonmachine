@@ -166,7 +166,7 @@ public class HecrasSectionsFromDtmExtractor implements HecrasSectionsExtractor {
 
         // add also the river coordinates that do not have sections
         Coordinate[] coordinates = riverLine.getCoordinates();
-        List<ProfilePoint> riverPprofile = CoverageUtilities.doProfile(elevIter, regionMap, gridGeometry, coordinates);
+        List<ProfilePoint> riverPprofile = CoverageUtilities.doProfile(elevIter, gridGeometry, coordinates);
         for( ProfilePoint profilePoint : riverPprofile ) {
             Coordinate position = profilePoint.getPosition();
             position.z = profilePoint.getElevation();
@@ -260,7 +260,7 @@ public class HecrasSectionsFromDtmExtractor implements HecrasSectionsExtractor {
      */
     private NetworkPoint getNetworkPoint( LineString riverLine, RandomIter elevIter, RegionMap regionMap,
             GridGeometry2D gridGeometry, double index, Coordinate leftPoint, Coordinate rightPoint ) throws TransformException {
-        List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(elevIter, regionMap, gridGeometry, rightPoint, leftPoint);
+        List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(elevIter, gridGeometry, rightPoint, leftPoint);
         List<Coordinate> coordinate3dList = new ArrayList<Coordinate>();
         for( ProfilePoint profilePoint : profilePoints ) {
             Coordinate position = profilePoint.getPosition();
