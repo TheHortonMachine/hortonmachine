@@ -101,7 +101,7 @@ public class OmsGeomorphon extends JGTModel {
         for( int c = 0; c < cols; c++ ) {
             for( int r = 0; r < rows; r++ ) {
                 try {
-                    int classification = calculateGeomorphon(elevIter, gridGeometry, pRadius, pThreshold, diagonalDelta, c, r);
+                    double classification = calculateGeomorphon(elevIter, gridGeometry, pRadius, pThreshold, diagonalDelta, c, r);
                     outIter.setSample(c, r, 0, classification);
                 } catch (TransformException e) {
                     e.printStackTrace();
@@ -126,13 +126,15 @@ public class OmsGeomorphon extends JGTModel {
      * @return the geomorphon classification for the cell.
      * @throws TransformException
      */
-    public static int calculateGeomorphon( RandomIter elevIter, GridGeometry2D gridGeometry, double searchRadius,
+    public static double calculateGeomorphon( RandomIter elevIter, GridGeometry2D gridGeometry, double searchRadius,
             double angleThreshold, double diagonalDelta, int c, int r ) throws TransformException {
         int[] plusCount = new int[1];
         int[] minusCount = new int[1];
 
         double elevation = elevIter.getSampleDouble(c, r, 0);
-
+        if (JGTConstants.isNovalue(elevation)) {
+            return JGTConstants.doubleNovalue;
+        }
         DirectPosition worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
         double[] coordinateArray = worldPosition.getCoordinate();
         Coordinate center = new Coordinate(coordinateArray[0], coordinateArray[1]);

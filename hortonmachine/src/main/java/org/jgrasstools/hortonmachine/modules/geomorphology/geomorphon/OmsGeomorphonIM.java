@@ -39,8 +39,8 @@ import oms3.annotations.Unit;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
+import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.colors.ColorTables;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspectIM;
 import org.opengis.referencing.operation.TransformException;
 
 @Description("The Geomorphon method for rasters - image mosaic version")
@@ -97,7 +97,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
             int writeRows ) {
         try {
             RandomIter elevIter = inRasters.get(0);
-            int classification = OmsGeomorphon.calculateGeomorphon(elevIter, readGridGeometry, pRadius, pThreshold,
+            double classification = OmsGeomorphon.calculateGeomorphon(elevIter, readGridGeometry, pRadius, pThreshold,
                     diagonalDelta, readCol, readRow);
             WritableRandomIter outDataIter = outRasters.get(0);
             outDataIter.setSample(writeCol, writeRow, 0, classification);
@@ -109,13 +109,13 @@ public class OmsGeomorphonIM extends JGTModelIM {
     public static void main( String[] args ) throws Exception {
         OmsGeomorphonIM g = new OmsGeomorphonIM();
         g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1.shp";
-        g.pRadius = 10.0;
+        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/q1swb_2008_export_043_xyz2_2m_geomorphon_13_1.shp";
+        g.pRadius = 30.0;
         g.pThreshold = 1.0;
         g.process();
 
         // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m_aspect/";
+        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1/";
         // im.process();
     }
 
