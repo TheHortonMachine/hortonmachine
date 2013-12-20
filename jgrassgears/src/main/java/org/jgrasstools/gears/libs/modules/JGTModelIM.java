@@ -74,6 +74,8 @@ public abstract class JGTModelIM extends JGTModel {
 
     protected int cellBuffer = 0;
 
+    protected GridGeometry2D readGridGeometry;
+
     protected void addSource( File imageMosaicSource ) throws IOException {
         ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
         if (readers.size() == 0) {
@@ -163,7 +165,7 @@ public abstract class JGTModelIM extends JGTModel {
             outRasters.add(outDataIter);
         }
 
-        GridGeometry2D readGridGeometry = null;
+        readGridGeometry = null;
         GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
                 readNorth, readSouth, readEast, readWest, crs);
 

@@ -1,0 +1,122 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon;
+import static java.lang.Math.ceil;
+import static java.lang.Math.max;
+import static java.lang.Math.sqrt;
+
+import java.io.File;
+
+import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.Unit;
+
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModelIM;
+import org.jgrasstools.gears.utils.colors.ColorTables;
+import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspectIM;
+import org.opengis.referencing.operation.TransformException;
+
+@Description("The Geomorphon method for rasters - image mosaic version")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
+@Keywords("raster, geomorphon")
+@Label(JGTConstants.RASTERPROCESSING)
+@Name("geomorphonraster")
+@Status(Status.EXPERIMENTAL)
+@License(JGTConstants.GPL3_LICENSE)
+public class OmsGeomorphonIM extends JGTModelIM {
+    @Description("An elevation raster.")
+    @In
+    public String inElev;
+
+    @Description("Maximum search radius")
+    @Unit("m")
+    @In
+    public double pRadius;
+
+    @Description("Vertical angle threshold.")
+    @Unit("degree")
+    @In
+    public double pThreshold = 1;
+
+    @Description("Output categories raster.")
+    @Out
+    public String outRaster;
+
+    private double diagonalDelta;
+
+    public void process() throws Exception {
+        checkNull(inElev);
+
+        if (pRadius <= 0) {
+            throw new ModelsIllegalargumentException("The search radius has to be > 0.", this);
+        }
+        diagonalDelta = pRadius / sqrt(2.0);
+
+        addSource(new File(inElev));
+        addDestination(new File(outRaster));
+
+        // calculate cellbuffer through the search radius
+        cellBuffer = (int) ceil(pRadius / max(xRes, yRes));
+        pm.message("Using a cell buffer of: " + cellBuffer);
+
+        processTiles();
+
+        makeMosaic();
+        makeStyle(ColorTables.geomorphon, 1000, 1008);
+    }
+
+    @Override
+    protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
+            int writeRows ) {
+        try {
+            RandomIter elevIter = inRasters.get(0);
+            int classification = OmsGeomorphon.calculateGeomorphon(elevIter, readGridGeometry, pRadius, pThreshold,
+                    diagonalDelta, readCol, readRow);
+            WritableRandomIter outDataIter = outRasters.get(0);
+            outDataIter.setSample(writeCol, writeRow, 0, classification);
+        } catch (TransformException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main( String[] args ) throws Exception {
+        OmsGeomorphonIM g = new OmsGeomorphonIM();
+        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
+        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1/q1swb_2008_export_043_xyz2_2m_geomorphon_10_1.shp";
+        g.pRadius = 10.0;
+        g.pThreshold = 1.0;
+        g.process();
+
+        // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m_aspect/";
+        // im.process();
+    }
+
+}

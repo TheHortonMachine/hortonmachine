@@ -165,6 +165,16 @@ public class DefaultTables {
 
         map.put(ColorTables.slope.name(), slope);
 
+        String geomorphon = "1000.0 127 127 127\n" + //
+                "1001.0 108 0 0\n" + //
+                "1002.0 255 0 0\n" + //
+                "1003.0 255 165 0\n" + //
+                "1004.0 255 219 61\n" + //
+                "1005.0 255 255 0\n" + //
+                "1006.0 143 203 44\n" + //
+                "1007.0 50 189 160\n" + //
+                "1008.0 0 0 255\n";
+        map.put(ColorTables.geomorphon.name(), geomorphon);
     }
 
     public String getTableString( String name ) {

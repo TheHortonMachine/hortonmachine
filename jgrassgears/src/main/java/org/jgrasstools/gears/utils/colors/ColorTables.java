@@ -30,6 +30,7 @@ public enum ColorTables {
     shalstab, //
     greyscale, //
     greyscaleinverse, //
+    geomorphon, //
     sea, //
     slope; //
 }
