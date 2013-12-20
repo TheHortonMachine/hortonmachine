@@ -62,7 +62,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
 
-
 @Description(OMSGRADIENT_DESCRIPTION)
 @Documentation(OMSGRADIENT_DOCUMENTATION)
 @Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
@@ -160,32 +159,8 @@ public class OmsGradient extends JGTModel {
             }
             for( int x = 1; x < nCols - 1; x++ ) {
                 // extract the value to use for the algoritm. It is the finite difference approach.
-                double elev5 = elevationIter.getSampleDouble(x, y, 0);
-                double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
-                double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
-                double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
-                double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
-                double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
-                double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
-                double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
-                double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
-
-                if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4)
-                        || isNovalue(elev6) || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
-                    gradientWR.setSample(x, y, 0, doubleNovalue);
-                } else {
-                    double fu = 2 * elev6 + elev9 + elev3;
-                    double fd = 2 * elev4 + elev7 + elev1;
-                    double xGrad = (fu - fd) / (8 * xRes);
-                    fu = 2 * elev8 + elev7 + elev9;
-                    fd = 2 * elev2 + elev1 + elev3;
-                    double yGrad = (fu - fd) / (8 * yRes);
-                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (doDegrees) {
-                        grad = transform(grad);
-                    }
-                    gradientWR.setSample(x, y, 0, grad);
-                }
+                double value = doGradientHornOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
+                gradientWR.setSample(x, y, 0, value);
             }
             pm.worked(1);
         }
@@ -194,13 +169,42 @@ public class OmsGradient extends JGTModel {
         return gradientWR;
     }
 
+    public static double doGradientHornOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes, boolean doDegrees ) {
+        double elev5 = elevationIter.getSampleDouble(x, y, 0);
+        double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
+        double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
+        double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
+        double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
+        double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
+        double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
+        double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
+        double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
+
+        if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4) || isNovalue(elev6)
+                || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
+            return doubleNovalue;
+        } else {
+            double fu = 2 * elev6 + elev9 + elev3;
+            double fd = 2 * elev4 + elev7 + elev1;
+            double xGrad = (fu - fd) / (8 * xRes);
+            fu = 2 * elev8 + elev7 + elev9;
+            fd = 2 * elev2 + elev1 + elev3;
+            double yGrad = (fu - fd) / (8 * yRes);
+            double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+            if (doDegrees) {
+                grad = transform(grad);
+            }
+            return grad;
+        }
+    }
+
     /**
      * Transform the gradient value into degrees.
      * 
      * @param value the radiant based gradient.
      * @return the degree gradient.
      */
-    private double transform( double value ) {
+    private static double transform( double value ) {
         return toDegrees(atan(value));
     }
 
@@ -215,40 +219,41 @@ public class OmsGradient extends JGTModel {
      * 
     */
     private WritableRaster gradientDiff( RandomIter elevationIter ) {
-
         WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
-
             for( int x = 1; x < nCols - 1; x++ ) {
-                // extract the value to use for the algoritm. It is the finite difference approach.
-                double elevIJ = elevationIter.getSampleDouble(x, y, 0);
-                double elevIJipre = elevationIter.getSampleDouble(x - 1, y, 0);
-                double elevIJipost = elevationIter.getSampleDouble(x + 1, y, 0);
-                double elevIJjpre = elevationIter.getSampleDouble(x, y - 1, 0);
-                double elevIJjpost = elevationIter.getSampleDouble(x, y + 1, 0);
-                if (isNovalue(elevIJ) || isNovalue(elevIJipre) || isNovalue(elevIJipost) || isNovalue(elevIJjpre)
-                        || isNovalue(elevIJjpost)) {
-                    gradientWR.setSample(x, y, 0, doubleNovalue);
-                } else if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
-                        && !isNovalue(elevIJjpost)) {
-                    double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
-                    double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
-                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (doDegrees) {
-                        grad = transform(grad);
-                    }
-                    gradientWR.setSample(x, y, 0, grad);
-                } else {
-                    throw new ModelsIllegalargumentException("Error in gradient", this);
-                }
+                double value = doGradientDiffOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
+                gradientWR.setSample(x, y, 0, value);
             }
             pm.worked(1);
         }
         pm.done();
-
         return gradientWR;
+    }
+
+    public static double doGradientDiffOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes, boolean doDegrees ) {
+        // extract the value to use for the algoritm. It is the finite difference approach.
+        double elevIJ = elevationIter.getSampleDouble(x, y, 0);
+        double elevIJipre = elevationIter.getSampleDouble(x - 1, y, 0);
+        double elevIJipost = elevationIter.getSampleDouble(x + 1, y, 0);
+        double elevIJjpre = elevationIter.getSampleDouble(x, y - 1, 0);
+        double elevIJjpost = elevationIter.getSampleDouble(x, y + 1, 0);
+        if (isNovalue(elevIJ) || isNovalue(elevIJipre) || isNovalue(elevIJipost) || isNovalue(elevIJjpre)
+                || isNovalue(elevIJjpost)) {
+            return doubleNovalue;
+        } else if (!isNovalue(elevIJ) && !isNovalue(elevIJipre) && !isNovalue(elevIJipost) && !isNovalue(elevIJjpre)
+                && !isNovalue(elevIJjpost)) {
+            double xGrad = 0.5 * (elevIJipost - elevIJipre) / xRes;
+            double yGrad = 0.5 * (elevIJjpre - elevIJjpost) / yRes;
+            double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+            if (doDegrees) {
+                grad = transform(grad);
+            }
+            return grad;
+        } else {
+            throw new ModelsIllegalargumentException("Error in gradient", "GRADIENT");
+        }
     }
 
     /** estimate the gradient using the Horn formula.
@@ -274,49 +279,49 @@ public class OmsGradient extends JGTModel {
      *
      */
     private WritableRaster gradientEvans( RandomIter elevationIter ) {
-
         WritableRaster gradientWR = CoverageUtilities.createDoubleWritableRaster(nCols, nRows, null, null, doubleNovalue);
-
         pm.beginTask(msg.message("gradient.working"), nRows);
         for( int y = 1; y < nRows - 1; y++ ) {
-
             for( int x = 1; x < nCols - 1; x++ ) {
-
-                // extract the value to use for the algoritm. It is the finite difference approach.
-                double elev5 = elevationIter.getSampleDouble(x, y, 0);
-                double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
-                double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
-                double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
-                double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
-                double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
-                double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
-                double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
-                double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
-
-                if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4)
-                        || isNovalue(elev6) || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
-                    gradientWR.setSample(x, y, 0, doubleNovalue);
-                } else {
-                    double fu = elev6 + elev9 + elev3;
-                    double fd = elev4 + elev7 + elev1;
-                    double xGrad = (fu - fd) / (6 * xRes);
-                    fu = elev8 + elev7 + elev9;
-                    fd = elev2 + elev1 + elev3;
-
-                    double yGrad = (fu - fd) / (6 * yRes);
-                    double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
-                    if (doDegrees) {
-                        grad = transform(grad);
-                    }
-                    gradientWR.setSample(x, y, 0, grad);
-                }
+                double value = doGradientEvansOnCell(elevationIter, x, y, xRes, yRes, doDegrees);
+                gradientWR.setSample(x, y, 0, value);
             }
-
             pm.worked(1);
         }
         pm.done();
-
         return gradientWR;
+    }
+
+    public static double doGradientEvansOnCell( RandomIter elevationIter, int x, int y, double xRes, double yRes,
+            boolean doDegrees ) {
+        // extract the value to use for the algoritm. It is the finite difference approach.
+        double elev5 = elevationIter.getSampleDouble(x, y, 0);
+        double elev4 = elevationIter.getSampleDouble(x - 1, y, 0);
+        double elev6 = elevationIter.getSampleDouble(x + 1, y, 0);
+        double elev2 = elevationIter.getSampleDouble(x, y - 1, 0);
+        double elev8 = elevationIter.getSampleDouble(x, y + 1, 0);
+        double elev9 = elevationIter.getSampleDouble(x + 1, y + 1, 0);
+        double elev1 = elevationIter.getSampleDouble(x - 1, y - 1, 0);
+        double elev3 = elevationIter.getSampleDouble(x + 1, y - 1, 0);
+        double elev7 = elevationIter.getSampleDouble(x - 1, y + 1, 0);
+
+        if (isNovalue(elev5) || isNovalue(elev1) || isNovalue(elev2) || isNovalue(elev3) || isNovalue(elev4) || isNovalue(elev6)
+                || isNovalue(elev7) || isNovalue(elev8) || isNovalue(elev9)) {
+            return doubleNovalue;
+        } else {
+            double fu = elev6 + elev9 + elev3;
+            double fd = elev4 + elev7 + elev1;
+            double xGrad = (fu - fd) / (6 * xRes);
+            fu = elev8 + elev7 + elev9;
+            fd = elev2 + elev1 + elev3;
+
+            double yGrad = (fu - fd) / (6 * yRes);
+            double grad = sqrt(pow(xGrad, 2) + pow(yGrad, 2));
+            if (doDegrees) {
+                grad = transform(grad);
+            }
+            return grad;
+        }
     }
 
 }

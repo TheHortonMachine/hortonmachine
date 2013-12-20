@@ -50,6 +50,7 @@ import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
@@ -104,103 +105,121 @@ public abstract class JGTModelIM extends JGTModel {
     protected void processTiles() throws Exception {
         int size = boundsGeometries.size();
         int count = 0;
-        pm.beginTask("Processing...", size);
+        // pm.beginTask("Processing tiles...", size);
         for( Geometry boundGeometry : boundsGeometries ) {
             count++;
-            Envelope writeEnv = boundGeometry.getEnvelopeInternal();
-
-            double writeEast = writeEnv.getMaxX();
-            double writeWest = writeEnv.getMinX();
-            double writeNorth = writeEnv.getMaxY();
-            double writeSouth = writeEnv.getMinY();
-            int writeCols = (int) ((writeEast - writeWest) / xRes);
-            int writeRows = (int) ((writeNorth - writeSouth) / yRes);
-
-            Envelope readEnv = new Envelope(writeEnv);
-            readEnv.expandBy(cellBuffer * xRes, cellBuffer * yRes);
-
-            double readEast = readEnv.getMaxX();
-            double readWest = readEnv.getMinX();
-            double readNorth = readEnv.getMaxY();
-            double readSouth = readEnv.getMinY();
-            // int readCols = (int) ((readEast - readWest) / xRes);
-            // int readRows = (int) ((readNorth - readSouth) / yRes);
-
-            GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast,
-                    writeWest, writeCols, writeRows, crs);
-
-            for( File outRasterFile : outRasterFiles ) {
-                WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
-                        JGTConstants.doubleNovalue);
-                RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
-                GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
-                outGridCoverages.add(writeGC);
-                WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
-                outRasters.add(outDataIter);
+            try {
+                pm.message("Processing tile " + boundGeometry.getUserData() + "(" + count + " of " + size + ")");
+                pm.message("\t\t->geom: " + boundGeometry.getEnvelopeInternal());
+                pm.message("\t\t->reading with cell buffer: " + cellBuffer);
+                pm.message("\t\t->reading with x/y resolution: " + xRes + "/" + yRes);
+                processGeometry(count, boundGeometry);
+            } catch (Exception e) {
+                pm.errorMessage("Problems found for tile: " + boundGeometry.getUserData());
+                e.printStackTrace();
             }
-
-            GridGeometry2D readGridGeometry = null;
-            GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
-                    readNorth, readSouth, readEast, readWest, crs);
-
-            inRasters.clear();
-            for( ImageMosaicReader reader : readers ) {
-                GridCoverage2D readGC = reader.read(readGeneralParameterValues);
-                readGridGeometry = readGC.getGridGeometry();
-                // read raster at once, since a randomiter is way slower
-                Raster readRaster = readGC.getRenderedImage().getData();
-                RandomIter readIter = RandomIterFactory.create(readRaster, null);
-                inRasters.add(readIter);
-            }
-
-            GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
-            GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new DirectPosition2D(urCorner[0], urCorner[1]));
-            int minX = llGrid.x;
-            int maxY = llGrid.y; // y grid is inverse
-            int maxX = urGrid.x;
-            int minY = urGrid.y;
-            // is there a gridrange shift?
-            GridEnvelope2D gridRange2D = readGridGeometry.getGridRange2D();
-            int readCols = gridRange2D.width;
-            int readRows = gridRange2D.height;
-            minY = minY + gridRange2D.y;
-            maxY = maxY + gridRange2D.y;
-            minX = minX + gridRange2D.x;
-            maxX = maxX + gridRange2D.x;
-
-            for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
-                for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
-                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
-                    GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
-                    int readCol = worldToReadGrid.x;
-                    int readRow = worldToReadGrid.y;
-
-                    if (readCol + cellBuffer > maxX || readCol - cellBuffer < minX || //
-                            readRow + cellBuffer > maxY || readRow - cellBuffer < minY) {
-                        continue;
-                    }
-
-                    processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
-                }
-            }
-
-            for( int i = 0; i < outRasterFiles.size(); i++ ) {
-                File outputFile = outRasterFiles.get(i);
-                GridCoverage2D writeGC = outGridCoverages.get(i);
-
-                File outParentFolder = outputFile.getParentFile();
-                String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
-                File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
-                OmsRasterWriter writer = new OmsRasterWriter();
-                writer.pm = new DummyProgressMonitor();
-                writer.inRaster = writeGC;
-                writer.file = outTileFile.getAbsolutePath();
-                writer.process();
-            }
-
-            pm.worked(1);
+            // pm.worked(1);
         }
-        pm.done();
+        // pm.done();
+
+    }
+    private void processGeometry( int count, Geometry boundGeometry ) throws IOException, TransformException, Exception {
+        Envelope writeEnv = boundGeometry.getEnvelopeInternal();
+
+        double writeEast = writeEnv.getMaxX();
+        double writeWest = writeEnv.getMinX();
+        double writeNorth = writeEnv.getMaxY();
+        double writeSouth = writeEnv.getMinY();
+        int writeCols = (int) ((writeEast - writeWest) / xRes);
+        int writeRows = (int) ((writeNorth - writeSouth) / yRes);
+
+        Envelope readEnv = new Envelope(writeEnv);
+        readEnv.expandBy(cellBuffer * xRes, cellBuffer * yRes);
+
+        double readEast = readEnv.getMaxX();
+        double readWest = readEnv.getMinX();
+        double readNorth = readEnv.getMaxY();
+        double readSouth = readEnv.getMinY();
+        // int readCols = (int) ((readEast - readWest) / xRes);
+        // int readRows = (int) ((readNorth - readSouth) / yRes);
+
+        /*
+         * clear lists of in and out data local to the loop
+         */
+        outGridCoverages.clear();
+        inRasters.clear();
+        outRasters.clear();
+
+        GridGeometry2D writeGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(writeNorth, writeSouth, writeEast,
+                writeWest, writeCols, writeRows, crs);
+
+        for( File outRasterFile : outRasterFiles ) {
+            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
+                    JGTConstants.doubleNovalue);
+            RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
+            GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
+            outGridCoverages.add(writeGC);
+            WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
+            outRasters.add(outDataIter);
+        }
+
+        GridGeometry2D readGridGeometry = null;
+        GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
+                readNorth, readSouth, readEast, readWest, crs);
+
+        for( ImageMosaicReader reader : readers ) {
+            GridCoverage2D readGC = reader.read(readGeneralParameterValues);
+            readGridGeometry = readGC.getGridGeometry();
+            // read raster at once, since a randomiter is way slower
+            Raster readRaster = readGC.getRenderedImage().getData();
+            RandomIter readIter = RandomIterFactory.create(readRaster, null);
+            inRasters.add(readIter);
+        }
+
+        GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
+        GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new DirectPosition2D(urCorner[0], urCorner[1]));
+        int minX = llGrid.x;
+        int maxY = llGrid.y; // y grid is inverse
+        int maxX = urGrid.x;
+        int minY = urGrid.y;
+        // is there a gridrange shift?
+        GridEnvelope2D gridRange2D = readGridGeometry.getGridRange2D();
+        int readCols = gridRange2D.width;
+        int readRows = gridRange2D.height;
+        minY = minY + gridRange2D.y;
+        maxY = maxY + gridRange2D.y;
+        minX = minX + gridRange2D.x;
+        maxX = maxX + gridRange2D.x;
+
+        for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
+            for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
+                DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
+                GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
+                int readCol = worldToReadGrid.x;
+                int readRow = worldToReadGrid.y;
+
+                if (readCol + cellBuffer > maxX || readCol - cellBuffer < minX || //
+                        readRow + cellBuffer > maxY || readRow - cellBuffer < minY) {
+                    continue;
+                }
+
+                processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
+            }
+        }
+
+        for( int i = 0; i < outRasterFiles.size(); i++ ) {
+            File outputFile = outRasterFiles.get(i);
+            GridCoverage2D writeGC = outGridCoverages.get(i);
+
+            File outParentFolder = outputFile.getParentFile();
+            String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
+            File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
+            OmsRasterWriter writer = new OmsRasterWriter();
+            writer.pm = new DummyProgressMonitor();
+            writer.inRaster = writeGC;
+            writer.file = outTileFile.getAbsolutePath();
+            writer.process();
+        }
 
     }
 
