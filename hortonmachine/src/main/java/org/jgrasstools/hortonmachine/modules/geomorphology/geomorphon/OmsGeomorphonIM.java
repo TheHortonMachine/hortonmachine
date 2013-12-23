@@ -39,7 +39,6 @@ import oms3.annotations.Unit;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
-import org.jgrasstools.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 import org.jgrasstools.gears.utils.colors.ColorTables;
 import org.opengis.referencing.operation.TransformException;
 
@@ -86,7 +85,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
         cellBuffer = (int) ceil(pRadius / max(xRes, yRes));
         pm.message("Using a cell buffer of: " + cellBuffer);
 
-        processTiles();
+        processByTileCells();
 
         makeMosaic();
         makeStyle(ColorTables.geomorphon, 1000, 1008);
@@ -96,7 +95,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
             int writeRows ) {
         try {
-            RandomIter elevIter = inRasters.get(0);
+            RandomIter elevIter = inRasterIterators.get(0);
             double classification = OmsGeomorphon.calculateGeomorphon(elevIter, readGridGeometry, pRadius, pThreshold,
                     diagonalDelta, readCol, readRow);
             WritableRandomIter outDataIter = outRasters.get(0);
@@ -104,19 +103,6 @@ public class OmsGeomorphonIM extends JGTModelIM {
         } catch (TransformException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-//        OmsGeomorphonIM g = new OmsGeomorphonIM();
-//        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-//        g.outRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/q1swb_2008_export_043_xyz2_2m_geomorphon_13_1.shp";
-//        g.pRadius = 30.0;
-//        g.pThreshold = 1.0;
-//        g.process();
-
-         OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-         im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_geomorphon_30_1_border_less_radius/";
-         im.process();
     }
 
 }

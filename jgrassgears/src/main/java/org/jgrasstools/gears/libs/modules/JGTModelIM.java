@@ -59,7 +59,8 @@ public abstract class JGTModelIM extends JGTModel {
 
     private List<ImageMosaicReader> readers = new ArrayList<ImageMosaicReader>();
 
-    protected List<RandomIter> inRasters = new ArrayList<RandomIter>();
+    protected List<RandomIter> inRasterIterators = new ArrayList<RandomIter>();
+    protected List<GridCoverage2D> inRasters = new ArrayList<GridCoverage2D>();
     protected List<WritableRandomIter> outRasters = new ArrayList<WritableRandomIter>();
     protected List<GridCoverage2D> outGridCoverages = new ArrayList<GridCoverage2D>();
     private List<File> outRasterFiles = new ArrayList<File>();
@@ -104,7 +105,7 @@ public abstract class JGTModelIM extends JGTModel {
         outRasterFiles.add(outputFile);
     }
 
-    protected void processTiles() throws Exception {
+    protected void processByTileCells() throws Exception {
         int size = boundsGeometries.size();
         int count = 0;
         // pm.beginTask("Processing tiles...", size);
@@ -115,7 +116,7 @@ public abstract class JGTModelIM extends JGTModel {
                 pm.message("\t\t->geom: " + boundGeometry.getEnvelopeInternal());
                 pm.message("\t\t->reading with cell buffer: " + cellBuffer);
                 pm.message("\t\t->reading with x/y resolution: " + xRes + "/" + yRes);
-                processGeometry(count, boundGeometry);
+                processGeometryByTileCell(count, boundGeometry);
             } catch (Exception e) {
                 pm.errorMessage("Problems found for tile: " + boundGeometry.getUserData());
                 e.printStackTrace();
@@ -125,7 +126,8 @@ public abstract class JGTModelIM extends JGTModel {
         // pm.done();
 
     }
-    private void processGeometry( int count, Geometry boundGeometry ) throws IOException, TransformException, Exception {
+
+    private void processGeometryByTileCell( int count, Geometry boundGeometry ) throws IOException, TransformException, Exception {
         Envelope writeEnv = boundGeometry.getEnvelopeInternal();
 
         double writeEast = writeEnv.getMaxX();
@@ -149,6 +151,7 @@ public abstract class JGTModelIM extends JGTModel {
          * clear lists of in and out data local to the loop
          */
         outGridCoverages.clear();
+        inRasterIterators.clear();
         inRasters.clear();
         outRasters.clear();
 
@@ -175,7 +178,8 @@ public abstract class JGTModelIM extends JGTModel {
             // read raster at once, since a randomiter is way slower
             Raster readRaster = readGC.getRenderedImage().getData();
             RandomIter readIter = RandomIterFactory.create(readRaster, null);
-            inRasters.add(readIter);
+            inRasterIterators.add(readIter);
+            inRasters.add(readGC);
         }
 
         GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
@@ -250,6 +254,8 @@ public abstract class JGTModelIM extends JGTModel {
 
     /**
      * Process one cell.
+     * 
+     * <p>This is used when {@link #processByTileCells()} is called.
      * 
      * @param readCol the column of the cell to read.
      * @param readRow  the row of the cell to read.

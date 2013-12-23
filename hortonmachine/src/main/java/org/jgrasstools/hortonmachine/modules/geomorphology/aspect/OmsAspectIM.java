@@ -92,7 +92,7 @@ public class OmsAspectIM extends JGTModelIM {
         addSource(new File(inElev));
         addDestination(new File(outAspect));
 
-        processTiles();
+        processByTileCells();
 
         makeMosaic();
         makeStyle(ColorTables.aspect, 0, 360);
@@ -102,7 +102,7 @@ public class OmsAspectIM extends JGTModelIM {
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
             int writeRows ) {
 
-        RandomIter elevIter = inRasters.get(0);
+        RandomIter elevIter = inRasterIterators.get(0);
         GridNode node = new GridNode(elevIter, readCols, readRows, xRes, yRes, readCol, readRow);
         double aspect = OmsAspect.calculateAspect(node, radtodeg, doRound);
         WritableRandomIter outDataIter = outRasters.get(0);

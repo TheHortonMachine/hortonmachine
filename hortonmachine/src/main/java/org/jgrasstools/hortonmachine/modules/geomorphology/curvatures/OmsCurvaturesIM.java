@@ -93,7 +93,7 @@ public class OmsCurvaturesIM extends JGTModelIM {
         disXX = Math.pow(xRes, 2.0);
         disYY = Math.pow(yRes, 2.0);
 
-        processTiles();
+        processByTileCells();
 
         makeMosaic();
         makeStyle(ColorTables.extrainbow, 0, 1);
@@ -103,7 +103,7 @@ public class OmsCurvaturesIM extends JGTModelIM {
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
             int writeRows ) {
 
-        RandomIter elevIter = inRasters.get(0);
+        RandomIter elevIter = inRasterIterators.get(0);
         OmsCurvatures.calculateCurvatures(elevIter, planTangProf, readCol, readRow, xRes, yRes, disXX, disYY);
         outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
         outRasters.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);

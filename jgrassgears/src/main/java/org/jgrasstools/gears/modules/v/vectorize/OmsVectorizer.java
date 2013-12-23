@@ -126,6 +126,8 @@ public class OmsVectorizer extends JGTModel {
     @Out
     public SimpleFeatureCollection outVector = null;
 
+    public int featureIndex = 0;
+
     private CoordinateReferenceSystem crs;
 
     private int cols;
@@ -160,7 +162,7 @@ public class OmsVectorizer extends JGTModel {
             sb.append("],(");
             sb.append(pValue);
             sb.append(" null)");
-            classes = "NaN,1,NaN";
+            classes = "NaN," + pValue + ",NaN";
         }
         String ranges = sb.toString();
 
@@ -198,7 +200,7 @@ public class OmsVectorizer extends JGTModel {
         SimpleFeatureType type = b.buildFeatureType();
 
         outVector = FeatureCollections.newCollection();
-        int index = 0;
+
         for( Polygon polygon : polygonsList ) {
             double area = polygon.getArea();
             if (area <= pThres) {
@@ -217,15 +219,15 @@ public class OmsVectorizer extends JGTModel {
                 LineString exteriorRing = polygon.getExteriorRing();
                 polygon = gf.createPolygon(exteriorRing.getCoordinates());
             }
-            
+
             area = polygon.getArea();
             double perim = polygon.getLength();
             com.vividsolutions.jts.geom.Point centroid = polygon.getCentroid();
             Coordinate centroidCoord = centroid.getCoordinate();
-            Object[] values = new Object[]{polygon, index, tmpValue, area, perim, centroidCoord.x, centroidCoord.y};
+            Object[] values = new Object[]{polygon, featureIndex, tmpValue, area, perim, centroidCoord.x, centroidCoord.y};
             builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
-            index++;
+            SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + featureIndex);
+            featureIndex++;
             outVector.add(feature);
         }
     }

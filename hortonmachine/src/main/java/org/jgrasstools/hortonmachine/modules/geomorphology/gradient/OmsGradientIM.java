@@ -90,7 +90,7 @@ public class OmsGradientIM extends JGTModelIM {
         addSource(new File(inElev));
         addDestination(new File(outSlope));
 
-        processTiles();
+        processByTileCells();
 
         makeMosaic();
         makeStyle(ColorTables.extrainbow, 0, 1);
@@ -99,7 +99,7 @@ public class OmsGradientIM extends JGTModelIM {
     @Override
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
             int writeRows ) {
-        RandomIter elevIter = inRasters.get(0);
+        RandomIter elevIter = inRasterIterators.get(0);
         double gradient;
         switch( pMode ) {
         case 1:

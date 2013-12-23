@@ -60,7 +60,7 @@ public class TestVectorizer extends HMTestCase {
 
         SimpleFeature feature = featureIterator.next();
         double value = ((Number) feature.getAttribute("rast")).doubleValue();
-        assertEquals(1.0, value, 0.0000001);
+        assertEquals(2.0, value, 0.0000001);
         Geometry geometry = (Geometry) feature.getDefaultGeometry();
         double area = geometry.getArea();
         assertEquals(6300.0, area, 0.0000001);
