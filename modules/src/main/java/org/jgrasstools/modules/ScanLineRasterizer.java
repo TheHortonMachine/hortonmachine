@@ -46,9 +46,11 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 
 @Description(OMSSCANLINERASTERIZER_DESCRIPTION)
 @Author(name = OMSSCANLINERASTERIZER_AUTHORNAMES, contact = OMSSCANLINERASTERIZER_AUTHORCONTACTS)
@@ -125,4 +127,5 @@ public class ScanLineRasterizer extends JGTModel {
         scanlinerasterizer.process();
         dumpRaster(scanlinerasterizer.outRaster, outRaster);
     }
+
 }

@@ -64,4 +64,5 @@ public class ImageMosaicCreator extends JGTModel {
         imagemosaiccreator.doReset = doReset;
         imagemosaiccreator.process();
     }
+    
 }
