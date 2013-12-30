@@ -164,6 +164,7 @@ public class OmsZonalStatsIM extends JGTModelIM {
                     continue;
                 }
 
+                pm.message("" + readEnvelope);
                 GridCoverage2D readGC = getGridCoverage(0, readEnvelope);
                 GridGeometry2D gridGeometry = readGC.getGridGeometry();
                 Raster readRaster = readGC.getRenderedImage().getData();
@@ -173,15 +174,30 @@ public class OmsZonalStatsIM extends JGTModelIM {
                     if (polygonStats == null) {
                         continue;
                     }
-                    Object[] values = new Object[]{geometry, //
-                            polygonStats[0], //
-                            polygonStats[1], //
-                            polygonStats[2], //
-                            polygonStats[3], //
-                            polygonStats[4], //
-                            polygonStats[5], //
-                            polygonStats[6] //
-                    };
+
+                    Object[] values;
+                    if (pTotalMean == null) {
+                        values = new Object[]{geometry, //
+                                polygonStats[0], //
+                                polygonStats[1], //
+                                polygonStats[2], //
+                                polygonStats[3], //
+                                polygonStats[4], //
+                                polygonStats[5], //
+                                polygonStats[6] //
+                        };
+                    } else {
+                        values = new Object[]{geometry, //
+                                polygonStats[0], //
+                                polygonStats[1], //
+                                polygonStats[2], //
+                                polygonStats[3], //
+                                polygonStats[4], //
+                                polygonStats[5], //
+                                polygonStats[6], //
+                                polygonStats[7] //
+                        };
+                    }
 
                     featureBuilder.addAll(values);
                     SimpleFeature feature = featureBuilder.buildFeature(null);
@@ -352,14 +368,5 @@ public class OmsZonalStatsIM extends JGTModelIM {
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,
             int writeRows ) {
         // not used in this case
-    }
-
-    public static void main( String[] args ) throws Exception {
-        OmsZonalStatsIM zs = new OmsZonalStatsIM();
-        zs.inRaster = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_curvatures/prof/prof.shp";
-        zs.inVector = getVector("/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_hexagons.shp");
-        zs.pBinSize = 1000;
-        zs.process();
-        dumpVector(zs.outVector, "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_hexagons_prof_curvatures_from_raster.shp");
     }
 }
