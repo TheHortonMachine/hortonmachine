@@ -164,7 +164,7 @@ public class OmsZonalStatsIM extends JGTModelIM {
                     continue;
                 }
 
-                pm.message("" + readEnvelope);
+                // pm.message("" + readEnvelope);
                 GridCoverage2D readGC = getGridCoverage(0, readEnvelope);
                 GridGeometry2D gridGeometry = readGC.getGridGeometry();
                 Raster readRaster = readGC.getRenderedImage().getData();
