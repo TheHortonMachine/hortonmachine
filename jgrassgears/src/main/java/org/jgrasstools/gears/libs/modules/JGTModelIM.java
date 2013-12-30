@@ -105,6 +105,40 @@ public abstract class JGTModelIM extends JGTModel {
         outRasterFiles.add(outputFile);
     }
 
+    /**
+     * Get the {@link GridCoverage2D} in a certain region.
+     * 
+     * <p>It might be usefull for faster access to the underlying data to
+     * extract the raster before creatin the iterator, instead of iterating 
+     * directly.
+     * <p>This can be done on the returned gridcoverage through:
+     * <code>
+     * Raster readRaster = readGC.getRenderedImage().getData();
+     * RandomIter readIter = RandomIterFactory.create(readRaster, null);
+     * </code>  
+     * 
+     * @param readerNum the number of the reader to use.
+     * @param north
+     * @param south
+     * @param east
+     * @param west
+     * @return the gridcoverage inside the supplied bounds.
+     * @throws Exception
+     */
+    protected GridCoverage2D getGridCoverage( int readerNum, double north, double south, double east, double west )
+            throws Exception {
+        GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
+                north, south, east, west, crs);
+
+        ImageMosaicReader reader = readers.get(readerNum);
+        GridCoverage2D readGC = reader.read(readGeneralParameterValues);
+        return readGC;
+    }
+
+    protected GridCoverage2D getGridCoverage( int readerNum, Envelope envelope ) throws Exception {
+        return getGridCoverage(readerNum, envelope.getMaxY(), envelope.getMinY(), envelope.getMaxX(), envelope.getMinX());
+    }
+
     protected void processByTileCells() throws Exception {
         int size = boundsGeometries.size();
         int count = 0;
