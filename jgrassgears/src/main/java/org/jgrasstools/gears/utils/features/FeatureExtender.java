@@ -72,6 +72,10 @@ public class FeatureExtender {
         b.addAll(newAttributesTypesList);
         newFeatureType = b.buildFeatureType();
     }
+    
+    public SimpleFeatureType getNewFeatureType() {
+        return newFeatureType;
+    }
 
     /**
      * @param oldFeature the feature from which to clone the existing attributes from.
