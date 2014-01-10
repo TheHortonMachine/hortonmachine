@@ -713,7 +713,7 @@ public class GeometryUtilities {
      * @return the {@link STRtree}.
      */
     public static STRtree geometriesToSRTree( List<Geometry> geometries ) {
-        STRtree tree = new STRtree(geometries.size());
+        STRtree tree = new STRtree();
         for( Geometry geometry : geometries ) {
             tree.insert(geometry.getEnvelopeInternal(), geometry);
         }
