@@ -537,10 +537,21 @@ public class FeatureUtilities {
         default:
             break;
         }
+
+        Object userData = geometries[0].getUserData();
+        if (userData != null) {
+            b.add("userdata", userData.getClass());
+        }
+
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         for( Geometry g : geometries ) {
-            Object[] values = new Object[]{g};
+            Object[] values;
+            if (userData == null) {
+                values = new Object[]{g};
+            } else {
+                values = new Object[]{g, g.getUserData()};
+            }
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(null);
             newCollection.add(feature);

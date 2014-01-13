@@ -140,7 +140,7 @@ public class LasHeader_1_0 implements ILasHeader {
     }
 
     public CoordinateReferenceSystem getCrs() {
-        if (crs != null) {
+        if (crs == null) {
             crs = DefaultGeographicCRS.WGS84;
         }
         return crs;
