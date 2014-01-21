@@ -89,7 +89,7 @@ public abstract class JGTModelIM extends JGTModel {
             yRes = Double.parseDouble(split[1]);
 
             locationField = propertiesMap.get("LocationAttribute");
-            crs = imReader.getCrs();
+            crs = imReader.getCoordinateReferenceSystem();
 
             GeneralEnvelope originalEnvelope = imReader.getOriginalEnvelope();
             llCorner = originalEnvelope.getLowerCorner().getCoordinate();
