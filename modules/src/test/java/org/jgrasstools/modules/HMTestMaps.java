@@ -21,6 +21,7 @@ package org.jgrasstools.modules;
 import static java.lang.Double.NaN;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -47,8 +48,8 @@ public class HMTestMaps {
 
     public static CoordinateReferenceSystem crs = null;
 
-    public static SimpleFeatureCollection testFC;
-    public static SimpleFeatureCollection testLeftFC;
+    public static DefaultFeatureCollection testFC;
+    public static DefaultFeatureCollection testLeftFC;
 
     public static Coordinate westNorth;
     public static Coordinate eastNorth;
@@ -101,7 +102,7 @@ public class HMTestMaps {
         builder.addAll(center);
         SimpleFeature centerFeature = builder.buildFeature(type.getTypeName() + ".3");
 
-        testFC = FeatureCollections.newCollection();
+        testFC = new DefaultFeatureCollection();
         testFC.add(nwFeature);
         testFC.add(seFeature);
         testFC.add(centerFeature);
@@ -124,7 +125,7 @@ public class HMTestMaps {
         builder.addAll(leftPolygon);
         SimpleFeature leftPolygonFeature = builder.buildFeature(null);
 
-        testLeftFC = FeatureCollections.newCollection();
+        testLeftFC = new DefaultFeatureCollection();
         testLeftFC.add(leftPolygonFeature);
 
     }

@@ -62,6 +62,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -209,7 +210,7 @@ public class OmsBobTheBuilder extends JGTModel {
                 .createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         newCollection.add(polygonMate.getFeature());
         OmsScanLineRasterizer slRasterizer = new OmsScanLineRasterizer();
         slRasterizer.pm = pm;

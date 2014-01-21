@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -36,7 +36,7 @@ public class TestVectorReader extends HMTestCase {
         b.add("the_geom", Point.class);
         b.add("id", Integer.class);
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         SimpleFeatureType type = b.buildFeatureType();
         for( int i = 0; i < 2; i++ ) {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);

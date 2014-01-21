@@ -57,7 +57,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -222,7 +222,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
         if (inElev != null) {
             pm.beginTask("Extracting elevations from dem...", junctionsList.size() + tanksList.size() + reservoirsList.size());
 
-            inJunctions = FeatureCollections.newCollection();
+            inJunctions = new DefaultFeatureCollection();
             for( SimpleFeature junction : junctionsList ) {
                 Geometry geometry = (Geometry) junction.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -234,11 +234,11 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
                     appendWarning("No elevation available for junction: ",
                             (String) junction.getAttribute(junctionElevatioAttributeName));
                 }
-                inJunctions.add(junction);
+                ((DefaultFeatureCollection) inJunctions).add(junction);
                 pm.worked(1);
             }
 
-            inTanks = FeatureCollections.newCollection();
+            inTanks = new DefaultFeatureCollection();
             for( SimpleFeature tank : tanksList ) {
                 Geometry geometry = (Geometry) tank.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -249,11 +249,11 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
                 } catch (Exception e) {
                     appendWarning("No elevation available for tank: ", (String) tank.getAttribute(tanksElevationAttributeName));
                 }
-                inTanks.add(tank);
+                ((DefaultFeatureCollection) inTanks).add(tank);
                 pm.worked(1);
             }
 
-            inReservoirs = FeatureCollections.newCollection();
+            inReservoirs = new DefaultFeatureCollection();
             for( SimpleFeature reservoir : reservoirsList ) {
                 Geometry geometry = (Geometry) reservoir.getDefaultGeometry();
                 Coordinate coordinate = geometry.getCoordinate();
@@ -265,7 +265,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
                     appendWarning("No elevation available for reservoir: ",
                             (String) reservoir.getAttribute(reservoirHeadAttributeName));
                 }
-                inReservoirs.add(reservoir);
+                ((DefaultFeatureCollection) inReservoirs).add(reservoir);
                 pm.worked(1);
             }
             pm.done();
@@ -329,7 +329,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
          * handle pumps
          */
         pm.beginTask("Extracting pumps attributes...", pumpsList.size());
-        inPumps = FeatureCollections.newCollection();
+        inPumps = new DefaultFeatureCollection();
         for( SimpleFeature pump : pumpsList ) {
             Geometry geometry = (Geometry) pump.getDefaultGeometry();
             Geometry buffer = geometry.buffer(pTol);
@@ -352,7 +352,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
             if (!gotIt) {
                 appendWarning("Pump ", (String) pump.getAttribute(pumpsIdAttributeName), " could not be placed on any pipe");
             }
-            inPumps.add(pump);
+            ((DefaultFeatureCollection) inPumps).add(pump);
             pm.worked(1);
         }
         pm.done();
@@ -361,7 +361,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
          * handle valves
          */
         pm.beginTask("Extracting valves attributes...", valvesList.size());
-        inValves = FeatureCollections.newCollection();
+        inValves = new DefaultFeatureCollection();
         for( SimpleFeature valve : valvesList ) {
             Geometry geometry = (Geometry) valve.getDefaultGeometry();
             Geometry buffer = geometry.buffer(pTol);
@@ -384,14 +384,14 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
             if (!gotIt) {
                 appendWarning("Valve ", (String) valve.getAttribute(valvesIdAttributeName), " could not be placed on any pipe");
             }
-            inValves.add(valve);
+            ((DefaultFeatureCollection) inValves).add(valve);
             pm.worked(1);
         }
         pm.done();
 
-        inPipes = FeatureCollections.newCollection();
+        inPipes = new DefaultFeatureCollection();
         for( SimpleFeature pipe : pipesList ) {
-            inPipes.add(pipe);
+            ((DefaultFeatureCollection) inPipes).add(pipe);
         }
 
         outWarning = warningBuilder.toString();

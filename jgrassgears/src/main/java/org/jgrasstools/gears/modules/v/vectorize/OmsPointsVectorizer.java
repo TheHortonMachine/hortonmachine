@@ -51,7 +51,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -108,7 +108,7 @@ public class OmsPointsVectorizer extends JGTModel {
 
         GeometryFactory gF = new GeometryFactory();
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         RandomIter rasterIter = RandomIterFactory.create(inRaster.getRenderedImage(), null);
 
@@ -127,7 +127,7 @@ public class OmsPointsVectorizer extends JGTModel {
                 Object[] values = new Object[]{point, value};
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
-                outVector.add(feature);
+                ((DefaultFeatureCollection) outVector).add(feature);
             }
         }
     }

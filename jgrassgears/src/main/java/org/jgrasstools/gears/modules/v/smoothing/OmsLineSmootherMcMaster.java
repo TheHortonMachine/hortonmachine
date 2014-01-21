@@ -51,7 +51,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -128,7 +128,7 @@ public class OmsLineSmootherMcMaster extends JGTModel {
             simplify = pSimplify;
         }
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         pm.message("Collecting geometries...");
         linesList = FeatureUtilities.featureCollectionToList(inVector);
@@ -142,7 +142,7 @@ public class OmsLineSmootherMcMaster extends JGTModel {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
-                outVector.add(newFeature);
+                ((DefaultFeatureCollection) outVector).add(newFeature);
             }
             pm.worked(1);
         }

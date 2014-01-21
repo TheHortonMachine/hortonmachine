@@ -63,7 +63,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -159,16 +159,16 @@ public class OmsEpanetInpGenerator extends JGTModel {
         checkNull(inJunctions, inPipes, outFile);
 
         if (inReservoirs == null) {
-            inReservoirs = FeatureCollections.newCollection();
+            inReservoirs = new DefaultFeatureCollection();
         }
         if (inTanks == null) {
-            inTanks = FeatureCollections.newCollection();
+            inTanks = new DefaultFeatureCollection();
         }
         if (inPumps == null) {
-            inPumps = FeatureCollections.newCollection();
+            inPumps = new DefaultFeatureCollection();
         }
         if (inValves == null) {
-            inValves = FeatureCollections.newCollection();
+            inValves = new DefaultFeatureCollection();
         }
 
         int resSize = inReservoirs.size();

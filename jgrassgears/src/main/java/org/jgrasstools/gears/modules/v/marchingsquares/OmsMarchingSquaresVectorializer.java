@@ -67,7 +67,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -224,7 +224,7 @@ public class OmsMarchingSquaresVectorializer extends JGTModel {
         b.add(defaultFeatureField, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
 
-        outGeodata = FeatureCollections.newCollection();
+        outGeodata = new DefaultFeatureCollection();
         int index = 0;
         for( Polygon polygon : geometriesList ) {
             Double tmpValue = valueRaster.get(index);
@@ -233,7 +233,7 @@ public class OmsMarchingSquaresVectorializer extends JGTModel {
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index);
             index++;
-            outGeodata.add(feature);
+            ((DefaultFeatureCollection) outGeodata).add(feature);
         }
 
     }

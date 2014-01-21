@@ -232,8 +232,8 @@ public class OmsCarver extends JGTModel {
     // Geometry bufferUnion = gc.union();
     // pm.done();
     //
-    // SimpleFeatureCollection outPoints = FeatureCollections.newCollection();
-    // SimpleFeatureCollection outPolygons = FeatureCollections.newCollection();
+    // SimpleFeatureCollection outPoints = new DefaultFeatureCollection();
+    // SimpleFeatureCollection outPolygons = new DefaultFeatureCollection();
     // SimpleFeatureTypeBuilder polygonTypeBuilder = new SimpleFeatureTypeBuilder();
     // polygonTypeBuilder.setName("cpoints");
     // polygonTypeBuilder.setCRS(crs);
@@ -305,7 +305,7 @@ public class OmsCarver extends JGTModel {
     // SimpleFeatureType type = b.buildFeatureType();
     // SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
     //
-    // SimpleFeatureCollection fc = FeatureCollections.newCollection();
+    // SimpleFeatureCollection fc = new DefaultFeatureCollection();
     //
     // for( Coordinate coordinate : riverCoords ) {
     // double value = CoverageUtilities.getValue(dtm, coordinate);

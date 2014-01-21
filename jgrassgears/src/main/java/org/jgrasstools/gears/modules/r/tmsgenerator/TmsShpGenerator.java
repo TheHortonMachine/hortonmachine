@@ -1,6 +1,7 @@
 package org.jgrasstools.gears.modules.r.tmsgenerator;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -36,7 +37,7 @@ public class TmsShpGenerator {
         GlobalMercator mercator = new GlobalMercator();
         for( int z = pMinzoom; z <= pMaxzoom; z++ ) {
 
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             // List<Geometry> g = new ArrayList<Geometry>();
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("typename");

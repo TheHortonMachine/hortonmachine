@@ -65,4 +65,5 @@ public class ImageMosaicCreator extends JGTModel {
         imagemosaiccreator.process();
     }
     
+
 }

@@ -54,7 +54,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.graph.build.line.BasicLineGraphGenerator;
 import org.geotools.graph.path.DijkstraShortestPathFinder;
@@ -134,9 +134,9 @@ public class OmsLineIntersectionCorrector extends JGTModel {
             return;
         }
 
-        untouchedFeatures = FeatureCollections.newCollection();
-        correctedFeatures = FeatureCollections.newCollection();
-        errorFeatures = FeatureCollections.newCollection();
+        untouchedFeatures = new DefaultFeatureCollection();
+        correctedFeatures = new DefaultFeatureCollection();
+        errorFeatures = new DefaultFeatureCollection();
 
         // extract points
         int pSize = pointFeatures.size();
@@ -183,7 +183,7 @@ public class OmsLineIntersectionCorrector extends JGTModel {
                 }
             }
             if (!touched) {
-                untouchedFeatures.add(feature);
+                ((DefaultFeatureCollection) untouchedFeatures).add(feature);
             }
             pm.worked(1);
         }
@@ -270,9 +270,9 @@ public class OmsLineIntersectionCorrector extends JGTModel {
             }
             SimpleFeature feature = featureElevationComparer.getFeature();
             if (!featureElevationComparer.isDirty()) {
-                correctedFeatures.add(feature);
+                ((DefaultFeatureCollection) correctedFeatures).add(feature);
             } else {
-                errorFeatures.add(feature);
+                ((DefaultFeatureCollection) errorFeatures).add(feature);
             }
         }
 

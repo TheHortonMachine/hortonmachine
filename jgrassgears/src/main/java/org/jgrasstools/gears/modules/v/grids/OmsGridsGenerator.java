@@ -59,7 +59,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
@@ -187,7 +187,7 @@ public class OmsGridsGenerator extends JGTModel {
         }
         isSquare = NumericsUtilities.dEq(pWidth, pHeight) ? true : false;
 
-        outMap = FeatureCollections.newCollection();
+        outMap = new DefaultFeatureCollection();
 
         ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, crs);
 
@@ -256,7 +256,7 @@ public class OmsGridsGenerator extends JGTModel {
 
     private void createPoints( CoordinateReferenceSystem crs, GeometryFactory gf, List<LineString> verticals,
             List<LineString> horizontals ) {
-        outMap = FeatureCollections.newCollection();
+        outMap = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("points");
         b.setCRS(crs);
@@ -277,12 +277,12 @@ public class OmsGridsGenerator extends JGTModel {
             Object[] values = new Object[]{geometry, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            outMap.add(feature);
+            ((DefaultFeatureCollection) outMap).add(feature);
         }
     }
 
     private void createLines( CoordinateReferenceSystem crs, List<LineString> verticals, List<LineString> horizontals ) {
-        outMap = FeatureCollections.newCollection();
+        outMap = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("lines");
         b.setCRS(crs);
@@ -296,13 +296,13 @@ public class OmsGridsGenerator extends JGTModel {
             Object[] values = new Object[]{lineString, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            outMap.add(feature);
+            ((DefaultFeatureCollection) outMap).add(feature);
         }
         for( LineString lineString : verticals ) {
             Object[] values = new Object[]{lineString, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            outMap.add(feature);
+            ((DefaultFeatureCollection) outMap).add(feature);
         }
     }
 }

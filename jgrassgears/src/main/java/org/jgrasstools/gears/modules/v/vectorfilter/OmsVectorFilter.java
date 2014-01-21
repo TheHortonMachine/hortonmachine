@@ -43,7 +43,7 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -81,12 +81,12 @@ public class OmsVectorFilter extends JGTModel {
         Filter cqlFilter = FilterUtilities.getCQLFilter(pCql);
         SimpleFeatureCollection subCollection = inVector.subCollection(cqlFilter);
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
         SimpleFeatureIterator iterator = subCollection.features();
         try {
             while( iterator.hasNext() ) {
                 SimpleFeature feature = iterator.next();
-                outVector.add(feature);
+                ((DefaultFeatureCollection) outVector).add(feature);
             }
         } finally {
             iterator.close();

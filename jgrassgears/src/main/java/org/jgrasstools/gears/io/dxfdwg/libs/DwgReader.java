@@ -23,8 +23,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.io.dxfdwg.libs.dwg.DwgFile;
@@ -41,7 +40,6 @@ import org.jgrasstools.gears.io.dxfdwg.libs.dwg.objects.DwgPolyline3D;
 import org.jgrasstools.gears.io.dxfdwg.libs.dwg.objects.DwgSolid;
 import org.jgrasstools.gears.io.dxfdwg.libs.dwg.objects.DwgText;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 /**
  * Feature reader for DWG files.
@@ -60,12 +58,12 @@ public class DwgReader {
     int chosenLayerType = -1;
 
     // different feature types
-    private SimpleFeatureCollection contourFeatures = FeatureCollections.newCollection();
-    private SimpleFeatureCollection multiLineFeatures = FeatureCollections.newCollection();
-    private SimpleFeatureCollection multiPointFeatures = FeatureCollections.newCollection();
-    private SimpleFeatureCollection multiPolygonFeatures = FeatureCollections.newCollection();
-    private SimpleFeatureCollection textFeatures = FeatureCollections.newCollection();
-    private SimpleFeatureCollection attributesFeatures = FeatureCollections.newCollection();
+    private DefaultFeatureCollection contourFeatures = new DefaultFeatureCollection();
+    private DefaultFeatureCollection multiLineFeatures = new DefaultFeatureCollection();
+    private DefaultFeatureCollection multiPointFeatures = new DefaultFeatureCollection();
+    private DefaultFeatureCollection multiPolygonFeatures = new DefaultFeatureCollection();
+    private DefaultFeatureCollection textFeatures = new DefaultFeatureCollection();
+    private DefaultFeatureCollection attributesFeatures = new DefaultFeatureCollection();
 
     /**
      * A basic reader based on a DwgFile.
@@ -139,8 +137,8 @@ public class DwgReader {
         }
     }
 
-    public HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>> getFeatureCollectionsMap() throws IOException {
-        HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>> map = new HashMap<String, FeatureCollection<SimpleFeatureType, SimpleFeature>>();
+    public HashMap<String, SimpleFeatureCollection> getFeatureCollectionsMap() throws IOException {
+        HashMap<String, SimpleFeatureCollection> map = new HashMap<String, SimpleFeatureCollection>();
         if (textFeatures.size() > 0) {
             map.put("text", textFeatures);
         }

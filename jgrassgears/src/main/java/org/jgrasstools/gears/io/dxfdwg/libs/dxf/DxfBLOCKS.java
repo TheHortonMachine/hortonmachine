@@ -27,10 +27,7 @@ package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.feature.DefaultFeatureCollection;
 
 /**
  * A DXF block contains a block of geometries. The dxf driver can read entities
@@ -42,9 +39,9 @@ import org.opengis.feature.simple.SimpleFeatureType;
 @SuppressWarnings("nls")
 public class DxfBLOCKS {
     // final static FeatureSchema DXF_SCHEMA = new FeatureSchema();
-    FeatureCollection<SimpleFeatureType, SimpleFeature> pointEntities;
-    FeatureCollection<SimpleFeatureType, SimpleFeature> lineEntities;
-    FeatureCollection<SimpleFeatureType, SimpleFeature> polygonEntities;
+    DefaultFeatureCollection pointEntities;
+    DefaultFeatureCollection lineEntities;
+    DefaultFeatureCollection polygonEntities;
 
     public DxfBLOCKS() {
         /*
@@ -55,9 +52,9 @@ public class DxfBLOCKS {
         DXF_SCHEMA.addAttribute("COLOR", AttributeType.INTEGER);
         DXF_SCHEMA.addAttribute("TEXT", AttributeType.STRING);
         */
-        pointEntities = FeatureCollections.newCollection();
-        lineEntities = FeatureCollections.newCollection();
-        polygonEntities = FeatureCollections.newCollection();
+        pointEntities = new DefaultFeatureCollection();
+        lineEntities = new DefaultFeatureCollection();
+        polygonEntities = new DefaultFeatureCollection();
     }
 
     public static DxfBLOCKS readBlocks( RandomAccessFile raf ) throws IOException {

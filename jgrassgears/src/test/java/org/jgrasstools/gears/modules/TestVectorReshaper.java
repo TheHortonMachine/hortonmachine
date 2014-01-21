@@ -18,7 +18,7 @@
 package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -96,7 +96,7 @@ public class TestVectorReshaper extends HMTestCase {
         Object[] values = new Object[]{multiPoint};
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         newCollection.add(feature);
 
         OmsVectorReshaper reshaper = new OmsVectorReshaper();

@@ -26,7 +26,6 @@ import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.morpher.Morpher;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

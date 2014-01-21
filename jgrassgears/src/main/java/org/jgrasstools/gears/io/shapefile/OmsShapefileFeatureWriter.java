@@ -55,7 +55,7 @@ import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -124,7 +124,7 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         featureStore.setTransaction(transaction);
         try {
             if (geodata == null) {
-                featureStore.addFeatures(FeatureCollections.newCollection());
+                featureStore.addFeatures(new DefaultFeatureCollection());
             } else {
                 featureStore.addFeatures(geodata);
             }

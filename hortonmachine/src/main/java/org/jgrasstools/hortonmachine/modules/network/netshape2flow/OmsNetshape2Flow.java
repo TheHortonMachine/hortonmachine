@@ -58,7 +58,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -295,13 +295,13 @@ public class OmsNetshape2Flow extends JGTModel {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
         GeometryFactory gf = GeometryUtilities.gf();
-        outProblems = FeatureCollections.newCollection();
+        outProblems = new DefaultFeatureCollection();
         for( int i = 0; i < problemPointsList.size(); i++ ) {
             MultiPoint mPoint = gf.createMultiPoint(new Coordinate[]{problemPointsList.get(i)});
             Object[] values = new Object[]{mPoint, i};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(null);
-            outProblems.add(feature);
+            ((DefaultFeatureCollection) outProblems).add(feature);
         }
 
     }

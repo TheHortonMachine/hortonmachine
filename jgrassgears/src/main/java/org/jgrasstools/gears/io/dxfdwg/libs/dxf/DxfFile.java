@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -176,9 +176,9 @@ public class DxfFile {
         DxfFile dxfFile = new DxfFile(crs);
         initializeDXF_SCHEMA(crs);
 
-        dxfFile.pointFeatures = FeatureCollections.newCollection();
-        dxfFile.lineFeatures = FeatureCollections.newCollection();
-        dxfFile.polygonFeatures = FeatureCollections.newCollection();
+        dxfFile.pointFeatures = new DefaultFeatureCollection();
+        dxfFile.lineFeatures = new DefaultFeatureCollection();
+        dxfFile.polygonFeatures = new DefaultFeatureCollection();
 
         DxfGroup group = null;
         while( null != (group = DxfGroup.readGroup(raf)) ) {
@@ -194,15 +194,21 @@ public class DxfFile {
                 } else if (group.equals(BLOCKS)) {
                     dxfFile.blocks = DxfBLOCKS.readEntities(raf);
                     // dxfFile.datasets.put("BLOCKS", dxfFile.blocks.entities);
-                    dxfFile.pointFeatures.addAll(dxfFile.blocks.pointEntities);
-                    dxfFile.lineFeatures.addAll(dxfFile.blocks.lineEntities);
-                    dxfFile.polygonFeatures.addAll(dxfFile.blocks.polygonEntities);
+                    ((DefaultFeatureCollection) dxfFile.pointFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.blocks.pointEntities);
+                    ((DefaultFeatureCollection) dxfFile.lineFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.blocks.lineEntities);
+                    ((DefaultFeatureCollection) dxfFile.polygonFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.blocks.polygonEntities);
                 } else if (group.equals(ENTITIES)) {
                     dxfFile.entities = DxfENTITIES.readEntities(raf);
                     // dxfFile.datasets.put("ENTITIES", dxfFile.entities.entities);
-                    dxfFile.pointFeatures.addAll(dxfFile.entities.pointEntities);
-                    dxfFile.lineFeatures.addAll(dxfFile.entities.lineEntities);
-                    dxfFile.polygonFeatures.addAll(dxfFile.entities.polygonEntities);
+                    ((DefaultFeatureCollection) dxfFile.pointFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.entities.pointEntities);
+                    ((DefaultFeatureCollection) dxfFile.lineFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.entities.lineEntities);
+                    ((DefaultFeatureCollection) dxfFile.polygonFeatures)
+                            .addAll((SimpleFeatureCollection) dxfFile.entities.polygonEntities);
                 } else if (group.equals(OBJECTS)) {
                     // objects = DxfOBJECTS.readObjects(br);
                     System.out.println("Jump objects: " + group.getValue());

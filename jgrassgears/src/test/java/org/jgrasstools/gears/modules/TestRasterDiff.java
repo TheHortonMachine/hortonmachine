@@ -22,11 +22,9 @@ import static java.lang.Double.NaN;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 import org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 

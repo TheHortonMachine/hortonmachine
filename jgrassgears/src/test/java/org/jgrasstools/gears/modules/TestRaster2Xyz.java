@@ -17,17 +17,8 @@
  */
 package org.jgrasstools.gears.modules;
 
-import java.util.HashMap;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.libs.modules.JGTConstants;
-import org.jgrasstools.gears.modules.r.raster2xyz.OmsRaster2Xyz;
 import org.jgrasstools.gears.modules.r.summary.OmsRasterSummary;
 import org.jgrasstools.gears.utils.HMTestCase;
-import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test for {@link OmsRasterSummary}.

@@ -49,7 +49,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -98,7 +98,7 @@ public class OmsLinesPolygonizer extends JGTModel {
     public void process() throws Exception {
         checkNull(inMap);
 
-        outMap = FeatureCollections.newCollection();
+        outMap = new DefaultFeatureCollection();
 
         GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
         switch( geometryType ) {
@@ -148,7 +148,7 @@ public class OmsLinesPolygonizer extends JGTModel {
             Object[] values = new Object[]{polygon, attribute};
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(null);
-            outMap.add(feature);
+            ((DefaultFeatureCollection) outMap).add(feature);
 
             pm.worked(1);
         }

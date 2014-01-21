@@ -24,8 +24,9 @@
 
 package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
 

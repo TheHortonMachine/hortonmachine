@@ -55,7 +55,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jaitools.media.jai.contour.ContourDescriptor;
@@ -128,7 +128,7 @@ public class OmsContourExtractor extends JGTModel {
         Collection<LineString> contours = (Collection<LineString>) dest.getProperty(ContourDescriptor.CONTOUR_PROPERTY_NAME);
         pm.done();
 
-        outGeodata = FeatureCollections.newCollection();
+        outGeodata = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("contours");
         b.setCRS(inCoverage.getCoordinateReferenceSystem());
@@ -152,7 +152,7 @@ public class OmsContourExtractor extends JGTModel {
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + id);
             id++;
-            outGeodata.add(feature);
+            ((DefaultFeatureCollection) outGeodata).add(feature);
         }
 
     }

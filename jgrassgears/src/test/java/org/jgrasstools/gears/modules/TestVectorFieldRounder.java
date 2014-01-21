@@ -18,7 +18,7 @@
 package org.jgrasstools.gears.modules;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -46,7 +46,7 @@ public class TestVectorFieldRounder extends HMTestCase {
         b.add("the_geom", Point.class);
         b.add("area", Double.class);
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Point point = GeometryUtilities.gf().createPoint(new Coordinate(0, 0));

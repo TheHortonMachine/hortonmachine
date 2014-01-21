@@ -27,10 +27,10 @@ package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 
@@ -50,7 +50,7 @@ public class DxfLINE extends DxfENTITY {
     }
 
     public static DxfGroup readEntity( RandomAccessFile raf,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> entities ) throws IOException {
+            DefaultFeatureCollection entities ) throws IOException {
 
         double x1 = Double.NaN, y1 = Double.NaN, z1 = Double.NaN;
         double x2 = Double.NaN, y2 = Double.NaN, z2 = Double.NaN;

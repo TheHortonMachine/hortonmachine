@@ -20,7 +20,7 @@ package org.jgrasstools.gears.modules;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -49,7 +49,7 @@ public class TestLineSmootherJaitools extends HMTestCase {
         b.add("the_geom", LineString.class);
         b.add("id", Integer.class);
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         SimpleFeatureType type = b.buildFeatureType();
 
         Geometry line = new WKTReader().read("LINESTRING (0 0, 1 1, 2 0)");//2 2, 3 3, 4 4, 5 3, 6 2, 7 1, 8 0)");

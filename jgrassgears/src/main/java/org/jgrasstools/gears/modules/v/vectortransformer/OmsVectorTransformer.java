@@ -46,7 +46,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -95,7 +95,7 @@ public class OmsVectorTransformer extends JGTModel {
             return;
         }
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
         SimpleFeatureType featureType = inVector.getSchema();
         ReferencedEnvelope vectorBounds = inVector.getBounds();
         double centerX = vectorBounds.getMinX() + (vectorBounds.getMaxX() - vectorBounds.getMinX()) / 2.0;
@@ -134,7 +134,7 @@ public class OmsVectorTransformer extends JGTModel {
             Geometry transformedGeometry = JTS.transform(geometry, transform);
 
             SimpleFeature newFeature = substitutor.substituteGeometry(feature, transformedGeometry);
-            outVector.add(newFeature);
+            ((DefaultFeatureCollection) outVector).add(newFeature);
             pm.worked(1);
         }
         inFeatureIterator.close();

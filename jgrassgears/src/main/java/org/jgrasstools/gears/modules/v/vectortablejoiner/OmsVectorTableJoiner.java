@@ -48,7 +48,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
@@ -110,7 +110,7 @@ public class OmsVectorTableJoiner extends JGTModel {
 
         FeatureExtender fExt = new FeatureExtender(inVector.getSchema(), fields, classes);
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         int size = inVector.size();
         pm.beginTask("Merging data...", size);
@@ -140,7 +140,7 @@ public class OmsVectorTableJoiner extends JGTModel {
 
             SimpleFeature newFeature = fExt.extendFeature(feature, newAttributes);
 
-            outVector.add(newFeature);
+            ((DefaultFeatureCollection) outVector).add(newFeature);
             pm.worked(1);
         }
         pm.done();

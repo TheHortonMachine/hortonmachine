@@ -24,18 +24,11 @@
 
 package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 
-import java.io.RandomAccessFile;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.RandomAccessFile;
 
-import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 
 /**
  * The ENTITIES section of a DXF file containing all data itself
@@ -45,14 +38,14 @@ import org.opengis.feature.simple.SimpleFeatureType;
 // History
 @SuppressWarnings("nls")
 public class DxfENTITIES {
-    FeatureCollection<SimpleFeatureType, SimpleFeature> pointEntities;
-    FeatureCollection<SimpleFeatureType, SimpleFeature> lineEntities;
-    FeatureCollection<SimpleFeatureType, SimpleFeature> polygonEntities;
+    DefaultFeatureCollection pointEntities;
+    DefaultFeatureCollection lineEntities;
+    DefaultFeatureCollection polygonEntities;
 
     public DxfENTITIES() {
-        pointEntities = FeatureCollections.newCollection();
-        lineEntities = FeatureCollections.newCollection();
-        polygonEntities = FeatureCollections.newCollection();
+        pointEntities = new DefaultFeatureCollection();
+        lineEntities = new DefaultFeatureCollection();
+        polygonEntities = new DefaultFeatureCollection();
     }
 
     public static DxfENTITIES readEntities( RandomAccessFile raf ) throws IOException {

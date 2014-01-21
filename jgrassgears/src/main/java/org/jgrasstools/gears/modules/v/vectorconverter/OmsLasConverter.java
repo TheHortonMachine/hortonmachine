@@ -63,7 +63,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
@@ -205,7 +205,7 @@ public class OmsLasConverter extends JGTModel {
             }
         }
 
-        SimpleFeatureCollection outGeodata = FeatureCollections.newCollection();
+        SimpleFeatureCollection outGeodata = new DefaultFeatureCollection();
 
         CoordinateReferenceSystem crs = null;
         if (pCode != null) {
@@ -388,7 +388,7 @@ public class OmsLasConverter extends JGTModel {
                     final Object[] values = new Object[]{point, z, intensity, classification, impulse, impulseNumber};
                     builder.addAll(values);
                     final SimpleFeature feature = builder.buildFeature(null);
-                    outGeodata.add(feature);
+                    ((DefaultFeatureCollection) outGeodata).add(feature);
                     addedFeatures++;
                 } else if (doCsv) {
                     StringBuilder sb = new StringBuilder();
@@ -446,7 +446,7 @@ public class OmsLasConverter extends JGTModel {
         final Object[] values = new Object[]{polygon, lasFile.getName()};
         builder.addAll(values);
         final SimpleFeature feature = builder.buildFeature(null);
-        outGeodata.add(feature);
+        ((DefaultFeatureCollection) outGeodata).add(feature);
         OmsVectorWriter.writeVector(outFile, outGeodata);
     }
 

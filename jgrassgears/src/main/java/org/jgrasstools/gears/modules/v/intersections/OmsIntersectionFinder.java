@@ -30,7 +30,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_inM
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outLinesMap_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_outPointsMap_DESCRIPTION;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import oms3.annotations.Author;
@@ -45,11 +44,9 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
-import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.math.Statistics.Delta;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -92,8 +89,8 @@ public class OmsIntersectionFinder extends JGTModel {
             return;
         }
 
-        outPointsMap = FeatureCollections.newCollection();
-        outLinesMap = FeatureCollections.newCollection();
+        outPointsMap = new DefaultFeatureCollection();
+        outLinesMap = new DefaultFeatureCollection();
 
         GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(inMap.getSchema().getGeometryDescriptor().getType());
         switch( geometryType ) {
@@ -171,14 +168,14 @@ public class OmsIntersectionFinder extends JGTModel {
                             Object[] values = new Object[]{p};
                             builder.addAll(values);
                             SimpleFeature feature = builder.buildFeature(pointType.getTypeName() + "." + id++);
-                            outPointsMap.add(feature);
+                            ((DefaultFeatureCollection) outPointsMap).add(feature);
                         } else if (geometryN instanceof LineString) {
                             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(linesType);
                             LineString l = (LineString) geometryN;
                             Object[] values = new Object[]{l};
                             builder.addAll(values);
                             SimpleFeature feature = builder.buildFeature(linesType.getTypeName() + "." + id++);
-                            outLinesMap.add(feature);
+                            ((DefaultFeatureCollection) outLinesMap).add(feature);
                         }
 
                     }

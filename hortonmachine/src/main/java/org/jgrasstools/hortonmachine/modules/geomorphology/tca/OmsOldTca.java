@@ -61,7 +61,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -118,7 +118,7 @@ public class OmsOldTca extends JGTModel {
         b.setCRS(inFlow.getCoordinateReferenceSystem());
         b.add("the_geom", LineString.class);
         loopFT = b.buildFeatureType();
-        outLoop = FeatureCollections.newCollection();
+        outLoop = new DefaultFeatureCollection();
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
         cols = regionMap.get(CoverageUtilities.COLS).intValue();
@@ -182,7 +182,7 @@ public class OmsOldTca extends JGTModel {
                             Object[] values = new Object[]{lineString};
                             builder.addAll(values);
                             SimpleFeature feature = builder.buildFeature(null);
-                            outLoop.add(feature);
+                            ((DefaultFeatureCollection) outLoop).add(feature);
 
                             pm.errorMessage(MessageFormat
                                     .format("The downstream sum passed twice through the same position, there might be an error in your flowdirections. col = {0} row = {1}",

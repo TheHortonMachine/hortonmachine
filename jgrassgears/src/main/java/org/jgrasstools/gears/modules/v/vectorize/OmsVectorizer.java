@@ -68,7 +68,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
@@ -199,7 +199,7 @@ public class OmsVectorizer extends JGTModel {
         b.add("ycentroid", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         for( Polygon polygon : polygonsList ) {
             double area = polygon.getArea();
@@ -228,7 +228,7 @@ public class OmsVectorizer extends JGTModel {
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + featureIndex);
             featureIndex++;
-            outVector.add(feature);
+            ((DefaultFeatureCollection) outVector).add(feature);
         }
     }
 

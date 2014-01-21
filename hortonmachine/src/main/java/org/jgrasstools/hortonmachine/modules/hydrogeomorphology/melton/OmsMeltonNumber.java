@@ -47,7 +47,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -114,7 +114,7 @@ public class OmsMeltonNumber extends JGTModel {
             Object attribute = fan.getAttribute(fId);
 
             // rasterize the fan
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             newCollection.add(fan);
 
             OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
