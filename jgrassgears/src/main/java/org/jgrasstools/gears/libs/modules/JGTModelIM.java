@@ -81,7 +81,7 @@ public abstract class JGTModelIM extends JGTModel {
         ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
         if (readers.size() == 0) {
             File propertiesFile = FileUtilities.substituteExtention(imageMosaicSource, "properties");
-            HashMap<String, String> propertiesMap = FileUtilities.readFileToHasMap(propertiesFile.getAbsolutePath(), null, false);
+            HashMap<String, String> propertiesMap = FileUtilities.readFileToHashMap(propertiesFile.getAbsolutePath(), null, false);
 
             String xyREs = propertiesMap.get("Levels");
             String[] split = xyREs.split(",");

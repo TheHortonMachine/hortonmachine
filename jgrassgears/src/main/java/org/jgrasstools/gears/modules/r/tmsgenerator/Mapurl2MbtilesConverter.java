@@ -81,7 +81,7 @@ public class Mapurl2MbtilesConverter extends JGTModel {
 
         File mapurlFile = new File(inFile);
 
-        HashMap<String, String> metadataMap = FileUtilities.readFileToHasMap(inFile, "=", false);
+        HashMap<String, String> metadataMap = FileUtilities.readFileToHashMap(inFile, "=", false);
         String url = metadataMap.get("url");
         if (url == null) {
             throw new ModelsIllegalargumentException("The supplied file doesn't seem to be a valid jgrasstools mapurl file.",

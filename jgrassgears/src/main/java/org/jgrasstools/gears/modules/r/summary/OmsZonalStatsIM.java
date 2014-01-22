@@ -185,8 +185,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
                                 polygonStats[2], //
                                 polygonStats[3], //
                                 polygonStats[4], //
-                                polygonStats[5], //
-                                polygonStats[6] //
+                                (int) polygonStats[5], //
+                                (int) polygonStats[6] //
                         };
                     } else {
                         values = new Object[]{geometry, //
@@ -196,8 +196,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
                                 polygonStats[3], //
                                 polygonStats[4], //
                                 polygonStats[5], //
-                                polygonStats[6], //
-                                polygonStats[7] //
+                                (int) polygonStats[6], //
+                                (int) polygonStats[7] //
                         };
                     }
 
@@ -329,9 +329,9 @@ public class OmsZonalStatsIM extends JGTModelIM {
         b.add("var", Double.class);
         b.add("sdev", Double.class);
         if (pTotalMean != null)
-            b.add("meanabsdev", Double.class);
-        b.add("activecells", Integer.class);
-        b.add("invalidcells", Integer.class);
+            b.add("avgabsdev", Double.class);
+        b.add("actcells", Integer.class);
+        b.add("invcells", Integer.class);
         SimpleFeatureType type = b.buildFeatureType();
         featureBuilder = new SimpleFeatureBuilder(type);
     }
