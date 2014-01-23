@@ -20,7 +20,7 @@
 // THIS FILE HAS TO BE RUN FROM THE PROJECT ROOT LIKE:
 // groovy extras/deploy/deploylibs.groovy 
 
-def VERSION = "0.7.6-SNAPSHOT";
+def VERSION = "0.7.7-SNAPSHOT";
 
 def javaHome = System.getProperty("java.home");
 def javaHomeFile = new File(javaHome);
@@ -78,6 +78,17 @@ JGTMODULESCOPY: {
 	def hmJar = jarFiles[0];
     def hmCopyToFile = new File(modulesFolderFile.absolutePath, hmJar.name).absolutePath;
     (new AntBuilder()).copy( file : hmJar , tofile : hmCopyToFile )
+
+    // take latest modules jar
+    jarFiles = new File("./modules/target").listFiles(new FilenameFilter() {  
+        public boolean accept(File f, String filename) {  
+            return filename.startsWith("jgt-modules-") && filename.endsWith(".jar")  
+        }  
+    });
+	Arrays.sort(jarFiles, Collections.reverseOrder());
+	def modJar = jarFiles[0];
+    def modCopyToFile = new File(modulesFolderFile.absolutePath, modJar.name).absolutePath;
+    (new AntBuilder()).copy( file : modJar , tofile : modCopyToFile )
 
     // tools.jar
     def newToolsJar = new File(copyPathFile, "tools.jar");

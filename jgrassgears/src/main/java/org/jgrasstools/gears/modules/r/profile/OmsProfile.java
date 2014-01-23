@@ -155,8 +155,9 @@ public class OmsProfile extends JGTModel {
                     ProfilePoint profilePoint = profilePoints.get(i);
                     double progressive = profilePoint.getProgressive();
                     double elev = profilePoint.getElevation();
-                    // Coordinate coord = profilePoint.getPosition();
-                    sb.append(progressive).append(", ").append(elev).append("\n");
+                    Coordinate coord = profilePoint.getPosition();
+                    sb.append(progressive).append(", ").append(elev).append(", ").append(coord.x).append(", ").append(coord.y)
+                            .append("\n");
                 }
                 FileUtilities.writeFile(sb.toString(), profileFile);
 
