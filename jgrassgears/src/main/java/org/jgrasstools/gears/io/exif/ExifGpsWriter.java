@@ -67,8 +67,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.w3c.dom.NodeList;
 
@@ -87,6 +89,7 @@ import com.sun.media.imageioimpl.plugins.tiff.TIFFIFD;
 @Name(EXIFGPSWRITER_NAME)
 @Status(EXIFGPSWRITER_STATUS)
 @License(EXIFGPSWRITER_LICENSE)
+@UI(JGTConstants.HIDE_UI_HINT)
 public class ExifGpsWriter extends JGTModel {
 
     @Description(EXIFGPSWRITER_file_DESCRIPTION)

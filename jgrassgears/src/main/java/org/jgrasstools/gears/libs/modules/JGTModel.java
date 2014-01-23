@@ -25,6 +25,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.media.jai.JAI;
+import javax.media.jai.util.ImagingListener;
+
 import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Description;
@@ -56,6 +59,23 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class JGTModel implements Process {
+
+    static {
+        // remove nasty error message if jai has no native backbone
+        JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
+            @Override
+            public boolean errorOccurred( String message, Throwable thrown, Object where, boolean isRetryable )
+                    throws RuntimeException {
+                String localizedMessage = thrown.getLocalizedMessage();
+                if (!localizedMessage.equals("com/sun/medialib/mlib/Image")) {
+                    System.err.println(message);
+                    thrown.printStackTrace(System.err);
+                }
+                return false;
+            }
+        });
+
+    }
 
     @Description(//
     en = PROGRESS_MONITOR_EN,//

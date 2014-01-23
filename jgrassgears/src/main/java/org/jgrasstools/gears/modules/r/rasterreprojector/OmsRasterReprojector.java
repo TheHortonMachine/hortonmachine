@@ -144,6 +144,7 @@ public class OmsRasterReprojector extends JGTModel {
             pm.message("Using supplied gridgeometry: " + gridGeometry);
         }
         pm.beginTask("Reprojecting...", IJGTProgressMonitor.UNKNOWN);
+
         if (gridGeometry == null) {
             outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolation);
         } else {

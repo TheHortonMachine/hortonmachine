@@ -671,7 +671,7 @@ public class GearsMessages {
     public static final String OMSMAPCALC_DOCUMENTATION = "OmsMapcalc.html";
     public static final String OMSMAPCALC_KEYWORDS = "OmsMapcalc, Raster, OmsCutOut";
     public static final String OMSMAPCALC_LABEL = RASTERPROCESSING;
-    public static final String OMSMAPCALC_NAME = "mapcalc";
+    public static final String OMSMAPCALC_NAME = "omsmapcalc";
     public static final int OMSMAPCALC_STATUS = 40;
     public static final String OMSMAPCALC_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSMAPCALC_AUTHORNAMES = "Andrea Antonello";

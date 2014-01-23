@@ -61,6 +61,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.jgrasstools.gears.io.timedependent.OmsTimeSeriesIteratorWriter;
+import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -115,9 +116,9 @@ public class Kriging extends JGTModel {
     @In
     public int pMode = 0;
 
-    @Description(OMSKRIGING_pIntegralscale_DESCRIPTION)
+    @Description("The integral scale as comma separated values.")
     @In
-    public double[] pIntegralscale = null;
+    public String pIntegralscale = null;
 
     @Description(OMSKRIGING_pVariance_DESCRIPTION)
     @In
@@ -179,7 +180,18 @@ public class Kriging extends JGTModel {
         kriging.fInterpolateid = fInterpolateid;
         kriging.fPointZ = fPointZ;
         kriging.pMode = pMode;
-        kriging.pIntegralscale = pIntegralscale;
+        if (pIntegralscale!=null && pIntegralscale.trim().length()>0) {
+            String[] split = pIntegralscale.split(",");
+            double[] integralScaleDouble = new double[split.length];
+            for( int i = 0; i < split.length; i++ ) {
+                try {
+                    integralScaleDouble[i] = Double.parseDouble(split[i]);
+                } catch (Exception e) {
+                    throw new ModelsIllegalargumentException("Problems with integral scale: " + pIntegralscale, this);
+                }
+            }
+            kriging.pIntegralscale = integralScaleDouble;
+        }
         kriging.pVariance = pVariance;
         kriging.doLogarithmic = doLogarithmic;
         GridCoverage2D interpolationGrid = getRaster(inInterpolationGrid);

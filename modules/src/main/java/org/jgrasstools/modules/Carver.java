@@ -42,7 +42,9 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.modules.r.carver.OmsCarver;
 
@@ -56,14 +58,17 @@ import org.jgrasstools.gears.modules.r.carver.OmsCarver;
 public class Carver extends JGTModel {
 
     @Description(OMSCARVER_inRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inRaster = null;
 
     @Description(OMSCARVER_inCarverPolygons_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inCarverPolygons = null;
 
     @Description(OMSCARVER_inCarverLines_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inCarverLines = null;
 
@@ -84,6 +89,7 @@ public class Carver extends JGTModel {
     public double pDepthPolygons = 6.0;
 
     @Description(OMSCARVER_outRaster_DESCRIPTION)
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;
 
