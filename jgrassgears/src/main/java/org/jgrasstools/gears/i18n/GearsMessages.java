@@ -32,6 +32,15 @@ public class GearsMessages {
     public static final String OMSHYDRO_AUTHORCONTACTS = "www.hydrologis.com";
     public static final int OMSHYDRO_DRAFT = 10;
     public static final int OMSHYDRO_CERTIFIED = 40;
+    
+    public static final String GENERIC_pNorth_DESCRIPTION = "The north bound of the region to consider";
+    public static final String GENERIC_pSouth_DESCRIPTION = "The south bound of the region to consider";
+    public static final String GENERIC_pWest_DESCRIPTION = "The west bound of the region to consider";
+    public static final String GENERIC_pEast_DESCRIPTION = "The east bound of the region to consider";
+    public static final String GENERIC_pRows_DESCRIPTION = "The rows of the region to consider";
+    public static final String GENERIC_pCols_DESCRIPTION = "The cols of the region to consider";
+    public static final String GENERIC_pXres_DESCRIPTION = "The requested resolution in x.";
+    public static final String GENERIC_pYres_DESCRIPTION = "The requested resolution in y.";
 
     public static final String OMSGEOPAPARAZZICONVERTER_LABEL = JGTConstants.VECTORPROCESSING;
     public static final String OMSGEOPAPARAZZICONVERTER_TAGS = "geopaparazzi, vector";
@@ -1410,7 +1419,7 @@ public class GearsMessages {
     public static final String OMSRASTERCONVERTER_DOCUMENTATION = "OmsRasterConverter.html";
     public static final String OMSRASTERCONVERTER_KEYWORDS = "IO, Coverage, Raster, Convert, OmsRasterReader";
     public static final String OMSRASTERCONVERTER_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERCONVERTER_NAME = "rconvert";
+    public static final String OMSRASTERCONVERTER_NAME = "oms_rconvert";
     public static final int OMSRASTERCONVERTER_STATUS = 40;
     public static final String OMSRASTERCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERCONVERTER_AUTHORNAMES = "Andrea Antonello";
