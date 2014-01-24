@@ -111,17 +111,5 @@ public class OmsCurvaturesIM extends JGTModelIM {
 
     }
 
-    public static void main( String[] args ) throws Exception {
-        OmsCurvaturesIM g = new OmsCurvaturesIM();
-        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m/q1swb_2008_export_043_xyz2_2m.shp";
-        g.outPlan = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_curvatures/planar.shp";
-        g.outTang = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_curvatures/tang.shp";
-        g.outProf = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_2m_curvatures/prof.shp";
-        g.process();
-
-        // OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-        // im.inFolder = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m_aspect/";
-        // im.process();
-    }
 
 }

@@ -116,12 +116,4 @@ public class OmsGradientIM extends JGTModelIM {
         outDataIter.setSample(writeCol, writeRow, 0, gradient);
     }
 
-    public static void main( String[] args ) throws Exception {
-        OmsGradientIM g = new OmsGradientIM();
-        g.inElev = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m/q1swb_2008_export_043_xyz2_1m.shp";
-        g.outSlope = "/media/lacntfs/oceandtm/q1swb_2008_export_043_xyz2_1m_gradient//q1swb_2008_export_043_xyz2_1m_gradient.shp";
-        g.process();
-
-    }
-
 }
