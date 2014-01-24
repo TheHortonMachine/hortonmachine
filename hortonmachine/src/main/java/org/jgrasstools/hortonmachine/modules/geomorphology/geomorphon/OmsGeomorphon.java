@@ -55,7 +55,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("raster, geomorphon")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("geomorphonraster")
+@Name("oms_geomorphonraster")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
 public class OmsGeomorphon extends JGTModel {
