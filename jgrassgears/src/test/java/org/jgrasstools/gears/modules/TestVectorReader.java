@@ -87,8 +87,7 @@ public class TestVectorReader extends HMTestCase {
         }
 
         if (tmpShape.exists()) {
-            if (!tmpShape.delete())
-                throw new IOException();
+            tmpShape.delete();
         }
     }
 

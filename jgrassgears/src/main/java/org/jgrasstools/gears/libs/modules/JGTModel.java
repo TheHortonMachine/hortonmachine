@@ -66,10 +66,12 @@ public class JGTModel implements Process {
             @Override
             public boolean errorOccurred( String message, Throwable thrown, Object where, boolean isRetryable )
                     throws RuntimeException {
-                String localizedMessage = thrown.getLocalizedMessage();
-                if (!localizedMessage.equals("com/sun/medialib/mlib/Image")) {
-                    System.err.println(message);
-                    thrown.printStackTrace(System.err);
+                if (thrown != null) {
+                    String localizedMessage = thrown.getLocalizedMessage();
+                    if (localizedMessage != null && !localizedMessage.equals("com/sun/medialib/mlib/Image")) {
+                        System.err.println(message);
+                        thrown.printStackTrace(System.err);
+                    }
                 }
                 return false;
             }
