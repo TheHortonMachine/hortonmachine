@@ -246,6 +246,13 @@ public abstract class JGTModelIM extends JGTModel {
                 processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
             }
         }
+        
+        for( RandomIter inRasterIterator : inRasterIterators ) {
+            inRasterIterator.done();
+        }
+        for( RandomIter outRasterIterator : outRasters ) {
+            outRasterIterator.done();
+        }
 
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
             File outputFile = outRasterFiles.get(i);
