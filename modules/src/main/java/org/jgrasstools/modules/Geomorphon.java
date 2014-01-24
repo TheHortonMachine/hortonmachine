@@ -20,16 +20,20 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Name;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon.OmsGeomorphon;
 
 @Name("geomorphonraster")
 public class Geomorphon extends OmsGeomorphon {
     @Description("An elevation raster.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inElev;
 
     @Description("Output categories raster.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;
 
