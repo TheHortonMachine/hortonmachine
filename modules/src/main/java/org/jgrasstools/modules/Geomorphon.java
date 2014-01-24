@@ -17,6 +17,7 @@
  */
 package org.jgrasstools.modules;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Name;
 
@@ -32,6 +33,7 @@ public class Geomorphon extends OmsGeomorphon {
     @In
     public String outRaster;
 
+    @Execute
     public void process() throws Exception {
         OmsGeomorphon geomorphon = new OmsGeomorphon();
         geomorphon.inElev = getRaster(inElev);

@@ -27,6 +27,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -77,6 +78,7 @@ public class OmsGeomorphon extends JGTModel {
     @Out
     public GridCoverage2D outRaster;
 
+    @Execute
     public void process() throws Exception {
         checkNull(inElev);
 

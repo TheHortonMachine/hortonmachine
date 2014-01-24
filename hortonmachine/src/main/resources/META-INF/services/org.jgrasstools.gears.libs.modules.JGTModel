@@ -15,6 +15,7 @@ org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir
 org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections
 org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsLeastCostFlowDirections
 org.jgrasstools.hortonmachine.modules.geomorphology.gc.OmsGc
+org.jgrasstools.hortonmachine.modules.geomorphology.geomorphon.OmsGeomorphon
 org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradient
 org.jgrasstools.hortonmachine.modules.geomorphology.gradient.OmsGradientIM
 org.jgrasstools.hortonmachine.modules.geomorphology.multitca.OmsMultiTca

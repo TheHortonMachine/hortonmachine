@@ -21,6 +21,7 @@ org.jgrasstools.modules.ExtractNetwork
 org.jgrasstools.modules.FileIterator
 org.jgrasstools.modules.FlowDirections
 org.jgrasstools.modules.Gc
+org.jgrasstools.modules.Geomorphon
 org.jgrasstools.modules.GeopaparazziConverter
 org.jgrasstools.modules.Gradient
 org.jgrasstools.modules.GridGeometryReader
