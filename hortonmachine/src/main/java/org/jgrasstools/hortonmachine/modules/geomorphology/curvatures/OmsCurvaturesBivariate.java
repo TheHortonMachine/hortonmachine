@@ -94,7 +94,7 @@ public class OmsCurvaturesBivariate extends JGTModel {
     public GridCoverage2D outAspect = null;
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outProf == null, doReset)) {
             return;
         }
@@ -255,18 +255,4 @@ public class OmsCurvaturesBivariate extends JGTModel {
         return parameters;
     }
 
-    public static void main( String[] args ) throws Exception {
-
-        OmsCurvaturesBivariate c = new OmsCurvaturesBivariate();
-        c.inElev = getRaster("/home/moovida/TMP/curvatures/dtm_flanginec.asc");
-        int cells = 5;
-        c.pCells = cells;
-        c.process();
-
-        dumpRaster(c.outAspect, "/home/moovida/TMP/curvatures/aspect_flanginec_" + cells + ".asc");
-        dumpRaster(c.outSlope, "/home/moovida/TMP/curvatures/slope_flanginec_" + cells + ".asc");
-        dumpRaster(c.outProf, "/home/moovida/TMP/curvatures/prof_flanginec_" + cells + ".asc");
-        dumpRaster(c.outPlan, "/home/moovida/TMP/curvatures/plan_flanginec_" + cells + ".asc");
-
-    }
 }
