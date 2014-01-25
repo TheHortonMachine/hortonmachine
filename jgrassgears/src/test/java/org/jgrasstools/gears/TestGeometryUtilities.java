@@ -13,12 +13,14 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.LinearRing;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * Test {@link GeometryUtilities}.
@@ -394,6 +396,34 @@ public class TestGeometryUtilities extends HMTestCase {
         pC1plus = new Coordinate(pC1.x, pC1.y, pC1.z + 1);
         angle = getAngleBetweenLinePlane(pC1plus, pC1, pC2, pC3);
         assertEquals(35.26438968, angle, DELTA);
+
+    }
+
+    public void testPolygonToUnitScaler() throws Exception {
+        GeometryFactory gf = GeometryUtilities.gf();
+        Polygon p1 = gf.createPolygon(new Coordinate[]{//
+                new Coordinate(-1, -3, 0),//
+                        new Coordinate(2, 1, 0),//
+                        new Coordinate(8, -4, 0),//
+                        new Coordinate(-1, -3, 0),//
+                });
+        Geometry scaled = GeometryUtilities.scaleToUnitaryArea(p1);
+        double area = scaled.getArea();
+        assertEquals(1.0, area, DELTA);
+
+        WKTReader reader = new WKTReader();
+
+        Geometry geometry = reader
+                .read("POLYGON ((1.5 2.2, -1.3 0.5, -0.9 -0.7, 2.1 -0.9, -0.2 -2.2, 4.9 -3, 5.9 -0.6, 3.3 -1.7, 6.3 1.2, 2.7 0.6, 2.8 2.1, 1.1 0, 0.1 0.3, 0 0.7, 1.5 2.2))");
+        scaled = GeometryUtilities.scaleToUnitaryArea((Polygon) geometry);
+        area = scaled.getArea();
+        assertEquals(1.0, area, DELTA);
+
+        geometry = reader
+                .read("POLYGON ((1.7999999999999998 1.29391606655914, 1.8928932188134537 1.4071067811865485, 2.0444297669803992 1.5314696123025462, 2.2173165676349122 1.6238795325112876, 2.404909677983874 1.6807852804032308, 2.6000000000000028 1.7, 2.795090322016131 1.6807852804032297, 2.9826834323650924 1.6238795325112856, 3.155570233019605 1.5314696123025433, 3.30710678118655 1.407106781186545, 3.431469612302547 1.2555702330195992, 3.5238795325112884 1.0826834323650862, 3.5807852804032314 0.8950903220161244, 3.6 0.7, 3.5807852804032305 0.5049096779838718, 3.5238795325112866 0.3173165676349102, 3.4314696123025454 0.1444297669803978, 3.3071067811865476 -0.0071067811865475, 3.1555702330196023 -0.1314696123025453, 2.98268343236509 -0.2238795325112868, 2.7950903220161285 -0.2807852804032305, 2.6 -0.3, 2.4049096779838717 -0.2807852804032305, 2.2173165676349105 -0.2238795325112868, 2.0444297669803984 -0.1314696123025454, 1.8928932188134526 -0.0071067811865476, 1.8 0.1060839334408596, 1.7071067811865475 -0.0071067811865475, 1.5555702330196022 -0.1314696123025453, 1.3826834323650898 -0.2238795325112868, 1.1950903220161284 -0.2807852804032305, 1 -0.3, 0.8049096779838718 -0.2807852804032305, 0.6173165676349103 -0.2238795325112868, 0.444429766980398 -0.1314696123025454, 0.2928932188134525 -0.0071067811865476, 0.1685303876974546 0.1444297669803978, 0.0761204674887132 0.3173165676349105, 0.0192147195967695 0.5049096779838722, 0 0.7000000000000007, 0.0192147195967698 0.8950903220161291, 0.0761204674887137 1.082683432365091, 0.1685303876974555 1.2555702330196032, 0.2928932188134536 1.4071067811865485, 0.4444297669803993 1.5314696123025462, 0.6173165676349122 1.6238795325112876, 0.8049096779838739 1.6807852804032308, 1.0000000000000024 1.7, 1.1950903220161309 1.6807852804032297, 1.3826834323650925 1.6238795325112856, 1.5555702330196048 1.5314696123025433, 1.70710678118655 1.407106781186545, 1.7999999999999998 1.29391606655914))");
+        scaled = GeometryUtilities.scaleToUnitaryArea((Polygon) geometry);
+        area = scaled.getArea();
+        assertEquals(1.0, area, DELTA);
 
     }
 

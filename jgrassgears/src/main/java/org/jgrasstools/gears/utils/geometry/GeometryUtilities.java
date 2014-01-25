@@ -27,18 +27,23 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.toDegrees;
 import static java.lang.Math.toRadians;
 
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.GeodeticCalculator;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.GeometryType;
+import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
@@ -980,4 +985,20 @@ public class GeometryUtilities {
         return new Coordinate(cx, cy, cz);
     }
 
+    /**
+     * Scales a {@link Polygon} to have an unitary area.
+     * 
+     * @param polygon the geometry to scale.
+     * @return a copy of the scaled geometry.
+     * @throws Exception 
+     */
+    public static Geometry scaleToUnitaryArea( Polygon polygon ) throws Exception {
+        double area = polygon.getArea();
+        double scale = sqrt(1.0 / area);
+        AffineTransform scaleAT = new AffineTransform();
+        scaleAT.scale(scale, scale);
+        AffineTransform2D scaleTransform = new AffineTransform2D(scaleAT);
+        polygon = (Polygon) JTS.transform(polygon, scaleTransform);
+        return polygon;
+    }
 }
