@@ -10,6 +10,7 @@ org.jgrasstools.hortonmachine.modules.geomorphology.ab.OmsAb
 org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspect
 org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspectIM
 org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvatures
+org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate
 org.jgrasstools.hortonmachine.modules.geomorphology.curvatures.OmsCurvaturesIM
 org.jgrasstools.hortonmachine.modules.geomorphology.draindir.OmsDrainDir
 org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsFlowDirections
