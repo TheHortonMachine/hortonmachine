@@ -333,8 +333,7 @@ public class FileUtilities {
      * @return the read map.
      * @throws IOException 
      */
-
-    public static LinkedHashMap<String, String> readFileToHasMap( String filePath, String separator, boolean valueFirst )
+    public static LinkedHashMap<String, String> readFileToHashMap( String filePath, String separator, boolean valueFirst )
             throws IOException {
         if (separator == null) {
             separator = "=";
