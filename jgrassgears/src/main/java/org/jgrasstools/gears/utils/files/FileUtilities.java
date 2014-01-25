@@ -28,7 +28,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -322,7 +322,7 @@ public class FileUtilities {
     }
 
     /**
-     * Method to read a properties file into a {@link HashMap}.
+     * Method to read a properties file into a {@link LinkedHashMap}.
      * 
      * <p>Empty lines are ignored, as well as lines that do not contain the
      * separator.</p>
@@ -333,13 +333,13 @@ public class FileUtilities {
      * @return the read map.
      * @throws IOException 
      */
-    public static HashMap<String, String> readFileToHasMap( String filePath, String separator, boolean valueFirst )
+    public static LinkedHashMap<String, String> readFileToHasMap( String filePath, String separator, boolean valueFirst )
             throws IOException {
         if (separator == null) {
             separator = "=";
         }
         List<String> lines = readFileToLinesList(filePath);
-        HashMap<String, String> propertiesMap = new HashMap<String, String>();
+        LinkedHashMap<String, String> propertiesMap = new LinkedHashMap<String, String>();
         for( String line : lines ) {
             line = line.trim();
             if (line.length() == 0) {
