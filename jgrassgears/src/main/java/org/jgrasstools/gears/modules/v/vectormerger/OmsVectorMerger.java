@@ -46,7 +46,7 @@ import oms3.annotations.Status;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureExtender;
@@ -81,7 +81,7 @@ public class OmsVectorMerger extends JGTModel {
 
         pm.beginTask("Merging features...", inVectors.size());
         try {
-            outVector = FeatureCollections.newCollection();
+            outVector = new DefaultFeatureCollection();
             for( SimpleFeatureCollection featureCollection : inVectors ) {
                 if (firstType == null) {
                     firstType = featureCollection.getSchema();
@@ -99,7 +99,7 @@ public class OmsVectorMerger extends JGTModel {
 
                     SimpleFeature extendFeature = fEx.extendFeature(f, new Object[0]);
 
-                    outVector.add(extendFeature);
+                    ((DefaultFeatureCollection) outVector).add(extendFeature);
                 }
                 pm.worked(1);
             }

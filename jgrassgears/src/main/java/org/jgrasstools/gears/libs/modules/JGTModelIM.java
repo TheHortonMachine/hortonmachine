@@ -81,7 +81,7 @@ public abstract class JGTModelIM extends JGTModel {
         ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
         if (readers.size() == 0) {
             File propertiesFile = FileUtilities.substituteExtention(imageMosaicSource, "properties");
-            HashMap<String, String> propertiesMap = FileUtilities.readFileToHasMap(propertiesFile.getAbsolutePath(), null, false);
+            HashMap<String, String> propertiesMap = FileUtilities.readFileToHashMap(propertiesFile.getAbsolutePath(), null, false);
 
             String xyREs = propertiesMap.get("Levels");
             String[] split = xyREs.split(",");
@@ -89,7 +89,7 @@ public abstract class JGTModelIM extends JGTModel {
             yRes = Double.parseDouble(split[1]);
 
             locationField = propertiesMap.get("LocationAttribute");
-            crs = imReader.getCrs();
+            crs = imReader.getCoordinateReferenceSystem();
 
             GeneralEnvelope originalEnvelope = imReader.getOriginalEnvelope();
             llCorner = originalEnvelope.getLowerCorner().getCoordinate();
@@ -245,6 +245,13 @@ public abstract class JGTModelIM extends JGTModel {
 
                 processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
             }
+        }
+        
+        for( RandomIter inRasterIterator : inRasterIterators ) {
+            inRasterIterator.done();
+        }
+        for( RandomIter outRasterIterator : outRasters ) {
+            outRasterIterator.done();
         }
 
         for( int i = 0; i < outRasterFiles.size(); i++ ) {

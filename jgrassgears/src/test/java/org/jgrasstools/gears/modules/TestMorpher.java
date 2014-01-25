@@ -23,15 +23,14 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Variables;
-import org.jgrasstools.gears.modules.r.morpher.Morpher;
+import org.jgrasstools.gears.modules.r.morpher.OmsMorpher;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
- * Test for {@link Morpher}
+ * Test for {@link OmsMorpher}
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -78,7 +77,7 @@ public class TestMorpher extends HMTestCase {
 
     public void testDilate() throws Exception {
 
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.DILATE;
         morpher.process();
@@ -95,7 +94,7 @@ public class TestMorpher extends HMTestCase {
         };
         checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 0, //
@@ -117,7 +116,7 @@ public class TestMorpher extends HMTestCase {
         };
         checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pKernel = new int[]{//
         /*    */0, 1, 1, //
@@ -140,7 +139,7 @@ public class TestMorpher extends HMTestCase {
 
         checkMatrixEqual(morphed.getRenderedImage(), dilated, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pKernel = new int[]{//
         /* */0, 0, 1, 0, 0,//
@@ -166,7 +165,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testErode() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.ERODE;
         morpher.process();
@@ -183,7 +182,7 @@ public class TestMorpher extends HMTestCase {
         };
         checkMatrixEqual(morphed.getRenderedImage(), eroded, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.ERODE;
         morpher.pKernel = new int[]{//
@@ -209,7 +208,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testSkeletonize() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.SKELETONIZE2;
         morpher.process();
@@ -228,7 +227,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testOpen() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.OPEN;
         morpher.process();
@@ -245,7 +244,7 @@ public class TestMorpher extends HMTestCase {
         };
         checkMatrixEqual(morphed.getRenderedImage(), opened, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.OPEN;
         morpher.pKernel = new int[]{//
@@ -269,7 +268,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testClose() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.CLOSE;
         morpher.process();
@@ -286,7 +285,7 @@ public class TestMorpher extends HMTestCase {
         };
         checkMatrixEqual(morphed.getRenderedImage(), closed, DELTA);
 
-        morpher = new Morpher();
+        morpher = new OmsMorpher();
         morpher.inMap = raster;
         morpher.pMode = Variables.CLOSE;
         morpher.pKernel = new int[]{//
@@ -311,7 +310,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testPrune() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = skeleton;
         morpher.pMode = Variables.PRUNE;
         morpher.pIterations = 1;
@@ -331,7 +330,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testLineendings() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = skeleton;
         morpher.pMode = Variables.LINEENDINGS;
         morpher.process();
@@ -350,7 +349,7 @@ public class TestMorpher extends HMTestCase {
     }
 
     public void testJunctions() throws Exception {
-        Morpher morpher = new Morpher();
+        OmsMorpher morpher = new OmsMorpher();
         morpher.inMap = skeleton;
         morpher.pMode = Variables.LINEJUNCTIONS;
         morpher.process();

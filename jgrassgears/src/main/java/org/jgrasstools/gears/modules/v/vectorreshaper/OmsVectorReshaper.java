@@ -51,7 +51,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -162,7 +162,7 @@ public class OmsVectorReshaper extends JGTModel {
         final List<Expression> expressions = createExpressionList(expressionString);
         SimpleFeatureType newFeatureType = createFeatureType(expressionString, originalFeatureType, names, expressions);
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         final SimpleFeatureBuilder build = new SimpleFeatureBuilder(newFeatureType);
         inVector.accepts(new FeatureVisitor(){
@@ -172,7 +172,7 @@ public class OmsVectorReshaper extends JGTModel {
                     build.add(expressions.get(i).evaluate(feature));
                 }
                 SimpleFeature created = build.buildFeature(feature.getID());
-                outVector.add(created);
+                ((DefaultFeatureCollection) outVector).add(created);
             }
         }, null);
 

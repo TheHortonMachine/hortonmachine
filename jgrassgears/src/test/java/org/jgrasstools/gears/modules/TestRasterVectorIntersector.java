@@ -21,7 +21,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector;
-import org.jgrasstools.gears.ui.OmsMapsViewer;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.RegionMap;

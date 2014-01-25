@@ -52,7 +52,7 @@ import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -141,7 +141,7 @@ public class OmsEpanetProjectFilesGenerator extends JGTModel {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
-            featureStore.addFeatures(FeatureCollections.newCollection());
+            featureStore.addFeatures(new DefaultFeatureCollection());
             transaction.commit();
         } catch (Exception problem) {
             problem.printStackTrace();
@@ -173,7 +173,7 @@ public class OmsEpanetProjectFilesGenerator extends JGTModel {
         SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
-            featureStore.addFeatures(FeatureCollections.newCollection());
+            featureStore.addFeatures(new DefaultFeatureCollection());
             transaction.commit();
         } catch (Exception problem) {
             problem.printStackTrace();

@@ -28,7 +28,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -207,8 +207,8 @@ public class HecrasSectionsFromDtmExtractor implements HecrasSectionsExtractor {
         SimpleFeatureType sectionPointsType = sectionPointsTypeBuilder.buildFeatureType();
         SimpleFeatureBuilder sectionPointsBuilder = new SimpleFeatureBuilder(sectionPointsType);
 
-        sectionsCollection = FeatureCollections.newCollection();
-        sectionPointsCollection = FeatureCollections.newCollection();
+        sectionsCollection = new DefaultFeatureCollection();
+        sectionPointsCollection = new DefaultFeatureCollection();
 
         int index = 0;
         for( NetworkPoint netPoint : networkPointList ) {
@@ -229,7 +229,7 @@ public class HecrasSectionsFromDtmExtractor implements HecrasSectionsExtractor {
             Object[] sectionValues = new Object[]{simpleSectionGeometry, sectionId, netPoint.progressiveDistance};
             sectionBuilder.addAll(sectionValues);
             SimpleFeature sectionFeature = sectionBuilder.buildFeature(null);
-            sectionsCollection.add(sectionFeature);
+            ((DefaultFeatureCollection) sectionsCollection).add(sectionFeature);
 
             Coordinate[] coordinates = sectionGeometry.getCoordinates();
             List<Double> sectionProgressive = netPoint.sectionProgressive;
@@ -239,7 +239,7 @@ public class HecrasSectionsFromDtmExtractor implements HecrasSectionsExtractor {
                 Object[] sectionPointsValues = new Object[]{point, i, coordinates[i].z, sectionProgressive.get(i), sectionId};
                 sectionPointsBuilder.addAll(sectionPointsValues);
                 SimpleFeature sectionPointsFeature = sectionPointsBuilder.buildFeature(null);
-                sectionPointsCollection.add(sectionPointsFeature);
+                ((DefaultFeatureCollection) sectionPointsCollection).add(sectionPointsFeature);
             }
             index++;
         }

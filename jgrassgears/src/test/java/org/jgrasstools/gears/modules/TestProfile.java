@@ -19,7 +19,7 @@ package org.jgrasstools.gears.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.modules.r.profile.OmsProfile;
@@ -93,7 +93,7 @@ public class TestProfile extends HMTestCase {
         Object[] values = new Object[]{lineString};
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         newCollection.add(feature);
         return newCollection;
     }

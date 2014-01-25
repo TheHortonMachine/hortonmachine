@@ -66,9 +66,9 @@ package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 //     * @param dp 'InputFile' or 'DefaultValue' to specify input .dxf file.
 //     *
 //     */
-//    public FeatureCollection<SimpleFeatureType, SimpleFeature> read( File file,
+//    public SimpleFeatureCollection read( File file,
 //            CoordinateReferenceSystem crs ) throws Exception {
-//        FeatureCollection<SimpleFeatureType, SimpleFeature> result;
+//        SimpleFeatureCollection result;
 //        GeometryFactory factory = new GeometryFactory();
 //        dxfFile = DxfFile.createFromFile(file, crs);
 //        result = dxfFile.read(factory);

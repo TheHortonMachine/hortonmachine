@@ -59,6 +59,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Name("grassmosaic")
 @Status(Status.EXPERIMENTAL)
 @License("General Public License Version 3 (GPLv3)")
+@UI(JGTConstants.HIDE_UI_HINT)
 public class GrassMosaicLegacy extends JGTModel {
 
     @Description("The list of files that have to be patched (used if inGeodata is null).")

@@ -20,7 +20,10 @@ package org.jgrasstools.utils.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.List;
 import java.util.Set;
 
 import org.jgrasstools.Modules;
@@ -39,15 +42,16 @@ public class ServiceGenerator {
             throw new IOException();
         }
 
-        StringBuilder sb = new StringBuilder();
-
         Modules jgg = Modules.getInstance();
         Set<Entry<String, Class< ? >>> cls = jgg.moduleName2Class.entrySet();
+        
+        List<String > names = new ArrayList<String>();
         for( Entry<String, Class< ? >> cl : cls ) {
-            sb.append(cl.getValue().getCanonicalName()).append("\n");;
+            String canonicalName = cl.getValue().getCanonicalName();
+            names.add(canonicalName);
         }
 
-        FileUtilities.writeFile(sb.toString(), serviceFile);
-
+        Collections.sort(names);
+        FileUtilities.writeFile(names, serviceFile);
     }
 }

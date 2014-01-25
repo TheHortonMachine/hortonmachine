@@ -46,7 +46,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeature;
@@ -89,7 +89,7 @@ public class OmsVectorFieldRounder extends JGTModel {
 
         formatter = new DecimalFormat(pPattern);
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         int size = inVector.size();
         pm.beginTask("Rounding data...", size);
@@ -106,7 +106,7 @@ public class OmsVectorFieldRounder extends JGTModel {
                 feature.setAttribute(fRound, num);
             }
 
-            outVector.add(feature);
+            ((DefaultFeatureCollection) outVector).add(feature);
             pm.worked(1);
         }
         pm.done();

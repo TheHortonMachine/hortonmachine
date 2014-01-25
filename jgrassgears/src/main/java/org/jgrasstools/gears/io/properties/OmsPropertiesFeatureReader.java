@@ -49,8 +49,8 @@ import org.geotools.data.Query;
 import org.geotools.data.Transaction;
 import org.geotools.data.property.PropertyDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -100,12 +100,12 @@ public class OmsPropertiesFeatureReader extends JGTModel {
 
             String name = FileUtilities.getNameWithoutExtention(propertiesFile);
 
-            geodata = FeatureCollections.newCollection();
+            geodata = new DefaultFeatureCollection();
             Query query = new Query(name);
             reader = store.getFeatureReader(query, Transaction.AUTO_COMMIT);
             while( reader.hasNext() ) {
                 SimpleFeature feature = reader.next();
-                geodata.add(feature);
+                ((DefaultFeatureCollection) geodata).add(feature);
             }
         } finally {
             pm.done();

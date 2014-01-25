@@ -29,9 +29,9 @@ import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
-import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
-
 import junit.framework.TestCase;
+
+import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 
 public class HMTestCase extends TestCase {
     protected static final double DELTA = 0.0000001;

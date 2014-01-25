@@ -48,18 +48,14 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
 @Keywords("Labeling, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("labeler")
+@Name("omslabeler")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Labeler extends JGTModel {
+public class OmsLabeler extends JGTModel {
 
     @Description("The map to label.")
     @In
     public GridCoverage2D inMap = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The resulting map.")
     @Out

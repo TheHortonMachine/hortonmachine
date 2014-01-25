@@ -27,10 +27,9 @@ package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
@@ -52,7 +51,7 @@ public class DxfLWPOLYLINE extends DxfENTITY {
         super("DEFAULT");
     }
 
-    public static DxfGroup readEntity( RandomAccessFile raf, FeatureCollection<SimpleFeatureType, SimpleFeature> entities )
+    public static DxfGroup readEntity( RandomAccessFile raf, DefaultFeatureCollection entities )
             throws IOException {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(DxfFile.DXF_LINESCHEMA);
         String layer = "";

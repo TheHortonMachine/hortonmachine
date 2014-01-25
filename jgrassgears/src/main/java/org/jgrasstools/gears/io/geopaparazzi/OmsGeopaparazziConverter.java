@@ -17,6 +17,22 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,7 +61,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -61,7 +77,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineString;
@@ -190,7 +205,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         SimpleFeatureType featureType = b.buildFeatureType();
         pm.beginTask("Import notes...", -1);
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
         Statement statement = null;
         try {
@@ -222,7 +237,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 Object[] values = new Object[]{point, text, dateTimeString, String.valueOf(altim)};
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
-                newCollection.add(feature);
+                ((DefaultFeatureCollection) newCollection).add(feature);
             }
 
         } finally {
@@ -315,7 +330,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                     SimpleFeatureType featureType = b.buildFeatureType();
                     SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
 
-                    SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+                    DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
                     builderAndCollectionPair = new BuilderAndCollectionPair();
                     builderAndCollectionPair.builder = builder;
                     builderAndCollectionPair.collection = newCollection;
@@ -364,7 +379,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
     private static class BuilderAndCollectionPair {
         SimpleFeatureBuilder builder;
-        SimpleFeatureCollection collection;
+        DefaultFeatureCollection collection;
     }
 
     private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
@@ -439,7 +454,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             b.add("DESCR", String.class);
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to lines...", logsList.size());
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             for( GpsLog log : logsList ) {
                 List<GpsPoint> points = log.points;
 
@@ -482,7 +497,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             b.add("DATE", String.class);
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to points...", logsList.size());
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             int index = 0;
             for( GpsLog log : logsList ) {
                 List<GpsPoint> gpsPointList = log.points;
@@ -538,7 +553,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             b.add("IMAGE", String.class);
             SimpleFeatureType featureType = b.buildFeatureType();
 
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             for( File imageFile : listFiles ) {
                 String name = imageFile.getName();
                 if (name.endsWith("jpg") || imageFile.getName().endsWith("JPG") || imageFile.getName().endsWith("png")

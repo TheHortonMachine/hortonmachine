@@ -55,7 +55,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -75,7 +75,6 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 @Description(OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION)
 @Documentation(OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION)
@@ -143,7 +142,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
         FeatureExtender fExt = null;
 
         Envelope2D inCoverageEnvelope = inRaster.getEnvelope2D();
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
         FeatureIterator<SimpleFeature> featureIterator = inVector.features();
         int all = inVector.size();
         pm.beginTask("Extracting raster information...", all);
@@ -166,7 +165,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                             new Class< ? >[]{Double.class});
 
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
-                outVector.add(extendedFeature);
+                ((DefaultFeatureCollection) outVector).add(extendedFeature);
             } else if (getGeometryType(geometry) == GEOMETRYTYPE.LINE || getGeometryType(geometry) == GEOMETRYTYPE.MULTILINE) {
                 if (pPos.trim().equalsIgnoreCase(START)) {
                     c = coordinates[0];
@@ -184,7 +183,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                             new String[]{fNew}, //
                             new Class< ? >[]{Double.class});
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{value});
-                outVector.add(extendedFeature);
+                ((DefaultFeatureCollection) outVector).add(extendedFeature);
             } else if (getGeometryType(geometry) == GEOMETRYTYPE.POLYGON
                     || getGeometryType(geometry) == GEOMETRYTYPE.MULTIPOLYGON) {
                 if (fExt == null) {
@@ -198,8 +197,8 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                 }
 
                 SimpleFeature singleFeature = FeatureUtilities.toDummyFeature(geometry, crs);
-                SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
-                newCollection.add(singleFeature);
+                SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
+                ((DefaultFeatureCollection) newCollection).add(singleFeature);
                 OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
                 raster.inVector = newCollection;
                 raster.inRaster = inRaster;
@@ -222,7 +221,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                 // }
                 SimpleFeature extendedFeature = fExt.extendFeature(feature, new Object[]{minMaxAvgSum[0], minMaxAvgSum[1],
                         minMaxAvgSum[2], minMaxAvgSum[3]});
-                outVector.add(extendedFeature);
+                ((DefaultFeatureCollection) outVector).add(extendedFeature);
             } else {
                 throw new ModelsIllegalargumentException("The Geometry type is not supported.", this);
             }

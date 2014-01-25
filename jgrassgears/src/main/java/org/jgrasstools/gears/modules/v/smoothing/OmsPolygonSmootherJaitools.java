@@ -44,7 +44,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jaitools.jts.PolygonSmoother;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -85,7 +85,7 @@ public class OmsPolygonSmootherJaitools extends JGTModel {
         if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         pm.message("Collecting geometries...");
         List<SimpleFeature> polygonsList = FeatureUtilities.featureCollectionToList(inVector);
@@ -109,7 +109,7 @@ public class OmsPolygonSmootherJaitools extends JGTModel {
                 Polygon[] lsArray = (Polygon[]) smoothedList.toArray(new Polygon[smoothedList.size()]);
                 MultiPolygon multiPolygonString = gF.createMultiPolygon(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(polygonsFeature, multiPolygonString);
-                outVector.add(newFeature);
+                ((DefaultFeatureCollection) outVector).add(newFeature);
             }
             pm.worked(1);
         }

@@ -24,13 +24,11 @@
 
 package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
-import java.util.Map;
+import java.io.RandomAccessFile;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * The TABLES section of a DXF file. It contains LAYERs, LTYPEs...

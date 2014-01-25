@@ -27,13 +27,11 @@ package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 /**
  * POINT DXF entity.
@@ -51,7 +49,7 @@ public class DxfPOINT extends DxfENTITY {
     }
 
     public static DxfGroup readEntity( RandomAccessFile raf,
-            FeatureCollection<SimpleFeatureType, SimpleFeature> entities )
+            DefaultFeatureCollection entities )
             throws IOException {
 
         double x = Double.NaN, y = Double.NaN, z = Double.NaN;

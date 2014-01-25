@@ -26,6 +26,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
+import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.io.File;
 import java.text.MessageFormat;
@@ -53,6 +54,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -132,7 +134,7 @@ public class OmsZonalStatsIM extends JGTModelIM {
 
         createFeatureBuilder();
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inVector, true, null);
 
         ConcurrentLinkedQueue<Geometry> allGeometriesQueue = new ConcurrentLinkedQueue<Geometry>();
@@ -183,8 +185,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
                                 polygonStats[2], //
                                 polygonStats[3], //
                                 polygonStats[4], //
-                                polygonStats[5], //
-                                polygonStats[6] //
+                                (int) polygonStats[5], //
+                                (int) polygonStats[6] //
                         };
                     } else {
                         values = new Object[]{geometry, //
@@ -194,14 +196,14 @@ public class OmsZonalStatsIM extends JGTModelIM {
                                 polygonStats[3], //
                                 polygonStats[4], //
                                 polygonStats[5], //
-                                polygonStats[6], //
-                                polygonStats[7] //
+                                (int) polygonStats[6], //
+                                (int) polygonStats[7] //
                         };
                     }
 
                     featureBuilder.addAll(values);
                     SimpleFeature feature = featureBuilder.buildFeature(null);
-                    outVector.add(feature);
+                    ((DefaultFeatureCollection) outVector).add(feature);
                 }
             }
             pm.worked(1);
@@ -327,9 +329,9 @@ public class OmsZonalStatsIM extends JGTModelIM {
         b.add("var", Double.class);
         b.add("sdev", Double.class);
         if (pTotalMean != null)
-            b.add("meanabsdev", Double.class);
-        b.add("activecells", Integer.class);
-        b.add("invalidcells", Integer.class);
+            b.add("avgabsdev", Double.class);
+        b.add("actcells", Integer.class);
+        b.add("invcells", Integer.class);
         SimpleFeatureType type = b.buildFeatureType();
         featureBuilder = new SimpleFeatureBuilder(type);
     }

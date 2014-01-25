@@ -30,7 +30,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
@@ -170,7 +170,7 @@ public class OmsValidateDoubleStation extends JGTModel {
         }
 
         stationsIter = inStations.features();
-        outStations = FeatureCollections.newCollection();
+        outStations = new DefaultFeatureCollection();
 
         try {
             while( stationsIter.hasNext() ) {
@@ -184,7 +184,7 @@ public class OmsValidateDoubleStation extends JGTModel {
                     }
                 }
 
-                outStations.add(feature);
+                ((DefaultFeatureCollection) outStations).add(feature);
 
             }
 

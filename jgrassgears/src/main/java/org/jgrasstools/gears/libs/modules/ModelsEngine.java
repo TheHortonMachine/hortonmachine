@@ -47,7 +47,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
@@ -311,7 +311,7 @@ public class ModelsEngine {
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
+        SimpleFeatureCollection featureCollection = new DefaultFeatureCollection();
         int index = 0;
         for( LineString lineString : newGeometryVectorLine ) {
             Object[] values = new Object[]{lineString};
@@ -320,7 +320,7 @@ public class ModelsEngine {
             // build the feature with provided ID
             SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + index); //$NON-NLS-1$
             index++;
-            featureCollection.add(feature);
+            ((DefaultFeatureCollection) featureCollection).add(feature);
         }
         return featureCollection;
     }

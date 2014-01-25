@@ -83,7 +83,7 @@ public class TestDiskTreeIO extends HMTestCase {
     //
     // w.writeGeometries(array);
     //
-    // SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+    // SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
     // SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
     // b.setName("typename");
     // b.setCRS(DefaultGeographicCRS.WGS84);

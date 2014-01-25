@@ -46,7 +46,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jaitools.jts.LineSmoother;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -88,7 +88,7 @@ public class OmsLineSmootherJaitools extends JGTModel {
         if (!concatOr(outVector == null, doReset)) {
             return;
         }
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         pm.message("Collecting geometries...");
         List<SimpleFeature> linesList = FeatureUtilities.featureCollectionToList(inVector);
@@ -112,7 +112,7 @@ public class OmsLineSmootherJaitools extends JGTModel {
                 LineString[] lsArray = (LineString[]) smoothedList.toArray(new LineString[smoothedList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
-                outVector.add(newFeature);
+                ((DefaultFeatureCollection) outVector).add(newFeature);
             }
             pm.worked(1);
         }

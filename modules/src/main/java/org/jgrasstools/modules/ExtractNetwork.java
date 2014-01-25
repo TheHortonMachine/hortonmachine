@@ -114,5 +114,6 @@ public class ExtractNetwork extends JGTModel {
         extractnetwork.process();
         dumpRaster(extractnetwork.outNet, outNet);
     }
+    
 
 }

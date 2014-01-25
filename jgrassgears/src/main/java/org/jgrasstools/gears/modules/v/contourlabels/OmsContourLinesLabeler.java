@@ -47,7 +47,7 @@ import oms3.annotations.Status;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -106,7 +106,7 @@ public class OmsContourLinesLabeler extends JGTModel {
 
         CoordinateReferenceSystem crs = inSchema.getCoordinateReferenceSystem();
 
-        outPoints = FeatureCollections.newCollection();
+        outPoints = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("labelpoints");
         b.setCRS(crs);
@@ -151,7 +151,7 @@ public class OmsContourLinesLabeler extends JGTModel {
                     Object[] values = new Object[]{labelPoint, elevation, azimuth, azimuthFrom90};
                     builder.addAll(values);
                     SimpleFeature pointFeature = builder.buildFeature(outType.getTypeName() + "." + count++);
-                    outPoints.add(pointFeature);
+                    ((DefaultFeatureCollection) outPoints).add(pointFeature);
                 }
 
             }

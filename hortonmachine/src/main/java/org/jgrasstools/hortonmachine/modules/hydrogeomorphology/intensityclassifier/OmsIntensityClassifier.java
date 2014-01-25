@@ -69,32 +69,32 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 public class OmsIntensityClassifier extends JGTModel {
 
     @Description(OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION)
-    @Unit("[m]")
+    @Unit("m")
     @In
     public GridCoverage2D inWaterDepth;
 
     @Description(OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION)
-    @Unit("[m/s]")
+    @Unit("m/s")
     @In
     public GridCoverage2D inVelocity;
 
     @Description(OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION)
-    @Unit("[m]")
+    @Unit("m")
     @In
     public Double pUpperThresWaterdepth = 1.0;
 
     @Description(OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION)
-    @Unit("[m2/s]")
+    @Unit("m2/s")
     @In
     public Double pUpperThresVelocityWaterdepth = 1.0;
 
     @Description(OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION)
-    @Unit("[m]")
+    @Unit("m")
     @In
     public Double pLowerThresWaterdepth = 0.5;
 
     @Description(OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION)
-    @Unit("[m2/s]")
+    @Unit("m2/s")
     @In
     public Double pLowerThresVelocityWaterdepth = 0.5;
 

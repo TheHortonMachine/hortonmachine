@@ -66,7 +66,7 @@ import oms3.annotations.Unit;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -256,8 +256,8 @@ public class OmsDebrisVandre extends JGTModel {
         RenderedImage slopeRI = inSlope.getRenderedImage();
         RandomIter slopeIter = RandomIterFactory.create(slopeRI, null);
 
-        outPaths = FeatureCollections.newCollection();
-        outIndexedTriggers = FeatureCollections.newCollection();
+        outPaths = new DefaultFeatureCollection();
+        outIndexedTriggers = new DefaultFeatureCollection();
 
         SimpleFeatureType triggersType = createTriggersType();
         SimpleFeatureType pathsType = createPathType();
@@ -459,13 +459,13 @@ public class OmsDebrisVandre extends JGTModel {
                                 Object[] values = new Object[]{pathLine, id};
                                 builder.addAll(values);
                                 SimpleFeature pathFeature = builder.buildFeature(null);
-                                outPaths.add(pathFeature);
+                                ((DefaultFeatureCollection) outPaths).add(pathFeature);
 
                                 builder = new SimpleFeatureBuilder(triggersType);
                                 values = new Object[]{triggerPoint, id};
                                 builder.addAll(values);
                                 SimpleFeature triggerFeature = builder.buildFeature(null);
-                                outIndexedTriggers.add(triggerFeature);
+                                ((DefaultFeatureCollection) outIndexedTriggers).add(triggerFeature);
 
                                 featureIndex++;
                             }

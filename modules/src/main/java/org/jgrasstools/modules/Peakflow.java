@@ -25,18 +25,17 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LABE
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_LICENSE;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_NAME;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_STATUS;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRainfall_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsub_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inRescaledsup_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inSat_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_inTopindex_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_outDischarge_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pA_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pCelerity_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pDiffusion_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pN_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSPEAKFLOW_pSat_DESCRIPTION;
 
+import java.io.File;
 import java.util.HashMap;
 
 import oms3.annotations.Author;
@@ -51,6 +50,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesReader;
+import org.jgrasstools.gears.io.timeseries.OmsTimeSeriesWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.peakflow.OmsPeakflow;
@@ -109,16 +110,19 @@ public class Peakflow extends JGTModel {
     @In
     public String inRescaledsub = null;
 
-    @Description(OMSPEAKFLOW_inRainfall_DESCRIPTION)
+    @Description("The oms csv of rainfall data per timestep.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public HashMap<DateTime, double[]> inRainfall;
+    public String inRainfall;
 
-    @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
+    @Description("The oms csv of peakflow output per timestep.")
+    @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public HashMap<DateTime, double[]> outDischarge;
+    public String outDischarge;
 
     @Execute
     public void process() throws Exception {
+
         OmsPeakflow peakflow = new OmsPeakflow();
         peakflow.pA = pA;
         peakflow.pN = pN;
@@ -129,11 +133,27 @@ public class Peakflow extends JGTModel {
         peakflow.inSat = getRaster(inSat);
         peakflow.inRescaledsup = getRaster(inRescaledsup);
         peakflow.inRescaledsub = getRaster(inRescaledsub);
-        peakflow.inRainfall = inRainfall;
+        if (inRainfall != null && new File(inRainfall).exists()) {
+            OmsTimeSeriesReader reader = new OmsTimeSeriesReader();
+            reader.file = inRainfall;
+            reader.fileNovalue = "-9999";
+            reader.read();
+            HashMap<DateTime, double[]> outData = reader.outData;
+            peakflow.inRainfall = outData;
+        }
         peakflow.pm = pm;
         peakflow.doProcess = doProcess;
         peakflow.doReset = doReset;
         peakflow.process();
-        outDischarge = peakflow.outDischarge;
+        
+        OmsTimeSeriesWriter writer = new OmsTimeSeriesWriter();
+        writer.columns = "date, discharge";
+        writer.file = outDischarge;
+        writer.doDates = true;
+        writer.inData = peakflow.outDischarge;
+        writer.tablename = "discharge";
+        writer.write();
+        writer.close();
+        
     }
 }

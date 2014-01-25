@@ -56,7 +56,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -158,7 +158,7 @@ public class OmsBasinShape extends JGTModel {
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         
-        outBasins = FeatureCollections.newCollection();
+        outBasins = new DefaultFeatureCollection();
 
         // for each stream correct problems with basins and create geometries
         pm.beginTask("Extracting basins...", nstream[0]);
@@ -300,7 +300,7 @@ public class OmsBasinShape extends JGTModel {
                 builder.addAll(values);
                 // build the feature with provided ID
                 SimpleFeature feature = builder.buildFeature(type.getTypeName() + "." + num);
-                outBasins.add(feature);
+                ((DefaultFeatureCollection) outBasins).add(feature);
             }
             pm.worked(1);
         }

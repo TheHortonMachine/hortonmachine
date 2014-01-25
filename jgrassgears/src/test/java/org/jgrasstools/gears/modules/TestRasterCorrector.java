@@ -23,7 +23,6 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector;
-import org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;

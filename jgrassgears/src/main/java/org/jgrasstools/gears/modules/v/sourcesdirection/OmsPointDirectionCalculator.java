@@ -34,6 +34,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULAT
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_pRes_DESCRIPTION;
 import static org.jgrasstools.gears.utils.coverage.CoverageUtilities.gridToWorld;
 
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
@@ -55,7 +56,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -103,7 +104,7 @@ public class OmsPointDirectionCalculator extends JGTModel {
 
         FeatureIterator<SimpleFeature> inFeatureIterator = inSources.features();
 
-        outSources = FeatureCollections.newCollection();
+        outSources = new DefaultFeatureCollection();
 
         FeatureExtender fExt = new FeatureExtender(inSources.getSchema(), new String[]{"azimuth", "availpixels", "c11", "c12",
                 "c13", "c21", "c22", "c23", "c31", "c32", "c33"}, new Class< ? >[]{Double.class, Integer.class, Double.class,
@@ -250,7 +251,7 @@ public class OmsPointDirectionCalculator extends JGTModel {
             SimpleFeature azimuthFeature = fExt.extendFeature(feature, new Object[]{azimuth, pixelNum, getValue(v11),
                     getValue(v12), getValue(v13), getValue(v21), getValue(center), getValue(v23), getValue(v31), getValue(v32),
                     getValue(v33)});
-            outSources.add(azimuthFeature);
+            ((DefaultFeatureCollection) outSources).add(azimuthFeature);
 
         }
         pm.done();

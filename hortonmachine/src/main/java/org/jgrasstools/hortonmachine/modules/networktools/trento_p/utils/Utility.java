@@ -23,6 +23,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -179,7 +180,7 @@ public class Utility {
          * Create The Feature Collection. Extract the geometry data from the
          * inPipesFC and other data from networkPipe.
          */
-        SimpleFeatureCollection outPipesFC = FeatureCollections.newCollection();
+        DefaultFeatureCollection outPipesFC = new DefaultFeatureCollection();
         SimpleFeatureBuilder builderFeature = new SimpleFeatureBuilder(type);
         FeatureIterator<SimpleFeature> stationsIter = inPipesFC.features();
         String searchedField = PipesTrentoP.PER_AREA.getAttributeName();

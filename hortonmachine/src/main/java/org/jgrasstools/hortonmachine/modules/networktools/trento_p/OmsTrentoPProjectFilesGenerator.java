@@ -49,7 +49,7 @@ import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.CRS;
@@ -151,7 +151,7 @@ public class OmsTrentoPProjectFilesGenerator extends JGTModel {
     }
 
     private SimpleFeatureCollection createNewCollection( SimpleFeatureType simpleFeatureType ) {
-        SimpleFeatureCollection featureCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection featureCollection = new DefaultFeatureCollection();
         SimpleFeatureIterator stationsIter = pOldVector.features();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(simpleFeatureType);
 

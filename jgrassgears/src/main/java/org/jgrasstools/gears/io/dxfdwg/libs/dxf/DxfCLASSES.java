@@ -24,14 +24,8 @@
 
 package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 
-import java.io.RandomAccessFile;
-import java.io.InputStreamReader;
 import java.io.IOException;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.RandomAccessFile;
 
 /**
  * Dxf section between the HEADER and the TABLES sections.

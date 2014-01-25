@@ -65,7 +65,7 @@ import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.util.NullProgressListener;
@@ -275,7 +275,7 @@ public class OmsExtractBasin extends JGTModel {
 
         rightPolygon = smoothVectorBasin(rightPolygon);
 
-        outVectorBasin = FeatureCollections.newCollection();
+        outVectorBasin = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("basins");
         b.setCRS(crs);
@@ -287,7 +287,7 @@ public class OmsExtractBasin extends JGTModel {
         Object[] values = new Object[]{rightPolygon, rightPolygon.getArea()};
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
-        outVectorBasin.add(feature);
+        ((DefaultFeatureCollection) outVectorBasin).add(feature);
     }
 
     private Polygon smoothVectorBasin( Polygon polygon ) throws Exception {
@@ -301,7 +301,7 @@ public class OmsExtractBasin extends JGTModel {
         try {
             LineString lineString = gf.createLineString(polygon.getCoordinates());
 
-            SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+            DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             newCollection.add(FeatureUtilities.toDummyFeature(lineString, null));
 
             OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
@@ -378,7 +378,7 @@ public class OmsExtractBasin extends JGTModel {
     }
 
     private void makeOutletFC( Point snappedOutletPoint ) {
-        outOutlet = FeatureCollections.newCollection();
+        outOutlet = new DefaultFeatureCollection();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("typename");
@@ -390,7 +390,7 @@ public class OmsExtractBasin extends JGTModel {
         Object[] values = new Object[]{snappedOutletPoint, -9999.0};
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
-        outOutlet.add(feature);
+        ((DefaultFeatureCollection) outOutlet).add(feature);
     }
 
     public static void main( String[] args ) throws Exception {

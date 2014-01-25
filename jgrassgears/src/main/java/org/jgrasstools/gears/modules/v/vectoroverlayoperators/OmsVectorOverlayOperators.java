@@ -51,7 +51,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -104,7 +104,7 @@ public class OmsVectorOverlayOperators extends JGTModel {
 
         CoordinateReferenceSystem crs = inMap1.getSchema().getCoordinateReferenceSystem();
 
-        outMap = FeatureCollections.newCollection();
+        outMap = new DefaultFeatureCollection();
 
         SimpleFeatureBuilder builder = null;
 
@@ -164,7 +164,7 @@ public class OmsVectorOverlayOperators extends JGTModel {
                 Object[] values = new Object[]{geometryN2, i};
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
-                outMap.add(feature);
+                ((DefaultFeatureCollection) outMap).add(feature);
             }
         }
 

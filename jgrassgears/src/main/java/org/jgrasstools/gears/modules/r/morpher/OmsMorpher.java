@@ -60,10 +60,10 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
 @Keywords("Dilation, Erosion, Skeletonize, Open, Close, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("morpher")
+@Name("omsmorpher")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Morpher extends JGTModel {
+public class OmsMorpher extends JGTModel {
 
     @Description("The map to morph.")
     @In

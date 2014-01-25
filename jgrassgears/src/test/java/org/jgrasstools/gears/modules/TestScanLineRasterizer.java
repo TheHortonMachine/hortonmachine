@@ -23,7 +23,7 @@ import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
@@ -123,7 +123,7 @@ public class TestScanLineRasterizer extends HMTestCase {
         Object[] values = new Object[]{polygon, 1.0};
         builder.addAll(values);
         SimpleFeature feature = builder.buildFeature(null);
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
         newCollection.add(feature);
         return newCollection;
     }

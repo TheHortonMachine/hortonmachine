@@ -1228,10 +1228,10 @@ public class HortonMessages {
     public static final String OMSHECRASINPUTBUILDER_inBridges_DESCRIPTION = "The map of bridges to consider.";
     public static final String OMSHECRASINPUTBUILDER_inSections_DESCRIPTION = "The map of sections to consider. If supplied, they are used instead of extracting at a given interval. The sections need to be created with this same module.";
     public static final String OMSHECRASINPUTBUILDER_pTitle_DESCRIPTION = "The id of the river/simulation.";
-    public static final String OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION = "";
-    public static final String OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION = "";
-    public static final String OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION = "";
-    public static final String OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION = "";
+    public static final String OMSHECRASINPUTBUILDER_pSectionsIntervalDistance_DESCRIPTION = "The sections interval distance.";
+    public static final String OMSHECRASINPUTBUILDER_pSectionsWidth_DESCRIPTION = "The section width.";
+    public static final String OMSHECRASINPUTBUILDER_pBridgeBuffer_DESCRIPTION = "The bridge buffer.";
+    public static final String OMSHECRASINPUTBUILDER_fBridgeWidth_DESCRIPTION = "The bridge width.";
     public static final String OMSHECRASINPUTBUILDER_inHecras_DESCRIPTION = "The path to the generated hecras.";
     public static final String OMSHECRASINPUTBUILDER_outSections_DESCRIPTION = "The extracted section lines.";
     public static final String OMSHECRASINPUTBUILDER_outSectionPoints_DESCRIPTION = "The extracted section points (with the elevation in the attribute table).";

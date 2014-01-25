@@ -206,9 +206,12 @@ public class CoverageUtilities {
                 // autobox only once
                 double v = value;
 
+                double[] dArray = new double[sampleModel.getNumBands()];
+                for(int i = 0; i<dArray.length; i++){dArray[i]=v;}
+                
                 for( int y = 0; y < height; y++ ) {
                     for( int x = 0; x < width; x++ ) {
-                        raster.setSample(x, y, 0, v);
+                        raster.setPixel(x, y, dArray);
                     }
                 }
             }

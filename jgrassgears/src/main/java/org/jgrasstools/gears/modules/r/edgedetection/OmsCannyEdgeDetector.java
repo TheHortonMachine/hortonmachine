@@ -35,26 +35,20 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 @Description("Edge detection operations")
 @Author(name = "Tom Gibara, Andrea Antonello", contact = "http://www.tomgibara.com/computer-vision/canny-edge-detector, www.hydrologis.com")
 @Keywords("Edge detection, Raster")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("canny")
+@Name("omscanny")
 @Status(Status.DRAFT)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class CannyEdgeDetector extends JGTModel {
+public class OmsCannyEdgeDetector extends JGTModel {
 
     @Description("The map on which to perform edge detection.")
     @In
     public GridCoverage2D inMap = null;
-
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Description("The low threshold for the algorithm (default = 2.5).")
     @In
@@ -88,7 +82,7 @@ public class CannyEdgeDetector extends JGTModel {
 
         final RenderedImage renderedImage = inMap.getRenderedImage();
         Canny canny = new Canny(pLowthres, pHighthres, pRadiusgauss, pWidthgauss, doNormcontrast, renderedImage);
-        pm.beginTask("Processsing edgedetection...", -1);
+        pm.beginTask("Processing edgedetection...", -1);
         canny.process();
         pm.done();
 

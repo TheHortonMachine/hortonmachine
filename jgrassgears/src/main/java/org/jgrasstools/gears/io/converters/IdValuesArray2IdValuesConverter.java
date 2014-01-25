@@ -45,7 +45,9 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description(IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION)
@@ -55,6 +57,7 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 @Name(IDVALUESARRAY2IDVALUESCONVERTER_NAME)
 @Status(IDVALUESARRAY2IDVALUESCONVERTER_STATUS)
 @License(IDVALUESARRAY2IDVALUESCONVERTER_LICENSE)
+@UI(JGTConstants.HIDE_UI_HINT)
 public class IdValuesArray2IdValuesConverter extends JGTModel {
 
     @Description(IDVALUESARRAY2IDVALUESCONVERTER_inData_DESCRIPTION)

@@ -45,8 +45,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -127,7 +127,7 @@ public class OmsJsonFeatureReader extends JGTModel {
             throw new ModelsIllegalargumentException("No lat or lon data found", this);
         }
 
-        geodata = FeatureCollections.newCollection();
+        geodata = new DefaultFeatureCollection();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("json");
@@ -172,7 +172,7 @@ public class OmsJsonFeatureReader extends JGTModel {
             }
             builder.addAll(objs);
             SimpleFeature feature = builder.buildFeature(null);
-            geodata.add(feature);
+            ((DefaultFeatureCollection) geodata).add(feature);
             pm.worked(1);
         }
         pm.done();

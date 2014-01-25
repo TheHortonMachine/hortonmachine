@@ -52,7 +52,7 @@ import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -170,8 +170,8 @@ public class OmsVectorClipper extends JGTModel {
             e.printStackTrace();
         }
 
-        outMap = FeatureCollections.newCollection();
-        outMap.addAll(newFeatures);
+        outMap = new DefaultFeatureCollection();
+        ((DefaultFeatureCollection) outMap).addAll(newFeatures);
     }
     // public static void main( String[] args ) throws Exception {
     // PrintStream ps = System.out;

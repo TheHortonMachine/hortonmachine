@@ -57,6 +57,7 @@ import org.jgrasstools.hortonmachine.modules.statistics.kriging.OmsVariogram;
 @Name("_" + OMSVARIOGRAM_NAME)
 @Status(OMSVARIOGRAM_STATUS)
 @License(OMSVARIOGRAM_LICENSE)
+@UI(JGTConstants.HIDE_UI_HINT)
 public class Variogram extends JGTModel {
 
     @Description(OMSVARIOGRAM_inStations_DESCRIPTION)

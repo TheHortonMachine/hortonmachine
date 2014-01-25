@@ -56,7 +56,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -209,8 +209,8 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         }
         pm.done();
 
-        outNet = FeatureCollections.newCollection();
-        outNet.addAll(networkList);
+        outNet = new DefaultFeatureCollection();
+        ((DefaultFeatureCollection) outNet).addAll(networkList);
 
         /*
          * connect channels

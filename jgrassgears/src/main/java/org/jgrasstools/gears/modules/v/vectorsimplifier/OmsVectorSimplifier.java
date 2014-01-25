@@ -47,7 +47,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.features.FeatureGeometrySubstitutor;
@@ -95,7 +95,7 @@ public class OmsVectorSimplifier extends JGTModel {
         }
         FeatureIterator<SimpleFeature> inFeatureIterator = inVector.features();
 
-        outVector = FeatureCollections.newCollection();
+        outVector = new DefaultFeatureCollection();
 
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
 
@@ -139,7 +139,7 @@ public class OmsVectorSimplifier extends JGTModel {
 
             SimpleFeature newFeature = fGS.substituteGeometry(feature, newGeometry);
 
-            outVector.add(newFeature);
+            ((DefaultFeatureCollection) outVector).add(newFeature);
             pm.worked(1);
         }
         pm.done();

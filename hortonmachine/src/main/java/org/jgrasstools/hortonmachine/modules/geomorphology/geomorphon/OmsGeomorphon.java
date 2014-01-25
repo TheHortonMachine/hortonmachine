@@ -27,6 +27,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -55,7 +56,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("raster, geomorphon")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("geomorphonraster")
+@Name("oms_geomorphonraster")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
 public class OmsGeomorphon extends JGTModel {
@@ -77,6 +78,7 @@ public class OmsGeomorphon extends JGTModel {
     @Out
     public GridCoverage2D outRaster;
 
+    @Execute
     public void process() throws Exception {
         checkNull(inElev);
 

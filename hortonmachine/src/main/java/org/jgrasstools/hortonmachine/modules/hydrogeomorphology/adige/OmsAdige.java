@@ -73,7 +73,7 @@ import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
@@ -421,7 +421,7 @@ public class OmsAdige extends JGTModel {
         FeatureExtender fExt = new FeatureExtender(inNetwork.getSchema(), new String[]{NetworkChannel.NETNUMNAME},
                 new Class[]{Integer.class});
 
-        SimpleFeatureCollection newCollection = FeatureCollections.newCollection();
+        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
         SimpleFeatureIterator hillslopeFeatures = inHillslope.features();
         while( hillslopeFeatures.hasNext() ) {

@@ -34,6 +34,9 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,14 +51,17 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FileDataStoreFactorySpi;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.feature.FeatureCollections;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -100,23 +106,15 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         if (!file.endsWith(".shp")) {
             file = file + ".shp";
         }
-        File shapeFile = new File(file);
-        DataStoreFactorySpi dataStoreFactory = new ShapefileDataStoreFactory();
-        Map<String, Serializable> params = new HashMap<String, Serializable>();
-        params.put("url", shapeFile.toURI().toURL());
-        String key = "create spatial index";
-        if (doIndex) {
-            params.put(key, Boolean.TRUE);
-        } else {
-            params.put(key, Boolean.FALSE);
-        }
         if (geodata != null && geodata.size() != 0) {
             pType = geodata.getSchema();
         }
-        ShapefileDataStore newDataStore = (ShapefileDataStore) dataStoreFactory.createNewDataStore(params);
-        newDataStore.createSchema(pType);
-        newDataStore.forceSchemaCRS(pType.getCoordinateReferenceSystem());
-
+        File shapeFile = new File(file);
+        FileDataStoreFactorySpi factory = FileDataStoreFinder.getDataStoreFactory("shp");
+        Map map = Collections.singletonMap( "url", shapeFile.toURI().toURL() );
+        DataStore newDataStore = factory.createNewDataStore( map );
+        newDataStore.createSchema( pType );
+        
         Transaction transaction = new DefaultTransaction("create");
         String typeName = newDataStore.getTypeNames()[0];
         SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource(typeName);
@@ -124,7 +122,7 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         featureStore.setTransaction(transaction);
         try {
             if (geodata == null) {
-                featureStore.addFeatures(FeatureCollections.newCollection());
+                featureStore.addFeatures(new DefaultFeatureCollection());
             } else {
                 featureStore.addFeatures(geodata);
             }

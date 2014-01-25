@@ -24,10 +24,10 @@
 
 package org.jgrasstools.gears.io.dxfdwg.libs.dxf;
 
-import java.io.RandomAccessFile;
 import java.io.IOException;
-import java.util.Map;
+import java.io.RandomAccessFile;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * The LTYPE item in the TABLES section
