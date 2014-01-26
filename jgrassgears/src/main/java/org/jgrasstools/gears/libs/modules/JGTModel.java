@@ -24,6 +24,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 import javax.media.jai.JAI;
 import javax.media.jai.util.ImagingListener;
@@ -60,6 +62,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
  */
 public class JGTModel implements Process {
 
+    private static boolean doLogging = false;
     static {
         // remove nasty error message if jai has no native backbone
         JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
@@ -77,6 +80,14 @@ public class JGTModel implements Process {
             }
         });
 
+        if (!doLogging) {
+            // remove many messages from below libs that go out in the console
+            Logger l0 = Logger.getLogger("");
+            Handler[] handlers = l0.getHandlers();
+            for( Handler handler : handlers ) {
+                l0.removeHandler(handler);
+            }
+        }
     }
 
     @Description(//
