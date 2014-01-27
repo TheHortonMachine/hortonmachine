@@ -131,6 +131,7 @@ public class OmsRasterNull extends JGTModel {
         }
         pm.done();
 
+        inRasterIter.done();
         outIter.done();
 
         outRaster = CoverageUtilities.buildCoverage("nulled", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
