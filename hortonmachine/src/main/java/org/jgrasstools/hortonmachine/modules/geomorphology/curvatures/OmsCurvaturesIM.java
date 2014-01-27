@@ -85,9 +85,12 @@ public class OmsCurvaturesIM extends JGTModelIM {
     @Execute
     public void process() throws Exception {
         addSource(new File(inElev));
-        addDestination(new File(outPlan));
-        addDestination(new File(outTang));
-        addDestination(new File(outProf));
+        if (outPlan != null)
+            addDestination(new File(outPlan), 0);
+        if (outTang != null)
+            addDestination(new File(outTang), 1);
+        if (outProf != null)
+            addDestination(new File(outProf), 2);
 
         cellBuffer = 1;
         disXX = Math.pow(xRes, 2.0);
@@ -105,11 +108,12 @@ public class OmsCurvaturesIM extends JGTModelIM {
 
         RandomIter elevIter = inRasterIterators.get(0);
         OmsCurvatures.calculateCurvatures(elevIter, planTangProf, readCol, readRow, xRes, yRes, disXX, disYY);
-        outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
-        outRasters.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
-        outRasters.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
+        if (outPlan != null)
+            outRasters.get(0).setSample(writeCol, writeRow, 0, planTangProf[0]);
+        if (outTang != null)
+            outRasters.get(1).setSample(writeCol, writeRow, 0, planTangProf[1]);
+        if (outProf != null)
+            outRasters.get(2).setSample(writeCol, writeRow, 0, planTangProf[2]);
 
     }
-
-
 }

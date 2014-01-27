@@ -81,7 +81,8 @@ public abstract class JGTModelIM extends JGTModel {
         ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
         if (readers.size() == 0) {
             File propertiesFile = FileUtilities.substituteExtention(imageMosaicSource, "properties");
-            HashMap<String, String> propertiesMap = FileUtilities.readFileToHashMap(propertiesFile.getAbsolutePath(), null, false);
+            HashMap<String, String> propertiesMap = FileUtilities
+                    .readFileToHashMap(propertiesFile.getAbsolutePath(), null, false);
 
             String xyREs = propertiesMap.get("Levels");
             String[] split = xyREs.split(",");
@@ -103,6 +104,15 @@ public abstract class JGTModelIM extends JGTModel {
 
     protected void addDestination( File outputFile ) throws IOException {
         outRasterFiles.add(outputFile);
+    }
+
+    protected void addDestination( File outputFile, int position ) throws IOException {
+        if (outRasterFiles.size() < position + 1) {
+            for( int i = 0; i < position + 1; i++ ) {
+                outRasterFiles.add(new File("dummy"));
+            }
+        }
+        outRasterFiles.set(position, outputFile);
     }
 
     /**
@@ -193,13 +203,18 @@ public abstract class JGTModelIM extends JGTModel {
                 writeWest, writeCols, writeRows, crs);
 
         for( File outRasterFile : outRasterFiles ) {
-            WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
-                    JGTConstants.doubleNovalue);
-            RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
-            GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
-            outGridCoverages.add(writeGC);
-            WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
-            outRasters.add(outDataIter);
+            if (outRasterFile.exists()) {
+                WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
+                        JGTConstants.doubleNovalue);
+                RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
+                GridCoverage2D writeGC = CoverageUtilities.buildCoverage(outRasterFile.getName(), outWR, writeParams, crs);
+                outGridCoverages.add(writeGC);
+                WritableRandomIter outDataIter = CoverageUtilities.getWritableRandomIterator(outWR);
+                outRasters.add(outDataIter);
+            } else {
+                outGridCoverages.add(null);
+                outRasters.add(null);
+            }
         }
 
         readGridGeometry = null;
@@ -246,26 +261,28 @@ public abstract class JGTModelIM extends JGTModel {
                 processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
             }
         }
-        
+
         for( RandomIter inRasterIterator : inRasterIterators ) {
             inRasterIterator.done();
         }
         for( RandomIter outRasterIterator : outRasters ) {
-            outRasterIterator.done();
+            if (outRasterIterator != null)
+                outRasterIterator.done();
         }
 
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
             File outputFile = outRasterFiles.get(i);
             GridCoverage2D writeGC = outGridCoverages.get(i);
-
-            File outParentFolder = outputFile.getParentFile();
-            String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
-            File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
-            OmsRasterWriter writer = new OmsRasterWriter();
-            writer.pm = new DummyProgressMonitor();
-            writer.inRaster = writeGC;
-            writer.file = outTileFile.getAbsolutePath();
-            writer.process();
+            if (writeGC != null) {
+                File outParentFolder = outputFile.getParentFile();
+                String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
+                File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
+                OmsRasterWriter writer = new OmsRasterWriter();
+                writer.pm = new DummyProgressMonitor();
+                writer.inRaster = writeGC;
+                writer.file = outTileFile.getAbsolutePath();
+                writer.process();
+            }
         }
 
     }
