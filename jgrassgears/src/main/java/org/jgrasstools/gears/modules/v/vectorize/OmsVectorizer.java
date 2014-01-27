@@ -130,10 +130,6 @@ public class OmsVectorizer extends JGTModel {
 
     private CoordinateReferenceSystem crs;
 
-    private int cols;
-
-    private int rows;
-
     @Execute
     public void process() throws Exception {
         if (!concatOr(outVector == null, doReset)) {
@@ -141,9 +137,6 @@ public class OmsVectorizer extends JGTModel {
         }
         checkNull(inRaster);
         crs = inRaster.getCoordinateReferenceSystem();
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        cols = regionMap.getCols();
-        rows = regionMap.getRows();
 
         doRegionCheck();
 
@@ -239,8 +232,11 @@ public class OmsVectorizer extends JGTModel {
             int top = -Integer.MAX_VALUE;
             int bottom = Integer.MAX_VALUE;
 
-            RenderedImage rasterRI = inRaster.getRenderedImage();
-            RandomIter rasterIter = RandomIterFactory.create(rasterRI, null);
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+            int cols = regionMap.getCols();
+            int rows = regionMap.getRows();
+            
+            RandomIter rasterIter =  CoverageUtilities.getRandomIterator(inRaster);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
                     double value = rasterIter.getSampleDouble(c, r, 0);
@@ -252,6 +248,7 @@ public class OmsVectorizer extends JGTModel {
                     }
                 }
             }
+            rasterIter.done();
 
             GridGeometry2D gridGeometry = inRaster.getGridGeometry();
             GridEnvelope2D gEnv = new GridEnvelope2D();
