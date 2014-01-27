@@ -37,7 +37,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestVectorizer extends HMTestCase {
-    public void testCoverageSummary() throws Exception {
+    public void testVectorizer1() throws Exception {
 
         double[][] inData = HMTestMaps.extractNet0Data;
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
@@ -58,6 +58,34 @@ public class TestVectorizer extends HMTestCase {
         SimpleFeatureIterator featureIterator = outGeodata.features();
         assertTrue(featureIterator.hasNext());
 
+        SimpleFeature feature = featureIterator.next();
+        double value = ((Number) feature.getAttribute("rast")).doubleValue();
+        assertEquals(2.0, value, 0.0000001);
+        Geometry geometry = (Geometry) feature.getDefaultGeometry();
+        double area = geometry.getArea();
+        assertEquals(6300.0, area, 0.0000001);
+    }
+
+    public void testVectorizer2() throws Exception {
+        double[][] inData = HMTestMaps.extractNet0Data;
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
+        
+        OmsVectorizer vectorizer = new OmsVectorizer();
+        vectorizer.pm = pm;
+        vectorizer.inRaster = inCoverage;
+        vectorizer.pValue = null;
+        vectorizer.pThres = 1;
+        vectorizer.fDefault = "rast";
+        vectorizer.process();
+        
+        SimpleFeatureCollection outGeodata = vectorizer.outVector;
+        assertEquals(1, outGeodata.size());
+        
+        SimpleFeatureIterator featureIterator = outGeodata.features();
+        assertTrue(featureIterator.hasNext());
+        
         SimpleFeature feature = featureIterator.next();
         double value = ((Number) feature.getAttribute("rast")).doubleValue();
         assertEquals(2.0, value, 0.0000001);

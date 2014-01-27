@@ -34,17 +34,17 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestRasterNull extends HMTestCase {
 
-    public void testRasterNull() throws Exception {
-        double[][] data = new double[][]{//
-        /*    */{5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
-                {5, 5, 6, 6, 6, 6, 6, 6, 6, 5}, //
-                {5, 7, 6, 6, 6, 6, 6, 7, 7, 5}, //
-                {5, 5, 5, 7, 6, 6, 6, 6, 5, 5}, //
-                {5, 3, 4, 5, 5, 5, 5, 5, 5, 5}, //
-                {5, 2, 3, 3, 4, 4, 4, 3, 3, 5}, //
-                {5, 4, 4, 4, 4, 4, 5, 4, 4, 5}, //
-                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
+    private double[][] data = new double[][]{//
+    /*    */{5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+            {5, 5, 6, 6, 6, 6, 6, 6, 6, 5}, //
+            {5, 7, 6, 6, 6, 6, 6, 7, 7, 5}, //
+            {5, 5, 5, 7, 6, 6, 6, 6, 5, 5}, //
+            {5, 3, 4, 5, 5, 5, 5, 5, 5, 5}, //
+            {5, 2, 3, 3, 4, 4, 4, 3, 3, 5}, //
+            {5, 4, 4, 4, 4, 4, 5, 4, 4, 5}, //
+            {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
 
+    public void testRasterNull1() throws Exception {
         HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
@@ -67,12 +67,19 @@ public class TestRasterNull extends HMTestCase {
         };
         checkMatrixEqual(outCoverage.getRenderedImage(), expected1);
 
-        transformer = new OmsRasterNull();
+    }
+
+    public void testRasterNull2() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
+
+        OmsRasterNull transformer = new OmsRasterNull();
         transformer.inRaster = inCoverage;
         transformer.pValue = 4.0;
         transformer.pNull = 1.0;
         transformer.process();
-        outCoverage = transformer.outRaster;
+        GridCoverage2D outCoverage = transformer.outRaster;
 
         double[][] expected2 = new double[][]{//
         /*    */{5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0}, //
@@ -85,5 +92,31 @@ public class TestRasterNull extends HMTestCase {
                 {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0} //
         };
         checkMatrixEqual(outCoverage.getRenderedImage(), expected2);
+    }
+
+    public void testRasterNull3() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
+
+        OmsRasterNull transformer = new OmsRasterNull();
+        transformer.inRaster = inCoverage;
+        transformer.pValue = 4.0;
+        transformer.doInverse = true;
+        transformer.pNull = 1.0;
+        transformer.process();
+        GridCoverage2D outCoverage = transformer.outRaster;
+
+        double[][] expected3 = new double[][]{//
+        /*    */{NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, 4.0, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, 4.0, 4.0, 4.0, NaN, NaN, NaN}, //
+                {NaN, 4.0, 4.0, 4.0, 4.0, 4.0, NaN, 4.0, 4.0, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
+        };
+        checkMatrixEqual(outCoverage.getRenderedImage(), expected3);
     }
 }

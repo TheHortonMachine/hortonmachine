@@ -208,10 +208,20 @@ public class OmsRasterReader extends JGTModel {
     private double[] pRes;
     private int[] pRowcol;
 
+    private double internalFileNovalue = -9999.0;
+    private double internalGeodataNovalue = doubleNovalue;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
+        }
+
+        if (fileNovalue != null) {
+            internalFileNovalue = fileNovalue;
+        }
+        if (geodataNovalue != null) {
+            internalGeodataNovalue = geodataNovalue;
         }
 
         if (hasBoundsRequest() && (!hasResolutionRequest() && !hasRowColsRequest())) {
@@ -441,10 +451,10 @@ public class OmsRasterReader extends JGTModel {
         if (fileNovalue == null || geodataNovalue == null) {
             return;
         }
-        if (isNovalue(fileNovalue) && isNovalue(geodataNovalue)) {
+        if (isNovalue(internalFileNovalue) && isNovalue(internalGeodataNovalue)) {
             return;
         }
-        if (!NumericsUtilities.dEq(fileNovalue, geodataNovalue)) {
+        if (!NumericsUtilities.dEq(internalFileNovalue, internalGeodataNovalue)) {
             HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
             int height = params.get(ROWS).intValue();
             int width = params.get(COLS).intValue();
@@ -457,13 +467,14 @@ public class OmsRasterReader extends JGTModel {
             for( int r = 0; r < height; r++ ) {
                 for( int c = 0; c < width; c++ ) {
                     double value = readIter.getSampleDouble(c + minX, r + minY, 0);
-                    if (isNovalue(value) || value == fileNovalue || value == -Float.MAX_VALUE || value == Float.MAX_VALUE) {
-                        tmpIter.setSample(c, r, 0, geodataNovalue);
+                    if (isNovalue(value) || value == internalFileNovalue || value == -Float.MAX_VALUE || value == Float.MAX_VALUE) {
+                        tmpIter.setSample(c, r, 0, internalGeodataNovalue);
                     } else {
                         tmpIter.setSample(c, r, 0, value);
                     }
                 }
             }
+            readIter.done();
             outRaster = buildCoverage(new File(file).getName(), tmpWR, params, outRaster.getCoordinateReferenceSystem());
         }
     }

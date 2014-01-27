@@ -1289,7 +1289,7 @@ public class GearsMessages {
 
     public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
     public static final String OMSRASTERNULL_DOCUMENTATION = "";
-    public static final String OMSRASTERNULL_KEYWORDS = "NUll, Raster";
+    public static final String OMSRASTERNULL_KEYWORDS = "Null, Raster";
     public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERNULL_NAME = "rnull";
     public static final int OMSRASTERNULL_STATUS = 40;

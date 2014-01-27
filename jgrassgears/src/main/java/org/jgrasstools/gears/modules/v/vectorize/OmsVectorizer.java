@@ -74,6 +74,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
@@ -142,10 +143,7 @@ public class OmsVectorizer extends JGTModel {
 
         String classes = null;
         StringBuilder sb = new StringBuilder();
-        if (pValue == null) {
-            sb.append("(null null)");
-            classes = "1";
-        } else {
+        if (pValue != null) {
             sb.append("(null ");
             sb.append(pValue);
             sb.append("),[");
@@ -156,21 +154,28 @@ public class OmsVectorizer extends JGTModel {
             sb.append(pValue);
             sb.append(" null)");
             classes = "NaN," + pValue + ",NaN";
+
+            String ranges = sb.toString();
+            
+            pm.beginTask("Extract range: " + ranges, IJGTProgressMonitor.UNKNOWN);
+            
+            // values are first classified, since the vectorializer works on same values
+            OmsRangeLookup cont = new OmsRangeLookup();
+            cont.inRaster = inRaster;
+            cont.pRanges = ranges;
+            cont.pClasses = classes;
+            cont.pm = pm;
+            cont.process();
+            inRaster = cont.outRaster;
+            
+            pm.done();
         }
-        String ranges = sb.toString();
 
-        // values are first classified, since the vectorializer works on same values
-        OmsRangeLookup cont = new OmsRangeLookup();
-        cont.inRaster = inRaster;
-        cont.pRanges = ranges;
-        cont.pClasses = classes;
-        cont.pm = pm;
-        cont.process();
-        GridCoverage2D outCov = cont.outRaster;
-
+        pm.beginTask("Vectorizing map...", IJGTProgressMonitor.UNKNOWN);
         Map<String, Object> args = new HashMap<String, Object>();
         // args.put("outsideValues", Collections.singleton(0));
-        Collection<Polygon> polygonsList = doVectorize(outCov.getRenderedImage(), args);
+        Collection<Polygon> polygonsList = doVectorize(inRaster.getRenderedImage(), args);
+        pm.done();
 
         HashMap<String, Double> regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         double xRes = regionParams.get(CoverageUtilities.XRES);
@@ -227,6 +232,7 @@ public class OmsVectorizer extends JGTModel {
 
     private void doRegionCheck() throws TransformException {
         if (doRegioncheck) {
+            
             int left = Integer.MAX_VALUE;
             int right = -Integer.MAX_VALUE;
             int top = -Integer.MAX_VALUE;
@@ -236,6 +242,7 @@ public class OmsVectorizer extends JGTModel {
             int cols = regionMap.getCols();
             int rows = regionMap.getRows();
             
+            pm.beginTask("Try to shrink the region over covered area...", cols);
             RandomIter rasterIter =  CoverageUtilities.getRandomIterator(inRaster);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
@@ -247,7 +254,9 @@ public class OmsVectorizer extends JGTModel {
                         bottom = min(bottom, r);
                     }
                 }
+                pm.worked(1);
             }
+            pm.done();
             rasterIter.done();
 
             GridGeometry2D gridGeometry = inRaster.getGridGeometry();

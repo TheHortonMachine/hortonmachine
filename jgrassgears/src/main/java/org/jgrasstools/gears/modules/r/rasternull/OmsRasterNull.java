@@ -75,6 +75,10 @@ public class OmsRasterNull extends JGTModel {
     @In
     public Double pValue = null;
 
+    @Description("If true, sets everything else to null.")
+    @In
+    public boolean doInverse = false;
+
     @Description(OMSRASTERNULL_pNull_DESCRIPTION)
     @In
     public Double pNull = null;
@@ -109,8 +113,14 @@ public class OmsRasterNull extends JGTModel {
             for( int r = 0; r < rows; r++ ) {
                 double value = inRasterIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(value)) {
-                    if (NumericsUtilities.dEq(value, replaceValue)) {
-                        value = nullValue;
+                    if (doInverse) {
+                        if (!NumericsUtilities.dEq(value, replaceValue)) {
+                            value = doubleNovalue;
+                        }
+                    } else {
+                        if (NumericsUtilities.dEq(value, replaceValue)) {
+                            value = nullValue;
+                        }
                     }
                     outIter.setSample(c, r, 0, value);
                 } else {
