@@ -226,7 +226,11 @@ if(copyPath){
             def path = it.getAbsolutePath();
             def newPath = new File(copyPath, name).getAbsolutePath();
 
-            if(!name.startsWith("jgt-jgrassgears-") && !name.startsWith("jgt-hortonmachine-"))
+            // exclude those that go in the modules folder
+            if(!name.startsWith("jgt-jgrassgears-") && 
+               !name.startsWith("jgt-hortonmachine-") && 
+               !name.startsWith("jgt-modules-")
+            )
                 new AntBuilder().copy ( file : path , tofile : newPath )
         }
     }
