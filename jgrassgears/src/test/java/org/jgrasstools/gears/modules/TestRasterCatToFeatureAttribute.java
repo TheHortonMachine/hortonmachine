@@ -38,11 +38,11 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
     public void testRasterCatToFeatureAttribute() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        SimpleFeatureCollection inFC = HMTestMaps.testFC;
+        SimpleFeatureCollection inFC = HMTestMaps.getTestFC();
 
         OmsRasterCatToFeatureAttribute rc2fa = new OmsRasterCatToFeatureAttribute();
         rc2fa.pm = pm;
@@ -75,11 +75,11 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
     public void testRasterCatToFeatureAttributePolygon() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
-        SimpleFeatureCollection inFC = HMTestMaps.testLeftFC;
+        SimpleFeatureCollection inFC = HMTestMaps.getTestLeftFC();
 
         OmsRasterCatToFeatureAttribute rc2fa = new OmsRasterCatToFeatureAttribute();
         rc2fa.pm = pm;

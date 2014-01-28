@@ -32,8 +32,8 @@ public class TestVectorMerger extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testVectorMerger() throws Exception {
-        SimpleFeatureCollection testFC1 = HMTestMaps.testFC;
-        SimpleFeatureCollection testFC2 = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC1 = HMTestMaps.getTestFC();
+        SimpleFeatureCollection testFC2 = HMTestMaps.getTestFC();
 
         OmsVectorMerger filter = new OmsVectorMerger();
         filter.pm = pm;

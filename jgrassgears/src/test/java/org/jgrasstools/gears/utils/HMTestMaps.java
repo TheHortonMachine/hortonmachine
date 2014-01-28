@@ -42,23 +42,67 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    public static final RegionMap envelopeParams = new RegionMap();
+    private static RegionMap envelopeParams = null;
 
-    public static CoordinateReferenceSystem crs = null;
+    private static CoordinateReferenceSystem crs = null;
 
-    public static DefaultFeatureCollection testFC;
-    public static DefaultFeatureCollection testLeftFC;
+    private static DefaultFeatureCollection testFC;
+    private static DefaultFeatureCollection testLeftFC;
 
-    public static Coordinate westNorth;
-    public static Coordinate eastNorth;
-    public static Coordinate eastSouth;
-    public static Coordinate centerCoord;
+    private static Coordinate westNorth;
+    private static Coordinate eastNorth;
+    private static Coordinate eastSouth;
+    private static Coordinate centerCoord;
 
-    static {
+    public static Coordinate getWestNorth() {
+        buildTestData();
+        return westNorth;
+    }
+
+    public static Coordinate getEastNorth() {
+        buildTestData();
+        return eastNorth;
+    }
+
+    public static Coordinate getEastSouth() {
+        buildTestData();
+        return eastSouth;
+    }
+
+    public static Coordinate getCenterCoord() {
+        buildTestData();
+        return centerCoord;
+    }
+
+    public static CoordinateReferenceSystem getCrs() {
+        buildTestData();
+        return crs;
+    }
+
+    public static RegionMap getEnvelopeparams() {
+        buildTestData();
+        return envelopeParams;
+    }
+
+    public static SimpleFeatureCollection getTestFC() {
+        buildTestData();
+        return testFC;
+    }
+
+    public static SimpleFeatureCollection getTestLeftFC() {
+        buildTestData();
+        return testLeftFC;
+    }
+
+    private static synchronized void buildTestData() {
+        if (envelopeParams != null) {
+            return;
+        }
         double n = 5140020.0;
         double s = 5139780.0;
         double w = 1640650.0;
         double e = 1640950.0;
+        envelopeParams = new RegionMap();
         envelopeParams.put(CoverageUtilities.NORTH, n);
         envelopeParams.put(CoverageUtilities.SOUTH, s);
         envelopeParams.put(CoverageUtilities.WEST, w);
@@ -184,7 +228,7 @@ public class HMTestMaps {
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
     public static double[][] flowData = new double[][]{//
-            {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+    {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
             {NaN, NaN, 6, 6, 6, 6, 6, 6, 6, NaN}, //
             {NaN, 7, 6, 6, 6, 6, 6, 7, 7, NaN}, //
             {NaN, 5, 5, 7, 6, 6, 6, 6, 5, NaN}, //

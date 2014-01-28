@@ -39,8 +39,8 @@ public class TestRasterDiff extends HMTestCase {
     private GridCoverage2D inRaster2;
 
     protected void setUp() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] inData = HMTestMaps.flowData;
         double[][] inDataPlus = new double[inData.length][inData[0].length];

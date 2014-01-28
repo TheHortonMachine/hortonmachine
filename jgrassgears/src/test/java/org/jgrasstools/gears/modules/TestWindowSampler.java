@@ -35,8 +35,8 @@ public class TestWindowSampler extends HMTestCase {
     public void testWindowSampler() throws Exception {
 
         double[][] inData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true); //$NON-NLS-1$
 
         OmsWindowSampler windowSampler = new OmsWindowSampler();

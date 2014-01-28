@@ -35,8 +35,8 @@ public class TestRangeLookup extends HMTestCase {
 
     public void testRangeLookup() throws Exception {
         double[][] inData = HMTestMaps.rangeLookupInData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         OmsRangeLookup range = new OmsRangeLookup();

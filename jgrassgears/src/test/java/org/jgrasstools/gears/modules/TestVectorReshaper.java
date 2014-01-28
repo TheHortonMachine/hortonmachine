@@ -43,7 +43,7 @@ public class TestVectorReshaper extends HMTestCase {
     @SuppressWarnings("nls")
     public void testFeatureReshaper() throws Exception {
 
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestFC();
 
         OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
@@ -67,7 +67,7 @@ public class TestVectorReshaper extends HMTestCase {
     public void testBuffer() throws Exception {
         String cql = "the_geom=buffer(the_geom, 20.0)";
 
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestFC();
         OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
         reshaper.pCql = cql;
@@ -85,11 +85,12 @@ public class TestVectorReshaper extends HMTestCase {
         String cql = "the_geom=convexHull(the_geom)";
 
         GeometryFactory gf = GeometryUtilities.gf();
-        MultiPoint multiPoint = gf.createMultiPoint(new Coordinate[]{HMTestMaps.westNorth, HMTestMaps.eastSouth,
-                HMTestMaps.eastNorth});
+        MultiPoint multiPoint = gf.createMultiPoint(new Coordinate[]{//
+                HMTestMaps.getWestNorth(), HMTestMaps.getEastSouth(),
+                HMTestMaps.getEastNorth()});
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("test");
-        b.setCRS(HMTestMaps.crs);
+        b.setCRS(HMTestMaps.getCrs());
         b.add("the_geom", MultiPoint.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
@@ -115,7 +116,7 @@ public class TestVectorReshaper extends HMTestCase {
     public void testCentroid() throws Exception {
         String cql = "the_geom=centroid(the_geom)";
 
-        SimpleFeatureCollection testFC = HMTestMaps.testLeftFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestLeftFC();
         OmsVectorReshaper reshaper = new OmsVectorReshaper();
         reshaper.inVector = testFC;
         reshaper.pCql = cql;

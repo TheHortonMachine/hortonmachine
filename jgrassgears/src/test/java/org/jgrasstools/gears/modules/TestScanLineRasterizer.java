@@ -45,8 +45,8 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestScanLineRasterizer extends HMTestCase {
-    private CoordinateReferenceSystem crs = HMTestMaps.crs;
-    private RegionMap ep = HMTestMaps.envelopeParams;
+    private CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+    private RegionMap ep = HMTestMaps.getEnvelopeparams();
     private Polygon polygon;
     private GridCoverage2D elevationCoverage;
     private double[][] elevationData;
@@ -63,7 +63,7 @@ public class TestScanLineRasterizer extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testScanLineRasterizer() throws Exception {
-        RegionMap ep = HMTestMaps.envelopeParams;
+        RegionMap ep = HMTestMaps.getEnvelopeparams();
         SimpleFeatureCollection newCollection = doCollection(ep);
 
         OmsScanLineRasterizer raster = new OmsScanLineRasterizer();

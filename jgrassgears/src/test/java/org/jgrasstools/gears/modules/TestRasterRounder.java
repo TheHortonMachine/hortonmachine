@@ -46,8 +46,8 @@ public class TestRasterRounder extends HMTestCase {
                 {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         OmsRasterValueRounder transformer = new OmsRasterValueRounder();

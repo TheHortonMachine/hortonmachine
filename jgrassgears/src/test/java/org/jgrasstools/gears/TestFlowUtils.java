@@ -38,8 +38,8 @@ public class TestFlowUtils extends HMTestCase {
     protected void setUp() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
         double[][] flowData = HMTestMaps.flowData;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, envelopeParams, crs, true);
         GridCoverage2D inFlow = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 

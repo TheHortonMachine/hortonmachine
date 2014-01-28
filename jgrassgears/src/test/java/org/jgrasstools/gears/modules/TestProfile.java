@@ -40,15 +40,15 @@ import com.vividsolutions.jts.geom.LineString;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestProfile extends HMTestCase {
-    private Coordinate westNorth = HMTestMaps.westNorth;
-    private Coordinate eastSouth = HMTestMaps.eastSouth;
-    private Coordinate centerCoord = HMTestMaps.centerCoord;
-    private RegionMap ep = HMTestMaps.envelopeParams;
+    private Coordinate westNorth = HMTestMaps.getWestNorth();
+    private Coordinate eastSouth = HMTestMaps.getEastSouth();
+    private Coordinate centerCoord = HMTestMaps.getCenterCoord();
+    private RegionMap ep = HMTestMaps.getEnvelopeparams();
 
     @SuppressWarnings("nls")
     public void testProfile() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, ep, crs, true);
 
         String coords = (westNorth.x + ep.getXres() / 2) + "," + (centerCoord.y + ep.getYres() / 2) + ","
@@ -78,7 +78,7 @@ public class TestProfile extends HMTestCase {
     }
 
     private SimpleFeatureCollection doCollection() {
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("typename");
         b.setCRS(crs);

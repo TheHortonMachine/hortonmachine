@@ -37,8 +37,8 @@
 // */
 //public class TestContourExtractor extends HMTestCase {
 //    public void testCountourExtractor() throws Exception {
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        double[][] netData = HMTestMaps.contourExtractorData;
 //        GridCoverage2D cedCoverage = CoverageUtilities.buildCoverage("ced", netData, envelopeParams, crs, true);
 //

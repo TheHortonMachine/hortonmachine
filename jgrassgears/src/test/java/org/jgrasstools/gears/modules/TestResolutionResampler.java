@@ -44,10 +44,10 @@
 //    public void testCoverageReprojector() throws Exception {
 //
 //        double[][] elevationData = HMTestMaps.mapData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
 //        int origRows = envelopeParams.get(CoverageUtilities.ROWS).intValue();
 //        int origCols = envelopeParams.get(CoverageUtilities.COLS).intValue();
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 //
 //        OmsRasterResolutionResampler reprojector = new OmsRasterResolutionResampler();

@@ -57,8 +57,8 @@ public class TestCoverageUtilities extends HMTestCase {
         super.setUp();
 
         double[][] elevationData = HMTestMaps.mapData;
-        eP = HMTestMaps.envelopeParams;
-        crs = HMTestMaps.crs;
+        eP = HMTestMaps.getEnvelopeparams();
+        crs = HMTestMaps.getCrs();
         elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
         north = eP.getNorth();
         south = eP.getSouth();
@@ -133,8 +133,8 @@ public class TestCoverageUtilities extends HMTestCase {
 
     public void testHypsographic() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> eP = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 
         double[][] calculateHypsographic = CoverageUtilities.calculateHypsographic(elevationCoverage, 10,
@@ -161,8 +161,8 @@ public class TestCoverageUtilities extends HMTestCase {
 
     public void testProfile() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        RegionMap eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        RegionMap eP = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 
         Coordinate c1 = new Coordinate(west + xres / 2.0, north - yres / 2.0);
@@ -207,8 +207,8 @@ public class TestCoverageUtilities extends HMTestCase {
 
     public void testLos() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        RegionMap eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        RegionMap eP = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 
         Coordinate c1 = new Coordinate(west + xres / 2.0, north - yres / 2.0);

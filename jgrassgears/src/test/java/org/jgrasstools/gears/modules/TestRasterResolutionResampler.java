@@ -36,8 +36,8 @@ public class TestRasterResolutionResampler extends HMTestCase {
     public void testRasterResolutionResampler() throws Exception {
 
         double[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         OmsRasterResolutionResampler transformer = new OmsRasterResolutionResampler();

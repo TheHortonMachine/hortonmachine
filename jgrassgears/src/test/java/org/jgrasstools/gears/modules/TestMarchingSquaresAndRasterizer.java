@@ -64,8 +64,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractNet1Data = HMTestMaps.marchingSq1;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -104,8 +104,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractNet1Data = HMTestMaps.marchingSq2;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -144,8 +144,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq3;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -193,8 +193,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq4;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -242,8 +242,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq3;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -291,8 +291,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq6;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //
@@ -332,8 +332,8 @@
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq7;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
 //

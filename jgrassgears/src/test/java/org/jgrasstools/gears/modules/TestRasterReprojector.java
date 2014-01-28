@@ -35,8 +35,8 @@ public class TestRasterReprojector extends HMTestCase {
     public void testRasterReprojector() throws Exception {
 
         double[][] inData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         OmsRasterReprojector reprojector = new OmsRasterReprojector();

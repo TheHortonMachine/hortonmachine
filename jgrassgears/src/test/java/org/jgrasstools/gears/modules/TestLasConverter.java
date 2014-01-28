@@ -31,7 +31,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestLasConverter extends HMTestCase {
     public void testLasConverter() throws Exception {
 
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         File tmpFile = File.createTempFile("jgt-", ".las");
 
         List<LasRecord> list = new ArrayList<LasRecord>();

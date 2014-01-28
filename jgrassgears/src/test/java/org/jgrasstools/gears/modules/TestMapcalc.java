@@ -40,8 +40,8 @@ public class TestMapcalc extends HMTestCase {
     public void testMapcalc() throws Exception {
 
         double[][] elevationData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
@@ -61,8 +61,8 @@ public class TestMapcalc extends HMTestCase {
     public void testMapcalc2() throws Exception {
 
         double[][] elevationData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("flow", elevationData, envelopeParams, crs, true);
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);
@@ -81,8 +81,8 @@ public class TestMapcalc extends HMTestCase {
 
     public void testMapcalc3() throws Exception {
         double[][] elevationData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 
         List<GridCoverage2D> maps = Arrays.asList(elevationCoverage);

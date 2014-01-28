@@ -39,7 +39,7 @@ public class TestFeatureTransformer extends HMTestCase {
     @SuppressWarnings("nls")
     public void testFeatureTransformer() throws Exception {
 
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestFC();
 
         OmsVectorTransformer transformer = new OmsVectorTransformer();
         transformer.inVector = testFC;

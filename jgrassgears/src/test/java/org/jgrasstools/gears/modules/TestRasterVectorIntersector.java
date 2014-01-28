@@ -35,11 +35,11 @@ public class TestRasterVectorIntersector extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testRasterVectorIntersector() throws Exception {
-        RegionMap ep = HMTestMaps.envelopeParams;
-        SimpleFeatureCollection testLeftFC = HMTestMaps.testLeftFC;
+        RegionMap ep = HMTestMaps.getEnvelopeparams();
+        SimpleFeatureCollection testLeftFC = HMTestMaps.getTestLeftFC();
 
         double[][] elevationData = HMTestMaps.mapData;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, ep, crs, true);
 
         double[][] test = new double[elevationData.length][elevationData[0].length];

@@ -40,8 +40,8 @@ public class TestVectorizer extends HMTestCase {
     public void testVectorizer1() throws Exception {
 
         double[][] inData = HMTestMaps.extractNet0Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         OmsVectorizer vectorizer = new OmsVectorizer();
@@ -68,8 +68,8 @@ public class TestVectorizer extends HMTestCase {
 
     public void testVectorizer2() throws Exception {
         double[][] inData = HMTestMaps.extractNet0Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
         
         OmsVectorizer vectorizer = new OmsVectorizer();

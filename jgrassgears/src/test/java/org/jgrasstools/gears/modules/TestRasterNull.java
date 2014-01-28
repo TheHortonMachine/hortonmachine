@@ -45,8 +45,8 @@ public class TestRasterNull extends HMTestCase {
             {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
 
     public void testRasterNull1() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
 
         OmsRasterNull transformer = new OmsRasterNull();
@@ -70,8 +70,8 @@ public class TestRasterNull extends HMTestCase {
     }
 
     public void testRasterNull2() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
 
         OmsRasterNull transformer = new OmsRasterNull();
@@ -95,8 +95,8 @@ public class TestRasterNull extends HMTestCase {
     }
 
     public void testRasterNull3() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
 
         OmsRasterNull transformer = new OmsRasterNull();

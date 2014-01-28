@@ -36,8 +36,8 @@ public class TestRasterSummary extends HMTestCase {
     public void testCoverageSummary() throws Exception {
 
         double[][] inData = HMTestMaps.extractNet0Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         OmsRasterSummary summary = new OmsRasterSummary();

@@ -47,8 +47,8 @@ public class TestRasterWriter extends HMTestCase {
         grassPath = new File(testUrl.toURI()).getAbsolutePath() + File.separator + "testout";
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         coverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
     }
 

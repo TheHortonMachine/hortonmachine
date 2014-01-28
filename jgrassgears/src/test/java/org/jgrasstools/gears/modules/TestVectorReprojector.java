@@ -42,7 +42,7 @@ public class TestVectorReprojector extends HMTestCase {
 
     public void testVectorReprojector() throws Exception {
 
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestFC();
 
         OmsVectorReprojector reprojector = new OmsVectorReprojector();
         reprojector.inVector = testFC;
@@ -50,7 +50,7 @@ public class TestVectorReprojector extends HMTestCase {
         reprojector.pm = pm;
         reprojector.process();
 
-        CoordinateReferenceSystem sourceCRS = HMTestMaps.crs;
+        CoordinateReferenceSystem sourceCRS = HMTestMaps.getCrs();
         CoordinateReferenceSystem targetCRS = CRS.decode("EPSG:4326");
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);

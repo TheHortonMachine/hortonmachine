@@ -32,7 +32,7 @@ public class TestVectorFilter extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testVectorFilter() throws Exception {
-        SimpleFeatureCollection testFC = HMTestMaps.testFC;
+        SimpleFeatureCollection testFC = HMTestMaps.getTestFC();
         OmsVectorFilter filter = new OmsVectorFilter();
         filter.inVector = testFC;
         filter.pCql = "cat > 2";

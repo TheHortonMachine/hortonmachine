@@ -38,8 +38,8 @@ public class TestCutOut extends HMTestCase {
 
     protected void setUp() throws Exception {
         double[][] inData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
         double[][] maskData = HMTestMaps.extractNet0Data;

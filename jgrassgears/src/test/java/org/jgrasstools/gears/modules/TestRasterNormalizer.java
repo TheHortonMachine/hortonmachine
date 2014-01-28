@@ -48,8 +48,8 @@ public class TestRasterNormalizer extends HMTestCase {
                 {NaN, 4, 4, 4, 4, 4, 5, 4, 4, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
     }
 
