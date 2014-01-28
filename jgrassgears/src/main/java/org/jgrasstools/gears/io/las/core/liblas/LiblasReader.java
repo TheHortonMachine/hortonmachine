@@ -34,7 +34,7 @@ import com.sun.jna.NativeLibrary;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LiblasReader extends ALasReader {
-    private static LiblasWrapper WRAPPER;
+    private static LiblasJNAWrapper WRAPPER;
 
     /**
      * Loads the native libs creating the native wrapper.
@@ -50,9 +50,8 @@ public class LiblasReader extends ALasReader {
                 libName = name;
             if (nativeLibPath != null)
                 NativeLibrary.addSearchPath(libName, nativeLibPath);
-            WRAPPER = (LiblasWrapper) Native.loadLibrary(libName, LiblasWrapper.class);
-        } catch (Exception e) {
-            e.printStackTrace();
+            WRAPPER = (LiblasJNAWrapper) Native.loadLibrary(libName, LiblasJNAWrapper.class);
+        } catch (UnsatisfiedLinkError e) {
             return false;
         }
         return true;
@@ -64,6 +63,8 @@ public class LiblasReader extends ALasReader {
     private LiblasHeader headerHandle = null;
     private CoordinateReferenceSystem crs;
     private byte pointDataFormat;
+    private long offset;
+    private short recordLength;
 
     public LiblasReader( File lasFile, CoordinateReferenceSystem crs ) {
         this.lasFile = lasFile;
@@ -73,7 +74,7 @@ public class LiblasReader extends ALasReader {
             try {
                 this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "las");
             } catch (Exception e) {
-                e.printStackTrace();
+                // ignore
             }
         }
         if (WRAPPER == null) {
@@ -85,6 +86,8 @@ public class LiblasReader extends ALasReader {
         fileHandle = WRAPPER.LASReader_Create(lasFile.getAbsolutePath());
         LiblasHeader header = getHeader();
         pointDataFormat = header.getPointDataFormat();
+        offset = header.getOffset();
+        recordLength = header.getRecordLength();
     }
 
     public LiblasHeader getHeader() {
@@ -126,21 +129,27 @@ public class LiblasReader extends ALasReader {
             dot.gpsTime = WRAPPER.LASPoint_GetTime(ref);
         } else if (pointDataFormat == 2) {
             long colorHandle = WRAPPER.LASPoint_GetColor(ref);
-            dot.color[0] = WRAPPER.LASPoint_GetRed(colorHandle);
-            dot.color[1] = WRAPPER.LASPoint_GetGreen(colorHandle);
-            dot.color[2] = WRAPPER.LASPoint_GetBlue(colorHandle);
+            dot.color[0] = WRAPPER.LASColor_GetRed(colorHandle);
+            dot.color[1] = WRAPPER.LASColor_GetGreen(colorHandle);
+            dot.color[2] = WRAPPER.LASColor_GetBlue(colorHandle);
         } else if (pointDataFormat == 3) {
             dot.gpsTime = WRAPPER.LASPoint_GetTime(ref);
             long colorHandle = WRAPPER.LASPoint_GetColor(ref);
-            dot.color[0] = WRAPPER.LASPoint_GetRed(colorHandle);
-            dot.color[1] = WRAPPER.LASPoint_GetGreen(colorHandle);
-            dot.color[2] = WRAPPER.LASPoint_GetBlue(colorHandle);
+            dot.color[0] = WRAPPER.LASColor_GetRed(colorHandle);
+            dot.color[1] = WRAPPER.LASColor_GetGreen(colorHandle);
+            dot.color[2] = WRAPPER.LASColor_GetBlue(colorHandle);
         }
         return dot;
     }
 
     public LasRecord getPointAt( long position ) {
         currentPointRef = WRAPPER.LASReader_GetPointAt(fileHandle, position);
+        return getPointAtRef(currentPointRef);
+    }
+
+    public LasRecord getPointAtAddress( long address ) {
+        long pointNum = (address - offset) / recordLength;
+        currentPointRef = WRAPPER.LASReader_GetPointAt(fileHandle, pointNum);
         return getPointAtRef(currentPointRef);
     }
 
@@ -155,13 +164,13 @@ public class LiblasReader extends ALasReader {
 
     @Override
     public double[] readNextLasXYZAddress() throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+        throw new RuntimeException("not implemented yet: readNextLasXYZAddress");
     }
 
     @Override
     public void seek( long pointNumber ) throws IOException {
         WRAPPER.LASReader_Seek(fileHandle, pointNumber);
+        currentPointRef = WRAPPER.LASReader_GetNextPoint(fileHandle);
     }
 
     @Override

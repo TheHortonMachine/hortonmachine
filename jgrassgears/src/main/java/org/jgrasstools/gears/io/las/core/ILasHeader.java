@@ -54,4 +54,8 @@ public interface ILasHeader {
     public abstract byte getPointDataFormat();
 
     public abstract int getGpsTimeType();
+
+    long getOffset();
+
+    short getRecordLength();
 }

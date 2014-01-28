@@ -30,7 +30,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class LiblasHeader implements ILasHeader {
 
-    private LiblasWrapper WRAPPER;
+    private LiblasJNAWrapper WRAPPER;
     // private long srsHandle;
 
     private String signature = "";
@@ -78,7 +78,7 @@ public class LiblasHeader implements ILasHeader {
 
     private ReferencedEnvelope3D dataEnvelope;
 
-    public LiblasHeader( LiblasWrapper wrapper, long headerHandle, CoordinateReferenceSystem crs ) {
+    public LiblasHeader( LiblasJNAWrapper wrapper, long headerHandle, CoordinateReferenceSystem crs ) {
         this.WRAPPER = wrapper;
         this.crs = crs;
         // srsHandle = WRAPPER.LASHeader_GetSRS(headerHandle);
@@ -120,8 +120,12 @@ public class LiblasHeader implements ILasHeader {
 
     }
 
-    public long getDataRecordLength() {
+    public short getRecordLength() {
         return recordLength;
+    }
+    
+    public long getOffset() {
+        return offset;
     }
     
     /**

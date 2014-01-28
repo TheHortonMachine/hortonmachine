@@ -24,13 +24,11 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
-import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
-import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -82,7 +80,7 @@ public class LasReader extends ALasReader {
             try {
                 this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "las");
             } catch (Exception e) {
-                e.printStackTrace();
+                // ignore
             }
         }
         doubleBb.order(ByteOrder.LITTLE_ENDIAN);
@@ -299,27 +297,34 @@ public class LasReader extends ALasReader {
         return dot;
     }
 
-    @Override
-    public LasRecord getPointAt( long address ) throws IOException {
-        // long oldPosition = fc.position();
+    public LasRecord getPointAtAddress( long address ) throws IOException {
         fc.position(address);
+        return getPoint();
+    }
 
+    @Override
+    public LasRecord getPointAt( long pointNumber ) throws IOException {
+        fc.position(offset + pointNumber * recordLength);
+        return getPoint();
+    }
+
+    private LasRecord getPoint() throws IOException {
         int read = 0;
-        long x = getLong4Bytes();
-        long y = getLong4Bytes();
-        long z = getLong4Bytes();
-        double xd = x * xScale + xOffset;
-        double yd = y * yScale + yOffset;
-        double zd = z * zScale + zOffset;
+        final long x = getLong4Bytes();
+        final long y = getLong4Bytes();
+        final long z = getLong4Bytes();
+        final double xd = x * xScale + xOffset;
+        final double yd = y * yScale + yOffset;
+        final double zd = z * zScale + zOffset;
 
         read = read + 12;
-        short intensity = getShort2Bytes();
+        final short intensity = getShort2Bytes();
         read = read + 2;
-        byte b = get();
-        int returnNumber = getReturnNumber(b);
-        int numberOfReturns = getNumberOfReturns(b);
+        final byte b = get();
+        final int returnNumber = getReturnNumber(b);
+        final int numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
-        byte classification = get();
+        final byte classification = get();
         read = read + 1;
 
         // skip:
@@ -329,7 +334,7 @@ public class LasReader extends ALasReader {
         skip(4);
         read = read + 4;
 
-        LasRecord dot = new LasRecord();
+        final LasRecord dot = new LasRecord();
         dot.x = xd;
         dot.y = yd;
         dot.z = zd;
@@ -352,9 +357,6 @@ public class LasReader extends ALasReader {
             dot.color[2] = getShort2Bytes();
             read = read + 14;
         }
-        // int skip = recordLength - read;
-        // skip(skip);
-
         return dot;
     }
 

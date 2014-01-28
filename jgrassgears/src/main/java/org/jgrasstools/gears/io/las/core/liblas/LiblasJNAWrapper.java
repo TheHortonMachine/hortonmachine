@@ -1,6 +1,29 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.gears.io.las.core.liblas;
 
-public interface LiblasWrapper extends com.sun.jna.Library {
+/**
+ * JNA wrapper for the laslib library.
+ * 
+ * @see LiblasReader
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public interface LiblasJNAWrapper extends com.sun.jna.Library {
     String LAS_GetVersion();
     String LAS_GetFullVersion();
     int LAS_IsGDALEnabled();
@@ -27,10 +50,13 @@ public interface LiblasWrapper extends com.sun.jna.Library {
     // LASPoint_GetUserData( long pointHandle );
     double LASPoint_GetTime( long pointHandle );
 
+    /*
+     * COLOR
+     */
     long LASPoint_GetColor( long pointHandle );
-    short LASPoint_GetRed( long colorHandle );
-    short LASPoint_GetGreen( long colorHandle );
-    short LASPoint_GetBlue( long colorHandle );
+    short LASColor_GetRed( long colorHandle );
+    short LASColor_GetGreen( long colorHandle );
+    short LASColor_GetBlue( long colorHandle );
 
     /*
      * HEADER

@@ -93,13 +93,20 @@ public abstract class ALasReader {
     /**
      * Reads a dot at a given address.
      * 
-     * <p>the file position is set back to the one before reading.</p>
-     * 
      * @param address the file address of the record to read.
      * @return the read record.
      * @throws IOException
      */
-    public abstract LasRecord getPointAt( long address ) throws IOException;
+    public abstract LasRecord getPointAtAddress( long address ) throws IOException;
+
+    /**
+     * Reads a dot at a given point position.
+     * 
+     * @param pointPosition the point position.
+     * @return the read record.
+     * @throws IOException
+     */
+    public abstract LasRecord getPointAt( long pointPosition ) throws IOException;
 
     /**
      * Reads the position and the record address in the file of the next point.
@@ -113,6 +120,8 @@ public abstract class ALasReader {
      * Move to a given point in the file.
      * 
      * <p>The position starts with 0 at the first point position.</p>
+     * <p>Note that not {@link #hasNextPoint()} can be called after seek,
+     * {@link #getNextPoint()} must be called directly instead.</p> 
      * 
      * @param pointNumber the number of records to skip.
      * @throws IOException

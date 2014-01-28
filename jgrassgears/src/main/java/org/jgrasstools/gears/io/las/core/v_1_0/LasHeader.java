@@ -146,6 +146,15 @@ public class LasHeader implements ILasHeader {
         return records;
     }
 
+    @Override
+    public long getOffset() {
+        return offset;
+    }
+    
+    public short getRecordLength() {
+        return recordLength;
+    }
+
     public ReferencedEnvelope3D getDataEnvelope() {
         if (dataEnvelope == null) {
             dataEnvelope = new ReferencedEnvelope3D(xMin, xMax, yMin, yMax, zMin, zMax, getCrs());
