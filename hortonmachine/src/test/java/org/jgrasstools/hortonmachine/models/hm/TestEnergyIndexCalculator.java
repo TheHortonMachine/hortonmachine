@@ -7,6 +7,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.io.eicalculator.EIAltimetry;
 import org.jgrasstools.gears.io.eicalculator.EIAreas;
 import org.jgrasstools.gears.io.eicalculator.EIEnergy;
+import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.libs.monitor.PrintStreamProgressMonitor;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.energyindexcalculator.OmsEnergyIndexCalculator;
@@ -30,8 +31,8 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
-        PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
-        
+        // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);
+
         double[][] aspectData = HMTestMaps.aspectDataRadiants;
         GridCoverage2D aspectCoverage = CoverageUtilities.buildCoverage("aspect", aspectData, envelopeParams, crs, true);
         double[][] nablaData = HMTestMaps.nablaData0;
@@ -52,7 +53,7 @@ public class TestEnergyIndexCalculator extends HMTestCase {
         eiCalculator.pDt = 1;
         eiCalculator.pEi = 2;
         eiCalculator.pEs = 2;
-        eiCalculator.pm = pm;
+        eiCalculator.pm = new DummyProgressMonitor();
 
         eiCalculator.process();
 

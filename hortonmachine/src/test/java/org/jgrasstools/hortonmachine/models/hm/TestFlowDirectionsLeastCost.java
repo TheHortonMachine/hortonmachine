@@ -20,7 +20,6 @@ package org.jgrasstools.hortonmachine.models.hm;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.geomorphology.flow.OmsLeastCostFlowDirections;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -40,7 +39,7 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("elev", mapData, envelopeParams, crs, true);
 
-        PrintUtilities.printCoverageData(mapCoverage);
+        // PrintUtilities.printCoverageData(mapCoverage);
 
         OmsLeastCostFlowDirections flowDirections = new OmsLeastCostFlowDirections();
         flowDirections.inElev = mapCoverage;
@@ -50,17 +49,17 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
         flowDirections.process();
 
-        GridCoverage2D flowCoverage = flowDirections.outFlow;
-        PrintUtilities.printCoverageData(flowCoverage);
-        System.out.println();
-        GridCoverage2D tcaCoverage = flowDirections.outTca;
-        PrintUtilities.printCoverageData(tcaCoverage);
-        System.out.println();
-        GridCoverage2D slopeCoverage = flowDirections.outSlope;
-        PrintUtilities.printCoverageData(slopeCoverage);
-        System.out.println();
-        GridCoverage2D aspectCoverage = flowDirections.outAspect;
-        PrintUtilities.printCoverageData(aspectCoverage);
+        // GridCoverage2D flowCoverage = flowDirections.outFlow;
+        // PrintUtilities.printCoverageData(flowCoverage);
+        // System.out.println();
+        // GridCoverage2D tcaCoverage = flowDirections.outTca;
+        // PrintUtilities.printCoverageData(tcaCoverage);
+        // System.out.println();
+        // GridCoverage2D slopeCoverage = flowDirections.outSlope;
+        // PrintUtilities.printCoverageData(slopeCoverage);
+        // System.out.println();
+        // GridCoverage2D aspectCoverage = flowDirections.outAspect;
+        // PrintUtilities.printCoverageData(aspectCoverage);
 
         // checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
     }
