@@ -18,8 +18,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestH2cA extends HMTestCase {
 
     public void testH2cA() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowGC = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         double[][] netData = HMTestMaps.extractNet0Data;

@@ -34,8 +34,8 @@ public class TestDistanceToOutlet extends HMTestCase {
      */
     public void testDistanceToOutletTopological() {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         OmsDistanceToOutlet distanceToOutlet = new OmsDistanceToOutlet();
@@ -52,8 +52,8 @@ public class TestDistanceToOutlet extends HMTestCase {
      */
     public void testDistanceToOutletMetere() {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
         OmsDistanceToOutlet distanceToOutlet = new OmsDistanceToOutlet();
@@ -69,8 +69,8 @@ public class TestDistanceToOutlet extends HMTestCase {
      * 
      */
     public void testDistanceToOutlet3D() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         //get the flow direction map.
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);

@@ -34,8 +34,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestCurvatures extends HMTestCase {
 
     public void testCurvatures() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] pitfillerData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pitfiller", pitfillerData, envelopeParams, crs, true);

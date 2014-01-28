@@ -107,7 +107,7 @@
 //        kriging.pm = pm;
 //
 //        GridGeometry2D gridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(5204514.51713, 5141634.51713,
-//                686136.82243, 601576.82243, 2114, 1572, HMTestMaps.crs);
+//                686136.82243, 601576.82243, 2114, 1572, HMTestMaps.getCrs());
 //        kriging.inInterpolationGrid = gridGeometry2D;
 //
 //        kriging.inStations = stationsFC;

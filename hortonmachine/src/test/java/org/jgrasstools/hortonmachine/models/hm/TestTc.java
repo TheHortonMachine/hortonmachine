@@ -35,8 +35,8 @@ public class TestTc extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testTc() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] tanData = HMTestMaps.tanData;
         double[][] profData = HMTestMaps.profData;

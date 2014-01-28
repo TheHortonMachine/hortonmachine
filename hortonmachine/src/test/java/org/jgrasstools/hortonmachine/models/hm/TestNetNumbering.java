@@ -36,8 +36,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestNetNumbering extends HMTestCase {
 
     public void testNetnumberingMode0() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
@@ -60,8 +60,8 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode1() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
@@ -88,8 +88,8 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode2() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
         File pointsFile = new File(pointURL.toURI());
 
@@ -120,8 +120,8 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     // public void testNetnumberingMode3() throws Exception {
-    // HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-    // CoordinateReferenceSystem crs = HMTestMaps.crs;
+    // HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+    // CoordinateReferenceSystem crs = HMTestMaps.getCrs();
     // URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
     // File pointsFile = new File(pointURL.toURI());
     //

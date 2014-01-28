@@ -66,8 +66,8 @@ public class TestCb extends HMTestCase {
     };
 
     public void testCb() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         GridCoverage2D map1 = CoverageUtilities.buildCoverage("map1", HMTestMaps.mapData, envelopeParams, crs, true);
         GridCoverage2D map2 = map1;

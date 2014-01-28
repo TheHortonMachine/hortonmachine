@@ -35,8 +35,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestRescaledDistance extends HMTestCase {
 
     public void testRescaledDistance() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
@@ -56,8 +56,8 @@ public class TestRescaledDistance extends HMTestCase {
     }
 
     public void testRescaledDistance3D() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);

@@ -37,12 +37,30 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class HMTestMaps {
     private static final double N = NaN;
 
-    public static final RegionMap envelopeParams = new RegionMap();
+    private static RegionMap envelopeParams = null;
+    private static CoordinateReferenceSystem crs = null;
+    private static CoordinateReferenceSystem crs3004 = null;
 
-    public static CoordinateReferenceSystem crs = null;
-    public static CoordinateReferenceSystem crs3004 = null;
+    public static CoordinateReferenceSystem getCrs() {
+        buildTestData();
+        return crs;
+    }
 
-    static {
+    public static CoordinateReferenceSystem getCrs3004() {
+        buildTestData();
+        return crs3004;
+    }
+
+    public static RegionMap getEnvelopeparams() {
+        buildTestData();
+        return envelopeParams;
+    }
+
+    private static synchronized void buildTestData() {
+        if (envelopeParams != null) {
+            return;
+        }
+        envelopeParams = new RegionMap();
         envelopeParams.put(CoverageUtilities.NORTH, 5140020.0);
         envelopeParams.put(CoverageUtilities.SOUTH, 5139780.0);
         envelopeParams.put(CoverageUtilities.WEST, 1640650.0);
@@ -748,12 +766,18 @@ public class HMTestMaps {
 
     public static double[][] rescaledDistanceData = {//
             {N, N, N, N, N, N, N, N, N, N}, //
-            {N, N, 51.72792206135786, 55.45584412271571, 64.45584412271572, 136.88225099390857, 140.61017305526642, 170.61017305526642, 256.58073580374355, N}, //
-            {N, 39.0, 42.72792206135786, 51.72792206135786, 124.15432893255071, 127.88225099390857, 157.88225099390857, 243.8528137423857, 252.8528137423857, N}, //
-            {N, 30.0, 39.0, 111.42640687119285, 115.15432893255071, 145.1543289325507, 175.1543289325507, 234.8528137423857, 243.8528137423857, N}, //
-            {N, 39.0, 72.42640687119285, 102.42640687119285, 132.42640687119285, 162.42640687119285, 192.42640687119285, 222.42640687119285, 231.42640687119285, N}, //
-            {N, 85.15432893255071, 81.42640687119285, 111.42640687119285, 115.15432893255071, 145.1543289325507, 175.1543289325507, 231.42640687119285, 240.42640687119285, N}, //
-            {N, N, 97.88225099390857, 94.15432893255071, 124.15432893255071, 127.88225099390857, 136.88225099390857, 187.88225099390857, 244.1543289325507, N}, //
+            {N, N, 51.72792206135786, 55.45584412271571, 64.45584412271572, 136.88225099390857, 140.61017305526642,
+                    170.61017305526642, 256.58073580374355, N}, //
+            {N, 39.0, 42.72792206135786, 51.72792206135786, 124.15432893255071, 127.88225099390857, 157.88225099390857,
+                    243.8528137423857, 252.8528137423857, N}, //
+            {N, 30.0, 39.0, 111.42640687119285, 115.15432893255071, 145.1543289325507, 175.1543289325507, 234.8528137423857,
+                    243.8528137423857, N}, //
+            {N, 39.0, 72.42640687119285, 102.42640687119285, 132.42640687119285, 162.42640687119285, 192.42640687119285,
+                    222.42640687119285, 231.42640687119285, N}, //
+            {N, 85.15432893255071, 81.42640687119285, 111.42640687119285, 115.15432893255071, 145.1543289325507,
+                    175.1543289325507, 231.42640687119285, 240.42640687119285, N}, //
+            {N, N, 97.88225099390857, 94.15432893255071, 124.15432893255071, 127.88225099390857, 136.88225099390857,
+                    187.88225099390857, 244.1543289325507, N}, //
             {N, N, N, N, N, N, N, N, N, N} //
     };
 

@@ -34,8 +34,8 @@ public class TestSlope extends HMTestCase {
 
     public void testSlope() throws Exception {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);
         double[][] flowData = HMTestMaps.flowData;

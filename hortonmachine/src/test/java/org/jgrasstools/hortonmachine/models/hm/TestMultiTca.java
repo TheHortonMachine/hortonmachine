@@ -12,16 +12,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestMultiTca extends HMTestCase {
     public void testMultiTca() throws Exception {
         double[][] pitfillerData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pit", pitfillerData, envelopeParams, crs, true);
 
 
         double[][] flowData = HMTestMaps.drainData1;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
-        envelopeParams = HMTestMaps.envelopeParams;
-        crs = HMTestMaps.crs;
+        envelopeParams = HMTestMaps.getEnvelopeparams();
+        crs = HMTestMaps.getCrs();
         double[][] cp9Data = HMTestMaps.cp9Data;
         GridCoverage2D cp3Coverage = CoverageUtilities.buildCoverage("cp9", cp9Data, envelopeParams, crs, true);
 

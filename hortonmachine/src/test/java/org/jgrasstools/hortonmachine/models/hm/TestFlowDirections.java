@@ -35,8 +35,8 @@ public class TestFlowDirections extends HMTestCase {
 
     public void testFlow() throws Exception {
         double[][] pitfillerData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("flow", pitfillerData, envelopeParams, crs, true);
 
         OmsFlowDirections flowDirections = new OmsFlowDirections();

@@ -35,8 +35,8 @@ public class TestH2cd extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testH2cd() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
         double[][] netData = HMTestMaps.extractNet1Data;

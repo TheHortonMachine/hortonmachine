@@ -35,8 +35,8 @@
 //public class TestStrahler extends HMTestCase {
 //
 //    public void testStrahler() throws Exception {
-//        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-//        CoordinateReferenceSystem crs = HMTestMaps.crs;
+//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        double[][] flowData = HMTestMaps.mflowDataBorder;
 //        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 //        double[][] netData = HMTestMaps.extractNet1Data;

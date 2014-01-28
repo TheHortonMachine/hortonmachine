@@ -1,6 +1,5 @@
 package org.jgrasstools.hortonmachine.utils;
 
-import static java.lang.Double.NaN;
 
 public class HMTestMapstrentoP {
     /**

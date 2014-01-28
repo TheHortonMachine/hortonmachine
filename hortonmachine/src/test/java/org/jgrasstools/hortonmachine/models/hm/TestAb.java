@@ -34,8 +34,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestAb extends HMTestCase {
 
     public void testAb() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] tcaData = HMTestMaps.tcaData;
         GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData,

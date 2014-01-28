@@ -35,8 +35,8 @@ public class TestSplitsubbasins extends HMTestCase {
     @SuppressWarnings("nls")
     public void testSplitsubbasins() throws Exception {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] drainData = HMTestMaps.drainData1;
         GridCoverage2D drainCoverage = CoverageUtilities.buildCoverage("drain", drainData, envelopeParams, crs, true);
         double[][] hackstreamData = HMTestMaps.hackstream;

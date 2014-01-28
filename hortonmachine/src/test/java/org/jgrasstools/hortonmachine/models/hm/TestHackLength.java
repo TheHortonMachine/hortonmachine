@@ -35,8 +35,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestHackLength extends HMTestCase {
 
     public void testHacklength() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
@@ -55,8 +55,8 @@ public class TestHackLength extends HMTestCase {
     }
 
     public void testHacklength3d() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);

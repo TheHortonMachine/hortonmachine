@@ -36,8 +36,8 @@ public class TestPitfiller extends HMTestCase {
     public void testPitfiller() throws Exception {
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         OmsPitfiller pitfiller = new OmsPitfiller();

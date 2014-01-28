@@ -33,8 +33,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestShalstab extends HMTestCase {
     public void testShalstab() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] slopeData = HMTestMaps.slopeData;
         GridCoverage2D slopeCoverage = CoverageUtilities.buildCoverage("slope", slopeData, envelopeParams, crs, true);

@@ -36,8 +36,8 @@ public class TestHillshade extends HMTestCase {
     public void testHillshade() throws Exception {
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs3004;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs3004();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
         OmsHillshade hillshade = new OmsHillshade();

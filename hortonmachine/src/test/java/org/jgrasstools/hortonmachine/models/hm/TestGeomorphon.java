@@ -53,8 +53,8 @@ public class TestGeomorphon extends HMTestCase {
                 {500, 600, 700, 600, 600, 700, 800, 1100, 1500, 2500}, //
                 {500, 600, 600, 600, 600, 700, 800, 1100, 1500, 1500}, //
                 {500, 500, 500, 500, 500, 500, 500, 500, 500, 500}};
-        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> eP = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, eP, crs, true);
 
         OmsGeomorphon g = new OmsGeomorphon();
@@ -77,8 +77,8 @@ public class TestGeomorphon extends HMTestCase {
                 {500, 600, 700, 600, 600, 700, 800, 1100, 1500, 2500}, //
                 {500, 600, 600, 600, 600, 700, 800, 1100, 1500, 1500}, //
                 {500, 500, 500, 500, 500, 500, 500, 500, 500, 500}};
-        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> eP = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, eP, crs, true);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);

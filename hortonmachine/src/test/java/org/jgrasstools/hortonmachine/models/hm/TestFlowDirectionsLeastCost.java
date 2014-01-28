@@ -36,8 +36,8 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
     public void testFlowDirectionsLeastCost() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("elev", mapData, envelopeParams, crs, true);
 
         PrintUtilities.printCoverageData(mapCoverage);

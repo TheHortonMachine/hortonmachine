@@ -32,8 +32,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestSumDownStream extends HMTestCase {
     public void testSumDownstream() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.netFlowData;
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true); //$NON-NLS-1$

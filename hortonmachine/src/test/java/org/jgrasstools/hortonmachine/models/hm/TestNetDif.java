@@ -13,8 +13,8 @@ public class TestNetDif extends HMTestCase {
 
     public void testNetDif() {
         double[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
         double[][] strahlerData = HMTestMaps.strahlerData;

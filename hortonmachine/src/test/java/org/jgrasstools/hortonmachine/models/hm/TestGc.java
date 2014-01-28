@@ -19,8 +19,8 @@ public class TestGc extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testGc() {
-        HashMap<String, Double> envelopeParams = HMTestMaps.envelopeParams;
-        CoordinateReferenceSystem crs = HMTestMaps.crs;
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] slopeData = HMTestMaps.slopeData;
         double[][] networkData = HMTestMaps.extractNet1Data;
