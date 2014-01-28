@@ -475,6 +475,7 @@ public class OmsRasterReader extends JGTModel {
                 }
             }
             readIter.done();
+            tmpIter.done();
             outRaster = buildCoverage(new File(file).getName(), tmpWR, params, outRaster.getCoordinateReferenceSystem());
         }
     }
