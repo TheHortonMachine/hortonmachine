@@ -86,9 +86,9 @@ public class LasConverter extends JGTModel {
     @In
     public String pClasses;
 
-    @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
-    @In
-    public String pIndexrange;
+    // @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
+    // @In
+    // public String pIndexrange;
 
     @Description(OMSLASCONVERTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -142,7 +142,7 @@ public class LasConverter extends JGTModel {
         lasconverter.pIntensityrange = pIntensityrange;
         lasconverter.pImpulses = pImpulses;
         lasconverter.pClasses = pClasses;
-        lasconverter.pIndexrange = pIndexrange;
+        // lasconverter.pIndexrange = pIndexrange;
         lasconverter.pNorth = pNorth;
         lasconverter.pSouth = pSouth;
         lasconverter.pWest = pWest;
@@ -161,5 +161,5 @@ public class LasConverter extends JGTModel {
         if (lasconverter != null)
             lasconverter.close();
     }
-    
+
 }

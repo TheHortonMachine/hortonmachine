@@ -18,9 +18,8 @@
 package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -29,7 +28,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasHeader_1_0 implements ILasHeader {
+public class LasHeader implements ILasHeader {
 
     /**
      *  file signature (LASF)
@@ -131,7 +130,7 @@ public class LasHeader_1_0 implements ILasHeader {
     protected ReferencedEnvelope3D dataEnvelope;
     protected CoordinateReferenceSystem crs;
     
-    public LasHeader_1_0(CoordinateReferenceSystem crs) {
+    public LasHeader(CoordinateReferenceSystem crs) {
         this.crs = crs;
     }
 
@@ -140,13 +139,10 @@ public class LasHeader_1_0 implements ILasHeader {
     }
 
     public CoordinateReferenceSystem getCrs() {
-        if (crs == null) {
-            crs = DefaultGeographicCRS.WGS84;
-        }
         return crs;
     }
     
-    public long getRecordsNum(){
+    public long getRecordsCount(){
         return records;
     }
 
@@ -156,13 +152,17 @@ public class LasHeader_1_0 implements ILasHeader {
         }
         return dataEnvelope;
     }
-
+    
     public boolean hasGpsTime() {
         return pointDataFormat == 1 || pointDataFormat == 3;
     }
 
     public boolean hasRGB() {
         return pointDataFormat == 2 || pointDataFormat == 3;
+    }
+    
+    public byte getPointDataFormat() {
+        return pointDataFormat;
     }
 
     public String toString() {
@@ -179,7 +179,7 @@ public class LasHeader_1_0 implements ILasHeader {
         if (dayOfYear != 0 && year != 0) {
             DateTime dateTime = new DateTime();
             dateTime = dateTime.withYear(year).withDayOfYear(dayOfYear);
-            String dtString = dateTime.toString(AbstractLasReader.dateTimeFormatterYYYYMMDD);
+            String dtString = dateTime.toString(LasUtils.dateTimeFormatterYYYYMMDD);
             sb.append("File creation date: ").append(dtString).append("\n");
         } else {
             sb.append("File creation Day of Year: ").append(dayOfYear).append("\n");
@@ -190,6 +190,7 @@ public class LasHeader_1_0 implements ILasHeader {
         sb.append("Variable length records: ").append(variableLengthRecordNum).append("\n");
         sb.append("Point data format ID (0-99 for spec): ").append(pointDataFormat).append("\n");
         sb.append("Number of point records: ").append(records).append("\n");
+        sb.append("Record length: ").append(recordLength).append("\n");
         sb.append("Scale: [").append(xScale).append(", ").append(yScale).append(", ").append(zScale).append("]\n");
         sb.append("Offset: [").append(xOffset).append(", ").append(yOffset).append(", ").append(zOffset).append("]\n");
         sb.append("X Range: [").append(xMin).append(", ").append(xMax).append("]\n");

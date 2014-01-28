@@ -70,7 +70,8 @@ import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.CRS;
-import org.jgrasstools.gears.io.las.core.AbstractLasReader;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.utils.LasStats;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
@@ -125,9 +126,9 @@ public class OmsLasConverter extends JGTModel {
     @In
     public String pClasses;
 
-    @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
-    @In
-    public String pIndexrange;
+    // @Description(OMSLASCONVERTER_pIndexrange_DESCRIPTION)
+    // @In
+    // public String pIndexrange;
 
     @Description(OMSLASCONVERTER_pNorth_DESCRIPTION)
     @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
@@ -172,11 +173,11 @@ public class OmsLasConverter extends JGTModel {
     public String outFile;
 
     private double[] intensityRange = null;
-    private long[] indexRange = null;
+    // private long[] indexRange = null;
     private double[] impulses = null;
     private int[] classes = null;
 
-    private AbstractLasReader lasReader;
+    private ALasReader lasReader;
 
     private PreparedGeometry filterPolygons;
 
@@ -216,7 +217,7 @@ public class OmsLasConverter extends JGTModel {
         }
 
         final File lasFile = new File(inFile);
-        lasReader = AbstractLasReader.getReader(lasFile, crs);
+        lasReader = ALasReader.getReader(lasFile, crs);
         lasReader.open();
 
         if (doHeader) {
@@ -243,17 +244,20 @@ public class OmsLasConverter extends JGTModel {
             }
         }
 
-        if (pIndexrange != null) {
-            final String[] split = pIndexrange.split(","); //$NON-NLS-1$
-            if (split.length != 2) {
-                throw new ModelsIllegalargumentException("Index range has to be of the form: min,max", this);
-            }
-            try {
-                indexRange = new long[]{Long.parseLong(split[0]), Long.parseLong(split[1])};
-            } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting index min and max to numbers.", this);
-            }
-        }
+        // if (pIndexrange != null) {
+        //            final String[] split = pIndexrange.split(","); //$NON-NLS-1$
+        // if (split.length != 2) {
+        // throw new ModelsIllegalargumentException("Index range has to be of the form: min,max",
+        // this);
+        // }
+        // try {
+        // indexRange = new long[]{Long.parseLong(split[0]), Long.parseLong(split[1])};
+        // } catch (final Exception e) {
+        // throw new
+        // ModelsIllegalargumentException("Problem in converting index min and max to numbers.",
+        // this);
+        // }
+        // }
 
         if (pImpulses != null) {
             final String[] split = pImpulses.split(","); //$NON-NLS-1$
@@ -302,34 +306,35 @@ public class OmsLasConverter extends JGTModel {
             csvWriter = new BufferedWriter(new FileWriter(outFile));
         }
 
-        final long recordsCount = lasReader.getRecordsCount();
-        pm.message("File header info \n" + lasReader.getHeader());
+        ILasHeader header = lasReader.getHeader();
+        final long recordsCount = header.getRecordsCount();
+        pm.message("File header info \n" + header);
 
-        long index = 0;
+        // long index = 0;
         long addedFeatures = 0;
 
         LasStats stats = new LasStats();
 
         pm.beginTask("Reading las data...", (int) recordsCount);
-        while( lasReader.hasNextLasDot() ) {
+        while( lasReader.hasNextPoint() ) {
             pm.worked(1);
 
-            if (indexRange != null) {
-                if (index < indexRange[0]) {
-                    // move to the right index
-                    final long skip = indexRange[0] - index;
-                    lasReader.skipRecords(skip);
-                    index = indexRange[0];
-                    pm.worked((int) skip);
-                    continue;
-                } else if (index > indexRange[1]) {
-                    pm.worked((int) (recordsCount - index));
-                    // simply stop
-                    break;
-                }
-            }
-            index++;
-            final LasRecord lasDot = lasReader.readNextLasDot();
+            // if (indexRange != null) {
+            // if (index < indexRange[0]) {
+            // // move to the right index
+            // final long skip = indexRange[0] - index;
+            // lasReader.skipRecords(skip);
+            // index = indexRange[0];
+            // pm.worked((int) skip);
+            // continue;
+            // } else if (index > indexRange[1]) {
+            // pm.worked((int) (recordsCount - index));
+            // // simply stop
+            // break;
+            // }
+            // }
+            // index++;
+            final LasRecord lasDot = lasReader.getNextPoint();
 
             final double x = lasDot.x;
             final double y = lasDot.y;
@@ -430,8 +435,9 @@ public class OmsLasConverter extends JGTModel {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }
     }
-    private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata ) throws IOException {
-        final ReferencedEnvelope3D envelope = lasReader.getEnvelope();
+    private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata )
+            throws IOException {
+        final ReferencedEnvelope3D envelope = lasReader.getHeader().getDataEnvelope();
         ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
         final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(env2d));
 

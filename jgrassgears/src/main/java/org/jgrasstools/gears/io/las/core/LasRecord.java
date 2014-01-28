@@ -17,9 +17,6 @@
  */
 package org.jgrasstools.gears.io.las.core;
 
-import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.jgrasstools.gears.utils.math.NumericsUtilities;
-import org.joda.time.DateTime;
 
 /**
  * Object containing the las record content plus some additional info.
@@ -81,61 +78,5 @@ public class LasRecord {
      * Density of points around the current point (not contained in record and optional).
      */
     public int pointsDensity = -1;
-
-    public String toString() {
-        final String CR = "\n";
-        final String TAB = "\t";
-
-        StringBuilder retValue = new StringBuilder();
-
-        retValue.append("Dot ( \n").append(TAB).append("x = ").append(this.x).append(CR).append(TAB).append("y = ")
-                .append(this.y).append(CR).append(TAB).append("z = ").append(this.z).append(CR).append(TAB)
-                .append("intensity = ").append(this.intensity).append(CR).append(TAB).append("impulse = ")
-                .append(this.returnNumber).append(CR).append(TAB).append("impulseNum = ").append(this.numberOfReturns).append(CR)
-                .append(TAB).append("classification = ").append(this.classification).append(CR).append(TAB).append("gpsTime = ")
-                .append(this.gpsTime).append(CR).append(" )");
-
-        return retValue.toString();
-    }
-
-    public boolean equals( Object obj ) {
-        if (obj == null) {
-            return false;
-        }
-        if (!(obj instanceof LasRecord)) {
-            return false;
-        }
-        LasRecord r = (LasRecord) obj;
-        double delta = 0.000001;
-        boolean check = NumericsUtilities.dEq(x, r.x, delta);
-        if (!check) {
-            return false;
-        }
-        check = NumericsUtilities.dEq(y, r.y, delta);
-        if (!check) {
-            return false;
-        }
-        check = NumericsUtilities.dEq(z, r.z, delta);
-        if (!check) {
-            return false;
-        }
-        check = intensity == r.intensity;
-        if (!check) {
-            return false;
-        }
-        check = classification == r.classification;
-        if (!check) {
-            return false;
-        }
-        check = returnNumber == r.returnNumber;
-        if (!check) {
-            return false;
-        }
-        check = numberOfReturns == r.numberOfReturns;
-        if (!check) {
-            return false;
-        }
-        return true;
-    }
 
 }

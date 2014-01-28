@@ -42,7 +42,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasWriter_1_0 {
+public class LasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
@@ -81,7 +81,7 @@ public class LasWriter_1_0 {
      * @param outFile the output file.
      * @param crs the {@link CoordinateReferenceSystem crs}. If <code>null</code>, no prj file is written.
      */
-    public LasWriter_1_0( File outFile, CoordinateReferenceSystem crs ) {
+    public LasWriter( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
         this.crs = crs;
 

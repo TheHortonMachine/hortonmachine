@@ -21,9 +21,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter_1_0;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.utils.HMTestCase;
 import org.jgrasstools.gears.utils.HMTestMaps;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -54,7 +55,7 @@ public class TestLasConverter extends HMTestCase {
         r2.classification = 3;
         list.add(r2);
 
-        LasWriter_1_0 w = new LasWriter_1_0(tmpFile, crs);
+        LasWriter w = new LasWriter(tmpFile, crs);
         w.setBounds(r1.x, r1.x, r2.y, r1.y, r1.z, r2.z);
         w.open();
         for( LasRecord lasRecord : list ) {
@@ -62,11 +63,11 @@ public class TestLasConverter extends HMTestCase {
         }
         w.close();
 
-        LasReader_1_0 r = new LasReader_1_0(tmpFile, crs);
+        ALasReader r = new LasReader(tmpFile, crs);
         r.open();
         r.getHeader();
-        assertTrue(r.hasNextLasDot());
-        LasRecord lr1 = r.readNextLasDot();
+        assertTrue(r.hasNextPoint());
+        LasRecord lr1 = r.getNextPoint();
         assertEquals(r1.x, lr1.x, DELTA);
         assertEquals(r1.y, lr1.y, DELTA);
         assertEquals(r1.z, lr1.z, DELTA);
@@ -75,8 +76,8 @@ public class TestLasConverter extends HMTestCase {
         assertEquals(r1.numberOfReturns, lr1.numberOfReturns, DELTA);
         assertEquals(r1.classification, lr1.classification, DELTA);
         assertEquals(r1.gpsTime, lr1.gpsTime, DELTA);
-        assertTrue(r.hasNextLasDot());
-        LasRecord lr2 = r.readNextLasDot();
+        assertTrue(r.hasNextPoint());
+        LasRecord lr2 = r.getNextPoint();
         assertEquals(r2.x, lr2.x, DELTA);
         assertEquals(r2.y, lr2.y, DELTA);
         assertEquals(r2.z, lr2.z, DELTA);
