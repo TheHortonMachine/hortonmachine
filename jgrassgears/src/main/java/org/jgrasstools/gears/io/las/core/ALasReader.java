@@ -30,10 +30,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public abstract class ALasReader {
+    private static volatile boolean testedLibLoading = false;
+    private static volatile boolean isNativeLibAvailable;
 
     public static ALasReader getReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
         ALasReader reader;
-        if (LiblasReader.loadNativeLibrary(null, null)) {
+        if (!testedLibLoading) {
+            isNativeLibAvailable = LiblasReader.loadNativeLibrary(null, null);
+            testedLibLoading = true;
+        }
+        if (isNativeLibAvailable) {
             reader = new LiblasReader(lasFile, crs);
         } else {
             reader = new LasReader(lasFile, crs);

@@ -59,6 +59,8 @@ public class LiblasHeader implements ILasHeader {
 
     private short recordLength = 0;
     private long pointRecordsCount = 0;
+    
+    private int gpsTimeType;
 
     private double xScale = 0.0;
     private double yScale = 0.0;
@@ -120,6 +122,21 @@ public class LiblasHeader implements ILasHeader {
 
     public long getDataRecordLength() {
         return recordLength;
+    }
+    
+    /**
+     * Sets the gps time type.
+     * 
+     * <p>
+     * <ul>
+     * <li>0 (not set) = GPS time in the point record fields is GPS Week Time</li>
+     * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
+     * </ul>
+     * 
+     * @param gpsTimeType the type to set.
+     */
+    public void setGpsTimeType( int gpsTimeType ) {
+        this.gpsTimeType = gpsTimeType;
     }
 
     public String toString() {
@@ -192,6 +209,11 @@ public class LiblasHeader implements ILasHeader {
     @Override
     public byte getPointDataFormat() {
         return pointDataFormat;
+    }
+
+    @Override
+    public int getGpsTimeType() {
+        return gpsTimeType;
     }
 
 }

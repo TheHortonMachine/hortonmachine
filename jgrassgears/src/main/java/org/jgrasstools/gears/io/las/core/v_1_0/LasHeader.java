@@ -33,11 +33,11 @@ public class LasHeader implements ILasHeader {
     /**
      *  file signature (LASF)
      */
-    protected String signature;
+    String signature;
     /**
      *  file source ID
      */
-    protected short fileSourceId;
+    short fileSourceId;
 
     /**
      * The gps time type.
@@ -48,89 +48,89 @@ public class LasHeader implements ILasHeader {
      * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
      * </ul>
      */
-    protected int gpsTimeType;
+    int gpsTimeType;
 
     /**
      *  Project ID - data 1 (optional)
      */
-    protected long projectIdGuidData1;
+    long projectIdGuidData1;
     /**
      *  Project ID - data 2 (optional)
      */
-    protected short projectIdGuidData2;
+    short projectIdGuidData2;
     /**
      *  Project ID - data 3 (optional)
      */
-    protected short projectIdGuidData3;
+    short projectIdGuidData3;
     /**
      *  Project ID - data 4 (optional)
      */
-    protected String projectIdGuidData4;
+    String projectIdGuidData4;
     /**
      *  Version Major
      */
-    protected byte versionMajor;
+    byte versionMajor;
     /**
      *  Version Minor
      */
-    protected byte versionMinor;
+    byte versionMinor;
     /**
      *  System identifier
      */
-    protected String systemIdentifier;
+    String systemIdentifier;
     /**
      *  generating software
      */
-    protected String generatingSoftware;
+    String generatingSoftware;
     /**
      *  File creation Day of Year (optional)
      */
-    protected short dayOfYear;
+    short dayOfYear;
     /**
      *  File creation Year (optional)
      */
-    protected short year;
+    short year;
     /**
      *  header size
      */
-    protected short headerSize;
+    short headerSize;
     /**
      *  offset to point data
      */
-    protected long offset;
+    long offset;
     /**
      *  Number of variable length records
      */
-    protected long variableLengthRecordNum;
+    long variableLengthRecordNum;
     /**
      *  point data format ID (0-99 for spec)
      */
-    protected byte pointDataFormat;
+    byte pointDataFormat;
     /**
      *  Record length
      */
-    protected short recordLength;
+    short recordLength;
     /**
      *  Number of point records
      */
-    protected long records;
-    protected double xScale;
-    protected double yScale;
-    protected double zScale;
-    protected double xOffset;
-    protected double yOffset;
-    protected double zOffset;
-    protected double xMin;
-    protected double yMin;
-    protected double zMin;
-    protected double xMax;
-    protected double yMax;
-    protected double zMax;
+    long records;
+    double xScale;
+    double yScale;
+    double zScale;
+    double xOffset;
+    double yOffset;
+    double zOffset;
+    double xMin;
+    double yMin;
+    double zMin;
+    double xMax;
+    double yMax;
+    double zMax;
 
-    protected ReferencedEnvelope3D dataEnvelope;
-    protected CoordinateReferenceSystem crs;
-    
-    public LasHeader(CoordinateReferenceSystem crs) {
+    private ReferencedEnvelope3D dataEnvelope;
+    private CoordinateReferenceSystem crs;
+
+    public LasHeader( CoordinateReferenceSystem crs ) {
         this.crs = crs;
     }
 
@@ -141,8 +141,8 @@ public class LasHeader implements ILasHeader {
     public CoordinateReferenceSystem getCrs() {
         return crs;
     }
-    
-    public long getRecordsCount(){
+
+    public long getRecordsCount() {
         return records;
     }
 
@@ -152,15 +152,19 @@ public class LasHeader implements ILasHeader {
         }
         return dataEnvelope;
     }
-    
+
     public boolean hasGpsTime() {
         return pointDataFormat == 1 || pointDataFormat == 3;
+    }
+
+    public int getGpsTimeType() {
+        return gpsTimeType;
     }
 
     public boolean hasRGB() {
         return pointDataFormat == 2 || pointDataFormat == 3;
     }
-    
+
     public byte getPointDataFormat() {
         return pointDataFormat;
     }

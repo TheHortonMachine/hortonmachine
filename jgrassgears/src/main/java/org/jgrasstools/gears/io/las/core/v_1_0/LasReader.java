@@ -390,10 +390,6 @@ public class LasReader extends ALasReader {
         return header;
     }
 
-    public DateTime getRecordDateTime( LasRecord record ) {
-        return LasUtils.gpsTimeToDateTime(record.gpsTime, header.gpsTimeType);
-    }
-
     private String getString( int size ) throws IOException {
         byte[] bytesStr = new byte[size];
         ByteBuffer singleBb = ByteBuffer.wrap(bytesStr);

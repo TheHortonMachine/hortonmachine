@@ -47,9 +47,11 @@ public interface ILasHeader {
      */
     public long getRecordsCount();
 
-    boolean hasGpsTime();
+    public abstract boolean hasGpsTime();
 
-    boolean hasRGB();
+    public abstract boolean hasRGB();
 
-    byte getPointDataFormat();
+    public abstract byte getPointDataFormat();
+
+    public abstract int getGpsTimeType();
 }
