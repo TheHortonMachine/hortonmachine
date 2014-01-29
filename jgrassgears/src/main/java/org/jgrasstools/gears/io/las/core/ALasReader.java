@@ -20,7 +20,9 @@ package org.jgrasstools.gears.io.las.core;
 import java.io.File;
 import java.io.IOException;
 
+import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -36,7 +38,10 @@ public abstract class ALasReader {
     public static ALasReader getReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
         ALasReader reader;
         if (!testedLibLoading) {
-            isNativeLibAvailable = LiblasReader.loadNativeLibrary(null, null);
+            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
+            if (wrapper != null) {
+                isNativeLibAvailable = true;
+            }
             testedLibLoading = true;
         }
         if (isNativeLibAvailable) {

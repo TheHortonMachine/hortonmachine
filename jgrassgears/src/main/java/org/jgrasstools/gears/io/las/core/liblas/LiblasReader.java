@@ -25,37 +25,12 @@ import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.sun.jna.Native;
-import com.sun.jna.NativeLibrary;
-
 /**
  * A laslib based native las reader.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LiblasReader extends ALasReader {
-    private static LiblasJNAWrapper WRAPPER;
-
-    /**
-     * Loads the native libs creating the native wrapper.
-     * 
-     * @param nativeLibPath the path to add or <code>null</code>.
-     * @param libName the lib name or <code>null</code>, in which case "lib_c" is used.
-     * @return <code>true</code>, if the lib could be loaded.
-     */
-    public static boolean loadNativeLibrary( String nativeLibPath, String libName ) {
-        try {
-            String name = "las_c";
-            if (libName == null)
-                libName = name;
-            if (nativeLibPath != null)
-                NativeLibrary.addSearchPath(libName, nativeLibPath);
-            WRAPPER = (LiblasJNAWrapper) Native.loadLibrary(libName, LiblasJNAWrapper.class);
-        } catch (UnsatisfiedLinkError e) {
-            return false;
-        }
-        return true;
-    }
 
     private File lasFile;
     private long fileHandle;
@@ -65,8 +40,9 @@ public class LiblasReader extends ALasReader {
     private byte pointDataFormat;
     private long offset;
     private short recordLength;
+    private LiblasJNALibrary WRAPPER;
 
-    public LiblasReader( File lasFile, CoordinateReferenceSystem crs ) {
+    public LiblasReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
         this.lasFile = lasFile;
         if (crs != null) {
             this.crs = crs;
@@ -77,9 +53,7 @@ public class LiblasReader extends ALasReader {
                 // ignore
             }
         }
-        if (WRAPPER == null) {
-            loadNativeLibrary(null, null);
-        }
+        WRAPPER = LiblasWrapper.getWrapper();
     }
 
     public void open() {
@@ -139,6 +113,7 @@ public class LiblasReader extends ALasReader {
             dot.color[1] = WRAPPER.LASColor_GetGreen(colorHandle);
             dot.color[2] = WRAPPER.LASColor_GetBlue(colorHandle);
         }
+
         return dot;
     }
 

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.io.las.core.v_1_0;
+package org.jgrasstools.gears.io.las.core.liblas;
 
 import static java.lang.Math.round;
 
@@ -43,17 +43,11 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasWriter implements ALasWriter {
+public class LiblasWriter implements ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
-    private final byte[] doubleDataArray = new byte[8];
-    private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
-    private final byte[] longDataArray = new byte[4];
-    private final ByteBuffer longBb = ByteBuffer.wrap(longDataArray);
-    private final byte[] shortDataArray = new byte[2];
-    private final ByteBuffer shortBb = ByteBuffer.wrap(shortDataArray);
+
     private File outFile;
     private CoordinateReferenceSystem crs;
-    private FileOutputStream fos;
     private File prjFile;
     private double xScale = 0.01;
     private double yScale = 0.01;
@@ -76,23 +70,26 @@ public class LasWriter implements ALasWriter {
     private int previousNumberOfReturns = -999;
     private byte[] previousReturnBytes = null;
 
+    private LiblasJNALibrary WRAPPER;
+
+    private long headerHandle;
+
     /**
      * A las file writer.
      * 
      * @param outFile the output file.
      * @param crs the {@link CoordinateReferenceSystem crs}. If <code>null</code>, no prj file is written.
+     * @throws Exception 
      */
-    public LasWriter( File outFile, CoordinateReferenceSystem crs ) {
+    public LiblasWriter( File outFile, CoordinateReferenceSystem crs ) throws Exception {
         this.outFile = outFile;
         this.crs = crs;
-
         if (crs != null) {
             String nameWithoutExtention = FileUtilities.getNameWithoutExtention(outFile);
             prjFile = new File(outFile.getParent(), nameWithoutExtention + ".prj");
         }
-        doubleBb.order(ByteOrder.LITTLE_ENDIAN);
-        longBb.order(ByteOrder.LITTLE_ENDIAN);
-        shortBb.order(ByteOrder.LITTLE_ENDIAN);
+
+        WRAPPER = LiblasWrapper.getWrapper();
     }
 
     @Override
@@ -132,17 +129,15 @@ public class LasWriter implements ALasWriter {
         this.zMax = env.getMaxZ();
     }
 
-    /* (non-Javadoc)
-     * @see org.jgrasstools.gears.io.las.core.v_1_0.ALasWriter#open()
-     */
     @Override
     public void open() throws Exception {
-        openFile();
         writeHeader();
+        WRAPPER.LASWriter_Create(outFile.getAbsolutePath(), headerHandle, (byte) 1);
         openCalled = true;
     }
 
     private void writeHeader() throws IOException {
+        headerHandle = WRAPPER.LASHeader_Create();
 
         // File signature: LASF
         // File source ID: 0
@@ -162,33 +157,15 @@ public class LasWriter implements ALasWriter {
 
         // TODO handle global enchoding and proper gps time
 
-        byte[] signature = "LASF".getBytes();
-        fos.write(signature);
-        hLength = hLength + 4;
-        byte[] reserved = new byte[4];
-        fos.write(reserved);
-        hLength = hLength + 4;
-        byte[] guid1 = new byte[4];
-        fos.write(guid1);
-        hLength = hLength + 4;
-        byte[] guid2 = new byte[2];
-        fos.write(guid2);
-        hLength = hLength + 2;
-        byte[] guid3 = new byte[2];
-        fos.write(guid3);
-        hLength = hLength + 2;
-        byte[] guid4 = new byte[8];
-        fos.write(guid4);
-        hLength = hLength + 8;
-        // major
-        fos.write(1);
-        // minor
-        fos.write(0);
-        hLength = hLength + 2;
+        // byte[] signature = "LASF".getBytes();
 
-        byte[] systemIdentifier = new byte[32];
-        fos.write(systemIdentifier);
-        hLength = hLength + 32;
+        // // major
+        // fos.write(1);
+        // // minor
+        // fos.write(0);
+        // hLength = hLength + 2;
+
+        // WRAPPER.LASHeader_SetSystemId(headerHandle, systemIdentifier);
 
         String jgtVersion = "jgrasstools_" + JGTVersion.CURRENT_VERSION.toString();
         if (jgtVersion.length() > 32) {
@@ -201,9 +178,7 @@ public class LasWriter implements ALasWriter {
             }
             jgtVersion = sb.toString();
         }
-        byte[] software = jgtVersion.getBytes();
-        fos.write(software);
-        hLength = hLength + 32;
+        WRAPPER.LASHeader_SetSoftwareId(headerHandle, jgtVersion);
 
         byte[] flightDateJulian = new byte[2];
         fos.write(flightDateJulian);
@@ -267,7 +242,6 @@ public class LasWriter implements ALasWriter {
         hLength = hLength + 3 * 8;
 
     }
-
     @Override
     public synchronized void addPoint( LasRecord record ) throws IOException {
         int length = 0;
@@ -378,11 +352,6 @@ public class LasWriter implements ALasWriter {
         shortBb.clear();
         shortBb.putShort(num);
         return shortBb.array();
-    }
-
-    private void openFile() throws Exception {
-        fos = new FileOutputStream(outFile);
-        fileChannel = fos.getChannel();
     }
 
     private void closeFile() throws Exception {

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
@@ -55,7 +56,7 @@ public class TestLasConverter extends HMTestCase {
         r2.classification = 3;
         list.add(r2);
 
-        LasWriter w = new LasWriter(tmpFile, crs);
+        ALasWriter w = new LasWriter(tmpFile, crs);
         w.setBounds(r1.x, r1.x, r2.y, r1.y, r1.z, r2.z);
         w.open();
         for( LasRecord lasRecord : list ) {
