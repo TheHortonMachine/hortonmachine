@@ -59,6 +59,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsSupporter;
+import org.jgrasstools.gears.utils.BitMatrix;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
@@ -168,17 +169,17 @@ public class OmsDrainDir extends JGTModel {
         pm.message(msg.message("draindir.initializematrix"));
 
         // Initialize new RasterData and set value
-        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
-        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, NaN);
+        WritableRaster tcaWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
+        WritableRaster dirWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, Double.class, null, NaN);
 
         // it contains the analyzed cells
-        WritableRaster analyzeWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRaster deviationsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        BitMatrix analizedMatrix = new BitMatrix(cols, rows);
 
         if (doLad) {
-            OrlandiniD8_LAD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            OrlandiniD8_LAD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
         } else {
-            OrlandiniD8_LTD(indexes, deviationsWR, analyzeWR, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
+            OrlandiniD8_LTD(indexes, deviationsWR, analizedMatrix, pitfillerWR, flowWR, tcaWR, dirWR, nelev);
             // only if required executes this method
             if (inFlownet != null) {
                 newDirections(pitfillerWR, dirWR);
@@ -198,19 +199,20 @@ public class OmsDrainDir extends JGTModel {
      *            vector containing the order of elevation
      * @param deviationsImage
      *            the map containing the deviation
-     * @param analyzeImage
+     * @param analizedMatrix 
      * @param nelev
      * @return
      */
-    private void OrlandiniD8_LAD( double[] indexes, WritableRaster deviationsImage, WritableRaster analyzeImage,
+    private void OrlandiniD8_LAD( double[] indexes, WritableRaster deviationsImage, BitMatrix analizedMatrix,
             WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
         int row, col, ncelle, nr, nc;
         double dev1, dev2, sumdev1, sumdev2, sumdev;
-        double[] dati = new double[10]; /*
-                                         * it contains:
-                                         * pend,dir,e0,e1,e2,sumdev,
-                                         * didren1,dirdren2,sigma
-                                         */
+        /*
+         * it contains:
+         * pend,dir,e0,e1,e2,sumdev,
+         * didren1,dirdren2,sigma
+         */
+        double[] dati = new double[10];
         double count, flow;
 
         double[] u = {xRes, yRes};
@@ -222,7 +224,6 @@ public class OmsDrainDir extends JGTModel {
         RandomIter flowRandomIter = RandomIterFactory.create(flowImage, null);
 
         WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
-        WritableRandomIter analyseRandomIter = RandomIterFactory.createWritable(analyzeImage, null);
         WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
 
@@ -236,7 +237,7 @@ public class OmsDrainDir extends JGTModel {
             col = (int) (count % cols);
             if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
-                compose(analyseRandomIter, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
+                compose(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
 
                 if (dati[1] > 0) {
                     dev1 = dati[2];
@@ -247,8 +248,8 @@ public class OmsDrainDir extends JGTModel {
                     } else {
                         dev1 = -dev1;
                     }
-                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                            dirRandomIter, i, i);
+                    calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter, dirRandomIter,
+                            i, i);
 
                     sumdev = dati[6];
                     sumdev1 = dev1 + (pLambda * sumdev);
@@ -265,7 +266,7 @@ public class OmsDrainDir extends JGTModel {
                 } else if (dati[1] == 0) {
                     if (ncelle == nelev) {
                         /* sono all'uscita */
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
                                 dirRandomIter, cols, rows);
                         dirRandomIter.setSample(col, row, 0, 10);
                         deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
@@ -278,14 +279,14 @@ public class OmsDrainDir extends JGTModel {
                             return;
                         }
                     } else {
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
                                 dirRandomIter, cols, rows);
                         sumdev = pLambda * dati[6];
                         dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
                         flow = dirRandomIter.getSampleDouble(col, row, 0);
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
-                        while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
+                        while( analizedMatrix.isMarked(nc, nr) ) {
                             tcaRandomIter.setSample(nc, nr, 0,
                                     tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
@@ -304,7 +305,6 @@ public class OmsDrainDir extends JGTModel {
         pitRandomIter.done();
         flowRandomIter.done();
         deviationRandomIter.done();
-        analyseRandomIter.done();
         tcaRandomIter.done();
     }
 
@@ -315,20 +315,21 @@ public class OmsDrainDir extends JGTModel {
      *            vector containing the order of elevation
      * @param deviationsImage
      *            the map containing the deviation
-     * @param analyzeImage
+     * @param analizedMatrix
      * @param nelev
      * @return
      */
-    private void OrlandiniD8_LTD( double[] indexes, WritableRaster deviationsImage, WritableRaster analyzeImage,
+    private void OrlandiniD8_LTD( double[] indexes, WritableRaster deviationsImage, BitMatrix analizedMatrix,
             WritableRaster pitImage, WritableRaster flowImage, WritableRaster tcaImage, WritableRaster dirImage, int nelev ) {
 
         int row, col, ncelle, nr, nc;
         double dx, dev1, dev2, sumdev1, sumdev2, sumdev;
-        double[] dati = new double[10]; /*
-                                         * it contains:
-                                         * pend,dir,e0,e1,e2,sumdev,
-                                         * didren1,dirdren2,sigma
-                                         */
+        /*
+         * it contains:
+         * pend,dir,e0,e1,e2,sumdev,
+         * didren1,dirdren2,sigma
+         */
+        double[] dati = new double[10];
         double count, flow;
         /*
          * it indicates the position of the triangle's vertexes
@@ -338,7 +339,6 @@ public class OmsDrainDir extends JGTModel {
         RandomIter flowRandomIter = RandomIterFactory.create(flowImage, null);
 
         WritableRandomIter tcaRandomIter = RandomIterFactory.createWritable(tcaImage, null);
-        WritableRandomIter analyseRandomIter = RandomIterFactory.createWritable(analyzeImage, null);
         WritableRandomIter deviationRandomIter = RandomIterFactory.createWritable(deviationsImage, null);
         WritableRandomIter dirRandomIter = RandomIterFactory.createWritable(dirImage, null);
         double[] u = {xRes, yRes};
@@ -361,7 +361,7 @@ public class OmsDrainDir extends JGTModel {
             if (!isNovalue(pitRandomIter.getSampleDouble(col, row, 0)) && !isNovalue(flowRandomIter.getSampleDouble(col, row, 0))) {
                 ncelle = ncelle + 1;
 
-                compose(analyseRandomIter, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
+                compose(analizedMatrix, pitRandomIter, tcaRandomIter, dati, u, v, col, row);
 
                 if (dati[1] > 0) {
                     dev1 = dx * Math.sin(dati[2]);
@@ -371,8 +371,8 @@ public class OmsDrainDir extends JGTModel {
                     } else {
                         dev1 = -dev1;
                     }
-                    calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
-                            dirRandomIter, cols, rows);
+                    calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter, dirRandomIter,
+                            cols, rows);
                     sumdev = dati[6];
                     sumdev1 = dev1 + pLambda * sumdev;
                     sumdev2 = dev2 + pLambda * sumdev;
@@ -388,7 +388,7 @@ public class OmsDrainDir extends JGTModel {
                 } else if (dati[1] == 0) {
                     if (ncelle == nelev) {
                         /* sono all'uscita */
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
                                 dirRandomIter, cols, rows);
                         dirRandomIter.setSample(col, row, 0, 10);
                         deviationRandomIter.setSample(col, row, 0, pLambda * dati[6]);
@@ -401,14 +401,14 @@ public class OmsDrainDir extends JGTModel {
                             return;
                         }
                     } else {
-                        calcarea(row, col, dati, v, analyseRandomIter, deviationRandomIter, pitRandomIter, tcaRandomIter,
+                        calcarea(row, col, dati, v, analizedMatrix, deviationRandomIter, pitRandomIter, tcaRandomIter,
                                 dirRandomIter, cols, rows);
                         sumdev = pLambda * dati[6];
                         dirRandomIter.setSample(col, row, 0, flowRandomIter.getSampleDouble(col, row, 0));
                         flow = dirRandomIter.getSampleDouble(col, row, 0);
                         nr = row + order[(int) flow][0];
                         nc = col + order[(int) flow][1];
-                        while( analyseRandomIter.getSampleDouble(nc, nr, 0) == 1 ) {
+                        while( analizedMatrix.isMarked(nc, nr) ) {
                             tcaRandomIter.setSample(nc, nr, 0,
                                     (tcaRandomIter.getSampleDouble(nc, nr, 0) + tcaRandomIter.getSampleDouble(col, row, 0)));
                             flow = dirRandomIter.getSampleDouble(nc, nr, 0);
@@ -427,10 +427,8 @@ public class OmsDrainDir extends JGTModel {
         pitRandomIter.done();
         flowRandomIter.done();
         deviationRandomIter.done();
-        analyseRandomIter.done();
         tcaRandomIter.done();
     }
-
     /**
      * It calculates the drainage area for a cell[rows][cols]
      * 
@@ -438,10 +436,10 @@ public class OmsDrainDir extends JGTModel {
      * @param col
      * @param dati
      * @param v
-     * @param analyse
+     * @param analizedMatrix
      * @param deviation
      */
-    private void calcarea( int row, int col, double[] dati, double[] v, WritableRandomIter analyse, WritableRandomIter deviation,
+    private void calcarea( int row, int col, double[] dati, double[] v, BitMatrix analizedMatrix, WritableRandomIter deviation,
             RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, WritableRandomIter dirRandomIter, int nCols, int nRows ) {
         int conta, ninflow;
         int outdir;
@@ -456,7 +454,7 @@ public class OmsDrainDir extends JGTModel {
             /*
              * verifico se la cella che sto considerando e' stata gia' processata
              */
-            if (analyse.getSampleDouble(col + order[n][1], row + order[n][0], 0) == 1) {
+            if (analizedMatrix.isMarked(col + order[n][1], row + order[n][0])) {
                 if (!isNovalue(pitRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0)) || conta <= nRows * nCols) {
                     outdir = (int) dirRandomIter.getSampleDouble(col + order[n][1], row + order[n][0], 0);
                     /*
@@ -488,14 +486,14 @@ public class OmsDrainDir extends JGTModel {
     /**
      * It calculates the direction of maximun slope.
      * 
-     * @param analyse
+     * @param analizedMatrix
      * @param dati
      * @param u
      * @param v
      * @param col
      * @param row
      */
-    private void compose( WritableRandomIter analyse, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, double[] dati,
+    private void compose( BitMatrix analizedMatrix, RandomIter pitRandomIter, WritableRandomIter tcaRandomIter, double[] dati,
             double[] u, double[] v, int col, int row ) {
         int n = 1, m = 1;
 
@@ -516,7 +514,7 @@ public class OmsDrainDir extends JGTModel {
         {1, 8, -1} /* tri 089 */
         };
 
-        analyse.setSample(col, row, 0, 1.0);
+        analizedMatrix.mark(col, row);
         tcaRandomIter.setSample(col, row, 0, 1.0);
         pendmax = 0.0;
         dati[3] = pitRandomIter.getSampleDouble(col, row, 0);
@@ -535,22 +533,26 @@ public class OmsDrainDir extends JGTModel {
              * novalue. In questo caso trascuro il triangolo.
              */
             if (!isNovalue(dati[4]) && !isNovalue(dati[5])) {
-
                 triangoli(u, dati);
                 if (dati[1] > pendmax) {
                     dirmax = dati[2];
                     pendmax = dati[1];
-                    dati[7] = tri[j][0]; /* - direzione cardinale */
-                    dati[8] = tri[j][1]; /* - direzione diagonale */
-                    dati[9] = tri[j][2]; /* - segno del triangolo */
-                    e1min = dati[4]; /*
-                                      * - quote del triangolo avente pendenza
-                                      * maggiore
-                                      */
-                    e2min = dati[5]; /*
-                                      * non necessariamente sono le quote
-                                      * minime.
-                                      */
+                    /* - direzione cardinale */
+                    dati[7] = tri[j][0];
+                    /* - direzione diagonale */
+                    dati[8] = tri[j][1];
+                    /* - segno del triangolo */
+                    dati[9] = tri[j][2];
+                    /*
+                     * - quote del triangolo avente pendenza
+                     * maggiore
+                     */
+                    e1min = dati[4];
+                    /*
+                     * non necessariamente sono le quote
+                     * minime.
+                     */
+                    e2min = dati[5];
                 }
             }
         }

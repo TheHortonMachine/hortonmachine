@@ -193,6 +193,8 @@ public class CoverageUtilities {
                 dataType = DataBuffer.TYPE_FLOAT;
             } else if (dataClass.isAssignableFrom(Byte.class)) {
                 dataType = DataBuffer.TYPE_BYTE;
+            } else if (dataClass.isAssignableFrom(Short.class)) {
+                dataType = DataBuffer.TYPE_SHORT;
             }
         }
 
@@ -207,8 +209,10 @@ public class CoverageUtilities {
                 double v = value;
 
                 double[] dArray = new double[sampleModel.getNumBands()];
-                for(int i = 0; i<dArray.length; i++){dArray[i]=v;}
-                
+                for( int i = 0; i < dArray.length; i++ ) {
+                    dArray[i] = v;
+                }
+
                 for( int y = 0; y < height; y++ ) {
                     for( int x = 0; x < width; x++ ) {
                         raster.setPixel(x, y, dArray);
