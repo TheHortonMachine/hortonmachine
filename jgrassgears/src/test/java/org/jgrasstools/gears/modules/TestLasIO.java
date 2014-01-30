@@ -46,6 +46,7 @@ public class TestLasIO extends HMTestCase {
 
     private static boolean doNative = false;
     private static boolean tellNative = true;
+    private static String lasWriteFileName = "las/1.0_0.las";
 
     protected void setUp() throws Exception {
         // local native libs for test
@@ -99,11 +100,70 @@ public class TestLasIO extends HMTestCase {
         processFile(name, expectedCount, true);
     }
 
+    public void testLasWriterNative() throws Exception {
+        if (doNative) {
+            URL lasUrl = this.getClass().getClassLoader().getResource(lasWriteFileName);
+            File lasFile = new File(lasUrl.toURI());
+
+            File liblasTmp = File.createTempFile("liblasreader", ".las");
+            LiblasReader libLasReader = new LiblasReader(lasFile, null);
+            libLasReader.open();
+            LiblasHeader libLasHeader = libLasReader.getHeader();
+
+            LiblasWriter liblasWriter = new LiblasWriter(liblasTmp, DefaultGeographicCRS.WGS84);
+            liblasWriter.setBounds(libLasHeader);
+            liblasWriter.open();
+            while( libLasReader.hasNextPoint() ) {
+                liblasWriter.addPoint(libLasReader.getNextPoint());
+            }
+            liblasWriter.close();
+
+            LiblasReader tmpLiblasReader = new LiblasReader(liblasTmp, null);
+            tmpLiblasReader.open();
+            ILasHeader tmpLiblasHeader = tmpLiblasReader.getHeader();
+            checkHeader(libLasHeader, tmpLiblasHeader);
+            LasRecord tmpLiblasDot = tmpLiblasReader.getPointAt(0);
+            LasRecord liblasDot = libLasReader.getPointAt(0);
+            assertTrue(LasUtils.lasRecordEqual(tmpLiblasDot, liblasDot));
+            tmpLiblasReader.close();
+            libLasReader.close();
+
+            liblasTmp.deleteOnExit();
+        }
+    }
+
     public void testLasWriter() throws Exception {
+        URL lasUrl = this.getClass().getClassLoader().getResource(lasWriteFileName);
+        File lasFile = new File(lasUrl.toURI());
 
-        String name = "las/1.0_0.las";
-        processFileWriting(name);
+        LasReader lasReader = new LasReader(lasFile, null);
+        lasReader.open();
+        ILasHeader lasHeader = lasReader.getHeader();
 
+        /*
+         * write tmp files
+         */
+        File lasTmp = File.createTempFile("lasreader", ".las");
+
+        LasWriter lasWriter = new LasWriter(lasTmp, DefaultGeographicCRS.WGS84);
+        lasWriter.setBounds(lasHeader);
+        lasWriter.open();
+        while( lasReader.hasNextPoint() ) {
+            lasWriter.addPoint(lasReader.getNextPoint());
+        }
+        lasWriter.close();
+
+        LasReader tmpLasReader = new LasReader(lasTmp, null);
+        tmpLasReader.open();
+        ILasHeader tmpLasHeader = tmpLasReader.getHeader();
+        checkHeader(lasHeader, tmpLasHeader);
+        LasRecord tmpLasDot = tmpLasReader.getPointAt(0);
+        LasRecord lasDot = lasReader.getPointAt(0);
+        assertTrue(LasUtils.lasRecordEqual(tmpLasDot, lasDot));
+        tmpLasReader.close();
+        lasReader.close();
+
+        lasTmp.deleteOnExit();
     }
 
     private void processFile( String name, long expectedCount, boolean hasColor ) throws URISyntaxException, Exception,
@@ -172,67 +232,6 @@ public class TestLasIO extends HMTestCase {
 
     }
 
-    private void processFileWriting( String name ) throws URISyntaxException, Exception, IOException {
-        URL lasUrl = this.getClass().getClassLoader().getResource(name);
-        File lasFile = new File(lasUrl.toURI());
-
-        if (doNative) {
-            File liblasTmp = File.createTempFile("liblasreader", ".las");
-            LiblasReader libLasReader = new LiblasReader(lasFile, null);
-            libLasReader.open();
-            LiblasHeader libLasHeader = libLasReader.getHeader();
-
-            LiblasWriter liblasWriter = new LiblasWriter(liblasTmp, DefaultGeographicCRS.WGS84);
-            liblasWriter.setBounds(libLasHeader);
-            liblasWriter.open();
-            while( libLasReader.hasNextPoint() ) {
-                liblasWriter.addPoint(libLasReader.getNextPoint());
-            }
-            liblasWriter.close();
-
-            LiblasReader tmpLiblasReader = new LiblasReader(liblasTmp, null);
-            tmpLiblasReader.open();
-            ILasHeader tmpLiblasHeader = tmpLiblasReader.getHeader();
-            checkHeader(libLasHeader, tmpLiblasHeader);
-            LasRecord tmpLiblasDot = tmpLiblasReader.getPointAt(0);
-            LasRecord liblasDot = libLasReader.getPointAt(0);
-            assertTrue(LasUtils.lasRecordEqual(tmpLiblasDot, liblasDot));
-            tmpLiblasReader.close();
-            libLasReader.close();
-
-            liblasTmp.deleteOnExit();
-        }
-
-        LasReader lasReader = new LasReader(lasFile, null);
-        lasReader.open();
-        ILasHeader lasHeader = lasReader.getHeader();
-
-        /*
-         * write tmp files
-         */
-        File lasTmp = File.createTempFile("lasreader", ".las");
-
-        LasWriter lasWriter = new LasWriter(lasTmp, DefaultGeographicCRS.WGS84);
-        lasWriter.setBounds(lasHeader);
-        lasWriter.open();
-        while( lasReader.hasNextPoint() ) {
-            lasWriter.addPoint(lasReader.getNextPoint());
-        }
-        lasWriter.close();
-
-        LasReader tmpLasReader = new LasReader(lasTmp, null);
-        tmpLasReader.open();
-        ILasHeader tmpLasHeader = tmpLasReader.getHeader();
-        checkHeader(lasHeader, tmpLasHeader);
-        LasRecord tmpLasDot = tmpLasReader.getPointAt(0);
-        LasRecord lasDot = lasReader.getPointAt(0);
-        assertTrue(LasUtils.lasRecordEqual(tmpLasDot, lasDot));
-        tmpLasReader.close();
-        lasReader.close();
-
-        lasTmp.deleteOnExit();
-
-    }
     private void checkHeader( ILasHeader header, ILasHeader tmpHeader ) {
         assertEquals(header.getOffset(), tmpHeader.getOffset());
         // assertEquals(header.getRecordLength(), tmpHeader.getRecordLength());
