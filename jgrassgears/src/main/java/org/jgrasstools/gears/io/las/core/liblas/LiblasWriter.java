@@ -20,19 +20,13 @@ package org.jgrasstools.gears.io.las.core.liblas;
 import static java.lang.Math.round;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-import java.util.BitSet;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.jgrasstools.gears.utils.ByteUtilities;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.JGTVersion;
 import org.jgrasstools.gears.utils.files.FileUtilities;
@@ -52,6 +46,9 @@ public class LiblasWriter implements ALasWriter {
     private double xScale = 0.01;
     private double yScale = 0.01;
     private double zScale = 0.001;
+    private double xOffset = 0.0;
+    private double yOffset = 0.0;
+    private double zOffset = 0.0;
     private double xMin = 0;
     private double yMin = 0;
     private double zMin = 0;
@@ -60,19 +57,18 @@ public class LiblasWriter implements ALasWriter {
     private double zMax = 0;
     private int recordsNum = 0;
 
-    private final short recordLength = 28;
-    private FileChannel fileChannel;
-    private int recordsNumPosition;
+    private short recordLength = 28;
+    private int offsetToData = 227;
     private boolean doWriteGroundElevation;
     private boolean openCalled;
-
-    private int previousReturnNumber = -999;
-    private int previousNumberOfReturns = -999;
-    private byte[] previousReturnBytes = null;
 
     private LiblasJNALibrary WRAPPER;
 
     private long headerHandle;
+
+    private int pointFormat = 0;
+
+    private long fileHandle;
 
     /**
      * A las file writer.
@@ -103,6 +99,23 @@ public class LiblasWriter implements ALasWriter {
     }
 
     @Override
+    public void setOffset( double xOffset, double yOffset, double zOffset ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.zOffset = zOffset;
+    }
+
+    // public void setPointFormat( int pointFormat ) {
+    // this.pointFormat = pointFormat;
+    // if (openCalled) {
+    // throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+    // }
+    // }
+
+    @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
         if (openCalled) {
             throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
@@ -127,12 +140,24 @@ public class LiblasWriter implements ALasWriter {
         this.xMax = env.getMaxX();
         this.yMax = env.getMaxY();
         this.zMax = env.getMaxZ();
+
+        double[] xyzOffset = header.getXYZOffset();
+        double[] xyzScale = header.getXYZScale();
+        xOffset = xyzOffset[0];
+        yOffset = xyzOffset[1];
+        zOffset = xyzOffset[2];
+        xScale = xyzScale[0];
+        yScale = xyzScale[1];
+        zScale = xyzScale[2];
+
+        recordLength = header.getRecordLength();
+        offsetToData = (int) header.getOffset();
     }
 
     @Override
     public void open() throws Exception {
         writeHeader();
-        WRAPPER.LASWriter_Create(outFile.getAbsolutePath(), headerHandle, (byte) 1);
+        fileHandle = WRAPPER.LASWriter_Create(outFile.getAbsolutePath(), headerHandle, (byte) 1);
         openCalled = true;
     }
 
@@ -153,8 +178,6 @@ public class LiblasWriter implements ALasWriter {
         // Variable length records: 1
         // Point data format ID (0-99 for spec): 1
         // Number of point records: 20308602
-        int hLength = 0;
-
         // TODO handle global enchoding and proper gps time
 
         // byte[] signature = "LASF".getBytes();
@@ -180,185 +203,68 @@ public class LiblasWriter implements ALasWriter {
         }
         WRAPPER.LASHeader_SetSoftwareId(headerHandle, jgtVersion);
 
-        byte[] flightDateJulian = new byte[2];
-        fos.write(flightDateJulian);
-        hLength = hLength + 2;
+        // fos.write(flightDateJulian);
 
-        byte[] year = new byte[2];
-        fos.write(year);
-        hLength = hLength + 2;
+        // WRAPPER.LASHeader_SetSoftwareId(headerHandle, jgtVersion);
+        // short headersize = 226;
 
-        short headersize = 226;
-        fos.write(getShort(headersize));
-        hLength = hLength + 2;
+        WRAPPER.LASHeader_SetDataOffset(headerHandle, offsetToData);
 
-        int offsetToData = 227;
-        fos.write(getLong(offsetToData));
-        hLength = hLength + 4;
+        // WRAPPER.LASHeader_SetDataRecordLength(headerHandle, recordLength);
 
-        int numVarRecords = 0;
-        fos.write(getLong(numVarRecords));
-        hLength = hLength + 4;
-
-        // point data format
-        fos.write(1);
-        hLength = hLength + 1;
-
-        fos.write(getShort(recordLength));
-        hLength = hLength + 2;
-
-        recordsNumPosition = hLength;
-        fos.write(getLong(recordsNum));
-        hLength = hLength + 4;
-
-        // num of points by return
-        fos.write(new byte[20]);
-        hLength = hLength + 20;
-
-        // xscale
-        fos.write(getDouble(xScale));
-        // yscale
-        fos.write(getDouble(yScale));
-        // zscale
-        fos.write(getDouble(zScale));
-        hLength = hLength + 3 * 8;
-
-        // xoff, yoff, zoff
-        fos.write(getDouble(xMin));
-        fos.write(getDouble(yMin));
-        fos.write(getDouble(zMin));
-        hLength = hLength + 3 * 8;
-
-        fos.write(getDouble(xMax));
-        fos.write(getDouble(xMin));
-        hLength = hLength + 2 * 8;
-
-        fos.write(getDouble(yMax));
-        fos.write(getDouble(yMin));
-        hLength = hLength + 2 * 8;
-
-        fos.write(getDouble(zMax));
-        fos.write(getDouble(zMin));
-        hLength = hLength + 3 * 8;
+        WRAPPER.LASHeader_SetOffset(headerHandle, xOffset, yOffset, zOffset);
+        WRAPPER.LASHeader_SetScale(headerHandle, xScale, yScale, zScale);
+        WRAPPER.LASHeader_SetMin(headerHandle, xMin, yMin, zMin);
+        WRAPPER.LASHeader_SetMax(headerHandle, xMax, yMax, zMax);
 
     }
+
     @Override
     public synchronized void addPoint( LasRecord record ) throws IOException {
-        int length = 0;
-        int x = (int) round((record.x - xMin) / xScale);
-        int y = (int) round((record.y - yMin) / yScale);
-        int z;
+        long pointHandle = WRAPPER.LASPoint_Create(fileHandle);
+        WRAPPER.LASPoint_SetHeader(pointHandle, headerHandle);
+        WRAPPER.LASPoint_SetX(pointHandle, record.x); // 4
+        WRAPPER.LASPoint_SetY(pointHandle, record.y); // 4
         if (!doWriteGroundElevation) {
-            z = (int) round((record.z - zMin) / zScale);
+            WRAPPER.LASPoint_SetZ(pointHandle, record.z); // 4
         } else {
-            z = (int) round((record.groundElevation - zMin) / zScale);
+            WRAPPER.LASPoint_SetZ(pointHandle, record.groundElevation); // 4
         }
-        fos.write(getLong(x));
-        fos.write(getLong(y));
-        fos.write(getLong(z));
-        length = length + 12;
-        fos.write(getShort(record.intensity));
-        length = length + 2;
 
-        // 001 | 001 | 11 -> bits for return num, num of ret, scan dir flag, edge of flight line
+        WRAPPER.LASPoint_SetIntensity(pointHandle, record.intensity); // 2
+        WRAPPER.LASPoint_SetNumberOfReturns(pointHandle, record.numberOfReturns); // 2
+        WRAPPER.LASPoint_SetReturnNumber(pointHandle, record.returnNumber); // 2
+        WRAPPER.LASPoint_SetClassification(pointHandle, record.classification); // 1
 
-        int returnNumber = record.returnNumber;
-        int numberOfReturns = record.numberOfReturns;
-
-        if (returnNumber != previousReturnNumber || numberOfReturns != previousNumberOfReturns) {
-            BitSet bitsetRN = ByteUtilities.bitsetFromByte((byte) returnNumber);
-            BitSet bitsetNOR = ByteUtilities.bitsetFromByte((byte) numberOfReturns);
-            BitSet b = new BitSet(7);
-            b.set(0, bitsetRN.get(0));
-            b.set(1, bitsetRN.get(1));
-            b.set(2, bitsetRN.get(2));
-            b.set(3, bitsetNOR.get(0));
-            b.set(4, bitsetNOR.get(1));
-            b.set(5, bitsetNOR.get(2));
-            b.set(6, false);
-            b.set(7, false);
-            byte[] bb = ByteUtilities.bitSetToByteArray(b);
-            fos.write(bb[0]);
-            previousReturnBytes = bb;
-            previousReturnNumber = returnNumber;
-            previousNumberOfReturns = numberOfReturns;
-        } else {
-            fos.write(previousReturnBytes[0]);
+        if (record.gpsTime > 0) {
+            WRAPPER.LASPoint_SetTime(pointHandle, record.gpsTime);
+            pointFormat = 1;
         }
-        length = length + 1;
 
-        // class
-        byte c = (byte) record.classification;
-        fos.write(c);
-        length = length + 1;
+        // if (record.color != null) {
+        // pointFormat = 3;
+        //
+        // }
 
-        // scan angle rank
-        fos.write(1);
-        length = length + 1;
-        fos.write(0);
-        length = length + 1;
-        fos.write(new byte[2]);
-        length = length + 2;
-
-        fos.write(getDouble(record.gpsTime));
-        length = length + 8;
-
-        if (recordLength != length) {
-            throw new RuntimeException();
-        }
+        WRAPPER.LASWriter_WritePoint(fileHandle, pointHandle);
+        WRAPPER.LASPoint_Destroy(pointHandle);
 
         recordsNum++;
     }
 
-    /* (non-Javadoc)
-     * @see org.jgrasstools.gears.io.las.core.v_1_0.ALasWriter#close()
-     */
     @Override
     public void close() throws Exception {
-        fileChannel.position(recordsNumPosition);
-        fos.write(getLong(recordsNum));
 
-        closeFile();
+        WRAPPER.LASHeader_SetPointRecordsCount(headerHandle, recordsNum);
+        WRAPPER.LASHeader_SetDataFormatId(headerHandle, (byte) pointFormat);
+
+        WRAPPER.LASWriter_Destroy(fileHandle);
 
         /*
          * write crs file
          */
         if (crs != null)
             CrsUtilities.writeProjectionFile(prjFile.getAbsolutePath(), null, crs);
-    }
-
-    private byte[] getLong( int num ) {
-        longBb.clear();
-        longBb.putInt(num);
-        byte[] array = longBb.array();
-        return array;
-    }
-
-    // private byte[] getLong( double num ) {
-    // longBb.clear();
-    // longBb.putDouble(num);
-    // byte[] array = longBb.array();
-    // return array;
-    // }
-
-    private byte[] getDouble( double num ) {
-        doubleBb.clear();
-        doubleBb.putDouble(num);
-        byte[] array = doubleBb.array();
-        return array;
-    }
-
-    private byte[] getShort( short num ) {
-        shortBb.clear();
-        shortBb.putShort(num);
-        return shortBb.array();
-    }
-
-    private void closeFile() throws Exception {
-        if (fileChannel != null && fileChannel.isOpen())
-            fileChannel.close();
-        if (fos != null)
-            fos.close();
     }
 
     @Override

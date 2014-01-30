@@ -55,8 +55,8 @@ public interface LiblasJNALibrary extends com.sun.jna.Library {
     // LASPoint_GetFlightLineEdge( long pointHandle );
     // LASPoint_GetScanDirection( long pointHandle );
     /* the number of returns of given pulse */
-    abstract int LASPoint_GetNumberOfReturns( long pointHandle );
-    abstract int LASPoint_GetReturnNumber( long pointHandle );
+    abstract short LASPoint_GetNumberOfReturns( long pointHandle );
+    abstract short LASPoint_GetReturnNumber( long pointHandle );
     abstract byte LASPoint_GetClassification( long pointHandle );
     /* the scan angle */
     // LASPoint_GetScanAngleRank( long pointHandle );
@@ -75,8 +75,8 @@ public interface LiblasJNALibrary extends com.sun.jna.Library {
     abstract void LASPoint_SetTime( long pointHandle, double gpsTime );
     abstract void LASPoint_SetIntensity( long pointHandle, short intensity );
     // void LASPoint_SetScanAngleRank( long pointHandle, short scanAngle );
-    abstract void LASPoint_SetNumberOfReturns( long pointHandle, int numberOfReturns );
-    abstract void LASPoint_SetReturnNumber( long pointHandle, int returnNumber );
+    abstract void LASPoint_SetNumberOfReturns( long pointHandle, short numberOfReturns );
+    abstract void LASPoint_SetReturnNumber( long pointHandle, short returnNumber );
     abstract void LASPoint_SetClassification( long pointHandle, byte classification );
     // LASPoint_SetUserData(point, temp_i);
     // LASPoint_SetPointSourceId(point, temp_i);
@@ -150,6 +150,8 @@ public interface LiblasJNALibrary extends com.sun.jna.Library {
     abstract void LASHeader_SetCreationYear( long headerHandle, short file_creation_year );
     abstract void LASHeader_SetVersionMinor( long headerHandle, int version );
     abstract void LASHeader_SetDataFormatId( long headerHandle, byte formatId );
+    abstract void LASHeader_SetDataOffset( long headerHandle, int offset );
+    abstract void LASHeader_SetDataRecordLength( long headerHandle, short recordLength );
 
     abstract void LASHeader_SetPointRecordsCount( long headerHandle, long number_of_point_records );
     abstract void LASHeader_SetScale( long headerHandle, double xScale, double yScale, double zScale );

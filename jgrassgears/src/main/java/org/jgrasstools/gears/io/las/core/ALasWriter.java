@@ -33,6 +33,17 @@ public interface ALasWriter {
     public abstract void setScales( double xScale, double yScale, double zScale );
 
     /**
+     * Possibility to define the offset for the data.
+     * 
+     * <p>If not set it defaults to 0.0,0.0,0.0.</p>
+     * 
+     * @param xOffset the x scaling value.
+     * @param yOffset the y scaling value.
+     * @param zOffset the z scaling value.
+     */
+    public abstract void setOffset( double xOffset, double yOffset, double zOffset );
+
+    /**
      * Possibility to set the min and max bounds.
      * 
      * <p>If not set they all default to 0.</p>

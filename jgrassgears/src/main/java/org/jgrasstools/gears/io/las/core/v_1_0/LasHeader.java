@@ -150,7 +150,15 @@ public class LasHeader implements ILasHeader {
     public long getOffset() {
         return offset;
     }
-    
+
+    public double[] getXYZScale() {
+        return new double[]{xScale, yScale, zScale};
+    }
+
+    public double[] getXYZOffset() {
+        return new double[]{xOffset, yOffset, zOffset};
+    }
+
     public short getRecordLength() {
         return recordLength;
     }

@@ -21,22 +21,54 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasHeader;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.utils.HMTestCase;
+import org.jgrasstools.gears.utils.HMTestMaps;
+import org.jgrasstools.gears.utils.RegionMap;
+import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestLasIO extends HMTestCase {
-    public void testLasReader() throws Exception {
 
+    private static boolean doNative = false;
+    private static boolean tellNative = true;
+
+    protected void setUp() throws Exception {
         // local native libs for test
-        File libFolder = new File("/home/moovida/development/liblas-git/makefiles/bin/Release/");
+        File libFolder = new File("/usr/local/lib/");
         if (libFolder.exists()) {
-            LiblasReader.loadNativeLibrary(libFolder.getAbsolutePath(), "las_c");
+            String error = LiblasWrapper.loadNativeLibrary(libFolder.getAbsolutePath(), "las_c");
+            if (error == null) {
+                doNative = true;
+            }
+        } else {
+            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
+            if (wrapper != null) {
+                doNative = true;
+            }
         }
+
+        if (doNative && tellNative) {
+            System.out.println("Doing tests with native support.");
+            tellNative = false;
+        }
+    }
+
+    public void testLasReader() throws Exception {
 
         String name = "las/1.0_0.las";
         long expectedCount = 1;
@@ -67,11 +99,17 @@ public class TestLasIO extends HMTestCase {
         processFile(name, expectedCount, true);
     }
 
+    public void testLasWriter() throws Exception {
+
+        String name = "las/1.0_0.las";
+        processFileWriting(name);
+
+    }
+
     private void processFile( String name, long expectedCount, boolean hasColor ) throws URISyntaxException, Exception,
             IOException {
         URL lasUrl = this.getClass().getClassLoader().getResource(name);
         File lasFile = new File(lasUrl.toURI());
-        boolean doNative = LiblasReader.loadNativeLibrary(null, null);
         LiblasReader libLasReader = null;
         ILasHeader libLasHeader = null;
         if (doNative) {
@@ -132,5 +170,80 @@ public class TestLasIO extends HMTestCase {
             libLasReader.close();
         }
 
+    }
+
+    private void processFileWriting( String name ) throws URISyntaxException, Exception, IOException {
+        URL lasUrl = this.getClass().getClassLoader().getResource(name);
+        File lasFile = new File(lasUrl.toURI());
+
+        if (doNative) {
+            File liblasTmp = File.createTempFile("liblasreader", ".las");
+            LiblasReader libLasReader = new LiblasReader(lasFile, null);
+            libLasReader.open();
+            LiblasHeader libLasHeader = libLasReader.getHeader();
+
+            LiblasWriter liblasWriter = new LiblasWriter(liblasTmp, DefaultGeographicCRS.WGS84);
+            liblasWriter.setBounds(libLasHeader);
+            liblasWriter.open();
+            while( libLasReader.hasNextPoint() ) {
+                liblasWriter.addPoint(libLasReader.getNextPoint());
+            }
+            liblasWriter.close();
+
+            LiblasReader tmpLiblasReader = new LiblasReader(liblasTmp, null);
+            tmpLiblasReader.open();
+            ILasHeader tmpLiblasHeader = tmpLiblasReader.getHeader();
+            checkHeader(libLasHeader, tmpLiblasHeader);
+            LasRecord tmpLiblasDot = tmpLiblasReader.getPointAt(0);
+            LasRecord liblasDot = libLasReader.getPointAt(0);
+            assertTrue(LasUtils.lasRecordEqual(tmpLiblasDot, liblasDot));
+            tmpLiblasReader.close();
+            libLasReader.close();
+
+            liblasTmp.deleteOnExit();
+        }
+
+        LasReader lasReader = new LasReader(lasFile, null);
+        lasReader.open();
+        ILasHeader lasHeader = lasReader.getHeader();
+
+        /*
+         * write tmp files
+         */
+        File lasTmp = File.createTempFile("lasreader", ".las");
+
+        LasWriter lasWriter = new LasWriter(lasTmp, DefaultGeographicCRS.WGS84);
+        lasWriter.setBounds(lasHeader);
+        lasWriter.open();
+        while( lasReader.hasNextPoint() ) {
+            lasWriter.addPoint(lasReader.getNextPoint());
+        }
+        lasWriter.close();
+
+        LasReader tmpLasReader = new LasReader(lasTmp, null);
+        tmpLasReader.open();
+        ILasHeader tmpLasHeader = tmpLasReader.getHeader();
+        checkHeader(lasHeader, tmpLasHeader);
+        LasRecord tmpLasDot = tmpLasReader.getPointAt(0);
+        LasRecord lasDot = lasReader.getPointAt(0);
+        assertTrue(LasUtils.lasRecordEqual(tmpLasDot, lasDot));
+        tmpLasReader.close();
+        lasReader.close();
+
+        lasTmp.deleteOnExit();
+
+    }
+    private void checkHeader( ILasHeader header, ILasHeader tmpHeader ) {
+        assertEquals(header.getOffset(), tmpHeader.getOffset());
+        // assertEquals(header.getRecordLength(), tmpHeader.getRecordLength());
+        assertEquals(header.getRecordsCount(), tmpHeader.getRecordsCount());
+        ReferencedEnvelope3D lasEnv = header.getDataEnvelope();
+        ReferencedEnvelope3D tmpLasEnv = tmpHeader.getDataEnvelope();
+        assertEquals(lasEnv.getMinX(), tmpLasEnv.getMinX(), DELTA);
+        assertEquals(lasEnv.getMinY(), tmpLasEnv.getMinY(), DELTA);
+        assertEquals(lasEnv.getMinZ(), tmpLasEnv.getMinZ(), DELTA);
+        assertEquals(lasEnv.getMaxX(), tmpLasEnv.getMaxX(), DELTA);
+        assertEquals(lasEnv.getMaxY(), tmpLasEnv.getMaxY(), DELTA);
+        assertEquals(lasEnv.getMaxZ(), tmpLasEnv.getMaxZ(), DELTA);
     }
 }

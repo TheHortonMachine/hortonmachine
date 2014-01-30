@@ -39,6 +39,9 @@ public class LiblasReader extends ALasReader {
     private CoordinateReferenceSystem crs;
     private byte pointDataFormat;
     private long offset;
+    private double xOffset = 0.0;
+    private double yOffset = 0.0;
+    private double zOffset = 0.0;
     private short recordLength;
     private LiblasJNALibrary WRAPPER;
 
@@ -91,8 +94,8 @@ public class LiblasReader extends ALasReader {
         dot.z = z;
 
         short intensity = WRAPPER.LASPoint_GetIntensity(ref);
-        int returnNumber = WRAPPER.LASPoint_GetReturnNumber(ref);
-        int numberOfReturns = WRAPPER.LASPoint_GetNumberOfReturns(ref);
+        short returnNumber = WRAPPER.LASPoint_GetReturnNumber(ref);
+        short numberOfReturns = WRAPPER.LASPoint_GetNumberOfReturns(ref);
         byte classification = WRAPPER.LASPoint_GetClassification(ref);
 
         dot.intensity = intensity;

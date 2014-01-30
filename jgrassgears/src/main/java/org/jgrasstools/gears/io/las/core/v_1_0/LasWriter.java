@@ -58,6 +58,9 @@ public class LasWriter implements ALasWriter {
     private double xScale = 0.01;
     private double yScale = 0.01;
     private double zScale = 0.001;
+    private double xOffset = 0.0;
+    private double yOffset = 0.0;
+    private double zOffset = 0.0;
     private double xMin = 0;
     private double yMin = 0;
     private double zMin = 0;
@@ -66,15 +69,19 @@ public class LasWriter implements ALasWriter {
     private double zMax = 0;
     private int recordsNum = 0;
 
-    private final short recordLength = 28;
+    private short recordLength = 28;
     private FileChannel fileChannel;
     private int recordsNumPosition;
+    private int pointFormatPosition;
+    private int pointFormat = 0;
     private boolean doWriteGroundElevation;
     private boolean openCalled;
 
     private int previousReturnNumber = -999;
     private int previousNumberOfReturns = -999;
     private byte[] previousReturnBytes = null;
+    private long offsetToData = 227;
+    private int recordLengthPosition;
 
     /**
      * A las file writer.
@@ -104,6 +111,16 @@ public class LasWriter implements ALasWriter {
         this.yScale = yScale;
         this.zScale = zScale;
     }
+    
+    @Override
+    public void setOffset( double xOffset, double yOffset, double zOffset ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.zOffset = zOffset;
+    }
 
     @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
@@ -130,6 +147,17 @@ public class LasWriter implements ALasWriter {
         this.xMax = env.getMaxX();
         this.yMax = env.getMaxY();
         this.zMax = env.getMaxZ();
+
+        double[] xyzOffset = header.getXYZOffset();
+        double[] xyzScale = header.getXYZScale();
+        xOffset = xyzOffset[0];
+        yOffset = xyzOffset[1];
+        zOffset = xyzOffset[2];
+        xScale = xyzScale[0];
+        yScale = xyzScale[1];
+        zScale = xyzScale[2];
+        
+        offsetToData = header.getOffset();
     }
 
     /* (non-Javadoc)
@@ -217,8 +245,7 @@ public class LasWriter implements ALasWriter {
         fos.write(getShort(headersize));
         hLength = hLength + 2;
 
-        int offsetToData = 227;
-        fos.write(getLong(offsetToData));
+        fos.write(getLong((int) offsetToData));
         hLength = hLength + 4;
 
         int numVarRecords = 0;
@@ -226,9 +253,11 @@ public class LasWriter implements ALasWriter {
         hLength = hLength + 4;
 
         // point data format
+        pointFormatPosition = hLength;
         fos.write(1);
         hLength = hLength + 1;
 
+        recordLengthPosition = hLength;
         fos.write(getShort(recordLength));
         hLength = hLength + 2;
 
@@ -271,13 +300,13 @@ public class LasWriter implements ALasWriter {
     @Override
     public synchronized void addPoint( LasRecord record ) throws IOException {
         int length = 0;
-        int x = (int) round((record.x - xMin) / xScale);
-        int y = (int) round((record.y - yMin) / yScale);
+        int x = (int) round((record.x - xOffset) / xScale);
+        int y = (int) round((record.y - yOffset) / yScale);
         int z;
         if (!doWriteGroundElevation) {
-            z = (int) round((record.z - zMin) / zScale);
+            z = (int) round((record.z - zOffset) / zScale);
         } else {
-            z = (int) round((record.groundElevation - zMin) / zScale);
+            z = (int) round((record.groundElevation - zOffset) / zScale);
         }
         fos.write(getLong(x));
         fos.write(getLong(y));
@@ -326,23 +355,26 @@ public class LasWriter implements ALasWriter {
         fos.write(new byte[2]);
         length = length + 2;
 
-        fos.write(getDouble(record.gpsTime));
-        length = length + 8;
-
-        if (recordLength != length) {
-            throw new RuntimeException();
+        if (record.gpsTime > 0) {
+            fos.write(getDouble(record.gpsTime));
+            length = length + 8;
+            pointFormat = 1;
         }
+
+        recordLength = (short) length;
 
         recordsNum++;
     }
 
-    /* (non-Javadoc)
-     * @see org.jgrasstools.gears.io.las.core.v_1_0.ALasWriter#close()
-     */
     @Override
     public void close() throws Exception {
         fileChannel.position(recordsNumPosition);
         fos.write(getLong(recordsNum));
+
+        fileChannel.position(pointFormatPosition);
+        fos.write(pointFormat);
+        fileChannel.position(recordLengthPosition);
+        fos.write(getShort(recordLength));
 
         closeFile();
 

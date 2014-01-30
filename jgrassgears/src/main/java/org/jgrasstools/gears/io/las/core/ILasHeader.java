@@ -58,4 +58,8 @@ public interface ILasHeader {
     long getOffset();
 
     short getRecordLength();
+
+    double[] getXYZScale();
+
+    double[] getXYZOffset();
 }

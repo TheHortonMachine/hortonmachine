@@ -184,11 +184,11 @@ public class LasUtils {
             r.z = elevation;
             short intensity = ((Number) lasFeature.getAttribute(INTENSITY)).shortValue();
             r.intensity = intensity;
-            int classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).intValue();
+            byte classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).byteValue();
             r.classification = classification;
-            int impulse = ((Number) lasFeature.getAttribute(IMPULSE)).intValue();
+            short impulse = ((Number) lasFeature.getAttribute(IMPULSE)).shortValue();
             r.returnNumber = impulse;
-            int numOfImpulses = ((Number) lasFeature.getAttribute(NUM_OF_IMPULSES)).intValue();
+            short numOfImpulses = ((Number) lasFeature.getAttribute(NUM_OF_IMPULSES)).shortValue();
             r.numberOfReturns = numOfImpulses;
             lasList.add(r);
         }

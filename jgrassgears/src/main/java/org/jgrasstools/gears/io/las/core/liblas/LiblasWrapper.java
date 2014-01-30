@@ -35,16 +35,12 @@ public class LiblasWrapper {
     /**
      * Getter for the liblas library JNA wrapper. 
      * 
-     * @return the JNA wrapper.
-     * @throws Exception if no library could be loaded.
+     * @return the JNA wrapper or <code>null</code> if no lib could be loaded.
      */
-    public synchronized static LiblasJNALibrary getWrapper() throws Exception {
+    public synchronized static LiblasJNALibrary getWrapper() {
         if (WRAPPER == null) {
             // try to find it in the default LD_LIBRARY path
             loadNativeLibrary(null, null);
-        }
-        if (WRAPPER == null) {
-            throw new Exception("No native liblas library loaded.");
         }
         return WRAPPER;
     }
@@ -54,9 +50,9 @@ public class LiblasWrapper {
      * 
      * @param nativeLibPath the path to add or <code>null</code>.
      * @param libName the lib name or <code>null</code>, in which case "lib_c" is used.
-     * @return <code>true</code>, if the lib could be loaded.
+     * @return <code>null</code>, if the lib could be loaded, the error string else.
      */
-    public static boolean loadNativeLibrary( String nativeLibPath, String libName ) {
+    public static String loadNativeLibrary( String nativeLibPath, String libName ) {
         try {
             String name = "las_c";
             if (libName == null)
@@ -65,9 +61,9 @@ public class LiblasWrapper {
                 NativeLibrary.addSearchPath(libName, nativeLibPath);
             WRAPPER = (LiblasJNALibrary) Native.loadLibrary(libName, LiblasJNALibrary.class);
         } catch (UnsatisfiedLinkError e) {
-            return false;
+            return e.getLocalizedMessage();
         }
-        return true;
+        return null;
     }
 
 }

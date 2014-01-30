@@ -47,17 +47,17 @@ public class LasRecord {
     /**
      * The return number.
      */
-    public int returnNumber = -1;
+    public short returnNumber = -1;
 
     /**
      * Number of Returns (given pulse).
      */
-    public int numberOfReturns = -1;
+    public short numberOfReturns = -1;
 
     /**
      * Classification.
      */
-    public int classification = -1;
+    public byte classification = -1;
 
     /**
      * Gps timestamp

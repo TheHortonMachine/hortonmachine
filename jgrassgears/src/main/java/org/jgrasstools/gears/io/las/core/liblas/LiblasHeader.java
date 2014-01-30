@@ -59,7 +59,7 @@ public class LiblasHeader implements ILasHeader {
 
     private short recordLength = 0;
     private long pointRecordsCount = 0;
-    
+
     private int gpsTimeType;
 
     private double xScale = 0.0;
@@ -120,14 +120,22 @@ public class LiblasHeader implements ILasHeader {
 
     }
 
+    public double[] getXYZScale() {
+        return new double[]{xScale, yScale, zScale};
+    }
+
+    public double[] getXYZOffset() {
+        return new double[]{xOffset, yOffset, zOffset};
+    }
+
     public short getRecordLength() {
         return recordLength;
     }
-    
+
     public long getOffset() {
         return offset;
     }
-    
+
     /**
      * Sets the gps time type.
      * 
@@ -209,7 +217,7 @@ public class LiblasHeader implements ILasHeader {
     public boolean hasRGB() {
         return pointDataFormat == 2 || pointDataFormat == 3;
     }
-    
+
     @Override
     public byte getPointDataFormat() {
         return pointDataFormat;

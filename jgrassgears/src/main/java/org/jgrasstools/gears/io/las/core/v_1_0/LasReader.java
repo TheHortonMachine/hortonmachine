@@ -253,9 +253,9 @@ public class LasReader extends ALasReader {
         read = read + 2;
         // return number
         byte b = get();
-        int returnNumber = getReturnNumber(b);
+        short returnNumber = getReturnNumber(b);
         // number of returns (given pulse)
-        int numberOfReturns = getNumberOfReturns(b);
+        short numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
         // classification
         byte classification = get();
@@ -321,8 +321,8 @@ public class LasReader extends ALasReader {
         final short intensity = getShort2Bytes();
         read = read + 2;
         final byte b = get();
-        final int returnNumber = getReturnNumber(b);
-        final int numberOfReturns = getNumberOfReturns(b);
+        final short returnNumber = getReturnNumber(b);
+        final short numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
         final byte classification = get();
         read = read + 1;
@@ -431,11 +431,11 @@ public class LasReader extends ALasReader {
         fc.position(fc.position() + bytesTpSkip);
     }
 
-    private int getReturnNumber( byte b ) {
-        int rn = 0;
+    private short getReturnNumber( byte b ) {
+        short rn = 0;
         for( int i = 0; i < 3; i++ ) {
             if (isSet(b, i)) {
-                rn = (int) (rn + Math.pow(2.0, i));
+                rn = (short) (rn + Math.pow(2.0, i));
             }
         }
         return rn;
@@ -457,11 +457,11 @@ public class LasReader extends ALasReader {
         return isSet(b, 0) ? 1 : 0;
     }
 
-    private int getNumberOfReturns( byte b ) {
-        int nor = 0;
+    private short getNumberOfReturns( byte b ) {
+        short nor = 0;
         for( int i = 3; i < 6; i++ ) {
             if (isSet(b, i)) {
-                nor = (int) (nor + Math.pow(2.0, i - 3));
+                nor = (short) (nor + Math.pow(2.0, i - 3));
             }
         }
         return nor;
