@@ -21,9 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
@@ -37,16 +35,12 @@ import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.utils.HMTestCase;
-import org.jgrasstools.gears.utils.HMTestMaps;
-import org.jgrasstools.gears.utils.RegionMap;
-import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestLasIO extends HMTestCase {
 
     private static boolean doNative = false;
     private static boolean tellNative = true;
-    private static String lasWriteFileName = "las/1.0_0.las";
+    private static String lasWriteFileName = "las/1.1_1.las";
 
     protected void setUp() throws Exception {
         // local native libs for test
@@ -98,6 +92,29 @@ public class TestLasIO extends HMTestCase {
         name = "las/1.2-with-color.las";
         expectedCount = 1065;
         processFile(name, expectedCount, true);
+    }
+
+    public void testLazReader() throws Exception {
+        if (doNative) {
+            String name = "las/1.2-with-color.laz";
+            int expectedCount = 1065;
+
+            URL lasUrl = this.getClass().getClassLoader().getResource(name);
+            File lasFile = new File(lasUrl.toURI());
+            LiblasReader libLasReader = new LiblasReader(lasFile, null);
+            libLasReader.open();
+            LiblasHeader libLasHeader = libLasReader.getHeader();
+
+            long recordsCount = libLasHeader.getRecordsCount();
+            if (recordsCount != 0) {
+                // we have laz support
+                assertEquals(expectedCount, recordsCount);
+            }else{
+                System.out.println("No laz support");
+            }
+            libLasReader.close();
+        }
+
     }
 
     public void testLasWriterNative() throws Exception {
