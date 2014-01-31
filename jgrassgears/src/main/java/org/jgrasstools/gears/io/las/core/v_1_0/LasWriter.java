@@ -43,7 +43,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasWriter implements ALasWriter {
+public class LasWriter extends ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);

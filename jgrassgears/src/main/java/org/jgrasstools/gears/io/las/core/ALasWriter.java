@@ -17,9 +17,36 @@
  */
 package org.jgrasstools.gears.io.las.core;
 
+import java.io.File;
 import java.io.IOException;
 
-public interface ALasWriter {
+import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
+import org.jgrasstools.gears.io.las.core.liblas.LiblasWriter;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+public abstract class ALasWriter {
+    
+    private static volatile boolean testedLibLoading = false;
+    private static volatile boolean isNativeLibAvailable;
+
+    public static ALasWriter getWriter( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
+        ALasWriter writer;
+        if (!testedLibLoading) {
+            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
+            if (wrapper != null) {
+                isNativeLibAvailable = true;
+            }
+            testedLibLoading = true;
+        }
+        if (isNativeLibAvailable) {
+            writer = new LiblasWriter(lasFile, crs);
+        } else {
+            writer = new LasWriter(lasFile, crs);
+        }
+        return writer;
+    }
 
     /**
      * Possibility to define the scale for the data.

@@ -48,6 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -57,6 +58,8 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasUtils {
+    private static final GeometryFactory gf = GeometryUtilities.gf();
+    
     public static final String THE_GEOM = "the_geom";
     public static final String ELEVATION = "elev";
     public static final String INTENSITY = "intensity";
@@ -164,12 +167,16 @@ public class LasUtils {
     }
 
     public static SimpleFeature tofeature( LasRecord r, CoordinateReferenceSystem crs ) {
-        final Point point = GeometryUtilities.gf().createPoint(new Coordinate(r.x, r.y));
+        final Point point = toGeometry(r);
         final Object[] values = new Object[]{point, r.z, r.intensity, r.classification, r.returnNumber, r.numberOfReturns};
         SimpleFeatureBuilder lasFeatureBuilder = getLasFeatureBuilder(crs);
         lasFeatureBuilder.addAll(values);
         final SimpleFeature feature = lasFeatureBuilder.buildFeature(null);
         return feature;
+    }
+
+    public static Point toGeometry( LasRecord r ) {
+        return gf.createPoint(new Coordinate(r.x, r.y));
     }
 
     public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection ) {

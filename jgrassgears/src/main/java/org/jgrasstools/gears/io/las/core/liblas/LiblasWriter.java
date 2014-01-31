@@ -17,8 +17,6 @@
  */
 package org.jgrasstools.gears.io.las.core.liblas;
 
-import static java.lang.Math.round;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -37,7 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LiblasWriter implements ALasWriter {
+public class LiblasWriter extends ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
 
     private File outFile;
