@@ -18,6 +18,7 @@
 package org.jgrasstools.gears.io.las.core.liblas;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jgrasstools.gears.io.las.core.ALasReader;
@@ -59,7 +60,10 @@ public class LiblasReader extends ALasReader {
         WRAPPER = LiblasWrapper.getWrapper();
     }
 
-    public void open() {
+    public void open() throws FileNotFoundException {
+        if (!lasFile.exists()) {
+            throw new FileNotFoundException(lasFile.getAbsolutePath());
+        }
         fileHandle = WRAPPER.LASReader_Create(lasFile.getAbsolutePath());
         LiblasHeader header = getHeader();
         pointDataFormat = header.getPointDataFormat();
