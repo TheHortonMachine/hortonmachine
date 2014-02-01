@@ -46,7 +46,10 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader;
@@ -121,24 +124,12 @@ public class OmsVectorReader extends JGTModel {
         return fc;
     }
 
-    /**
-     * Fast reading of the bounds of a vector dataset.
-     * 
-     * @param path the vector file path.
-     * @return the array containing the bounds as [n, s, e, w].
-     * @throws IOException
-     */
-    public static double[] readBounds( String path ) throws IOException {
-        SimpleFeatureCollection fc = getFC(path);
-        ReferencedEnvelope bounds = fc.getBounds();
-
-        double[] nsew = {//
-        bounds.getMaxY(), //
-                bounds.getMinY(), //
-                bounds.getMaxX(), //
-                bounds.getMinX() //
-        };
-        return nsew;
+    public static ReferencedEnvelope readEnvelope(String filePath) throws IOException {
+        File shapeFile = new File(filePath);
+        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+        SimpleFeatureSource featureSource = store.getFeatureSource();
+        return featureSource.getBounds();
     }
+    
 
 }
