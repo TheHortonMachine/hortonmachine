@@ -26,6 +26,8 @@ import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 
+import org.jgrasstools.gears.utils.math.NumericsUtilities;
+
 /**
  * A node in the grid environment of a digital elevation model. 
  * 
@@ -274,15 +276,15 @@ public class GridNode extends Node {
         return nextNode;
     }
 
-    /**
-     * Get next upstream {@link GridNode node}, based on least cost.
-     * 
-     * @return the next least cost, upstream node.
-     */
-    public GridNode goLeastCostUpstream() {
-
-        return null;
-    }
+    // /**
+    // * Get next upstream {@link GridNode node}, based on least cost.
+    // *
+    // * @return the next least cost, upstream node.
+    // */
+    // public GridNode goLeastCostUpstream() {
+    //
+    // return null;
+    // }
 
     /**
      * Gets all surrounding {@link GridNode nodes}, starting from the most eastern.
@@ -310,6 +312,37 @@ public class GridNode extends Node {
             }
         }
         return nodes;
+    }
+
+    /**
+     * Checks if the supplied node is adjacent to the current.
+     * 
+     * @return the {@link Direction} if the two cells touch, else <code>null</code>.
+     */
+    public Direction isNeighborOf( GridNode otherNode ) {
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        for( int i = 0; i < orderedDirs.length; i++ ) {
+            Direction direction = orderedDirs[i];
+            int newCol = col + direction.col;
+            int newRow = row + direction.row;
+            if (otherNode.col == newCol && otherNode.row == newRow) {
+                return direction;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the supplied node is adjacent to the current and has the same value.
+     * 
+     * @return the {@link Direction} if the two cells touch and have the same value, else <code>null</code>.
+     */
+    public Direction isSameValueNeighborOf( GridNode otherNode ) {
+        Direction direction = isNeighborOf(otherNode);
+        if (direction != null && NumericsUtilities.dEq(elevation, otherNode.elevation)) {
+            return direction;
+        }
+        return null;
     }
 
     /**

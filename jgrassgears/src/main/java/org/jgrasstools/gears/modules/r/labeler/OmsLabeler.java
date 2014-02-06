@@ -39,8 +39,6 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.BinaryFast;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
@@ -60,13 +58,6 @@ public class OmsLabeler extends JGTModel {
     @Description("The resulting map.")
     @Out
     public GridCoverage2D outMap = null;
-
-    private int d_w;
-    private int d_h;
-    private int[] dest_1d;
-    private int labels[];
-    private int numberOfLabels;
-    // private boolean labelsValid = false;
 
     @Execute
     public void process() throws Exception {
@@ -94,35 +85,35 @@ public class OmsLabeler extends JGTModel {
 
         int[] labelsArray = doLabel(data, width, height);
 
-        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height,
-                labelsArray);
-        HashMap<String, Double> regionMap = CoverageUtilities
-                .getRegionParamsFromGridCoverage(inMap);
-        outMap = CoverageUtilities.buildCoverage(
-                "morphed", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, labelsArray);
+        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
+        outMap = CoverageUtilities.buildCoverage("labeled", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
 
     /**
-     *doLabel applies the Labeling alogrithm plus offset and scaling
-     *The input image is expected to be 8-bit mono 0=black everything else=white
-     *@param src1_1d The input pixel array
-     *@param width width of the destination image in pixels
-     *@param height height of the destination image in pixels
-     *@return A pixel array containing the labelled image
+     * Applies the Labeling algorithm plus offset and scaling
+     * 
+     * <p>The input image is expected to be 8-bit mono 0=black everything else=white
+     * 
+     * @param data The input pixel array
+     * @param width width of the destination image in pixels
+     * @param height height of the destination image in pixels
+     * @return A pixel array containing the labelled image
      */
-    private int[] doLabel( int[] src1_1d, int width, int height ) {
+    private int[] doLabel( int[] data, int width, int height ) {
 
         int nextlabel = 1;
         int nbs[] = new int[4];
         int nbls[] = new int[4];
 
         // Get size of image and make 1d_arrays
-        d_w = width;
-        d_h = height;
+        int d_w = width;
+        int d_h = height;
 
-        dest_1d = new int[d_w * d_h];
-        labels = new int[d_w * d_h / 2]; // the most labels there can be is 1/2 of the points in
-        // checkerboard
+        int[] dest_1d = new int[d_w * d_h];
+        // the most labels there can be is 1/2 of the points
+        // in checkerboard
+        int[] labels = new int[d_w * d_h / 2];
 
         int result = 0;
         // labelsValid = false; // only set to true once we've complete the task
@@ -132,25 +123,25 @@ public class OmsLabeler extends JGTModel {
 
         int count;
         // now Label the image
-        for( int i = 0; i < src1_1d.length; i++ ) {
+        for( int i = 0; i < data.length; i++ ) {
 
-            int src1rgb = src1_1d[i] & 0x000000ff;
+            int src1rgb = data[i] & 0x000000ff;
 
             if (src1rgb == 0) {
                 result = 0; // nothing here
             } else {
 
                 // The 4 visited neighbours
-                nbs[0] = getNeighbours(src1_1d, i, -1, 0);
-                nbs[1] = getNeighbours(src1_1d, i, 0, -1);
-                nbs[2] = getNeighbours(src1_1d, i, -1, -1);
-                nbs[3] = getNeighbours(src1_1d, i, 1, -1);
+                nbs[0] = getNeighbours(data, i, -1, 0, d_w, d_h);
+                nbs[1] = getNeighbours(data, i, 0, -1, d_w, d_h);
+                nbs[2] = getNeighbours(data, i, -1, -1, d_w, d_h);
+                nbs[3] = getNeighbours(data, i, 1, -1, d_w, d_h);
 
                 // Their corresponding labels
-                nbls[0] = getNeighbourd(dest_1d, i, -1, 0);
-                nbls[1] = getNeighbourd(dest_1d, i, 0, -1);
-                nbls[2] = getNeighbourd(dest_1d, i, -1, -1);
-                nbls[3] = getNeighbourd(dest_1d, i, 1, -1);
+                nbls[0] = getNeighbourd(dest_1d, i, -1, 0, d_w, d_h);
+                nbls[1] = getNeighbourd(dest_1d, i, 0, -1, d_w, d_h);
+                nbls[2] = getNeighbourd(dest_1d, i, -1, -1, d_w, d_h);
+                nbls[3] = getNeighbourd(dest_1d, i, 1, -1, d_w, d_h);
 
                 // label the point
                 if ((nbs[0] == nbs[1]) && (nbs[1] == nbs[2]) && (nbs[2] == nbs[3]) && (nbs[0] == 0)) {
@@ -175,7 +166,7 @@ public class OmsLabeler extends JGTModel {
                         // Equivalence the connected points
                         for( int j = 0; j < 4; j++ ) {
                             if ((nbls[j] != 0) && (nbls[j] != result)) {
-                                associate(nbls[j], result);
+                                associate(nbls[j], result, labels);
                             }
                         }
                     }
@@ -187,7 +178,7 @@ public class OmsLabeler extends JGTModel {
         // reduce labels ie 76=23=22=3 -> 76=3
         // done in reverse order to preserve sorting
         for( int i = labels.length - 1; i > 0; i-- ) {
-            labels[i] = reduce(i);
+            labels[i] = reduce(i, labels);
         }
 
         /*now labels will look something like 1=1 2=2 3=2 4=2 5=5.. 76=5 77=5
@@ -203,7 +194,7 @@ public class OmsLabeler extends JGTModel {
                 condensed[i] = count++;
         }
         // Record the number of labels
-        numberOfLabels = count - 1;
+        int numberOfLabels = count - 1;
 
         // now run back through our preliminary results, replacing the raw label
         // with the reduced and condensed one, and do the scaling and offsets too
@@ -231,7 +222,7 @@ public class OmsLabeler extends JGTModel {
             labelColors[i] = i;
         }
 
-        for( int i = 0; i < src1_1d.length; i++ ) {
+        for( int i = 0; i < data.length; i++ ) {
             result = condensed[labels[dest_1d[i]]];
             // result = (int) ( scale * (float) result + oset );
             // truncate if necessary
@@ -250,9 +241,11 @@ public class OmsLabeler extends JGTModel {
      * getNeighbours will get the pixel value of i's neighbour that's ox and oy
      * away from i, if the point is outside the image, then 0 is returned.
      * This version gets from source image.
+     * @param d_w 
+     * @param d_h 
      */
 
-    private int getNeighbours( int[] src1d, int i, int ox, int oy ) {
+    private int getNeighbours( int[] src1d, int i, int ox, int oy, int d_w, int d_h ) {
         int x, y, result;
 
         x = (i % d_w) + ox; // d_w and d_h are assumed to be set to the
@@ -270,9 +263,11 @@ public class OmsLabeler extends JGTModel {
      * getNeighbourd will get the pixel value of i's neighbour that's ox and oy
      * away from i, if the point is outside the image, then 0 is returned.
      * This version gets from destination image.
+     * @param d_w 
+     * @param d_h 
      */
 
-    private int getNeighbourd( int[] src1d, int i, int ox, int oy ) {
+    private int getNeighbourd( int[] src1d, int i, int ox, int oy, int d_w, int d_h ) {
         int x, y, result;
 
         x = (i % d_w) + ox; // d_w and d_h are assumed to be set to the
@@ -291,11 +286,12 @@ public class OmsLabeler extends JGTModel {
      *  a should be less than b to give some ordering (sorting)
      * if b is already associated with some other value, then propagate
      * down the list.
+     * @param labels 
       */
-    private void associate( int a, int b ) {
+    private void associate( int a, int b, int[] labels ) {
 
         if (a > b) {
-            associate(b, a);
+            associate(b, a, labels);
             return;
         }
         if ((a == b) || (labels[b] == a))
@@ -303,7 +299,7 @@ public class OmsLabeler extends JGTModel {
         if (labels[b] == b) {
             labels[b] = a;
         } else {
-            associate(labels[b], a);
+            associate(labels[b], a, labels);
             if (labels[b] > a) { // ***rbf new
                 labels[b] = a;
             }
@@ -311,13 +307,13 @@ public class OmsLabeler extends JGTModel {
     }
     /**
      * Reduces the number of labels.
+     * @param labels 
      */
-    private int reduce( int a ) {
-
+    private int reduce( int a, int[] labels ) {
         if (labels[a] == a) {
             return a;
         } else {
-            return reduce(labels[a]);
+            return reduce(labels[a], labels);
         }
     }
 
