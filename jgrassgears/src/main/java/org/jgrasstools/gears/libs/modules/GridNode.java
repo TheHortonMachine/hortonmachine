@@ -94,7 +94,12 @@ public class GridNode extends Node {
                 if (!isInRaster(newC, newR)) {
                     touchesBound = true;
                 } else {
-                    tmp = gridIter.getSampleDouble(newC, newR, 0);
+                    try {
+                        tmp = gridIter.getSampleDouble(newC, newR, 0);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        // touches - might be tiled, which needs better support
+                        touchesBound = true;
+                    }
                 }
 
                 switch( index ) {
