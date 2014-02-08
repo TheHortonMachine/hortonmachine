@@ -106,7 +106,7 @@ public class OmsLinesPolygonizer extends JGTModel {
         case MULTILINE:
             break;
         default:
-            throw new ModelsIllegalargumentException("The module only works with line layers.", this);
+            throw new ModelsIllegalargumentException("The module only works with line layers.", this, pm);
         }
 
         List<Geometry> linesList = FeatureUtilities.featureCollectionToGeometriesList(inMap, true, null);

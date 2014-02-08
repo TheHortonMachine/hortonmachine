@@ -33,11 +33,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRITER
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import oms3.annotations.Author;
@@ -52,18 +48,16 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FileDataStoreFactorySpi;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description(OMSSHAPEFILEFEATUREWRITER_DESCRIPTION)
@@ -111,10 +105,10 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         }
         File shapeFile = new File(file);
         FileDataStoreFactorySpi factory = FileDataStoreFinder.getDataStoreFactory("shp");
-        Map map = Collections.singletonMap( "url", shapeFile.toURI().toURL() );
-        DataStore newDataStore = factory.createNewDataStore( map );
-        newDataStore.createSchema( pType );
-        
+        Map map = Collections.singletonMap("url", shapeFile.toURI().toURL());
+        DataStore newDataStore = factory.createNewDataStore(map);
+        newDataStore.createSchema(pType);
+
         Transaction transaction = new DefaultTransaction("create");
         String typeName = newDataStore.getTypeNames()[0];
         SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource(typeName);
@@ -138,15 +132,22 @@ public class OmsShapefileFeatureWriter extends JGTModel {
         hasWritten = true;
     }
 
-    public static void writeShapefile( String path, SimpleFeatureCollection featureCollection ) throws IOException {
+    public static void writeShapefile( String path, SimpleFeatureCollection featureCollection, IJGTProgressMonitor pm )
+            throws IOException {
         OmsShapefileFeatureWriter writer = new OmsShapefileFeatureWriter();
+        if (pm != null) {
+            writer.pm = pm;
+        }
         writer.file = path;
         writer.geodata = featureCollection;
         writer.writeFeatureCollection();
     }
 
-    public static void writeEmptyShapefile( String path, SimpleFeatureType schema ) throws IOException {
+    public static void writeEmptyShapefile( String path, SimpleFeatureType schema, IJGTProgressMonitor pm ) throws IOException {
         OmsShapefileFeatureWriter writer = new OmsShapefileFeatureWriter();
+        if (pm != null) {
+            writer.pm = pm;
+        }
         writer.file = path;
         writer.pType = schema;
         writer.writeFeatureCollection();

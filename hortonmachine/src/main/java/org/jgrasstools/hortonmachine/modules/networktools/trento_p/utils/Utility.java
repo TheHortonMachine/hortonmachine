@@ -294,7 +294,7 @@ public class Utility {
     }
 
     public static void makePolygonShp( ITrentoPType[] values, String path, CoordinateReferenceSystem crs,
-            String pAreaShapeFileName ) throws IOException {
+            String pAreaShapeFileName, IJGTProgressMonitor pm ) throws IOException {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         String typeName = values[0].getName();
         b.setName(typeName);
@@ -302,7 +302,7 @@ public class Utility {
         b.add("the_geom", Polygon.class);
         b.add(PipesTrentoP.ID.getAttributeName(), PipesTrentoP.ID.getClazz());
         SimpleFeatureType areaType = b.buildFeatureType();
-        OmsShapefileFeatureWriter.writeEmptyShapefile(path, areaType);
+        OmsShapefileFeatureWriter.writeEmptyShapefile(path, areaType, pm);
 
     }
 

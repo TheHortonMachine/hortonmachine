@@ -188,7 +188,7 @@ public class OmsWindowSampler extends JGTModel {
             }
             return min;
         default:
-            throw new ModelsIllegalargumentException("Mode not recognized: " + pMode, this);
+            throw new ModelsIllegalargumentException("Mode not recognized: " + pMode, this, pm);
         }
     }
 

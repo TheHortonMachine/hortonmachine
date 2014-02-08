@@ -522,7 +522,7 @@ public class ModelsEngine {
                 previousCount = count;
                 count++;
                 if (head > num_max)
-                    throw new ModelsIllegalargumentException("The number of bin eccedes the maximum number allowed.", "MODEL");
+                    throw new ModelsIllegalargumentException("The number of bin eccedes the maximum number allowed.", "MODEL", pm);
             }
 
         } else if (binNum > 1) {
@@ -598,7 +598,7 @@ public class ModelsEngine {
         }
 
         if (head < 1) {
-            throw new ModelsIllegalargumentException("Something wrong happened in binning", "MODEL");
+            throw new ModelsIllegalargumentException("Something wrong happened in binning", "MODEL", pm);
         } else {
             theSplit.initIndex(head);
 
@@ -857,7 +857,7 @@ public class ModelsEngine {
                         pointV.getCoordinates()[0].y));
                 nodoId = (Number) attributePoints.get(numGeometry).get(reteId);
                 if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field " + reteId + " not found", "");
+                    throw new ModelsIllegalargumentException("Field " + reteId + " not found", "", pm);
                 }
                 if (nodoId.intValue() != -1
                         && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
@@ -989,7 +989,7 @@ public class ModelsEngine {
                         pointV.getCoordinates()[0].y));
                 nodoId = (Number) attributePoints.get(numGeometry).get("RETE_ID");
                 if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field RETE_ID not found", "");
+                    throw new ModelsIllegalargumentException("Field RETE_ID not found", "", pm);
                 }
                 if (nodoId.intValue() != -1
                         && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
@@ -1213,7 +1213,7 @@ public class ModelsEngine {
                     } else {
                         throw new ModelsIllegalargumentException(
                                 "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
-                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?", "MODELSENGINE");
+                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?", "MODELSENGINE", pm);
                     }
                 }
             }

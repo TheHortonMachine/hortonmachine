@@ -130,7 +130,7 @@ public class OmsVectorOverlayOperators extends JGTModel {
         } else if (pType.equals(SYMDIFFERENCE)) {
             resultingGeometryCollection = g1.symDifference(g2);
         } else {
-            throw new ModelsIllegalargumentException("The overlay type is not supported: " + pType, this);
+            throw new ModelsIllegalargumentException("The overlay type is not supported: " + pType, this, pm);
         }
         pm.done();
 

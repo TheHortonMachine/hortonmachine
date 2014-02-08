@@ -89,15 +89,15 @@ public class GrassMosaicLegacy extends JGTModel {
     public void process() throws Exception {
 
         if (inFiles == null) {
-            throw new ModelsIllegalargumentException("No input data have been provided.", this);
+            throw new ModelsIllegalargumentException("No input data have been provided.", this, pm);
         }
 
         if (pRes == null) {
-            throw new ModelsIllegalargumentException("The definition of the output resolution is mandatory.", this);
+            throw new ModelsIllegalargumentException("The definition of the output resolution is mandatory.", this, pm);
         }
 
         if (inFiles != null && inFiles.size() < 2) {
-            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
+            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this, pm);
         }
 
         if (pBounds != null) {

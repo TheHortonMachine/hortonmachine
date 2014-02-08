@@ -102,4 +102,10 @@ public class GeotoolsProgressMonitorAdapter implements IJGTProgressMonitor {
     public void message( String message ) {
     }
 
+    public void exceptionThrown( String message ) {
+    }
+
+    public void onModuleExit() {
+    }
+
 }

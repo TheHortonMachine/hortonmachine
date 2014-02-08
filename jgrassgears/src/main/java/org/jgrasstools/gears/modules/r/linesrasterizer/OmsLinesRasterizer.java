@@ -145,7 +145,7 @@ public class OmsLinesRasterizer extends JGTModel {
         if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
             throw new ModelsIllegalargumentException(
                     "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
-                    this);
+                    this, pm);
         }
         SimpleFeatureType schema = inVector.getSchema();
         CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
@@ -186,7 +186,7 @@ public class OmsLinesRasterizer extends JGTModel {
                     if (fCatChecked == null) {
                         fCatChecked = FeatureUtilities.findAttributeName(featureMate.getFeature().getFeatureType(), fCat);
                         if (fCatChecked == null) {
-                            throw new ModelsIllegalargumentException("Could not find an attribute named: " + fCat, this);
+                            throw new ModelsIllegalargumentException("Could not find an attribute named: " + fCat, this, pm);
                         }
                     }
                     cat = featureMate.getAttribute(fCat, Double.class);

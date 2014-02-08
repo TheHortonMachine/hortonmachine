@@ -235,12 +235,12 @@ public class OmsLasConverter extends JGTModel {
         if (pIntensityrange != null) {
             final String[] split = pIntensityrange.split(","); //$NON-NLS-1$
             if (split.length != 2) {
-                throw new ModelsIllegalargumentException("Intensity range has to be of the form: min,max", this);
+                throw new ModelsIllegalargumentException("Intensity range has to be of the form: min,max", this, pm);
             }
             try {
                 intensityRange = new double[]{Double.parseDouble(split[0]), Double.parseDouble(split[1])};
             } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting min and max to numbers.", this);
+                throw new ModelsIllegalargumentException("Problem in converting min and max to numbers.", this, pm);
             }
         }
 
@@ -267,7 +267,7 @@ public class OmsLasConverter extends JGTModel {
                     impulses[i] = Double.parseDouble(split[i]);
                 }
             } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting impulses values to numbers.", this);
+                throw new ModelsIllegalargumentException("Problem in converting impulses values to numbers.", this, pm);
             }
         }
 
@@ -279,7 +279,7 @@ public class OmsLasConverter extends JGTModel {
                     classes[i] = (int) Double.parseDouble(split[i]);
                 }
             } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting classes to numbers.", this);
+                throw new ModelsIllegalargumentException("Problem in converting classes to numbers.", this, pm);
             }
         }
 

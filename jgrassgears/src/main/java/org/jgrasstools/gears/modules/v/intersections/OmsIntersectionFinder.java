@@ -100,9 +100,9 @@ public class OmsIntersectionFinder extends JGTModel {
             break;
         case POLYGON:
         case MULTIPOLYGON:
-            throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.", this);
+            throw new ModelsIllegalargumentException("The module doesn't work for polygons yet.", this, pm);
         default:
-            throw new ModelsIllegalargumentException("The module doesn't work for points.", this);
+            throw new ModelsIllegalargumentException("The module doesn't work for points.", this, pm);
         }
 
     }

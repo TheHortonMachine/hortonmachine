@@ -207,7 +207,7 @@ public class OmsDebrisVandre extends JGTModel {
 
         if (inSoil != null) {
             if (inNet == null) {
-                throw new ModelsIllegalargumentException("If the soil map is supplied also the network map is needed.", this);
+                throw new ModelsIllegalargumentException("If the soil map is supplied also the network map is needed.", this, pm);
             }
             outSoilWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, Double.NaN);
             outSoilIter = RandomIterFactory.createWritable(outSoilWR, null);
@@ -332,7 +332,7 @@ public class OmsDebrisVandre extends JGTModel {
                                 if (!ModelsEngine.go_downstream(flowDirColRow, flowValue))
                                     throw new ModelsIllegalargumentException(
                                             "Unable to go downstream. There might be problems in the consistency of your data.",
-                                            this);
+                                            this, pm);
 
                                 if (useObstacles) {
                                     /*
@@ -565,7 +565,7 @@ public class OmsDebrisVandre extends JGTModel {
 
             double soil = soilIter.getSampleDouble(point.x, point.y, 0);
             if (isNovalue(soil)) {
-                throw new ModelsIllegalargumentException("The soil map needs to cover the whole paths.", this);
+                throw new ModelsIllegalargumentException("The soil map needs to cover the whole paths.", this, pm);
             }
             double net = netIter.getSampleDouble(point.x, point.y, 0);
             if (!isNovalue(net)) {
@@ -608,7 +608,7 @@ public class OmsDebrisVandre extends JGTModel {
                 // first move to the next point
                 if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
                     throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/"
-                            + flowDirColRow[1], this);
+                            + flowDirColRow[1], this, pm);
                 tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 while( !isNovalue(tmpFlowValue) && tmpFlowValue != 10 ) {
                     double cumulated = outSoilIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
@@ -620,7 +620,7 @@ public class OmsDebrisVandre extends JGTModel {
 
                     if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
                         throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/"
-                                + flowDirColRow[1], this);
+                                + flowDirColRow[1], this, pm);
                     tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
                 }
 
@@ -643,7 +643,7 @@ public class OmsDebrisVandre extends JGTModel {
         }
         if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
             throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/" + flowDirColRow[1],
-                    this);
+                    this, pm);
         while( isNovalue(triggerIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0)) ) {
             tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
             if (tmpFlowValue == 10) {
@@ -651,7 +651,7 @@ public class OmsDebrisVandre extends JGTModel {
             }
             if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
                 throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/" + flowDirColRow[1],
-                        this);
+                        this, pm);
         }
         return true;
     }

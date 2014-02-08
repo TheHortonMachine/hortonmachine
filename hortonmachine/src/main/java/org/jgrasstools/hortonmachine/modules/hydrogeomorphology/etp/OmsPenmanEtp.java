@@ -200,7 +200,7 @@ public class OmsPenmanEtp extends JGTModel {
             double f = 0.0;
             if (rs > 0.) {
                 if (RGL < 0) {
-                    throw new ModelsIllegalargumentException("Invalid value of RGL for the current class.", this);
+                    throw new ModelsIllegalargumentException("Invalid value of RGL for the current class.", this, pm);
                 } else if (RGL == 0) {
                     f = shortRadiation;
                 } else {

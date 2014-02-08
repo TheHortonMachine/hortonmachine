@@ -154,7 +154,7 @@ public class OmsIntensityClassifier extends JGTModel {
                         value = INTENSITY_LOW;
                     } else {
                         throw new ModelsIllegalargumentException("No intensity could be calculated for h = " + h + " and v = "
-                                + v, this);
+                                + v, this, pm);
                     }
                     outIter.setSample(c, r, 0, value);
                 } else {

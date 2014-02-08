@@ -174,7 +174,7 @@ public class OmsEpanetInpGenerator extends JGTModel {
         int resSize = inReservoirs.size();
         int tanksSize = inTanks.size();
         if (resSize + tanksSize < 1) {
-            throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this);
+            throw new ModelsIllegalargumentException("The model needs at least one tanks or reservoir to work.", this, pm);
         }
 
         if (inExtras != null) {

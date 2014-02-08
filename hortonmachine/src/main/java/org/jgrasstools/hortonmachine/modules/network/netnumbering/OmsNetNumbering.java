@@ -179,15 +179,15 @@ public class OmsNetNumbering extends JGTModel {
             netNumWR = ModelsEngine.netNumbering(nstream, flowIter, netIter, nCols, nRows, pm);
         } else if (pMode == 1) {
             if (tcaIter == null) {
-                throw new ModelsIllegalargumentException("This method needs the map of tca.", this);
+                throw new ModelsIllegalargumentException("This method needs the map of tca.", this, pm);
             }
             netNumWR = ModelsEngine.netNumberingWithTca(nstream, flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
         } else if (pMode == 2) {
             if (attributeVect == null || geomVect == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this);
+                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this, pm);
             }
             if (fPointId == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this);
+                throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this, pm);
             }
             netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
                     inFlow.getGridGeometry(), fPointId, pm);
@@ -199,7 +199,7 @@ public class OmsNetNumbering extends JGTModel {
             // netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter,
             // tcaIter, pThres, nRows, nCols,
             // attributeVect, geomVect, inFlow.getGridGeometry(), pm);
-            throw new ModelsIllegalargumentException("Only pMode 0, 1 and 2 are supported.", this);
+            throw new ModelsIllegalargumentException("Only pMode 0, 1 and 2 are supported.", this, pm);
         }
 
         WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);

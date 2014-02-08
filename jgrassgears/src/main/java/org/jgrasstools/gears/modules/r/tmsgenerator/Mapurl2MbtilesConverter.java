@@ -85,7 +85,7 @@ public class Mapurl2MbtilesConverter extends JGTModel {
         String url = metadataMap.get("url");
         if (url == null) {
             throw new ModelsIllegalargumentException("The supplied file doesn't seem to be a valid jgrasstools mapurl file.",
-                    this);
+                    this, pm);
         }
         if (url.endsWith("jpg")) {
             format = "jpg";

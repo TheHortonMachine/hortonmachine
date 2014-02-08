@@ -167,13 +167,13 @@ public class OmsScanLineRasterizer extends JGTModel {
     public void process() throws Exception {
         checkNull(inVector);
         if (pValue == null && fCat == null) {
-            throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this);
+            throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this, pm);
         }
         if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
             if (inRaster == null) {
                 throw new ModelsIllegalargumentException(
                         "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
-                        this);
+                        this, pm);
             }
         }
 
@@ -215,7 +215,7 @@ public class OmsScanLineRasterizer extends JGTModel {
             rasterizepolygon(pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()
-                    .getSimpleName());
+                    .getSimpleName(), pm);
         }
 
         outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap, inVector.getSchema()

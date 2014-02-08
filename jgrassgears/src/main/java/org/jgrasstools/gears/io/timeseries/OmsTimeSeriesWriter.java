@@ -118,7 +118,7 @@ public class OmsTimeSeriesWriter extends JGTModel {
 
         Set<Entry<DateTime, double[]>> entrySet = inData.entrySet();
         if (entrySet.isEmpty()) {
-            throw new ModelsIllegalargumentException("The data to write are empty.", this);
+            throw new ModelsIllegalargumentException("The data to write are empty.", this, pm);
         }
         Entry<DateTime, double[]> firstItem = entrySet.iterator().next();
 

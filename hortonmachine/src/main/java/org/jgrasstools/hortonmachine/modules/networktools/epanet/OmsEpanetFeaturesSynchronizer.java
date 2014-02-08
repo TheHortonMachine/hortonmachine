@@ -402,7 +402,7 @@ public class OmsEpanetFeaturesSynchronizer extends JGTModel {
         for( SimpleFeature sF : featureList ) {
             Object id = sF.getAttribute(attributesName);
             if (!checkTree.add(id)) {
-                throw new ModelsIllegalargumentException(msg + "(" + id + ")", this);
+                throw new ModelsIllegalargumentException(msg + "(" + id + ")", this, pm);
             }
         }
     }

@@ -111,7 +111,7 @@ public class LasWriter extends ALasWriter {
         this.yScale = yScale;
         this.zScale = zScale;
     }
-    
+
     @Override
     public void setOffset( double xOffset, double yOffset, double zOffset ) {
         if (openCalled) {
@@ -156,7 +156,7 @@ public class LasWriter extends ALasWriter {
         xScale = xyzScale[0];
         yScale = xyzScale[1];
         zScale = xyzScale[2];
-        
+
         offsetToData = header.getOffset();
     }
 

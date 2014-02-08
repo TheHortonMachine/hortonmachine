@@ -249,11 +249,11 @@ public class OmsTmsGenerator extends JGTModel {
             inRasters = FileUtilities.readFileToLinesList(new File(inRasterFile));
 
         if (inRasters == null && inVectors == null) {
-            throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this);
+            throw new ModelsIllegalargumentException("No raster and vector input maps available. check your inputs.", this, pm);
         }
 
         if (pEpsg == null && inPrj == null) {
-            throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this);
+            throw new ModelsIllegalargumentException("No projection info available. check your inputs.", this, pm);
         }
 
         final CoordinateReferenceSystem mercatorCrs = CRS.decode(EPSG_MERCATOR);

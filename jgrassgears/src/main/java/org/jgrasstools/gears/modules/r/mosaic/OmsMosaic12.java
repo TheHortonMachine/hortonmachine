@@ -149,7 +149,7 @@ public class OmsMosaic12 extends JGTModel {
         checkMap(filesList, inMap12);
 
         if (filesList.size() < 2) {
-            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
+            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this, pm);
         }
 
         OmsMosaic mosaic = new OmsMosaic();

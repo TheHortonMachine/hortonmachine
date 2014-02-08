@@ -260,12 +260,12 @@ public class DuffyModel {
             if (Double.isNaN(qs) || Double.isNaN(qd)) {
                 if (Double.isNaN(qs)) {
                     throw new ModelsIllegalargumentException("Subsuperficial discharge for the hillslope "
-                            + currentHillslope.getHillslopeId() + " " + i + " is NaN", this.getClass().getSimpleName());
+                            + currentHillslope.getHillslopeId() + " " + i + " is NaN", this.getClass().getSimpleName(), pm);
                 } else {
                     throw new ModelsIllegalargumentException("Timestep " + currentTimeInMinutes
                             + "Superficial discharge for the hillslope " + currentHillslope.getHillslopeId() + " " + i
                             + " is NaN" + "\nValue of qdh " + qdh + "\nValue of qds " + qds + "\nPrecipitation " + prec_mphr
-                            + "\nSatsurf " + satsurf, this.getClass().getSimpleName());
+                            + "\nSatsurf " + satsurf, this.getClass().getSimpleName(), pm);
                 }
             }
 
@@ -375,13 +375,13 @@ public class DuffyModel {
                 output[i + (2 * linksNum)] = (1.0D / 60.0) * (inf - re - qe1);
                 if (output[i + (2 * linksNum)] != output[i + (2 * linksNum)] || output[i + (2 * linksNum)] == 0.0) {
                     throw new ModelsIllegalargumentException("Invalid value of S1, please check the parameters."
-                            + output[i + (2 * linksNum)], this);
+                            + output[i + (2 * linksNum)], this, pm);
                 }
                 output[i + (3 * linksNum)] = (1.0D / 60.0) * (re - qs - qe2);
             }
             if (output[i + (3 * linksNum)] != output[i + (3 * linksNum)] || output[i + (2 * linksNum)] == 0.) {
                 throw new ModelsIllegalargumentException("Invalid value of S2, please check the parameters.", this.getClass()
-                        .getSimpleName());
+                        .getSimpleName(), pm);
             }
 
         }

@@ -86,7 +86,7 @@ public class OmsVectorWriter extends JGTModel {
         }
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith("shp") || (pType != null && pType.equals(JGTConstants.SHP))) {
-            OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector);
+            OmsShapefileFeatureWriter.writeShapefile(vectorFile.getAbsolutePath(), inVector, pm);
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }

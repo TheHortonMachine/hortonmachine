@@ -132,20 +132,20 @@ public class OmsTrentoPProjectFilesGenerator extends JGTModel {
             String file = new File(inFolder, pNetname).getAbsolutePath();
             if (pMode == 0) {
                 // project
-                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getProjectFeatureType(crs));
+                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getProjectFeatureType(crs), pm);
             } else if (pMode == 1) {
                 // calibration
-                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getCalibrationFeatureType(crs));
+                OmsShapefileFeatureWriter.writeEmptyShapefile(file, getCalibrationFeatureType(crs), pm);
             }
             file = new File(inFolder, pShapeAreeName).getAbsolutePath();
-            makePolygonShp(values, file, crs, pShapeAreeName);
+            makePolygonShp(values, file, crs, pShapeAreeName, pm);
         } else if (doFromold) {
             if (pOldVector == null) {
                 throw new IllegalArgumentException(msg.message("trentoP.generatefile.error.noFeature"));
             }
             String file = new File(inFolder, pNetname).getAbsolutePath();
             SimpleFeatureCollection calibrationFC = createNewCollection(getCalibrationFeatureType(crs));
-            OmsShapefileFeatureWriter.writeShapefile(file, calibrationFC);
+            OmsShapefileFeatureWriter.writeShapefile(file, calibrationFC, pm);
         }
         pm.done();
     }

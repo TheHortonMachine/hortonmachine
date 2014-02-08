@@ -120,7 +120,7 @@ public class OmsMorpher extends JGTModel {
             lineendings(inWR, regionMap, outWR, MorpherHelp.LINEJUNCTIONS_KERNEL);
         } else if (pMode.equals(PRUNE)) {
             if (pIterations == 0) {
-                throw new ModelsIllegalargumentException("Number of iterations has to be > 0.", this);
+                throw new ModelsIllegalargumentException("Number of iterations has to be > 0.", this, pm);
             }
             prune(inWR, regionMap, outWR, MorpherHelp.DEFAULT_PRUNE_KERNEL, pIterations);
         } else {
@@ -133,7 +133,7 @@ public class OmsMorpher extends JGTModel {
             } else if (pMode.equals(CLOSE)) {
                 close(inWR, regionMap, outWR, pKernel, doBinary, pm);
             } else {
-                throw new ModelsIllegalargumentException("Could not recognize mode.", this);
+                throw new ModelsIllegalargumentException("Could not recognize mode.", this, pm);
             }
         }
 

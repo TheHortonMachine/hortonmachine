@@ -108,7 +108,7 @@ public class OmsRasterWriter extends JGTModel {
             pType = GRASS;
         } else
             throw new ModelsIllegalargumentException("Can't recognize the data format. Supported are: asc, tiff, grass.", this
-                    .getClass().getSimpleName());
+                    .getClass().getSimpleName(), pm);
 
         File mapFile = new File(file);
         try {
@@ -121,7 +121,7 @@ public class OmsRasterWriter extends JGTModel {
             } else if (pType.equals(GRASS)) {
                 writeGrass(mapFile);
             } else {
-                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(), pm);
             }
         } finally {
             pm.done();

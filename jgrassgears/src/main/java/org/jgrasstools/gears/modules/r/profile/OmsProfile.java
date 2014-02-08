@@ -103,7 +103,7 @@ public class OmsProfile extends JGTModel {
 
         if (inCoordinates == null && inVector == null) {
             throw new ModelsIllegalargumentException(
-                    "Either the coordinates or a vector map to trace the profile on have to be supplied.", this);
+                    "Either the coordinates or a vector map to trace the profile on have to be supplied.", this, pm);
         }
 
         if (inCoordinates != null && inCoordinates.length() > 0) {
@@ -129,7 +129,7 @@ public class OmsProfile extends JGTModel {
                     profileNodesList.add(coordinate);
                 }
             } else {
-                throw new ModelsIllegalargumentException("The module works only for lines.", this);
+                throw new ModelsIllegalargumentException("The module works only for lines.", this, pm);
             }
             // dump the profile
             List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(inRaster, profileNodesList.toArray(new Coordinate[0]));
@@ -189,7 +189,7 @@ public class OmsProfile extends JGTModel {
 
         if (profileNodesList.size() < 2) {
             throw new ModelsIllegalargumentException("We need at least two coordinates to create a profile. Check your syntax.",
-                    this);
+                    this, pm);
         }
 
         List<ProfilePoint> profilePoints = CoverageUtilities.doProfile(inRaster, profileNodesList.toArray(new Coordinate[0]));

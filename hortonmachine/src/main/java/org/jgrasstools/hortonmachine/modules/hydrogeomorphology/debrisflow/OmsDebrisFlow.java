@@ -137,7 +137,7 @@ public class OmsDebrisFlow extends JGTModel {
         double south = regionMap.getSouth();
         double north = regionMap.getNorth();
         if (!isBetween(pEasting, west, east) || !isBetween(pNorthing, south, north)) {
-            throw new ModelsIllegalargumentException("Input coordinates have to be within the map boundaries.", this);
+            throw new ModelsIllegalargumentException("Input coordinates have to be within the map boundaries.", this, pm);
         }
 
         double thresArea = pMcoeff * pow(pVolume, (2.0 / 3.0));
@@ -150,7 +150,7 @@ public class OmsDebrisFlow extends JGTModel {
         int startRow = colRow[1];
         double startValue = elevIter.getSampleDouble(startCol, startRow, 0);
         if (isNovalue(startValue)) {
-            throw new ModelsIllegalargumentException("Input coordinates are on a novalue elevation point.", this);
+            throw new ModelsIllegalargumentException("Input coordinates are on a novalue elevation point.", this, pm);
         }
 
         WritableRaster mcsWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, JGTConstants.doubleNovalue);
