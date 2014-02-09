@@ -57,8 +57,9 @@ public class LiblasWrapper {
             String name = "las_c";
             if (libName == null)
                 libName = name;
-            if (nativeLibPath != null)
+            if (nativeLibPath != null) {
                 NativeLibrary.addSearchPath(libName, nativeLibPath);
+            }
             WRAPPER = (LiblasJNALibrary) Native.loadLibrary(libName, LiblasJNALibrary.class);
         } catch (UnsatisfiedLinkError e) {
             return e.getLocalizedMessage();

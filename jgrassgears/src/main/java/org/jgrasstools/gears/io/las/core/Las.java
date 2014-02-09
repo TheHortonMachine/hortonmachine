@@ -18,6 +18,9 @@
 package org.jgrasstools.gears.io.las.core;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
 import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
@@ -52,6 +55,22 @@ public abstract class Las {
         return isNativeLibAvailable;
     }
 
+    public static String[] getLibraryPaths() {
+        String path = System.getProperty("java.library.path");
+        String[] split = path.trim().split(File.pathSeparator);
+        List<String> pathList = new ArrayList<String>();
+        for( String pathItem : split ) {
+            pathItem = pathItem.trim();
+            if (pathItem.length() == 0) {
+                continue;
+            }
+            if (!pathList.contains(pathItem)) {
+                pathList.add(pathItem);
+            }
+        }
+        Collections.sort(pathList);
+        return pathList.toArray(new String[0]);
+    }
     /**
      * Get a las reader.
      * 
