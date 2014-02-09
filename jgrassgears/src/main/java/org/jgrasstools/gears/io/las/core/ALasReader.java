@@ -20,37 +20,12 @@ package org.jgrasstools.gears.io.las.core;
 import java.io.File;
 import java.io.IOException;
 
-import org.jgrasstools.gears.io.las.core.liblas.LiblasJNALibrary;
-import org.jgrasstools.gears.io.las.core.liblas.LiblasReader;
-import org.jgrasstools.gears.io.las.core.liblas.LiblasWrapper;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 /**
  * Interface for las readers.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public abstract class ALasReader {
-    private static volatile boolean testedLibLoading = false;
-    private static volatile boolean isNativeLibAvailable;
-
-    public static ALasReader getReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
-        ALasReader reader;
-        if (!testedLibLoading) {
-            LiblasJNALibrary wrapper = LiblasWrapper.getWrapper();
-            if (wrapper != null) {
-                isNativeLibAvailable = true;
-            }
-            testedLibLoading = true;
-        }
-        if (isNativeLibAvailable) {
-            reader = new LiblasReader(lasFile, crs);
-        } else {
-            reader = new LasReader(lasFile, crs);
-        }
-        return reader;
-    }
+public abstract class ALasReader extends Las{
 
     /**
      * Open the las data source.
