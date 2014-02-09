@@ -278,23 +278,21 @@ public class LasWriter extends ALasWriter {
         hLength = hLength + 3 * 8;
 
         // xoff, yoff, zoff
-        fos.write(getDouble(xMin));
-        fos.write(getDouble(yMin));
-        fos.write(getDouble(zMin));
+        fos.write(getDouble(xOffset));
+        fos.write(getDouble(yOffset));
+        fos.write(getDouble(zOffset));
         hLength = hLength + 3 * 8;
 
+        //  x,y,z - min/max
         fos.write(getDouble(xMax));
         fos.write(getDouble(xMin));
-        hLength = hLength + 2 * 8;
-
         fos.write(getDouble(yMax));
         fos.write(getDouble(yMin));
-        hLength = hLength + 2 * 8;
-
         fos.write(getDouble(zMax));
         fos.write(getDouble(zMin));
-        hLength = hLength + 3 * 8;
+        hLength = hLength + 6 * 8;
 
+        fileChannel.position(offsetToData);
     }
 
     @Override
