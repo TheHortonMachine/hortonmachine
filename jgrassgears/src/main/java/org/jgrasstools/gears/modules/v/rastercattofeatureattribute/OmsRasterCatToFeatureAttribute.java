@@ -223,7 +223,7 @@ public class OmsRasterCatToFeatureAttribute extends JGTModel {
                         minMaxAvgSum[2], minMaxAvgSum[3]});
                 ((DefaultFeatureCollection) outVector).add(extendedFeature);
             } else {
-                throw new ModelsIllegalargumentException("The Geometry type is not supported.", this);
+                throw new ModelsIllegalargumentException("The Geometry type is not supported.", this, pm);
             }
 
             pm.worked(1);

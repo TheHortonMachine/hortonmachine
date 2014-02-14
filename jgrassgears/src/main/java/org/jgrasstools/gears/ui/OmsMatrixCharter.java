@@ -186,7 +186,7 @@ public class OmsMatrixCharter extends JGTModel {
     @Execute
     public void chart() throws Exception {
         if (inData == null && inDataXY == null) {
-            throw new ModelsIllegalargumentException("At least one of the datasets need to be valid.", this);
+            throw new ModelsIllegalargumentException("At least one of the datasets need to be valid.", this, pm);
         }
 
         if (doDump) {

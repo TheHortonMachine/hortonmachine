@@ -141,4 +141,11 @@ public class PrintStreamProgressMonitor implements IJGTProgressMonitor {
     public void message( String message ) {
         outStream.println(message);
     }
+    
+    public void exceptionThrown(String message) {
+    }
+    
+    public void onModuleExit() {
+    }
+
 }

@@ -96,7 +96,7 @@ public class OmsVectorClipper extends JGTModel {
         checkNull(inMap, inClipper);
 
         if (!GeometryUtilities.isPolygon(inClipper.getSchema().getGeometryDescriptor())) {
-            throw new ModelsIllegalargumentException("The clipping geometry needs to be polygon.", this);
+            throw new ModelsIllegalargumentException("The clipping geometry needs to be polygon.", this, pm);
         }
 
         pm.beginTask("Indexing geometries...", IJGTProgressMonitor.UNKNOWN);

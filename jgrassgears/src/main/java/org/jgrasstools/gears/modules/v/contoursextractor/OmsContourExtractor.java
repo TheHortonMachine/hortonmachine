@@ -108,7 +108,7 @@ public class OmsContourExtractor extends JGTModel {
         checkNull(inCoverage, pMin, pMax, pInterval);
 
         if (pMin > pMax) {
-            throw new ModelsIllegalargumentException("Min has to be bigger than Max.", this);
+            throw new ModelsIllegalargumentException("Min has to be bigger than Max.", this, pm);
         }
 
         final AffineTransform mt2D = (AffineTransform) inCoverage.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);

@@ -74,7 +74,7 @@ public class OmsGeomorphonIM extends JGTModelIM {
         checkNull(inElev);
 
         if (pRadius <= 0) {
-            throw new ModelsIllegalargumentException("The search radius has to be > 0.", this);
+            throw new ModelsIllegalargumentException("The search radius has to be > 0.", this, pm);
         }
         diagonalDelta = pRadius / sqrt(2.0);
 

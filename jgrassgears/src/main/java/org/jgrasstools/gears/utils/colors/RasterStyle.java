@@ -33,7 +33,7 @@ public class RasterStyle {
     private double min;
     private double max;
     private double alpha = 1.0;
-    
+
     public RasterStyle() {
     }
 

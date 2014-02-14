@@ -187,7 +187,7 @@ public class Kriging extends JGTModel {
                 try {
                     integralScaleDouble[i] = Double.parseDouble(split[i]);
                 } catch (Exception e) {
-                    throw new ModelsIllegalargumentException("Problems with integral scale: " + pIntegralscale, this);
+                    throw new ModelsIllegalargumentException("Problems with integral scale: " + pIntegralscale, this, pm);
                 }
             }
             kriging.pIntegralscale = integralScaleDouble;

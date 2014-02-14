@@ -124,7 +124,7 @@ public class OmsJsonFeatureReader extends JGTModel {
         }
 
         if (latString == null || lonString == null) {
-            throw new ModelsIllegalargumentException("No lat or lon data found", this);
+            throw new ModelsIllegalargumentException("No lat or lon data found", this, pm);
         }
 
         geodata = new DefaultFeatureCollection();

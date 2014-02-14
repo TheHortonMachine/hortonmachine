@@ -214,7 +214,7 @@ public class OmsTimeSeriesIteratorReader extends JGTModel {
                 previousIdInteger = idInteger;
             } catch (Exception e) {
                 throw new ModelsIllegalargumentException("The id value doesn't seem to be an integer.", this.getClass()
-                        .getSimpleName());
+                        .getSimpleName(), pm);
             }
         }
 

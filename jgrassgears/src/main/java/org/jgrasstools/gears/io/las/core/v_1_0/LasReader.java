@@ -18,13 +18,17 @@
 package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
 
-import org.jgrasstools.gears.io.las.core.AbstractLasReader;
+import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.utils.LasUtils;
-import org.joda.time.DateTime;
+import org.jgrasstools.gears.utils.ByteUtilities;
+import org.jgrasstools.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -32,7 +36,30 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasReader_1_0 extends AbstractLasReader {
+public class LasReader extends ALasReader {
+    private final byte[] doubleDataArray = new byte[8];
+    private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
+    private final byte[] longDataArray = new byte[4];
+    private final ByteBuffer longBb = ByteBuffer.wrap(longDataArray);
+    private final byte[] shortDataArray = new byte[2];
+    private final ByteBuffer shortBb = ByteBuffer.wrap(shortDataArray);
+    private final byte[] singleDataArray = new byte[1];
+    private final ByteBuffer singleBb = ByteBuffer.wrap(singleDataArray);
+
+    private double xScale;
+    private double yScale;
+    private double zScale;
+    private double xOffset;
+    private double yOffset;
+    private double zOffset;
+    private final File lasFile;
+    private FileChannel fc;
+    private FileInputStream fis;
+    private long offset;
+    private long records;
+    private short recordLength;
+    private boolean isOpen;
+    private CoordinateReferenceSystem crs;
 
     private long readRecords = 0;
 
@@ -43,22 +70,68 @@ public class LasReader_1_0 extends AbstractLasReader {
     private double zMax;
     private double zMin;
 
-    private LasHeader_1_0 header;
+    private LasHeader header;
 
-    public LasReader_1_0( File lasFile, CoordinateReferenceSystem crs ) {
-        super(lasFile, crs);
+    public LasReader( File lasFile, CoordinateReferenceSystem crs ) throws Exception {
+        this.lasFile = lasFile;
+        if (crs != null) {
+            this.crs = crs;
+        } else {
+            try {
+                this.crs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "las");
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        doubleBb.order(ByteOrder.LITTLE_ENDIAN);
+        longBb.order(ByteOrder.LITTLE_ENDIAN);
+        shortBb.order(ByteOrder.LITTLE_ENDIAN);
     }
 
+    @Override
+    public File getLasFile() {
+        return lasFile;
+    }
+
+    private void checkOpen() {
+        if (!isOpen) {
+            try {
+                open();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void open() throws Exception {
+        fis = new FileInputStream(lasFile);
+        fc = fis.getChannel();
+
+        parseHeader();
+        isOpen = true;
+    }
+
+    @Override
+    public void close() throws Exception {
+        if (fc != null && fc.isOpen())
+            fc.close();
+        if (fis != null)
+            fis.close();
+        isOpen = false;
+    }
+
+    @Override
     public void setOverrideGpsTimeType( int type ) {
         getHeader();
         header.gpsTimeType = type;
     }
 
     @SuppressWarnings("nls")
-    protected void parseHeader() throws Exception {
+    private void parseHeader() throws Exception {
 
         try {
-            header = new LasHeader_1_0(crs);
+            header = new LasHeader(crs);
 
             String signature = getString(4);
             header.signature = signature;
@@ -154,7 +227,7 @@ public class LasReader_1_0 extends AbstractLasReader {
     }
 
     @Override
-    public boolean hasNextLasDot() {
+    public boolean hasNextPoint() {
         if (readRecords < records) {
             return true;
         }
@@ -162,7 +235,7 @@ public class LasReader_1_0 extends AbstractLasReader {
     }
 
     @Override
-    public LasRecord readNextLasDot() throws IOException {
+    public LasRecord getNextPoint() throws IOException {
         int read = 0;
         // x
         long x = getLong4Bytes();
@@ -180,9 +253,9 @@ public class LasReader_1_0 extends AbstractLasReader {
         read = read + 2;
         // return number
         byte b = get();
-        int returnNumber = getReturnNumber(b);
+        short returnNumber = getReturnNumber(b);
         // number of returns (given pulse)
-        int numberOfReturns = getNumberOfReturns(b);
+        short numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
         // classification
         byte classification = get();
@@ -224,35 +297,34 @@ public class LasReader_1_0 extends AbstractLasReader {
         return dot;
     }
 
-    /**
-     * Reads a dot at a given address.
-     * 
-     * <p>the file position is set back to the one before reading.</p>
-     * 
-     * @param address the file address of the record to read.
-     * @return the read record.
-     * @throws IOException
-     */
-    public LasRecord readLasDotAtAddress( long address ) throws IOException {
-        // long oldPosition = fc.position();
+    public LasRecord getPointAtAddress( long address ) throws IOException {
         fc.position(address);
+        return getPoint();
+    }
 
+    @Override
+    public LasRecord getPointAt( long pointNumber ) throws IOException {
+        fc.position(offset + pointNumber * recordLength);
+        return getPoint();
+    }
+
+    private LasRecord getPoint() throws IOException {
         int read = 0;
-        long x = getLong4Bytes();
-        long y = getLong4Bytes();
-        long z = getLong4Bytes();
-        double xd = x * xScale + xOffset;
-        double yd = y * yScale + yOffset;
-        double zd = z * zScale + zOffset;
+        final long x = getLong4Bytes();
+        final long y = getLong4Bytes();
+        final long z = getLong4Bytes();
+        final double xd = x * xScale + xOffset;
+        final double yd = y * yScale + yOffset;
+        final double zd = z * zScale + zOffset;
 
         read = read + 12;
-        short intensity = getShort2Bytes();
+        final short intensity = getShort2Bytes();
         read = read + 2;
-        byte b = get();
-        int returnNumber = getReturnNumber(b);
-        int numberOfReturns = getNumberOfReturns(b);
+        final byte b = get();
+        final short returnNumber = getReturnNumber(b);
+        final short numberOfReturns = getNumberOfReturns(b);
         read = read + 1;
-        byte classification = get();
+        final byte classification = get();
         read = read + 1;
 
         // skip:
@@ -262,7 +334,7 @@ public class LasReader_1_0 extends AbstractLasReader {
         skip(4);
         read = read + 4;
 
-        LasRecord dot = new LasRecord();
+        final LasRecord dot = new LasRecord();
         dot.x = xd;
         dot.y = yd;
         dot.z = zd;
@@ -285,18 +357,10 @@ public class LasReader_1_0 extends AbstractLasReader {
             dot.color[2] = getShort2Bytes();
             read = read + 14;
         }
-        // int skip = recordLength - read;
-        // skip(skip);
-
         return dot;
     }
 
-    /**
-     * Reads the position and the record address in the file of the next point.
-     * 
-     * @return the array containing [x, y, z, address].
-     * @throws IOException
-     */
+    @Override
     public double[] readNextLasXYZAddress() throws IOException {
         long position = fc.position();
         int read = 0;
@@ -316,10 +380,10 @@ public class LasReader_1_0 extends AbstractLasReader {
         return new double[]{xd, yd, zd, position};
     }
 
-    @Override
-    public long getRecordsCount() {
-        checkOpen();
-        return records;
+    public void seek( long pointNumber ) throws IOException {
+        // long bytesToSkip = recordLength * newPosition;
+        // fc.position(fc.position() + bytesToSkip);
+        fc.position(offset + pointNumber * recordLength);
     }
 
     @Override
@@ -328,8 +392,82 @@ public class LasReader_1_0 extends AbstractLasReader {
         return header;
     }
 
-    public DateTime getRecordDateTime( LasRecord record ) {
-        return LasUtils.gpsTimeToDateTime(record.gpsTime, header.gpsTimeType);
+    private String getString( int size ) throws IOException {
+        byte[] bytesStr = new byte[size];
+        ByteBuffer singleBb = ByteBuffer.wrap(bytesStr);
+        fc.read(singleBb);
+        String signature = new String(bytesStr);
+        return signature;
     }
 
+    private long getLong4Bytes() throws IOException {
+        longBb.clear();
+        fc.read(longBb);
+        long arr2long = ByteUtilities.byteArrayToLongLE(longDataArray);
+        return arr2long;
+    }
+
+    private double getDouble8Bytes() throws IOException {
+        doubleBb.clear();
+        fc.read(doubleBb);
+        double arr2Double = doubleBb.getDouble(0);
+        return arr2Double;
+    }
+
+    private short getShort2Bytes() throws IOException {
+        shortBb.clear();
+        fc.read(shortBb);
+        short arr2short = shortBb.getShort(0);
+        return arr2short;
+    }
+
+    private byte get() throws IOException {
+        singleBb.clear();
+        fc.read(singleBb);
+        return singleBb.get(0);
+    }
+
+    private void skip( int bytesTpSkip ) throws IOException {
+        fc.position(fc.position() + bytesTpSkip);
+    }
+
+    private short getReturnNumber( byte b ) {
+        short rn = 0;
+        for( int i = 0; i < 3; i++ ) {
+            if (isSet(b, i)) {
+                rn = (short) (rn + Math.pow(2.0, i));
+            }
+        }
+        return rn;
+    }
+
+    /**
+     * Checks the gps time type.
+     * 
+     * <p>
+     * <ul>
+     * <li>0 (not set) = GPS time in the point record fields is GPS Week Time</li>
+     * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
+     * </ul>
+     * 
+     * @param b the global enchoding byte.
+     * @return 0 or 1;
+     */
+    private int getGpsTimeType( byte b ) {
+        return isSet(b, 0) ? 1 : 0;
+    }
+
+    private short getNumberOfReturns( byte b ) {
+        short nor = 0;
+        for( int i = 3; i < 6; i++ ) {
+            if (isSet(b, i)) {
+                nor = (short) (nor + Math.pow(2.0, i - 3));
+            }
+        }
+        return nor;
+    }
+
+    private boolean isSet( byte b, int n ) { // true if bit n is set in byte b
+        return (b & (1 << n)) != 0;
+    }
 }

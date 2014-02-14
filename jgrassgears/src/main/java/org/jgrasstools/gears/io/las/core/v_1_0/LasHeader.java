@@ -18,9 +18,8 @@
 package org.jgrasstools.gears.io.las.core.v_1_0;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.jgrasstools.gears.io.las.core.AbstractLasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.joda.time.DateTime;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -29,16 +28,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasHeader_1_0 implements ILasHeader {
+public class LasHeader implements ILasHeader {
 
     /**
      *  file signature (LASF)
      */
-    protected String signature;
+    String signature;
     /**
      *  file source ID
      */
-    protected short fileSourceId;
+    short fileSourceId;
 
     /**
      * The gps time type.
@@ -49,89 +48,89 @@ public class LasHeader_1_0 implements ILasHeader {
      * <li>1 (set) = GPS time is standard GPS time (satellite gps time) minus 1E9 (Adjusted standard GPS time)</li>
      * </ul>
      */
-    protected int gpsTimeType;
+    int gpsTimeType;
 
     /**
      *  Project ID - data 1 (optional)
      */
-    protected long projectIdGuidData1;
+    long projectIdGuidData1;
     /**
      *  Project ID - data 2 (optional)
      */
-    protected short projectIdGuidData2;
+    short projectIdGuidData2;
     /**
      *  Project ID - data 3 (optional)
      */
-    protected short projectIdGuidData3;
+    short projectIdGuidData3;
     /**
      *  Project ID - data 4 (optional)
      */
-    protected String projectIdGuidData4;
+    String projectIdGuidData4;
     /**
      *  Version Major
      */
-    protected byte versionMajor;
+    byte versionMajor;
     /**
      *  Version Minor
      */
-    protected byte versionMinor;
+    byte versionMinor;
     /**
      *  System identifier
      */
-    protected String systemIdentifier;
+    String systemIdentifier;
     /**
      *  generating software
      */
-    protected String generatingSoftware;
+    String generatingSoftware;
     /**
      *  File creation Day of Year (optional)
      */
-    protected short dayOfYear;
+    short dayOfYear;
     /**
      *  File creation Year (optional)
      */
-    protected short year;
+    short year;
     /**
      *  header size
      */
-    protected short headerSize;
+    short headerSize;
     /**
      *  offset to point data
      */
-    protected long offset;
+    long offset;
     /**
      *  Number of variable length records
      */
-    protected long variableLengthRecordNum;
+    long variableLengthRecordNum;
     /**
      *  point data format ID (0-99 for spec)
      */
-    protected byte pointDataFormat;
+    byte pointDataFormat;
     /**
      *  Record length
      */
-    protected short recordLength;
+    short recordLength;
     /**
      *  Number of point records
      */
-    protected long records;
-    protected double xScale;
-    protected double yScale;
-    protected double zScale;
-    protected double xOffset;
-    protected double yOffset;
-    protected double zOffset;
-    protected double xMin;
-    protected double yMin;
-    protected double zMin;
-    protected double xMax;
-    protected double yMax;
-    protected double zMax;
+    long records;
+    double xScale;
+    double yScale;
+    double zScale;
+    double xOffset;
+    double yOffset;
+    double zOffset;
+    double xMin;
+    double yMin;
+    double zMin;
+    double xMax;
+    double yMax;
+    double zMax;
 
-    protected ReferencedEnvelope3D dataEnvelope;
-    protected CoordinateReferenceSystem crs;
-    
-    public LasHeader_1_0(CoordinateReferenceSystem crs) {
+    private ReferencedEnvelope3D dataEnvelope;
+    private CoordinateReferenceSystem crs;
+
+    public LasHeader( CoordinateReferenceSystem crs ) {
         this.crs = crs;
     }
 
@@ -140,14 +139,28 @@ public class LasHeader_1_0 implements ILasHeader {
     }
 
     public CoordinateReferenceSystem getCrs() {
-        if (crs == null) {
-            crs = DefaultGeographicCRS.WGS84;
-        }
         return crs;
     }
-    
-    public long getRecordsNum(){
+
+    public long getRecordsCount() {
         return records;
+    }
+
+    @Override
+    public long getOffset() {
+        return offset;
+    }
+
+    public double[] getXYZScale() {
+        return new double[]{xScale, yScale, zScale};
+    }
+
+    public double[] getXYZOffset() {
+        return new double[]{xOffset, yOffset, zOffset};
+    }
+
+    public short getRecordLength() {
+        return recordLength;
     }
 
     public ReferencedEnvelope3D getDataEnvelope() {
@@ -161,8 +174,16 @@ public class LasHeader_1_0 implements ILasHeader {
         return pointDataFormat == 1 || pointDataFormat == 3;
     }
 
+    public int getGpsTimeType() {
+        return gpsTimeType;
+    }
+
     public boolean hasRGB() {
         return pointDataFormat == 2 || pointDataFormat == 3;
+    }
+
+    public byte getPointDataFormat() {
+        return pointDataFormat;
     }
 
     public String toString() {
@@ -179,7 +200,7 @@ public class LasHeader_1_0 implements ILasHeader {
         if (dayOfYear != 0 && year != 0) {
             DateTime dateTime = new DateTime();
             dateTime = dateTime.withYear(year).withDayOfYear(dayOfYear);
-            String dtString = dateTime.toString(AbstractLasReader.dateTimeFormatterYYYYMMDD);
+            String dtString = dateTime.toString(LasUtils.dateTimeFormatterYYYYMMDD);
             sb.append("File creation date: ").append(dtString).append("\n");
         } else {
             sb.append("File creation Day of Year: ").append(dayOfYear).append("\n");
@@ -190,6 +211,7 @@ public class LasHeader_1_0 implements ILasHeader {
         sb.append("Variable length records: ").append(variableLengthRecordNum).append("\n");
         sb.append("Point data format ID (0-99 for spec): ").append(pointDataFormat).append("\n");
         sb.append("Number of point records: ").append(records).append("\n");
+        sb.append("Record length: ").append(recordLength).append("\n");
         sb.append("Scale: [").append(xScale).append(", ").append(yScale).append(", ").append(zScale).append("]\n");
         sb.append("Offset: [").append(xOffset).append(", ").append(yOffset).append(", ").append(zOffset).append("]\n");
         sb.append("X Range: [").append(xMin).append(", ").append(xMax).append("]\n");

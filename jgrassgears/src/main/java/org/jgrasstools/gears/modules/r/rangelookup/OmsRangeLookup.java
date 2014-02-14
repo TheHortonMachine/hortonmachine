@@ -99,7 +99,7 @@ public class OmsRangeLookup extends JGTModel {
         String[] rangesSplit = pRanges.trim().split(",");
         String[] classesSplit = pClasses.trim().split(",");
         if (rangesSplit.length != classesSplit.length) {
-            throw new ModelsIllegalargumentException("Ranges and classes must be in pairs!", this);
+            throw new ModelsIllegalargumentException("Ranges and classes must be in pairs!", this, pm);
         }
         for( int i = 0; i < rangesSplit.length; i++ ) {
             String classStr = classesSplit[i].trim();

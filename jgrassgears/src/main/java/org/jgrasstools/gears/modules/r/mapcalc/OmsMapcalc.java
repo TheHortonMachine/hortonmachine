@@ -137,7 +137,7 @@ public class OmsMapcalc extends JGTModel {
             jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
         }
         if (regionParameters == null) {
-            throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName(), pm);
         }
         int nCols = regionParameters.get(CoverageUtilities.COLS).intValue();
         int nRows = regionParameters.get(CoverageUtilities.ROWS).intValue();

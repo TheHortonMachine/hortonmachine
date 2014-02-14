@@ -28,6 +28,7 @@ import java.nio.channels.FileChannel;
 import java.util.BitSet;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -42,7 +43,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class LasWriter_1_0 {
+public class LasWriter extends ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";
     private final byte[] doubleDataArray = new byte[8];
     private final ByteBuffer doubleBb = ByteBuffer.wrap(doubleDataArray);
@@ -57,6 +58,9 @@ public class LasWriter_1_0 {
     private double xScale = 0.01;
     private double yScale = 0.01;
     private double zScale = 0.001;
+    private double xOffset = 0.0;
+    private double yOffset = 0.0;
+    private double zOffset = 0.0;
     private double xMin = 0;
     private double yMin = 0;
     private double zMin = 0;
@@ -65,15 +69,19 @@ public class LasWriter_1_0 {
     private double zMax = 0;
     private int recordsNum = 0;
 
-    private final short recordLength = 28;
+    private short recordLength = 28;
     private FileChannel fileChannel;
     private int recordsNumPosition;
+    private int pointFormatPosition;
+    private int pointFormat = 0;
     private boolean doWriteGroundElevation;
     private boolean openCalled;
 
     private int previousReturnNumber = -999;
     private int previousNumberOfReturns = -999;
     private byte[] previousReturnBytes = null;
+    private long offsetToData = 227;
+    private int recordLengthPosition;
 
     /**
      * A las file writer.
@@ -81,7 +89,7 @@ public class LasWriter_1_0 {
      * @param outFile the output file.
      * @param crs the {@link CoordinateReferenceSystem crs}. If <code>null</code>, no prj file is written.
      */
-    public LasWriter_1_0( File outFile, CoordinateReferenceSystem crs ) {
+    public LasWriter( File outFile, CoordinateReferenceSystem crs ) {
         this.outFile = outFile;
         this.crs = crs;
 
@@ -94,15 +102,7 @@ public class LasWriter_1_0 {
         shortBb.order(ByteOrder.LITTLE_ENDIAN);
     }
 
-    /**
-     * Possibility to define the scale for the data.
-     * 
-     * <p>If not set it defaults to 0.01,0.01,0.001.</p>
-     * 
-     * @param xScale the x scaling value.
-     * @param yScale the y scaling value.
-     * @param zScale the z scaling value.
-     */
+    @Override
     public void setScales( double xScale, double yScale, double zScale ) {
         if (openCalled) {
             throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
@@ -112,18 +112,17 @@ public class LasWriter_1_0 {
         this.zScale = zScale;
     }
 
-    /**
-     * Possibility to set the min and max bounds.
-     * 
-     * <p>If not set they all default to 0.</p>
-     * 
-     * @param xMin
-     * @param xMax
-     * @param yMin
-     * @param yMax
-     * @param zMin
-     * @param zMax
-     */
+    @Override
+    public void setOffset( double xOffset, double yOffset, double zOffset ) {
+        if (openCalled) {
+            throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
+        }
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.zOffset = zOffset;
+    }
+
+    @Override
     public void setBounds( double xMin, double xMax, double yMin, double yMax, double zMin, double zMax ) {
         if (openCalled) {
             throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
@@ -136,11 +135,7 @@ public class LasWriter_1_0 {
         this.zMax = zMax;
     }
 
-    /**
-     * Possibility to set the min and max bounds.
-     * 
-     * @param header the las header (as read by the reader).
-     */
+    @Override
     public void setBounds( ILasHeader header ) {
         if (openCalled) {
             throw new ModelsIllegalargumentException(OPEN_METHOD_MSG, crs);
@@ -152,13 +147,23 @@ public class LasWriter_1_0 {
         this.xMax = env.getMaxX();
         this.yMax = env.getMaxY();
         this.zMax = env.getMaxZ();
+
+        double[] xyzOffset = header.getXYZOffset();
+        double[] xyzScale = header.getXYZScale();
+        xOffset = xyzOffset[0];
+        yOffset = xyzOffset[1];
+        zOffset = xyzOffset[2];
+        xScale = xyzScale[0];
+        yScale = xyzScale[1];
+        zScale = xyzScale[2];
+
+        offsetToData = header.getOffset();
     }
 
-    /**
-     * Opens the file and write the header info.
-     * 
-     * @throws Exception
+    /* (non-Javadoc)
+     * @see org.jgrasstools.gears.io.las.core.v_1_0.ALasWriter#open()
      */
+    @Override
     public void open() throws Exception {
         openFile();
         writeHeader();
@@ -240,8 +245,7 @@ public class LasWriter_1_0 {
         fos.write(getShort(headersize));
         hLength = hLength + 2;
 
-        int offsetToData = 227;
-        fos.write(getLong(offsetToData));
+        fos.write(getLong((int) offsetToData));
         hLength = hLength + 4;
 
         int numVarRecords = 0;
@@ -249,9 +253,11 @@ public class LasWriter_1_0 {
         hLength = hLength + 4;
 
         // point data format
+        pointFormatPosition = hLength;
         fos.write(1);
         hLength = hLength + 1;
 
+        recordLengthPosition = hLength;
         fos.write(getShort(recordLength));
         hLength = hLength + 2;
 
@@ -272,40 +278,33 @@ public class LasWriter_1_0 {
         hLength = hLength + 3 * 8;
 
         // xoff, yoff, zoff
-        fos.write(getDouble(xMin));
-        fos.write(getDouble(yMin));
-        fos.write(getDouble(zMin));
+        fos.write(getDouble(xOffset));
+        fos.write(getDouble(yOffset));
+        fos.write(getDouble(zOffset));
         hLength = hLength + 3 * 8;
 
+        //  x,y,z - min/max
         fos.write(getDouble(xMax));
         fos.write(getDouble(xMin));
-        hLength = hLength + 2 * 8;
-
         fos.write(getDouble(yMax));
         fos.write(getDouble(yMin));
-        hLength = hLength + 2 * 8;
-
         fos.write(getDouble(zMax));
         fos.write(getDouble(zMin));
-        hLength = hLength + 3 * 8;
+        hLength = hLength + 6 * 8;
 
+        fileChannel.position(offsetToData);
     }
 
-    /**
-     * Writes a point to file.
-     * 
-     * @param record the point record.
-     * @throws IOException
-     */
+    @Override
     public synchronized void addPoint( LasRecord record ) throws IOException {
         int length = 0;
-        int x = (int) round((record.x - xMin) / xScale);
-        int y = (int) round((record.y - yMin) / yScale);
+        int x = (int) round((record.x - xOffset) / xScale);
+        int y = (int) round((record.y - yOffset) / yScale);
         int z;
         if (!doWriteGroundElevation) {
-            z = (int) round((record.z - zMin) / zScale);
+            z = (int) round((record.z - zOffset) / zScale);
         } else {
-            z = (int) round((record.groundElevation - zMin) / zScale);
+            z = (int) round((record.groundElevation - zOffset) / zScale);
         }
         fos.write(getLong(x));
         fos.write(getLong(y));
@@ -354,19 +353,26 @@ public class LasWriter_1_0 {
         fos.write(new byte[2]);
         length = length + 2;
 
-        fos.write(getDouble(record.gpsTime));
-        length = length + 8;
-
-        if (recordLength != length) {
-            throw new RuntimeException();
+        if (record.gpsTime > 0) {
+            fos.write(getDouble(record.gpsTime));
+            length = length + 8;
+            pointFormat = 1;
         }
+
+        recordLength = (short) length;
 
         recordsNum++;
     }
 
+    @Override
     public void close() throws Exception {
         fileChannel.position(recordsNumPosition);
         fos.write(getLong(recordsNum));
+
+        fileChannel.position(pointFormatPosition);
+        fos.write(pointFormat);
+        fileChannel.position(recordLengthPosition);
+        fos.write(getShort(recordLength));
 
         closeFile();
 
@@ -416,6 +422,7 @@ public class LasWriter_1_0 {
             fos.close();
     }
 
+    @Override
     public void setWriteGroundElevation( boolean doWriteGroundElevation ) {
         this.doWriteGroundElevation = doWriteGroundElevation;
     }

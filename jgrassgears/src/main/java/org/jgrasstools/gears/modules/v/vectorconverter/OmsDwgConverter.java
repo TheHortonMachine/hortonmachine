@@ -129,7 +129,7 @@ public class OmsDwgConverter extends JGTModel {
             if (pCode != null) {
                 crs = CRS.decode(pCode);
             } else {
-                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DWG file.", this);
+                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DWG file.", this, pm);
             }
         }
 

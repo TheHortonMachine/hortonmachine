@@ -488,7 +488,7 @@ public class OmsEnergyIndexCalculator extends JGTModel {
             day_begin[0] = 143;
             day_end[0] = 173;
         } else {
-            throw new ModelsIllegalargumentException("Incorrect in find_days", "OmsEnergyIndexCalculator");
+            throw new ModelsIllegalargumentException("Incorrect in find_days", "OmsEnergyIndexCalculator", pm);
         }
     }
 

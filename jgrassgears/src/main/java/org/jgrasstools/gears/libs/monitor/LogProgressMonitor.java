@@ -18,7 +18,6 @@
  */
 package org.jgrasstools.gears.libs.monitor;
 
-import java.util.logging.Logger;
 
 /**
  * A progress monitor that sends progress to log.
@@ -26,7 +25,6 @@ import java.util.logging.Logger;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LogProgressMonitor implements IJGTProgressMonitor {
-    private static final Logger log = Logger.getLogger("org.jgrasstools");
 
     protected boolean cancelled = false;
     protected String taskName;
@@ -36,8 +34,9 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
     private String prefix = null;
 
     public LogProgressMonitor() {
-        this.prefix = "";
+        this("");
     }
+    
     public LogProgressMonitor( String prefix ) {
         this.prefix = prefix;
     }
@@ -129,4 +128,11 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
         System.out.println(message);
         // log.info(message);
     }
+    
+    public void exceptionThrown(String message) {
+    }
+    
+    public void onModuleExit() {
+    }
+
 }

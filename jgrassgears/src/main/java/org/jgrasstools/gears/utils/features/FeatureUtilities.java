@@ -544,8 +544,17 @@ public class FeatureUtilities {
         }
 
         Object userData = geometries[0].getUserData();
+        int userDataSize = 1;
         if (userData != null) {
-            b.add("userdata", userData.getClass());
+            if (userData instanceof String[]) {
+                String[] string = (String[]) userData;
+                userDataSize = string.length;
+                for( int i = 0; i < userDataSize; i++ ) {
+                    b.add("data" + i, String.class);
+                }
+            } else {
+                b.add("userdata", userData.getClass());
+            }
         }
 
         SimpleFeatureType type = b.buildFeatureType();
@@ -555,7 +564,17 @@ public class FeatureUtilities {
             if (userData == null) {
                 values = new Object[]{g};
             } else {
-                values = new Object[]{g, g.getUserData()};
+                Object tmpUserData = g.getUserData();
+                if (tmpUserData instanceof String[]) {
+                    String[] string = (String[]) tmpUserData;
+                    values = new Object[userDataSize + 1];
+                    values[0] = g;
+                    for( int i = 0; i < string.length; i++ ) {
+                        values[i + 1] = string[i];
+                    }
+                } else {
+                    values = new Object[]{g, tmpUserData};
+                }
             }
             builder.addAll(values);
             SimpleFeature feature = builder.buildFeature(null);

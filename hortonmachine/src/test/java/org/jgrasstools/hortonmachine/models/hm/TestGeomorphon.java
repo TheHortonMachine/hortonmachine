@@ -63,7 +63,7 @@ public class TestGeomorphon extends HMTestCase {
         g.pThreshold = 1;
         g.process();
         GridCoverage2D outRaster = g.outRaster;
-        PrintUtilities.printCoverageData(outRaster);
+        // PrintUtilities.printCoverageData(outRaster);
 
     }
 
@@ -93,8 +93,8 @@ public class TestGeomorphon extends HMTestCase {
         coordinateArray = endPosition.getCoordinate();
         Coordinate endCoord = new Coordinate(coordinateArray[0], coordinateArray[1]);
 
-        ProfilePoint lastVisiblePoint = OmsGeomorphon.getLastVisiblePoint(regionMap, elevIter, gridGeometry, startCoord,
-                endCoord);
+        ProfilePoint lastVisiblePoint = OmsGeomorphon
+                .getLastVisiblePoint(regionMap, elevIter, gridGeometry, startCoord, endCoord);
         assertEquals(2500.0, lastVisiblePoint.getElevation(), DELTA);
 
         // down

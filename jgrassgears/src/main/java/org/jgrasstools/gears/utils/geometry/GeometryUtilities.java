@@ -42,8 +42,6 @@ import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.GeometryType;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
@@ -992,13 +990,13 @@ public class GeometryUtilities {
      * @return a copy of the scaled geometry.
      * @throws Exception 
      */
-    public static Geometry scaleToUnitaryArea( Polygon polygon ) throws Exception {
+    public static Geometry scaleToUnitaryArea( Geometry polygon ) throws Exception {
         double area = polygon.getArea();
         double scale = sqrt(1.0 / area);
         AffineTransform scaleAT = new AffineTransform();
         scaleAT.scale(scale, scale);
         AffineTransform2D scaleTransform = new AffineTransform2D(scaleAT);
-        polygon = (Polygon) JTS.transform(polygon, scaleTransform);
+        polygon = JTS.transform(polygon, scaleTransform);
         return polygon;
     }
 }

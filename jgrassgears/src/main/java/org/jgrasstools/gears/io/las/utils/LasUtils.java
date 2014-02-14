@@ -19,18 +19,20 @@ package org.jgrasstools.gears.io.las.utils;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.geotools.referencing.CRS;
+import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader_1_0;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -38,14 +40,15 @@ import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 
@@ -55,6 +58,8 @@ import com.vividsolutions.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasUtils {
+    private static final GeometryFactory gf = GeometryUtilities.gf();
+    
     public static final String THE_GEOM = "the_geom";
     public static final String ELEVATION = "elev";
     public static final String INTENSITY = "intensity";
@@ -62,6 +67,9 @@ public class LasUtils {
     public static final String IMPULSE = "impulse";
     public static final String NUM_OF_IMPULSES = "numimpulse";
     private static SimpleFeatureBuilder lasSimpleFeatureBuilder;
+
+    public static String dateTimeFormatterYYYYMMDD_string = "yyyy-MM-dd";
+    public static DateTimeFormatter dateTimeFormatterYYYYMMDD = DateTimeFormat.forPattern(dateTimeFormatterYYYYMMDD_string);
 
     private static DateTime gpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
     private static DateTime javaEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC);
@@ -92,6 +100,34 @@ public class LasUtils {
 
         public int getValue() {
             return value;
+        }
+    }
+
+    /**
+     * Read just the version bytes from a las file.
+     * 
+     * <p>This can be handy is one needs to choose version reader.
+     * 
+     * @param lasFile the las file to check.
+     * @return the version string as "major.minor" .
+     * @throws IOException
+     */
+    public static String getLasFileVersion( File lasFile ) throws IOException {
+        FileInputStream fis = null;
+        FileChannel fc = null;
+        try {
+            fis = new FileInputStream(lasFile);
+            fc = fis.getChannel();
+            // Version Major
+            fis.skip(24);
+            int versionMajor = fis.read();
+            // Version Minor
+            int versionMinor = fis.read();
+            String version = versionMajor + "." + versionMinor; //$NON-NLS-1$
+            return version;
+        } finally {
+            fc.close();
+            fis.close();
         }
     }
 
@@ -131,12 +167,16 @@ public class LasUtils {
     }
 
     public static SimpleFeature tofeature( LasRecord r, CoordinateReferenceSystem crs ) {
-        final Point point = GeometryUtilities.gf().createPoint(new Coordinate(r.x, r.y));
+        final Point point = toGeometry(r);
         final Object[] values = new Object[]{point, r.z, r.intensity, r.classification, r.returnNumber, r.numberOfReturns};
         SimpleFeatureBuilder lasFeatureBuilder = getLasFeatureBuilder(crs);
         lasFeatureBuilder.addAll(values);
         final SimpleFeature feature = lasFeatureBuilder.buildFeature(null);
         return feature;
+    }
+
+    public static Point toGeometry( LasRecord r ) {
+        return gf.createPoint(new Coordinate(r.x, r.y));
     }
 
     public static List<LasRecord> getLasRecordsFromFeatureCollection( SimpleFeatureCollection lasCollection ) {
@@ -151,11 +191,11 @@ public class LasUtils {
             r.z = elevation;
             short intensity = ((Number) lasFeature.getAttribute(INTENSITY)).shortValue();
             r.intensity = intensity;
-            int classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).intValue();
+            byte classification = ((Number) lasFeature.getAttribute(CLASSIFICATION)).byteValue();
             r.classification = classification;
-            int impulse = ((Number) lasFeature.getAttribute(IMPULSE)).intValue();
+            short impulse = ((Number) lasFeature.getAttribute(IMPULSE)).shortValue();
             r.returnNumber = impulse;
-            int numOfImpulses = ((Number) lasFeature.getAttribute(NUM_OF_IMPULSES)).intValue();
+            short numOfImpulses = ((Number) lasFeature.getAttribute(NUM_OF_IMPULSES)).shortValue();
             r.numberOfReturns = numOfImpulses;
             lasList.add(r);
         }
@@ -252,10 +292,10 @@ public class LasUtils {
         List<File> filesList = iter.filesList;
 
         for( File file : filesList ) {
-            LasReader_1_0 r = new LasReader_1_0(file, crs);
+            ALasReader r = new LasReader(file, crs);
             try {
                 r.open();
-                ReferencedEnvelope3D envelope = r.getEnvelope();
+                ReferencedEnvelope3D envelope = r.getHeader().getDataEnvelope();
                 Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
                 Object[] objs = new Object[]{polygon, r.getLasFile().getName()};
                 builder.addAll(objs);
@@ -295,6 +335,65 @@ public class LasUtils {
         double projectedDistance = NumericsUtilities.pythagoras(r1.x - r2.x, r1.y - r2.y);
         double distance = NumericsUtilities.pythagoras(projectedDistance, deltaElev);
         return distance;
+    }
+
+    /**
+     * String representation for a {@link LasRecord}.
+     * 
+     * @param dot the record to convert.
+     * @return the string.
+     */
+    public static String lasRecordToString( LasRecord dot ) {
+        final String CR = "\n";
+        final String TAB = "\t";
+        StringBuilder retValue = new StringBuilder();
+        retValue.append("Dot ( \n").append(TAB).append("x = ").append(dot.x).append(CR).append(TAB).append("y = ").append(dot.y)
+                .append(CR).append(TAB).append("z = ").append(dot.z).append(CR).append(TAB).append("intensity = ")
+                .append(dot.intensity).append(CR).append(TAB).append("impulse = ").append(dot.returnNumber).append(CR)
+                .append(TAB).append("impulseNum = ").append(dot.numberOfReturns).append(CR).append(TAB)
+                .append("classification = ").append(dot.classification).append(CR).append(TAB).append("gpsTime = ")
+                .append(dot.gpsTime).append(CR).append(" )");
+        return retValue.toString();
+    }
+
+    /**
+     * Compare two {@link LasRecord}s.
+     * 
+     * @param dot1 the first record.
+     * @param dot2 the second record.
+     * @return <code>true</code>, if the records are the same.
+     */
+    public static boolean lasRecordEqual( LasRecord dot1, LasRecord dot2 ) {
+        double delta = 0.000001;
+        boolean check = NumericsUtilities.dEq(dot1.x, dot2.x, delta);
+        if (!check) {
+            return false;
+        }
+        check = NumericsUtilities.dEq(dot1.y, dot2.y, delta);
+        if (!check) {
+            return false;
+        }
+        check = NumericsUtilities.dEq(dot1.z, dot2.z, delta);
+        if (!check) {
+            return false;
+        }
+        check = dot1.intensity == dot2.intensity;
+        if (!check) {
+            return false;
+        }
+        check = dot1.classification == dot2.classification;
+        if (!check) {
+            return false;
+        }
+        check = dot1.returnNumber == dot2.returnNumber;
+        if (!check) {
+            return false;
+        }
+        check = dot1.numberOfReturns == dot2.numberOfReturns;
+        if (!check) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -191,11 +191,11 @@ public class OmsExtractBasin extends JGTModel {
         double east = regionMap.getEast();
 
         if (pNorth == -1 || pEast == -1) {
-            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException("No outlet coordinates were supplied.", this.getClass().getSimpleName(), pm);
         }
         if (pNorth > north || pNorth < south || pEast > east || pEast < west) {
             throw new ModelsIllegalargumentException("The outlet point lies outside the map region.", this.getClass()
-                    .getSimpleName());
+                    .getSimpleName(), pm);
         }
 
         Coordinate snapOutlet = snapOutlet();

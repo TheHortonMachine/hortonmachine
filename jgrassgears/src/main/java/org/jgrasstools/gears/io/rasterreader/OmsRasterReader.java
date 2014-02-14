@@ -254,7 +254,7 @@ public class OmsRasterReader extends JGTModel {
         } else
             throw new ModelsIllegalargumentException(
                     "Can't recognize the data format. Supported are: asc, tiff, jpg, png, grass.", this.getClass()
-                            .getSimpleName());
+                            .getSimpleName(), pm);
 
         File mapFile = new File(file);
         try {
@@ -273,7 +273,7 @@ public class OmsRasterReader extends JGTModel {
             } else if (pType.equals(GRASS)) {
                 readGrass(mapFile);
             } else {
-                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Data type not supported: " + pType, this.getClass().getSimpleName(), pm);
             }
         } finally {
             pm.done();

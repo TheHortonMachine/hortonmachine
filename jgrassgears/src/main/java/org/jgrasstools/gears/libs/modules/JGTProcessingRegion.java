@@ -398,31 +398,6 @@ public class JGTProcessingRegion {
     }
 
     /**
-     * Creates a region from envelope bounds snapped to a region grid.
-     * 
-     * <p>
-     * This takes an envelope and a JGrass region and creates a new region to
-     * match the bounds of the envelope, but the grid of the region. This is
-     * important if the region has to match some feature layer.
-     * </p>
-     * <p>
-     * The bounds of the new region contain completely the envelope.
-     * </p>
-     * 
-     * @param sourceEnvelope
-     *            the envelope to adapt.
-     * @param sourceRegion
-     *            the region from which to take the grid to be snapped.
-     * @return a new region, created from the envelope bounds snapped to the
-     *         region grid.
-     */
-    public static JGTProcessingRegion adaptActiveRegionToEnvelope( Envelope sourceEnvelope, JGTProcessingRegion sourceRegion ) {
-        JGTProcessingRegion newRegion = new JGTProcessingRegion(sourceEnvelope.getMinX(), sourceEnvelope.getMaxX(),
-                sourceEnvelope.getMinY(), sourceEnvelope.getMaxY(), sourceRegion.getRows(), sourceRegion.getCols());
-        return newRegion;
-    }
-
-    /**
      * @param subregionsNum
      * @return
      */
@@ -474,15 +449,7 @@ public class JGTProcessingRegion {
 
         return regions;
     }
-    /**
-     * Reads a region file and sets a given region to the supplied region file.
-     * 
-     * @param filePath
-     *            the path to the region file.
-     * @param region
-     *            the region to be set to the region file informations.
-     */
-    @SuppressWarnings("nls")
+
     /**
      * Transforms degree string into the decimal value.
      * 

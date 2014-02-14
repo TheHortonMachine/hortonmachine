@@ -72,7 +72,7 @@ public class OmsRasterCorrector extends JGTModel {
         String[] correctionSplit = pCorrections.split(","); //$NON-NLS-1$
         if (correctionSplit.length % 3 != 0) {
             throw new ModelsIllegalargumentException(
-                    "the format of the correction values is: col1,row1,value1,col2,row2,value2...", this);
+                    "the format of the correction values is: col1,row1,value1,col2,row2,value2...", this, pm);
         }
 
         RenderedImage inRI = inRaster.getRenderedImage();

@@ -66,7 +66,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
-import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -142,7 +141,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
         checkNull(inGeopaparazzi);
 
         if (!hasDriver) {
-            throw new ModelsIllegalargumentException("Can't find any sqlite driver. Check your settings.", this);
+            throw new ModelsIllegalargumentException("Can't find any sqlite driver. Check your settings.", this, pm);
         }
 
         File geopapFolderFile = new File(inGeopaparazzi);
@@ -150,7 +149,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         if (!geopapDatabaseFile.exists()) {
             throw new ModelsIllegalargumentException(
-                    "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this);
+                    "The geopaparazzi database file (geopaparazzi.db) is missing. Check the inserted path.", this, pm);
         }
 
         File outputFolderFile = new File(outData);
@@ -245,7 +244,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             if (statement != null)
                 statement.close();
         }
-        OmsVectorWriter.writeVector(outputShapeFile.getAbsolutePath(), newCollection);
+        dumpVector(newCollection, outputShapeFile.getAbsolutePath());
     }
 
     private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
@@ -368,7 +367,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 SimpleFeatureCollection collection = entry.getValue().collection;
 
                 File outFile = new File(outputFolderFile, name + ".shp");
-                OmsVectorWriter.writeVector(outFile.getAbsolutePath(), collection);
+                dumpVector(collection, outFile.getAbsolutePath());
             }
         } finally {
             pm.done();
@@ -482,7 +481,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             }
             pm.done();
             File outputLinesShapeFile = new File(outputFolderFile, "gpslines.shp");
-            OmsVectorWriter.writeVector(outputLinesShapeFile.getAbsolutePath(), newCollection);
+            dumpVector(newCollection, outputLinesShapeFile.getAbsolutePath());
         }
 
         if (doLogpoints) {
@@ -515,7 +514,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             }
             pm.done();
             File outputPointsShapeFile = new File(outputFolderFile, "gpspoints.shp");
-            OmsVectorWriter.writeVector(outputPointsShapeFile.getAbsolutePath(), newCollection);
+            dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
         }
     }
 
@@ -616,7 +615,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             }
 
             File outputPointsShapeFile = new File(outputFolderFile, "mediapoints.shp");
-            OmsVectorWriter.writeVector(outputPointsShapeFile.getAbsolutePath(), newCollection);
+            dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
         } finally {
             pm.done();
         }

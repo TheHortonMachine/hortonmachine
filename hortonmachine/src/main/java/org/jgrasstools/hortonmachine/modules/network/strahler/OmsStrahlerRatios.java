@@ -122,7 +122,7 @@ public class OmsStrahlerRatios extends JGTModel {
             inStrahler.evaluate(new Point2D.Double(coordinate.x, coordinate.y), value);
 
             if (JGTConstants.isNovalue(value[0]) || value[0] < 1 || value[0] > maxStrahler) {
-                throw new ModelsIllegalargumentException("An incorrect value of OmsStrahler was extracted from the map.", this);
+                throw new ModelsIllegalargumentException("An incorrect value of OmsStrahler was extracted from the map.", this, pm);
             }
 
             int strahler = (int) value[0];

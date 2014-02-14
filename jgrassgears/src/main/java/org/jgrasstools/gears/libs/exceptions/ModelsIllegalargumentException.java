@@ -18,6 +18,8 @@
  */
 package org.jgrasstools.gears.libs.exceptions;
 
+import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+
 /**
  * Extention of the {@link IllegalAccessException}
  * 
@@ -28,7 +30,13 @@ package org.jgrasstools.gears.libs.exceptions;
 public class ModelsIllegalargumentException extends IllegalArgumentException {
     private static final long serialVersionUID = 4509285779491321905L;
 
-    public ModelsIllegalargumentException( String message, Object owner ) {
+    public ModelsIllegalargumentException( String message, Object owner, IJGTProgressMonitor monitor ) {
         super(owner instanceof String ? (String) owner + ": " + message : owner.getClass().getSimpleName() + ": " + message);
+        if (monitor != null)
+            monitor.exceptionThrown(message);
+    }
+    
+    public ModelsIllegalargumentException( String message, Object owner ) {
+        this(message, owner, null);
     }
 }

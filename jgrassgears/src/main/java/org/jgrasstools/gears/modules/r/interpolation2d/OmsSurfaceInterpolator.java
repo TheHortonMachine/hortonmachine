@@ -137,7 +137,7 @@ public class OmsSurfaceInterpolator extends JGTModel {
 
         GeometryDescriptor geometryDescriptor = inVector.getSchema().getGeometryDescriptor();
         if (!GeometryUtilities.isPoint(geometryDescriptor)) {
-            throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this);
+            throw new ModelsIllegalargumentException("The geometry has to be a point geometry.", this, pm);
         }
 
         RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);

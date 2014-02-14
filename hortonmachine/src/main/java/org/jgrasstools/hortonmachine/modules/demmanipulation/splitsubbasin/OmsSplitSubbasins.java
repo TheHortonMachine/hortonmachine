@@ -192,7 +192,7 @@ public class OmsSplitSubbasins extends JGTModel {
                         n++;
                         netNumberRandomIter.setSample(c, r, 0, n);
                         if (!ModelsEngine.go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
-                            throw new ModelsIllegalargumentException("go_downstream failure...", this);
+                            throw new ModelsIllegalargumentException("go_downstream failure...", this, pm);
                         /*
                          * while it is on the network, go downstream
                          */
@@ -216,7 +216,7 @@ public class OmsSplitSubbasins extends JGTModel {
 
                             if (!ModelsEngine
                                     .go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
-                                throw new ModelsIllegalargumentException("go_downstream failure...", this);
+                                throw new ModelsIllegalargumentException("go_downstream failure...", this, pm);
                         }
                     }
                 }

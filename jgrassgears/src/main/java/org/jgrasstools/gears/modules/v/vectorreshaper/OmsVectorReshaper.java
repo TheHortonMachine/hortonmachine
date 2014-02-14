@@ -146,7 +146,7 @@ public class OmsVectorReshaper extends JGTModel {
                 }
             }
         } else {
-            throw new ModelsIllegalargumentException("No CQL function has been provided.", this);
+            throw new ModelsIllegalargumentException("No CQL function has been provided.", this, pm);
         }
         StringBuilder sB = new StringBuilder();
         Set<Entry<String, String>> entrySet = functionMap.entrySet();
@@ -217,7 +217,7 @@ public class OmsVectorReshaper extends JGTModel {
                     String path = ((PropertyName) expression).getPropertyName();
                     AttributeType attributeType = sample.getFeatureType().getType(path);
                     if (attributeType == null) {
-                        throw new ModelsIllegalargumentException("Attribute type is null", this.getClass().getSimpleName());
+                        throw new ModelsIllegalargumentException("Attribute type is null", this.getClass().getSimpleName(), pm);
                     }
                     binding = attributeType.getClass();
                 }
@@ -226,7 +226,7 @@ public class OmsVectorReshaper extends JGTModel {
             }
 
             if (binding == null) {
-                throw new ModelsIllegalargumentException("Binding is null", this.getClass().getSimpleName());
+                throw new ModelsIllegalargumentException("Binding is null", this.getClass().getSimpleName(), pm);
             }
 
             if (Geometry.class.isAssignableFrom(binding)) {

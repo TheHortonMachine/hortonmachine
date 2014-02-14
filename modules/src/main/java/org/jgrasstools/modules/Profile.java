@@ -75,6 +75,7 @@ public class Profile extends JGTModel {
     public String fLineid;
 
     @Description(OMSPROFILE_outFolder_DESCRIPTION)
+    @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder;
 

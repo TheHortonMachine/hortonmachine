@@ -101,7 +101,7 @@ public class OmsMeltonNumber extends JGTModel {
         AttributeType type = inFans.getSchema().getType(fId);
         if (type == null) {
             throw new ModelsIllegalargumentException(MessageFormat.format("The attribute {0} does not exist in the vector map.",
-                    fId), this);
+                    fId), this, pm);
         }
 
         List<SimpleFeature> fansList = FeatureUtilities.featureCollectionToList(inFans);

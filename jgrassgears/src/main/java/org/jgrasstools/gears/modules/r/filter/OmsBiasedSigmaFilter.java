@@ -131,7 +131,7 @@ public class OmsBiasedSigmaFilter extends JGTModel {
 					}
 					if (isNovalue(value)) {
 						throw new ModelsIllegalargumentException("Found NaN",
-								this);
+								this, pm);
 					}
 					outIter.setSample(c, r, 0, value);
 				}

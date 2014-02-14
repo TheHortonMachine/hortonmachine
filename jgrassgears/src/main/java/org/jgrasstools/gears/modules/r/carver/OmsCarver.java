@@ -179,7 +179,7 @@ public class OmsCarver extends JGTModel {
             finalCarveGC = depthLinesRaster;
         } else {
             throw new ModelsIllegalargumentException("At least one lines or one polygon carving layer needs to be supplied.",
-                    this);
+                    this, pm);
         }
 
         RenderedImage dtmRI = inRaster.getRenderedImage();

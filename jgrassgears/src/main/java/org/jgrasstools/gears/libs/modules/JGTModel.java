@@ -218,7 +218,7 @@ public class JGTModel implements Process {
         for( Object object : objects ) {
             if (object == null) {
                 throw new ModelsIllegalargumentException("Mandatory input argument is missing. Check your syntax...", this
-                        .getClass().getSimpleName());
+                        .getClass().getSimpleName(), pm);
             }
         }
     }
@@ -241,7 +241,7 @@ public class JGTModel implements Process {
             }
         }
         if (sb != null)
-            throw new ModelsIllegalargumentException(sb.toString(), this.getClass().getSimpleName());
+            throw new ModelsIllegalargumentException(sb.toString(), this.getClass().getSimpleName(), pm);
     }
 
     /**
@@ -267,10 +267,15 @@ public class JGTModel implements Process {
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
-    public static GridCoverage2D getRaster( String source ) throws Exception {
+    public GridCoverage2D getRaster( String source ) throws Exception {
         if (source == null)
             return null;
-        return OmsRasterReader.readRaster(source);
+        OmsRasterReader reader = new OmsRasterReader();
+        reader.pm = pm;
+        reader.file = source;
+        reader.process();
+        GridCoverage2D geodata = reader.outRaster;
+        return geodata;
     }
 
     /**
@@ -283,10 +288,15 @@ public class JGTModel implements Process {
      * @return the read {@link GridCoverage2D}.
      * @throws Exception
      */
-    public static SimpleFeatureCollection getVector( String source ) throws Exception {
+    public SimpleFeatureCollection getVector( String source ) throws Exception {
         if (source == null)
             return null;
-        return OmsVectorReader.readVector(source);
+        OmsVectorReader reader = new OmsVectorReader();
+        reader.pm = pm;
+        reader.file = source;
+        reader.process();
+        SimpleFeatureCollection fc = reader.outVector;
+        return fc;
     }
 
     /**
@@ -299,10 +309,14 @@ public class JGTModel implements Process {
      * @param source the source to which to write to.
      * @throws Exception
      */
-    public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
+    public void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null || source == null)
             return;
-        OmsRasterWriter.writeRaster(source, raster);
+        OmsRasterWriter writer = new OmsRasterWriter();
+        writer.pm = pm;
+        writer.inRaster = raster;
+        writer.file = source;
+        writer.process();
     }
 
     /**
@@ -315,10 +329,14 @@ public class JGTModel implements Process {
      * @param source the source to which to write to.
      * @throws Exception
      */
-    public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
+    public void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
         if (vector == null || source == null)
             return;
-        OmsVectorWriter.writeVector(source, vector);
+        OmsVectorWriter writer = new OmsVectorWriter();
+        writer.pm = pm;
+        writer.file = source;
+        writer.inVector = vector;
+        writer.process();
     }
 
     public void help() throws Exception {
@@ -330,5 +348,4 @@ public class JGTModel implements Process {
         String help = ModelsSupporter.generateTemplate(this);
         pm.message(help);
     }
-
 }

@@ -114,7 +114,7 @@ public class OmsHazardClassifier extends JGTModel {
                 } else if (dEq(tr30, 3.0)) {
                     tmpTr30 = 9.0;
                 } else {
-                    throw new ModelsIllegalargumentException("Unknown tr30 value: " + tr30, this);
+                    throw new ModelsIllegalargumentException("Unknown tr30 value: " + tr30, this, pm);
                 }
                 double tmpTr100;
                 if (isNovalue(tr100)) {
@@ -126,7 +126,7 @@ public class OmsHazardClassifier extends JGTModel {
                 } else if (dEq(tr100, 3.0)) {
                     tmpTr100 = 8.0;
                 } else {
-                    throw new ModelsIllegalargumentException("Unknown tr100 value: " + tr100, this);
+                    throw new ModelsIllegalargumentException("Unknown tr100 value: " + tr100, this, pm);
                 }
                 double tmpTr200;
                 if (isNovalue(tr200)) {
@@ -138,7 +138,7 @@ public class OmsHazardClassifier extends JGTModel {
                 } else if (dEq(tr200, 3.0)) {
                     tmpTr200 = 7.0;
                 } else {
-                    throw new ModelsIllegalargumentException("Unknown tr200 value: " + tr200, this);
+                    throw new ModelsIllegalargumentException("Unknown tr200 value: " + tr200, this, pm);
                 }
 
                 int maxValue = (int) max(tmpTr30, max(tmpTr100, tmpTr200));
@@ -166,7 +166,7 @@ public class OmsHazardClassifier extends JGTModel {
                 };
 
                 if (maxValue < 1 || maxValue > (reclassIP1.length - 1)) {
-                    throw new ModelsIllegalargumentException("Unknown max value from tr30/100/200: " + maxValue, this);
+                    throw new ModelsIllegalargumentException("Unknown max value from tr30/100/200: " + maxValue, this, pm);
                 }
                 double ip1 = reclassIP1[(int) maxValue];
                 double ip2 = reclassIP2[(int) maxValue];

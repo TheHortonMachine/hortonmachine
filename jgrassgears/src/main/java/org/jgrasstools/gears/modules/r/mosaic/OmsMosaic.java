@@ -104,11 +104,11 @@ public class OmsMosaic extends JGTModel {
         }
 
         if (inFiles == null) {
-            throw new ModelsIllegalargumentException("No input data have been provided.", this);
+            throw new ModelsIllegalargumentException("No input data have been provided.", this, pm);
         }
 
         if (inFiles != null && inFiles.size() < 2) {
-            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this);
+            throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this, pm);
         }
 
         GridGeometry2D referenceGridGeometry = null;

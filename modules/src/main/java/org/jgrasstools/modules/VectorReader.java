@@ -75,10 +75,6 @@ public class VectorReader extends JGTModel {
         outVector = vectorreader.outVector;
     }
 
-    public static double[] readBounds( String path ) throws IOException {
-        return OmsVectorReader.readBounds(path);
-    }
-
     public static SimpleFeatureCollection readVector( String path ) throws IOException {
         return OmsVectorReader.readVector(path);
     }

@@ -180,7 +180,7 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         pm.done();
         
         if (exitsList.size()==0) {
-            throw new ModelsIllegalargumentException("No outlet has been found in the network. Check your data.", this);
+            throw new ModelsIllegalargumentException("No outlet has been found in the network. Check your data.", this, pm);
         }
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -479,19 +479,6 @@ public class OmsNetworkAttributesBuilder extends JGTModel {
         synchronized (networkList) {
             networkList.add(netFeature);
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-
-        OmsNetworkAttributesBuilder networkattributesbuilder = new OmsNetworkAttributesBuilder();
-        networkattributesbuilder.inNet = getRaster("/media/lacntfs/unibz_ana/utm_aa/test_ana/cell/ana_net_null");
-        networkattributesbuilder.inFlow = getRaster("/media/lacntfs/unibz_ana/utm_aa/test_ana/cell/ana_flow_small");
-        networkattributesbuilder.inTca = getRaster("/media/lacntfs/unibz_ana/utm_aa/test_ana/cell/ana_tca_small");
-        networkattributesbuilder.doHack = false;
-        networkattributesbuilder.process();
-        dumpVector(networkattributesbuilder.outNet, "/media/lacntfs/unibz_ana/shape_net/ana_net.shp");
-        // dumpRaster(networkattributesbuilder.outHack,
-        // "/media/lacntfs/unibz_ana/utm_aa/test_ana/fcell/ana_hack_small");
     }
 
 }

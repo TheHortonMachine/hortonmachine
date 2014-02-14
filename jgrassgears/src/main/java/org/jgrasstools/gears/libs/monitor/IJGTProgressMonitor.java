@@ -33,8 +33,7 @@ public interface IJGTProgressMonitor {
      * Constant indicating an unknown amount of work.
      */
     public final static int UNKNOWN = -1;
-    
-    
+
     /**
      * Notifies that the main task is beginning.
      * 
@@ -43,7 +42,6 @@ public interface IJGTProgressMonitor {
      */
     public void beginTask( String name, int totalWork );
 
-    
     /**
      * Sends out a message.
      * 
@@ -57,6 +55,13 @@ public interface IJGTProgressMonitor {
      * @param message the error message to send out.
      */
     public void errorMessage( String message );
+
+    /**
+     * Method to be called in case of exception.
+     * 
+     * @param message the error message to send out.
+     */
+    public void exceptionThrown(String message);
 
     /**
      * Notifies that the work is done; that is, either the main task is completed or the user canceled it.
@@ -112,4 +117,9 @@ public interface IJGTProgressMonitor {
      * @return the adapted object or null, if it is not assignable.
      */
     public <T> T adapt( Class<T> adaptee );
+
+    /**
+     * Method to call on module finalization.
+     */
+    public void onModuleExit();
 }

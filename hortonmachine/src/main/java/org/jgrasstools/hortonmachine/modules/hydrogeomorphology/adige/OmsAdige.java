@@ -287,7 +287,7 @@ public class OmsAdige extends JGTModel {
                 } else {
                     throw new ModelsIllegalargumentException(
                             "In the case of usage of a constant rainintensity it is necessary to define also its duration.\nCheck your arguments, probably the --rainduration flag is missing.",
-                            this);
+                            this, pm);
                 }
             }
 
@@ -351,7 +351,7 @@ public class OmsAdige extends JGTModel {
                 adigeEngine = new HymodAdigeEngine(inHymodInput, orderedHillslopes, index2Basinid, outDischarge, outSubdischarge,
                         pfaffsList, doLog, doLog, pm);
             } else {
-                throw new ModelsIllegalargumentException("No parameters for any model were defined. Check your syntax.", this);
+                throw new ModelsIllegalargumentException("No parameters for any model were defined. Check your syntax.", this, pm);
             }
 
             if (hydrometersHandler != null) {
@@ -452,7 +452,7 @@ public class OmsAdige extends JGTModel {
         if (inHydrometers != null || inDams != null || inTributary != null || inOfftakes != null) {
             if (fMonpointid == null || fMonpointid.length() < 1) {
                 throw new ModelsIllegalargumentException("Missing monitoring point id attribute name.", this.getClass()
-                        .getSimpleName());
+                        .getSimpleName(), pm);
             }
         }
 

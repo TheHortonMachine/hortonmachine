@@ -258,7 +258,7 @@ public class OmsLineSmootherMcMaster extends JGTModel {
 
         SimpleFeatureCollection smoothedFeatures = smoother.outVector;
 
-        OmsShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures);
+        OmsShapefileFeatureWriter.writeShapefile(outPath, smoothedFeatures, pm);
     }
 
 }

@@ -195,7 +195,7 @@ public class OmsPeakflow extends JGTModel {
             processWithSaturation(inSat, supRescaledWR, subRescaledWR);
         } else {
             throw new ModelsIllegalargumentException(
-                    "At least one of the topindex or the saturation map have to be available to proceed.", this);
+                    "At least one of the topindex or the saturation map have to be available to proceed.", this, pm);
         }
 
         GridCoverage2D widthfunctionSupCoverage = CoverageUtilities.buildCoverage("sup", supRescaledWR, regionMap,
@@ -225,7 +225,7 @@ public class OmsPeakflow extends JGTModel {
             isReal = true;
         } else {
             throw new ModelsIllegalargumentException(
-                    "Problems occurred in parsing the command arguments. Please check your arguments.", this);
+                    "Problems occurred in parsing the command arguments. Please check your arguments.", this, pm);
         }
 
         // the internal timestep is always 1 second
@@ -346,7 +346,7 @@ public class OmsPeakflow extends JGTModel {
             }
         } else {
             throw new ModelsIllegalargumentException("Statistic and real rain are implemented only.", this.getClass()
-                    .getSimpleName());
+                    .getSimpleName(), pm);
         }
 
         /*

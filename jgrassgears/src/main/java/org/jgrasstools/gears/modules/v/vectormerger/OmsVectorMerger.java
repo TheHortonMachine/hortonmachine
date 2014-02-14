@@ -90,7 +90,7 @@ public class OmsVectorMerger extends JGTModel {
                     SimpleFeatureType schema = featureCollection.getSchema();
                     int compare = DataUtilities.compare(firstType, schema);
                     if (compare != 0) {
-                        throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this);
+                        throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this, pm);
                     }
                 }
                 SimpleFeatureIterator featureIterator = featureCollection.features();

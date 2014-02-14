@@ -248,7 +248,7 @@ public class OmsGridsGenerator extends JGTModel {
 
             break;
         default:
-            throw new ModelsIllegalargumentException("The supplied pType is not supported.", this);
+            throw new ModelsIllegalargumentException("The supplied pType is not supported.", this, pm);
         }
 
         pm.done();

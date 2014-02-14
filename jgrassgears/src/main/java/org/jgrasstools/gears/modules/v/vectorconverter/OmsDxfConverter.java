@@ -119,7 +119,7 @@ public class OmsDxfConverter extends JGTModel {
             if (pCode != null) {
                 crs = CRS.decode(pCode);
             } else {
-                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DXF file.", this);
+                throw new ModelsIllegalargumentException("Please specify the CRS for the imported DXF file.", this, pm);
             }
         }
 

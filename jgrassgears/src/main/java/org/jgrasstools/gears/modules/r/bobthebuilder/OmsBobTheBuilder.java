@@ -146,13 +146,13 @@ public class OmsBobTheBuilder extends JGTModel {
         ReferencedEnvelope vectorBounds = inArea.getBounds();
         if (!isBetween(vectorBounds.getMaxX(), west, east) || !isBetween(vectorBounds.getMinX(), west, east)
                 || !isBetween(vectorBounds.getMaxY(), south, north) || !isBetween(vectorBounds.getMinY(), south, north)) {
-            throw new ModelsIllegalargumentException("The vector map has to be within the raster map boundaries.", this);
+            throw new ModelsIllegalargumentException("The vector map has to be within the raster map boundaries.", this, pm);
         }
 
         List<FeatureMate> polygonMates = FeatureUtilities.featureCollectionToMatesList(inArea);
         String polygonMessage = "This operation can be applied only to a single polygon.";
         if (polygonMates.size() != 1) {
-            throw new ModelsIllegalargumentException(polygonMessage, this);
+            throw new ModelsIllegalargumentException(polygonMessage, this, pm);
         }
         FeatureMate polygonMate = polygonMates.get(0);
         Geometry polygon = polygonMate.getGeometry();
@@ -160,7 +160,7 @@ public class OmsBobTheBuilder extends JGTModel {
             polygon = polygon.getGeometryN(0);
         }
         if (!(polygon instanceof Polygon)) {
-            throw new ModelsIllegalargumentException(polygonMessage, this);
+            throw new ModelsIllegalargumentException(polygonMessage, this, pm);
         }
 
         List<FeatureMate> pointsMates = FeatureUtilities.featureCollectionToMatesList(inElevations);
@@ -177,7 +177,7 @@ public class OmsBobTheBuilder extends JGTModel {
         }
         if (pointsMates.size() < 4) {
             throw new ModelsIllegalargumentException(
-                    "You need at least 4 elevation points (the more, the better) to gain a decent interpolation.", this);
+                    "You need at least 4 elevation points (the more, the better) to gain a decent interpolation.", this, pm);
         }
 
         List<Coordinate> controlPointsList = new ArrayList<Coordinate>();

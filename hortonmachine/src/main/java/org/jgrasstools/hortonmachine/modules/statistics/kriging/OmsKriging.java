@@ -257,7 +257,7 @@ public class OmsKriging extends JGTModel {
                 } else if (stationId instanceof String) {
                     id = (int) Double.parseDouble((String) stationId);
                 } else {
-                    throw new ModelsIllegalargumentException("Unreadable type found for the station id.", this);
+                    throw new ModelsIllegalargumentException("Unreadable type found for the station id.", this, pm);
                 }
                 double z = 0;
                 if (fStationsZ != null) {
@@ -373,7 +373,7 @@ public class OmsKriging extends JGTModel {
             pointsToInterpolateId2Coordinates = getCoordinate(inInterpolationGrid);
             numPointToInterpolate = pointsToInterpolateId2Coordinates.size();
         } else {
-            throw new ModelsIllegalargumentException("The parameter pMode can only be 0 or 1.", this);
+            throw new ModelsIllegalargumentException("The parameter pMode can only be 0 or 1.", this, pm);
         }
 
         Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
@@ -519,10 +519,10 @@ public class OmsKriging extends JGTModel {
         }
 
         if ((pMode == 0) && inInterpolate == null) {
-            throw new ModelsIllegalargumentException(msg.message("kriging.noPoint"), this);
+            throw new ModelsIllegalargumentException(msg.message("kriging.noPoint"), this, pm);
         }
         if (pMode == 1 && inInterpolationGrid == null) {
-            throw new ModelsIllegalargumentException("The gridded interpolation needs a gridgeometry in input.", this);
+            throw new ModelsIllegalargumentException("The gridded interpolation needs a gridgeometry in input.", this, pm);
         }
 
     }
