@@ -192,6 +192,8 @@ public class RegionMap extends HashMap<String, Double> {
     /**
      * Creates a new {@link RegionMap} cropped on the new bounds and snapped on the original grid.
      * 
+     * <p><b>The supplied bounds are contained in the resulting region.</b></p>
+     * 
      * @param n the new north.
      * @param s the new south.
      * @param w the new west.
