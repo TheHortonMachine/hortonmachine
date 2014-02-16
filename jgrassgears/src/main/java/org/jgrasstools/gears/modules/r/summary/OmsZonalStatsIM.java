@@ -17,20 +17,12 @@
  */
 package org.jgrasstools.gears.modules.r.summary;
 
-import static java.lang.Math.abs;
-import static java.lang.Math.ceil;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
-import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.io.File;
-import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -48,34 +40,20 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollections;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.operation.TransformException;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.Polygon;
 
 @Description("Calculate zonal stats on image mosaic datasets.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -110,13 +88,16 @@ public class OmsZonalStatsIM extends JGTModelIM {
     @Out
     public SimpleFeatureCollection outVector;
 
-    private GeometryFactory gf = GeometryUtilities.gf();
-
-    private SimpleFeatureBuilder featureBuilder;
-
-    private double totalMean = 0;
-    private int totalActiveCells = 0;
-    private double userTotalMean = 0;
+    /**
+     * The array holding:
+     * <ul>
+     *  <li>totalMean</li>
+     *  <li>userTotalMean</li>
+     *  <li>totalActiveCells</li>
+     * </ul>
+     * if {@link #pTotalMean} is != <code>null</code>.
+     */
+    double[] tm_usertm_tactivecells = new double[3];
 
     @Execute
     public void process() throws Exception {
@@ -124,15 +105,18 @@ public class OmsZonalStatsIM extends JGTModelIM {
 
         addSource(new File(inRaster));
 
+        boolean hasUserTotalMean = false;
         if (pTotalMean != null) {
-            userTotalMean = pTotalMean;
+            hasUserTotalMean = true;
+            tm_usertm_tactivecells[1] = pTotalMean;
         }
 
         ReferencedEnvelope bounds = inVector.getBounds();
         double[] xBins = NumericsUtilities.range2Bins(bounds.getMinX(), bounds.getMaxX(), pBinSize);
         double[] yBins = NumericsUtilities.range2Bins(bounds.getMinY(), bounds.getMaxY(), pBinSize);
 
-        createFeatureBuilder();
+        SimpleFeatureBuilder featureBuilder = OmsZonalStats.createFeatureBuilder(bounds.getCoordinateReferenceSystem(),
+                hasUserTotalMean);
 
         outVector = new DefaultFeatureCollection();
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inVector, true, null);
@@ -172,7 +156,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
                 Raster readRaster = readGC.getRenderedImage().getData();
                 RandomIter readIter = RandomIterFactory.create(readRaster, null);
                 for( Geometry geometry : removeGeometriesQueue ) {
-                    double[] polygonStats = polygonStats(geometry, gridGeometry, readIter);
+                    double[] polygonStats = OmsZonalStats.polygonStats(geometry, gridGeometry, readIter, hasUserTotalMean,
+                            tm_usertm_tactivecells, pPercentageThres, pm);
                     if (polygonStats == null) {
                         continue;
                     }
@@ -210,161 +195,10 @@ public class OmsZonalStatsIM extends JGTModelIM {
         }
         pm.done();
 
-        if (pTotalMean == null) {
-            totalMean = totalMean / totalActiveCells;
-            pm.message("Total mean: " + totalMean);
+        if (!hasUserTotalMean) {
+            tm_usertm_tactivecells[0] = tm_usertm_tactivecells[0] / tm_usertm_tactivecells[2];
+            pm.message("Total mean: " + tm_usertm_tactivecells[0]);
         }
-    }
-
-    private double[] polygonStats( Geometry geometry, GridGeometry2D gridGeometry, RandomIter inIter )
-            throws InvalidGridGeometryException, TransformException, Exception {
-        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
-        int rows = gridRange.height;
-        int cols = gridRange.width;
-        int startX = gridRange.x;
-        int startY = gridRange.y;
-
-        final double delta = xRes / 4.0;
-        Envelope env = geometry.getEnvelopeInternal();
-        double envArea = env.getWidth() * env.getHeight();
-        int maxCells = (int) ceil(envArea / (xRes * yRes));
-
-        int activeCellCount = 0;
-        int passiveCellCount = 0;
-        double min = Double.POSITIVE_INFINITY;
-        double max = Double.NEGATIVE_INFINITY;
-
-        double[] values = new double[maxCells];
-
-        for( int r = startY; r < startY + rows; r++ ) {
-            // do scan line to fill the polygon
-            double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(startX, r)).getCoordinate();
-            double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(startX + cols - 1, r)).getCoordinate();
-            Coordinate west = new Coordinate(westPos[0], westPos[1]);
-            Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
-            LineString line = gf.createLineString(new Coordinate[]{west, east});
-            if (geometry.intersects(line)) {
-                Geometry internalLines = geometry.intersection(line);
-                int lineNums = internalLines.getNumGeometries();
-                for( int l = 0; l < lineNums; l++ ) {
-                    Coordinate[] coords = internalLines.getGeometryN(l).getCoordinates();
-                    if (coords.length == 2) {
-                        for( int j = 0; j < coords.length; j = j + 2 ) {
-                            Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
-                            Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
-
-                            DirectPosition2D startDP;
-                            DirectPosition2D endDP;
-                            if (startC.x < endC.x) {
-                                startDP = new DirectPosition2D(startC.x, startC.x);
-                                endDP = new DirectPosition2D(endC.x, endC.x);
-                            } else {
-                                startDP = new DirectPosition2D(endC.x, endC.x);
-                                endDP = new DirectPosition2D(startC.x, startC.x);
-                            }
-                            GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
-                            GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);
-
-                            /*
-                             * the part in between has to be filled
-                             */
-                            for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                double v = inIter.getSampleDouble(k, r, 0);
-                                if (isNovalue(v)) {
-                                    passiveCellCount++;
-                                    continue;
-                                }
-                                min = Math.min(min, v);
-                                max = Math.max(max, v);
-                                values[activeCellCount] = v;
-                                activeCellCount++;
-
-                                if (pTotalMean == null) {
-                                    totalMean += v;
-                                    totalActiveCells++;
-                                }
-                            }
-                        }
-                    } else {
-                        if (coords.length == 1) {
-                            pm.errorMessage(MessageFormat.format("Found a cusp in: {0}/{1}", coords[0].x, coords[0].y));
-                        } else {
-                            throw new ModelsIOException(MessageFormat.format(
-                                    "Found intersection with more than 2 points in: {0}/{1}", coords[0].x, coords[0].y), this);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        int all = activeCellCount + passiveCellCount;
-        double ratio = 100.0 * activeCellCount / all;
-        if (ratio < pPercentageThres) {
-            return null;
-        }
-
-        double mean = mean(values, activeCellCount);
-        double sdev = standardDeviation(values, mean, activeCellCount);
-        double var = variance(values, mean, activeCellCount);
-
-        double[] result;
-        if (pTotalMean != null) {
-            double meanAbsoluteDeviation = meanAbsoluteDeviation(values, activeCellCount);
-            result = new double[]{min, max, mean, var, sdev, meanAbsoluteDeviation, activeCellCount, passiveCellCount};
-        } else {
-            result = new double[]{min, max, mean, var, sdev, activeCellCount, passiveCellCount};
-        }
-        return result;
-    }
-
-    private void createFeatureBuilder() {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("stats");
-        b.setCRS(crs);
-        b.add("the_geom", Polygon.class);
-        b.add("min", Double.class);
-        b.add("max", Double.class);
-        b.add("avg", Double.class);
-        b.add("var", Double.class);
-        b.add("sdev", Double.class);
-        if (pTotalMean != null)
-            b.add("avgabsdev", Double.class);
-        b.add("actcells", Integer.class);
-        b.add("invcells", Integer.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        featureBuilder = new SimpleFeatureBuilder(type);
-    }
-
-    private double meanAbsoluteDeviation( double[] values, int count ) {
-        double mean = 0;
-        for( int i = 0; i < count; i++ ) {
-            mean = mean + abs(values[i] - userTotalMean);
-        }
-        return mean / count;
-    }
-
-    private double mean( double[] values, int count ) {
-        double mean = 0;
-        for( int i = 0; i < count; i++ ) {
-            mean += values[i];
-        }
-        return mean / count;
-    }
-
-    private double standardDeviation( double[] values, double mean, int count ) {
-        double sd = variance(values, mean, count);
-        sd = sqrt(sd);
-        return sd;
-    }
-
-    private double variance( double[] values, double mean, int count ) {
-        double variance = 0;
-        for( int i = 0; i < count; i++ ) {
-            variance = variance + pow(values[i] - mean, 2.0);
-        }
-        variance = variance / (count);
-        return variance;
     }
 
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,

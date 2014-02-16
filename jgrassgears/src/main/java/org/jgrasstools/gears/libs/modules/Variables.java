@@ -64,6 +64,18 @@ public interface Variables {
     public String OPEN = "open";
     public String CLOSE = "close";
 
+    /*
+     * zonalstats 
+     */
+    public String MIN = "min";
+    public String MAX = "max";
+    public String AVG = "avg";
+    public String VAR = "var";
+    public String SDEV = "sdev";
+    public String AVGABSDEV = "avgabsdev";
+    public String ACTCELLS = "actcells";
+    public String INVCELLS = "invcells";
+
     /**
      * Custom keyword. 
      */
