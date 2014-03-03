@@ -43,12 +43,12 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -84,6 +84,7 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.geom.util.AffineTransformation;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 public class FeatureUtilities {
 
@@ -265,7 +266,7 @@ public class FeatureUtilities {
             } else if (typeIndex == 1) {
                 yIndex = i;
             } else {
-                Class class1 = typesMap.get(typesArray[typeIndex]);
+                Class<?> class1 = typesMap.get(typesArray[typeIndex]);
                 b.add(fieldName, class1);
             }
         }
@@ -365,8 +366,7 @@ public class FeatureUtilities {
         if (crs != null)
             newDataStore.forceSchemaCRS(crs);
         Transaction transaction = new DefaultTransaction();
-        FeatureStore<SimpleFeatureType, SimpleFeature> featureStore = (FeatureStore<SimpleFeatureType, SimpleFeature>) newDataStore
-                .getFeatureSource();
+        SimpleFeatureStore featureStore = (SimpleFeatureStore) newDataStore.getFeatureSource();
         featureStore.setTransaction(transaction);
         try {
             featureStore.addFeatures(fet);
@@ -439,6 +439,24 @@ public class FeatureUtilities {
         }
         featureIterator.close();
         return featuresList;
+    }
+
+    /**
+     * Extracts features from a {@link FeatureCollection} into an {@link STRtree}.
+     * 
+     * @param collection the feature collection.
+     * @return the tree containing the features.
+     */
+    public static STRtree featureCollectionToSTRtree( SimpleFeatureCollection collection ) {
+        STRtree tree = new STRtree();
+        SimpleFeatureIterator featureIterator = collection.features();
+        while( featureIterator.hasNext() ) {
+            SimpleFeature feature = featureIterator.next();
+            Geometry geometry = (Geometry) feature.getDefaultGeometry();
+            tree.insert(geometry.getEnvelopeInternal(), feature);
+        }
+        featureIterator.close();
+        return tree;
     }
 
     /**
