@@ -27,9 +27,6 @@ import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 
-import javax.media.jai.JAI;
-import javax.media.jai.util.ImagingListener;
-
 import oms3.Access;
 import oms3.ComponentAccess;
 import oms3.annotations.Description;
@@ -65,20 +62,24 @@ public class JGTModel implements Process {
     private static boolean doLogging = false;
     static {
         // remove nasty error message if jai has no native backbone
-        JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
-            @Override
-            public boolean errorOccurred( String message, Throwable thrown, Object where, boolean isRetryable )
-                    throws RuntimeException {
-                if (thrown != null) {
-                    String localizedMessage = thrown.getLocalizedMessage();
-                    if (localizedMessage != null && !localizedMessage.equals("com/sun/medialib/mlib/Image")) {
-                        System.err.println(message);
-                        thrown.printStackTrace(System.err);
-                    }
-                }
-                return false;
-            }
-        });
+        // JAI.getDefaultInstance().setImagingListener(new ImagingListener(){
+        // @Override
+        // public boolean errorOccurred( String message, Throwable thrown, Object where, boolean
+        // isRetryable )
+        // throws RuntimeException {
+        // if (thrown != null) {
+        // String localizedMessage = thrown.getLocalizedMessage();
+        // if (localizedMessage != null //
+        // && !localizedMessage.equals("com/sun/medialib/mlib/Image") //
+        // && !localizedMessage.equals("IOException occurs when create the socket.") //
+        // ) {
+        // System.err.println(message);
+        // thrown.printStackTrace(System.err);
+        // }
+        // }
+        // return true;
+        // }
+        // });
 
         if (!doLogging) {
             // remove many messages from below libs that go out in the console

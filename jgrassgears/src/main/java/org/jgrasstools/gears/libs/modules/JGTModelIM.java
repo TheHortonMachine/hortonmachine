@@ -203,7 +203,8 @@ public abstract class JGTModelIM extends JGTModel {
                 writeWest, writeCols, writeRows, crs);
 
         for( File outRasterFile : outRasterFiles ) {
-            if (outRasterFile.exists()) {
+            File parentFile = outRasterFile.getParentFile();
+            if (parentFile != null && parentFile.exists()) {
                 WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(writeCols, writeRows, null, null,
                         JGTConstants.doubleNovalue);
                 RegionMap writeParams = CoverageUtilities.gridGeometry2RegionParamsMap(writeGridGeometry);
@@ -225,13 +226,14 @@ public abstract class JGTModelIM extends JGTModel {
             for( ImageMosaicReader reader : readers ) {
                 GridCoverage2D readGC = reader.read(readGeneralParameterValues);
                 readGridGeometry = readGC.getGridGeometry();
-                // read raster at once, since a randomiter is way slower
+                // read raster at once, since a randomiter is way slower when wrapping borders
                 Raster readRaster = readGC.getRenderedImage().getData();
                 RandomIter readIter = RandomIterFactory.create(readRaster, null);
                 inRasterIterators.add(readIter);
                 inRasters.add(readGC);
             }
         } catch (Exception e) {
+            pm.errorMessage("ERROR: could not read coverage for parameters: \n" + readGeneralParameterValues[0]);
             e.printStackTrace();
             freeIterators();
             return;
@@ -289,7 +291,6 @@ public abstract class JGTModelIM extends JGTModel {
         }
 
     }
-
     private void freeIterators() {
         for( RandomIter inRasterIterator : inRasterIterators ) {
             if (inRasterIterator != null)
