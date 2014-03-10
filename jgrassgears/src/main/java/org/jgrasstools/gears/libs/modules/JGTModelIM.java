@@ -246,28 +246,31 @@ public abstract class JGTModelIM extends JGTModel {
         minX = minX + gridRange2D.x;
         maxX = maxX + gridRange2D.x;
 
-        for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
-            for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
-                DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
-                GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
-                int readCol = worldToReadGrid.x;
-                int readRow = worldToReadGrid.y;
+        try {
+            for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
+                for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
+                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
+                    GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
+                    int readCol = worldToReadGrid.x;
+                    int readRow = worldToReadGrid.y;
 
-                if (readCol + cellBuffer > maxX || readCol - cellBuffer < minX || //
-                        readRow + cellBuffer > maxY || readRow - cellBuffer < minY) {
-                    continue;
+                    if (readCol + cellBuffer > maxX || readCol - cellBuffer < minX || //
+                            readRow + cellBuffer > maxY || readRow - cellBuffer < minY) {
+                        continue;
+                    }
+
+                    processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
                 }
-
-                processCell(readCol, readRow, writeCol, writeRow, readCols, readRows, writeCols, writeRows);
             }
-        }
 
-        for( RandomIter inRasterIterator : inRasterIterators ) {
-            inRasterIterator.done();
-        }
-        for( RandomIter outRasterIterator : outRasters ) {
-            if (outRasterIterator != null)
-                outRasterIterator.done();
+        } finally {
+            for( RandomIter inRasterIterator : inRasterIterators ) {
+                inRasterIterator.done();
+            }
+            for( RandomIter outRasterIterator : outRasters ) {
+                if (outRasterIterator != null)
+                    outRasterIterator.done();
+            }
         }
 
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
