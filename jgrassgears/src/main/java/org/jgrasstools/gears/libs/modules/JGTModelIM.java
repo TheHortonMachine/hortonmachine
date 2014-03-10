@@ -163,7 +163,7 @@ public abstract class JGTModelIM extends JGTModel {
                 processGeometryByTileCell(count, boundGeometry);
             } catch (Exception e) {
                 pm.errorMessage("Problems found for tile: " + boundGeometry.getUserData());
-                e.printStackTrace();
+                throw e;
             }
             // pm.worked(1);
         }
@@ -221,14 +221,20 @@ public abstract class JGTModelIM extends JGTModel {
         GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
                 readNorth, readSouth, readEast, readWest, crs);
 
-        for( ImageMosaicReader reader : readers ) {
-            GridCoverage2D readGC = reader.read(readGeneralParameterValues);
-            readGridGeometry = readGC.getGridGeometry();
-            // read raster at once, since a randomiter is way slower
-            Raster readRaster = readGC.getRenderedImage().getData();
-            RandomIter readIter = RandomIterFactory.create(readRaster, null);
-            inRasterIterators.add(readIter);
-            inRasters.add(readGC);
+        try {
+            for( ImageMosaicReader reader : readers ) {
+                GridCoverage2D readGC = reader.read(readGeneralParameterValues);
+                readGridGeometry = readGC.getGridGeometry();
+                // read raster at once, since a randomiter is way slower
+                Raster readRaster = readGC.getRenderedImage().getData();
+                RandomIter readIter = RandomIterFactory.create(readRaster, null);
+                inRasterIterators.add(readIter);
+                inRasters.add(readGC);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            freeIterators();
+            return;
         }
 
         GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
@@ -264,13 +270,7 @@ public abstract class JGTModelIM extends JGTModel {
             }
 
         } finally {
-            for( RandomIter inRasterIterator : inRasterIterators ) {
-                inRasterIterator.done();
-            }
-            for( RandomIter outRasterIterator : outRasters ) {
-                if (outRasterIterator != null)
-                    outRasterIterator.done();
-            }
+            freeIterators();
         }
 
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
@@ -288,6 +288,17 @@ public abstract class JGTModelIM extends JGTModel {
             }
         }
 
+    }
+
+    private void freeIterators() {
+        for( RandomIter inRasterIterator : inRasterIterators ) {
+            if (inRasterIterator != null)
+                inRasterIterator.done();
+        }
+        for( RandomIter outRasterIterator : outRasters ) {
+            if (outRasterIterator != null)
+                outRasterIterator.done();
+        }
     }
 
     protected void makeMosaic() throws Exception {
