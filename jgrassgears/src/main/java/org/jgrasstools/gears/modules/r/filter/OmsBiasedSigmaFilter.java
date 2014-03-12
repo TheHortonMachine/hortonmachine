@@ -18,12 +18,12 @@
 package org.jgrasstools.gears.modules.r.filter;
 
 import static java.lang.Math.abs;
-import static java.lang.Math.min;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 
@@ -42,7 +42,6 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.GridNode;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -58,90 +57,90 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @License(OMSHYDRO_LICENSE)
 public class OmsBiasedSigmaFilter extends JGTModel {
 
-	@Description("The input raster")
-	@In
-	public GridCoverage2D inGeodata;
+    @Description("The input raster")
+    @In
+    public GridCoverage2D inGeodata;
 
-	@Description("The output raster")
-	@Out
-	public GridCoverage2D outGeodata;
+    @Description("The filter windows in cells.")
+    @In
+    public int pWindow = 3;
 
-	@Execute
-	public void process() throws Exception {
-		checkNull(inGeodata);
+    @Description("The output raster")
+    @Out
+    public GridCoverage2D outGeodata;
 
-		RegionMap regionMap = CoverageUtilities
-				.getRegionParamsFromGridCoverage(inGeodata);
+    @Execute
+    public void process() throws Exception {
+        checkNull(inGeodata);
 
-		int cols = regionMap.getCols();
-		int rows = regionMap.getRows();
-		double xres = regionMap.getXres();
-		double yres = regionMap.getYres();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
 
-		RandomIter inIter = CoverageUtilities.getRandomIterator(inGeodata);
-		WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(
-				cols, rows, null, null, doubleNovalue);
-		WritableRandomIter outIter = CoverageUtilities
-				.getWritableRandomIterator(outWR);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
 
-		pm.beginTask("Processing filter...", cols - 2);
-		for (int c = 1; c < cols - 1; c++) {
-			for (int r = 1; r < rows - 1; r++) {
-				GridNode node = new GridNode(inIter, cols, rows, xres, yres, c,
-						r);
-				if (node.isValid() && !node.touchesBound()) {
-					double[][] window = node.getWindow(3, false);
+        RandomIter inIter = CoverageUtilities.getRandomIterator(inGeodata);
+        WritableRaster outWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, doubleNovalue);
+        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
-					double elevation = node.elevation;
-					double sumUpper = 0;
-					double countUpper = 0;
-					double sumLower = 0;
-					double countLower = 0;
+        int part = (pWindow - 1) / 2;
 
-					for (int i = 0; i < window.length; i++) {
-						for (int j = 0; j < window[0].length; j++) {
-							if (i == 1 && j == 1) {
-								continue;
-							}
-							if (window[i][j] >= elevation) {
-								sumUpper = sumUpper + window[i][j];
-								countUpper++;
-							} else {
-								sumLower = sumLower + window[i][j];
-								countLower++;
-							}
-						}
-					}
+        pm.beginTask("Processing filter...", cols - (pWindow - 1));
+        for( int c = part; c < cols - part; c++ ) {
+            for( int r = part; r < rows - part; r++ ) {
+                GridNode node = new GridNode(inIter, cols, rows, xres, yres, c, r);
+                if (node.isValid() && !node.touchesBound()) {
+                    double[][] window = node.getWindow(pWindow, false);
 
-					double avgUpper = sumUpper / countUpper;
-					double avgLower = sumLower / countLower;
-					double value = 0;
-					if (countUpper == 0) {
-						value = avgLower;
-					} else if (countLower == 0) {
-						value = avgUpper;
-					} else {
-						double deltaUpper = abs(elevation - avgUpper);
-						double deltaLower = abs(elevation - avgLower);
-						if (deltaUpper < deltaLower) {
-							value = avgUpper;
-						} else {
-							value = avgLower;
-						}
-					}
-					if (isNovalue(value)) {
-						throw new ModelsIllegalargumentException("Found NaN",
-								this, pm);
-					}
-					outIter.setSample(c, r, 0, value);
-				}
-			}
-			pm.worked(1);
-		}
-		pm.done();
+                    double elevation = node.elevation;
+                    double sumUpper = 0;
+                    double countUpper = 0;
+                    double sumLower = 0;
+                    double countLower = 0;
 
-		outGeodata = CoverageUtilities.buildCoverage("sigma", outWR, regionMap,
-				inGeodata.getCoordinateReferenceSystem());
-	}
+                    for( int i = 0; i < window.length; i++ ) {
+                        for( int j = 0; j < window[0].length; j++ ) {
+                            if (i == 1 && j == 1) {
+                                continue;
+                            }
+                            if (window[i][j] >= elevation) {
+                                sumUpper = sumUpper + window[i][j];
+                                countUpper++;
+                            } else {
+                                sumLower = sumLower + window[i][j];
+                                countLower++;
+                            }
+                        }
+                    }
+
+                    double avgUpper = sumUpper / countUpper;
+                    double avgLower = sumLower / countLower;
+                    double value = 0;
+                    if (countUpper == 0) {
+                        value = avgLower;
+                    } else if (countLower == 0) {
+                        value = avgUpper;
+                    } else {
+                        double deltaUpper = abs(elevation - avgUpper);
+                        double deltaLower = abs(elevation - avgLower);
+                        if (deltaUpper < deltaLower) {
+                            value = avgUpper;
+                        } else {
+                            value = avgLower;
+                        }
+                    }
+                    if (!isNovalue(value)) {
+                        outIter.setSample(c, r, 0, value);
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+        outIter.done();
+
+        outGeodata = CoverageUtilities.buildCoverage("sigma", outWR, regionMap, inGeodata.getCoordinateReferenceSystem());
+    }
 
 }

@@ -100,7 +100,11 @@ public class OmsVectorOverlayOperators extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inMap1, inMap2);
+        if (pType.equals(UNION)) {
+            checkNull(inMap1);
+        } else {
+            checkNull(inMap1, inMap2);
+        }
 
         CoordinateReferenceSystem crs = inMap1.getSchema().getCoordinateReferenceSystem();
 
@@ -112,19 +116,26 @@ public class OmsVectorOverlayOperators extends JGTModel {
 
         GeometryFactory gf = GeometryUtilities.gf();
         List<Geometry> geoms1 = FeatureUtilities.featureCollectionToGeometriesList(inMap1, false, null);
-        List<Geometry> geoms2 = FeatureUtilities.featureCollectionToGeometriesList(inMap2, false, null);
-
         GeometryCollection geometryCollection1 = new GeometryCollection(geoms1.toArray(new Geometry[0]), gf);
-        GeometryCollection geometryCollection2 = new GeometryCollection(geoms2.toArray(new Geometry[0]), gf);
         Geometry g1 = geometryCollection1.buffer(0);
-        Geometry g2 = geometryCollection2.buffer(0);
+
+        Geometry g2 = null;
+        if (inMap2 != null) {
+            List<Geometry> geoms2 = FeatureUtilities.featureCollectionToGeometriesList(inMap2, false, null);
+            GeometryCollection geometryCollection2 = new GeometryCollection(geoms2.toArray(new Geometry[0]), gf);
+            g2 = geometryCollection2.buffer(0);
+        }
 
         pm.beginTask("Performing overlay operation...", IJGTProgressMonitor.UNKNOWN);
         Geometry resultingGeometryCollection = null;
         if (pType.equals(INTERSECTION)) {
             resultingGeometryCollection = g1.intersection(g2);
         } else if (pType.equals(UNION)) {
-            resultingGeometryCollection = g1.union(g2);
+            if (inMap2 != null) {
+                resultingGeometryCollection = g1.union(g2);
+            } else {
+                resultingGeometryCollection = g1.union();
+            }
         } else if (pType.equals(DIFFERENCE)) {
             resultingGeometryCollection = g1.difference(g2);
         } else if (pType.equals(SYMDIFFERENCE)) {
