@@ -40,6 +40,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,6 +51,7 @@ import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -73,6 +75,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.Envelope2D;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.r.rangelookup.OmsRangeLookup;
@@ -123,6 +126,14 @@ public class OmsVectorizer extends JGTModel {
     @In
     public boolean doRegioncheck = false;
 
+    @Description("Don't consider values, use value-nvalue mask.")
+    @In
+    public boolean doMask = false;
+
+    @Description("A threshold to set on the values before masking (values below are nulled).")
+    @In
+    public double pMaskThreshold = Double.NaN;
+
     @Description(OMSVECTORIZER_outVector_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
@@ -156,9 +167,9 @@ public class OmsVectorizer extends JGTModel {
             classes = "NaN," + pValue + ",NaN";
 
             String ranges = sb.toString();
-            
+
             pm.beginTask("Extract range: " + ranges, IJGTProgressMonitor.UNKNOWN);
-            
+
             // values are first classified, since the vectorializer works on same values
             OmsRangeLookup cont = new OmsRangeLookup();
             cont.inRaster = inRaster;
@@ -167,8 +178,12 @@ public class OmsVectorizer extends JGTModel {
             cont.pm = pm;
             cont.process();
             inRaster = cont.outRaster;
-            
+
             pm.done();
+        }
+
+        if (doMask) {
+            inRaster = maskRaster();
         }
 
         pm.beginTask("Vectorizing map...", IJGTProgressMonitor.UNKNOWN);
@@ -230,9 +245,46 @@ public class OmsVectorizer extends JGTModel {
         }
     }
 
+    private GridCoverage2D maskRaster() {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        int nCols = regionMap.getCols();
+        int nRows = regionMap.getRows();
+
+        RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
+        WritableRaster[] holder = new WritableRaster[1];
+        GridCoverage2D outGC = CoverageUtilities.createCoverageFromTemplate(inRaster, JGTConstants.doubleNovalue, holder);
+        WritableRandomIter outIter = RandomIterFactory.createWritable(holder[0], null);
+
+        pm.beginTask("Masking map...", nRows);
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                double value = rasterIter.getSampleDouble(c, r, 0);
+                boolean doNull = false;
+                if (!isNovalue(value)) {
+                    if (!Double.isNaN(pMaskThreshold)) {
+                        // check threshold
+                        if (value < pMaskThreshold) {
+                            doNull = true;
+                        } else {
+                            doNull = false;
+                        }
+                    }
+                } else {
+                    doNull = true;
+                }
+                if (!doNull)
+                    outIter.setSample(c, r, 0, 1);
+            }
+            System.out.println();
+            pm.worked(1);
+        }
+        pm.done();
+        return outGC;
+    }
+
     private void doRegionCheck() throws TransformException {
         if (doRegioncheck) {
-            
+
             int left = Integer.MAX_VALUE;
             int right = -Integer.MAX_VALUE;
             int top = -Integer.MAX_VALUE;
@@ -241,9 +293,9 @@ public class OmsVectorizer extends JGTModel {
             RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
             int cols = regionMap.getCols();
             int rows = regionMap.getRows();
-            
+
             pm.beginTask("Try to shrink the region over covered area...", cols);
-            RandomIter rasterIter =  CoverageUtilities.getRandomIterator(inRaster);
+            RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
             for( int c = 0; c < cols; c++ ) {
                 for( int r = 0; r < rows; r++ ) {
                     double value = rasterIter.getSampleDouble(c, r, 0);
