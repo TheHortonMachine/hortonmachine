@@ -197,7 +197,7 @@ public class OmsVectorizer extends JGTModel {
         double yRes = regionParams.get(CoverageUtilities.YRES);
 
         final AffineTransform mt2D = (AffineTransform) inRaster.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
-        final AffineTransformation jtsTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
+        final AffineTransformation awt2WorldTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),
                 mt2D.getTranslateX() - xRes / 2.0, mt2D.getShearY(), mt2D.getScaleY(), mt2D.getTranslateY() + yRes / 2.0);
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -225,7 +225,7 @@ public class OmsVectorizer extends JGTModel {
             if (userData instanceof Double) {
                 tmpValue = (Double) userData;
             }
-            polygon.apply(jtsTransformation);
+            polygon.apply(awt2WorldTransformation);
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
             if (doRemoveHoles) {

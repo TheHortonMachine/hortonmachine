@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -396,4 +397,21 @@ public class FileUtilities {
         writeFile(list, tempFile);
         return tempFile;
     }
+
+    /**
+     * Get the list of files in a folder by its extension.
+     * 
+     * @param folderPath the folder path.
+     * @param ext the extension without the dot.
+     * @return the list of files patching.
+     */
+    public static File[] getFilesListByExtention( String folderPath, final String ext ) {
+        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter(){
+            public boolean accept( File dir, String name ) {
+                return name.endsWith(ext);
+            }
+        });
+        return shpFiles;
+    }
+
 }
