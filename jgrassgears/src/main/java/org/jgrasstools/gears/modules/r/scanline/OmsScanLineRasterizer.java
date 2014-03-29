@@ -285,7 +285,7 @@ public class OmsScanLineRasterizer extends JGTModel {
                                                  * the part in between has to be filled
                                                  */
                                                 for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                                    if (inIter != null) {
+                                                    if (inIter != null && fCat == null) {
                                                         double v = inIter.getSampleDouble(k, r, 0);
                                                         outWR.setSample(k, r, 0, v);
                                                     } else {
