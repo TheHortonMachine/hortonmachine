@@ -49,8 +49,6 @@ import oms3.annotations.Status;
 
 import org.jgrasstools.gears.libs.modules.JGTModelIM;
 import org.jgrasstools.gears.utils.colors.ColorTables;
-import org.jgrasstools.hortonmachine.i18n.HortonMessageHandler;
-import org.jgrasstools.hortonmachine.modules.geomorphology.aspect.OmsAspectIM;
 
 @Description(OMSCURVATURES_DESCRIPTION)
 @Documentation(OMSCURVATURES_DOCUMENTATION)
@@ -100,6 +98,8 @@ public class OmsCurvaturesIM extends JGTModelIM {
 
         makeMosaic();
         makeStyle(ColorTables.extrainbow, 0, 1);
+        
+        dispose();
     }
 
     @Override

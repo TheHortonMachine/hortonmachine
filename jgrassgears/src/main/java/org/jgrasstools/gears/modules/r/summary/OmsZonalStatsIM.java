@@ -199,6 +199,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
             tm_usertm_tactivecells[0] = tm_usertm_tactivecells[0] / tm_usertm_tactivecells[2];
             pm.message("Total mean: " + tm_usertm_tactivecells[0]);
         }
+
+        dispose();
     }
 
     protected void processCell( int readCol, int readRow, int writeCol, int writeRow, int readCols, int readRows, int writeCols,

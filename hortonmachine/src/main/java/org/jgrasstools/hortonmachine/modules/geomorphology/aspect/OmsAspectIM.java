@@ -96,6 +96,8 @@ public class OmsAspectIM extends JGTModelIM {
 
         makeMosaic();
         makeStyle(ColorTables.aspect, 0, 360);
+        
+        dispose();
     }
 
     @Override

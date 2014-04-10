@@ -89,6 +89,8 @@ public class OmsGeomorphonIM extends JGTModelIM {
 
         makeMosaic();
         makeStyle(ColorTables.geomorphon, 1000, 1008);
+        
+        dispose();
     }
 
     @Override

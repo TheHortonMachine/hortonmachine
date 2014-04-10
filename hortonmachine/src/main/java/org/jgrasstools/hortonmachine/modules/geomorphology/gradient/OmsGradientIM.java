@@ -94,6 +94,8 @@ public class OmsGradientIM extends JGTModelIM {
 
         makeMosaic();
         makeStyle(ColorTables.extrainbow, 0, 1);
+        
+        dispose();
     }
 
     @Override
