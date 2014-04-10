@@ -280,6 +280,9 @@ public abstract class JGTModelIM extends JGTModel {
             GridCoverage2D writeGC = outGridCoverages.get(i);
             if (writeGC != null) {
                 File outParentFolder = outputFile.getParentFile();
+                if (outParentFolder == null || !outParentFolder.exists()) {
+                    continue;
+                }
                 String outBaseName = FileUtilities.getNameWithoutExtention(outputFile);
                 File outTileFile = new File(outParentFolder, outBaseName + "_" + count + ".tiff");
                 OmsRasterWriter writer = new OmsRasterWriter();
@@ -305,23 +308,33 @@ public abstract class JGTModelIM extends JGTModel {
     protected void makeMosaic() throws Exception {
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
             File outputFile = outRasterFiles.get(i);
-            File outParentFolder = outputFile.getParentFile();
-            OmsImageMosaicCreator im = new OmsImageMosaicCreator();
-            im.inFolder = outParentFolder.getAbsolutePath();
-            im.process();
+            if (outputFile != null) {
+                File outParentFolder = outputFile.getParentFile();
+                if (outParentFolder == null || !outParentFolder.exists()) {
+                    continue;
+                }
+                OmsImageMosaicCreator im = new OmsImageMosaicCreator();
+                im.inFolder = outParentFolder.getAbsolutePath();
+                im.process();
+            }
         }
     }
 
     protected void makeStyle( ColorTables colorTable, double min, double max ) throws Exception {
         for( int i = 0; i < outRasterFiles.size(); i++ ) {
             File outputFile = outRasterFiles.get(i);
-            File outParentFolder = outputFile.getParentFile();
-            if (colorTable == null)
-                colorTable = ColorTables.extrainbow;
-            String name = outParentFolder.getName();
-            String style = RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0);
-            File styleFile = new File(outParentFolder, name + ".sld");
-            FileUtilities.writeFile(style, styleFile);
+            if (outputFile != null) {
+                File outParentFolder = outputFile.getParentFile();
+                if (outParentFolder == null || !outParentFolder.exists()) {
+                    continue;
+                }
+                if (colorTable == null)
+                    colorTable = ColorTables.extrainbow;
+                String name = outParentFolder.getName();
+                String style = RasterStyleUtilities.createStyleForColortable(colorTable.name(), min, max, null, 1.0);
+                File styleFile = new File(outParentFolder, name + ".sld");
+                FileUtilities.writeFile(style, styleFile);
+            }
         }
     }
 
