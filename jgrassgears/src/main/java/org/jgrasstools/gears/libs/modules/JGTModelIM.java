@@ -21,7 +21,9 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -33,6 +35,8 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
@@ -78,7 +82,12 @@ public abstract class JGTModelIM extends JGTModel {
     protected GridGeometry2D readGridGeometry;
 
     protected void addSource( File imageMosaicSource ) throws IOException {
-        ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
+
+        URL imageMosaicUrl = imageMosaicSource.toURI().toURL();
+        final AbstractGridFormat imageMosaicFormat = (AbstractGridFormat) GridFormatFinder.findFormat(imageMosaicUrl);
+        final ImageMosaicReader imReader = (ImageMosaicReader) imageMosaicFormat.getReader(imageMosaicUrl);
+        // ImageMosaicReader imReader = new ImageMosaicReader(imageMosaicSource);
+
         if (readers.size() == 0) {
             File propertiesFile = FileUtilities.substituteExtention(imageMosaicSource, "properties");
             HashMap<String, String> propertiesMap = FileUtilities
@@ -222,8 +231,9 @@ public abstract class JGTModelIM extends JGTModel {
         GeneralParameterValue[] readGeneralParameterValues = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
                 readNorth, readSouth, readEast, readWest, crs);
 
-        try {
-            for( ImageMosaicReader reader : readers ) {
+        int index = 0;
+        for( ImageMosaicReader reader : readers ) {
+            try {
                 GridCoverage2D readGC = reader.read(readGeneralParameterValues);
                 readGridGeometry = readGC.getGridGeometry();
                 // read raster at once, since a randomiter is way slower when wrapping borders
@@ -231,12 +241,19 @@ public abstract class JGTModelIM extends JGTModel {
                 RandomIter readIter = RandomIterFactory.create(readRaster, null);
                 inRasterIterators.add(readIter);
                 inRasters.add(readGC);
+                index++;
+            } catch (Exception e) {
+                StringBuilder errSb = new StringBuilder();
+                errSb.append("ERROR: could not read coverage for parameters: \n");
+                errSb.append(readGeneralParameterValues[0]);
+                errSb.append("ERROR: with reader N." + index + ": " + Arrays.toString(reader.getGridCoverageNames()));
+                errSb.append("\nERROR: " + e.getLocalizedMessage());
+                pm.errorMessage(errSb.toString());
+                freeIterators();
+                // e.printStackTrace();
+                // return;
+                throw new IOException("Problems reading Mosaic!");
             }
-        } catch (Exception e) {
-            pm.errorMessage("ERROR: could not read coverage for parameters: \n" + readGeneralParameterValues[0]);
-            e.printStackTrace();
-            freeIterators();
-            return;
         }
 
         GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
@@ -294,6 +311,7 @@ public abstract class JGTModelIM extends JGTModel {
         }
 
     }
+
     private void freeIterators() {
         for( RandomIter inRasterIterator : inRasterIterators ) {
             if (inRasterIterator != null)
@@ -335,6 +353,15 @@ public abstract class JGTModelIM extends JGTModel {
                 File styleFile = new File(outParentFolder, name + ".sld");
                 FileUtilities.writeFile(style, styleFile);
             }
+        }
+    }
+
+    /**
+     * Disposes resources.
+     */
+    protected void dispose() {
+        for( ImageMosaicReader reader : readers ) {
+            reader.dispose();
         }
     }
 
