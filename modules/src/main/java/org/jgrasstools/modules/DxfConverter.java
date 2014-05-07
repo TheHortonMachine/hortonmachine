@@ -92,5 +92,4 @@ public class DxfConverter extends JGTModel {
         dumpVector(dxfconverter.lineVector, lineVector);
         dumpVector(dxfconverter.polygonVector, polygonVector);
     }
-
 }

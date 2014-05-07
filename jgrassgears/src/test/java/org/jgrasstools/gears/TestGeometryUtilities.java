@@ -51,6 +51,25 @@ public class TestGeometryUtilities extends HMTestCase {
         negul = new Coordinate(-1, 1);
     }
 
+    public void testCoordinateAzimuth() throws Exception {
+        double azimuth = GeometryUtilities.azimuth(ll, ur);
+        assertEquals(45.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(ul, lr);
+        assertEquals(135.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(ur, ll);
+        assertEquals(225.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(lr, ul);
+        assertEquals(315.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(ll, ul);
+        assertEquals(0.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(ul, ll);
+        assertEquals(180.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(ll, lr);
+        assertEquals(90.0, azimuth, DELTA);
+        azimuth = GeometryUtilities.azimuth(lr, ll);
+        assertEquals(270.0, azimuth, DELTA);
+    }
+    
     public void testAnglesAndAzimuth() throws Exception {
         LineSegment ls1 = new LineSegment(ll, ul);
         LineSegment ls2 = new LineSegment(ll, ur);
