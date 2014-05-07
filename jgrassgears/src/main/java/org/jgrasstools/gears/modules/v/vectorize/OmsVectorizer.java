@@ -275,7 +275,6 @@ public class OmsVectorizer extends JGTModel {
                 if (!doNull)
                     outIter.setSample(c, r, 0, 1);
             }
-            System.out.println();
             pm.worked(1);
         }
         pm.done();
