@@ -74,7 +74,11 @@ public class LasUtils {
     private static DateTime gpsEpoch = new DateTime(1980, 1, 6, 0, 0, 0, 0, DateTimeZone.UTC);
     private static DateTime javaEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeZone.UTC);
 
-    public enum POINTTYPE {
+    public static enum VALUETYPE {
+        ELEVATION, GROUNDELEVATION, CLASSIFICATION, INTENSITY, IMPULSE, NUM_OF_IMPULSES, X, Y
+    }
+
+    public static enum POINTTYPE {
         UNCLASSIFIED(1, "UNCLASSIFIED"), //
         GROUND(2, "GROUND"), //
         VEGETATION_MIN(3, "LOW VEGETATION"), //
@@ -400,4 +404,97 @@ public class LasUtils {
         return true;
     }
 
+    /**
+     * Calculate the avg of a value in a list of {@link LasRecord}s.
+     * 
+     * @param points the records.
+     * @param valueType the value to consider. 
+     * @return the avg.
+     */
+    public static double avg( List<LasRecord> points, VALUETYPE valueType ) {
+        double sum = 0;
+        int count = 0;
+        for( LasRecord lasRecord : points ) {
+            sum = sum + getValue(valueType, lasRecord);
+            count++;
+        }
+        double avg = sum / count;
+        return avg;
+    }
+
+    private static double getValue( VALUETYPE valueType, LasRecord lasRecord ) {
+        switch( valueType ) {
+        case ELEVATION:
+            return lasRecord.z;
+        case GROUNDELEVATION:
+            return lasRecord.groundElevation;
+        case CLASSIFICATION:
+            return lasRecord.classification;
+        case INTENSITY:
+            return lasRecord.intensity;
+        case IMPULSE:
+            return lasRecord.returnNumber;
+        case NUM_OF_IMPULSES:
+            return lasRecord.numberOfReturns;
+        case X:
+            return lasRecord.x;
+        case Y:
+            return lasRecord.y;
+        }
+        return Double.NaN;
+    }
+
+    /**
+     * Calculate the histogram of a list of {@link LasRecord}s.
+     * 
+     * @param points the list of points.
+     * @param valueType the value to consider.
+     * @param bins the number of bins.
+     * @return the histogram as matrix of rows num like bins and 3 columns for [binCenter, count, cummulated-normalize-count].
+     */
+    public static double[][] histogram( List<LasRecord> points, VALUETYPE valueType, int bins ) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        for( LasRecord lasRecord : points ) {
+            double value = getValue(valueType, lasRecord);
+            min = Math.min(min, value);
+            max = Math.max(max, value);
+        }
+
+        double range = max - min;
+        double step = range / bins;
+        double[][] histogram = new double[bins][3];
+        for( int i = 0; i < histogram.length; i++ ) {
+            histogram[i][0] = min + step * (i + 1);
+        }
+
+        for( LasRecord lasRecord : points ) {
+            double value = getValue(valueType, lasRecord);
+            for( int j = 0; j < histogram.length; j++ ) {
+                if (value <= histogram[j][0]) {
+                    histogram[j][1] = histogram[j][1] + 1;
+                    break;
+                }
+            }
+        }
+
+        double cumulatedMax = 0;
+        for( int i = 0; i < histogram.length; i++ ) {
+            if (i == 0) {
+                histogram[i][2] = histogram[i][1];
+            } else {
+                histogram[i][2] = (histogram[i - 1][2] + histogram[i][1]);
+            }
+            cumulatedMax = histogram[i][2];
+        }
+
+        for( int i = 0; i < histogram.length; i++ ) {
+            histogram[i][2] = histogram[i][2] / cumulatedMax;
+            // and  move the bin markers to their centers
+            histogram[i][0] = histogram[i][0] - step / 2.0;
+        }
+
+        return histogram;
+    }
 }

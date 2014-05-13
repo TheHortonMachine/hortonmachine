@@ -266,7 +266,7 @@ public class FeatureUtilities {
             } else if (typeIndex == 1) {
                 yIndex = i;
             } else {
-                Class<?> class1 = typesMap.get(typesArray[typeIndex]);
+                Class< ? > class1 = typesMap.get(typesArray[typeIndex]);
                 b.add(fieldName, class1);
             }
         }
@@ -881,4 +881,88 @@ public class FeatureUtilities {
 
         return coordinatesList;
     }
+
+    /**
+     * Calculate the avg of a value in a list of {@link SimpleFeature}s.
+     * 
+     * <p>Empty records are ignored.
+     * 
+     * @param features the features.
+     * @param field the field to consider. 
+     * @return the avg.
+     */
+    public static double avg( List<SimpleFeature> features, String field ) {
+        double sum = 0;
+        int count = 0;
+        for( SimpleFeature feature : features ) {
+            Object attribute = feature.getAttribute(field);
+            if (attribute instanceof Number) {
+                sum = sum + ((Number) attribute).doubleValue();
+                count++;
+            }
+        }
+        double avg = sum / count;
+        return avg;
+    }
+
+    /**
+     * Calculate the histogram of a list of {@link SimpleFeature}s.
+     * 
+     * @param features the list of features.
+     * @param field the field to consider. 
+     * @param bins the number of bins.
+     * @return the histogram as matrix of rows num like bins and 3 columns for [binCenter, count, cumulated-normalize-count].
+     */
+    public static double[][] histogram( List<SimpleFeature> features, String field, int bins ) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+
+        for( SimpleFeature feature : features ) {
+            Object attribute = feature.getAttribute(field);
+            if (attribute instanceof Number) {
+                double value = ((Number) attribute).doubleValue();
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+            }
+        }
+
+        double range = max - min;
+        double step = range / bins;
+        double[][] histogram = new double[bins][3];
+        for( int i = 0; i < histogram.length; i++ ) {
+            histogram[i][0] = min + step * (i + 1);
+        }
+
+        for( SimpleFeature feature : features ) {
+            Object attribute = feature.getAttribute(field);
+            if (attribute instanceof Number) {
+                double value = ((Number) attribute).doubleValue();
+                for( int j = 0; j < histogram.length; j++ ) {
+                    if (value <= histogram[j][0]) {
+                        histogram[j][1] = histogram[j][1] + 1;
+                        break;
+                    }
+                }
+            }
+        }
+
+        double cumulatedMax = 0;
+        for( int i = 0; i < histogram.length; i++ ) {
+            if (i == 0) {
+                histogram[i][2] = histogram[i][1];
+            } else {
+                histogram[i][2] = (histogram[i - 1][2] + histogram[i][1]);
+            }
+            cumulatedMax = histogram[i][2];
+        }
+
+        for( int i = 0; i < histogram.length; i++ ) {
+            histogram[i][2] = histogram[i][2] / cumulatedMax;
+            // and move the bin markers to their centers
+            histogram[i][0] = histogram[i][0] - step / 2.0;
+        }
+
+        return histogram;
+    }
+
 }
