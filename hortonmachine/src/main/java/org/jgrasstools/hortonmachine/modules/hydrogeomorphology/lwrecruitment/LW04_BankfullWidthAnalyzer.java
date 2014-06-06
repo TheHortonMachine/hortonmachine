@@ -91,27 +91,27 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
 
     private int NEW_NETWORK_ATTRIBUTES_NUM = 2;
 
-    double MAX_DISTANCE_FROM_NETPOINT = 100.0;
+    private double MAX_DISTANCE_FROM_NETPOINT = 100.0;
     /**
      * The maximum distance that a point can have from the nearest polygon. If
      * distance is major, then the netpoint is ignored and identified as outside 
      * the region of interest.  
      */
-    double MAX_NETWORK_WIDTH = 100;
+    private double MAX_NETWORK_WIDTH = 100;
     /**
      * The maximum width for the channel network
      */
-    double MIN_NETWORK_WIDTH = 0.5;
+    private double MIN_NETWORK_WIDTH = 0.5;
     /**
      * The minimum width for the channel network
      */
 
     // error messages
-    String NEAREST_CHANNEL_POLYGON_TOO_FAR_FROM_POINT = "nearest channeledit polygon is too far from point";
-    String NO_CHANNELEDIT_POLYGON_FOUND = "no channeledit polygon found";
-    String FOUND_INVALID_NETWORK_WIDTH_LARGE = "invalid network width (too large)";
-    String FOUND_INVALID_NETWORK_WIDTH_SMALL = "invalid network width (too small)";
-    String NO_PROPER_INTERSECTION_WITH_CHANNELEDIT = "no proper intersection with channeledit";
+    private String NEAREST_CHANNEL_POLYGON_TOO_FAR_FROM_POINT = "nearest channeledit polygon is too far from point";
+    private String NO_CHANNELEDIT_POLYGON_FOUND = "no channeledit polygon found";
+    private String FOUND_INVALID_NETWORK_WIDTH_LARGE = "invalid network width (too large)";
+    private String FOUND_INVALID_NETWORK_WIDTH_SMALL = "invalid network width (too small)";
+    private String NO_PROPER_INTERSECTION_WITH_CHANNELEDIT = "no proper intersection with channeledit";
 
     @Execute
     public void process() throws Exception {
