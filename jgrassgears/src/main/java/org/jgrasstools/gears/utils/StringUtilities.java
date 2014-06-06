@@ -125,4 +125,22 @@ public class StringUtilities {
         return s;
     }
 
+    /**
+     * Convert a string containing a list of numbers into its array.
+     * 
+     * @param string the string containing numbers.
+     * @param separator the number separator.
+     * @return the array of values.
+     */
+    public static double[] stringToDoubleArray( String string, String separator ) {
+        if (separator == null) {
+            separator = ",";
+        }
+        String[] stringSplit = string.trim().split(separator);
+        double[] array = new double[stringSplit.length];
+        for( int i = 0; i < array.length; i++ ) {
+            array[i] = Double.parseDouble(stringSplit[i].trim());
+        }
+        return array;
+    }
 }
