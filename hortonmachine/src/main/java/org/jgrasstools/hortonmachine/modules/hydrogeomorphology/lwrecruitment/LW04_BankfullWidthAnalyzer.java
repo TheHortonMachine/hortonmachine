@@ -145,7 +145,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
             ConcurrentHashMap<SimpleFeature, double[]> netPointsMap, ConcurrentHashMap<SimpleFeature, double[]> validPointsMap,
             ConcurrentHashMap<SimpleFeature, String> problemPointsMap, ConcurrentLinkedQueue<Object[]> validPointsLineList ) {
 
-        // index the bankfull geoms
+        // index the bankfull geometries
         List<Geometry> channelGeometriesList = FeatureUtilities.featureCollectionToGeometriesList(channeleditedFC, true, null);
         STRtree channelIndex = new STRtree(channelGeometriesList.size());
         for( Geometry channelGeometry : channelGeometriesList ) {
@@ -156,7 +156,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
         Set<Entry<SimpleFeature, double[]>> entrySet = netPointsMap.entrySet();
         pm.beginTask("Calculating channel edited width...", entrySet.size());
         /*
-         * Main cicle over all the channel points to extract the bakfull width
+         * Main cycle over all the channel points to extract the bakfull width
          */
         for( Entry<SimpleFeature, double[]> entry : entrySet ) {
             SimpleFeature netFeature = entry.getKey();
