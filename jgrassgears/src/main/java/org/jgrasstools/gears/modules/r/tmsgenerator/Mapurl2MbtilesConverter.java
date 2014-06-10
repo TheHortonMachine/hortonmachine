@@ -170,9 +170,4 @@ public class Mapurl2MbtilesConverter extends JGTModel {
         mbtilesHelper.close();
     }
 
-    public static void main( String[] args ) throws Exception {
-        Mapurl2MbtilesConverter m = new Mapurl2MbtilesConverter();
-        m.inFile = "/home/moovida/FIA_CASTELLO/geopaptiles/fia_castello.mapurl";
-        m.process();
-    }
 }

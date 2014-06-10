@@ -271,4 +271,5 @@ public class OmsOnlineTilesDownloader extends JGTModel {
         File propFile = new File(inFolder, pName + ".mapurl");
         FileUtilities.writeFile(properties.toString(), propFile);
     }
+
 }
