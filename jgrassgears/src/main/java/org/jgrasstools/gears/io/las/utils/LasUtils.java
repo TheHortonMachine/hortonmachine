@@ -33,8 +33,10 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.modules.utils.fileiterator.OmsFileIterator;
@@ -50,10 +52,12 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 
 /**
@@ -509,14 +513,16 @@ public class LasUtils {
      * 
      * @param lasPoints the list of points.
      * @param elevThres the optional threshold for true dsm calculation.
+     * @param useGround use the ground elevation instead of z.
      * @param pm the monitor.
      * @return the list of triangles.
      */
-    public static List<Geometry> las2Triangulation( List<LasRecord> lasPoints, Double elevThres, IJGTProgressMonitor pm ) {
+    public static List<Geometry> triangulate( List<LasRecord> lasPoints, Double elevThres, boolean useGround,
+            IJGTProgressMonitor pm ) {
         pm.beginTask("Triangulation...", -1);
         List<Coordinate> lasCoordinates = new ArrayList<Coordinate>();
         for( LasRecord lasRecord : lasPoints ) {
-            lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
+            lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, useGround ? lasRecord.groundElevation : lasRecord.z));
         }
         DelaunayTriangulationBuilder triangulationBuilder = new DelaunayTriangulationBuilder();
         triangulationBuilder.setSites(lasCoordinates);
@@ -539,15 +545,18 @@ public class LasUtils {
                 pm.worked(1);
                 Geometry geometryN = triangles.getGeometryN(i);
                 Coordinate[] coordinates = geometryN.getCoordinates();
-                double diff1 = abs(coordinates[0].z - coordinates[1].z);
+                double z0 = coordinates[0].z;
+                double z1 = coordinates[1].z;
+                double z2 = coordinates[2].z;
+                double diff1 = abs(z0 - z1);
                 if (diff1 > pElevThres) {
                     continue;
                 }
-                double diff2 = abs(coordinates[0].z - coordinates[2].z);
+                double diff2 = abs(z0 - z2);
                 if (diff2 > pElevThres) {
                     continue;
                 }
-                double diff3 = abs(coordinates[1].z - coordinates[2].z);
+                double diff3 = abs(z1 - z2);
                 if (diff3 > pElevThres) {
                     continue;
                 }
@@ -556,5 +565,61 @@ public class LasUtils {
             pm.done();
         }
         return trianglesList;
+    }
+
+    /**
+     * Smooths a set of las points through the IDW method.
+     * 
+     * <p>Note that the values in the original data are changed.
+     * 
+     * @param lasPoints the list of points to smooth.
+     * @param useGround if <code>true</code>, the ground elev is smoothed instead of the z. 
+     * @param idwBuffer the buffer around the points to consider for smoothing.
+     * @param pm the monitor.
+     */
+    public static void smoothIDW( List<LasRecord> lasPoints, boolean useGround, double idwBuffer, IJGTProgressMonitor pm ) {
+        List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
+        if (useGround) {
+            for( LasRecord dot : lasPoints ) {
+                Coordinate c = new Coordinate(dot.x, dot.y, dot.groundElevation);
+                coordinatesList.add(c);
+            }
+        } else {
+            for( LasRecord dot : lasPoints ) {
+                Coordinate c = new Coordinate(dot.x, dot.y, dot.z);
+                coordinatesList.add(c);
+            }
+        }
+
+        // make triangles tree
+        STRtree pointsTree = new STRtree(coordinatesList.size());
+        pm.beginTask("Make points tree...", coordinatesList.size());
+        for( Coordinate coord : coordinatesList ) {
+            pointsTree.insert(new Envelope(coord), coord);
+            pm.worked(1);
+        }
+        pm.done();
+
+        pm.beginTask("Interpolate...", coordinatesList.size());
+        for( int i = 0; i < coordinatesList.size(); i++ ) {
+            Coordinate coord = coordinatesList.get(i);
+            Envelope env = new Envelope(coord);
+            env.expandBy(idwBuffer);
+            List<Coordinate> nearPoints = pointsTree.query(env);
+            double avg = 0;
+            for( Coordinate coordinate : nearPoints ) {
+                avg += coordinate.z;
+            }
+            avg = avg / nearPoints.size();
+
+            LasRecord lasRecord = lasPoints.get(i);
+            if (useGround) {
+                lasRecord.groundElevation = avg;
+            } else {
+                lasRecord.z = avg;
+            }
+            pm.worked(1);
+        }
+        pm.done();
     }
 }
