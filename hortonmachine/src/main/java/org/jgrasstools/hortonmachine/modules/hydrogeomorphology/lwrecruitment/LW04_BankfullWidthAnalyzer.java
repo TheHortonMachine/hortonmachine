@@ -165,7 +165,7 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
             Object pfaf = netFeature.getAttribute(PFAF);
 
             double[] attributes = entry.getValue();
-            // expand the envelop of the point to verify if it is inside the area of interes
+            // expand the envelop of the point to verify if it is inside the area of interest
             Envelope env = new Envelope(netPoint.getCoordinate());
             env.expandBy(MAX_DISTANCE_FROM_NETPOINT);
             // consider the bankfull polygons
