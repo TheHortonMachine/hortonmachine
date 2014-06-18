@@ -1,12 +1,34 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
-import java.io.IOException;
 import java.util.List;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -22,6 +44,13 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
+@Description("Correct the bankfull width in the section of the channels point where a bridge or a check dam is found, set the attribute with the origin of the with to the corresponding value.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("network, vector, point, bankflull, width")
+@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
+@Name("LW05_BridgesDamsWidthAdder")
+@Status(Status.EXPERIMENTAL)
+@License("General Public License Version 3 (GPLv3)")
 public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
 
     @Description("The input hierarchy point network layer.")
@@ -117,15 +146,15 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
          * handles bridges
          */
 
-        // creates the new collection for bridges without the information of length
-        DefaultFeatureCollection zeroWidthBridges = new DefaultFeatureCollection();
+        // adds the bridges without the information of length to the output FC
+        outProblemBridges = new DefaultFeatureCollection();
         List<SimpleFeature> pontiList = FeatureUtilities.featureCollectionToList(inBridges);
         for( SimpleFeature pontiFeature : pontiList ) {
             Geometry pontiGeometry = (Geometry) pontiFeature.getDefaultGeometry();
             // check if there is a regular bridge length
             double length = (Double) pontiFeature.getAttribute(BRIDGE_LENGTH);
             if (length == 0.0) {
-                zeroWidthBridges.add(pontiFeature);
+                ((DefaultFeatureCollection) outProblemBridges).add(pontiFeature);
                 continue;
             }
 
@@ -157,8 +186,9 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
             }
         }
 
-        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-        newCollection.addAll(netList);
+        // adds the data to the output FC
+        outNetPoints = new DefaultFeatureCollection();
+        ((DefaultFeatureCollection) outNetPoints).addAll(netList);
 
     }
 
