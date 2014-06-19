@@ -17,19 +17,22 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
-import java.io.IOException;
 import java.util.List;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
@@ -43,6 +46,13 @@ import org.opengis.feature.simple.SimpleFeature;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
+@Description("Add the local slope attribute to the input channel point layer.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("network, vector, point, bankflull, width")
+@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
+@Name("LW06_SlopeToNetworkAdder")
+@Status(Status.EXPERIMENTAL)
+@License("General Public License Version 3 (GPLv3)")
 public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
 
     @Description("The input hierarchy point network layer.")
@@ -54,7 +64,7 @@ public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
     @In
     public GridCoverage2D inSlope = null;
 
-    @Description("The output points network layer with the additional attribute of average slope.")
+    @Description("The output points network layer with the additional attribute of local slope.")
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 
