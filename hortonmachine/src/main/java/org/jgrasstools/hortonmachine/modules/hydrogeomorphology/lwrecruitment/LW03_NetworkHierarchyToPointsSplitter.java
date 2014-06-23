@@ -122,8 +122,8 @@ public class LW03_NetworkHierarchyToPointsSplitter extends JGTModel {
      */
     public static void main( String[] args ) throws Exception {
 
-        String inNet = "D:/lavori_tmp/gsoc/net_attribute.shp";
-        String outNetPoint = "D:/lavori_tmp/gsoc/netpoints.shp";
+        String inNet = "D:/lavori_tmp/unibz/saldura/saldura_net_attribute.shp";
+        String outNetPoint = "D:/lavori_tmp/unibz/saldura/saldura_netpoints.shp";
         LW03_NetworkHierarchyToPointsSplitter networkHierarchyToPointSplitter = new LW03_NetworkHierarchyToPointsSplitter();
         networkHierarchyToPointSplitter.inNet = OmsVectorReader.readVector(inNet);
         
