@@ -51,6 +51,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.jgrasstools.gears.libs.modules.Direction;
@@ -81,6 +82,7 @@ public class OmsSlope extends JGTModel {
     public boolean doHandleNegativeSlope;
 
     @Description(OMSSLOPE_outSlope_DESCRIPTION)
+    @Unit("m/m")
     @Out
     public GridCoverage2D outSlope = null;
 
