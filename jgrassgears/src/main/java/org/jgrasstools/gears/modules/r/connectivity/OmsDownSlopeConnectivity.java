@@ -31,6 +31,7 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -61,6 +62,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Name("downslopeconnectivity")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
+@Bibliography("Geomorphometric assessment of spatial sediment connectivity in small Alpine catchments. - Cavalli et al. 2012")
 public class OmsDownSlopeConnectivity extends JGTModel {
 
     @Description("The map of flowdirections.")
