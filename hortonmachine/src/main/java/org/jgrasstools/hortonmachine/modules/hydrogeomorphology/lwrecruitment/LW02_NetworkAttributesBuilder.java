@@ -81,10 +81,10 @@ public class LW02_NetworkAttributesBuilder extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String inNet = "D:/lavori_tmp/unibz/strimmgadria/new/net_null.tif";
-        String inFlow = "D:/lavori_tmp/unibz/strimmgadria/new/flow_null.tif";
-        String inTca = "D:/lavori_tmp/unibz/strimmgadria/new/tca_null.tif";
-        String outNet = "D:/lavori_tmp/unibz/strimmgadria/strimmgadria_net_attribute.shp";
+        String inNet = "D:/lavori_tmp/gsoc/raster/net_null.asc";
+        String inFlow = "D:/lavori_tmp/gsoc/raster/flow.asc";
+        String inTca = "D:/lavori_tmp/gsoc/raster/tca.asc";
+        String outNet = "D:/lavori_tmp/gsoc/net_attribute.shp";
         LW02_NetworkAttributesBuilder networkAttributesBuilder = new LW02_NetworkAttributesBuilder();
         networkAttributesBuilder.inNet = inNet;
         networkAttributesBuilder.inFlow = inFlow;

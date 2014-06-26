@@ -95,7 +95,7 @@ public class LW06_SlopeToNetworkAdder extends JGTModel implements LWFields {
     }
     public static void main( String[] args ) throws Exception {
 
-        String inNetPoints = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams.shp";
+        String inNetPoints = "D:/lavori_tmp/gsoc/netpoints_width.shp";
         String inSlope = "D:/lavori_tmp/gsoc/raster/slope.asc";
 
         String outNetPoints = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope.shp";

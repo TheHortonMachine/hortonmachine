@@ -407,12 +407,12 @@ public class LW04_BankfullWidthAnalyzer extends JGTModel implements LWFields {
      * @throws Exception 
      */
     public static void main( String[] args ) throws Exception {
-        String inBankfull = "D:/lavori_tmp/unibz/strimmgadria/channeledited_merged.shp";
-        String inNetPoints = "D:/lavori_tmp/unibz/strimmgadria/results/strimmgadria_netpoints.shp";
+        String inBankfull = "D:/lavori_tmp/gsoc/channeledited_merged.shp";
+        String inNetPoints = "D:/lavori_tmp/gsoc/netpoints.shp";
 
-        String outNetPoints = "D:/lavori_tmp/unibz/strimmgadria/results/netpoints_width.shp";
-        String outProblemPoints = "D:/lavori_tmp/unibz/strimmgadria/results/netpoints_problems.shp";
-        String outBankfullSections = "D:/lavori_tmp/unibz/strimmgadria/results/bankfull_sections.shp";
+        String outNetPoints = "D:/lavori_tmp/gsoc/netpoints_width.shp";
+        String outProblemPoints = "D:/lavori_tmp/gsoc/netpoints_problems.shp";
+        String outBankfullSections = "D:/lavori_tmp/gsoc/bankfull_sections.shp";
 
         LW04_BankfullWidthAnalyzer bankfullWidthAnalyzer = new LW04_BankfullWidthAnalyzer();
         bankfullWidthAnalyzer.inBankfull = OmsVectorReader.readVector(inBankfull);
