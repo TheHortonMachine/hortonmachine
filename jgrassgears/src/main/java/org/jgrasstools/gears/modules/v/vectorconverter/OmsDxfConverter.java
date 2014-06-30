@@ -94,7 +94,7 @@ public class OmsDxfConverter extends JGTModel {
     private CoordinateReferenceSystem crs;
 
     @Execute
-    public void readFeatureCollection() throws Exception {
+    public void process() throws Exception {
         if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
             return;
         }

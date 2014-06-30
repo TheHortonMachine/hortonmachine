@@ -80,14 +80,14 @@ public class DxfConverter extends JGTModel {
     public String polygonVector = null;
 
     @Execute
-    public void readFeatureCollection() throws Exception {
+    public void process() throws Exception {
         OmsDxfConverter dxfconverter = new OmsDxfConverter();
         dxfconverter.file = file;
         dxfconverter.pCode = pCode;
         dxfconverter.pm = pm;
         dxfconverter.doProcess = doProcess;
         dxfconverter.doReset = doReset;
-        dxfconverter.readFeatureCollection();
+        dxfconverter.process();
         dumpVector(dxfconverter.pointsVector, pointsVector);
         dumpVector(dxfconverter.lineVector, lineVector);
         dumpVector(dxfconverter.polygonVector, polygonVector);
