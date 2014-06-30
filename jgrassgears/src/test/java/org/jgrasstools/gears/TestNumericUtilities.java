@@ -88,23 +88,38 @@ public class TestNumericUtilities extends HMTestCase {
         checkMatrixEqual(got, expected, DELTA);
 
         // use steps
-        range2Bins = NumericsUtilities.range2Bins(-6, 12, 3.0);
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 3.0, false);
         expected = new double[][]{{-6.0, -3.0, 0.0, 3.0, 6.0, 9.0, 12.0}};
         got = new double[][]{range2Bins};
         checkMatrixEqual(got, expected, DELTA);
 
-        range2Bins = NumericsUtilities.range2Bins(-6, 12, 1.5);
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 3.0, true);
+        expected = new double[][]{{-6.0, -3.0, 0.0, 3.0, 6.0, 9.0, 12.0}};
+        got = new double[][]{range2Bins};
+        checkMatrixEqual(got, expected, DELTA);
+
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 1.5, false);
         expected = new double[][]{{-6.0, -4.5, -3.0, -1.5, 0.0, 1.5, 3.0, 4.5, 6.0, 7.5, 9.0, 10.5, 12.0}};
         got = new double[][]{range2Bins};
         checkMatrixEqual(got, expected, DELTA);
 
-        range2Bins = NumericsUtilities.range2Bins(-6, 12, 5.0);
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 5.0, false);
         expected = new double[][]{{-6.0, -1.0, 4.0, 9.0, 12.0}};
         got = new double[][]{range2Bins};
         checkMatrixEqual(got, expected, DELTA);
 
-        range2Bins = NumericsUtilities.range2Bins(-6, 12, 7.5);
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 5.0, true);
+        expected = new double[][]{{-6.0, -1.0, 4.0, 9.0, 14.0}};
+        got = new double[][]{range2Bins};
+        checkMatrixEqual(got, expected, DELTA);
+
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 7.5, false);
         expected = new double[][]{{-6.0, 1.5, 9.0, 12.0}};
+        got = new double[][]{range2Bins};
+        checkMatrixEqual(got, expected, DELTA);
+
+        range2Bins = NumericsUtilities.range2Bins(-6, 12, 7.5, true);
+        expected = new double[][]{{-6.0, 1.5, 9.0, 16.5}};
         got = new double[][]{range2Bins};
         checkMatrixEqual(got, expected, DELTA);
     }

@@ -112,8 +112,8 @@ public class OmsZonalStatsIM extends JGTModelIM {
         }
 
         ReferencedEnvelope bounds = inVector.getBounds();
-        double[] xBins = NumericsUtilities.range2Bins(bounds.getMinX(), bounds.getMaxX(), pBinSize);
-        double[] yBins = NumericsUtilities.range2Bins(bounds.getMinY(), bounds.getMaxY(), pBinSize);
+        double[] xBins = NumericsUtilities.range2Bins(bounds.getMinX(), bounds.getMaxX(), pBinSize, false);
+        double[] yBins = NumericsUtilities.range2Bins(bounds.getMinY(), bounds.getMaxY(), pBinSize, false);
 
         SimpleFeatureBuilder featureBuilder = OmsZonalStats.createFeatureBuilder(bounds.getCoordinateReferenceSystem(),
                 hasUserTotalMean);
