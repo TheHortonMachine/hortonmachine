@@ -126,6 +126,11 @@ public class OmsDownSlopeConnectivity extends JGTModel {
                 return;
             }
             for( int c = 0; c < nCols; c++ ) {
+                if (c == 7 && r == 2) {
+                    System.out.println();
+                }
+                
+                
                 FlowNode flowNode = new FlowNode(flowIter, nCols, nRows, c, r);
                 if (!flowNode.isValid()) {
                     continue;
@@ -136,8 +141,11 @@ public class OmsDownSlopeConnectivity extends JGTModel {
                 double connectivitySum = 0;
                 while( flowNode.isValid() && !netNode.isValid() ) {
                     FlowNode nextFlowNode = flowNode.goDownstream();
-                    double distance = sqrt(pow((nextFlowNode.col - flowNode.col) * xres, 2.0)
-                            + pow((nextFlowNode.row - flowNode.row) * yres, 2.0));
+                    int col = flowNode.col;
+                    int nextCol = nextFlowNode.col;
+                    int row = flowNode.row;
+                    int nextRow = nextFlowNode.row;
+                    double distance = sqrt(pow((nextCol - col) * xres, 2.0) + pow((nextRow - row) * yres, 2.0));
 
                     double weight = weightsIter.getSampleDouble(flowNode.col, flowNode.row, 0);
                     double slope = slopeIter.getSampleDouble(flowNode.col, flowNode.row, 0);
@@ -154,22 +162,6 @@ public class OmsDownSlopeConnectivity extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String flowPath = "/home/moovida/gsoc/basin_flow.asc";
-        String netPath = "/home/moovida/gsoc/basin_net.asc";
-        String slopePath = "/home/moovida/gsoc/basin_slope.asc";
-        String connectPath = "/home/moovida/gsoc/basin_connectivity.asc";
-
-        OmsDownSlopeConnectivity c = new OmsDownSlopeConnectivity();
-        c.inFlow = OmsRasterReader.readRaster(flowPath);
-        c.inNet = OmsRasterReader.readRaster(netPath);
-        c.inSlope = OmsRasterReader.readRaster(slopePath);
-        c.pWeight = 100.0;
-        c.process();
-
-        OmsRasterWriter.writeRaster(connectPath, c.outConnectivity);
     }
 
 }
