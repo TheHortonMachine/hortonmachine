@@ -34,6 +34,7 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outNetnum_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pMode_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pThres_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.*;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
@@ -58,6 +59,7 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureIterator;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -129,68 +131,30 @@ public class OmsNetNumbering extends JGTModel {
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
 
-        RenderedImage netRI = inNet.getRenderedImage();
-        RandomIter netIter = RandomIterFactory.create(netRI, null);
+        RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
 
         RandomIter tcaIter = null;
         if (pMode == 1) {
-            RenderedImage tcaRI = inTca.getRenderedImage();
-            tcaIter = RandomIterFactory.create(tcaRI, null);
+            tcaIter = CoverageUtilities.getRandomIterator(inTca);
         }
-        ArrayList<Geometry> geomVect = null;
-        ArrayList<HashMap<String, ? >> attributeVect = null;
-        if (inPoints != null) {
-            HashMap<String, Object> geomMap = null;
-
-            List<String> key = new ArrayList<String>();
-            SimpleFeatureType ft = inPoints.getSchema();
-            for( int i = 0; i < ft.getAttributeCount(); i++ ) {
-                AttributeType at = ft.getType(i);
-                key.add(at.getName().toString());
-            }
-            geomVect = new ArrayList<Geometry>();
-            attributeVect = new ArrayList<HashMap<String, ? >>();
-            FeatureIterator<SimpleFeature> featureIterator = inPoints.features();
-            while( featureIterator.hasNext() ) {
-                SimpleFeature feature = featureIterator.next();
-                geomMap = new HashMap<String, Object>();
-                for( int i = 0; i < feature.getAttributeCount(); i++ ) {
-                    Object attribute = feature.getAttribute(i);
-                    if (attribute != null) {
-                        feature.getAttribute(i).getClass();
-                        if (!(attribute instanceof Geometry))
-                            geomMap.put(key.get(i), attribute);
-                    } else {
-                        geomMap.put(key.get(i), "null");
-                    }
-                }
-                geomMap.put("id", feature.getID());
-                geomVect.add((Geometry) feature.getDefaultGeometry());
-                attributeVect.add(geomMap);
-                geomMap = null;
-            }
-            featureIterator.close();
-        }
-
-        ArrayList<Integer> nstream = new ArrayList<Integer>();
 
         WritableRaster netNumWR = null;
         if (pMode == 0) {
-            netNumWR = ModelsEngine.netNumbering(nstream, flowIter, netIter, nCols, nRows, pm);
+            netNumWR = ModelsEngine.netNumbering(flowIter, netIter, nCols, nRows, pm);
         } else if (pMode == 1) {
             if (tcaIter == null) {
                 throw new ModelsIllegalargumentException("This method needs the map of tca.", this, pm);
             }
-            netNumWR = ModelsEngine.netNumberingWithTca(nstream, flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
+            netNumWR = ModelsEngine.netNumberingWithTca(flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
         } else if (pMode == 2) {
-            if (attributeVect == null || geomVect == null) {
+            if (inPoints == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this, pm);
             }
             if (fPointId == null) {
                 throw new ModelsIllegalargumentException("This processing mode needs the field of the point ID .", this, pm);
             }
-            netNumWR = ModelsEngine.netNumberingWithPoints(nstream, flowIter, netIter, nRows, nCols, attributeVect, geomVect,
-                    inFlow.getGridGeometry(), fPointId, pm);
+            netNumWR = ModelsEngine.netNumberingWithPoints(flowIter, netIter, nRows, nCols, inPoints, fPointId,
+                    inFlow.getGridGeometry(), pm);
         } else {
             // if (attributeVect == null || geomVect == null || tcaIter == null) {
             // throw new ModelsIllegalargumentException(

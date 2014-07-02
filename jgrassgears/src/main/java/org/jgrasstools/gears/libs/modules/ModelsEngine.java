@@ -47,15 +47,18 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -695,8 +698,8 @@ public class ModelsEngine {
     /**
      * this method numerating every stream
      */
-    public static WritableRaster netNumbering( List<Integer> nstream, RandomIter flowIter, RandomIter networkIter, int width,
-            int height, IJGTProgressMonitor pm ) {
+    public static WritableRaster netNumbering( RandomIter flowIter, RandomIter networkIter, int width, int height,
+            IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
         WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
@@ -722,7 +725,6 @@ public class ModelsEngine {
                     // if the pixel is a source...
                     if (f == 8) {
                         n++;
-                        nstream.add(n);
                         netnumIter.setSample(i, j, 0, n);
                         if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return null;
@@ -737,7 +739,6 @@ public class ModelsEngine {
                             }
                             if (gg >= 2) {
                                 n++;
-                                nstream.add(n);
                                 netnumIter.setSample(flow[0], flow[1], 0, n);
                             } else {
                                 netnumIter.setSample(flow[0], flow[1], 0, n);
@@ -758,8 +759,8 @@ public class ModelsEngine {
      * this method numerating every stream and subdivide the stream when tca is
      * greater than a threshold
      */
-    public static WritableRaster netNumberingWithTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            RandomIter tcaRandomIter, int cols, int rows, double tcaTh, IJGTProgressMonitor pm ) {
+    public static WritableRaster netNumberingWithTca( RandomIter mRandomIter, RandomIter netRandomIter, RandomIter tcaRandomIter,
+            int cols, int rows, double tcaTh, IJGTProgressMonitor pm ) {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
 
@@ -788,7 +789,6 @@ public class ModelsEngine {
                     // if the pixel is a source...
                     if (f == 8) {
                         n++;
-                        nstream.add(n);
                         tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
                         oMatrixRandomIter.setSample(i, j, 0, n);
                         if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
@@ -805,13 +805,11 @@ public class ModelsEngine {
                             if (gg >= 2) {
                                 // it is a node
                                 n++;
-                                nstream.add(n);
                                 oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
                                 tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
                             } else if (tcaRandomIter.getSampleDouble(flow[0], flow[1], 0) - tcaValue > tcaTh) {
                                 // tca greater than threshold
                                 n++;
-                                nstream.add(n);
                                 oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
                                 tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
                             } else {
@@ -835,55 +833,45 @@ public class ModelsEngine {
      * @throws TransformException 
      * @throws InvalidGridGeometryException 
      */
-    public static WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
-            String reteId, IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
+    public static WritableRaster netNumberingWithPoints( RandomIter flowIter, RandomIter netIter, int rows, int cols,
+            SimpleFeatureCollection pointsFC, String reteId, GridGeometry2D gridGeometry, IJGTProgressMonitor pm )
+            throws InvalidGridGeometryException, TransformException {
         int[] flow = new int[2];
         int gg = 0, n = 0, f;
         WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter oMatrixRandomIter = RandomIterFactory.createWritable(outImage, null);
+        WritableRandomIter netnumOutIter = RandomIterFactory.createWritable(outImage, null);
 
-        Rectangle2D regionBox = gridGeometry.getEnvelope2D().getBounds2D();
+        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
 
         List<Point4d> points = new ArrayList<Point4d>();
-        // new rectangle for active region
-        Number nodoId;
-        int l = 0;
-        int numGeometry = 0;
-        // insert the points in a Vector of points
-        for( Geometry pointV : geomVect ) {
-            for( int i = 0; i < pointV.getNumGeometries(); i++ ) {
-                GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointV.getCoordinates()[0].x,
-                        pointV.getCoordinates()[0].y));
-                nodoId = (Number) attributePoints.get(numGeometry).get(reteId);
-                if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field " + reteId + " not found", "", pm);
-                }
-                if (nodoId.intValue() != -1
-                        && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
-                    points.add(new Point4d(gridCoordinate.x, gridCoordinate.y, nodoId.doubleValue(), 0));
-                    l++;
-                }
+        // insert the features in a list of points
+        SimpleFeatureIterator pointsIter = pointsFC.features();
+        while( pointsIter.hasNext() ) {
+            SimpleFeature pointFeature = pointsIter.next();
+            Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+            Number nodoId = (Number) pointFeature.getAttribute(reteId);
+            if (nodoId == null) {
+                throw new ModelsIllegalargumentException("Field " + reteId + " not found", "", pm);
             }
-            numGeometry++;
+            int nodoIdInt = nodoId.intValue();
+            if (nodoIdInt != -1 && envelope2d.contains(pointCoordinate.x, pointCoordinate.y)) {
+                GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
+                        pointCoordinate.y));
+                points.add(new Point4d(gridCoordinate.x, gridCoordinate.y, nodoIdInt, 0));
+            }
         }
         // if the points isn't on the channel net, move the point
-        int p = 0;
         for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
+            double netValue = netIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0);
+            if (netValue != point4d.z) {
                 for( int i = 1; i < 9; i++ ) {
                     int indexI = (int) point4d.x + dirIn[i][1];
                     int indexJ = (int) point4d.y + dirIn[i][0];
-                    if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
+                    if (netIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
                         point4d.x = indexI;
                         point4d.y = indexJ;
                     }
                 }
-            }
-        }
-        for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) == point4d.z) {
-                p++;
             }
         }
 
@@ -894,13 +882,13 @@ public class ModelsEngine {
             for( int i = 0; i < cols; i++ ) {
                 flow[0] = i;
                 flow[1] = j;
-                if (!isNovalue(netRandomIter.getSampleDouble(i, j, 0)) && mRandomIter.getSampleDouble(i, j, 0) != 10.0
-                        && oMatrixRandomIter.getSampleDouble(i, j, 0) == 0.0) {
+                if (!isNovalue(netIter.getSampleDouble(i, j, 0)) && flowIter.getSampleDouble(i, j, 0) != 10.0
+                        && netnumOutIter.getSampleDouble(i, j, 0) == 0.0) {
                     f = 0;
                     // look for the source...
                     for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
+                        if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+                                && !isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
                             break;
                         } else
                             f++;
@@ -909,45 +897,37 @@ public class ModelsEngine {
                     // every stream
                     if (f == 8) {
                         n++;
-                        nstream.add(n);
-                        oMatrixRandomIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
+                        netnumOutIter.setSample(i, j, 0, n);
+                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                             return null;
                         for( Point4d point4d : points ) {
                             if (point4d.x == flow[0] && point4d.y == flow[1]) {
                                 n++;
-                                nstream.add(n);
                                 point4d.w = n - 1;
-                                /*
-                                 * omatrix.getSampleDouble(i,j) = n; if
-                                 * (!FluidUtils.go_downstream(flow,
-                                 * m.getSampleDouble(flow[0],flow[1]), copt)) ;
-                                 */
+                                break;
                             }
                         }
-                        while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                                && oMatrixRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0
-                                && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
+                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+                                && netnumOutIter.getSampleDouble(flow[0], flow[1], 0) == 0
+                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
                             gg = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
+                                if (!isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+                                        && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
                                     gg++;
                                 }
                             }
-                            if (gg >= 2) {
+                            if (gg > 1) {
                                 n++;
-                                nstream.add(n);
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
+                                netnumOutIter.setSample(flow[0], flow[1], 0, n);
                             } else {
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
+                                netnumOutIter.setSample(flow[0], flow[1], 0, n);
                             }
-                            if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
+                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
                                 return null;
                             for( Point4d point4d : points ) {
                                 if (point4d.x == flow[0] && point4d.y == flow[1]) {
                                     n++;
-                                    nstream.add(n);
                                     point4d.w = n - 1;
                                 }
                             }
@@ -1213,7 +1193,8 @@ public class ModelsEngine {
                     } else {
                         throw new ModelsIllegalargumentException(
                                 "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
-                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?", "MODELSENGINE", pm);
+                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?",
+                                "MODELSENGINE", pm);
                     }
                 }
             }
