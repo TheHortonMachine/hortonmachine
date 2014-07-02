@@ -27,6 +27,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
@@ -36,6 +37,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -843,7 +845,7 @@ public class ModelsEngine {
 
         Envelope2D envelope2d = gridGeometry.getEnvelope2D();
 
-        List<Point4d> points = new ArrayList<Point4d>();
+        HashMap<Point, SimpleFeature> featuresMap = new HashMap<Point, SimpleFeature>();
         // insert the features in a list of points
         SimpleFeatureIterator pointsIter = pointsFC.features();
         while( pointsIter.hasNext() ) {
@@ -857,87 +859,121 @@ public class ModelsEngine {
             if (nodoIdInt != -1 && envelope2d.contains(pointCoordinate.x, pointCoordinate.y)) {
                 GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
                         pointCoordinate.y));
-                points.add(new Point4d(gridCoordinate.x, gridCoordinate.y, nodoIdInt, 0));
-            }
-        }
-        // if the points isn't on the channel net, move the point
-        for( Point4d point4d : points ) {
-            double netValue = netIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0);
-            if (netValue != point4d.z) {
-                for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dirIn[i][1];
-                    int indexJ = (int) point4d.y + dirIn[i][0];
-                    if (netIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
-                        point4d.x = indexI;
-                        point4d.y = indexJ;
-                    }
-                }
+                featuresMap.put(new Point(gridCoordinate.x, gridCoordinate.y), pointFeature);
             }
         }
 
+        // snap points on net if necessary
+        HashMap<Point, SimpleFeature> snappedFeaturesMap = new HashMap<Point, SimpleFeature>();
+        for( Entry<Point, SimpleFeature> featureMapEntry : featuresMap.entrySet() ) {
+            Point gridPosition = featureMapEntry.getKey();
+
+            GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridPosition.x, gridPosition.y);
+            FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridPosition.x, gridPosition.y);
+            while( !netNode.isValid() ) {
+                FlowNode nextNode = flowNode.goDownstream();
+                netNode = new GridNode(netIter, cols, rows, -1, -1, nextNode.col, nextNode.row);
+            }
+            snappedFeaturesMap.put(new Point(netNode.col, netNode.row), featureMapEntry.getValue());
+        }
+
         pm.beginTask(msg.message("utils.numbering_stream"), rows);
-        /* Selects every node and go downstream */
-        for( int j = 0; j < rows; j++ ) {
-            // ShowPercent.getPercent(copt, i, rows - 1, 1);
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(netIter.getSampleDouble(i, j, 0)) && flowIter.getSampleDouble(i, j, 0) != 10.0
-                        && netnumOutIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    // look for the source...
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
+
+        Point positionPoint = new Point();
+        int channelId = 1;
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+                if (flowNode.isSource()) {
+                    netnumOutIter.setSample(c, r, 0, channelId - 1);
+
+                    FlowNode nextFlowNode = flowNode.goDownstream();
+                    if (nextFlowNode == null) {
+                        continue;
                     }
-                    // if the pixel is a source...starts to assign a number to
-                    // every stream
-                    if (f == 8) {
-                        n++;
-                        netnumOutIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        for( Point4d point4d : points ) {
-                            if (point4d.x == flow[0] && point4d.y == flow[1]) {
-                                n++;
-                                point4d.w = n - 1;
-                                break;
-                            }
+                    double netnumValue = netnumOutIter.getSampleDouble(nextFlowNode.col, nextFlowNode.row, 0);
+                    while( nextFlowNode != null && nextFlowNode.isValid() && !nextFlowNode.isMarkedAsOutlet()
+                            && netnumValue == 0.0 ) {
+                        if (nextFlowNode.getEnteringNodes().size() > 1) {
+                            // split also at confluences
+                            channelId++;
                         }
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && netnumOutIter.getSampleDouble(flow[0], flow[1], 0) == 0
-                                && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg > 1) {
-                                n++;
-                                netnumOutIter.setSample(flow[0], flow[1], 0, n);
-                            } else {
-                                netnumOutIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
-                            for( Point4d point4d : points ) {
-                                if (point4d.x == flow[0] && point4d.y == flow[1]) {
-                                    n++;
-                                    point4d.w = n - 1;
-                                }
-                            }
+                        positionPoint.setLocation(nextFlowNode.col, nextFlowNode.row);
+                        if (snappedFeaturesMap.get(positionPoint) != null) {
+                            channelId++;
                         }
+                        netnumOutIter.setSample(nextFlowNode.col, nextFlowNode.row, 0, channelId - 1);
+                        nextFlowNode = nextFlowNode.goDownstream();
+                        netnumValue = netnumOutIter.getSampleDouble(nextFlowNode.col, nextFlowNode.row, 0);
                     }
                 }
             }
             pm.worked(1);
         }
         pm.done();
+
+        // /* Selects every node and go downstream */
+        // for( int r = 0; r < rows; r++ ) {
+        // for( int c = 0; c < cols; c++ ) {
+        // flow[0] = c;
+        // flow[1] = r;
+        // if (!isNovalue(netIter.getSampleDouble(c, r, 0)) && flowIter.getSampleDouble(c, r, 0) !=
+        // 10.0
+        // && netnumOutIter.getSampleDouble(c, r, 0) == 0.0) {
+        // f = 0;
+        // // look for the source...
+        // for( int k = 1; k <= 8; k++ ) {
+        // if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) ==
+        // dirIn[k][2]
+        // && !isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0)))
+        // {
+        // break;
+        // } else
+        // f++;
+        // }
+        // // if the pixel is a source...starts to assign a number to
+        // // every stream
+        // if (f == 8) {
+        // n++;
+        // netnumOutIter.setSample(c, r, 0, n);
+        // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+        // return null;
+        // for( Point4d point4d : points ) {
+        // if (point4d.x == flow[0] && point4d.y == flow[1]) {
+        // n++;
+        // point4d.w = n - 1;
+        // break;
+        // }
+        // }
+        // while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+        // && netnumOutIter.getSampleDouble(flow[0], flow[1], 0) == 0
+        // && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
+        // gg = 0;
+        // for( int k = 1; k <= 8; k++ ) {
+        // if (!isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+        // && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) ==
+        // dirIn[k][2]) {
+        // gg++;
+        // }
+        // }
+        // if (gg > 1) {
+        // n++;
+        // netnumOutIter.setSample(flow[0], flow[1], 0, n);
+        // } else {
+        // netnumOutIter.setSample(flow[0], flow[1], 0, n);
+        // }
+        // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+        // return null;
+        // for( Point4d point4d : points ) {
+        // if (point4d.x == flow[0] && point4d.y == flow[1]) {
+        // n++;
+        // point4d.w = n - 1;
+        // }
+        // }
+        // }
+        // }
+        // }
+
         return outImage;
     }
 

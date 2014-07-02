@@ -23,6 +23,7 @@ import java.util.HashMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.jgrasstools.gears.io.shapefile.OmsShapefileFeatureReader;
+import org.jgrasstools.gears.utils.PrintUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.hortonmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.jgrasstools.hortonmachine.utils.HMTestCase;
@@ -115,6 +116,10 @@ public class TestNetNumbering extends HMTestCase {
         GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
         GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
 
+        PrintUtilities.printCoverageData(netnumberingCoverage);
+        System.out.println("***************");
+        PrintUtilities.printMatrixData( HMTestMaps.netNumberingChannelDataNN2);
+        
         checkMatrixEqual(netnumberingCoverage.getRenderedImage(), HMTestMaps.netNumberingChannelDataNN2, 0);
         checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN2, 0);
     }
