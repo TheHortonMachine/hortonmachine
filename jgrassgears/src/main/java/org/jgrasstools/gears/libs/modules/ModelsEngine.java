@@ -697,65 +697,70 @@ public class ModelsEngine {
         return moment;
     }
 
-    /**
-     * this method numerating every stream
-     */
-    public static WritableRaster netNumbering( RandomIter flowIter, RandomIter networkIter, int width, int height,
-            IJGTProgressMonitor pm ) {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
-        WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
-        WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
-
-        /* numerating every stream */
-        GearsMessageHandler msg = GearsMessageHandler.getInstance();
-        pm.beginTask(msg.message("utils.numbering_stream"), height);
-        for( int j = 0; j < height; j++ ) {
-            for( int i = 0; i < width; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(networkIter.getSampleDouble(i, j, 0)) && flowIter.getSampleDouble(i, j, 0) != 10.0
-                        && netnumIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
-                    }
-                    // if the pixel is a source...
-                    if (f == 8) {
-                        n++;
-                        netnumIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && netnumIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg >= 2) {
-                                n++;
-                                netnumIter.setSample(flow[0], flow[1], 0, n);
-                            } else {
-                                netnumIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return netnumWR;
-    }
+    // /**
+    // * this method numerating every stream
+    // */
+    // public static WritableRaster netNumbering( RandomIter flowIter, RandomIter networkIter, int
+    // width, int height,
+    // IJGTProgressMonitor pm ) {
+    // int[] flow = new int[2];
+    // int gg = 0, n = 0, f;
+    // WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null,
+    // null, null);
+    // WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
+    //
+    // /* numerating every stream */
+    // GearsMessageHandler msg = GearsMessageHandler.getInstance();
+    // pm.beginTask(msg.message("utils.numbering_stream"), height);
+    // for( int j = 0; j < height; j++ ) {
+    // for( int i = 0; i < width; i++ ) {
+    // flow[0] = i;
+    // flow[1] = j;
+    // if (!isNovalue(networkIter.getSampleDouble(i, j, 0)) && flowIter.getSampleDouble(i, j, 0) !=
+    // 10.0
+    // && netnumIter.getSampleDouble(i, j, 0) == 0.0) {
+    // f = 0;
+    // for( int k = 1; k <= 8; k++ ) {
+    // if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
+    // && !isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0)))
+    // {
+    // break;
+    // } else
+    // f++;
+    // }
+    // // if the pixel is a source...
+    // if (f == 8) {
+    // n++;
+    // netnumIter.setSample(i, j, 0, n);
+    // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+    // return null;
+    // while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
+    // && netnumIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
+    // gg = 0;
+    // for( int k = 1; k <= 8; k++ ) {
+    // if (!isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
+    // && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2])
+    // {
+    // gg++;
+    // }
+    // }
+    // if (gg >= 2) {
+    // n++;
+    // netnumIter.setSample(flow[0], flow[1], 0, n);
+    // } else {
+    // netnumIter.setSample(flow[0], flow[1], 0, n);
+    // }
+    // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
+    // return null;
+    // }
+    // }
+    // }
+    // }
+    // pm.worked(1);
+    // }
+    // pm.done();
+    // return netnumWR;
+    // }
 
     /**
      * this method numerating every stream and subdivide the stream when tca is
@@ -836,145 +841,319 @@ public class ModelsEngine {
      * @throws InvalidGridGeometryException 
      */
     public static WritableRaster netNumberingWithPoints( RandomIter flowIter, RandomIter netIter, int rows, int cols,
-            SimpleFeatureCollection pointsFC, String reteId, GridGeometry2D gridGeometry, IJGTProgressMonitor pm )
+            SimpleFeatureCollection pointsFC, GridGeometry2D gridGeometry, IJGTProgressMonitor pm )
             throws InvalidGridGeometryException, TransformException {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
         WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter netnumOutIter = RandomIterFactory.createWritable(outImage, null);
 
-        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
-
-        HashMap<Point, SimpleFeature> featuresMap = new HashMap<Point, SimpleFeature>();
-        // insert the features in a list of points
-        SimpleFeatureIterator pointsIter = pointsFC.features();
-        while( pointsIter.hasNext() ) {
-            SimpleFeature pointFeature = pointsIter.next();
-            Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
-            Number nodoId = (Number) pointFeature.getAttribute(reteId);
-            if (nodoId == null) {
-                throw new ModelsIllegalargumentException("Field " + reteId + " not found", "", pm);
+        HashMap<Point, SimpleFeature> snappedFeaturesMap = null;
+        if (pointsFC != null) {
+            Envelope2D envelope2d = gridGeometry.getEnvelope2D();
+            HashMap<Point, SimpleFeature> featuresMap = new HashMap<Point, SimpleFeature>();
+            // insert the features in a list of points
+            SimpleFeatureIterator pointsIter = pointsFC.features();
+            while( pointsIter.hasNext() ) {
+                SimpleFeature pointFeature = pointsIter.next();
+                Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+                if (envelope2d.contains(pointCoordinate.x, pointCoordinate.y)) {
+                    GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
+                            pointCoordinate.y));
+                    featuresMap.put(new Point(gridCoordinate.x, gridCoordinate.y), pointFeature);
+                }
             }
-            int nodoIdInt = nodoId.intValue();
-            if (nodoIdInt != -1 && envelope2d.contains(pointCoordinate.x, pointCoordinate.y)) {
-                GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
-                        pointCoordinate.y));
-                featuresMap.put(new Point(gridCoordinate.x, gridCoordinate.y), pointFeature);
-            }
-        }
 
-        // snap points on net if necessary
-        HashMap<Point, SimpleFeature> snappedFeaturesMap = new HashMap<Point, SimpleFeature>();
-        for( Entry<Point, SimpleFeature> featureMapEntry : featuresMap.entrySet() ) {
-            Point gridPosition = featureMapEntry.getKey();
+            // snap points on net if necessary
+            snappedFeaturesMap = new HashMap<Point, SimpleFeature>();
+            for( Entry<Point, SimpleFeature> featureMapEntry : featuresMap.entrySet() ) {
+                Point gridPosition = featureMapEntry.getKey();
 
-            GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridPosition.x, gridPosition.y);
-            FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridPosition.x, gridPosition.y);
-            while( !netNode.isValid() ) {
-                FlowNode nextNode = flowNode.goDownstream();
-                netNode = new GridNode(netIter, cols, rows, -1, -1, nextNode.col, nextNode.row);
+                GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridPosition.x, gridPosition.y);
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridPosition.x, gridPosition.y);
+                while( !netNode.isValid() ) {
+                    FlowNode nextNode = flowNode.goDownstream();
+                    netNode = new GridNode(netIter, cols, rows, -1, -1, nextNode.col, nextNode.row);
+                }
+                snappedFeaturesMap.put(new Point(netNode.col, netNode.row), featureMapEntry.getValue());
             }
-            snappedFeaturesMap.put(new Point(netNode.col, netNode.row), featureMapEntry.getValue());
         }
 
         pm.beginTask(msg.message("utils.numbering_stream"), rows);
 
-        Point positionPoint = new Point();
+        final Point positionPoint = new Point();
         int channelId = 1;
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
                 FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
                 if (flowNode.isSource()) {
-                    netnumOutIter.setSample(c, r, 0, channelId - 1);
+                    // walk down until you find the net point
+                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+                    while( !netNode.isValid() && flowNode != null ) {
+                        flowNode = flowNode.goDownstream();
+                        if (flowNode != null)
+                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+                    }
+                    if (flowNode == null) {
+                        channelId++;
+                        continue;
+                    }
+
+                    double netnumValue = netNode.getValueFromMap(netnumOutIter);
+                    if (netnumValue != 0) {
+                        // point has been already marked
+                        continue;
+                    }
+                    netNode.setValueInMap(netnumOutIter, channelId);
 
                     FlowNode nextFlowNode = flowNode.goDownstream();
                     if (nextFlowNode == null) {
+                        channelId++;
                         continue;
                     }
-                    double netnumValue = netnumOutIter.getSampleDouble(nextFlowNode.col, nextFlowNode.row, 0);
+
+                    netnumValue = nextFlowNode.getValueFromMap(netnumOutIter);
+                    if (netnumValue != 0) {
+                        channelId++;
+                        continue;
+                    }
                     while( nextFlowNode != null && nextFlowNode.isValid() && !nextFlowNode.isMarkedAsOutlet()
                             && netnumValue == 0.0 ) {
-                        if (nextFlowNode.getEnteringNodes().size() > 1) {
-                            // split also at confluences
-                            channelId++;
-                        }
                         positionPoint.setLocation(nextFlowNode.col, nextFlowNode.row);
-                        if (snappedFeaturesMap.get(positionPoint) != null) {
+
+                        /*
+                         * we split at confluences, i.e. at least 2 entering
+                         * net points
+                         */
+                        List<FlowNode> enteringNodes = nextFlowNode.getEnteringNodes();
+                        int enteringNetCount = 0;
+                        for( FlowNode enteringFlowNode : enteringNodes ) {
+                            if (!isNovalue(enteringFlowNode.getValueFromMap(netIter))) {
+                                enteringNetCount++;
+                                if (enteringNetCount > 1) {
+                                    channelId++;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (enteringNetCount <= 1 && snappedFeaturesMap != null && snappedFeaturesMap.get(positionPoint) != null) {
                             channelId++;
                         }
-                        netnumOutIter.setSample(nextFlowNode.col, nextFlowNode.row, 0, channelId - 1);
+                        nextFlowNode.setValueInMap(netnumOutIter, channelId);
+
                         nextFlowNode = nextFlowNode.goDownstream();
-                        netnumValue = netnumOutIter.getSampleDouble(nextFlowNode.col, nextFlowNode.row, 0);
+                        if (nextFlowNode != null)
+                            netnumValue = nextFlowNode.getValueFromMap(netnumOutIter);
+                    }
+                    channelId++;
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+        return outImage;
+    }
+
+    public static WritableRaster netNumbering( RandomIter flowIter, RandomIter netIter, int rows, int cols,
+            SimpleFeatureCollection pointsFC, GridGeometry2D gridGeometry, IJGTProgressMonitor pm )
+            throws InvalidGridGeometryException, TransformException {
+        WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
+        WritableRandomIter netnumOutIter = RandomIterFactory.createWritable(outImage, null);
+
+        /*
+         * split nodes are points that create new numbering:
+         * - first points upstream on net
+         * - confluences
+         * - supplied points
+         */
+        List<FlowNode> splitNodes = new ArrayList<FlowNode>();
+        if (pointsFC != null) {
+            Envelope2D envelope2d = gridGeometry.getEnvelope2D();
+            HashMap<Point, SimpleFeature> featuresMap = new HashMap<Point, SimpleFeature>();
+            // insert the features in a list of points
+            SimpleFeatureIterator pointsIter = pointsFC.features();
+            while( pointsIter.hasNext() ) {
+                SimpleFeature pointFeature = pointsIter.next();
+                Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+                if (envelope2d.contains(pointCoordinate.x, pointCoordinate.y)) {
+                    GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
+                            pointCoordinate.y));
+                    featuresMap.put(new Point(gridCoordinate.x, gridCoordinate.y), pointFeature);
+                }
+            }
+
+            // snap points on net if necessary
+            for( Entry<Point, SimpleFeature> featureMapEntry : featuresMap.entrySet() ) {
+                Point gridPosition = featureMapEntry.getKey();
+
+                GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridPosition.x, gridPosition.y);
+                FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridPosition.x, gridPosition.y);
+                while( !netNode.isValid() ) {
+                    FlowNode nextNode = flowNode.goDownstream();
+                    netNode = new GridNode(netIter, cols, rows, -1, -1, nextNode.col, nextNode.row);
+                }
+
+                FlowNode snappedFlowNode = new FlowNode(flowIter, cols, rows, netNode.col, netNode.row);
+                splitNodes.add(snappedFlowNode);
+            }
+        }
+
+        // find outlets
+        pm.beginTask("Find split nodes...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r);
+                if (netNode.isValid()) {
+                    List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
+                    FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r);
+                    int enteringCount = 0;
+                    for( GridNode gridNode : validSurroundingNodes ) {
+                        FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row);
+                        List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
+                        if (enteringNodes.contains(tmpNode)) {
+                            enteringCount++;
+                        }
+                    }
+                    if (enteringCount != 1) {
+                        splitNodes.add(currentflowNode);
                     }
                 }
             }
             pm.worked(1);
         }
         pm.done();
+        pm.message("Found split points: " + splitNodes.size());
 
-        // /* Selects every node and go downstream */
+        int channel = 1;
+        pm.beginTask("Numbering network...", splitNodes.size());
+        for( FlowNode splitNode : splitNodes ) {
+            // we simply go down to the next split with one number
+            splitNode.setValueInMap(netnumOutIter, channel);
+            FlowNode nextNode = splitNode.goDownstream();
+            while( nextNode != null && !splitNodes.contains(nextNode) ) {
+                nextNode.setValueInMap(netnumOutIter, channel);
+                nextNode = nextNode.goDownstream();
+            }
+            channel++;
+            pm.worked(1);
+        }
+        pm.done();
+
+        // // crawl up and number
+        // int[] channelNumber = {1};
+        // pm.message("Channel count: " + channelNumber[0]);
+        // for( FlowNode outletNode : splitNodes ) {
+        //
+        // GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, outletNode.col,
+        // outletNode.row);
+        // List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
+        //
+        // evaluateEnteringNodes(netIter, netnumOutIter, channelNumber, outletNode, pm);
+        // }
+        // pm.done();
+
+        // pm.beginTask(msg.message("utils.numbering_stream"), rows);
+        // final Point positionPoint = new Point();
+        // int channelId = 1;
         // for( int r = 0; r < rows; r++ ) {
         // for( int c = 0; c < cols; c++ ) {
-        // flow[0] = c;
-        // flow[1] = r;
-        // if (!isNovalue(netIter.getSampleDouble(c, r, 0)) && flowIter.getSampleDouble(c, r, 0) !=
-        // 10.0
-        // && netnumOutIter.getSampleDouble(c, r, 0) == 0.0) {
-        // f = 0;
-        // // look for the source...
-        // for( int k = 1; k <= 8; k++ ) {
-        // if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) ==
-        // dirIn[k][2]
-        // && !isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0)))
-        // {
+        // FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r);
+        // if (flowNode.isSource()) {
+        // // walk down until you find the net point
+        // GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+        // while( !netNode.isValid() && flowNode != null ) {
+        // flowNode = flowNode.goDownstream();
+        // if (flowNode != null)
+        // netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+        // }
+        // if (flowNode == null) {
+        // channelId++;
+        // continue;
+        // }
+        //
+        // double netnumValue = netNode.getValueFromMap(netnumOutIter);
+        // if (netnumValue != 0) {
+        // // point has been already marked
+        // continue;
+        // }
+        // netNode.setValueInMap(netnumOutIter, channelId);
+        //
+        // FlowNode nextFlowNode = flowNode.goDownstream();
+        // if (nextFlowNode == null) {
+        // channelId++;
+        // continue;
+        // }
+        //
+        // netnumValue = nextFlowNode.getValueFromMap(netnumOutIter);
+        // if (netnumValue != 0) {
+        // channelId++;
+        // continue;
+        // }
+        // while( nextFlowNode != null && nextFlowNode.isValid() && !nextFlowNode.isMarkedAsOutlet()
+        // && netnumValue == 0.0 ) {
+        // positionPoint.setLocation(nextFlowNode.col, nextFlowNode.row);
+        //
+        // /*
+        // * we split at confluences, i.e. at least 2 entering
+        // * net points
+        // */
+        // List<FlowNode> enteringNodes = nextFlowNode.getEnteringNodes();
+        // int enteringNetCount = 0;
+        // for( FlowNode enteringFlowNode : enteringNodes ) {
+        // if (!isNovalue(enteringFlowNode.getValueFromMap(netIter))) {
+        // enteringNetCount++;
+        // if (enteringNetCount > 1) {
+        // channelId++;
         // break;
-        // } else
-        // f++;
-        // }
-        // // if the pixel is a source...starts to assign a number to
-        // // every stream
-        // if (f == 8) {
-        // n++;
-        // netnumOutIter.setSample(c, r, 0, n);
-        // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-        // return null;
-        // for( Point4d point4d : points ) {
-        // if (point4d.x == flow[0] && point4d.y == flow[1]) {
-        // n++;
-        // point4d.w = n - 1;
-        // break;
-        // }
-        // }
-        // while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-        // && netnumOutIter.getSampleDouble(flow[0], flow[1], 0) == 0
-        // && flowIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
-        // gg = 0;
-        // for( int k = 1; k <= 8; k++ ) {
-        // if (!isNovalue(netIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-        // && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) ==
-        // dirIn[k][2]) {
-        // gg++;
-        // }
-        // }
-        // if (gg > 1) {
-        // n++;
-        // netnumOutIter.setSample(flow[0], flow[1], 0, n);
-        // } else {
-        // netnumOutIter.setSample(flow[0], flow[1], 0, n);
-        // }
-        // if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-        // return null;
-        // for( Point4d point4d : points ) {
-        // if (point4d.x == flow[0] && point4d.y == flow[1]) {
-        // n++;
-        // point4d.w = n - 1;
         // }
         // }
         // }
+        //
+        // if (enteringNetCount <= 1 && snappedFeaturesMap != null &&
+        // snappedFeaturesMap.get(positionPoint) != null) {
+        // channelId++;
+        // }
+        // nextFlowNode.setValueInMap(netnumOutIter, channelId);
+        //
+        // nextFlowNode = nextFlowNode.goDownstream();
+        // if (nextFlowNode != null)
+        // netnumValue = nextFlowNode.getValueFromMap(netnumOutIter);
+        // }
+        // channelId++;
         // }
         // }
-
+        // pm.worked(1);
+        // }
+        // pm.done();
         return outImage;
+    }
+
+    private static void evaluateEnteringNodes( RandomIter netIter, WritableRandomIter netnumOutIter, int[] channelNumber,
+            FlowNode flowNode, IJGTProgressMonitor pm ) {
+        flowNode.setValueInMap(netnumOutIter, channelNumber[0]);
+        List<FlowNode> enteringFlowNodes = flowNode.getEnteringNodes();
+        while( enteringFlowNodes.size() > 0 ) {
+            List<FlowNode> enteringNetNodes = new ArrayList<FlowNode>();
+            for( FlowNode enteringNode : enteringFlowNodes ) {
+                double netValue = enteringNode.getValueFromMap(netIter);
+                if (!isNovalue(netValue)) {
+                    enteringNetNodes.add(enteringNode);
+                }
+            }
+            int enteringNetNodesCount = enteringNetNodes.size();
+            if (enteringNetNodesCount == 0) {
+                break;
+            } else if (enteringNetNodes.size() == 1) {
+                enteringNetNodes.get(0).setValueInMap(netnumOutIter, channelNumber[0]);
+                enteringNetNodes = enteringNetNodes.get(0).getEnteringNodes();
+            }
+            for( FlowNode enteringNetNode : enteringNetNodes ) {
+                if (enteringNetNodesCount > 1) {
+                    channelNumber[0] = channelNumber[0] + 1;
+                    pm.message("Channel count: " + channelNumber[0]);
+                }
+                evaluateEnteringNodes(netIter, netnumOutIter, channelNumber, enteringNetNode, pm);
+            }
+        }
     }
 
     /**

@@ -56,6 +56,9 @@ public class TestNetNumbering extends HMTestCase {
         GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
         GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
 
+        PrintUtilities.printCoverageData(subbasinsCoverage);
+        System.out.println("***************");
+        PrintUtilities.printMatrixData(HMTestMaps.basinDataNN0);
         checkMatrixEqual(netnumberingCoverage.getRenderedImage(), HMTestMaps.netNumberingChannelDataNN0, 0);
         checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN0, 0);
     }
@@ -94,6 +97,12 @@ public class TestNetNumbering extends HMTestCase {
         URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
         File pointsFile = new File(pointURL.toURI());
 
+        /*
+        * POINTS:
+        * POINT (1640800 5139900) - RETE_ID = 1 ->
+        * POINT (1640800 5139870) - RETE_ID = 2 ->
+        */
+
         OmsShapefileFeatureReader pointsReader = new OmsShapefileFeatureReader();
         pointsReader.file = pointsFile.getAbsolutePath();
         pointsReader.readFeatureCollection();
@@ -106,7 +115,6 @@ public class TestNetNumbering extends HMTestCase {
         OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
-        netNumbering.fPointId = "RETE_ID";
         netNumbering.pMode = 2;
         netNumbering.inPoints = pointsFC;
         netNumbering.pm = pm;
@@ -116,10 +124,6 @@ public class TestNetNumbering extends HMTestCase {
         GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
         GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
 
-        PrintUtilities.printCoverageData(netnumberingCoverage);
-        System.out.println("***************");
-        PrintUtilities.printMatrixData( HMTestMaps.netNumberingChannelDataNN2);
-        
         checkMatrixEqual(netnumberingCoverage.getRenderedImage(), HMTestMaps.netNumberingChannelDataNN2, 0);
         checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN2, 0);
     }
