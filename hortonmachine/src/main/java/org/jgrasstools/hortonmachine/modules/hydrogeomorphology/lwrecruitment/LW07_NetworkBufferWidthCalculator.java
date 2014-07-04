@@ -52,9 +52,11 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 @Description("Calculate the inundation zones along the channel network following a power law for the new width based on the original widht and the channel slope.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
@@ -202,7 +204,12 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
                 SimpleFeature extendedFeature = ext.extendFeature(netPointFeature, new Object[]{newWidth, slope});
                 ((DefaultFeatureCollection) outNetPoints).add(extendedFeature);
             }
-            //TODO create the output polygon of inundated area
+            // TODO
+            //create the output polygon of inundated area
+            ArrayList<Geometry> triangles = getPolygonBetweenLines(newLinesFeatures);
+
+            Geometry union = CascadedPolygonUnion.union(triangles);
+            outInundationArea.add(union);
             
             // add the inundated section to the output collection
             ((DefaultFeatureCollection) outInundationSections).addAll(newLinesFeatures);
@@ -211,6 +218,27 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         
         pm.done();
 
+    }
+
+    /*
+     * create the polygons between the inundated sections for the inundated
+     * areas
+     */
+    private ArrayList<Geometry> getPolygonBetweenLines(ArrayList<SimpleFeature> newLinesFeatures ) {
+        ArrayList<Geometry> polygons = new ArrayList<Geometry>();
+        for( int i = 0; i < newLinesFeatures.size() - 1; i++ ) {
+            SimpleFeature f1 = newLinesFeatures.get(i);
+            SimpleFeature f2 = newLinesFeatures.get(i + 1);
+
+            LineString l1 = (LineString) f1.getDefaultGeometry();
+            LineString l2 = (LineString) f2.getDefaultGeometry();
+            MultiLineString multiLine = gf.createMultiLineString(new LineString[]{l1, l2});
+            
+            Geometry convexHull = multiLine.convexHull();
+            Geometry buffer = convexHull.buffer(0.1);
+            polygons.add(buffer);
+        }
+        return polygons;
     }
 
     /*
