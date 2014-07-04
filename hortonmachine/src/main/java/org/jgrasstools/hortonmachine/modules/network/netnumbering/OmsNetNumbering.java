@@ -31,7 +31,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inTca_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outBasins_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outNetnum_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pMode_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pThres_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
@@ -54,10 +53,6 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.jgrasstools.gears.io.rasterreader.OmsRasterReader;
-import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
-import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
-import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.ModelsEngine;
 import org.jgrasstools.gears.utils.RegionMap;
@@ -88,10 +83,6 @@ public class OmsNetNumbering extends JGTModel {
     @In
     public SimpleFeatureCollection inPoints = null;
 
-    @Description(OMSNETNUMBERING_pMode_DESCRIPTION)
-    @In
-    public int pMode = 0;
-
     @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
@@ -120,30 +111,7 @@ public class OmsNetNumbering extends JGTModel {
 
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
 
-        WritableRaster netNumWR = null;
-        if (pMode == 0) {
-            netNumWR = ModelsEngine.netNumbering(flowIter, netIter, nRows, nCols, null, null, pm);
-        } else if (pMode == 1) {
-            if (inTca == null) {
-                throw new ModelsIllegalargumentException("This method needs the map of tca.", this, pm);
-            }
-            RandomIter tcaIter = CoverageUtilities.getRandomIterator(inTca);
-            netNumWR = ModelsEngine.netNumberingWithTca(flowIter, netIter, tcaIter, nCols, nRows, pThres, pm);
-        } else if (pMode == 2) {
-            if (inPoints == null) {
-                throw new ModelsIllegalargumentException("This processing mode needs a point featurecollection.", this, pm);
-            }
-            netNumWR = ModelsEngine.netNumbering(flowIter, netIter, nRows, nCols, inPoints, inFlow.getGridGeometry(), pm);
-        } else {
-            // if (attributeVect == null || geomVect == null || tcaIter == null) {
-            // throw new ModelsIllegalargumentException(
-            // "This processing mode needs a point featurecollection and the map of tca.", this);
-            // }
-            // netNumWR = ModelsEngine.netNumberingWithPointsAndTca(nstream, flowIter, netIter,
-            // tcaIter, pThres, nRows, nCols,
-            // attributeVect, geomVect, inFlow.getGridGeometry(), pm);
-            throw new ModelsIllegalargumentException("Only pMode 0, 1 and 2 are supported.", this, pm);
-        }
+        WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, pThres, inPoints, pm);
 
         WritableRandomIter netNumIter = RandomIterFactory.createWritable(netNumWR, null);
         WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, netIter, netNumIter, nRows, nCols, pm);
@@ -152,15 +120,4 @@ public class OmsNetNumbering extends JGTModel {
         outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
     }
 
-    public static void main( String[] args ) throws Exception {
-        OmsNetNumbering n = new OmsNetNumbering();
-        n.inFlow = OmsRasterReader.readRaster("D:/data/gsoc/basin_flow.asc");
-        n.inNet = OmsRasterReader.readRaster("D:/data/gsoc/basin_net.asc");
-        n.inPoints = OmsVectorReader.readVector("D:/data/gsoc/netpoints.shp");
-        n.pMode = 2;
-        n.process();
-        OmsRasterWriter.writeRaster("D:/data/gsoc/basin_netnum_basins.asc", n.outBasins);
-        OmsRasterWriter.writeRaster("D:/data/gsoc/basin_netnum_channels.asc", n.outNetnum);
-
-    }
 }

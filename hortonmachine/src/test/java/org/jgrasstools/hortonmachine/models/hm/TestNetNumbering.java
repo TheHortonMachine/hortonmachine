@@ -48,7 +48,6 @@ public class TestNetNumbering extends HMTestCase {
         OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
-        netNumbering.pMode = 0;
         netNumbering.pm = pm;
 
         netNumbering.process();
@@ -56,9 +55,6 @@ public class TestNetNumbering extends HMTestCase {
         GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
         GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
 
-        PrintUtilities.printCoverageData(subbasinsCoverage);
-        System.out.println("***************");
-        PrintUtilities.printMatrixData(HMTestMaps.basinDataNN0);
         checkMatrixEqual(netnumberingCoverage.getRenderedImage(), HMTestMaps.netNumberingChannelDataNN0, 0);
         checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN0, 0);
     }
@@ -78,7 +74,6 @@ public class TestNetNumbering extends HMTestCase {
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
         netNumbering.inTca = tcaCoverage;
-        netNumbering.pMode = 1;
         netNumbering.pThres = 2.0;
         netNumbering.pm = pm;
 
@@ -115,7 +110,6 @@ public class TestNetNumbering extends HMTestCase {
         OmsNetNumbering netNumbering = new OmsNetNumbering();
         netNumbering.inFlow = flowCoverage;
         netNumbering.inNet = netCoverage;
-        netNumbering.pMode = 2;
         netNumbering.inPoints = pointsFC;
         netNumbering.pm = pm;
 
@@ -128,43 +122,37 @@ public class TestNetNumbering extends HMTestCase {
         checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN2, 0);
     }
 
-    // public void testNetnumberingMode3() throws Exception {
-    // HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
-    // CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-    // URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
-    // File pointsFile = new File(pointURL.toURI());
-    //
-    // OmsShapefileFeatureReader pointsReader = new OmsShapefileFeatureReader();
-    // pointsReader.file = pointsFile.getAbsolutePath();
-    // pointsReader.readFeatureCollection();
-    // SimpleFeatureCollection pointsFC = pointsReader.geodata;
-    // double[][] flowData = HMTestMaps.mflowDataBorder;
-    // GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData,
-    // envelopeParams, crs, true);
-    // double[][] netData = HMTestMaps.extractNet1Data;
-    // GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams,
-    // crs, true);
-    // double[][] tcaData = HMTestMaps.tcaData;
-    // GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams,
-    // crs, true);
-    //
-    // OmsNetNumbering netNumbering = new OmsNetNumbering();
-    // netNumbering.inFlow = flowCoverage;
-    // netNumbering.inNet = netCoverage;
-    // netNumbering.inTca = tcaCoverage;
-    // netNumbering.pMode = 3;
-    // netNumbering.inPoints = pointsFC;
-    // netNumbering.pThres = 2.0;
-    // netNumbering.pm = pm;
-    //
-    // netNumbering.process();
-    //
-    // GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
-    // GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
-    //
-    // checkMatrixEqual(netnumberingCoverage.getRenderedImage(),
-    // HMTestMaps.netNumberingChannelDataNN3, 0);
-    // checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN3, 0);
-    // }
+    public void testNetnumberingMode3() throws Exception {
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
+        File pointsFile = new File(pointURL.toURI());
+
+        OmsShapefileFeatureReader pointsReader = new OmsShapefileFeatureReader();
+        pointsReader.file = pointsFile.getAbsolutePath();
+        pointsReader.readFeatureCollection();
+        SimpleFeatureCollection pointsFC = pointsReader.geodata;
+        double[][] flowData = HMTestMaps.mflowDataBorder;
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
+        double[][] netData = HMTestMaps.extractNet1Data;
+        GridCoverage2D netCoverage = CoverageUtilities.buildCoverage("net", netData, envelopeParams, crs, true);
+        double[][] tcaData = HMTestMaps.tcaData;
+        GridCoverage2D tcaCoverage = CoverageUtilities.buildCoverage("tca", tcaData, envelopeParams, crs, true);
+
+        OmsNetNumbering netNumbering = new OmsNetNumbering();
+        netNumbering.inFlow = flowCoverage;
+        netNumbering.inNet = netCoverage;
+        netNumbering.inTca = tcaCoverage;
+        netNumbering.inPoints = pointsFC;
+        netNumbering.pThres = 2.0;
+        netNumbering.pm = pm;
+        netNumbering.process();
+
+        GridCoverage2D netnumberingCoverage = netNumbering.outNetnum;
+        GridCoverage2D subbasinsCoverage = netNumbering.outBasins;
+
+        checkMatrixEqual(netnumberingCoverage.getRenderedImage(), HMTestMaps.netNumberingChannelDataNN3, 0);
+        checkMatrixEqual(subbasinsCoverage.getRenderedImage(), HMTestMaps.basinDataNN3, 0);
+    }
 
 }
