@@ -27,6 +27,7 @@ import static org.jgrasstools.gears.libs.modules.JGTConstants.doubleNovalue;
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
 import static org.jgrasstools.gears.utils.math.NumericsUtilities.dEq;
 
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
@@ -36,6 +37,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
@@ -43,19 +45,23 @@ import javax.media.jai.iterator.WritableRandomIter;
 import javax.vecmath.Point4d;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Envelope2D;
 import org.jgrasstools.gears.i18n.GearsMessageHandler;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -65,6 +71,7 @@ import org.opengis.referencing.operation.TransformException;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
@@ -693,421 +700,143 @@ public class ModelsEngine {
     }
 
     /**
-     * this method numerating every stream
+     * Calculate the map of netnumbering.
+     * 
+     * @param flowIter the map of flowdirection.
+     * @param netIter the map of network.
+     * @param tcaIter the optional map of tca.
+     * @param tcaThreshold the threshold on the tca.
+     * @param rows the rows of the map.
+     * @param cols the cols of the map.
+     * @param pointsFC optional feature collection of points in which to split the net.
+     * @param gridGeometry the {@link GridGeometry2D} of the raster.
+     * @param pm the monitor.
+     * @return the raster of netnumbering.
+     * @throws Exception
      */
-    public static WritableRaster netNumbering( List<Integer> nstream, RandomIter flowIter, RandomIter networkIter, int width,
-            int height, IJGTProgressMonitor pm ) {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
-        WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(width, height, null, null, null);
+    public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
+            double tcaThreshold, SimpleFeatureCollection pointsFC, IJGTProgressMonitor pm ) throws Exception {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        WritableRaster netnumWR = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
         WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
 
-        /* numerating every stream */
-        GearsMessageHandler msg = GearsMessageHandler.getInstance();
-        pm.beginTask(msg.message("utils.numbering_stream"), height);
-        for( int j = 0; j < height; j++ ) {
-            for( int i = 0; i < width; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(networkIter.getSampleDouble(i, j, 0)) && flowIter.getSampleDouble(i, j, 0) != 10.0
-                        && netnumIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
+        RandomIter flowIter = CoverageUtilities.getRandomIterator(flowGC);
+        RandomIter netIter = CoverageUtilities.getRandomIterator(netGC);
+        RandomIter tcaIter = null;
+        if (tcaGC != null)
+            tcaIter = CoverageUtilities.getRandomIterator(tcaGC);
+
+        /*
+         * split nodes are points that create new numbering:
+         * - first points upstream on net
+         * - confluences
+         * - supplied points
+         */
+        List<FlowNode> splitNodes = new ArrayList<FlowNode>();
+        List<Boolean> splitNodesIsNetStart = new ArrayList<Boolean>();
+        // SUPPLIED POINTS
+        if (pointsFC != null) {
+            Envelope envelope = regionMap.toEnvelope();
+            GridGeometry2D gridGeometry = flowGC.getGridGeometry();
+            SimpleFeatureIterator pointsIter = pointsFC.features();
+            // snap points on net if necessary
+            while( pointsIter.hasNext() ) {
+                SimpleFeature pointFeature = pointsIter.next();
+                Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+                if (envelope.contains(pointCoordinate)) {
+
+                    GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointCoordinate.x,
+                            pointCoordinate.y));
+
+                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y);
+                    FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
+                    while( !netNode.isValid() ) {
+                        flowNode = flowNode.goDownstream();
+                        if (flowNode != null)
+                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
                     }
-                    // if the pixel is a source...
-                    if (f == 8) {
-                        n++;
-                        nstream.add(n);
-                        netnumIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        while( !isNovalue(flowIter.getSampleDouble(flow[0], flow[1], 0))
-                                && netnumIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(networkIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && flowIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg >= 2) {
-                                n++;
-                                nstream.add(n);
-                                netnumIter.setSample(flow[0], flow[1], 0, n);
-                            } else {
-                                netnumIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, flowIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
+                    if (flowNode != null) {
+                        splitNodes.add(flowNode);
+                        splitNodesIsNetStart.add(false);
+                    }
+                }
+            }
+        }
+
+        // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)
+        pm.beginTask("Find confluences...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r);
+                if (netNode.isValid()) {
+                    List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
+                    FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r);
+                    int enteringCount = 0;
+                    for( GridNode gridNode : validSurroundingNodes ) {
+                        FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row);
+                        List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
+                        if (enteringNodes.contains(tmpNode)) {
+                            enteringCount++;
+                        }
+                    }
+                    if (enteringCount != 1) {
+                        // starting (==0) + confluences (>1)
+                        splitNodes.add(currentflowNode);
+                        if (enteringCount == 0) {
+                            splitNodesIsNetStart.add(true);
+                        } else {
+                            splitNodesIsNetStart.add(false);
                         }
                     }
                 }
             }
+            pm.worked(1);
+        }
+        pm.done();
+        pm.message("Found split points: " + splitNodes.size());
+
+        int channel = 1;
+        pm.beginTask("Numbering network...", splitNodes.size());
+        for( int i = 0; i < splitNodes.size(); i++ ) {
+            FlowNode splitNode = splitNodes.get(i);
+            boolean isNetStart = splitNodesIsNetStart.get(i);
+
+            // we simply go down to the next split with one number
+            splitNode.setValueInMap(netnumIter, channel);
+
+            // if it is a net start, check the tca if it exists
+            if (isNetStart) {
+                double netStartTca = splitNode.getValueFromMap(tcaIter);
+                if (!isNovalue(netStartTca) && netStartTca > tcaThreshold) {
+                    channel++;
+                }
+            }
+
+            FlowNode nextNode = splitNode.goDownstream();
+            double startTca = doubleNovalue;
+            if (nextNode != null)
+                startTca = nextNode.getValueFromMap(tcaIter);
+            while( nextNode != null && !splitNodes.contains(nextNode) ) {
+                nextNode.setValueInMap(netnumIter, channel);
+                nextNode = nextNode.goDownstream();
+                double endTca = doubleNovalue;
+                if (nextNode != null)
+                    endTca = nextNode.getValueFromMap(tcaIter);
+                if (!isNovalue(startTca) && !isNovalue(endTca)) {
+                    double diffTca = endTca - startTca;
+                    if (diffTca > tcaThreshold) {
+                        startTca = endTca;
+                        channel++;
+                    }
+                }
+            }
+            channel++;
             pm.worked(1);
         }
         pm.done();
         return netnumWR;
-    }
-
-    /**
-     * this method numerating every stream and subdivide the stream when tca is
-     * greater than a threshold
-     */
-    public static WritableRaster netNumberingWithTca( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            RandomIter tcaRandomIter, int cols, int rows, double tcaTh, IJGTProgressMonitor pm ) {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
-
-        WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter oMatrixRandomIter = RandomIterFactory.createWritable(outImage, null);
-
-        double tcaValue = 0;
-
-        pm.beginTask(msg.message("utils.numbering_stream"), rows);
-        /* numerating every stream */
-        for( int j = 0; j < rows; j++ ) {
-            // ShowPercent.getPercent(copt, i, rows - 1, 1);
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(netRandomIter.getSampleDouble(i, j, 0)) && mRandomIter.getSampleDouble(i, j, 0) != 10.0
-                        && oMatrixRandomIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
-                    }
-                    // if the pixel is a source...
-                    if (f == 8) {
-                        n++;
-                        nstream.add(n);
-                        tcaValue = tcaRandomIter.getSampleDouble(i, j, 0);
-                        oMatrixRandomIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                                && oMatrixRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg >= 2) {
-                                // it is a node
-                                n++;
-                                nstream.add(n);
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
-                            } else if (tcaRandomIter.getSampleDouble(flow[0], flow[1], 0) - tcaValue > tcaTh) {
-                                // tca greater than threshold
-                                n++;
-                                nstream.add(n);
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
-                            } else {
-                                // normal point
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return outImage;
-    }
-
-    /**
-     * this method numerating every stream dividing the channels in fixed points
-     * @throws TransformException 
-     * @throws InvalidGridGeometryException 
-     */
-    public static WritableRaster netNumberingWithPoints( List<Integer> nstream, RandomIter mRandomIter, RandomIter netRandomIter,
-            int rows, int cols, List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
-            String reteId, IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
-        WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter oMatrixRandomIter = RandomIterFactory.createWritable(outImage, null);
-
-        Rectangle2D regionBox = gridGeometry.getEnvelope2D().getBounds2D();
-
-        List<Point4d> points = new ArrayList<Point4d>();
-        // new rectangle for active region
-        Number nodoId;
-        int l = 0;
-        int numGeometry = 0;
-        // insert the points in a Vector of points
-        for( Geometry pointV : geomVect ) {
-            for( int i = 0; i < pointV.getNumGeometries(); i++ ) {
-                GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointV.getCoordinates()[0].x,
-                        pointV.getCoordinates()[0].y));
-                nodoId = (Number) attributePoints.get(numGeometry).get(reteId);
-                if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field " + reteId + " not found", "", pm);
-                }
-                if (nodoId.intValue() != -1
-                        && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
-                    points.add(new Point4d(gridCoordinate.x, gridCoordinate.y, nodoId.doubleValue(), 0));
-                    l++;
-                }
-            }
-            numGeometry++;
-        }
-        // if the points isn't on the channel net, move the point
-        int p = 0;
-        for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
-                for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dirIn[i][1];
-                    int indexJ = (int) point4d.y + dirIn[i][0];
-                    if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
-                        point4d.x = indexI;
-                        point4d.y = indexJ;
-                    }
-                }
-            }
-        }
-        for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) == point4d.z) {
-                p++;
-            }
-        }
-
-        pm.beginTask(msg.message("utils.numbering_stream"), rows);
-        /* Selects every node and go downstream */
-        for( int j = 0; j < rows; j++ ) {
-            // ShowPercent.getPercent(copt, i, rows - 1, 1);
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(netRandomIter.getSampleDouble(i, j, 0)) && mRandomIter.getSampleDouble(i, j, 0) != 10.0
-                        && oMatrixRandomIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    // look for the source...
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
-                    }
-                    // if the pixel is a source...starts to assign a number to
-                    // every stream
-                    if (f == 8) {
-                        n++;
-                        nstream.add(n);
-                        oMatrixRandomIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        for( Point4d point4d : points ) {
-                            if (point4d.x == flow[0] && point4d.y == flow[1]) {
-                                n++;
-                                nstream.add(n);
-                                point4d.w = n - 1;
-                                /*
-                                 * omatrix.getSampleDouble(i,j) = n; if
-                                 * (!FluidUtils.go_downstream(flow,
-                                 * m.getSampleDouble(flow[0],flow[1]), copt)) ;
-                                 */
-                            }
-                        }
-                        while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                                && oMatrixRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0
-                                && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg >= 2) {
-                                n++;
-                                nstream.add(n);
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
-                            } else {
-                                oMatrixRandomIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
-                            for( Point4d point4d : points ) {
-                                if (point4d.x == flow[0] && point4d.y == flow[1]) {
-                                    n++;
-                                    nstream.add(n);
-                                    point4d.w = n - 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        return outImage;
-    }
-
-    /**
-     * this method numerating every stream dividing the channels in fixed points
-     * @param out 
-     * @throws TransformException 
-     * @throws InvalidGridGeometryException 
-     */
-    public static WritableRaster netNumberingWithPointsAndTca( List<Integer> nstream, RandomIter mRandomIter,
-            RandomIter netRandomIter, RandomIter tcaRandomIter, double tcaTh, int rows, int cols,
-            List<HashMap<String, ? >> attributePoints, List<Geometry> geomVect, GridGeometry2D gridGeometry,
-            IJGTProgressMonitor pm ) throws InvalidGridGeometryException, TransformException {
-        int[] flow = new int[2];
-        int gg = 0, n = 0, f;
-
-        double tcaValue = 0;
-
-        List<Point4d> points = new ArrayList<Point4d>();
-        // new rectangle for active region
-        Rectangle2D regionBox = gridGeometry.getEnvelope2D().getBounds2D();
-        Number nodoId;
-        int l = 0;
-        int numGeometry = 0;
-        // insert the points in a Vector of points
-        for( Geometry pointV : geomVect ) {
-            for( int i = 0; i < pointV.getNumGeometries(); i++ ) {
-                GridCoordinates2D gridCoordinate = gridGeometry.worldToGrid(new DirectPosition2D(pointV.getCoordinates()[0].x,
-                        pointV.getCoordinates()[0].y));
-                nodoId = (Number) attributePoints.get(numGeometry).get("RETE_ID");
-                if (nodoId == null) {
-                    throw new ModelsIllegalargumentException("Field RETE_ID not found", "", pm);
-                }
-                if (nodoId.intValue() != -1
-                        && regionBox.contains(new Point2D.Double(pointV.getCoordinates()[0].x, pointV.getCoordinates()[0].y))) {
-                    points.add(new Point4d(gridCoordinate.x, gridCoordinate.y, nodoId.doubleValue(), 0));
-                    l++;
-                }
-            }
-            numGeometry++;
-        }
-        // if the points isn't on the channel net, move the point
-        int p = 0;
-
-        WritableRaster outImage = CoverageUtilities.createDoubleWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter oRandomIter = RandomIterFactory.createWritable(outImage, null);
-
-        for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) != point4d.z) {
-                for( int i = 1; i < 9; i++ ) {
-                    int indexI = (int) point4d.x + dirIn[i][1];
-                    int indexJ = (int) point4d.y + dirIn[i][0];
-                    if (netRandomIter.getSampleDouble(indexI, indexJ, 0) == point4d.z) {
-                        point4d.x = indexI;
-                        point4d.y = indexJ;
-                    }
-                }
-            }
-        }
-        for( Point4d point4d : points ) {
-            if (netRandomIter.getSampleDouble((int) point4d.x, (int) point4d.y, 0) == point4d.z) {
-                p++;
-            }
-        }
-
-        pm.beginTask(msg.message("utils.numbering_stream"), rows);
-        /* Selects every node and go downstream */
-        for( int j = 0; j < rows; j++ ) {
-            // ShowPercent.getPercent(copt, i, rows - 1, 1);
-            for( int i = 0; i < cols; i++ ) {
-                flow[0] = i;
-                flow[1] = j;
-                if (!isNovalue(netRandomIter.getSampleDouble(i, j, 0)) && mRandomIter.getSampleDouble(i, j, 0) != 10.0
-                        && oRandomIter.getSampleDouble(i, j, 0) == 0.0) {
-                    f = 0;
-                    // look for the source...
-                    for( int k = 1; k <= 8; k++ ) {
-                        if (mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]
-                                && !isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))) {
-                            break;
-                        } else
-                            f++;
-                    }
-                    // if the pixel is a source...starts to assigne a number to
-                    // every stream
-                    if (f == 8) {
-                        n++;
-                        nstream.add(n);
-                        oRandomIter.setSample(i, j, 0, n);
-                        if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                            return null;
-                        for( Point4d point4d : points ) {
-                            if (point4d.y == flow[1] && point4d.x == flow[0]) {
-                                n++;
-                                nstream.add(n);
-                                point4d.w = n - 1;
-                                /*
-                                 * omatrix.getValueAt(i,j) = n; if
-                                 * (!FluidUtils.go_downstream(flow,
-                                 * m.getValueAt(flow[0],flow[1]), copt)) ;
-                                 */
-                            }
-                        }
-                        while( !isNovalue(mRandomIter.getSampleDouble(flow[0], flow[1], 0))
-                                && oRandomIter.getSampleDouble(flow[0], flow[1], 0) == 0
-                                && mRandomIter.getSampleDouble(flow[0], flow[1], 0) != 10 ) {
-                            gg = 0;
-                            for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0))
-                                        && mRandomIter.getSampleDouble(flow[0] + dirIn[k][1], flow[1] + dirIn[k][0], 0) == dirIn[k][2]) {
-                                    gg++;
-                                }
-                            }
-                            if (gg >= 2) {
-                                // it is a node
-                                n++;
-                                oRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
-                            } else if (tcaRandomIter.getSampleDouble(flow[0], flow[1], 0) - tcaValue > tcaTh) {
-                                // tca greater than threshold
-                                n++;
-                                nstream.add(n);
-                                oRandomIter.setSample(flow[0], flow[1], 0, n);
-                                tcaValue = tcaRandomIter.getSampleDouble(flow[0], flow[1], 0);
-                            } else {
-                                // normal point
-                                oRandomIter.setSample(flow[0], flow[1], 0, n);
-                            }
-                            if (!go_downstream(flow, mRandomIter.getSampleDouble(flow[0], flow[1], 0)))
-                                return null;
-                            for( Point4d point4d : points ) {
-                                if (point4d.y == flow[1] && point4d.x == flow[0]) {
-                                    n++;
-                                    nstream.add(n);
-                                    point4d.w = n - 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        oRandomIter.done();
-        tcaRandomIter.done();
-        // mRandomIter.done();
-        // netRandomIter.done();
-        return outImage;
     }
 
     /**
@@ -1213,7 +942,8 @@ public class ModelsEngine {
                     } else {
                         throw new ModelsIllegalargumentException(
                                 "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
-                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?", "MODELSENGINE", pm);
+                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?",
+                                "MODELSENGINE", pm);
                     }
                 }
             }

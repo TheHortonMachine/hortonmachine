@@ -121,16 +121,18 @@ public class LogProgressMonitor implements IJGTProgressMonitor {
     public void errorMessage( String message ) {
         if (prefix != null) {
             System.err.println(prefix + message);
+        } else {
+            System.err.println(message);
         }
-        System.err.println(message);
         // log.severe(message);
     }
 
     public void message( String message ) {
         if (prefix != null) {
             System.out.println(prefix + message);
+        } else {
+            System.out.println(message);
         }
-        System.out.println(message);
         // log.info(message);
     }
 

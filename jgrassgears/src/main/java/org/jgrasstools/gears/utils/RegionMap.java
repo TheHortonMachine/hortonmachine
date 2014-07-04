@@ -32,6 +32,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 
 /**
  * Map containing a region definition, having utility methods to get the values.
@@ -187,6 +188,16 @@ public class RegionMap extends HashMap<String, Double> {
         double ysnap = miny + (Math.ceil((y - miny) / nsres) * nsres);
 
         return new Coordinate(xsnap, ysnap);
+    }
+
+    /**
+     * Create the envelope of the region borders.
+     * 
+     * @return the envelope of the region borders.
+     */
+    public Envelope toEnvelope() {
+        Envelope env = new Envelope(getWest(), getEast(), getSouth(), getNorth());
+        return env;
     }
 
     /**

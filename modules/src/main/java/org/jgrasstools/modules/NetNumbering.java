@@ -32,7 +32,6 @@ import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_inTca_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outBasins_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_outNetnum_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pMode_DESCRIPTION;
 import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSNETNUMBERING_pThres_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -78,10 +77,6 @@ public class NetNumbering extends JGTModel {
     @In
     public String inPoints = null;
 
-    @Description(OMSNETNUMBERING_pMode_DESCRIPTION)
-    @In
-    public int pMode = 0;
-
     @Description(OMSNETNUMBERING_pThres_DESCRIPTION)
     @In
     public double pThres = 0;
@@ -107,9 +102,7 @@ public class NetNumbering extends JGTModel {
         omsnetnumbering.inTca = getRaster(inTca);
         omsnetnumbering.inNet = getRaster(inNet);
         omsnetnumbering.inPoints = getVector(inPoints);
-        omsnetnumbering.pMode = pMode;
         omsnetnumbering.pThres = pThres;
-        omsnetnumbering.fPointId = fPointId;
         omsnetnumbering.pm = pm;
         omsnetnumbering.doProcess = doProcess;
         omsnetnumbering.doReset = doReset;
@@ -117,22 +110,4 @@ public class NetNumbering extends JGTModel {
         dumpRaster(omsnetnumbering.outNetnum, outNetnum);
         dumpRaster(omsnetnumbering.outBasins, outBasins);
     }
-
-    public static void main( String[] args ) throws Exception {
-        NetNumbering omsnetnumbering = new NetNumbering();
-        omsnetnumbering.inFlow = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_flow.tif";
-        omsnetnumbering.inTca = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_tca.tif";
-        omsnetnumbering.inNet = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_net100.tif";
-        // omsnetnumbering.inPoints = getVector(inPoints);
-        omsnetnumbering.pMode = 1;
-        omsnetnumbering.pThres = 170;
-        // omsnetnumbering.fPointId = fPointId;
-        // omsnetnumbering.pm = pm;
-        // omsnetnumbering.doProcess = doProcess;
-        // omsnetnumbering.doReset = doReset;
-        omsnetnumbering.outNetnum = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_netnum170.tif";
-        omsnetnumbering.outBasins = "/home/moovida/data-mega/unibz_aurino/testarea_dtm_dsm/dsm_reverse_sub170.tif";
-        omsnetnumbering.process();
-    }
-
 }
