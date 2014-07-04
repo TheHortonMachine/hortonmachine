@@ -56,6 +56,7 @@ import com.vividsolutions.jts.geom.MultiLineString;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.operation.distance.DistanceOp;
 import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 @Description("Calculate the inundation zones along the channel network following a power law for the new width based on the original widht and the channel slope.")
@@ -204,17 +205,21 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
                 SimpleFeature extendedFeature = ext.extendFeature(netPointFeature, new Object[]{newWidth, slope});
                 ((DefaultFeatureCollection) outNetPoints).add(extendedFeature);
             }
-            // TODO
-            //create the output polygon of inundated area
+            // create the output polygon of inundated area
             ArrayList<Geometry> triangles = getPolygonBetweenLines(newLinesFeatures);
 
             Geometry union = CascadedPolygonUnion.union(triangles);
-            outInundationArea.add(union);
-            
+            finalPolygonGeoms.add(union);
+
             // add the inundated section to the output collection
             ((DefaultFeatureCollection) outInundationSections).addAll(newLinesFeatures);
             pm.worked(1);
         }
+        SimpleFeatureCollection outInundatedAreaFC = FeatureUtilities.featureCollectionFromGeometry(inNetPoints.getBounds()
+                .getCoordinateReferenceSystem(), finalPolygonGeoms.toArray(new Geometry[0]));
+
+        // add the inundated section to the output collection
+        ((DefaultFeatureCollection) outInundationArea).addAll(outInundatedAreaFC);
         
         pm.done();
 
@@ -224,7 +229,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
      * create the polygons between the inundated sections for the inundated
      * areas
      */
-    private ArrayList<Geometry> getPolygonBetweenLines(ArrayList<SimpleFeature> newLinesFeatures ) {
+    private ArrayList<Geometry> getPolygonBetweenLines( ArrayList<SimpleFeature> newLinesFeatures ) {
         ArrayList<Geometry> polygons = new ArrayList<Geometry>();
         for( int i = 0; i < newLinesFeatures.size() - 1; i++ ) {
             SimpleFeature f1 = newLinesFeatures.get(i);
@@ -233,7 +238,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
             LineString l1 = (LineString) f1.getDefaultGeometry();
             LineString l2 = (LineString) f2.getDefaultGeometry();
             MultiLineString multiLine = gf.createMultiLineString(new LineString[]{l1, l2});
-            
+
             Geometry convexHull = multiLine.convexHull();
             Geometry buffer = convexHull.buffer(0.1);
             polygons.add(buffer);
@@ -306,7 +311,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         if (Double.isNaN(slopeAvg)) {
             System.out.println();
         }
-        
+
         return slopeAvg;
     }
 
@@ -327,8 +332,8 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         if (preparedSupFormGeom.intersects(centerPoint)) {
             newWidth = calculateWidth(k, n, slope, width);
         } else {
-        // outside geology polygons there is rock, the channel width can not change during
-        // a flooding event
+            // outside geology polygons there is rock, the channel width can not change during
+            // a flooding event
             newWidth = width;
         }
 
@@ -341,23 +346,24 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         Coordinate origC2 = endPoint.getCoordinate();
         LineSegment seg1 = new LineSegment(center, origC1);
         LineSegment seg2 = new LineSegment(center, origC2);
-        
-        // create the two new vertexes of the inundated section considering the same line  
+
+        // create the two new vertexes of the inundated section considering the same line
         Coordinate c1 = seg1.pointAlong(factor);
         Coordinate c2 = seg2.pointAlong(factor);
 
         // create the new segments from the center to the two new vertexes
         LineString newSeg1 = gf.createLineString(new Coordinate[]{center, c1});
         LineString newSeg2 = gf.createLineString(new Coordinate[]{center, c2});
-        
+
         /*
-         * TODO: add a check of the intersection of the new vertexes of the inundated section
+         * TODO
+         * check of the intersection of the new vertexes of the inundated section
          * and the superficial geology
          */
-//        newSeg1 = checkSupFormIntersection(centerPoint, origC1, newSeg1);
-//        newSeg2 = checkSupFormIntersection(centerPoint, origC2, newSeg2);
+         newSeg1 = checkSupFormIntersection(centerPoint, origC1, newSeg1);
+         newSeg2 = checkSupFormIntersection(centerPoint, origC2, newSeg2);
 
-        // consider the final coordinates of the vertexes of the inundated section and create 
+        // consider the final coordinates of the vertexes of the inundated section and create
         // the new line
         Coordinate newC1 = newSeg1.getEndPoint().getCoordinate();
         Coordinate newC2 = newSeg2.getEndPoint().getCoordinate();
@@ -369,6 +375,48 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         SimpleFeature feature = newLinesBuilder.buildFeature(null);
         newLinesFeatures.add(feature);
         return newWidth;
+    }
+
+    /*
+     * check the intersection of the extracted inundated sections with the geology of
+     * superficial forms to avoid to have erosion where there is rock on the surface
+     */
+    private LineString checkSupFormIntersection( Point centerPoint, Coordinate origC, LineString newOneSideSegment ) {
+        if (preparedSupFormGeom.intersects(newOneSideSegment) && !preparedSupFormGeom.covers(newOneSideSegment)) {
+            Geometry intersection1 = preparedSupFormGeom.getGeometry().intersection(newOneSideSegment);
+            if (intersection1 instanceof LineString) {
+                newOneSideSegment = (LineString) intersection1;
+            } else if (intersection1 instanceof MultiLineString) {
+                newOneSideSegment = null;
+                MultiLineString multiLineIntersected = (MultiLineString) intersection1;
+                double minDistance = Double.POSITIVE_INFINITY;
+                for( int i = 0; i < multiLineIntersected.getNumGeometries(); i++ ) {
+                    LineString tmpLine = (LineString) multiLineIntersected.getGeometryN(i);
+                    double distance = DistanceOp.distance(tmpLine, centerPoint);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        newOneSideSegment = tmpLine;
+                    }
+                }
+                if (newOneSideSegment == null) {
+                    throw new RuntimeException();
+                }
+            } else {
+                throw new RuntimeException("Geometry found: " + intersection1);
+            }
+        }
+
+        Point checkPoint = newOneSideSegment.getStartPoint();
+        if (centerPoint.equals(checkPoint)) {
+            // need to check since we are not sure about the order after intersection
+            checkPoint = newOneSideSegment.getEndPoint();
+        }
+        if (centerPoint.distance(checkPoint) < centerPoint.getCoordinate().distance(origC)) {
+            // the new line segment is smaller, that is not allowed
+            newOneSideSegment = gf.createLineString(new Coordinate[]{centerPoint.getCoordinate(), origC});
+        }
+
+        return newOneSideSegment;
     }
 
     public static void main( String[] args ) throws Exception {
@@ -384,13 +432,15 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         networkBufferWidthCalculator.inGeo = OmsVectorReader.readVector(inSupFormShp);
         networkBufferWidthCalculator.inNetPoints = OmsVectorReader.readVector(inNetPointsShp);
         networkBufferWidthCalculator.inSectWidth = OmsVectorReader.readVector(inWidthLinesShp);
-        
 
         networkBufferWidthCalculator.process();
 
         SimpleFeatureCollection outNetPointFC = networkBufferWidthCalculator.outNetPoints;
         SimpleFeatureCollection outInundatedSectionFC = networkBufferWidthCalculator.outInundationSections;
         SimpleFeatureCollection outInundatedAreaFC = networkBufferWidthCalculator.outInundationArea;
+        
+        // SimpleFeatureCollection outInundatedAreaFC =
+        // networkBufferWidthCalculator.outInundationArea;
 
         OmsVectorWriter.writeVector(outNetPointsShp, outNetPointFC);
         OmsVectorWriter.writeVector(outWidthLinesShp, outInundatedSectionFC);
@@ -399,7 +449,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         if (size > 0) {
             OmsVectorWriter.writeVector(outInundatedPolyShp, outInundatedAreaFC);
         }
-    
+
     }
 
 }
