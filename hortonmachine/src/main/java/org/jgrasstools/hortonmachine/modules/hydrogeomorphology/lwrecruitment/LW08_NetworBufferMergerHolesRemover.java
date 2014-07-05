@@ -35,11 +35,15 @@ public class LW08_NetworBufferMergerHolesRemover extends JGTModel implements LWF
 
     private void process() {
 
-        List<Geometry> inBufferGeomsList = FeatureUtilities.featureCollectionToGeometriesList(inInundationArea, false, null);
+        // create a geometry list of the input polygons
+        List<Geometry> inInundationGeomsList = FeatureUtilities.featureCollectionToGeometriesList(inInundationArea, false, null);
 
-        Geometry union = CascadedPolygonUnion.union(inBufferGeomsList);
+        // make the union and merge of the polygons
+        Geometry union = CascadedPolygonUnion.union(inInundationGeomsList);
         List<Geometry> removedHoles = removeHoles(union);
-
+        
+        // store the results in the output feature collection
+        outInundationArea = new DefaultFeatureCollection();
         SimpleFeatureCollection outMergedAreaFC = FeatureUtilities.featureCollectionFromGeometry(inInundationArea.getBounds()
                 .getCoordinateReferenceSystem(), removedHoles.toArray(GeometryUtilities.TYPE_POLYGON));
         
@@ -48,7 +52,7 @@ public class LW08_NetworBufferMergerHolesRemover extends JGTModel implements LWF
 
 
     /*
-     * remove holes in mreged polygons
+     * remove holes in merged polygons
      */
     private List<Geometry> removeHoles( Geometry cleanPolygon ) {
         ArrayList<Geometry> gl = new ArrayList<Geometry>();

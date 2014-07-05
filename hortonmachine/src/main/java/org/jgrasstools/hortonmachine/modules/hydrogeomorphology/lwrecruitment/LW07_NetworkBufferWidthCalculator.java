@@ -218,7 +218,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
         SimpleFeatureCollection outInundatedAreaFC = FeatureUtilities.featureCollectionFromGeometry(inNetPoints.getBounds()
                 .getCoordinateReferenceSystem(), finalPolygonGeoms.toArray(new Geometry[0]));
 
-        // add the inundated section to the output collection
+        // add the inundated polygons to the output collection
         ((DefaultFeatureCollection) outInundationArea).addAll(outInundatedAreaFC);
         
         pm.done();
