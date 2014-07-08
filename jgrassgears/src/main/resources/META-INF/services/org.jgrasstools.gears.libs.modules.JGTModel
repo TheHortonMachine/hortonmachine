@@ -79,6 +79,7 @@ org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor
 org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator
 org.jgrasstools.gears.modules.v.intersections.OmsIntersectionFinder
 org.jgrasstools.gears.modules.v.intersections.OmsLineIntersectionCorrector
+org.jgrasstools.gears.modules.v.laspointdensity.OmsLasPointDensityExtractor
 org.jgrasstools.gears.modules.v.marchingsquares.OmsMarchingSquaresVectorializer
 org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer
 org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute
