@@ -39,7 +39,7 @@ public class ServiceGenerator {
     public static void main( String[] args ) throws IOException {
         File serviceFile = new File("./src/main/resources/META-INF/services/org.jgrasstools.gears.libs.modules.JGTModel");
         if (!serviceFile.exists()) {
-            throw new IOException();
+            throw new IOException("File doesn't exist: " + serviceFile.getAbsolutePath());
         }
 
         JGrassGears jgg = JGrassGears.getInstance();
