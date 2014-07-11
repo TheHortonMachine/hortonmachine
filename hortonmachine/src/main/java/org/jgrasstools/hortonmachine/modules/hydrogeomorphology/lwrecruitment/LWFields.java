@@ -26,4 +26,7 @@ public interface LWFields {
     static final String BRIDGE_LENGTH = "LENGHT";
     static final String SLOPE = "slope";
     static final String AVGSLOPE = "slopeavg";
+    
+    static final String VOLUME = "volume";
+    static final String MEDIAN = "median";
 }
