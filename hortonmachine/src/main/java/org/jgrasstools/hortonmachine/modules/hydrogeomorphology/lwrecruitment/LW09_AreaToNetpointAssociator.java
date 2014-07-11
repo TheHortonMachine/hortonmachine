@@ -63,6 +63,7 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import com.vividsolutions.jts.operation.union.CascadedPolygonUnion;
 
 @Description("Calculate median vegetation height and total timber volume of the vegetation on unstable and connected areas of each subbasin.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
@@ -231,8 +232,8 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
     */
     private PreparedGeometry getFloofindArea( SimpleFeatureCollection inFloodingAreas ) throws Exception {
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inFloodingAreas, true, null);
-        GeometryCollection gc = new GeometryCollection(geometriesList.toArray(new Geometry[0]), GeometryUtilities.gf());
-        PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(gc);
+        Geometry polygonUnion = CascadedPolygonUnion.union(geometriesList);
+        PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(polygonUnion);
         return preparedGeometry;
     }
 
