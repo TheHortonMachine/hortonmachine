@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
@@ -7,10 +24,16 @@ import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -41,6 +64,13 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 
+@Description("Calculate median vegetation height and total timber volume of the vegetation on unstable and connected areas of each subbasin.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("network, vector, bankflull, width, inundation, vegetation")
+@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
+@Name("LW09_AreaToNetpointAssociator")
+@Status(Status.EXPERIMENTAL)
+@License("General Public License Version 3 (GPLv3)")
 public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields {
 
     @Description("The input hierarchy point network layer.")
