@@ -51,6 +51,9 @@ public class Node {
      */
     public double getValueFromMap( RandomIter map ) {
         try {
+            if (map == null) {
+                return JGTConstants.doubleNovalue;
+            }
             double value = map.getSampleDouble(col, row, 0);
             return value;
         } catch (Exception e) {

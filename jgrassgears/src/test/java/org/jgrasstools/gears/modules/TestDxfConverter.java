@@ -41,7 +41,7 @@ public class TestDxfConverter extends HMTestCase {
 
         OmsDxfConverter reader = new OmsDxfConverter();
         reader.file = dxfFile;
-        reader.readFeatureCollection();
+        reader.process();
 
         SimpleFeatureCollection pointsFC = reader.pointsVector;
         SimpleFeatureCollection linesFC = reader.lineVector;

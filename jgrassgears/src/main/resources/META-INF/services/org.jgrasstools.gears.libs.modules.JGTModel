@@ -36,6 +36,7 @@ org.jgrasstools.gears.io.vectorreader.OmsVectorReader
 org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter
 org.jgrasstools.gears.modules.r.bobthebuilder.OmsBobTheBuilder
 org.jgrasstools.gears.modules.r.carver.OmsCarver
+org.jgrasstools.gears.modules.r.connectivity.OmsDownSlopeConnectivity
 org.jgrasstools.gears.modules.r.cutout.OmsCutOut
 org.jgrasstools.gears.modules.r.edgedetection.OmsCannyEdgeDetector
 org.jgrasstools.gears.modules.r.filter.OmsBiasedSigmaFilter
@@ -62,6 +63,7 @@ org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder
 org.jgrasstools.gears.modules.r.rastervectorintersection.OmsRasterVectorIntersector
 org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer
 org.jgrasstools.gears.modules.r.summary.OmsRasterSummary
+org.jgrasstools.gears.modules.r.summary.OmsZonalStats
 org.jgrasstools.gears.modules.r.summary.OmsZonalStatsIM
 org.jgrasstools.gears.modules.r.tmsgenerator.Mapurl2MbtilesConverter
 org.jgrasstools.gears.modules.r.tmsgenerator.OmsOnlineTilesDownloader
@@ -77,6 +79,7 @@ org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor
 org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator
 org.jgrasstools.gears.modules.v.intersections.OmsIntersectionFinder
 org.jgrasstools.gears.modules.v.intersections.OmsLineIntersectionCorrector
+org.jgrasstools.gears.modules.v.laspointdensity.OmsLasPointDensityExtractor
 org.jgrasstools.gears.modules.v.marchingsquares.OmsMarchingSquaresVectorializer
 org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer
 org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute
@@ -88,6 +91,7 @@ org.jgrasstools.gears.modules.v.vectorclipper.OmsVectorClipper
 org.jgrasstools.gears.modules.v.vectorconverter.OmsDwgConverter
 org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter
 org.jgrasstools.gears.modules.v.vectorconverter.OmsLasConverter
+org.jgrasstools.gears.modules.v.vectorconverter.OmsShp2DxfConverter
 org.jgrasstools.gears.modules.v.vectorconverter.OmsVectorConverter
 org.jgrasstools.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder
 org.jgrasstools.gears.modules.v.vectorfilter.OmsVectorFilter

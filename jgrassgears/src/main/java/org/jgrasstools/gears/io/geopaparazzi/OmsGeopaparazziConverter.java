@@ -195,15 +195,17 @@ public class OmsGeopaparazziConverter extends JGTModel {
         File outputShapeFile = new File(outputFolderFile, "simplenotes.shp");
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("geopaparazzisimplenotes"); //$NON-NLS-1$
+        b.setName("gpsimplenotes"); //$NON-NLS-1$
         b.setCRS(crs);
         b.add("the_geom", Point.class); //$NON-NLS-1$
-        b.add("DESCRIPTION", String.class);
+        b.add("DESCR", String.class);
         b.add("TIMESTAMP", String.class);
         b.add("ALTIM", Double.class);
 
         SimpleFeatureType featureType = b.buildFeatureType();
-        pm.beginTask("Import notes...", -1);
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
+        
+        pm.beginTask("Import simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
         Statement statement = null;
@@ -232,8 +234,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 Coordinate c = new Coordinate(lon, lat);
                 Point point = gf.createPoint(c);
 
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-                Object[] values = new Object[]{point, text, dateTimeString, String.valueOf(altim)};
+                Object[] values = new Object[]{point, text, dateTimeString, altim};
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
                 ((DefaultFeatureCollection) newCollection).add(feature);

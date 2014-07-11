@@ -387,14 +387,16 @@ public class NumericsUtilities {
     /**
      * Creates an array of bins from a range and a step to use.
      * 
-     * <p>Note that if the step doesn't split the range exactly, the last bin will be smaller.</p>
+     * <p>Note that if the step doesn't split the range exactly, the last bin 
+     * will be smaller if doLastEqual is set to <code>false</code>.</p>
      * 
      * @param min the min value.
      * @param max the max value.
      * @param step the wanted size of the bins.
+     * @param doLastEqual make also the last bin of equal step size.
      * @return the array of bin bounds.
      */
-    public static double[] range2Bins( double min, double max, double step ) {
+    public static double[] range2Bins( double min, double max, double step, boolean doLastEqual ) {
         double intervalsDouble = (max - min) / step;
 
         int intervals = (int) intervalsDouble;
@@ -411,7 +413,11 @@ public class NumericsUtilities {
             running = running + step;
             count++;
         }
-        bins[intervals] = max;
+        if (doLastEqual) {
+            bins[intervals] = running;
+        } else {
+            bins[intervals] = max;
+        }
         return bins;
     }
 
