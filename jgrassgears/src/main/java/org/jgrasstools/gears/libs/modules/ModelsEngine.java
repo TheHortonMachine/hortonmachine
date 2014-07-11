@@ -498,7 +498,6 @@ public class ModelsEngine {
      * @param theSplit
      * @param binNum
      * @param num_max
-     * @param out
      * @return
      */
     public static double split2realvectors( double[] U, double[] T, SplitVectors theSplit, int binNum, int num_max,
@@ -529,7 +528,7 @@ public class ModelsEngine {
                 previousCount = count;
                 count++;
                 if (head > num_max)
-                    throw new ModelsIllegalargumentException("The number of bin eccedes the maximum number allowed.", "MODEL", pm);
+                    throw new ModelsIllegalargumentException("The number of bin exceeds the maximum number allowed.", "MODEL", pm);
             }
 
         } else if (binNum > 1) {
@@ -702,14 +701,11 @@ public class ModelsEngine {
     /**
      * Calculate the map of netnumbering.
      *
-     * @param flowIter the map of flowdirection.
-     * @param netIter the map of network.
-     * @param tcaIter the optional map of tca.
+     * @param flowGC the map of flowdirection.
+     * @param netGC the map of network.
+     * @param tcaGC the optional map of tca.
      * @param tcaThreshold the threshold on the tca.
-     * @param rows the rows of the map.
-     * @param cols the cols of the map.
      * @param pointsFC optional feature collection of points in which to split the net.
-     * @param gridGeometry the {@link GridGeometry2D} of the raster.
      * @param pm the monitor.
      * @return the raster of netnumbering.
      * @throws Exception
