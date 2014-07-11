@@ -79,9 +79,9 @@ import com.vividsolutions.jts.geom.MultiLineString;
 
 /**
  * A class containing several methods used by the modules.
- * 
+ *
  * <p>The methods are not static for usage in multithreading environment.</p>
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  * @author Silvia Franceschi (www.hydrologis.com)
  * @author Erica Ghesla
@@ -102,7 +102,7 @@ public class ModelsEngine {
 
     /**
      * Moves one pixel downstream.
-     * 
+     *
      * @param colRow
      *            the array containing the column and row of the current pixel.
      *            It will be modified here to represent the next downstream
@@ -127,7 +127,7 @@ public class ModelsEngine {
 
     /**
      * Moves one pixel upstream.
-     * 
+     *
      * @param p
      * @param flowRandomIter
      * @param tcaRandomIter
@@ -178,7 +178,7 @@ public class ModelsEngine {
 
     /**
      * Moves one pixel upstream following the supplied network. TODO Daniele doc
-     * 
+     *
      * @param colRow
      * @param flowIterator
      * @param netnumIterator
@@ -217,11 +217,11 @@ public class ModelsEngine {
 
     /**
      * It create the shape-file of channel network
-     * 
+     *
      * @param flowImage the map of flow direction.
      * @param netNumImage the map of netnumbering.
      * @param gridGeometry the {@link GridGeometry2D} of the flow coverage.
-     * @param nstream 
+     * @param nstream
      * @param pm the progress monitor.
      * @return the extracted features.
      * @throws IOException
@@ -334,7 +334,7 @@ public class ModelsEngine {
 
     /**
      * Create the {@link MultiLineString line} geometries of channel network
-     * 
+     *
      * @param flowIter the flow map.
      * @param netNumIter the netnumbering map.
      * @param nstream
@@ -438,7 +438,7 @@ public class ModelsEngine {
 
     /**
      * Controls if the considered point is a source in the network map.
-     * 
+     *
      * @param flowIterator
      *            {@link RandomIter iterator} of flowdirections map
      * @param colRow the col and row of the point to check.
@@ -468,7 +468,7 @@ public class ModelsEngine {
 
     /**
      * Takes a input raster and vectorializes it.
-     * 
+     *
      * @param input
      * @return
      */
@@ -492,7 +492,7 @@ public class ModelsEngine {
 
     /**
      * TODO Daniele doc
-     * 
+     *
      * @param U
      * @param T
      * @param theSplit
@@ -701,7 +701,7 @@ public class ModelsEngine {
 
     /**
      * Calculate the map of netnumbering.
-     * 
+     *
      * @param flowIter the map of flowdirection.
      * @param netIter the map of network.
      * @param tcaIter the optional map of tca.
@@ -754,8 +754,9 @@ public class ModelsEngine {
                     FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y);
                     while( !netNode.isValid() ) {
                         flowNode = flowNode.goDownstream();
-                        if (flowNode != null)
-                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
+                        if (flowNode == null)
+                            break;
+                        netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row);
                     }
                     if (flowNode != null) {
                         splitNodes.add(flowNode);
@@ -841,7 +842,7 @@ public class ModelsEngine {
 
     /**
      * Extract the subbasins of a raster map.
-     * 
+     *
      * @param flowIter the map of flowdirections.
      * @param netRandomIter the network map.
      * @param netNumberIter the netnumber map.
@@ -886,8 +887,8 @@ public class ModelsEngine {
 
     /**
      * Marks a map on the hillslope with the values on the channel of an attribute map.
-     * 
-     * @param flowIter map of flow direction with the network cells 
+     *
+     * @param flowIter map of flow direction with the network cells
      *                  all marked as {@link FlowNode#NETVALUE}. This is very important!
      * @param attributeIter map of attributes.
      * @param markedIter the map to be marked.
@@ -954,7 +955,7 @@ public class ModelsEngine {
 
     /**
      * Verifies if the point is a source pixel in the supplied flow raster.
-     * 
+     *
      * @param flowIter the {@link RandomIter iterator} of the flowdirections.
      * @param col the col of the point to check.
      * @param row the row of the point to check.
@@ -976,7 +977,7 @@ public class ModelsEngine {
 
     /**
      * Returns the flow direction value for a given point as indexes (i, j) of the dir matrix.
-     * 
+     *
      * @param i
      * @param j
      * @return
@@ -993,7 +994,7 @@ public class ModelsEngine {
 
     /**
      * Linear interpolation between two values
-     * 
+     *
      * @param data
      *            - matrix of values to interpolate
      * @param x
@@ -1042,7 +1043,7 @@ public class ModelsEngine {
 
     /**
      * Interpolates the width function in a given tp.
-     * 
+     *
      * @param data
      * @param tp
      * @return
@@ -1101,7 +1102,7 @@ public class ModelsEngine {
 
     /**
      * The Gamma function.
-     * 
+     *
      * @param x
      * @return the calculated gamma function.
      */
@@ -1115,14 +1116,14 @@ public class ModelsEngine {
 
     /**
      * Calculates the sum of the values of a specified quantity from every point to the outlet.
-     * 
+     *
      * <p>During the calculation the drainage directions are followed.</p>
-     * 
+     *
      * @param flowIter the map of flowdirections.
      * @param mapToSumIter the map for which to sum downstream.
      * @param width the width of the resulting map.
      * @param height the height of the resulting map.
-     * @param upperThreshold the upper threshold, values above that are excluded. 
+     * @param upperThreshold the upper threshold, values above that are excluded.
      * @param lowerThreshold the lower threshold, values below that are excluded.
      * @param pm the monitor.
      * @return The map of downstream summed values.
@@ -1189,7 +1190,7 @@ public class ModelsEngine {
 
     /**
      * Calculating the inverse of the sun vector.
-     * 
+     *
      * @param sunVector
      * @return
      */
@@ -1200,7 +1201,7 @@ public class ModelsEngine {
 
     /**
      * Calculating the normal to the sun vector.
-     * 
+     *
      * @param sunVector
      * @return
      */
@@ -1214,7 +1215,7 @@ public class ModelsEngine {
 
     /**
      * Compute the dot product.
-     * 
+     *
      * @param a
      *            is a vector.
      * @param b
@@ -1230,7 +1231,7 @@ public class ModelsEngine {
     }
     /**
     * Evaluate the shadow map calling the shadow method.
-    * 
+    *
     * @param h
     *            the height of the raster.
     * @param w
@@ -1278,7 +1279,7 @@ public class ModelsEngine {
 
     /**
      * Evaluate the shadow map.
-     * 
+     *
      * @param i
      *            the x axis index.
      * @param j
@@ -1341,7 +1342,7 @@ public class ModelsEngine {
 
     /**
      * Verify if the current station (i) is already into the arrays.
-     *      
+     *
      * @param xStation the x coordinate of the stations
      * @param yStation the y coordinate of the stations
      * @param zStation the z coordinate of the stations
@@ -1383,7 +1384,7 @@ public class ModelsEngine {
 
     /**
      * Return the mean of a column of a matrix.
-     * 
+     *
      * @param matrix matrix of the value to calculate.
      * @param column index of the column to calculate the variance.
      * @return mean.
@@ -1405,7 +1406,7 @@ public class ModelsEngine {
 
     /**
      * Return the variance of a column of a matrix.
-     * 
+     *
      * @param matrix matrix of the value to calculate.
      * @param column index of the column to calculate the variance.
      * @param mean the mean value of the column.
@@ -1429,14 +1430,14 @@ public class ModelsEngine {
 
     /**
      * Sum columns.
-     * 
+     *
      * <p>
      * Store in a matrix (at index coulumn), the sum of the column of another
      * matrix. It's necessary to specify the initial and final index of the
      * coluns to sum.
      * </p>
-     * 
-     * 
+     *
+     *
      * @param coolIndex index of the matrix2 where to put the result.
      * @param matrixToSum contains the value to sum.
      * @param resultMatrix where to put the result.
@@ -1479,7 +1480,7 @@ public class ModelsEngine {
     /**
      * Calculates the distance of every pixel of the basin from the outlet (in meter),
      * calculated along the drainage directions
-     * 
+     *
      * @param flowIter the flow map.
      * @param pitIter the pit map (if available distance is calculated in 3d).
      * @param distanceToOutIter the resulting outlet distance map.
@@ -1596,7 +1597,7 @@ public class ModelsEngine {
     /**
      * Calculates the distance of every pixel of the basin from the outlet (in map units),
      * calculated along the drainage directions
-     * 
+     *
      * @param flowIter the flow map.
      * @param distanceToOutIter the resulting outlet distance map.
      * @param region the region parameters.
@@ -1661,7 +1662,7 @@ public class ModelsEngine {
      * <p>
      * It evaluates a multiple of the divisor (which is the nearest number to valueToApproximate).
      * </p>
-     * 
+     *
      * @param valueToApproximate value to approximate
      * @param divisor the unit value, it's the divisor number.
      * @return the largest value less than or equal to valueToApproximate and divisible to divisor.
