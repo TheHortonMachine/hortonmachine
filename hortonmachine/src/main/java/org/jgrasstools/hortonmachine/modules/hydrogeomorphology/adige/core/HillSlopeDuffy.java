@@ -244,7 +244,7 @@ public class HillSlopeDuffy implements IHillSlope {
     public int compare( IHillSlope ue1, IHillSlope ue2 ) {
         PfafstetterNumber p1 = ue1.getPfafstetterNumber();
         PfafstetterNumber p2 = ue2.getPfafstetterNumber();
-        return p1.compare(p1, p2);
+        return p1.compareTo(p2);
     }
 
     @Override
@@ -262,7 +262,7 @@ public class HillSlopeDuffy implements IHillSlope {
             IHillSlope other = (IHillSlope) obj;
             PfafstetterNumber p1 = getPfafstetterNumber();
             PfafstetterNumber p2 = other.getPfafstetterNumber();
-            return p1.compare(p1, p2) == 0;
+            return p1.compareTo(p2) == 0;
         }
         return false;
     }

@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class PfafstetterNumberTest extends TestCase {
@@ -63,8 +64,8 @@ public class PfafstetterNumberTest extends TestCase {
         assertEquals(false,PfafstetterNumber.areConnectedUpstream(n8, n7));
         assertEquals(false,PfafstetterNumber.areConnectedUpstream(n6, n9));
 
+        Collections.sort(list);
         PfafstetterNumber[] array = list.toArray(new PfafstetterNumber[list.size()]);
-        Arrays.sort(array, n1);
 
         assertEquals("2.7.6.5.2", array[0].toString());
         assertEquals("2.7.6.2.1", array[1].toString());

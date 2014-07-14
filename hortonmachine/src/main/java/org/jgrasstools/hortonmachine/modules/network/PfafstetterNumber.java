@@ -27,7 +27,7 @@ import java.util.List;
  *
  * @author Andrea Antonello - www.hydrologis.com
  */
-public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
+public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
 
     private String pfafstetterNumberString = null;
     private String pfafstetterUpToLastLevel = null;
@@ -133,9 +133,10 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
         return ordersList.get(ordersList.size() - 1) % 2 == 0;
     }
 
-    public int compare(PfafstetterNumber p1, PfafstetterNumber p2) {
-        List<Integer> p1OrdersList = p1.getOrdersList();
-        List<Integer> p2OrdersList = p2.getOrdersList();
+    @Override
+    public int compareTo(PfafstetterNumber o) {
+        List<Integer> p1OrdersList = getOrdersList();
+        List<Integer> p2OrdersList = o.getOrdersList();
 
         int levels = p1OrdersList.size();
         if (p2OrdersList.size() < levels) {
@@ -212,5 +213,6 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
                                                               PfafstetterNumber p2) {
         return areConnectedUpstream(p2, p1);
     }
+
 
 }
