@@ -106,6 +106,11 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public GridCoverage2D inDsm = null;
+    
+    @Description("The input total stand volume raster map.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public GridCoverage2D inStand = null;
 
     @Description("The input slope raster map.")
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -152,7 +157,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         GridCoverage2D chmGC = getChm(inDsm, inDtm);
 
         /*
-         * extract basins using netnumbering with input all network points
+         * extract basins calling netnumbering with in input all the network points
          */
         OmsNetNumbering omsnetnumbering = new OmsNetNumbering();
         omsnetnumbering.inFlow = inFlow;
@@ -165,16 +170,16 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         outNetnum = omsnetnumbering.outNetnum;
         outBasins = omsnetnumbering.outBasins;
 
-        RandomIter netnumIter = CoverageUtilities.getRandomIterator(outNetnum);
+        RandomIter netnumBasinsIter = CoverageUtilities.getRandomIterator(outBasins);
         RandomIter connectivityIter = CoverageUtilities.getRandomIterator(inConnectivity);
         RandomIter chmIter = CoverageUtilities.getRandomIterator(chmGC);
 
         HashMap<Integer, DescriptiveStatistics> chmBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
 
-        pm.beginTask("Calculating volume stats.", cols);
+        pm.beginTask("Calculating vegetation stats.", cols);
         for( int c = 0; c < cols; c++ ) {
             for( int r = 0; r < rows; r++ ) {
-                double netnumDouble = netnumIter.getSampleDouble(c, r, 0);
+                double netnumDouble = netnumBasinsIter.getSampleDouble(c, r, 0);
                 if (!isNovalue(netnumDouble)) {
                     Integer netNum = (int) netnumDouble;
                     Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
@@ -215,16 +220,20 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
             Geometry geometry = (Geometry) inPointFeature.getDefaultGeometry();
             Coordinate coordinate = geometry.getCoordinate();
             CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, point);
-            int netnum = netnumIter.getSample(point.x, point.y, 0);
+            int netnum = netnumBasinsIter.getSample(point.x, point.y, 0);
 
             DescriptiveStatistics summaryStatistics = chmBasin2ValueMap.get(netnum);
-            double sum = summaryStatistics.getSum();
-            double median = summaryStatistics.getPercentile(50);
+            double sum = 0.0;
+            double median = 0.0;
+            if (summaryStatistics != null) {
+                sum = summaryStatistics.getSum();
+                median = summaryStatistics.getPercentile(50);
+            }
 
             SimpleFeature newPointFeature = ext.extendFeature(inPointFeature, new Object[]{sum, median});
             finalNetworkPointsFC.add(newPointFeature);
         }
-
+        outNetPoints = finalNetworkPointsFC;
     }
 
     /*
@@ -259,6 +268,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         String inNetRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_netnull.asc";
         String inDtmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dtmfel.asc";
         String inDsmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dsm.asc";
+        String inStandRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_stand.asc";
         String inSlopeRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_slope.asc";
         String inConnectivityRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_down_slope_con_log10.asc";
 
@@ -275,6 +285,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         areaToNetpointAssociator.inNet = OmsRasterReader.readRaster(inNetRaster);
         areaToNetpointAssociator.inDtm = OmsRasterReader.readRaster(inDtmRaster);
         areaToNetpointAssociator.inDsm = OmsRasterReader.readRaster(inDsmRaster);
+        areaToNetpointAssociator.inStand = OmsRasterReader.readRaster(inStandRaster);
         areaToNetpointAssociator.inSlope = OmsRasterReader.readRaster(inSlopeRaster);
         areaToNetpointAssociator.inConnectivity = OmsRasterReader.readRaster(inConnectivityRaster);
 
