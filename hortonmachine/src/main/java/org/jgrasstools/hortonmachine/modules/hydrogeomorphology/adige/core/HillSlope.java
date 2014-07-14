@@ -1,20 +1,19 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- * (C) HydroloGIS - www.hydrologis.com 
- * 
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU Library General Public License as published by the Free
- * Software Foundation; either version 2 of the License, or (at your option) any
- * later version.
- * 
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
- * details.
- * 
- * You should have received a copy of the GNU Library General Public License
- * along with this library; if not, write to the Free Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com
+ *
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core;
 
@@ -24,6 +23,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 
@@ -282,11 +282,11 @@ public class HillSlope implements IHillSlope {
     }
 
     /* (non-Javadoc)
-     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getUpstreamElementAtPfafstetter(org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber)
+     * @see org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope#getUpstreamElementAtPfafstetter(org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber)
      */
     public IHillSlope getUpstreamElementAtPfafstetter( PfafstetterNumber pNum ) {
         // am I the one
-        if (pfafstetterNumber.compare(pfafstetterNumber, pNum) == 0) {
+        if (pfafstetterNumber.compareTo(pNum) == 0) {
             return this;
         }
         // // perhaps my upstream elements
@@ -334,7 +334,7 @@ public class HillSlope implements IHillSlope {
         // if the limit is the number of the actual element, return
         if (limit != null && limit.size() > 0) {
             for( PfafstetterNumber pfafs : limit ) {
-                if (pfafs.compare(pfafs, pfafstetterNumber) == 0) {
+                if (pfafs.compareTo(pfafstetterNumber) == 0) {
                     return;
                 }
             }
@@ -353,7 +353,7 @@ public class HillSlope implements IHillSlope {
         // if the limit is the number of the actual element, return
         if (limit != null && limit.size() > 0) {
             for( PfafstetterNumber pfafs : limit ) {
-                if (pfafs.compare(pfafs, pfafstetterNumber) == 0) {
+                if (pfafs.compareTo(pfafstetterNumber) == 0) {
                     return;
                 }
             }
@@ -409,7 +409,7 @@ public class HillSlope implements IHillSlope {
     public int compare( IHillSlope ue1, IHillSlope ue2 ) {
         PfafstetterNumber p1 = ue1.getPfafstetterNumber();
         PfafstetterNumber p2 = ue2.getPfafstetterNumber();
-        return p1.compare(p1, p2);
+        return p1.compareTo(p2);
     }
 
     @Override
@@ -427,7 +427,7 @@ public class HillSlope implements IHillSlope {
             IHillSlope other = (IHillSlope) obj;
             PfafstetterNumber p1 = getPfafstetterNumber();
             PfafstetterNumber p2 = other.getPfafstetterNumber();
-            return p1.compare(p1, p2) == 0;
+            return p1.compareTo(p2) == 0;
         }
         return false;
     }

@@ -86,7 +86,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Hydro
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Offtakes;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.Tributaries;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyAdigeEngine;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
