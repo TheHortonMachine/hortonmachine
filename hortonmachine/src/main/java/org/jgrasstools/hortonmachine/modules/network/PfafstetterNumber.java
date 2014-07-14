@@ -18,14 +18,13 @@
 package org.jgrasstools.hortonmachine.modules.network;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 /**
  * The object for OmsPfafstetter numbers, supplying several methods to compare and analyse a
  * hierarchial network numbered following a OmsPfafstetter modified network.
- * 
+ *
  * @author Andrea Antonello - www.hydrologis.com
  */
 public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
@@ -35,7 +34,7 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
     private int order = -1;
     private List<Integer> ordersList = null;
 
-    public PfafstetterNumber( String pfafstetterNumberString ) {
+    public PfafstetterNumber(String pfafstetterNumberString) {
         this.pfafstetterNumberString = pfafstetterNumberString;
 
         ordersList = new ArrayList<Integer>();
@@ -47,7 +46,7 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
         } else {
             String[] order = pfafstetterNumberString.split("\\."); //$NON-NLS-1$
             this.order = order.length;
-            for( String string : order ) {
+            for (String string : order) {
                 ordersList.add(Integer.parseInt(string));
             }
             pfafstetterUpToLastLevel = pfafstetterNumberString.substring(0, lastDot + 1);
@@ -76,8 +75,8 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
     /**
      * The pfafstetter string without the last level, useful for comparison. The dot is added at the
      * end in order have defined levels. *
-     * 
-     * @return
+     *
+     * @return the pfafstetter string without the last level.
      */
     public String toStringUpToLastLevel() {
         return pfafstetterUpToLastLevel;
@@ -85,23 +84,20 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
 
     /**
      * Check if the number is of a certain order or minor to that order
-     * 
-     * @return
+     *
+     * @return <code>true</code> if the supplied order is of same or minor order of the current.
      */
-    public boolean isOfOrderOrMinor( int order ) {
-        if (this.order >= order) {
-            return true;
-        }
-        return false;
+    public boolean isOfOrderOrMinor(int order) {
+        return this.order >= order;
     }
 
     /**
      * Checks if the actual pfafstetter object is downstream or not of the passed argument
-     * 
-     * @param pfafstetterNumber
-     * @return true if the actual obj is downstream of the passed one
+     *
+     * @param pfafstetterNumber the pfafstetterNumber to check against.
+     * @return true if the actual obj is downstream of the passed one.
      */
-    public boolean isDownStreamOf( PfafstetterNumber pfafstetterNumber ) {
+    public boolean isDownStreamOf(PfafstetterNumber pfafstetterNumber) {
         /*
          * all the upstreams will have same numbers until the last dot
          */
@@ -134,10 +130,10 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
      * @return true if the queried piece is end piece of a reach, i.e. pfafstetter is even
      */
     public boolean isEndPiece() {
-        return ordersList.get(ordersList.size() - 1) % 2 == 0 ? true : false;
+        return ordersList.get(ordersList.size() - 1) % 2 == 0;
     }
 
-    public int compare( PfafstetterNumber p1, PfafstetterNumber p2 ) {
+    public int compare(PfafstetterNumber p1, PfafstetterNumber p2) {
         List<Integer> p1OrdersList = p1.getOrdersList();
         List<Integer> p2OrdersList = p2.getOrdersList();
 
@@ -149,7 +145,7 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
         /*
          * check the numbers to the minor level of the two
          */
-        for( int i = 0; i < levels; i++ ) {
+        for (int i = 0; i < levels; i++) {
             int thisone = p1OrdersList.get(i);
             int otherone = p2OrdersList.get(i);
             if (thisone > otherone) {
@@ -160,10 +156,8 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
                 return -1;
             } else if (thisone < otherone) {
                 return 1;
-            } else {
-                // if they are equal, go on to the next level
-                continue;
             }
+            // if they are equal, go on to the next level
         }
 
         return 0;
@@ -171,13 +165,13 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
 
     /**
      * Checks if two pfafstetter are connected upstream, i.e. p1 is more downstream than p2
-     * 
-     * @param p1
-     * @param p2
-     * @return
+     *
+     * @param p1 the first pfafstetter.
+     * @param p2 the second pfafstetter.
+     * @return <code>true</code> if the first is more upstream than the second.
      */
-    public synchronized static boolean areConnectedUpstream( PfafstetterNumber p1,
-            PfafstetterNumber p2 ) {
+    public synchronized static boolean areConnectedUpstream(PfafstetterNumber p1,
+                                                            PfafstetterNumber p2) {
 
         List<Integer> p1OrdersList = p1.getOrdersList();
         List<Integer> p2OrdersList = p2.getOrdersList();
@@ -188,10 +182,7 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
                 int p1Last = p1OrdersList.get(p1OrdersList.size() - 1);
                 int p2Last = p2OrdersList.get(p2OrdersList.size() - 1);
                 if (p2Last == p1Last + 1 || p2Last == p1Last + 2) {
-                    if (p1Last % 2 == 0) {
-                        return false;
-                    }
-                    return true;
+                    return p1Last % 2 != 0;
                 }
             }
         } else if (levelDiff == -1) {
@@ -203,10 +194,7 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
                 int p1Last = p1OrdersList.get(p1OrdersList.size() - 1);
                 int p2LastMinus1 = p2OrdersList.get(p2OrdersList.size() - 2);
                 if (p2LastMinus1 == p1Last + 1 || p2Last == p1Last + 2) {
-                    if (p1Last % 2 == 0) {
-                        return false;
-                    }
-                    return true;
+                    return p1Last % 2 != 0;
                 }
             }
         }
@@ -214,14 +202,14 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
     }
 
     /**
-     * inverse of areConnectedUpstream
-     * 
-     * @param p1
-     * @param p2
-     * @return
+     * Inverse of {@link #areConnectedUpstream(PfafstetterNumber, PfafstetterNumber)} .
+     *
+     * @param p1 the first pfafstetter.
+     * @param p2 the second pfafstetter.
+     * @return <code>true</code> if the first is more downstream than the second.
      */
-    public synchronized static boolean areConnectedDownstream( PfafstetterNumber p1,
-            PfafstetterNumber p2 ) {
+    public synchronized static boolean areConnectedDownstream(PfafstetterNumber p1,
+                                                              PfafstetterNumber p2) {
         return areConnectedUpstream(p2, p1);
     }
 
