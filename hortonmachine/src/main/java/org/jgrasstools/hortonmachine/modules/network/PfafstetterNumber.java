@@ -68,10 +68,6 @@ public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
         return ordersList;
     }
 
-    public String toString() {
-        return pfafstetterNumberString;
-    }
-
     /**
      * The pfafstetter string without the last level, useful for comparison. The dot is added at the
      * end in order have defined levels. *
@@ -215,4 +211,24 @@ public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
     }
 
 
+    public String toString() {
+        return pfafstetterNumberString;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        PfafstetterNumber that = (PfafstetterNumber) o;
+
+        if (!pfafstetterNumberString.equals(that.pfafstetterNumberString)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return pfafstetterNumberString.hashCode();
+    }
 }
