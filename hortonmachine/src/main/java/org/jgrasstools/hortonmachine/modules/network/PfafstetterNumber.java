@@ -31,7 +31,7 @@ import java.util.List;
 public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
 
     private String pfafstetterNumberString = null;
-    private String pfafstetterUpToLastLeveL = null;
+    private String pfafstetterUpToLastLevel = null;
     private int order = -1;
     private List<Integer> ordersList = null;
 
@@ -43,14 +43,14 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
         if (lastDot == -1) {
             this.order = 1;
             ordersList.add(Integer.parseInt(pfafstetterNumberString));
-            pfafstetterUpToLastLeveL = ""; //$NON-NLS-1$
+            pfafstetterUpToLastLevel = ""; //$NON-NLS-1$
         } else {
             String[] order = pfafstetterNumberString.split("\\."); //$NON-NLS-1$
             this.order = order.length;
             for( String string : order ) {
                 ordersList.add(Integer.parseInt(string));
             }
-            pfafstetterUpToLastLeveL = pfafstetterNumberString.substring(0, lastDot + 1);
+            pfafstetterUpToLastLevel = pfafstetterNumberString.substring(0, lastDot + 1);
         }
 
     }
@@ -74,13 +74,13 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
     }
 
     /**
-     * The pfaftetter string without the last level, usefull for comparison. The dot is added at the
+     * The pfafstetter string without the last level, useful for comparison. The dot is added at the
      * end in order have defined levels. *
      * 
      * @return
      */
     public String toStringUpToLastLevel() {
-        return pfafstetterUpToLastLeveL;
+        return pfafstetterUpToLastLevel;
     }
 
     /**
@@ -223,52 +223,6 @@ public class PfafstetterNumber implements Comparator<PfafstetterNumber> {
     public synchronized static boolean areConnectedDownstream( PfafstetterNumber p1,
             PfafstetterNumber p2 ) {
         return areConnectedUpstream(p2, p1);
-    }
-
-    public static void main( String[] args ) {
-        PfafstetterNumber n1 = new PfafstetterNumber("2.5"); //$NON-NLS-1$
-        PfafstetterNumber n2 = new PfafstetterNumber("2.6.4"); //$NON-NLS-1$
-        PfafstetterNumber n3 = new PfafstetterNumber("2.4.3"); //$NON-NLS-1$
-        PfafstetterNumber n4 = new PfafstetterNumber("2.7.1"); //$NON-NLS-1$
-        PfafstetterNumber n5 = new PfafstetterNumber("2.4.16.45"); //$NON-NLS-1$
-        PfafstetterNumber n6 = new PfafstetterNumber("2.6.2.1"); //$NON-NLS-1$
-        PfafstetterNumber n7 = new PfafstetterNumber("2.7.6.5.2"); //$NON-NLS-1$
-        PfafstetterNumber n8 = new PfafstetterNumber("2.7.6.2.1"); //$NON-NLS-1$
-        PfafstetterNumber n9 = new PfafstetterNumber("2.6.2.7"); //$NON-NLS-1$
-        List<PfafstetterNumber> list = new ArrayList<PfafstetterNumber>();
-        list.add(n1);
-        list.add(n2);
-        list.add(n3);
-        list.add(n4);
-        list.add(n5);
-        list.add(n6);
-        list.add(n7);
-        list.add(n8);
-
-        System.out.println(n1.isDownStreamOf(n2));
-        System.out.println(n1.isDownStreamOf(n4));
-        System.out.println(n3.isDownStreamOf(n2));
-        System.out.println(n3.isDownStreamOf(n5));
-        System.out.println(n4.isDownStreamOf(n1));
-        System.out.println(n6.isDownStreamOf(n7));
-        System.out.println(n8.isDownStreamOf(n7));
-        System.out.println();
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n1, n2));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n1, n4));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n3, n2));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n3, n5));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n4, n1));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n4, n6));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n8, n7));
-        System.out.println(PfafstetterNumber.areConnectedUpstream(n6, n9));
-        System.out.println();
-
-        PfafstetterNumber[] array = list.toArray(new PfafstetterNumber[list.size()]);
-        Arrays.sort(array, n1);
-        for( PfafstetterNumber pfafstetterNumber : array ) {
-            System.out.println(pfafstetterNumber.toString());
-        }
-
     }
 
 }
