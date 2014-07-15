@@ -58,7 +58,6 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryCollection;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
@@ -173,8 +172,10 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         RandomIter netnumBasinsIter = CoverageUtilities.getRandomIterator(outBasins);
         RandomIter connectivityIter = CoverageUtilities.getRandomIterator(inConnectivity);
         RandomIter chmIter = CoverageUtilities.getRandomIterator(chmGC);
+        RandomIter standIter = CoverageUtilities.getRandomIterator(inStand);
 
-        HashMap<Integer, DescriptiveStatistics> chmBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
+        HashMap<Integer, DescriptiveStatistics> heightBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
+        HashMap<Integer, DescriptiveStatistics> standBasin2ValueMap = new HashMap<Integer, DescriptiveStatistics>();
 
         pm.beginTask("Calculating vegetation stats.", cols);
         for( int c = 0; c < cols; c++ ) {
@@ -189,16 +190,21 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
                      * check if the point is connected to the network:
                      * - connectivity index less than the threshold
                      * - point is inside the inundated area
-                     * and fill the hashmap with the correspondent positions.
+                     * and fill the hashmaps with the correspondent positions.
                      */
                     if (connectivityDouble < connectivityThreshold || preparedFooldingArea.intersects(point)) {
                         double chmDouble = chmIter.getSampleDouble(c, r, 0);
-                        DescriptiveStatistics summaryStatistics = chmBasin2ValueMap.get(netNum);
-                        if (summaryStatistics == null) {
-                            summaryStatistics = new DescriptiveStatistics();
-                            chmBasin2ValueMap.put(netNum, summaryStatistics);
+                        double standDouble = standIter.getSampleDouble(c, r, 0);
+                        DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netNum);
+                        DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netNum);
+                        if (summaryHeightStatistics == null) {
+                            summaryHeightStatistics = new DescriptiveStatistics();
+                            summaryStandStatistics = new DescriptiveStatistics();
+                            heightBasin2ValueMap.put(netNum, summaryHeightStatistics);
+                            standBasin2ValueMap.put(netNum, summaryStandStatistics);
                         }
-                        summaryStatistics.addValue(chmDouble);
+                        summaryHeightStatistics.addValue(chmDouble);
+                        summaryStandStatistics.addValue(standDouble);
                     }
                 }
 
@@ -222,15 +228,19 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
             CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, point);
             int netnum = netnumBasinsIter.getSample(point.x, point.y, 0);
 
-            DescriptiveStatistics summaryStatistics = chmBasin2ValueMap.get(netnum);
-            double sum = 0.0;
-            double median = 0.0;
-            if (summaryStatistics != null) {
-                sum = summaryStatistics.getSum();
-                median = summaryStatistics.getPercentile(50);
+            DescriptiveStatistics summaryHeightStatistics = heightBasin2ValueMap.get(netnum);
+            double medianHeight = 0.0;
+            if (summaryHeightStatistics != null) {
+                medianHeight = summaryHeightStatistics.getPercentile(50);
+            }
+            
+            DescriptiveStatistics summaryStandStatistics = standBasin2ValueMap.get(netnum);
+            double sumStand = 0.0;
+            if (summaryStandStatistics != null) {
+                sumStand = summaryStandStatistics.getSum();
             }
 
-            SimpleFeature newPointFeature = ext.extendFeature(inPointFeature, new Object[]{sum, median});
+            SimpleFeature newPointFeature = ext.extendFeature(inPointFeature, new Object[]{sumStand, medianHeight});
             finalNetworkPointsFC.add(newPointFeature);
         }
         outNetPoints = finalNetworkPointsFC;
@@ -274,7 +284,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
 
         String outNetnumRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_netnum.asc";
         String outBasinsRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_basins.asc";
-        String outNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_veg.shp";
+        String outNetPointsShp = "D:/lavori_tmp/gsoc/netpoints_width_bridgesdams_slope_veg_stand.shp";
 
         LW09_AreaToNetpointAssociator areaToNetpointAssociator = new LW09_AreaToNetpointAssociator();
         areaToNetpointAssociator.inNetPoints = OmsVectorReader.readVector(inNetPointsShp);
