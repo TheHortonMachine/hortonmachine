@@ -17,9 +17,12 @@
  */
 package org.jgrasstools.hortonmachine.modules.network;
 
+import org.jgrasstools.gears.utils.StringUtilities;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * The object for OmsPfafstetter numbers, supplying several methods to compare and analyse a
@@ -29,7 +32,7 @@ import java.util.List;
  */
 public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
 
-    private String pfafstetterNumberString = null;
+    final private String pfafstetterNumberString;
     private String pfafstetterUpToLastLevel = null;
     private int order = -1;
     private List<Integer> ordersList = null;
@@ -44,7 +47,7 @@ public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
             ordersList.add(Integer.parseInt(pfafstetterNumberString));
             pfafstetterUpToLastLevel = ""; //$NON-NLS-1$
         } else {
-            String[] order = pfafstetterNumberString.split("\\."); //$NON-NLS-1$
+            String[] order = StringUtilities.REGEX_PATTER_DOT.split(pfafstetterNumberString);
             this.order = order.length;
             for (String string : order) {
                 ordersList.add(Integer.parseInt(string));
@@ -114,7 +117,8 @@ public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
             if (pfaff.startsWith(pre)) {
                 // search for all those with a higher next number
                 String lastPart = pfaff.substring(lastDot + 1, pfaff.length());
-                if (Integer.parseInt(lastPart.split("\\.")[0]) >= lastNumInt) { //$NON-NLS-1$
+                String lastPartParent = StringUtilities.REGEX_PATTER_DOT.split(lastPart)[0];
+                if (Integer.parseInt(lastPartParent) >= lastNumInt) {
                     return true;
                 }
             }
@@ -199,7 +203,7 @@ public class PfafstetterNumber implements Comparable<PfafstetterNumber> {
     }
 
     /**
-     * Inverse of {@link #areConnectedUpstream(PfafstetterNumber, PfafstetterNumber)} .
+     * Inverse of {@link #areConnectedUpstream(org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber, org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber)} .
      *
      * @param p1 the first pfafstetter.
      * @param p2 the second pfafstetter.
