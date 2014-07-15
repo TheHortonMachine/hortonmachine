@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 /**
  * An utilities class for handling strings and similar.
@@ -30,6 +31,8 @@ import java.util.Scanner;
  * @since 0.7.0
  */
 public class StringUtilities {
+
+    public static final Pattern REGEX_PATTER_DOT = Pattern.compile("\\.");
 
     /**
      * Checks if the list of strings supplied contains the supplied string.
