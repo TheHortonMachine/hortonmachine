@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.opengis.feature.simple.SimpleFeature;
 
 import com.vividsolutions.jts.geom.Coordinate;

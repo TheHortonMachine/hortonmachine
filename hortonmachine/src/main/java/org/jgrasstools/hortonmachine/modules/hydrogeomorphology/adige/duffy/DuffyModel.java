@@ -37,7 +37,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDisc
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.HillSlopeDuffy.Parameters;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.utils.AdigeUtilities;
 /**
  * The duffy model.

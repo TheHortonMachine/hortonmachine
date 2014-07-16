@@ -32,7 +32,7 @@ import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.OmsAdige;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.IAdigeEngine;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IDischargeContributor;
 import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
-import org.jgrasstools.hortonmachine.modules.hydrogeomorphology.adige.core.PfafstetterNumber;
+import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.joda.time.DateTime;
 
 /**
