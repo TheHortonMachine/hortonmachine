@@ -265,6 +265,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         rasterDiff.inRaster1 = inDsm;
         rasterDiff.inRaster2 = inDtm;
         rasterDiff.pThreshold = 0.0;
+        rasterDiff.doNegatives = false;
         rasterDiff.process();
         GridCoverage2D out = rasterDiff.outRaster;
         return out;
@@ -278,7 +279,7 @@ public class LW09_AreaToNetpointAssociator extends JGTModel implements LWFields 
         String inNetRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_netnull.asc";
         String inDtmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dtmfel.asc";
         String inDsmRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_dsm.asc";
-        String inStandRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_stand.asc";
+        String inStandRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_stand_zero.asc";
         String inSlopeRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_slope.asc";
         String inConnectivityRaster = "D:/lavori_tmp/gsoc/raster/basin_raster/basin_down_slope_con_log10.asc";
 
