@@ -17,21 +17,24 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.lwrecruitment;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
 import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.factory.FactoryRegistryException;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.SchemaException;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -41,6 +44,13 @@ import org.jgrasstools.hortonmachine.modules.network.PfafstetterNumber;
 import org.jgrasstools.hortonmachine.modules.network.networkattributes.NetworkChannel;
 import org.opengis.feature.simple.SimpleFeature;
 
+@Description("Label the critical section for the transit of the wood and calculate the cumulated volume of biomass in each blocking section.")
+@Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
+@Keywords("network, vector, bankflull, width, inundation, vegetation")
+@Label("HortonMachine/Hydro-Geomorphology/LWRecruitment/critical/wood")
+@Name("LW10_NetworkPropagator")
+@Status(Status.EXPERIMENTAL)
+@License("General Public License Version 3 (GPLv3)") 
 public class LW10_NetworkPropagator extends JGTModel implements LWFields {
 
     @Description("The input network points layer with the additional attributes vegetation height and timber volume.")
