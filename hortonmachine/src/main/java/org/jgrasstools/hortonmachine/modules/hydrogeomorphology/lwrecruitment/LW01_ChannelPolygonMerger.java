@@ -93,7 +93,7 @@ public class LW01_ChannelPolygonMerger extends JGTModel {
     public static void main( String[] args ) throws Exception {
 
         String inBankfull = "D:/lavori_tmp/gsoc/channeledited.shp";
-        String outBankfull = "D:/lavori_tmp/gsoc/channeledited_merged.shp";
+        String outBankfull = "D:/lavori_tmp/gsoc/channeledited_merged2.shp";
         LW01_ChannelPolygonMerger channelPolygonMerger = new LW01_ChannelPolygonMerger();
         channelPolygonMerger.inBankfull = OmsVectorReader.readVector(inBankfull);
         

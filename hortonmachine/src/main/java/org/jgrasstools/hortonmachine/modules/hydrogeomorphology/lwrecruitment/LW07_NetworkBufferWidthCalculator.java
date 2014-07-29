@@ -80,7 +80,7 @@ public class LW07_NetworkBufferWidthCalculator extends JGTModel implements LWFie
     @In
     public SimpleFeatureCollection inSectWidth = null;
 
-    @Description("The output points network layer with the additional attribute of average slope.")
+    @Description("The output points network layer with the additional attribute of inundated width and average slope.")
     @Out
     public SimpleFeatureCollection outNetPoints = null;
 

@@ -44,7 +44,7 @@ import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description("Correct the bankfull width in the section of the channels point where a bridge or a check dam is found, set the attribute with the origin of the with to the corresponding value.")
+@Description("Correct the bankfull width of the sections of the channels where a bridge or a check dam is found, set the attribute with the origin of the width to the corresponding value.")
 @Author(name = "Silvia Franceschi, Andrea Antonello", contact = "http://www.hydrologis.com")
 @Keywords("network, vector, point, bankflull, width")
 @Label("HortonMachine/Hydro-Geomorphology/LWRecruitment")
@@ -57,11 +57,11 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
     @In
     public SimpleFeatureCollection inNetPoints = null;
 
-    @Description("The input point layer of with the bridges to consider for channel width.")
+    @Description("The input point layer with the bridges to consider to modify channel width.")
     @In
     public SimpleFeatureCollection inBridges = null;
 
-    @Description("The input point layer of with the check dams to consider for channel width.")
+    @Description("The input point layer with the check dams to consider to modify channel width.")
     @In
     public SimpleFeatureCollection inDams = null;
 
@@ -76,12 +76,22 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
     /*
      * meters within a dam is assumed to be on the network
      */
-    private double briglieOnNetDistance = 15.0;
+    private double damsOnNetDistance = 15.0;
 
     /*
      * meters within a bridge is assumed to be on the network
      */
-    private double pontiOnNetDistance = 15.0;
+    private double bridgesOnNetDistance = 15.0;
+    
+    /*
+     * fixed value of the width to assign to the sections where there is a check dam
+     */
+    private double fixedDamsWidth = 0.1;
+    
+    /*
+     * name of the attribute field of the bridges layer to use as width of the channel under the bridge
+     */
+    private String bridgeLenghtField = "LENGHT";
 
     @Execute
     public void process() throws Exception {
@@ -112,7 +122,7 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
             Geometry brigliaGeometry = (Geometry) brigliaFeature.getDefaultGeometry();
             Envelope envelopeInternal = brigliaGeometry.getEnvelopeInternal();
             Envelope envelopeExpanded = new Envelope(envelopeInternal);
-            envelopeExpanded.expandBy(briglieOnNetDistance);
+            envelopeExpanded.expandBy(damsOnNetDistance);
 
             /*
              * finds the nearest point on the network within the minDistance for Dams
@@ -137,7 +147,7 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
              */
             if (nearestPoint != null) {
                 // briglia filtrante strozza
-                nearestPoint.setAttribute(WIDTH, 0.1);
+                nearestPoint.setAttribute(WIDTH, fixedDamsWidth);
                 nearestPoint.setAttribute(WIDTH_FROM, WIDTH_FROM_DAMS);
             }
         }
@@ -151,8 +161,9 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
         List<SimpleFeature> pontiList = FeatureUtilities.featureCollectionToList(inBridges);
         for( SimpleFeature pontiFeature : pontiList ) {
             Geometry pontiGeometry = (Geometry) pontiFeature.getDefaultGeometry();
+
             // check if there is a regular bridge length
-            double length = (Double) pontiFeature.getAttribute(BRIDGE_LENGTH);
+            double length = (Double) pontiFeature.getAttribute(bridgeLenghtField);
             if (length == 0.0) {
                 ((DefaultFeatureCollection) outProblemBridges).add(pontiFeature);
                 continue;
@@ -160,7 +171,7 @@ public class LW05_BridgesDamsWidthAdder extends JGTModel implements LWFields {
 
             Envelope envelopeInternal = pontiGeometry.getEnvelopeInternal();
             Envelope envelopeExpanded = new Envelope(envelopeInternal);
-            envelopeExpanded.expandBy(pontiOnNetDistance);
+            envelopeExpanded.expandBy(bridgesOnNetDistance);
 
             /*
              * finds the nearest point on the network within the minDistance for Bridges

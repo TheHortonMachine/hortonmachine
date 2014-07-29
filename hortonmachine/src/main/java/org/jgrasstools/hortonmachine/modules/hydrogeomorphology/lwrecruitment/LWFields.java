@@ -23,7 +23,7 @@ public interface LWFields {
     static final double WIDTH_FROM_BRIDGES = 2;
 
     static final String NOTES = "notes";
-    static final String BRIDGE_LENGTH = "LENGHT";
+//    static final String BRIDGE_LENGTH = "LENGHT";
     static final String SLOPE = "slope";
     static final String AVGSLOPE = "slopeavg";
     
