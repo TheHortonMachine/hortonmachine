@@ -252,7 +252,8 @@ public class LasUtils {
         if (gpsTimeType == 0) {
             String[] split = String.valueOf(gpsTime).split("\\.");
             int week = Integer.parseInt(split[0]);
-            int seconds = Integer.parseInt(split[1]);
+//            int seconds = Integer.parseInt(split[1]);
+            long seconds = Long.parseLong(split[1]);
             double standardGpsTimeSeconds = week * 604800 + seconds;
             double standardGpsTimeMillis = standardGpsTimeSeconds * 1000;
             DateTime dt = gpsEpoch.plus((long) standardGpsTimeMillis);

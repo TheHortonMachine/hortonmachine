@@ -17,9 +17,32 @@
  */
 package org.jgrasstools.gears.modules.v.laspointdensity;
 
-import com.vividsolutions.jts.geom.*;
-import com.vividsolutions.jts.index.strtree.STRtree;
-import oms3.annotations.*;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_inFile_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSLASCONVERTER_pCode_DESCRIPTION;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -39,11 +62,13 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.jgrasstools.gears.i18n.GearsMessages.*;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.index.strtree.STRtree;
 
 @Description("Creates a vector map of the point cloud density over a given grid.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -67,7 +92,6 @@ public class OmsLasPointDensityExtractor extends JGTModel {
     @Description("The grid resolution.")
     @In
     public double pGridStep = 1.0;
-
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
@@ -101,10 +125,10 @@ public class OmsLasPointDensityExtractor extends JGTModel {
             double[] yBins = NumericsUtilities.range2Bins(dataEnvelope.getMinY(), dataEnvelope.getMaxY(), pGridStep, false);
 
             STRtree tree = new STRtree();
-            for (int x = 0; x < xBins.length - 1; x++) {
+            for( int x = 0; x < xBins.length - 1; x++ ) {
                 double minX = xBins[x];
                 double maxX = xBins[x + 1];
-                for (int y = 0; y < yBins.length - 1; y++) {
+                for( int y = 0; y < yBins.length - 1; y++ ) {
                     double minY = yBins[y];
                     double maxY = yBins[y + 1];
                     Envelope envelope = new Envelope(minX, maxX, minY, maxY);
@@ -116,13 +140,9 @@ public class OmsLasPointDensityExtractor extends JGTModel {
                 }
             }
 
-
             final long recordsCount = header.getRecordsCount();
-            // long index = 0;
-            long addedFeatures = 0;
-
             pm.beginTask("Sorting las data...", (int) recordsCount);
-            while (lasReader.hasNextPoint()) {
+            while( lasReader.hasNextPoint() ) {
                 pm.worked(1);
 
                 final LasRecord lasDot = lasReader.getNextPoint();
@@ -130,15 +150,25 @@ public class OmsLasPointDensityExtractor extends JGTModel {
                 final double x = lasDot.x;
                 final double y = lasDot.y;
                 final short impulse = lasDot.returnNumber;
-                final short impulseNumber = lasDot.numberOfReturns;
 
-                Envelope envelope = new Envelope(new Coordinate(x, y));
+                Coordinate p = new Coordinate(x, y);
+                Envelope envelope = new Envelope(p);
                 List result = tree.query(envelope);
-                if (result.size() != 1)
+                if (result.size() < 1)
                     throw new RuntimeException();
 
-                DensityData densityData = (DensityData) result.get(0);
-
+                DensityData densityData = null;
+                if (result.size() == 1) {
+                    densityData = (DensityData) result.get(0);
+                } else {
+                    for( Object object : result ) {
+                        densityData = (DensityData) object;
+                        Point point = gf.createPoint(p);
+                        if (densityData.geometry.intersects(point)) {
+                            break;
+                        }
+                    }
+                }
                 densityData.imp[impulse]++; // update impulse count
                 densityData.imp[0]++; // update total count
             }
@@ -148,7 +178,6 @@ public class OmsLasPointDensityExtractor extends JGTModel {
             if (lasReader != null)
                 lasReader.close();
         }
-
 
         DefaultFeatureCollection outGeodata = new DefaultFeatureCollection();
 
@@ -165,13 +194,15 @@ public class OmsLasPointDensityExtractor extends JGTModel {
         final SimpleFeatureType type = b.buildFeatureType();
         final SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        for (DensityData d : densityDataList) {
+        for( DensityData d : densityDataList ) {
             Object[] objs = {d.geometry, d.imp[1], d.imp[2], d.imp[3], d.imp[4], d.imp[5], d.imp[0]};
 
-            builder.addAll(objs);
-            final SimpleFeature feature = builder.buildFeature(null);
-
-            outGeodata.add(feature);
+            if (d.imp[0]>0) {
+                builder.addAll(objs);
+                final SimpleFeature feature = builder.buildFeature(null);
+                
+                outGeodata.add(feature);
+            }
         }
 
         File inputFile = new File(inFile);
@@ -185,7 +216,26 @@ public class OmsLasPointDensityExtractor extends JGTModel {
         /**
          * contains the count of [total, imp1, imp2, imp3, imp4, imp5]
          */
-        int[] imp = new int[5];
+        int[] imp = new int[6];
         Geometry geometry;
     }
+
+    public static void main( String[] args ) throws Exception {
+        File[] lasFiles = FileUtilities.getFilesListByExtention("/media/lacntfs/unibz/LAS_Classificati/", "las");
+        Arrays.sort(lasFiles);
+        for( File lasFile : lasFiles ) {
+            String name = lasFile.getName();
+            if (name.contains("indexed")) {
+                // don't duplicate
+                continue;
+            }
+
+            OmsLasPointDensityExtractor ex = new OmsLasPointDensityExtractor();
+            ex.inFile = lasFile.getAbsolutePath();
+            ex.pGridStep = 1.0;
+            ex.process();
+        }
+
+    }
+
 }
