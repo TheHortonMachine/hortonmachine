@@ -28,6 +28,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVector1_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_inVector2_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSVECTORMERGER_outVector_DESCRIPTION;
+import static org.jgrasstools.gears.libs.modules.JGTConstants.FILEIN_UI_HINT;
 
 import java.util.Arrays;
 
@@ -56,10 +57,12 @@ import org.jgrasstools.gears.modules.v.vectormerger.OmsVectorMerger;
 public class VectorMerger extends JGTModel {
 
     @Description(OMSVECTORMERGER_inVector1_DESCRIPTION)
+    @UI(FILEIN_UI_HINT)
     @In
     public String inVector1;
 
     @Description(OMSVECTORMERGER_inVector2_DESCRIPTION)
+    @UI(FILEIN_UI_HINT)
     @In
     public String inVector2;
 
