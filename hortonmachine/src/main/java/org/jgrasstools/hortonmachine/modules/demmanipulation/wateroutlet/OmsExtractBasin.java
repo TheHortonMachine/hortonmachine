@@ -111,6 +111,7 @@ import com.vividsolutions.jts.linearref.LocationIndexedLine;
 @Status(OMSEXTRACTBASIN_STATUS)
 @License(OMSEXTRACTBASIN_LICENSE)
 public class OmsExtractBasin extends JGTModel {
+
     @Description(OMSEXTRACTBASIN_pNorth_DESCRIPTION)
     @UI(JGTConstants.NORTHING_UI_HINT)
     @In
@@ -160,6 +161,8 @@ public class OmsExtractBasin extends JGTModel {
     @Description(OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVectorBasin = null;
+
+    public static final String FIELD_BASINAREA = "basinarea";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
@@ -381,10 +384,10 @@ public class OmsExtractBasin extends JGTModel {
         outOutlet = new DefaultFeatureCollection();
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("typename");
+        b.setName("outlet");
         b.setCRS(crs);
         b.add("the_geom", Point.class);
-        b.add("basinarea", Double.class);
+        b.add(FIELD_BASINAREA, Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         Object[] values = new Object[]{snappedOutletPoint, -9999.0};
