@@ -18,12 +18,16 @@
 package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
 
+import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter;
+
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -34,7 +38,7 @@ import static java.lang.Math.abs;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 @SuppressWarnings("nls")
-public class DaoGpsLog  {
+public class DaoGpsLog {
 
     private static SimpleDateFormat dateFormatter = TimeUtilities.INSTANCE.TIME_FORMATTER_SQLITE_UTC;
     private static SimpleDateFormat dateFormatterForLabelInLocalTime = TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL;
@@ -164,120 +168,173 @@ public class DaoGpsLog  {
 
     }
 
-//
-//    public long addGpsLog(long startTs, long endTs, double lengthm, String text, float width, String color, boolean visible)
-//            throws IOException {
-//        SQLiteDatabase sqliteDatabase = GeopaparazziApplication.getInstance().getDatabase();
-//        sqliteDatabase.beginTransaction();
-//        long rowId;
-//        try {
-//            // add new log
-//            ContentValues values = new ContentValues();
-//            values.put(GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName(), startTs);
-//            values.put(GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName(), endTs);
-//            if (text == null) {
-//                text = "log_" + dateFormatterForLabelInLocalTime.format(new java.util.Date(startTs));
-//            }
-//            values.put(GpsLogsTableFields.COLUMN_LOG_LENGTHM.getFieldName(), lengthm);
-//            values.put(GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName(), text);
-//            values.put(GpsLogsTableFields.COLUMN_LOG_ISDIRTY.getFieldName(), 1);
-//            rowId = sqliteDatabase.insertOrThrow(TABLE_GPSLOGS, null, values);
-//
-//            // and some default properties
-//            ContentValues propValues = new ContentValues();
-//            propValues.put(GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName(), rowId);
-//            propValues.put(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName(), color);
-//            propValues.put(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName(), width);
-//            propValues.put(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName(), visible ? 1 : 0);
-//            sqliteDatabase.insertOrThrow(TABLE_GPSLOG_PROPERTIES, null, propValues);
-//
-//            sqliteDatabase.setTransactionSuccessful();
-//        } catch (Exception e) {
-//            GPLog.error("DAOGPSLOG", e.getLocalizedMessage(), e);
-//            throw new IOException(e.getLocalizedMessage());
-//        } finally {
-//            sqliteDatabase.endTransaction();
-//        }
-//        return rowId;
-//    }
-//
-//    /**
-//     * Adds a new XY entry to the gps table.
-//     *
-//     * @param gpslogId the ID from the GPS log table.
-//     * @param lon      longitude.
-//     * @param lat      latitude
-//     * @param altim    altitude/elevation
-//     * @throws IOException if something goes wrong
-//     */
-//    public void addGpsLogDataPoint(SQLiteDatabase sqliteDatabase, long gpslogId, double lon, double lat, double altim,
-//                                   long timestamp) throws IOException {
-//        ContentValues values = new ContentValues();
-//        values.put(GpsLogsDataTableFields.COLUMN_LOGID.getFieldName(), (int) gpslogId);
-//        values.put(GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName(), lon);
-//        values.put(GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName(), lat);
-//        values.put(GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName(), altim);
-//        values.put(GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName(), timestamp);
-//        sqliteDatabase.insertOrThrow(TABLE_GPSLOG_DATA, null, values);
-//    }
-//
-//
-//
-//    /**
-//     * Update the properties of a log.
-//     *
-//     * @param logid   the id of the log.
-//     * @param color   color
-//     * @param width   width
-//     * @param visible whether it is visible.
-//     * @param name    the name.
-//     * @throws IOException if something goes wrong.
-//     */
-//    public static void updateLogProperties(long logid, String color, float width, boolean visible, String name)
-//            throws IOException {
-//        SQLiteDatabase sqliteDatabase = GeopaparazziApplication.getInstance().getDatabase();
-//        sqliteDatabase.beginTransaction();
-//        try {
-//
-//            StringBuilder sb = new StringBuilder();
-//            sb.append("UPDATE ");
-//            sb.append(TABLE_GPSLOG_PROPERTIES);
-//            sb.append(" SET ");
-//            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName()).append("='").append(color).append("', ");
-//            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName()).append("=").append(width).append(", ");
-//            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName()).append("=").append(visible ? 1 : 0).append(" ");
-//            sb.append("WHERE ").append(GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName()).append("=").append(logid);
-//
-//            String query = sb.toString();
-//            if (GPLog.LOG_HEAVY)
-//                GPLog.addLogEntry("DAOGPSLOG", query);
-//            // sqliteDatabase.execSQL(query);
-//            SQLiteStatement sqlUpdate = sqliteDatabase.compileStatement(query);
-//            sqlUpdate.execute();
-//            sqlUpdate.close();
-//
-//            if (name != null && name.length() > 0) {
-//                sb = new StringBuilder();
-//                sb.append("UPDATE ");
-//                sb.append(TABLE_GPSLOGS);
-//                sb.append(" SET ");
-//                sb.append(GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName()).append("='").append(name).append("' ");
-//                sb.append("WHERE ").append(GpsLogsTableFields.COLUMN_ID.getFieldName()).append("=").append(logid);
-//
-//                query = sb.toString();
-//                if (GPLog.LOG_HEAVY)
-//                    GPLog.addLogEntry("DAOGPSLOG", query);
-//                sqlUpdate = sqliteDatabase.compileStatement(query);
-//                sqlUpdate.execute();
-//                sqlUpdate.close();
-//            }
-//
-//            sqliteDatabase.setTransactionSuccessful();
-//        } catch (Exception e) {
-//            GPLog.error("DAOGPSLOG", e.getLocalizedMessage(), e);
-//            throw new IOException(e.getLocalizedMessage());
-//        } finally {
-//            sqliteDatabase.endTransaction();
-//        }
-//    }
+
+    public static void addGpsLog(Connection connection, OmsGeopaparazziProject3To4Converter.GpsLog log, float width, String color, boolean visible)
+            throws Exception {
+        Date startTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.startTime);
+        Date endTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.endTime);
+
+        PreparedStatement writeStatement = null;
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOGS
+                    + "(" + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_LENGTHM.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ISDIRTY.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?,?,?,?,?)";
+
+            writeStatement = connection.prepareStatement(insertSQL);
+            writeStatement.setLong(1, log.id);
+            writeStatement.setLong(2, startTS.getTime());
+            writeStatement.setLong(3, endTS.getTime());
+            writeStatement.setDouble(4, 0.0);
+            writeStatement.setString(5, log.text);
+            writeStatement.setInt(6, 1);
+
+            writeStatement.executeUpdate();
+
+        } finally {
+            if (writeStatement != null) {
+                writeStatement.close();
+            }
+        }
+
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_PROPERTIES
+                    + "(" + //
+                    GpsLogsPropertiesTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + ", " + //
+                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + ", " + //
+                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName() + ", " + //
+                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?,?,?,?)";
+
+            writeStatement = connection.prepareStatement(insertSQL);
+            writeStatement.setLong(1, log.id);
+            writeStatement.setLong(2, log.id);
+            writeStatement.setString(3, color);
+            writeStatement.setFloat(4, width);
+            writeStatement.setInt(5, visible ? 1 : 0);
+
+            writeStatement.executeUpdate();
+
+        } finally {
+            if (writeStatement != null) {
+                writeStatement.close();
+            }
+        }
+
+        for (OmsGeopaparazziProject3To4Converter.GpsPoint point : log.points) {
+            addGpsLogDataPoint(connection, point, log.id);
+        }
+
+
+    }
+
+    /**
+     * Adds a new XY entry to the gps table.
+     *
+     * @param connection the db connection.
+     * @param point      the point to add.
+     * @param gpslogId   the id of the log the point is part of.
+     *
+     * @throws IOException if something goes wrong
+     */
+    public static void addGpsLogDataPoint(Connection connection, OmsGeopaparazziProject3To4Converter.GpsPoint point, long gpslogId) throws Exception {
+        Date timestamp = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(point.utctime);
+
+        PreparedStatement writeStatement = null;
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_DATA
+                    + "(" + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ", " + //
+                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?,?,?,?,?)";
+
+            writeStatement = connection.prepareStatement(insertSQL);
+            writeStatement.setLong(1, point.id);
+            writeStatement.setLong(2, gpslogId);
+            writeStatement.setDouble(3, point.lon);
+            writeStatement.setDouble(4, point.lat);
+            writeStatement.setDouble(5, point.altim);
+            writeStatement.setLong(6, timestamp.getTime());
+
+            writeStatement.executeUpdate();
+
+        } finally {
+            if (writeStatement != null) {
+                writeStatement.close();
+            }
+        }
+    }
+    //
+    //
+    //
+    //    /**
+    //     * Update the properties of a log.
+    //     *
+    //     * @param logid   the id of the log.
+    //     * @param color   color
+    //     * @param width   width
+    //     * @param visible whether it is visible.
+    //     * @param name    the name.
+    //     * @throws IOException if something goes wrong.
+    //     */
+    //    public static void updateLogProperties(long logid, String color, float width, boolean visible, String name)
+    //            throws IOException {
+    //        SQLiteDatabase sqliteDatabase = GeopaparazziApplication.getInstance().getDatabase();
+    //        sqliteDatabase.beginTransaction();
+    //        try {
+    //
+    //            StringBuilder sb = new StringBuilder();
+    //            sb.append("UPDATE ");
+    //            sb.append(TABLE_GPSLOG_PROPERTIES);
+    //            sb.append(" SET ");
+    //            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName()).append("='").append(color).append("', ");
+    //            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName()).append("=").append(width).append(", ");
+    //            sb.append(GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName()).append("=").append(visible ? 1 : 0).append(" ");
+    //            sb.append("WHERE ").append(GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName()).append("=").append(logid);
+    //
+    //            String query = sb.toString();
+    //            if (GPLog.LOG_HEAVY)
+    //                GPLog.addLogEntry("DAOGPSLOG", query);
+    //            // sqliteDatabase.execSQL(query);
+    //            SQLiteStatement sqlUpdate = sqliteDatabase.compileStatement(query);
+    //            sqlUpdate.execute();
+    //            sqlUpdate.close();
+    //
+    //            if (name != null && name.length() > 0) {
+    //                sb = new StringBuilder();
+    //                sb.append("UPDATE ");
+    //                sb.append(TABLE_GPSLOGS);
+    //                sb.append(" SET ");
+    //                sb.append(GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName()).append("='").append(name).append("' ");
+    //                sb.append("WHERE ").append(GpsLogsTableFields.COLUMN_ID.getFieldName()).append("=").append(logid);
+    //
+    //                query = sb.toString();
+    //                if (GPLog.LOG_HEAVY)
+    //                    GPLog.addLogEntry("DAOGPSLOG", query);
+    //                sqlUpdate = sqliteDatabase.compileStatement(query);
+    //                sqlUpdate.execute();
+    //                sqlUpdate.close();
+    //            }
+    //
+    //            sqliteDatabase.setTransactionSuccessful();
+    //        } catch (Exception e) {
+    //            GPLog.error("DAOGPSLOG", e.getLocalizedMessage(), e);
+    //            throw new IOException(e.getLocalizedMessage());
+    //        } finally {
+    //            sqliteDatabase.endTransaction();
+    //        }
+    //    }
 }

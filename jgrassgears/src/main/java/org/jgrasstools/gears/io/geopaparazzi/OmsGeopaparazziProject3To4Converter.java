@@ -141,8 +141,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
             importNotes(geopap3Connection, geopap4Connection, pm);
             importImages(geopapFolderFile, geopap4Connection, pm);
-            //            complexNotesToShapefile(geopap3Connection, geopap4Connection, pm);
-            //            gpsLogToShapefiles(geopap3Connection, geopap4Connection, pm);
+            importGpsLog(geopap3Connection, geopap4Connection, pm);
 
         } catch (Exception e) {
             throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
@@ -261,13 +260,13 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
     }
 
 
-    private void gpsLogToShapefiles(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
-        Statement statement = connection.createStatement();
-        statement.setQueryTimeout(30); // set timeout to 30 sec.
+    private void importGpsLog(Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
+        Statement readStatement = geopap3Connection.createStatement();
+        readStatement.setQueryTimeout(30); // set timeout to 30 sec.
 
         List<GpsLog> logsList = new ArrayList<GpsLog>();
         // first get the logs
-        ResultSet rs = statement.executeQuery("select _id, startts, endts, text from gpslogs");
+        ResultSet rs = readStatement.executeQuery("select _id, startts, endts, text from gpslogs");
         while (rs.next()) {
             long id = rs.getLong("_id");
 
@@ -282,25 +281,27 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
             log.text = text;
             logsList.add(log);
         }
-        statement.close();
+        readStatement.close();
 
         try {
             // then the log data
             for (GpsLog log : logsList) {
                 long logId = log.id;
-                String query = "select lat, lon, altim, ts from gpslog_data where logid = " + logId + " order by ts";
+                String query = "select _id, lat, lon, altim, ts from gpslog_data where logid = " + logId + " order by ts";
 
-                Statement newStatement = connection.createStatement();
+                Statement newStatement = geopap3Connection.createStatement();
                 newStatement.setQueryTimeout(30);
                 ResultSet result = newStatement.executeQuery(query);
 
                 while (result.next()) {
+                    long id = result.getLong("_id");
                     double lat = result.getDouble("lat");
                     double lon = result.getDouble("lon");
                     double altim = result.getDouble("altim");
                     String dateTimeString = result.getString("ts");
 
                     GpsPoint gPoint = new GpsPoint();
+                    gPoint.id = id;
                     gPoint.lon = lon;
                     gPoint.lat = lat;
                     gPoint.altim = altim;
@@ -317,80 +318,14 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
             throw new ModelsRuntimeException("An error occurred while reading the gps logs.", this);
         }
 
-        /*
-         * create the lines shapefile
-         */
-        SimpleFeatureTypeBuilder b;
-        SimpleFeatureType featureType;
-
-        b = new SimpleFeatureTypeBuilder();
-        b.setName("geopaparazzinotes");
-        b.setCRS(crs);
-        b.add("the_geom", MultiLineString.class);
-        b.add("STARTDATE", String.class);
-        b.add("ENDDATE", String.class);
-        b.add("DESCR", String.class);
-        featureType = b.buildFeatureType();
-        pm.beginTask("Import gps to lines...", logsList.size());
-        DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
+        pm.beginTask("Import logs...", logsList.size());
         for (GpsLog log : logsList) {
-            List<GpsPoint> points = log.points;
 
-            List<Coordinate> coordList = new ArrayList<Coordinate>();
-            String startDate = log.startTime;
-            String endDate = log.endTime;
-            for (GpsPoint gpsPoint : points) {
-                Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
-                coordList.add(c);
-            }
-            Coordinate[] coordArray = (Coordinate[]) coordList.toArray(new Coordinate[coordList.size()]);
-            if (coordArray.length < 2) {
-                continue;
-            }
-            LineString lineString = gf.createLineString(coordArray);
-            MultiLineString multiLineString = gf.createMultiLineString(new LineString[]{lineString});
+            DaoGpsLog.addGpsLog(geopap4Connection, log, 8, "red", true);
 
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-            Object[] values = new Object[]{multiLineString, startDate, endDate, log.text};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-
-            newCollection.add(feature);
             pm.worked(1);
         }
         pm.done();
-        File outputLinesShapeFile = new File(outputFolderFile, "gpslines.shp");
-        dumpVector(newCollection, outputLinesShapeFile.getAbsolutePath());
-            /*
-                 * create the points shapefile
-                 */
-        b = new SimpleFeatureTypeBuilder();
-        b.setName("geopaparazzinotes");
-        b.setCRS(crs);
-        b.add("the_geom", Point.class);
-        b.add("ALTIMETRY", String.class);
-        b.add("DATE", String.class);
-        featureType = b.buildFeatureType();
-        pm.beginTask("Import gps to points...", logsList.size());
-        newCollection = new DefaultFeatureCollection();
-        int index = 0;
-        for (GpsLog log : logsList) {
-            List<GpsPoint> gpsPointList = log.points;
-            for (GpsPoint gpsPoint : gpsPointList) {
-                Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
-                Point point = gf.createPoint(c);
-                Object[] values = new Object[]{point, String.valueOf(gpsPoint.altim), gpsPoint.utctime};
-
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(featureType.getTypeName() + "." + index++);
-                newCollection.add(feature);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        File outputPointsShapeFile = new File(outputFolderFile, "gpspoints.shp");
-        dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
     }
 
     private void importImages(File geopapFolderFile, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
@@ -562,14 +497,15 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         return result;
     }
 
-    private static class GpsPoint {
+    public static class GpsPoint {
+        public long id;
         public double lat;
         public double lon;
         public double altim;
         public String utctime;
     }
 
-    private static class GpsLog {
+    public static class GpsLog {
         public long id;
         public String startTime;
         public String endTime;
