@@ -143,6 +143,10 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
             importImages(geopapFolderFile, geopap4Connection, pm);
             importGpsLog(geopap3Connection, geopap4Connection, pm);
 
+            // create some metadata info
+            String notes = "This project has been migrated through JGrasstools from a Geopaparazzi < 4 version. The creation timestamp refers to the conversion instant. The name might contain the original creation timestamp.";
+            DaoMetadata.fillProjectMetadata(geopap4Connection, folderName, null, notes, "JGrasstools Geopaparazzi 3 to 4 Converter");
+
         } catch (Exception e) {
             throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
                     this);

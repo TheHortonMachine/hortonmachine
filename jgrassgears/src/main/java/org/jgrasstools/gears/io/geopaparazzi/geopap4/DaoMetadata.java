@@ -20,6 +20,8 @@ package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,70 +72,54 @@ public class DaoMetadata {
      * @param description  an optional description.
      * @param notes        optional notes.
      * @param creationUser the user creating the project.
+     *
      * @throws java.io.IOException if something goes wrong.
      */
-//    public static void initProjectMetadata(String name, String description, String notes, String creationUser) throws IOException {
-//        Date creationDate = new Date();
-//        if (name == null) {
-//            name = "project-" + TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(creationDate);
-//        }
-//        if (description == null) {
-//            description = EMPTY_VALUE;
-//        }
-//        if (notes == null) {
-//            notes = EMPTY_VALUE;
-//        }
-//        if (creationUser == null) {
-//            creationUser = "dummy user";
-//        }
-//
-//        SQLiteDatabase sqliteDatabase = GeopaparazziApplication.getInstance().getDatabase();
-//        sqliteDatabase.beginTransaction();
-//        try {
-//            ContentValues values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_NAME.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), name);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_DESCRIPTION.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), description);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_NOTES.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), notes);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_CREATIONTS.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), String.valueOf(creationDate.getTime()));
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_LASTTS.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), EMPTY_VALUE);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_CREATIONUSER.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), creationUser);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            values = new ContentValues();
-//            values.put(MetadataTableFields.COLUMN_KEY.getFieldName(), MetadataTableFields.KEY_LASTUSER.getFieldName());
-//            values.put(MetadataTableFields.COLUMN_VALUE.getFieldName(), EMPTY_VALUE);
-//            sqliteDatabase.insertOrThrow(TABLE_METADATA, null, values);
-//
-//            sqliteDatabase.setTransactionSuccessful();
-//        } catch (Exception e) {
-//            GPLog.error("DaoProject", e.getLocalizedMessage(), e);
-//            throw new IOException(e.getLocalizedMessage());
-//        } finally {
-//            sqliteDatabase.endTransaction();
-//        }
-//    }
+    public static void fillProjectMetadata(Connection connection, String name, String description, String notes, String creationUser) throws Exception {
+        Date creationDate = new Date();
+        if (name == null) {
+            name = "project-" + TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(creationDate);
+        }
+        if (description == null) {
+            description = EMPTY_VALUE;
+        }
+        if (notes == null) {
+            notes = EMPTY_VALUE;
+        }
+        if (creationUser == null) {
+            creationUser = "dummy user";
+        }
 
+        insertPair(connection, MetadataTableFields.KEY_NAME.getFieldName(), name);
+        insertPair(connection, MetadataTableFields.KEY_DESCRIPTION.getFieldName(), description);
+        insertPair(connection, MetadataTableFields.KEY_NOTES.getFieldName(), notes);
+        insertPair(connection, MetadataTableFields.KEY_CREATIONTS.getFieldName(), String.valueOf(creationDate.getTime()));
+        insertPair(connection, MetadataTableFields.KEY_LASTTS.getFieldName(), EMPTY_VALUE);
+        insertPair(connection, MetadataTableFields.KEY_CREATIONUSER.getFieldName(), creationUser);
+        insertPair(connection, MetadataTableFields.KEY_LASTUSER.getFieldName(), EMPTY_VALUE);
+
+    }
+
+    private static void insertPair(Connection connection, String key, String value) throws SQLException {
+        PreparedStatement writeImageDataStatement = null;
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_METADATA
+                    + "(" + //
+                    MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                    MetadataTableFields.COLUMN_VALUE.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?)";
+            writeImageDataStatement = connection.prepareStatement(insertSQL);
+            writeImageDataStatement.setString(1, key);
+            writeImageDataStatement.setString(2, value);
+
+            writeImageDataStatement.executeUpdate();
+        } finally {
+            if (writeImageDataStatement != null) {
+                writeImageDataStatement.close();
+            }
+        }
+    }
 
 
 }
