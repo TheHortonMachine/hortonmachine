@@ -19,10 +19,7 @@ package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,7 +44,7 @@ public class DaoNotes {
         sB.append(TABLE_NOTES);
         sB.append(" (");
         sB.append(NotesTableFields.COLUMN_ID.getFieldName());
-        sB.append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sB.append(" INTEGER PRIMARY KEY, ");
         sB.append(NotesTableFields.COLUMN_LON.getFieldName()).append(" REAL NOT NULL, ");
         sB.append(NotesTableFields.COLUMN_LAT.getFieldName()).append(" REAL NOT NULL,");
         sB.append(NotesTableFields.COLUMN_ALTIM.getFieldName()).append(" REAL NOT NULL,");
@@ -90,6 +87,7 @@ public class DaoNotes {
         try {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
+            //            System.out.println("CREATE TABLE: " + CREATE_TABLE_NOTES);
             statement.executeUpdate(CREATE_TABLE_NOTES);
             statement.executeUpdate(CREATE_INDEX_NOTES_TS);
             statement.executeUpdate(CREATE_INDEX_NOTES_X_BY_Y);
@@ -105,59 +103,47 @@ public class DaoNotes {
     /**
      * Add a new note to the database.
      *
-     * @param lon         lon
-     * @param lat         lat
-     * @param altim       elevation
-     * @param timestamp   the UTC timestamp in millis.
-     * @param text        a text
-     * @param description an optional description for the note.
-     * @param form        the optional json form.
-     * @param style       the optional style definition.
-     *
-     * @return the inserted note id.
+     * @param id        the id
+     * @param lon       lon
+     * @param lat       lat
+     * @param altim     elevation
+     * @param timestamp the UTC timestamp in millis.
+     * @param text      a text
+     * @param form      the optional json form.
      *
      * @throws IOException if something goes wrong.
      */
-    public static void addNote(Connection connection, double lon, double lat, double altim, long timestamp, String text, String description,
-                               String form, String style) throws Exception {
-        Statement statement = connection.createStatement();
+    public static void addNote(Connection connection, long id, double lon, double lat, double altim, long timestamp, String text,
+                               String form) throws Exception {
+        PreparedStatement writeStatement = null;
         try {
-            statement.setQueryTimeout(30); // set timeout to 30 sec.
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_NOTES
+                    + "(" + //
+                    TableDescriptions.NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_LAT.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_LON.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_TS.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_TEXT.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_FORM.getFieldName() + ", " + //
+                    TableDescriptions.NotesTableFields.COLUMN_ISDIRTY.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?,?,?,?,?,?,?)";
+            writeStatement = connection.prepareStatement(insertSQL);
+            writeStatement.setLong(1, id);
+            writeStatement.setDouble(2, lat);
+            writeStatement.setDouble(3, lon);
+            writeStatement.setDouble(4, altim);
+            writeStatement.setLong(5, timestamp);
+            writeStatement.setString(6, text);
+            writeStatement.setString(7, form);
+            writeStatement.setInt(8, 1);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append("INSERT INTO ").append(TABLE_NOTES).append("(");
-            sb.append(NotesTableFields.COLUMN_LON.getFieldName()).append(",");
-            sb.append(NotesTableFields.COLUMN_LAT.getFieldName()).append(",");
-            sb.append(NotesTableFields.COLUMN_ALTIM.getFieldName()).append(",");
-            sb.append(NotesTableFields.COLUMN_TS.getFieldName()).append(",");
-            if (description != null)
-                sb.append(NotesTableFields.COLUMN_DESCRIPTION.getFieldName()).append(",");
-            sb.append(NotesTableFields.COLUMN_TEXT.getFieldName()).append(",");
-            if (form != null)
-                sb.append(NotesTableFields.COLUMN_FORM.getFieldName()).append(",");
-            if (style != null)
-                sb.append(NotesTableFields.COLUMN_STYLE.getFieldName()).append(",");
-            sb.append(NotesTableFields.COLUMN_ISDIRTY.getFieldName());
-            sb.append(") VALUES (");
-            sb.append(lon).append(",");
-            sb.append(lat).append(",");
-            sb.append(altim).append(",");
-            sb.append(timestamp).append(",");
-            if (description != null)
-                sb.append("'").append(description).append("'").append(",");
-            sb.append("'").append(text).append("'").append(",");
-            if (form != null)
-                sb.append("'").append(form).append("'").append(",");
-            if (style != null)
-                sb.append("'").append(style).append("'").append(",");
-            sb.append(1);
-            sb.append(")");
-
-            statement.executeUpdate(sb.toString());
-        } catch (Exception e) {
-            throw new IOException(e.getLocalizedMessage());
+            writeStatement.executeUpdate();
         } finally {
-            statement.close();
+            if (writeStatement != null) {
+                writeStatement.close();
+            }
         }
     }
 

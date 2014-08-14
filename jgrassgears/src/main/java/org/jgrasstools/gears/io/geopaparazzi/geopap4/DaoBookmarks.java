@@ -58,7 +58,7 @@ public class DaoBookmarks {
         sB.append(TABLE_BOOKMARKS);
         sB.append(" (");
         sB.append(COLUMN_ID);
-        sB.append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sB.append(" INTEGER PRIMARY KEY, ");
         sB.append(COLUMN_LON).append(" REAL NOT NULL, ");
         sB.append(COLUMN_LAT).append(" REAL NOT NULL,");
         sB.append(COLUMN_ZOOM).append(" REAL NOT NULL,");

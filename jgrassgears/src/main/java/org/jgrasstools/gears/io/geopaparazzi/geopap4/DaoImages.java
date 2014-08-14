@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.Exception;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -49,7 +50,7 @@ public class DaoImages {
         sB.append(TABLE_IMAGES);
         sB.append(" (");
         sB.append(ImageTableFields.COLUMN_ID.getFieldName());
-        sB.append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sB.append(" INTEGER PRIMARY KEY, ");
         sB.append(ImageTableFields.COLUMN_LON.getFieldName()).append(" REAL NOT NULL, ");
         sB.append(ImageTableFields.COLUMN_LAT.getFieldName()).append(" REAL NOT NULL,");
         sB.append(ImageTableFields.COLUMN_ALTIM.getFieldName()).append(" REAL NOT NULL,");
@@ -107,7 +108,7 @@ public class DaoImages {
         sB.append(TABLE_IMAGE_DATA);
         sB.append(" (");
         sB.append(ImageDataTableFields.COLUMN_ID.getFieldName());
-        sB.append(" INTEGER PRIMARY KEY AUTOINCREMENT, ");
+        sB.append(" INTEGER PRIMARY KEY, ");
         sB.append(ImageDataTableFields.COLUMN_IMAGE.getFieldName()).append(" BLOB NOT NULL,");
         sB.append(ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName()).append(" BLOB NOT NULL");
         sB.append(");");
@@ -131,39 +132,65 @@ public class DaoImages {
     }
 
 
-//    public long addImage(double lon, double lat, double altim, double azim, long timestamp, String text, byte[] image, byte[] thumb, long noteId)
-//            throws IOException {
-//        SQLiteDatabase sqliteDatabase = GeopaparazziApplication.getInstance().getDatabase();
-//        sqliteDatabase.beginTransaction();
-//        try {
-//            // first insert image data
-//            ContentValues imageDataValues = new ContentValues();
-//            imageDataValues.put(ImageDataTableFields.COLUMN_IMAGE.getFieldName(), image);
-//            imageDataValues.put(ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName(), thumb);
-//            long imageDataId = sqliteDatabase.insertOrThrow(TABLE_IMAGE_DATA, null, imageDataValues);
-//
-//            // then insert the image properties and reference to the image itself
-//            ContentValues values = new ContentValues();
-//            values.put(ImageTableFields.COLUMN_LON.getFieldName(), lon);
-//            values.put(ImageTableFields.COLUMN_LAT.getFieldName(), lat);
-//            values.put(ImageTableFields.COLUMN_ALTIM.getFieldName(), altim);
-//            values.put(ImageTableFields.COLUMN_TS.getFieldName(), timestamp);
-//            values.put(ImageTableFields.COLUMN_TEXT.getFieldName(), text);
-//            values.put(ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName(), imageDataId);
-//            values.put(ImageTableFields.COLUMN_AZIM.getFieldName(), azim);
-//            values.put(ImageTableFields.COLUMN_ISDIRTY.getFieldName(), 1);
-//            values.put(ImageTableFields.COLUMN_NOTE_ID.getFieldName(), noteId);
-//            long imageId = sqliteDatabase.insertOrThrow(TABLE_IMAGES, null, values);
-//
-//            sqliteDatabase.setTransactionSuccessful();
-//
-//            return imageId;
-//        } catch (Exception e) {
-//            GPLog.error("DAOIMAGES", e.getLocalizedMessage(), e);
-//            throw new IOException(e.getLocalizedMessage());
-//        } finally {
-//            sqliteDatabase.endTransaction();
-//        }
-//    }
+    public static void addImage(Connection connection, long id, double lon, double lat, double altim, double azim, long timestamp, String text, byte[] image, byte[] thumb, long noteId)
+            throws IOException, SQLException {
+
+        PreparedStatement writeImageDataStatement = null;
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_IMAGE_DATA
+                    + "(" + //
+                    ImageDataTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    ImageDataTableFields.COLUMN_IMAGE.getFieldName() + ", " + //
+                    ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName() + //
+                    ") VALUES"
+                    + "(?,?,?)";
+            writeImageDataStatement = connection.prepareStatement(insertSQL);
+            writeImageDataStatement.setLong(1, id);
+            writeImageDataStatement.setBytes(2, image);
+            writeImageDataStatement.setBytes(3, thumb);
+
+            writeImageDataStatement.executeUpdate();
+        } finally {
+            if (writeImageDataStatement != null) {
+                writeImageDataStatement.close();
+            }
+        }
+
+
+        PreparedStatement writeImageStatement = null;
+        try {
+            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_IMAGES
+                    + "(" + //
+                    ImageTableFields.COLUMN_ID.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_LON.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_LAT.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_TS.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_AZIM.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_TEXT.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_ISDIRTY.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_NOTE_ID.getFieldName() + ", " + //
+                    ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
+                    ") VALUES"
+                    + "(?,?,?,?,?,?,?,?,?,?)";
+            writeImageStatement = connection.prepareStatement(insertSQL);
+            writeImageStatement.setLong(1, id);
+            writeImageStatement.setDouble(2, lon);
+            writeImageStatement.setDouble(3, lat);
+            writeImageStatement.setDouble(4, altim);
+            writeImageStatement.setLong(5, timestamp);
+            writeImageStatement.setDouble(6, azim);
+            writeImageStatement.setString(7, text);
+            writeImageStatement.setInt(8, 1);
+            writeImageStatement.setLong(9, noteId);
+            writeImageStatement.setLong(10, id);
+
+            writeImageStatement.executeUpdate();
+        } finally {
+            if (writeImageStatement != null) {
+                writeImageStatement.close();
+            }
+        }
+    }
 
 }
