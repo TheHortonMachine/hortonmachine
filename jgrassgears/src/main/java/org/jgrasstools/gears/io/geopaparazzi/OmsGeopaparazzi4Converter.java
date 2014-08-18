@@ -631,12 +631,15 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         for (GpsLog log : logsList) {
             String logName = log.text;
 
-            File outFile = new File(chartsFolderFile, logName + ".png");
+            File profileFile = new File(chartsFolderFile, logName + "_profile.png");
+            File planimetricFile = new File(chartsFolderFile, logName + "_planimetric.png");
 
             GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
             int size = log.points.size();
-            double[] x = new double[size];
-            double[] y = new double[size];
+            double[] xProfile = new double[size];
+            double[] yProfile = new double[size];
+            double[] xPlanim = new double[size];
+            double[] yPlanim = new double[size];
             double runningDistance = 0;
             for (int i = 0; i < size - 1; i++) {
                 GpsPoint p1 = log.points.get(i);
@@ -654,21 +657,34 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 runningDistance += distance;
 
                 if (i == 0) {
-                    x[i] = 0.0;
-                    y[i] = altim1;
-                }
-                x[i + 1] = runningDistance;
-                y[i + 1] = altim2;
+                    xProfile[i] = 0.0;
+                    yProfile[i] = altim1;
 
+                    xPlanim[i] = lon1;
+                    yPlanim[i] = lat1;
+                }
+                xProfile[i + 1] = runningDistance;
+                yProfile[i + 1] = altim2;
+
+                xPlanim[i + 1] = lon2;
+                yPlanim[i + 1] = lat2;
             }
 
-            Scatter scatter = new Scatter("Profile " + logName);
-            scatter.addSeries("profile", x, y);
-            scatter.setShowLines(true);
-            scatter.setXLabel("progressive distance [m]");
-            scatter.setYLabel("elevation [m]");
-            BufferedImage image = scatter.getImage(1000, 800);
-            ImageIO.write(image, "png", outFile);
+            Scatter scatterProfile = new Scatter("Profile " + logName);
+            scatterProfile.addSeries("profile", xProfile, yProfile);
+            scatterProfile.setShowLines(true);
+            scatterProfile.setXLabel("progressive distance [m]");
+            scatterProfile.setYLabel("elevation [m]");
+            BufferedImage imageProfile = scatterProfile.getImage(1000, 800);
+            ImageIO.write(imageProfile, "png", profileFile);
+
+            Scatter scatterPlanim = new Scatter("Planimetry " + logName);
+            scatterPlanim.addSeries("planimetry", xPlanim, yPlanim);
+            scatterPlanim.setShowLines(false);
+            scatterPlanim.setXLabel("longitude");
+            scatterPlanim.setYLabel("latitude");
+            BufferedImage imagePlanim = scatterPlanim.getImage(1000, 800);
+            ImageIO.write(imagePlanim, "png", planimetricFile);
 
             pm.worked(1);
         }
