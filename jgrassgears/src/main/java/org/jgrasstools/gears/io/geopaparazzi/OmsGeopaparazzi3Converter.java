@@ -112,10 +112,6 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION)
-    @In
-    public boolean doBookmarks = true;
-
     @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In

@@ -100,10 +100,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     @In
     public boolean doMedia = true;
 
-    @Description(OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION)
-    @In
-    public boolean doBookmarks = true;
-
     @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
@@ -135,6 +131,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         OmsGeopaparazzi4Converter conv = new OmsGeopaparazzi4Converter();
         conv.inGeopaparazzi = "/home/hydrologis/TMP/geopap/export4/geopaparazzi_test_4_conversion.gpap";
         conv.outFolder = "/home/hydrologis/TMP/geopap/export4/outfolder/";
+        conv.doLogpoints = true;
         conv.process();
 
     }
@@ -170,7 +167,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 /*
                  * import gps logs as shapefiles, once as lines and once as points
                  */
-            //            gpsLogToShapefiles(connection, outputFolderFile, pm);
+            gpsLogToShapefiles(connection, outputFolderFile, pm);
             /*
              * import media as point shapefile, containing the path
              */
@@ -213,7 +210,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void simpleNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
-        File outputShapeFile = new File(outputFolderFile, "simplenotes.shp");
+        File outputShapeFile = new File(outputFolderFile, "notes_simple.shp");
 
         String textFN = NotesTableFields.COLUMN_TEXT.getFieldName();
         String descFN = NotesTableFields.COLUMN_DESCRIPTION.getFieldName();
@@ -451,7 +448,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 String name = entry.getKey();
                 SimpleFeatureCollection collection = entry.getValue().collection;
 
-                File outFile = new File(outputFolderFile, name + ".shp");
+                File outFile = new File(outputFolderFile, "notes_" + name + ".shp");
                 dumpVector(collection, outFile.getAbsolutePath());
             }
         } finally {
@@ -469,54 +466,67 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private void gpsLogToShapefiles(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
-        Statement statement = connection.createStatement();
-        statement.setQueryTimeout(30); // set timeout to 30 sec.
-
         List<GpsLog> logsList = new ArrayList<GpsLog>();
-        // first get the logs
-        ResultSet rs = statement.executeQuery("select _id, startts, endts, text from gpslogs");
-        while (rs.next()) {
-            long id = rs.getLong("_id");
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            String startDateTimeString = rs.getString("startts");
-            String endDateTimeString = rs.getString("endts");
-            String text = rs.getString("text");
+            String sql = "select " + //
+                    GpsLogsTableFields.COLUMN_ID.getFieldName() + "," + //
+                    GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + "," + //
+                    GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + "," + //
+                    GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + //
+                    " from " + TABLE_GPSLOGS; //
 
-            GpsLog log = new GpsLog();
-            log.id = id;
-            log.startTime = startDateTimeString;
-            log.endTime = endDateTimeString;
-            log.text = text;
-            logsList.add(log);
+
+            // first get the logs
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                long id = rs.getLong(1);
+
+                long startDateTimeString = rs.getLong(2);
+                long endDateTimeString = rs.getLong(3);
+                String text = rs.getString(4);
+
+                GpsLog log = new GpsLog();
+                log.id = id;
+                log.startTime = startDateTimeString;
+                log.endTime = endDateTimeString;
+                log.text = text;
+                logsList.add(log);
+            }
         }
-        statement.close();
 
         try {
             // then the log data
             for (GpsLog log : logsList) {
                 long logId = log.id;
-                String query = "select lat, lon, altim, ts from gpslog_data where logid = " + logId + " order by ts";
 
-                Statement newStatement = connection.createStatement();
-                newStatement.setQueryTimeout(30);
-                ResultSet result = newStatement.executeQuery(query);
+                String query = "select " + //
+                        GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + "," + //
+                        GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + "," + //
+                        GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + "," + //
+                        GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName() + //
+                        " from " + TABLE_GPSLOG_DATA + " where " +  //
+                        GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + " = " + logId + " order by " + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName();
 
-                while (result.next()) {
-                    double lat = result.getDouble("lat");
-                    double lon = result.getDouble("lon");
-                    double altim = result.getDouble("altim");
-                    String dateTimeString = result.getString("ts");
+                try (Statement newStatement = connection.createStatement()) {
+                    newStatement.setQueryTimeout(30);
+                    ResultSet result = newStatement.executeQuery(query);
 
-                    GpsPoint gPoint = new GpsPoint();
-                    gPoint.lon = lon;
-                    gPoint.lat = lat;
-                    gPoint.altim = altim;
-                    gPoint.utctime = dateTimeString;
-                    log.points.add(gPoint);
+                    while (result.next()) {
+                        double lat = result.getDouble(1);
+                        double lon = result.getDouble(2);
+                        double altim = result.getDouble(3);
+                        long ts = result.getLong(4);
 
+                        GpsPoint gPoint = new GpsPoint();
+                        gPoint.lon = lon;
+                        gPoint.lat = lat;
+                        gPoint.altim = altim;
+                        gPoint.utctime = ts;
+                        log.points.add(gPoint);
+                    }
                 }
-
-                newStatement.close();
 
             }
         } catch (Exception e) {
@@ -545,8 +555,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 List<GpsPoint> points = log.points;
 
                 List<Coordinate> coordList = new ArrayList<Coordinate>();
-                String startDate = log.startTime;
-                String endDate = log.endTime;
+                String startDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.startTime));
+                String endDate = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(log.endTime));
                 for (GpsPoint gpsPoint : points) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     coordList.add(c);
@@ -579,7 +589,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             b.setName("geopaparazzinotes");
             b.setCRS(crs);
             b.add("the_geom", Point.class);
-            b.add("ALTIMETRY", String.class);
+            b.add("ALTIMETRY", Double.class);
             b.add("DATE", String.class);
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to points...", logsList.size());
@@ -590,7 +600,9 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
                 for (GpsPoint gpsPoint : gpsPointList) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     Point point = gf.createPoint(c);
-                    Object[] values = new Object[]{point, String.valueOf(gpsPoint.altim), gpsPoint.utctime};
+
+                    String ts = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(gpsPoint.utctime));
+                    Object[] values = new Object[]{point, gpsPoint.altim, ts};
 
                     SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
                     builder.addAll(values);
@@ -722,13 +734,13 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         public double lat;
         public double lon;
         public double altim;
-        public String utctime;
+        public long utctime;
     }
 
     private static class GpsLog {
         public long id;
-        public String startTime;
-        public String endTime;
+        public long startTime;
+        public long endTime;
         public String text;
         public List<GpsPoint> points = new ArrayList<GpsPoint>();
 
