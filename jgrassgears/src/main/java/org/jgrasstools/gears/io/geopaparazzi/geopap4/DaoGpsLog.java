@@ -26,13 +26,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
 
 import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.*;
-import static java.lang.Math.abs;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)
@@ -147,8 +143,7 @@ public class DaoGpsLog {
         sB.append(");");
         String CREATE_TABLE_GPSLOGS_PROPERTIES = sB.toString();
 
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             statement.executeUpdate(CREATE_TABLE_GPSLOGS);
@@ -162,8 +157,6 @@ public class DaoGpsLog {
             statement.executeUpdate(CREATE_TABLE_GPSLOGS_PROPERTIES);
         } catch (Exception e) {
             throw new IOException(e.getLocalizedMessage());
-        } finally {
-            statement.close();
         }
 
     }
@@ -174,20 +167,17 @@ public class DaoGpsLog {
         Date startTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.startTime);
         Date endTS = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(log.endTime);
 
-        PreparedStatement writeStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOGS
-                    + "(" + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_LENGTHM.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ISDIRTY.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?,?,?,?,?)";
-
-            writeStatement = connection.prepareStatement(insertSQL);
+        String insertSQL1 = "INSERT INTO " + TableDescriptions.TABLE_GPSLOGS
+                + "(" + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_ID.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_LOG_STARTTS.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ENDTS.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_LOG_LENGTHM.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_LOG_TEXT.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsTableFields.COLUMN_LOG_ISDIRTY.getFieldName() + //
+                ") VALUES"
+                + "(?,?,?,?,?,?)";
+        try (PreparedStatement writeStatement = connection.prepareStatement(insertSQL1)) {
             writeStatement.setLong(1, log.id);
             writeStatement.setLong(2, startTS.getTime());
             writeStatement.setLong(3, endTS.getTime());
@@ -196,25 +186,18 @@ public class DaoGpsLog {
             writeStatement.setInt(6, 1);
 
             writeStatement.executeUpdate();
-
-        } finally {
-            if (writeStatement != null) {
-                writeStatement.close();
-            }
         }
 
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_PROPERTIES
-                    + "(" + //
-                    GpsLogsPropertiesTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + ", " + //
-                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + ", " + //
-                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName() + ", " + //
-                    GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?,?,?,?)";
-
-            writeStatement = connection.prepareStatement(insertSQL);
+        String insertSQL2 = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_PROPERTIES
+                + "(" + //
+                GpsLogsPropertiesTableFields.COLUMN_ID.getFieldName() + ", " + //
+                GpsLogsPropertiesTableFields.COLUMN_LOGID.getFieldName() + ", " + //
+                GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_COLOR.getFieldName() + ", " + //
+                GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_WIDTH.getFieldName() + ", " + //
+                GpsLogsPropertiesTableFields.COLUMN_PROPERTIES_VISIBLE.getFieldName() + //
+                ") VALUES"
+                + "(?,?,?,?,?)";
+        try (PreparedStatement writeStatement = connection.prepareStatement(insertSQL2)) {
             writeStatement.setLong(1, log.id);
             writeStatement.setLong(2, log.id);
             writeStatement.setString(3, color);
@@ -222,11 +205,6 @@ public class DaoGpsLog {
             writeStatement.setInt(5, visible ? 1 : 0);
 
             writeStatement.executeUpdate();
-
-        } finally {
-            if (writeStatement != null) {
-                writeStatement.close();
-            }
         }
 
         for (OmsGeopaparazziProject3To4Converter.GpsPoint point : log.points) {
@@ -248,20 +226,17 @@ public class DaoGpsLog {
     public static void addGpsLogDataPoint(Connection connection, OmsGeopaparazziProject3To4Converter.GpsPoint point, long gpslogId) throws Exception {
         Date timestamp = TimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.parse(point.utctime);
 
-        PreparedStatement writeStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_DATA
-                    + "(" + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ", " + //
-                    TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?,?,?,?,?)";
-
-            writeStatement = connection.prepareStatement(insertSQL);
+        String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_GPSLOG_DATA
+                + "(" + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_ID.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_LOGID.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ", " + //
+                TableDescriptions.GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName() + //
+                ") VALUES"
+                + "(?,?,?,?,?,?)";
+        try (PreparedStatement writeStatement = connection.prepareStatement(insertSQL)) {
             writeStatement.setLong(1, point.id);
             writeStatement.setLong(2, gpslogId);
             writeStatement.setDouble(3, point.lon);
@@ -270,11 +245,6 @@ public class DaoGpsLog {
             writeStatement.setLong(6, timestamp.getTime());
 
             writeStatement.executeUpdate();
-
-        } finally {
-            if (writeStatement != null) {
-                writeStatement.close();
-            }
         }
     }
 }

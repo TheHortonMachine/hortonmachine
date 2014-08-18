@@ -114,8 +114,7 @@ public class DaoImages {
         sB.append(");");
         String CREATE_TABLE_IMAGEDATA = sB.toString();
 
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             statement.executeUpdate(CREATE_TABLE_IMAGES);
@@ -126,8 +125,6 @@ public class DaoImages {
             statement.executeUpdate(CREATE_TABLE_IMAGEDATA);
         } catch (Exception e) {
             throw new IOException(e.getLocalizedMessage());
-        } finally {
-            statement.close();
         }
     }
 
@@ -135,45 +132,37 @@ public class DaoImages {
     public static void addImage(Connection connection, long id, double lon, double lat, double altim, double azim, long timestamp, String text, byte[] image, byte[] thumb, long noteId)
             throws IOException, SQLException {
 
-        PreparedStatement writeImageDataStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_IMAGE_DATA
-                    + "(" + //
-                    ImageDataTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    ImageDataTableFields.COLUMN_IMAGE.getFieldName() + ", " + //
-                    ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?,?)";
-            writeImageDataStatement = connection.prepareStatement(insertSQL);
+        String insertSQL1 = "INSERT INTO " + TableDescriptions.TABLE_IMAGE_DATA
+                + "(" + //
+                ImageDataTableFields.COLUMN_ID.getFieldName() + ", " + //
+                ImageDataTableFields.COLUMN_IMAGE.getFieldName() + ", " + //
+                ImageDataTableFields.COLUMN_THUMBNAIL.getFieldName() + //
+                ") VALUES"
+                + "(?,?,?)";
+        try (PreparedStatement writeImageDataStatement = connection.prepareStatement(insertSQL1)) {
             writeImageDataStatement.setLong(1, id);
             writeImageDataStatement.setBytes(2, image);
             writeImageDataStatement.setBytes(3, thumb);
 
             writeImageDataStatement.executeUpdate();
-        } finally {
-            if (writeImageDataStatement != null) {
-                writeImageDataStatement.close();
-            }
         }
 
 
-        PreparedStatement writeImageStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_IMAGES
-                    + "(" + //
-                    ImageTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_LON.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_LAT.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_TS.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_AZIM.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_TEXT.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_ISDIRTY.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_NOTE_ID.getFieldName() + ", " + //
-                    ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
-                    ") VALUES"
-                    + "(?,?,?,?,?,?,?,?,?,?)";
-            writeImageStatement = connection.prepareStatement(insertSQL);
+        String insertSQL2 = "INSERT INTO " + TableDescriptions.TABLE_IMAGES
+                + "(" + //
+                ImageTableFields.COLUMN_ID.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_LON.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_LAT.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_TS.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_AZIM.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_TEXT.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_ISDIRTY.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_NOTE_ID.getFieldName() + ", " + //
+                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
+                ") VALUES"
+                + "(?,?,?,?,?,?,?,?,?,?)";
+        try (PreparedStatement writeImageStatement = connection.prepareStatement(insertSQL2)) {
             writeImageStatement.setLong(1, id);
             writeImageStatement.setDouble(2, lon);
             writeImageStatement.setDouble(3, lat);
@@ -186,10 +175,6 @@ public class DaoImages {
             writeImageStatement.setLong(10, id);
 
             writeImageStatement.executeUpdate();
-        } finally {
-            if (writeImageStatement != null) {
-                writeImageStatement.close();
-            }
         }
     }
 

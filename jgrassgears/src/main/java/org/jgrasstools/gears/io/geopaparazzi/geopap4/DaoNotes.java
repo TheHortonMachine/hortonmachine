@@ -83,19 +83,15 @@ public class DaoNotes {
         sB.append(" );");
         String CREATE_INDEX_NOTES_ISDIRTY = sB.toString();
 
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            //            System.out.println("CREATE TABLE: " + CREATE_TABLE_NOTES);
             statement.executeUpdate(CREATE_TABLE_NOTES);
             statement.executeUpdate(CREATE_INDEX_NOTES_TS);
             statement.executeUpdate(CREATE_INDEX_NOTES_X_BY_Y);
             statement.executeUpdate(CREATE_INDEX_NOTES_ISDIRTY);
         } catch (Exception e) {
             throw new IOException(e.getLocalizedMessage());
-        } finally {
-            statement.close();
         }
     }
 
@@ -115,21 +111,19 @@ public class DaoNotes {
      */
     public static void addNote(Connection connection, long id, double lon, double lat, double altim, long timestamp, String text,
                                String form) throws Exception {
-        PreparedStatement writeStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_NOTES
-                    + "(" + //
-                    TableDescriptions.NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_LAT.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_LON.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_TS.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_TEXT.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_FORM.getFieldName() + ", " + //
-                    TableDescriptions.NotesTableFields.COLUMN_ISDIRTY.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?,?,?,?,?,?,?)";
-            writeStatement = connection.prepareStatement(insertSQL);
+        String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_NOTES
+                + "(" + //
+                TableDescriptions.NotesTableFields.COLUMN_ID.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_LAT.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_LON.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_ALTIM.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_TS.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_TEXT.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_FORM.getFieldName() + ", " + //
+                TableDescriptions.NotesTableFields.COLUMN_ISDIRTY.getFieldName() + //
+                ") VALUES"
+                + "(?,?,?,?,?,?,?,?)";
+        try (PreparedStatement writeStatement = connection.prepareStatement(insertSQL)) {
             writeStatement.setLong(1, id);
             writeStatement.setDouble(2, lat);
             writeStatement.setDouble(3, lon);
@@ -140,10 +134,6 @@ public class DaoNotes {
             writeStatement.setInt(8, 1);
 
             writeStatement.executeUpdate();
-        } finally {
-            if (writeStatement != null) {
-                writeStatement.close();
-            }
         }
     }
 

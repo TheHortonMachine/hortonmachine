@@ -28,51 +28,47 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
- * <p>
- * Various file utilities useful when dealing with bytes, bits and numbers
- * </p>
- * 
+ * <p> Various file utilities useful when dealing with bytes, bits and numbers </p>
+ *
  * @author Andrea Antonello - www.hydrologis.com
  * @since 1.1.0
  */
 public class FileUtilities {
 
-    public static void copyFile( String fromFile, String toFile ) throws IOException {
+    public static void copyFile(String fromFile, String toFile) throws IOException {
         File in = new File(fromFile);
         File out = new File(toFile);
+
+        Files.copy(Paths.get(fromFile), Paths.get(toFile));
         copyFile(in, out);
     }
 
-    public static void copyFile( File in, File out ) throws IOException {
-        FileInputStream fis = new FileInputStream(in);
-        FileOutputStream fos = new FileOutputStream(out);
-        byte[] buf = new byte[1024];
-        int i = 0;
-        while( (i = fis.read(buf)) != -1 ) {
-            fos.write(buf, 0, i);
-        }
-        fis.close();
-        fos.close();
+    public static void copyFile(File in, File out) throws IOException {
+        copyFile(in.getAbsolutePath(), out.getAbsolutePath());
     }
 
     /**
-     * Returns true if all deletions were successful. If a deletion fails, the method stops
-     * attempting to delete and returns false.
-     * 
-     * @param filehandle
+     * Returns true if all deletions were successful. If a deletion fails, the method stops attempting to delete and
+     * returns false.
+     *
+     * @param filehandle the file or folder to remove.
+     *
      * @return true if all deletions were successful
      */
-    public static boolean deleteFileOrDir( File filehandle ) {
+    public static boolean deleteFileOrDir(File filehandle) {
 
         if (filehandle.isDirectory()) {
             String[] children = filehandle.list();
-            for( int i = 0; i < children.length; i++ ) {
-                boolean success = deleteFileOrDir(new File(filehandle, children[i]));
+            for (String aChildren : children) {
+                boolean success = deleteFileOrDir(new File(filehandle, aChildren));
                 if (!success) {
                     return false;
                 }
@@ -92,15 +88,16 @@ public class FileUtilities {
 
     /**
      * Delete file or folder recursively on exit of the program
-     * 
-     * @param filehandle
+     *
+     * @param filehandle the file or folder to remove.
+     *
      * @return true if all went well
      */
-    public static boolean deleteFileOrDirOnExit( File filehandle ) {
+    public static boolean deleteFileOrDirOnExit(File filehandle) {
         if (filehandle.isDirectory()) {
             String[] children = filehandle.list();
-            for( int i = 0; i < children.length; i++ ) {
-                boolean success = deleteFileOrDir(new File(filehandle, children[i]));
+            for (String aChildren : children) {
+                boolean success = deleteFileOrDir(new File(filehandle, aChildren));
                 if (!success) {
                     return false;
                 }
@@ -110,27 +107,45 @@ public class FileUtilities {
         return true;
     }
 
+
     /**
-     * Read from an inoutstream and convert the readed stuff to a String. Usefull for text files
-     * that are available as streams.
-     * 
-     * @param inputStream
-     * @return the read string
-     * @throws IOException 
+     * Read a file into a byte array.
+     *
+     * @param filePath the path to the file.
+     *
+     * @return the array of bytes.
+     *
+     * @throws IOException
      */
-    public static String readInputStreamToString( InputStream inputStream ) throws IOException {
+    public static byte[] readFileToBytes(String filePath) throws IOException {
+        Path path = Paths.get(filePath);
+        byte[] bytes = Files.readAllBytes(path);
+        return bytes;
+    }
+
+    /**
+     * Read from an inoutstream and convert the readed stuff to a String. Usefull for text files that are available as
+     * streams.
+     *
+     * @param inputStream
+     *
+     * @return the read string
+     *
+     * @throws IOException
+     */
+    public static String readInputStreamToString(InputStream inputStream) throws IOException {
         // Create the byte list to hold the data
         List<Byte> bytesList = new ArrayList<Byte>();
 
         byte b = 0;
-        while( (b = (byte) inputStream.read()) != -1 ) {
+        while ((b = (byte) inputStream.read()) != -1) {
             bytesList.add(b);
         }
         // Close the input stream and return bytes
         inputStream.close();
 
         byte[] bArray = new byte[bytesList.size()];
-        for( int i = 0; i < bArray.length; i++ ) {
+        for (int i = 0; i < bArray.length; i++) {
             bArray[i] = bytesList.get(i);
         }
 
@@ -140,136 +155,130 @@ public class FileUtilities {
 
     /**
      * Read text from a file in one line.
-     * 
+     *
      * @param filePath the path to the file to read.
+     *
      * @return the read string.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static String readFile( String filePath ) throws IOException {
+    public static String readFile(String filePath) throws IOException {
         return readFile(new File(filePath));
     }
 
     /**
      * Read text from a file in one line.
-     * 
+     *
      * @param file the file to read.
+     *
      * @return the read string.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static String readFile( File file ) throws IOException {
-        BufferedReader br = null;
-        try {
-            br = new BufferedReader(new FileReader(file));
+    public static String readFile(File file) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+
             StringBuilder sb = new StringBuilder(200);
             String line = null;
-            while( (line = br.readLine()) != null ) {
+            while ((line = br.readLine()) != null) {
                 sb.append(line);
                 sb.append("\n"); //$NON-NLS-1$
             }
             return sb.toString();
-        } finally {
-            if (br != null)
-                br.close();
         }
     }
 
     /**
      * Read text from a file to a list of lines.
-     * 
-     * @param outFile the path to the file to read.
+     *
+     * @param filePath the path to the file to read.
+     *
      * @return the list of lines.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static List<String> readFileToLinesList( String filePath ) throws IOException {
+    public static List<String> readFileToLinesList(String filePath) throws IOException {
         return readFileToLinesList(new File(filePath));
     }
 
     /**
      * Read text from a file to a list of lines.
-     * 
+     *
      * @param file the file to read.
+     *
      * @return the list of lines.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static List<String> readFileToLinesList( File file ) throws IOException {
-        BufferedReader br = null;
+    public static List<String> readFileToLinesList(File file) throws IOException {
         List<String> lines = new ArrayList<String>();
-        try {
-            br = new BufferedReader(new FileReader(file));
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = null;
-            while( (line = br.readLine()) != null ) {
+            while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
             return lines;
-        } finally {
-            if (br != null)
-                br.close();
         }
     }
 
     /**
      * Write text to a file in one line.
-     * 
+     *
      * @param text the text to write.
      * @param file the file to write to.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static void writeFile( String text, File file ) throws IOException {
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(file));
+    public static void writeFile(String text, File file) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+
             bw.write(text);
-        } finally {
-            if (bw != null)
-                bw.close();
         }
     }
 
     /**
      * Write a list of lines to a file.
-     * 
-     * @param lines the list of lines to write.
-     * @param outFile the path to the file to write to.
-     * @throws IOException 
+     *
+     * @param lines    the list of lines to write.
+     * @param filePath the path to the file to write to.
+     *
+     * @throws IOException
      */
-    public static void writeFile( List<String> lines, String filePath ) throws IOException {
+    public static void writeFile(List<String> lines, String filePath) throws IOException {
         writeFile(lines, new File(filePath));
     }
 
     /**
      * Write a list of lines to a file.
-     * 
+     *
      * @param lines the list of lines to write.
-     * @param file the file to write to.
-     * @throws IOException 
+     * @param file  the file to write to.
+     *
+     * @throws IOException
      */
-    public static void writeFile( List<String> lines, File file ) throws IOException {
-        BufferedWriter bw = null;
-        try {
-            bw = new BufferedWriter(new FileWriter(file));
-            for( String line : lines ) {
+    public static void writeFile(List<String> lines, File file) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            for (String line : lines) {
                 bw.write(line);
                 bw.write("\n"); //$NON-NLS-1$
             }
-        } finally {
-            if (bw != null)
-                bw.close();
         }
     }
 
-    public static String replaceBackSlashes( String path ) {
+    public static String replaceBackSlashes(String path) {
         return path.replaceAll("\\\\", "\\\\\\\\"); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     /**
      * Returns the name of the file without the extension.
-     * 
+     * <p/>
      * <p>Note that if the file has no extension, the name is returned.
-     * 
+     *
      * @param file the file to trim.
+     *
      * @return the name without extension.
      */
-    public static String getNameWithoutExtention( File file ) {
+    public static String getNameWithoutExtention(File file) {
         String name = file.getName();
         int lastDot = name.lastIndexOf("."); //$NON-NLS-1$
         if (lastDot == -1) {
@@ -282,12 +291,13 @@ public class FileUtilities {
 
     /**
      * Substitute the extention of a file.
-     * 
-     * @param file the file.
+     *
+     * @param file         the file.
      * @param newExtention the new extention (without the dot).
+     *
      * @return the file with the new extention.
      */
-    public static File substituteExtention( File file, String newExtention ) {
+    public static File substituteExtention(File file, String newExtention) {
         String path = file.getAbsolutePath();
         int lastDot = path.lastIndexOf("."); //$NON-NLS-1$
         if (lastDot == -1) {
@@ -300,18 +310,19 @@ public class FileUtilities {
 
     /**
      * Makes a file name safe to be used.
-     * 
+     * <p/>
      * <p>Taken from http://stackoverflow.com/questions/1184176/how-can-i-safely-encode-a-string-in-java-to-use-as-a-filename
-     * 
+     *
      * @param fileName the file name to "encode".
+     *
      * @return the safe filename.
      */
-    public static String getSafeFileName( String fileName ) {
+    public static String getSafeFileName(String fileName) {
         char fileSep = '/'; // ... or do this portably.
         char escape = '%'; // ... or some other legal char.
         int len = fileName.length();
         StringBuilder sb = new StringBuilder(len);
-        for( int i = 0; i < len; i++ ) {
+        for (int i = 0; i < len; i++) {
             char ch = fileName.charAt(i);
             if (ch < ' ' || ch >= 0x7F || ch == fileSep // add other illegal chars
                     || (ch == '.' && i == 0) // we don't want to collide with "." or ".."!
@@ -329,25 +340,25 @@ public class FileUtilities {
     }
 
     /**
-     * Method to read a properties file into a {@link LinkedHashMap}.
-     * 
-     * <p>Empty lines are ignored, as well as lines that do not contain the
-     * separator.</p>
-     * 
-     * @param filePath the path to the file to read.
-     * @param separator the separator or <code>null</code>. Defaults to '='.
-     * @param valueFirst if <code>true</code>, the second part of the string is used as key. 
+     * Method to read a properties file into a {@link LinkedHashMap}. <p/> <p>Empty lines are ignored, as well as lines
+     * that do not contain the separator.</p>
+     *
+     * @param filePath   the path to the file to read.
+     * @param separator  the separator or <code>null</code>. Defaults to '='.
+     * @param valueFirst if <code>true</code>, the second part of the string is used as key.
+     *
      * @return the read map.
-     * @throws IOException 
+     *
+     * @throws IOException
      */
-    public static LinkedHashMap<String, String> readFileToHashMap( String filePath, String separator, boolean valueFirst )
+    public static LinkedHashMap<String, String> readFileToHashMap(String filePath, String separator, boolean valueFirst)
             throws IOException {
         if (separator == null) {
             separator = "=";
         }
         List<String> lines = readFileToLinesList(filePath);
         LinkedHashMap<String, String> propertiesMap = new LinkedHashMap<String, String>();
-        for( String line : lines ) {
+        for (String line : lines) {
             line = line.trim();
             if (line.length() == 0) {
                 continue;
@@ -375,30 +386,32 @@ public class FileUtilities {
     }
 
     /**
-     * "Converts" a string to a temporary file.
-     * 
-     * <p>Useful for those modules that want a file in input and one wants to use the parameters.</p>
-     * 
+     * "Converts" a string to a temporary file. <p/> <p>Useful for those modules that want a file in input and one wants
+     * to use the parameters.</p>
+     *
      * @param string the string to write to the file.
+     *
      * @return the created file.
+     *
      * @throws Exception
      */
-    public static File stringAsTmpFile( String string ) throws Exception {
+    public static File stringAsTmpFile(String string) throws Exception {
         File tempFile = File.createTempFile("jgt-", "txt");
         writeFile(string, tempFile);
         return tempFile;
     }
 
     /**
-     * "Converts" a List of strings to a temporary file.
-     * 
-     * <p>Useful for those modules that want a file in input and one wants to use the parameters.</p>
-     * 
+     * "Converts" a List of strings to a temporary file. <p/> <p>Useful for those modules that want a file in input and
+     * one wants to use the parameters.</p>
+     *
      * @param list the list of strings to write to the file (one per row).
+     *
      * @return the created file.
+     *
      * @throws Exception
      */
-    public static File stringListAsTmpFile( List<String> list ) throws Exception {
+    public static File stringListAsTmpFile(List<String> list) throws Exception {
         File tempFile = File.createTempFile("jgt-", "txt");
         writeFile(list, tempFile);
         return tempFile;
@@ -406,14 +419,15 @@ public class FileUtilities {
 
     /**
      * Get the list of files in a folder by its extension.
-     * 
+     *
      * @param folderPath the folder path.
-     * @param ext the extension without the dot.
+     * @param ext        the extension without the dot.
+     *
      * @return the list of files patching.
      */
-    public static File[] getFilesListByExtention( String folderPath, final String ext ) {
-        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter(){
-            public boolean accept( File dir, String name ) {
+    public static File[] getFilesListByExtention(String folderPath, final String ext) {
+        File[] shpFiles = new File(folderPath).listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
                 return name.endsWith(ext);
             }
         });

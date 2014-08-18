@@ -18,8 +18,8 @@
 
 /*
  * This file is part of JGrasstools (http://www.jgrasstools.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * JGrasstools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -67,6 +67,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -88,15 +91,40 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
     @In
     public String inGeopaparazzi = null;
 
+    public static final String TABLE_GPSLOGS = "gpslogs";
+    public static final String TABLE_GPSLOG_DATA = "gpslog_data";
+    public static final String TABLE_NOTES = "notes";
+
+    public static final String LAT = "lat";
+    public static final String ID = "_id";
+    public static final String LON = "lon";
+    public static final String ALTIM = "altim";
+    public static final String TS = "ts";
+    public static final String TEXT = "text";
+    public static final String FORM = "form";
+    public static final String JPG = "jpg";
+    public static final String PNG = "png";
+    public static final String AZIMUTH = "azimuth";
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+    public static final String ENDTS = "endts";
+    public static final String STARTTS = "startts";
+    public static final String LOGID = "logid";
+
+    public static final String FOLDER_MEDIA = "media";
+    public static final String FOLDER_MEDIA_OLD = "pictures";
+
     private static final String TAG_KEY = "key";
     private static final String TAG_VALUE = "value";
 
     private final DefaultGeographicCRS crs = DefaultGeographicCRS.WGS84;
     private static boolean hasDriver = false;
 
+    public static final String IMAGE_ID_SEPARATOR = ";";
 
     private int imageCount = 0;
     private HashMap<String, Integer> imageName2IdMap = new HashMap<String, Integer>();
+    private HashMap<String, double[]> imageName2DataMap = new HashMap<String, double[]>();
     private HashMap<String, Long> imageName2NoteIdMap = new HashMap<String, Long>();
 
     static {
@@ -130,12 +158,10 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
             throw new ModelsIllegalargumentException("The output database file already exists: " + geopap4DbFile.getAbsolutePath(), this);
         }
 
-        Connection geopap3Connection = null;
-        Connection geopap4Connection = null;
-        try {
-            // create a database connection
-            geopap3Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap3DbFile.getAbsolutePath());
-            geopap4Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap4DbFile.getAbsolutePath());
+
+        try (Connection geopap3Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap3DbFile.getAbsolutePath());
+             Connection geopap4Connection = DriverManager.getConnection("jdbc:sqlite:" + geopap4DbFile.getAbsolutePath())
+        ) {
 
             createBaseTables(geopap4Connection);
 
@@ -150,14 +176,6 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         } catch (Exception e) {
             throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
                     this);
-        } finally {
-            try {
-                if (geopap3Connection != null)
-                    geopap3Connection.close();
-            } catch (SQLException e) {
-                // connection close failed.
-                throw new ModelsRuntimeException("An error occurred while closing the database connection.", this);
-            }
         }
 
     }
@@ -169,29 +187,29 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
         DaoMetadata.createTables(connection);
         DaoBookmarks.createTables(connection);
         DaoGpsLog.createTables(connection);
+        DaoLog.createTables(connection);
 
 
     }
 
     private void importNotes(Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
 
-        pm.beginTask("Import notes...", -1);
+        pm.beginTask("Import " + TABLE_NOTES + "...", -1);
 
-        Statement readStatement = null;
-        try {
-            readStatement = geopap3Connection.createStatement();
+        try (Statement readStatement = geopap3Connection.createStatement()) {
             readStatement.setQueryTimeout(30); // set timeout to 30 sec.
 
-            ResultSet rs = readStatement.executeQuery("select _id, lat, lon, altim, ts, text, form from notes");
+            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM +
+                    ", " + TS + ", " + TEXT + ", " + FORM + " from " + TABLE_NOTES);
             while (rs.next()) {
-                String form = rs.getString("form");
+                String form = rs.getString(FORM);
 
-                long id = rs.getLong("_id");
-                double lat = rs.getDouble("lat");
-                double lon = rs.getDouble("lon");
-                double altim = rs.getDouble("altim");
-                String dateTimeString = rs.getString("ts");
-                String text = rs.getString("text");
+                long id = rs.getLong(ID);
+                double lat = rs.getDouble(LAT);
+                double lon = rs.getDouble(LON);
+                double altim = rs.getDouble(ALTIM);
+                String dateTimeString = rs.getString(TS);
+                String text = rs.getString(TEXT);
 
                 if (lat == 0 || lon == 0) {
                     continue;
@@ -224,16 +242,18 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                             if (value != null) {
                                 if (isImage(value)) {
                                     // do images
-                                    String[] imageSplit = value.split(";");
+                                    String[] imageSplit = value.split(IMAGE_ID_SEPARATOR);
                                     StringBuilder sb = new StringBuilder();
                                     for (String image : imageSplit) {
                                         int lastSlash = image.lastIndexOf('/');
-                                        image = image.substring(lastSlash + 1, image.length());
+                                        image = image.substring(lastSlash + 1, image.length()).trim();
 
-                                        imageName2IdMap.put(image.trim(), imageCount);
-                                        sb.append(",").append(imageCount);
+                                        imageName2IdMap.put(image, imageCount);
+                                        sb.append(IMAGE_ID_SEPARATOR).append(imageCount);
                                         imageCount++;
-                                        imageName2NoteIdMap.put(image.trim(), id);
+                                        imageName2NoteIdMap.put(image, id);
+
+                                        imageName2DataMap.put(image, new double[]{lon, lat});
                                     }
 
                                     value = sb.substring(1);
@@ -253,69 +273,66 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
         } finally {
             pm.done();
-            if (readStatement != null)
-                readStatement.close();
         }
     }
 
     private boolean isImage(String value) {
         String tmp = value.toLowerCase();
-        return tmp.endsWith("png") || tmp.endsWith("jpg");
+        return tmp.endsWith(PNG) || tmp.endsWith(JPG);
     }
 
 
     private void importGpsLog(Connection geopap3Connection, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
-        Statement readStatement = geopap3Connection.createStatement();
-        readStatement.setQueryTimeout(30); // set timeout to 30 sec.
+        List<GpsLog> logsList;
+        try (Statement readStatement = geopap3Connection.createStatement()) {
+            readStatement.setQueryTimeout(30); // set timeout to 30 sec.
 
-        List<GpsLog> logsList = new ArrayList<GpsLog>();
-        // first get the logs
-        ResultSet rs = readStatement.executeQuery("select _id, startts, endts, text from gpslogs");
-        while (rs.next()) {
-            long id = rs.getLong("_id");
+            logsList = new ArrayList<GpsLog>();
+            // first get the logs
+            ResultSet rs = readStatement.executeQuery("select " + ID + ", " + STARTTS + ", " + ENDTS + ", " + TEXT + " from " + TABLE_GPSLOGS);
+            while (rs.next()) {
+                long id = rs.getLong(ID);
 
-            String startDateTimeString = rs.getString("startts");
-            String endDateTimeString = rs.getString("endts");
-            String text = rs.getString("text");
+                String startDateTimeString = rs.getString(STARTTS);
+                String endDateTimeString = rs.getString(ENDTS);
+                String text = rs.getString(TEXT);
 
-            GpsLog log = new GpsLog();
-            log.id = id;
-            log.startTime = startDateTimeString;
-            log.endTime = endDateTimeString;
-            log.text = text;
-            logsList.add(log);
+                GpsLog log = new GpsLog();
+                log.id = id;
+                log.startTime = startDateTimeString;
+                log.endTime = endDateTimeString;
+                log.text = text;
+                logsList.add(log);
+            }
         }
-        readStatement.close();
 
         try {
             // then the log data
             for (GpsLog log : logsList) {
                 long logId = log.id;
-                String query = "select _id, lat, lon, altim, ts from gpslog_data where logid = " + logId + " order by ts";
+                String query = "select " + ID + ", " + LAT + ", " + LON + ", " + ALTIM + ", " + TS + " from " + TABLE_GPSLOG_DATA + " where " + LOGID + " = " + logId + " order by " + TS;
 
-                Statement newStatement = geopap3Connection.createStatement();
-                newStatement.setQueryTimeout(30);
-                ResultSet result = newStatement.executeQuery(query);
+                try (Statement newStatement = geopap3Connection.createStatement()) {
+                    newStatement.setQueryTimeout(30);
+                    ResultSet result = newStatement.executeQuery(query);
 
-                while (result.next()) {
-                    long id = result.getLong("_id");
-                    double lat = result.getDouble("lat");
-                    double lon = result.getDouble("lon");
-                    double altim = result.getDouble("altim");
-                    String dateTimeString = result.getString("ts");
+                    while (result.next()) {
+                        long id = result.getLong(ID);
+                        double lat = result.getDouble(LAT);
+                        double lon = result.getDouble(LON);
+                        double altim = result.getDouble(ALTIM);
+                        String dateTimeString = result.getString(TS);
 
-                    GpsPoint gPoint = new GpsPoint();
-                    gPoint.id = id;
-                    gPoint.lon = lon;
-                    gPoint.lat = lat;
-                    gPoint.altim = altim;
-                    gPoint.utctime = dateTimeString;
-                    log.points.add(gPoint);
+                        GpsPoint gPoint = new GpsPoint();
+                        gPoint.id = id;
+                        gPoint.lon = lon;
+                        gPoint.lat = lat;
+                        gPoint.altim = altim;
+                        gPoint.utctime = dateTimeString;
+                        log.points.add(gPoint);
 
+                    }
                 }
-
-                newStatement.close();
-
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -333,19 +350,15 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
     }
 
     private void importImages(File geopapFolderFile, Connection geopap4Connection, IJGTProgressMonitor pm) throws Exception {
-        File folder = new File(geopapFolderFile, "media");
+        File folder = new File(geopapFolderFile, FOLDER_MEDIA);
         if (!folder.exists()) {
             // try to see if it is an old version of geopaparazzi
-            folder = new File(geopapFolderFile, "pictures");
+            folder = new File(geopapFolderFile, FOLDER_MEDIA_OLD);
             if (!folder.exists()) {
                 // ignoring non existing things
                 return;
             }
         }
-
-        // create destination folder
-        String imageFolderName = "media";
-
         File[] listFiles = folder.listFiles();
         List<String> nonTakenFilesList = new ArrayList<String>();
 
@@ -354,7 +367,10 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
             for (File imageFile : listFiles) {
                 String name = imageFile.getName();
                 String nameLC = name.toLowerCase();
-                if (nameLC.endsWith("jpg") || nameLC.endsWith("png")) {
+                if (nameLC.endsWith(JPG) || nameLC.endsWith(PNG)) {
+                    int lastDot = name.lastIndexOf('.');
+                    if (lastDot == -1) continue;
+                    String ext = name.substring(lastDot + 1);
 
                     int id = -1;
                     Integer idObj = imageName2IdMap.get(name);
@@ -368,44 +384,59 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                     String dateString = nameSplit[1];
                     String timeString = nameSplit[2];
 
+                    double lat = 0.0;
+                    double lon = 0.0;
+                    double altim = -1;
+                    double azimuth = -9999.0;
+
                     Properties locationProperties = new Properties();
                     String mediaPath = imageFile.getAbsolutePath();
-                    int lastDot = mediaPath.lastIndexOf("."); //$NON-NLS-1$
+                    lastDot = mediaPath.lastIndexOf("."); //$NON-NLS-1$
+                    if (lastDot == -1) continue;
                     String nameNoExt = mediaPath.substring(0, lastDot);
                     String infoPath = nameNoExt + ".properties"; //$NON-NLS-1$
                     File infoFile = new File(infoPath);
                     if (!infoFile.exists()) {
-                        nonTakenFilesList.add(mediaPath);
-                        continue;
-                    }
-                    locationProperties.load(new FileInputStream(infoFile));
-                    String azimuthString = locationProperties.getProperty("azimuth"); //$NON-NLS-1$
-                    String latString = locationProperties.getProperty("latitude"); //$NON-NLS-1$
-                    String lonString = locationProperties.getProperty("longitude"); //$NON-NLS-1$
-                    String altimString = locationProperties.getProperty("altim"); //$NON-NLS-1$
+                        double[] data = imageName2DataMap.get(name);
+                        if (data == null) {
+                            nonTakenFilesList.add(mediaPath);
+                            continue;
+                        }
+                        lon = data[0];
+                        lat = data[1];
 
-                    Double azimuth = -9999.0;
-                    if (azimuthString != null)
-                        azimuth = Double.parseDouble(azimuthString);
-                    double lat = 0.0;
-                    double lon = 0.0;
-                    if (latString.contains("/")) {
-                        // this is an exif string
-                        lat = exifFormat2degreeDecimal(latString);
-                        lon = exifFormat2degreeDecimal(lonString);
                     } else {
-                        lat = Double.parseDouble(latString);
-                        lon = Double.parseDouble(lonString);
+                        locationProperties.load(new FileInputStream(infoFile));
+
+                        String azimuthString = locationProperties.getProperty(AZIMUTH); //$NON-NLS-1$
+                        String latString = locationProperties.getProperty(LATITUDE); //$NON-NLS-1$
+                        String lonString = locationProperties.getProperty(LONGITUDE); //$NON-NLS-1$
+                        String altimString = locationProperties.getProperty(ALTIM); //$NON-NLS-1$
+
+
+                        if (azimuthString != null)
+                            azimuth = Double.parseDouble(azimuthString);
+
+                        if (latString.contains("/")) {
+                            // this is an exif string
+                            lat = exifFormat2degreeDecimal(latString);
+                            lon = exifFormat2degreeDecimal(lonString);
+                        } else {
+                            lat = Double.parseDouble(latString);
+                            lon = Double.parseDouble(lonString);
+                        }
+                        altim = Double.parseDouble(altimString);
                     }
-                    double altim = Double.parseDouble(altimString);
 
                     Date timestamp = TimeUtilities.INSTANCE.TIMESTAMPFORMATTER_LOCAL.parse(dateString + "_" + timeString);
 
-                    BufferedImage bufferedImage = ImageIO.read(imageFile);
-                    WritableRaster raster = bufferedImage.getRaster();
-                    DataBufferByte data = (DataBufferByte) raster.getDataBuffer();
-                    byte[] imageBytes = data.getData();
 
+                    /*
+                     * image bytes read as they are on disk, so that they can be decoded in geopap
+                     */
+                    byte[] imageBytes = FileUtilities.readFileToBytes(imageFile.getAbsolutePath());
+
+                    BufferedImage bufferedImage = ImageIO.read(imageFile);
                     // create thumb
                     // define sampling for thumbnail
                     int THUMBNAILWIDTH = 100;
@@ -416,9 +447,12 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
                     g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
                     g.drawImage(bufferedImage, 0, 0, THUMBNAILWIDTH, newHeight, 0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), null);
                     g.dispose();
-                    WritableRaster thumbRaster = resized.getRaster();
-                    DataBufferByte thumbData = (DataBufferByte) thumbRaster.getDataBuffer();
-                    byte[] thumbImageBytes = thumbData.getData();
+
+                    Path tempPath = Files.createTempFile("jgt-", name);
+                    File tempFile = tempPath.toFile();
+                    ImageIO.write(resized, ext, tempFile);
+
+                    byte[] thumbImageBytes = FileUtilities.readFileToBytes(tempFile.getAbsolutePath());
 
                     long noteId = -1;
                     Long noteIdObj = imageName2NoteIdMap.get(name);
@@ -428,6 +462,7 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
                     DaoImages.addImage(geopap4Connection, id, lon, lat, altim, azimuth, timestamp.getTime(), name, imageBytes, thumbImageBytes, noteId);
 
+                    Files.delete(tempPath);
                 }
                 pm.worked(1);
             }

@@ -52,15 +52,12 @@ public class DaoMetadata {
         sB.append(");");
         String CREATE_TABLE_PROJECT = sB.toString();
 
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             statement.executeUpdate(CREATE_TABLE_PROJECT);
         } catch (Exception e) {
             throw new IOException(e.getLocalizedMessage());
-        } finally {
-            statement.close();
         }
     }
 
@@ -101,23 +98,17 @@ public class DaoMetadata {
     }
 
     private static void insertPair(Connection connection, String key, String value) throws SQLException {
-        PreparedStatement writeImageDataStatement = null;
-        try {
-            String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_METADATA
-                    + "(" + //
-                    MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
-                    MetadataTableFields.COLUMN_VALUE.getFieldName() + //
-                    ") VALUES"
-                    + "(?,?)";
-            writeImageDataStatement = connection.prepareStatement(insertSQL);
+        String insertSQL = "INSERT INTO " + TableDescriptions.TABLE_METADATA
+                + "(" + //
+                MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //
+                MetadataTableFields.COLUMN_VALUE.getFieldName() + //
+                ") VALUES"
+                + "(?,?)";
+        try (PreparedStatement writeImageDataStatement = connection.prepareStatement(insertSQL)) {
             writeImageDataStatement.setString(1, key);
             writeImageDataStatement.setString(2, value);
 
             writeImageDataStatement.executeUpdate();
-        } finally {
-            if (writeImageDataStatement != null) {
-                writeImageDataStatement.close();
-            }
         }
     }
 

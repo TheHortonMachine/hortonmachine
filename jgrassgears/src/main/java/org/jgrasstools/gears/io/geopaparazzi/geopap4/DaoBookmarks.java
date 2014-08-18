@@ -80,16 +80,13 @@ public class DaoBookmarks {
         sB.append(" );");
         String CREATE_INDEX_BOOKMARKS_X_BY_Y = sB.toString();
 
-        Statement statement = connection.createStatement();
-        try {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             statement.executeUpdate(CREATE_TABLE_BOOKMARKS);
             statement.executeUpdate(CREATE_INDEX_BOOKMARKS_X_BY_Y);
         } catch (Exception e) {
             throw new IOException(e.getLocalizedMessage());
-        } finally {
-            statement.close();
         }
     }
 
@@ -124,7 +121,7 @@ public class DaoBookmarks {
 //
 //            sqliteDatabase.setTransactionSuccessful();
 //        } catch (Exception e) {
-//            GPLog.error("DAOBOOKMARKS", e.getLocalizedMessage(), e);
+//            DaoLog.error("DAOBOOKMARKS", e.getLocalizedMessage(), e);
 //            throw new IOException(e.getLocalizedMessage());
 //        } finally {
 //            sqliteDatabase.endTransaction();
