@@ -46,18 +46,18 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziConverter;
+import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi3Converter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
 @Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
-@Label(OMSGEOPAPARAZZICONVERTER_LABEL)
+@Label(OMSGEOPAPARAZZICONVERTER_LABEL + "_v3")
 @Name("_" + OMSGEOPAPARAZZICONVERTER_NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-public class GeopaparazziConverter extends JGTModel {
+public class Geopaparazzi3Converter extends JGTModel {
 
     @Description(OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -91,7 +91,7 @@ public class GeopaparazziConverter extends JGTModel {
 
     @Execute
     public void process() throws IOException {
-        OmsGeopaparazziConverter geopaparazziconverter = new OmsGeopaparazziConverter();
+        OmsGeopaparazzi3Converter geopaparazziconverter = new OmsGeopaparazzi3Converter();
         geopaparazziconverter.inGeopaparazzi = inGeopaparazzi;
         geopaparazziconverter.doNotes = doNotes;
         geopaparazziconverter.doLoglines = doLoglines;

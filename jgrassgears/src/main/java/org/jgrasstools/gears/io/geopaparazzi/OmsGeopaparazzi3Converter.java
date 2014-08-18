@@ -85,11 +85,11 @@ import com.vividsolutions.jts.geom.Point;
 @Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
-@Label(OMSGEOPAPARAZZICONVERTER_LABEL)
-@Name(OMSGEOPAPARAZZICONVERTER_NAME)
+@Label(JGTConstants.MOBILE)
+@Name(OMSGEOPAPARAZZICONVERTER_NAME + "_v3")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
-public class OmsGeopaparazziConverter extends JGTModel {
+public class OmsGeopaparazzi3Converter extends JGTModel {
 
     @Description(OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -191,7 +191,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
     }
 
-    private void simpleNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void simpleNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
         File outputShapeFile = new File(outputFolderFile, "simplenotes.shp");
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -204,17 +204,15 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         SimpleFeatureType featureType = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
-        
+
         pm.beginTask("Import simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        Statement statement = null;
-        try {
-            statement = connection.createStatement();
+        try (Statement statement = connection.createStatement()){
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
-            while( rs.next() ) {
+            while (rs.next()) {
                 String form = rs.getString("form");
                 if (form != null && form.trim().length() != 0) {
                     continue;
@@ -242,13 +240,11 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         } finally {
             pm.done();
-            if (statement != null)
-                statement.close();
         }
         dumpVector(newCollection, outputShapeFile.getAbsolutePath());
     }
 
-    private void complexNotesToShapefile( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void complexNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
         pm.beginTask("Import complex notes...", -1);
 
         HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<String, BuilderAndCollectionPair>();
@@ -259,7 +255,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
-            while( rs.next() ) {
+            while (rs.next()) {
                 String formString = rs.getString("form");
                 if (formString == null || formString.trim().length() == 0) {
                     continue;
@@ -285,12 +281,12 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
 
                 LinkedHashMap<String, String> valuesMap = new LinkedHashMap<String, String>();
-                for( String formName : formNames4Section ) {
+                for (String formName : formNames4Section) {
                     JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
                     JSONArray formItems = Utilities.getFormItems(form4Name);
 
                     int length = formItems.length();
-                    for( int i = 0; i < length; i++ ) {
+                    for (int i = 0; i < length; i++) {
                         JSONObject jsonObject = formItems.getJSONObject(i);
 
                         if (!jsonObject.has(TAG_KEY)) {
@@ -318,7 +314,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                     b.add("the_geom", Point.class); //$NON-NLS-1$
                     b.add("ts", String.class); //$NON-NLS-1$
                     b.add("altim", String.class); //$NON-NLS-1$
-                    for( Entry<String, String> entry : entrySet ) {
+                    for (Entry<String, String> entry : entrySet) {
                         String key = entry.getKey();
                         key = key.replaceAll("\\s+", "_");
                         if (key.length() > 10) {
@@ -344,7 +340,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 values[1] = dateTimeString;
                 values[2] = "" + altim;
                 int i = 3;
-                for( Entry<String, String> entry : entrySet ) {
+                for (Entry<String, String> entry : entrySet) {
                     String value = entry.getValue();
                     if (value.toLowerCase().endsWith(".jpg") || value.toLowerCase().endsWith(".png")) {
                         int lastIndexOf = value.lastIndexOf("media");
@@ -363,7 +359,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             }
 
             Set<Entry<String, BuilderAndCollectionPair>> entrySet = forms2PropertiesMap.entrySet();
-            for( Entry<String, BuilderAndCollectionPair> entry : entrySet ) {
+            for (Entry<String, BuilderAndCollectionPair> entry : entrySet) {
                 String name = entry.getKey();
                 SimpleFeatureCollection collection = entry.getValue().collection;
 
@@ -382,14 +378,14 @@ public class OmsGeopaparazziConverter extends JGTModel {
         DefaultFeatureCollection collection;
     }
 
-    private void gpsLogToShapefiles( Connection connection, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void gpsLogToShapefiles(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
         Statement statement = connection.createStatement();
         statement.setQueryTimeout(30); // set timeout to 30 sec.
 
         List<GpsLog> logsList = new ArrayList<GpsLog>();
         // first get the logs
         ResultSet rs = statement.executeQuery("select _id, startts, endts, text from gpslogs");
-        while( rs.next() ) {
+        while (rs.next()) {
             long id = rs.getLong("_id");
 
             String startDateTimeString = rs.getString("startts");
@@ -407,7 +403,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
         try {
             // then the log data
-            for( GpsLog log : logsList ) {
+            for (GpsLog log : logsList) {
                 long logId = log.id;
                 String query = "select lat, lon, altim, ts from gpslog_data where logid = " + logId + " order by ts";
 
@@ -415,7 +411,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
                 newStatement.setQueryTimeout(30);
                 ResultSet result = newStatement.executeQuery(query);
 
-                while( result.next() ) {
+                while (result.next()) {
                     double lat = result.getDouble("lat");
                     double lon = result.getDouble("lon");
                     double altim = result.getDouble("altim");
@@ -455,13 +451,13 @@ public class OmsGeopaparazziConverter extends JGTModel {
             featureType = b.buildFeatureType();
             pm.beginTask("Import gps to lines...", logsList.size());
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            for( GpsLog log : logsList ) {
+            for (GpsLog log : logsList) {
                 List<GpsPoint> points = log.points;
 
                 List<Coordinate> coordList = new ArrayList<Coordinate>();
                 String startDate = log.startTime;
                 String endDate = log.endTime;
-                for( GpsPoint gpsPoint : points ) {
+                for (GpsPoint gpsPoint : points) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     coordList.add(c);
                 }
@@ -499,9 +495,9 @@ public class OmsGeopaparazziConverter extends JGTModel {
             pm.beginTask("Import gps to points...", logsList.size());
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             int index = 0;
-            for( GpsLog log : logsList ) {
+            for (GpsLog log : logsList) {
                 List<GpsPoint> gpsPointList = log.points;
-                for( GpsPoint gpsPoint : gpsPointList ) {
+                for (GpsPoint gpsPoint : gpsPointList) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     Point point = gf.createPoint(c);
                     Object[] values = new Object[]{point, String.valueOf(gpsPoint.altim), gpsPoint.utctime};
@@ -519,7 +515,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
         }
     }
 
-    private void mediaToShapeFile( File geopapFolderFile, File outputFolderFile, IJGTProgressMonitor pm ) throws Exception {
+    private void mediaToShapeFile(File geopapFolderFile, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
         File folder = new File(geopapFolderFile, "media");
         if (!folder.exists()) {
             // try to see if it is an old version of geopaparazzi
@@ -554,7 +550,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
             SimpleFeatureType featureType = b.buildFeatureType();
 
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
-            for( File imageFile : listFiles ) {
+            for (File imageFile : listFiles) {
                 String name = imageFile.getName();
                 if (name.endsWith("jpg") || imageFile.getName().endsWith("JPG") || imageFile.getName().endsWith("png")
                         || imageFile.getName().endsWith("PNG") || imageFile.getName().endsWith("3gp")) {
@@ -624,7 +620,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
         if (nonTakenFilesList.size() > 0) {
             final StringBuilder sB = new StringBuilder();
             sB.append("For the following media no *.properties file could be found:/n");
-            for( String p : nonTakenFilesList ) {
+            for (String p : nonTakenFilesList) {
                 sB.append(p).append("/n");
             }
             pm.errorMessage(sB.toString());
@@ -636,12 +632,13 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
     /**
      * Convert decimal degrees to exif format.
-     * 
+     *
      * @param decimalDegree the angle in decimal format.
+     *
      * @return the exif format string.
      */
     @SuppressWarnings("nls")
-    public static String degreeDecimal2ExifFormat( double decimalDegree ) {
+    public static String degreeDecimal2ExifFormat(double decimalDegree) {
         StringBuilder sb = new StringBuilder();
         sb.append((int) decimalDegree);
         sb.append("/1,");
@@ -656,12 +653,13 @@ public class OmsGeopaparazziConverter extends JGTModel {
 
     /**
      * Convert exif format to decimal degree.
-     * 
+     *
      * @param exifFormat the exif string of the gps position.
+     *
      * @return the decimal degree.
      */
     @SuppressWarnings("nls")
-    public static double exifFormat2degreeDecimal( String exifFormat ) {
+    public static double exifFormat2degreeDecimal(String exifFormat) {
         // latitude=44/1,10/1,28110/1000
         String[] exifSplit = exifFormat.trim().split(",");
 
@@ -684,6 +682,7 @@ public class OmsGeopaparazziConverter extends JGTModel {
         double result = degree + (minutes / 60.0) + (seconds / 3600.0);
         return result;
     }
+
     private static class GpsPoint {
         public double lat;
         public double lon;

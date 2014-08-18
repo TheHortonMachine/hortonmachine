@@ -18,13 +18,15 @@
 package org.jgrasstools.gears.io.geopaparazzi.geopap4;
 
 
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Point;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.opengis.feature.simple.SimpleFeature;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.Exception;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -176,6 +178,98 @@ public class DaoImages {
 
             writeImageStatement.executeUpdate();
         }
+    }
+
+
+    public static String getImageName(Connection connection, long imageId) throws Exception {
+        String sql = "select " +
+                ImageTableFields.COLUMN_TEXT.getFieldName() + //
+                " from " + TABLE_IMAGES + //
+                " where " + ImageTableFields.COLUMN_ID.getFieldName() + " = " + imageId;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(sql);
+            if (rs.next()) {
+                String text = rs.getString(ImageTableFields.COLUMN_TEXT.getFieldName());
+                if (text != null && text.trim().length() != 0) {
+                    return text;
+                }
+            }
+            return null;
+        }
+    }
+
+
+    /**
+     * Get the list of Images from the db.
+     *
+     * @return list of notes.
+     *
+     * @throws IOException if something goes wrong.
+     */
+    public static List<Image> getImagesList(Connection connection) throws Exception {
+        List<Image> images = new ArrayList<Image>();
+        String sql = "select " + //
+                ImageTableFields.COLUMN_ID.getFieldName() + "," +//
+                ImageTableFields.COLUMN_LON.getFieldName() + "," +//
+                ImageTableFields.COLUMN_LAT.getFieldName() + "," +//
+                ImageTableFields.COLUMN_ALTIM.getFieldName() + "," +//
+                ImageTableFields.COLUMN_TS.getFieldName() + "," +//
+                ImageTableFields.COLUMN_AZIM.getFieldName() + "," +//
+                ImageTableFields.COLUMN_TEXT.getFieldName() + "," +//
+                ImageTableFields.COLUMN_NOTE_ID.getFieldName() + "," +//
+                ImageTableFields.COLUMN_IMAGEDATA_ID.getFieldName() +//
+                " from " + TABLE_IMAGES;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(sql);
+            while (rs.next()) {
+                long id = rs.getLong(1);
+                double lon = rs.getDouble(2);
+                double lat = rs.getDouble(3);
+                double altim = rs.getDouble(4);
+                long ts = rs.getLong(5);
+                double azim = rs.getDouble(6);
+                String text = rs.getString(7);
+                long noteId = rs.getLong(8);
+                long imageDataId = rs.getLong(9);
+
+                Image image = new Image(id, text, lon, lat, altim, azim, imageDataId, noteId, ts);
+                images.add(image);
+            }
+        }
+        return images;
+    }
+
+
+    /**
+     * Get Image data from data id.
+     *
+     * @param connection
+     * @param imageDataId
+     * @return
+     * @throws Exception
+     */
+    public static byte[] getImageData(Connection connection, long imageDataId) throws Exception {
+        String sql = "select " + //
+                ImageDataTableFields.COLUMN_IMAGE.getFieldName() +//
+                " from " + TABLE_IMAGE_DATA + " where " +//
+                ImageDataTableFields.COLUMN_ID.getFieldName() + " = " + imageDataId;
+
+        try (Statement statement = connection.createStatement()) {
+            statement.setQueryTimeout(30); // set timeout to 30 sec.
+
+            ResultSet rs = statement.executeQuery(sql);
+            if (rs.next()) {
+                byte[] bytes = rs.getBytes(1);
+                return bytes;
+            }
+        }
+        return null;
     }
 
 }

@@ -77,21 +77,27 @@ import java.util.List;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
-@Description("Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database.")
+@Description(OmsGeopaparazziProject3To4Converter.CONVERT_A_GEOPAPARAZZI_3_FOLDER_PROJECT_INTO_A_GEOPAPARAZZI_4_DATABASE)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
-@Name("geopap3to4")
+@Name("_" + OmsGeopaparazziProject3To4Converter.GEOPAP3TO4)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
-    @Description("Geopaparazzi 3 input folder to convert.")
+    @Description(GEOPAPARAZZI_3_INPUT_FOLDER_TO_CONVERT)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inGeopaparazzi = null;
 
+    // VARS DOCS START
+    public static final String CONVERT_A_GEOPAPARAZZI_3_FOLDER_PROJECT_INTO_A_GEOPAPARAZZI_4_DATABASE = "Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database.";
+    public static final String GEOPAPARAZZI_3_INPUT_FOLDER_TO_CONVERT = "Geopaparazzi 3 input folder to convert.";
     public static final String TABLE_GPSLOGS = "gpslogs";
+    // VARS DOCS END
+
+    public static final String GEOPAP3TO4 = "geopap3to4";
     public static final String TABLE_GPSLOG_DATA = "gpslog_data";
     public static final String TABLE_NOTES = "notes";
 
