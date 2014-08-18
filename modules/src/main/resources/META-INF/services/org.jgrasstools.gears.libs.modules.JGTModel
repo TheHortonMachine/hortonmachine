@@ -23,7 +23,9 @@ org.jgrasstools.modules.FileIterator
 org.jgrasstools.modules.FlowDirections
 org.jgrasstools.modules.Gc
 org.jgrasstools.modules.Geomorphon
-org.jgrasstools.modules.GeopaparazziConverter
+org.jgrasstools.modules.Geopaparazzi3Converter
+org.jgrasstools.modules.Geopaparazzi4Converter
+org.jgrasstools.modules.GeopaparazziProject3To4Converter
 org.jgrasstools.modules.Gradient
 org.jgrasstools.modules.GridGeometryReader
 org.jgrasstools.modules.GridsGenerator
@@ -82,6 +84,7 @@ org.jgrasstools.modules.RasterWriter
 org.jgrasstools.modules.RescaledDistance
 org.jgrasstools.modules.ScanLineRasterizer
 org.jgrasstools.modules.Shalstab
+org.jgrasstools.modules.Shp2DxfConverter
 org.jgrasstools.modules.Skyview
 org.jgrasstools.modules.Slope
 org.jgrasstools.modules.SplitSubbasins

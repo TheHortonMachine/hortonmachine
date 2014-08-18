@@ -18,7 +18,8 @@
  */
 package org.jgrasstools.gears.modules.v.vectorconverter;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.io.dxfdwg.libs.DxfUtils.LAYER;
 
 import java.io.File;
@@ -50,44 +51,49 @@ import org.jgrasstools.gears.io.dxfdwg.libs.dxf.DxfTABLE_STYLE_ITEM;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
-import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-@Description("Shapefiles to dxf converter (Based on work of Michael Michaud)")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("dxf, vector, converter")
+@Description(OmsShp2DxfConverter.DESCRIPTION)
+@Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
+@Keywords(OmsShp2DxfConverter.KEYWORDS)
 @Label(OMSDXFCONVERTER_LABEL)
-@Name("shp2dxfconverter")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Name("_" + OmsShp2DxfConverter.NAME)
+@Status(OMSHYDRO_DRAFT)
+@License(OMSHYDRO_LICENSE)
 public class OmsShp2DxfConverter extends JGTModel {
 
-    @Description("The folder containing the shapefiles.")
+    @Description(THE_FOLDER_CONTAINING_THE_SHAPEFILES)
     @UI(JGTConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder = null;
 
-    @Description("Optional field name for elevation value (in case of lines it will be applied to the whole feature).")
+    @Description(FIELD_NAME_FOR_ELEVATION_VALUE)
     @In
     public String fElev = null;
 
-    @Description("The output dxf file path.")
+    @Description(DO_THE_SUFFIX)
+    @In
+    public boolean doSuffix = false;
+
+    @Description(THE_OUTPUT_DXF_FILE_PATH)
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String inDxfpath = null;
 
-    @Description("Do the suffix.")
-    @In
-    public boolean doSuffix = false;
+    // START VARIABLE DOCS
+    public static final String NAME = "shp2dxfconverter";
+    public static final String KEYWORDS = "dxf, vector, converter";
+    public static final String DESCRIPTION = "Shapefiles to dxf converter (Based on work of Michael Michaud)";
+    public static final String THE_FOLDER_CONTAINING_THE_SHAPEFILES = "The folder containing the shapefiles.";
+    public static final String FIELD_NAME_FOR_ELEVATION_VALUE = "Optional field name for elevation value (in case of lines it will be applied to the whole feature).";
+    public static final String DO_THE_SUFFIX = "Do the suffix.";
+    public static final String THE_OUTPUT_DXF_FILE_PATH = "The output dxf file path.";
+    // END VARIABLE DOCS
 
-    @Description("The progress monitor.")
-    @In
-    public IJGTProgressMonitor pm = new DummyProgressMonitor();
 
     @Execute
     public void process() throws Exception {
@@ -98,8 +104,8 @@ public class OmsShp2DxfConverter extends JGTModel {
             throw new ModelsIllegalargumentException("Folder doesn't exist: " + inFolder, this);
         }
 
-        File[] shpFiles = fodlerFile.listFiles(new FilenameFilter(){
-            public boolean accept( File arg0, String name ) {
+        File[] shpFiles = fodlerFile.listFiles(new FilenameFilter() {
+            public boolean accept(File arg0, String name) {
                 return name.endsWith(".shp");
             }
         });
@@ -107,7 +113,7 @@ public class OmsShp2DxfConverter extends JGTModel {
         Envelope envelope = null;
         int count = 0;
         LinkedHashMap<String, List<FeatureMate>> layer2FeaturesMap = new LinkedHashMap<String, List<FeatureMate>>();
-        for( File shpFile : shpFiles ) {
+        for (File shpFile : shpFiles) {
             String path = shpFile.getAbsolutePath();
             String layerName = FileUtilities.getNameWithoutExtention(shpFile);
             SimpleFeatureCollection vector = getVector(path);
@@ -192,7 +198,7 @@ public class OmsShp2DxfConverter extends JGTModel {
             fw.write(DxfGroup.toString(2, LAYER));
             fw.write(DxfGroup.toString(70, 2));
 
-            for( String layerName : layer2FeaturesMap.keySet() ) {
+            for (String layerName : layer2FeaturesMap.keySet()) {
                 DxfTABLE_LAYER_ITEM layer = new DxfTABLE_LAYER_ITEM(layerName, 0, 131, "CONTINUE");
                 fw.write(DxfGroup.toString(0, LAYER)); // added by L. Becker on 2006-11-08
                 fw.write(layer.toString());
@@ -209,10 +215,10 @@ public class OmsShp2DxfConverter extends JGTModel {
             fw.write(DxfGroup.toString(0, "SECTION"));
             fw.write(DxfGroup.toString(2, "ENTITIES"));
 
-            for( Entry<String, List<FeatureMate>> entries : layer2FeaturesMap.entrySet() ) {
+            for (Entry<String, List<FeatureMate>> entries : layer2FeaturesMap.entrySet()) {
                 String layerName = entries.getKey();
                 List<FeatureMate> featuresList = entries.getValue();
-                for( FeatureMate feature : featuresList ) {
+                for (FeatureMate feature : featuresList) {
                     fw.write(DxfUtils.feature2Dxf(feature, layerName, fElev, doSuffix, false));
                 }
             }

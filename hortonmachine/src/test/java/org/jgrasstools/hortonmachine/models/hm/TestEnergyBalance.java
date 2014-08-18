@@ -130,7 +130,7 @@
 //
 //        while( rainReader.doProcess ) {
 //            rainReader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = rainReader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = rainReader.outFolder;
 //            energyBalance.inRain = id2ValueMap;
 //
 //            tempReader.readNextLine();
