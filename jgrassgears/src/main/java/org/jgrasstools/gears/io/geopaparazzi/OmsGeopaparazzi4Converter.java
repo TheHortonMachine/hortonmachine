@@ -44,6 +44,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.jgrasstools.gears.io.geopaparazzi.forms.Utilities;
 import org.jgrasstools.gears.io.geopaparazzi.geopap4.DaoImages;
@@ -55,12 +56,15 @@ import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
+import org.jgrasstools.gears.utils.chart.Scatter;
 import org.jgrasstools.gears.utils.files.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
@@ -108,6 +112,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     public static final String EMPTY_STRING = " - ";
 
     public static final String MEDIA_FOLDER_NAME = "media";
+    public static final String CHARTS_FOLDER_NAME = "charts";
 
     private static final String TAG_KEY = "key";
     private static final String TAG_VALUE = "value";
@@ -126,6 +131,7 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
     }
 
     private File mediaFolderFile;
+    private File chartsFolderFile;
 
     public static void main(String[] args) throws Exception {
         OmsGeopaparazzi4Converter conv = new OmsGeopaparazzi4Converter();
@@ -153,6 +159,8 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
         File outputFolderFile = new File(outFolder);
         mediaFolderFile = new File(outputFolderFile, MEDIA_FOLDER_NAME);
         mediaFolderFile.mkdir();
+        chartsFolderFile = new File(outputFolderFile, CHARTS_FOLDER_NAME);
+        chartsFolderFile.mkdir();
 
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath())) {
             projectInfo(connection, outputFolderFile, pm);
@@ -615,6 +623,57 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
             File outputPointsShapeFile = new File(outputFolderFile, "gpspoints.shp");
             dumpVector(newCollection, outputPointsShapeFile.getAbsolutePath());
         }
+
+        /*
+         * create charts for logs
+         */
+        pm.beginTask("Create log charts...", logsList.size());
+        for (GpsLog log : logsList) {
+            String logName = log.text;
+
+            File outFile = new File(chartsFolderFile, logName + ".png");
+
+            GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
+            int size = log.points.size();
+            double[] x = new double[size];
+            double[] y = new double[size];
+            double runningDistance = 0;
+            for (int i = 0; i < size - 1; i++) {
+                GpsPoint p1 = log.points.get(i);
+                GpsPoint p2 = log.points.get(i + 1);
+                double lon1 = p1.lon;
+                double lat1 = p1.lat;
+                double altim1 = p1.altim;
+                double lon2 = p2.lon;
+                double lat2 = p2.lat;
+                double altim2 = p2.altim;
+
+                gc.setStartingGeographicPoint(lon1, lat1);
+                gc.setDestinationGeographicPoint(lon2, lat2);
+                double distance = gc.getOrthodromicDistance();
+                runningDistance += distance;
+
+                if (i == 0) {
+                    x[i] = 0.0;
+                    y[i] = altim1;
+                }
+                x[i + 1] = runningDistance;
+                y[i + 1] = altim2;
+
+            }
+
+            Scatter scatter = new Scatter("Profile " + logName);
+            scatter.addSeries("profile", x, y);
+            scatter.setShowLines(true);
+            scatter.setXLabel("progressive distance [m]");
+            scatter.setYLabel("elevation [m]");
+            BufferedImage image = scatter.getImage(1000, 800);
+            ImageIO.write(image, "png", outFile);
+
+            pm.worked(1);
+        }
+        pm.done();
+
     }
 
     private void mediaToShapeFile(Connection connection, File mediaFolderFile, IJGTProgressMonitor pm) throws Exception {
