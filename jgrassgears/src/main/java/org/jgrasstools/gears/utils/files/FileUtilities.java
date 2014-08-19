@@ -18,16 +18,7 @@
  */
 package org.jgrasstools.gears.utils.files;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -179,7 +170,7 @@ public class FileUtilities {
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
             StringBuilder sb = new StringBuilder(200);
-            String line = null;
+            String line;
             while ((line = br.readLine()) != null) {
                 sb.append(line);
                 sb.append("\n"); //$NON-NLS-1$
@@ -211,9 +202,9 @@ public class FileUtilities {
      * @throws IOException
      */
     public static List<String> readFileToLinesList(File file) throws IOException {
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line = null;
+            String line;
             while ((line = br.readLine()) != null) {
                 lines.add(line);
             }
@@ -357,7 +348,7 @@ public class FileUtilities {
             separator = "=";
         }
         List<String> lines = readFileToLinesList(filePath);
-        LinkedHashMap<String, String> propertiesMap = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> propertiesMap = new LinkedHashMap<>();
         for (String line : lines) {
             line = line.trim();
             if (line.length() == 0) {

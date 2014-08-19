@@ -17,40 +17,16 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-
-import java.io.IOException;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
+import oms3.annotations.*;
 import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi3Converter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-@Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
+import java.io.IOException;
+
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+
+@Description(OmsGeopaparazzi3Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
@@ -79,10 +55,6 @@ public class Geopaparazzi3Converter extends JGTModel {
     @Description(OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION)
     @In
     public boolean doMedia = true;
-
-    @Description(OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION)
-    @In
-    public boolean doBookmarks = true;
 
     @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)

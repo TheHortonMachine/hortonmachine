@@ -17,49 +17,11 @@
  */
 package org.jgrasstools.gears.io.geopaparazzi;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_LABEL;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_NAME;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_TAGS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doLogpoints_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.MultiLineString;
+import com.vividsolutions.jts.geom.Point;
+import oms3.annotations.*;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -77,12 +39,16 @@ import org.json.JSONObject;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiLineString;
-import com.vividsolutions.jts.geom.Point;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
+import java.util.Map.Entry;
 
-@Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
+import static org.jgrasstools.gears.i18n.GearsMessages.*;
+
+@Description(OmsGeopaparazzi3Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
@@ -117,6 +83,10 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
     @In
     public String outData = null;
 
+    // VARS DOCS START
+    public static final String DESCRIPTION = "Converts a geopaparazzi 3 project folder into shapefiles.";
+    // VARS DOCS END
+
     private static final String TAG_KEY = "key";
     private static final String TAG_VALUE = "value";
 
@@ -150,10 +120,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
 
         File outputFolderFile = new File(outData);
 
-        Connection connection = null;
-        try {
-            // create a database connection
-            connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath());
+        try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + geopapDatabaseFile.getAbsolutePath())) {
             if (geopapDatabaseFile.exists()) {
                 /*
                  * import notes as shapefile
@@ -175,16 +142,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
         } catch (Exception e) {
             throw new ModelsRuntimeException("An error occurred while importing from geopaparazzi: " + e.getLocalizedMessage(),
                     this);
-        } finally {
-            try {
-                if (connection != null)
-                    connection.close();
-            } catch (SQLException e) {
-                // connection close failed.
-                throw new ModelsRuntimeException("An error occurred while closing the database connection.", this);
-            }
         }
-
     }
 
     private void simpleNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
@@ -204,7 +162,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
         pm.beginTask("Import simple notes...", -1);
         SimpleFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        try (Statement statement = connection.createStatement()){
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30); // set timeout to 30 sec.
 
             ResultSet rs = statement.executeQuery("select lat, lon, altim, ts, text, form from notes");
@@ -243,7 +201,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
     private void complexNotesToShapefile(Connection connection, File outputFolderFile, IJGTProgressMonitor pm) throws Exception {
         pm.beginTask("Import complex notes...", -1);
 
-        HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<String, BuilderAndCollectionPair>();
+        HashMap<String, BuilderAndCollectionPair> forms2PropertiesMap = new HashMap<>();
 
         Statement statement = null;
         try {
@@ -276,7 +234,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
                 sectionName = sectionName.replaceAll("\\s+", "_");
                 List<String> formNames4Section = Utilities.getFormNames4Section(sectionObject);
 
-                LinkedHashMap<String, String> valuesMap = new LinkedHashMap<String, String>();
+                LinkedHashMap<String, String> valuesMap = new LinkedHashMap<>();
                 for (String formName : formNames4Section) {
                     JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
                     JSONArray formItems = Utilities.getFormItems(form4Name);
@@ -295,7 +253,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
                             value = jsonObject.getString(TAG_VALUE).trim();
                         }
 
-                        if (key != null && value != null)
+                        if (value != null)
                             valuesMap.put(key, value);
                     }
                 }
@@ -378,7 +336,7 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
         Statement statement = connection.createStatement();
         statement.setQueryTimeout(30); // set timeout to 30 sec.
 
-        List<GpsLog> logsList = new ArrayList<GpsLog>();
+        List<GpsLog> logsList = new ArrayList<>();
         // first get the logs
         ResultSet rs = statement.executeQuery("select _id, startts, endts, text from gpslogs");
         while (rs.next()) {
@@ -450,14 +408,14 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
             for (GpsLog log : logsList) {
                 List<GpsPoint> points = log.points;
 
-                List<Coordinate> coordList = new ArrayList<Coordinate>();
+                List<Coordinate> coordList = new ArrayList<>();
                 String startDate = log.startTime;
                 String endDate = log.endTime;
                 for (GpsPoint gpsPoint : points) {
                     Coordinate c = new Coordinate(gpsPoint.lon, gpsPoint.lat);
                     coordList.add(c);
                 }
-                Coordinate[] coordArray = (Coordinate[]) coordList.toArray(new Coordinate[coordList.size()]);
+                Coordinate[] coordArray = coordList.toArray(new Coordinate[coordList.size()]);
                 if (coordArray.length < 2) {
                     continue;
                 }
@@ -526,7 +484,8 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
         String imageFolderName = "media";
 
         File[] listFiles = folder.listFiles();
-        List<String> nonTakenFilesList = new ArrayList<String>();
+        if (listFiles == null) listFiles = new File[0];
+        List<String> nonTakenFilesList = new ArrayList<>();
 
         pm.beginTask("Importing media...", listFiles.length);
         try {
@@ -574,8 +533,8 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
                     Double azimuth = -9999.0;
                     if (azimuthString != null)
                         azimuth = Double.parseDouble(azimuthString);
-                    double lat = 0.0;
-                    double lon = 0.0;
+                    double lat;
+                    double lon;
                     if (latString.contains("/")) {
                         // this is an exif string
                         lat = exifFormat2degreeDecimal(latString);
@@ -627,31 +586,9 @@ public class OmsGeopaparazzi3Converter extends JGTModel {
     }
 
     /**
-     * Convert decimal degrees to exif format.
-     *
-     * @param decimalDegree the angle in decimal format.
-     *
-     * @return the exif format string.
-     */
-    @SuppressWarnings("nls")
-    public static String degreeDecimal2ExifFormat(double decimalDegree) {
-        StringBuilder sb = new StringBuilder();
-        sb.append((int) decimalDegree);
-        sb.append("/1,");
-        decimalDegree = (decimalDegree - (int) decimalDegree) * 60;
-        sb.append((int) decimalDegree);
-        sb.append("/1,");
-        decimalDegree = (decimalDegree - (int) decimalDegree) * 60000;
-        sb.append((int) decimalDegree);
-        sb.append("/1000");
-        return sb.toString();
-    }
-
-    /**
      * Convert exif format to decimal degree.
      *
      * @param exifFormat the exif string of the gps position.
-     *
      * @return the decimal degree.
      */
     @SuppressWarnings("nls")

@@ -40,11 +40,9 @@ import org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi4Converter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 
-import java.io.IOException;
-
 import static org.jgrasstools.gears.i18n.GearsMessages.*;
 
-@Description(OMSGEOPAPARAZZICONVERTER_DESCRIPTION)
+@Description(OmsGeopaparazzi4Converter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
@@ -53,8 +51,8 @@ import static org.jgrasstools.gears.i18n.GearsMessages.*;
 @License(OMSHYDRO_LICENSE)
 public class Geopaparazzi4Converter extends JGTModel {
 
-    @Description(OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION)
-    @UI(JGTConstants.FOLDERIN_UI_HINT)
+    @Description(OmsGeopaparazzi4Converter.THE_GEOPAPARAZZI_DATABASE_FILE)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inGeopaparazzi = null;
 
@@ -73,10 +71,6 @@ public class Geopaparazzi4Converter extends JGTModel {
     @Description(OMSGEOPAPARAZZICONVERTER_doMedia_DESCRIPTION)
     @In
     public boolean doMedia = true;
-
-    @Description(OMSGEOPAPARAZZICONVERTER_doBookmarks_DESCRIPTION)
-    @In
-    public boolean doBookmarks = true;
 
     @Description(OMSGEOPAPARAZZICONVERTER_outData_DESCRIPTION)
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
