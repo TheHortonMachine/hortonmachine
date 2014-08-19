@@ -78,7 +78,7 @@ import static org.jgrasstools.gears.io.geopaparazzi.geopap4.TableDescriptions.*;
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
-@Name(OMSGEOPAPARAZZICONVERTER_NAME + "_v4")
+@Name("_" + OMSGEOPAPARAZZICONVERTER_NAME + "_v4")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazzi4Converter extends JGTModel {

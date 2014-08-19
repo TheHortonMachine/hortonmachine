@@ -86,7 +86,7 @@ import com.vividsolutions.jts.geom.Point;
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OMSGEOPAPARAZZICONVERTER_TAGS)
 @Label(JGTConstants.MOBILE)
-@Name(OMSGEOPAPARAZZICONVERTER_NAME + "_v3")
+@Name("_" + OMSGEOPAPARAZZICONVERTER_NAME + "_v3")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class OmsGeopaparazzi3Converter extends JGTModel {
