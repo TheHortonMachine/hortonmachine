@@ -27,7 +27,7 @@
   </modules>
 
 	<issueManagement>
-        <url>http://code.google.com/p/jgrasstools/issues/list</url>
+        <url>https://github.com/moovida/jgrasstools/issues</url>
     </issueManagement>
 
     <mailingLists>
@@ -41,9 +41,9 @@
     </mailingLists>
 
     <scm>
-        <connection>scm:hg:http://jgrasstools.googlecode.com/hg/</connection>
-        <developerConnection>scm:hg:https://jgrasstools.googlecode.com/hg/</developerConnection>
-        <url>http://code.google.com/p/jgrasstools/source/browse/</url>
+        <connection>scm:git:https://github.com/moovida/jgrasstools.git</connection>
+        <developerConnection>scm:git:https://github.com/moovida/jgrasstools.git</developerConnection>
+        <url>https://github.com/moovida/jgrasstools</url>
     </scm>
 
   <organization>
@@ -136,8 +136,8 @@
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

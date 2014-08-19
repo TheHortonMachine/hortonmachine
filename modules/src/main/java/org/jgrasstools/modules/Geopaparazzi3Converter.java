@@ -97,7 +97,6 @@ public class Geopaparazzi3Converter extends JGTModel {
         geopaparazziconverter.doLoglines = doLoglines;
         geopaparazziconverter.doLogpoints = doLogpoints;
         geopaparazziconverter.doMedia = doMedia;
-        geopaparazziconverter.doBookmarks = doBookmarks;
         geopaparazziconverter.outData = outData;
         geopaparazziconverter.pm = pm;
         geopaparazziconverter.process();
