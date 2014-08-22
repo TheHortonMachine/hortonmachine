@@ -43,6 +43,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
+import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.exceptions.ModelsRuntimeException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -117,6 +119,7 @@ public class OmsVectorIntersector extends JGTModel {
 
         GeometryType geometryType = GeometryUtilities.getGeometryType((Geometry) mainFeatures.get(0).getDefaultGeometry());
         Class<?> multiClazz = geometryType.getMultiClazz();
+        GeometryType newGeometryType = GeometryType.forClass(multiClazz);
         FeatureGeometrySubstitutor sub = new FeatureGeometrySubstitutor(inMap1.getSchema(), multiClazz);
 
 
@@ -127,7 +130,7 @@ public class OmsVectorIntersector extends JGTModel {
                 Geometry intersection = geometry.intersection(intersectionGeometry);
 
                 GeometryType intersectionGeometryType = GeometryUtilities.getGeometryType(intersection);
-                if (intersectionGeometryType.isCompatibleWith(geometryType)) {
+                if (intersectionGeometryType.isCompatibleWith(newGeometryType)) {
                     SimpleFeature newFeature = sub.substituteGeometry(feature, intersection);
                     ((DefaultFeatureCollection) outMap).add(newFeature);
                 } else {
@@ -138,6 +141,14 @@ public class OmsVectorIntersector extends JGTModel {
         }
         pm.done();
 
+    }
+    public static void main(String[] args) throws Exception {
+        OmsVectorIntersector vint = new OmsVectorIntersector();
+        vint.inMap1 = OmsVectorReader.readVector("/media/hydrologis/FLASH DRIVE/test_data/topodb_poly.shp");
+        vint.inMap2 = OmsVectorReader.readVector("/media/hydrologis/FLASH DRIVE/test_data/stand.shp");
+//        vint.doKeepFirstAttributes = doKeepFirstAttributes;
+        vint.process();
+        OmsVectorWriter.writeVector("/media/hydrologis/FLASH DRIVE/test_data/intersected.shp", vint.outMap);
     }
 
 }

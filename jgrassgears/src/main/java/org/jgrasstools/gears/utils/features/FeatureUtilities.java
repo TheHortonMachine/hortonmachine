@@ -634,7 +634,7 @@ public class FeatureUtilities {
     /**
      * Find the name of an attribute, case insensitive.
      * 
-     * @param featureType te feature type to check.
+     * @param featureType the feature type to check.
      * @param field the case insensitive field name.
      * @return the real name of the field, or <code>null</code>, if none found.
      */
