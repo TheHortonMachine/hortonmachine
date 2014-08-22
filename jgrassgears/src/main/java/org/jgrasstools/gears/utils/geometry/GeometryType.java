@@ -49,6 +49,26 @@ public enum GeometryType {
         return multiClazz;
     }
 
+    public static GeometryType forClass(Class<?> clazz) {
+        if (POINT.getClazz().isAssignableFrom(clazz)) {
+            return POINT;
+        } else if (MULTIPOINT.getClazz().isAssignableFrom(clazz)) {
+            return MULTIPOINT;
+        } else if (LINE.getClazz().isAssignableFrom(clazz)) {
+            return LINE;
+        } else if (MULTILINE.getClazz().isAssignableFrom(clazz)) {
+            return MULTILINE;
+        } else if (POLYGON.getClazz().isAssignableFrom(clazz)) {
+            return POLYGON;
+        } else if (MULTIPOLYGON.getClazz().isAssignableFrom(clazz)) {
+            return MULTIPOLYGON;
+        } else if (GEOMETRYCOLLECTION.getClazz().isAssignableFrom(clazz)) {
+            return GEOMETRYCOLLECTION;
+        } else {
+            return null;
+        }
+    }
+
     public boolean isMulti() {
         switch (this) {
             case MULTILINE:
@@ -61,19 +81,19 @@ public enum GeometryType {
     }
 
     public boolean isCompatibleWith(GeometryType geometryType) {
-        switch (this) {
+        switch (geometryType) {
             case LINE:
-                return geometryType == LINE;
+                return this == LINE;
             case MULTILINE:
-                return geometryType == LINE || geometryType == MULTILINE;
+                return this == LINE || this == MULTILINE;
             case POINT:
-                return geometryType == POINT;
+                return this == POINT;
             case MULTIPOINT:
-                return geometryType == POINT || geometryType == MULTIPOINT;
+                return this == POINT || this == MULTIPOINT;
             case POLYGON:
-                return geometryType == POLYGON;
+                return this == POLYGON;
             case MULTIPOLYGON:
-                return geometryType == POLYGON || geometryType == MULTIPOLYGON;
+                return this == POLYGON || this == MULTIPOLYGON;
             default:
                 return false;
         }

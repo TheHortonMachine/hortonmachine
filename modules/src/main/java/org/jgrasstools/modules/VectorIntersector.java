@@ -99,7 +99,7 @@ public class VectorIntersector extends JGTModel {
 
     @Description(OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION)
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outMap = null;
 
     @Execute
