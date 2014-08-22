@@ -209,6 +209,7 @@ public class OmsZonalStats extends JGTModel {
 
         final double delta = xRes / 4.0;
         Envelope env = geometry.getEnvelopeInternal();
+        env.expandBy(xRes, yRes);
         double envArea = env.getWidth() * env.getHeight();
         int maxCells = (int) ceil(envArea / (xRes * yRes));
 
