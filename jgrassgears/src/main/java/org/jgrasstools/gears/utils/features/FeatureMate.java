@@ -17,21 +17,20 @@
  */
 package org.jgrasstools.gears.utils.features;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A wrapper for features that helps out with lots of stuff.
@@ -239,7 +238,7 @@ public class FeatureMate {
      * @throws IllegalArgumentException in the case the geometry is a point.
      */
     public void convertToLine() throws IllegalArgumentException {
-        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        GeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:
@@ -259,14 +258,14 @@ public class FeatureMate {
     }
 
     /**
-     * Tries to convert the internal geometry to a {@link Point}.
+     * Tries to convert the internal geometry to a {@link com.vividsolutions.jts.geom.Point}.
      * 
      * <p>From this moment on the internal geometry (as got by the {@link #getGeometry()})
      * will be the point type.
      * <p>To get the original geometry one can simply call {@link #resetGeometry()}. 
      */
     public void convertToPoint() {
-        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(getGeometry());
+        GeometryType geometryType = GeometryUtilities.getGeometryType(getGeometry());
         switch( geometryType ) {
         case MULTIPOLYGON:
         case POLYGON:

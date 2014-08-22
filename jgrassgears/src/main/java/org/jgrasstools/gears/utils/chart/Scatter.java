@@ -24,6 +24,8 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.LogAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -34,7 +36,7 @@ import org.jfree.ui.RefineryUtilities;
 
 /**
  * A simple scatter plotter.
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class Scatter extends ApplicationFrame {
@@ -48,7 +50,7 @@ public class Scatter extends ApplicationFrame {
     private boolean showLines = true;
     private boolean showShapes = true;
 
-    public Scatter( String title ) {
+    public Scatter(String title) {
         super(title);
         dataset = new XYSeriesCollection();
     }
@@ -57,36 +59,36 @@ public class Scatter extends ApplicationFrame {
         this("Scatter");
     }
 
-    public void addSeries( String seriesName, double[] x, double[] y ) {
+    public void addSeries(String seriesName, double[] x, double[] y) {
         XYSeries series = new XYSeries(seriesName);
-        for( int i = 0; i < x.length; i++ ) {
+        for (int i = 0; i < x.length; i++) {
             series.add(x[i], y[i]);
         }
         dataset.addSeries(series);
     }
 
-    public void setLogAxes( boolean xLog, boolean yLog ) {
+    public void setLogAxes(boolean xLog, boolean yLog) {
         this.xLog = xLog;
         this.yLog = yLog;
     }
 
-    public void setShowLines( boolean showLines ) {
+    public void setShowLines(boolean showLines) {
         this.showLines = showLines;
     }
 
-    public void setShowShapes( boolean showShapes ) {
+    public void setShowShapes(boolean showShapes) {
         this.showShapes = showShapes;
     }
 
-    public void setXLabel( String xLabel ) {
+    public void setXLabel(String xLabel) {
         this.xLabel = xLabel;
     }
 
-    public void setYLabel( String yLabel ) {
+    public void setYLabel(String yLabel) {
         this.yLabel = yLabel;
     }
 
-    public BufferedImage getImage( int width, int height ) {
+    public BufferedImage getImage(int width, int height) {
         JFreeChart chart = getChart();
         BufferedImage bufferedImage = chart.createBufferedImage(width, height);
         return bufferedImage;
@@ -120,8 +122,8 @@ public class Scatter extends ApplicationFrame {
                 true,
                 // tooltips?
                 false
-        // URLs?
-                );
+                // URLs?
+        );
 
         XYPlot plot = (XYPlot) chart.getPlot();
         if (xLog) {
@@ -135,9 +137,15 @@ public class Scatter extends ApplicationFrame {
             plot.setRangeAxis(yAxis);
         }
 
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        if (rangeAxis instanceof NumberAxis) {
+            NumberAxis axis = (NumberAxis) rangeAxis;
+            axis.setAutoRangeIncludesZero(false);
+        }
+
         XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
         int seriesCount = plot.getSeriesCount();
-        for( int i = 0; i < seriesCount; i++ ) {
+        for (int i = 0; i < seriesCount; i++) {
             renderer.setSeriesShapesVisible(i, showShapes);
             renderer.setSeriesLinesVisible(i, showLines);
         }
@@ -145,7 +153,7 @@ public class Scatter extends ApplicationFrame {
         return chart;
     }
 
-    public static void main( String[] args ) {
+    public static void main(String[] args) {
         double[] asd = {1, 2};
         double[] qwe = {1, 2};
         Scatter scatter = new Scatter("");

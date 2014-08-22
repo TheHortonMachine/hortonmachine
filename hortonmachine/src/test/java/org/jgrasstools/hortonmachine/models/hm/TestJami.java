@@ -114,7 +114,7 @@
 //        while( dataReader.doProcess ) {
 //            dataReader.nextRecord();
 //            DateTime runningDate = dF.parseDateTime(dataReader.tCurrent);
-//            HashMap<Integer, double[]> id2ValueMap = dataReader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = dataReader.outFolder;
 //            jami.inMeteo = id2ValueMap;
 //            jami.tCurrent = runningDate.toString(dF);
 //

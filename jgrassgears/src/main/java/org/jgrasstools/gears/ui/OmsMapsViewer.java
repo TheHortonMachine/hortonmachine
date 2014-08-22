@@ -80,8 +80,8 @@ import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.swing.JMapFrame;
 import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.expression.Expression;
@@ -177,7 +177,7 @@ public class OmsMapsViewer extends JGTModel {
     private void addFeatureCollections( MapContext map ) {
         for( SimpleFeatureCollection fc : inVectors ) {
             GeometryDescriptor geometryDescriptor = fc.getSchema().getGeometryDescriptor();
-            GEOMETRYTYPE type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
+            GeometryType type = GeometryUtilities.getGeometryType(geometryDescriptor.getType());
 
             switch( type ) {
             case MULTIPOLYGON:

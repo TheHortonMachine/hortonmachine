@@ -77,7 +77,6 @@ import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
@@ -207,11 +206,11 @@ public class OmsScanLineRasterizer extends JGTModel {
         }
 
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) == GEOMETRYTYPE.POINT || getGeometryType(type) == GEOMETRYTYPE.MULTIPOINT) {
+        if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.POINT || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.MULTIPOINT) {
             throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
-        } else if (getGeometryType(type) == GEOMETRYTYPE.LINE || getGeometryType(type) == GEOMETRYTYPE.MULTILINE) {
+        } else if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.LINE || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.MULTILINE) {
             throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
-        } else if (getGeometryType(type) == GEOMETRYTYPE.POLYGON || getGeometryType(type) == GEOMETRYTYPE.MULTIPOLYGON) {
+        } else if (getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.POLYGON || getGeometryType(type) == org.jgrasstools.gears.utils.geometry.GeometryType.MULTIPOLYGON) {
             rasterizepolygon(pGrid);
         } else {
             throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.", this.getClass()

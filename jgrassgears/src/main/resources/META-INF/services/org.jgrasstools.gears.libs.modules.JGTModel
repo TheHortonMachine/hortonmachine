@@ -17,7 +17,9 @@ org.jgrasstools.gears.io.generic.OmsDateTime2ValueMapWriter
 org.jgrasstools.gears.io.generic.OmsId2ValueArrayReader
 org.jgrasstools.gears.io.generic.OmsId2ValueArrayWriter
 org.jgrasstools.gears.io.generic.OmsPlainId2ValueReader
-org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziConverter
+org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi3Converter
+org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazzi4Converter
+org.jgrasstools.gears.io.geopaparazzi.OmsGeopaparazziProject3To4Converter
 org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyReader
 org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyWriter
 org.jgrasstools.gears.io.grasslegacy.modules.GrassMosaicLegacy

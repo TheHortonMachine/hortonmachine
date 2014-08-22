@@ -61,8 +61,8 @@ import org.jgrasstools.gears.libs.exceptions.ModelsIOException;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryType;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -537,7 +537,7 @@ public class FeatureUtilities {
 
         DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
 
-        GEOMETRYTYPE geometryType = GeometryUtilities.getGeometryType(geometries[0]);
+        GeometryType geometryType = GeometryUtilities.getGeometryType(geometries[0]);
         switch( geometryType ) {
         case LINE:
             b.add("the_geom", LineString.class);

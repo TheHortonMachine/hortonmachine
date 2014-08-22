@@ -51,7 +51,6 @@ import org.jgrasstools.gears.modules.r.cutout.OmsCutOut;
 import org.jgrasstools.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
 
@@ -87,7 +86,7 @@ public class OmsRasterVectorIntersector extends JGTModel {
 
         SimpleFeatureType schema = inVector.getSchema();
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != GEOMETRYTYPE.POLYGON && getGeometryType(type) != GEOMETRYTYPE.MULTIPOLYGON) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POLYGON && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.MULTIPOLYGON) {
             throw new ModelsRuntimeException("The module works only with polygon vectors.", this);
         }
 

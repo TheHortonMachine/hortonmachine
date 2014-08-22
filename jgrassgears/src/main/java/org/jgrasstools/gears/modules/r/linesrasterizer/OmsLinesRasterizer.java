@@ -72,7 +72,6 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
@@ -152,7 +151,7 @@ public class OmsLinesRasterizer extends JGTModel {
         GridGeometry2D inGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
 
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != GEOMETRYTYPE.LINE && getGeometryType(type) != GEOMETRYTYPE.MULTILINE) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.LINE && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.MULTILINE) {
             throw new ModelsRuntimeException("The module works only with line vectors.", this);
         }
 

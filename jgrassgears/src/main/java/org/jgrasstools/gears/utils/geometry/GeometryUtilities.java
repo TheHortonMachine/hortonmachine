@@ -41,7 +41,6 @@ import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.jgrasstools.gears.utils.sorting.QuickSortAlgorithm;
 import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.feature.type.GeometryType;
 
 import com.vividsolutions.jts.algorithm.PointLocator;
 import com.vividsolutions.jts.algorithm.RobustLineIntersector;
@@ -85,12 +84,6 @@ public class GeometryUtilities {
     public static Point[] TYPE_POINT = new Point[0];
     public static MultiPoint[] TYPE_MULTIPOINT = new MultiPoint[0];
 
-    /**
-     * Geometry types used by the utility.
-     */
-    public static enum GEOMETRYTYPE {
-        POINT, MULTIPOINT, LINE, MULTILINE, POLYGON, MULTIPOLYGON, GEOMETRYCOLLECTION, UNKNOWN
-    }
 
     private static GeometryFactory geomFactory;
     private static PrecisionModel precModel;
@@ -252,52 +245,52 @@ public class GeometryUtilities {
     }
 
     /**
-     * Returns the {@link GEOMETRYTYPE} for a given {@link Geometry}. 
+     * Returns the {@link GeometryType} for a given {@link Geometry}.
      * 
      * @param geometry the geometry to check.
      * @return the type.
      */
-    public static GEOMETRYTYPE getGeometryType( Geometry geometry ) {
+    public static GeometryType getGeometryType( Geometry geometry ) {
         if (geometry instanceof LineString) {
-            return GEOMETRYTYPE.LINE;
+            return GeometryType.LINE;
         } else if (geometry instanceof MultiLineString) {
-            return GEOMETRYTYPE.MULTILINE;
+            return GeometryType.MULTILINE;
         } else if (geometry instanceof Point) {
-            return GEOMETRYTYPE.POINT;
+            return GeometryType.POINT;
         } else if (geometry instanceof MultiPoint) {
-            return GEOMETRYTYPE.MULTIPOINT;
+            return GeometryType.MULTIPOINT;
         } else if (geometry instanceof Polygon) {
-            return GEOMETRYTYPE.POLYGON;
+            return GeometryType.POLYGON;
         } else if (geometry instanceof MultiPolygon) {
-            return GEOMETRYTYPE.MULTIPOLYGON;
+            return GeometryType.MULTIPOLYGON;
         } else if (geometry instanceof GeometryCollection) {
-            return GEOMETRYTYPE.GEOMETRYCOLLECTION;
+            return GeometryType.GEOMETRYCOLLECTION;
         } else {
             return null;
         }
     }
 
     /**
-     * Returns the {@link GEOMETRYTYPE} for a given {@link GeometryType}. 
+     * Returns the {@link GeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
      * 
      * @param geometryType the geometry type to check.
      * @return the type.
      */
-    public static GEOMETRYTYPE getGeometryType( GeometryType geometryType ) {
+    public static GeometryType getGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
         Class< ? > binding = geometryType.getBinding();
 
         if (binding == LineString.class) {
-            return GEOMETRYTYPE.LINE;
+            return GeometryType.LINE;
         } else if (binding == MultiLineString.class) {
-            return GEOMETRYTYPE.MULTILINE;
+            return GeometryType.MULTILINE;
         } else if (binding == Point.class) {
-            return GEOMETRYTYPE.POINT;
+            return GeometryType.POINT;
         } else if (binding == MultiPoint.class) {
-            return GEOMETRYTYPE.MULTIPOINT;
+            return GeometryType.MULTIPOINT;
         } else if (binding == Polygon.class) {
-            return GEOMETRYTYPE.POLYGON;
+            return GeometryType.POLYGON;
         } else if (binding == MultiPolygon.class) {
-            return GEOMETRYTYPE.MULTIPOLYGON;
+            return GeometryType.MULTIPOLYGON;
         } else {
             return null;
         }
@@ -323,7 +316,7 @@ public class GeometryUtilities {
      * @return <code>true</code> if there are points in there.
      */
     public static boolean isLine( GeometryDescriptor geometryDescriptor ) {
-        GeometryType type = geometryDescriptor.getType();
+        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiLineString.class || binding == LineString.class) {
             return true;
@@ -351,7 +344,7 @@ public class GeometryUtilities {
      * @return <code>true</code> if there are polygons in there.
      */
     public static boolean isPolygon( GeometryDescriptor geometryDescriptor ) {
-        GeometryType type = geometryDescriptor.getType();
+        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiPolygon.class || binding == Polygon.class) {
             return true;
@@ -379,7 +372,7 @@ public class GeometryUtilities {
      * @return <code>true</code> if there are points in there.
      */
     public static boolean isPoint( GeometryDescriptor geometryDescriptor ) {
-        GeometryType type = geometryDescriptor.getType();
+        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiPoint.class || binding == Point.class) {
             return true;

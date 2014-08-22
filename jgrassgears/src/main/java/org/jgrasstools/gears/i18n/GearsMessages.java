@@ -52,7 +52,6 @@ public class GearsMessages {
     public static final String OMSGEOPAPARAZZICONVERTER_doLoglines_DESCRIPTION = "Flag to create log lines";
     public static final String OMSGEOPAPARAZZICONVERTER_doNotes_DESCRIPTION = "Flag to create notes";
     public static final String OMSGEOPAPARAZZICONVERTER_inGeopaparazzi_DESCRIPTION = "The geopaparazzi folder";
-    public static final String OMSGEOPAPARAZZICONVERTER_DESCRIPTION = "Coverts a geopaparazzi project into shapefiles.";
 
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
     public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";

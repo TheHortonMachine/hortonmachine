@@ -62,7 +62,6 @@ import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureMate;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
-import org.jgrasstools.gears.utils.geometry.GeometryUtilities.GEOMETRYTYPE;
 import org.jgrasstools.gears.utils.math.NumericsUtilities;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryType;
@@ -102,7 +101,7 @@ public class OmsPointsRasterizer extends JGTModel {
 
         SimpleFeatureType schema = inVector.getSchema();
         GeometryType type = schema.getGeometryDescriptor().getType();
-        if (getGeometryType(type) != GEOMETRYTYPE.POINT && getGeometryType(type) != GEOMETRYTYPE.POINT) {
+        if (getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POINT && getGeometryType(type) != org.jgrasstools.gears.utils.geometry.GeometryType.POINT) {
             throw new ModelsRuntimeException("The module works only with point vectors.", this);
         }
 

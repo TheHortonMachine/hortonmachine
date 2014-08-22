@@ -142,7 +142,7 @@
 //        // writer.tTimestep = reader.tTimestep;
 //        while( reader.doProcess ) {
 //            reader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = reader.outFolder;
 //            kriging.inData = id2ValueMap;
 //            kriging.executeKriging();
 //            /*
@@ -164,7 +164,7 @@
 //
 //            assertEquals(expected[0], values[0], 0.01);
 //
-//            // HashMap<Integer, double[]> result = kriging.outData;
+//            // HashMap<Integer, double[]> result = kriging.outFolder;
 //            // Set<Integer> pointsToInterpolateResult = result.keySet();
 //            // Iterator<Integer> iteratorTest = pointsToInterpolateResult
 //            // .iterator();
@@ -286,13 +286,13 @@
 //        int j = 0;
 //        while( reader.doProcess ) {
 //            reader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = reader.outFolder;
 //            kriging.inData = id2ValueMap;
 //            kriging.executeKriging();
 //            /*
 //            * Extract the result.
 //            */
-//            HashMap<Integer, double[]> result = kriging.outData;
+//            HashMap<Integer, double[]> result = kriging.outFolder;
 //            Set<Integer> pointsToInterpolateResult = result.keySet();
 //            Iterator<Integer> iteratorTest = pointsToInterpolateResult.iterator();
 //
@@ -421,13 +421,13 @@
 //
 //        while( reader.doProcess ) {
 //            reader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = reader.outFolder;
 //            kriging.inData = id2ValueMap;
 //            kriging.executeKriging();
 //            /*
 //            * Extract the result.
 //            */
-//            HashMap<Integer, double[]> result = kriging.outData;
+//            HashMap<Integer, double[]> result = kriging.outFolder;
 //            Set<Integer> pointsToInterpolateResult = result.keySet();
 //            Iterator<Integer> iterator = pointsToInterpolateResult.iterator();
 //            while( iterator.hasNext() ) {
@@ -513,13 +513,13 @@
 //
 //        while( reader.doProcess ) {
 //            reader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = reader.outFolder;
 //            kriging.inData = id2ValueMap;
 //            kriging.executeKriging();
 //            /*
 //            * Extract the result.
 //            */
-//            HashMap<Integer, double[]> result = kriging.outData;
+//            HashMap<Integer, double[]> result = kriging.outFolder;
 //            double[][] test = HMTestMaps.outKriging4;
 //            for( int i = 0; i < test.length; i++ ) {
 //                double actual = result.get((int) test[i][0])[0];
@@ -604,13 +604,13 @@
 //        int j = 0;
 //        while( reader.doProcess ) {
 //            reader.nextRecord();
-//            HashMap<Integer, double[]> id2ValueMap = reader.outData;
+//            HashMap<Integer, double[]> id2ValueMap = reader.outFolder;
 //            kriging.inData = id2ValueMap;
 //            kriging.executeKriging();
 //            /*
 //            * Extract the result.
 //            */
-//            HashMap<Integer, double[]> result = kriging.outData;
+//            HashMap<Integer, double[]> result = kriging.outFolder;
 //            Set<Integer> pointsToInterpolateResult = result.keySet();
 //            Iterator<Integer> iteratorTest = pointsToInterpolateResult.iterator();
 //            double expected;
