@@ -101,6 +101,7 @@ org.jgrasstools.modules.VectorClipper
 org.jgrasstools.modules.VectorConverter
 org.jgrasstools.modules.VectorFieldRounder
 org.jgrasstools.modules.VectorFilter
+org.jgrasstools.modules.VectorIntersector
 org.jgrasstools.modules.VectorMerger
 org.jgrasstools.modules.VectorOverlayOperators
 org.jgrasstools.modules.VectorReader
