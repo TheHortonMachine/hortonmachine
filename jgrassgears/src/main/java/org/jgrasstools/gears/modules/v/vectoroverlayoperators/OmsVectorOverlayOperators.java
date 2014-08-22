@@ -114,34 +114,38 @@ public class OmsVectorOverlayOperators extends JGTModel {
 
         pm.message("Preparing geometry layers...");
 
-        GeometryFactory gf = GeometryUtilities.gf();
         List<Geometry> geoms1 = FeatureUtilities.featureCollectionToGeometriesList(inMap1, false, null);
-        GeometryCollection geometryCollection1 = new GeometryCollection(geoms1.toArray(new Geometry[0]), gf);
+        GeometryCollection geometryCollection1 = new GeometryCollection(geoms1.toArray(new Geometry[geoms1.size()]), gf);
         Geometry g1 = geometryCollection1.buffer(0);
 
         Geometry g2 = null;
         if (inMap2 != null) {
             List<Geometry> geoms2 = FeatureUtilities.featureCollectionToGeometriesList(inMap2, false, null);
-            GeometryCollection geometryCollection2 = new GeometryCollection(geoms2.toArray(new Geometry[0]), gf);
+            GeometryCollection geometryCollection2 = new GeometryCollection(geoms2.toArray(new Geometry[geoms2.size()]), gf);
             g2 = geometryCollection2.buffer(0);
         }
 
         pm.beginTask("Performing overlay operation...", IJGTProgressMonitor.UNKNOWN);
         Geometry resultingGeometryCollection = null;
-        if (pType.equals(INTERSECTION)) {
-            resultingGeometryCollection = g1.intersection(g2);
-        } else if (pType.equals(UNION)) {
-            if (inMap2 != null) {
-                resultingGeometryCollection = g1.union(g2);
-            } else {
-                resultingGeometryCollection = g1.union();
-            }
-        } else if (pType.equals(DIFFERENCE)) {
-            resultingGeometryCollection = g1.difference(g2);
-        } else if (pType.equals(SYMDIFFERENCE)) {
-            resultingGeometryCollection = g1.symDifference(g2);
-        } else {
-            throw new ModelsIllegalargumentException("The overlay type is not supported: " + pType, this, pm);
+        switch (pType) {
+            case INTERSECTION:
+                resultingGeometryCollection = g1.intersection(g2);
+                break;
+            case UNION:
+                if (inMap2 != null) {
+                    resultingGeometryCollection = g1.union(g2);
+                } else {
+                    resultingGeometryCollection = g1.union();
+                }
+                break;
+            case DIFFERENCE:
+                resultingGeometryCollection = g1.difference(g2);
+                break;
+            case SYMDIFFERENCE:
+                resultingGeometryCollection = g1.symDifference(g2);
+                break;
+            default:
+                throw new ModelsIllegalargumentException("The overlay type is not supported: " + pType, this, pm);
         }
         pm.done();
 
