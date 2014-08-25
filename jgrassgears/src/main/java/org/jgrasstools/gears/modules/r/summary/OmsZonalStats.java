@@ -72,11 +72,11 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Calculate zonal stats on image mosaic datasets.")
+@Description("Calculate zonal stats.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("zonalstats, image mosaic")
+@Keywords("zonalstats")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("zonalstats_im")
+@Name("zonalstats")
 @Status(Status.EXPERIMENTAL)
 @License(OMSHYDRO_LICENSE)
 public class OmsZonalStats extends JGTModel {
@@ -111,6 +111,15 @@ public class OmsZonalStats extends JGTModel {
      * if {@link #pTotalMean} is != <code>null</code>.
      */
     double[] tm_usertm_tactivecells = new double[3];
+
+    public static final String MIN = "min";
+    public static final String MAX = "max";
+    public static final String AVG = "avg";
+    public static final String VAR = "var";
+    public static final String SDEV = "sdev";
+    public static final String AVGABSDEV = "avgabsdev";
+    public static final String ACTCELLS = "actcells";
+    public static final String INVCELLS = "invcells";
 
     @Execute
     public void process() throws Exception {
@@ -313,15 +322,15 @@ public class OmsZonalStats extends JGTModel {
         b.setName("stats");
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
-        b.add("min", Double.class);
-        b.add("max", Double.class);
-        b.add("avg", Double.class);
-        b.add("var", Double.class);
-        b.add("sdev", Double.class);
+        b.add(MIN, Double.class);
+        b.add(MAX, Double.class);
+        b.add(AVG, Double.class);
+        b.add(VAR, Double.class);
+        b.add(SDEV, Double.class);
         if (hasUserTotalMean)
-            b.add("avgabsdev", Double.class);
-        b.add("actcells", Integer.class);
-        b.add("invcells", Integer.class);
+            b.add(AVGABSDEV, Double.class);
+        b.add(ACTCELLS, Integer.class);
+        b.add(INVCELLS, Integer.class);
         SimpleFeatureType type = b.buildFeatureType();
         return new SimpleFeatureBuilder(type);
     }
