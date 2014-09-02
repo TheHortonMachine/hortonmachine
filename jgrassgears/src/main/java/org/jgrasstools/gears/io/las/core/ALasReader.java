@@ -25,7 +25,7 @@ import java.io.IOException;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public abstract class ALasReader extends Las{
+public abstract class ALasReader extends Las implements AutoCloseable{
 
     /**
      * Open the las data source.
