@@ -133,11 +133,26 @@ public class RasterStyleUtilities {
         return newStyle;
     }
 
+    /**
+     * Create style for a given colortable.
+     *
+     *
+     * @param colorTableName the name of the colortable (has to be available in {@link org.jgrasstools.gears.utils.colors.DefaultTables).
+     * @param min
+     * @param max
+     * @param values
+     * @param opacity
+     * @return the style.
+     * @throws Exception
+     */
     public static String createStyleForColortable( String colorTableName, double min, double max, double[] values, double opacity )
             throws Exception {
 
         List<Color> colorList = new ArrayList<Color>();
         String tableString = new DefaultTables().getTableString(colorTableName);
+        if (tableString==null){
+            return null;
+        }
         String[] split = tableString.split("\n");
         List<Double> newValues = null; // if necessary
         for( String line : split ) {
