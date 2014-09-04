@@ -40,6 +40,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometry;
 import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 import com.vividsolutions.jts.index.strtree.AbstractSTRtree;
 import com.vividsolutions.jts.index.strtree.ItemBoundable;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -54,6 +55,7 @@ import org.jgrasstools.gears.io.las.index.strtree.STRtreeJGT;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
@@ -232,6 +234,9 @@ public class LasDataManager implements AutoCloseable {
                                         continue;
                                     }
                                     double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
+                                    if (JGTConstants.isNovalue(value)) {
+                                        continue;
+                                    }
                                     double height = lasDot.z - value;
                                     if (height > elevThreshold) {
                                         // lasDot.z = height;
@@ -279,7 +284,7 @@ public class LasDataManager implements AutoCloseable {
         }
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        List filesList = mainLasFolderIndex.query(env);
+        List< ? > filesList = mainLasFolderIndex.query(env);
         for( Object fileName : filesList ) {
             if (fileName instanceof String) {
                 String name = (String) fileName;
@@ -292,7 +297,7 @@ public class LasDataManager implements AutoCloseable {
                     lasIndex = LasIndexReader.readIndex(absolutePath);
                     fileName2IndexMap.put(absolutePath, lasIndex);
                 }
-                List queryBoundables = lasIndex.queryBoundables(env);
+                List< ? > queryBoundables = lasIndex.queryBoundables(env);
                 for( Object object : queryBoundables ) {
                     if (object instanceof ItemBoundable) {
                         ItemBoundable itemBoundable = (ItemBoundable) object;
@@ -674,16 +679,9 @@ public class LasDataManager implements AutoCloseable {
         // SimpleFeatureCollection fc = l.getEnvelopeFeaturesInGeometry(geoms.get(0), false, null,
         // false);
         // OmsVectorWriter.writeVector("/media/OCEANDTM/testindex/testenvelopes.shp", fc);
-        LasDataManager l = new LasDataManager(new File("/media/OCEANDTM/testindex/index.lasfolder"), null, 0, null);
+        LasDataManager l = new LasDataManager(new File("/media/hydrologis/LESTO/unibz/LAS_Classificati/index.lasfolder"), null, 0, null);
         l.open();
-        SimpleFeatureCollection readVector = OmsVectorReader.readVector("/media/OCEANDTM/testindex/testbounds.shp");
-        CoordinateReferenceSystem crs = readVector.getSchema().getCoordinateReferenceSystem();
-        List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(readVector, true, null);
-        List<LasRecord> p = l.getPointsInGeometry(geoms.get(0), false);
-        DefaultFeatureCollection fc = new DefaultFeatureCollection();
-        for( LasRecord lasRecord : p ) {
-            fc.add(LasUtils.tofeature(lasRecord, crs));
-        }
-        OmsVectorWriter.writeVector("/media/OCEANDTM/testindex/testpoints2.shp", fc);
+        SimpleFeatureCollection overviewFeatures = l.getOverviewFeatures();
+        OmsVectorWriter.writeVector("/media/hydrologis/LESTO/unibz/LAS_Classificati/overview.shp", overviewFeatures);
     }
 }
