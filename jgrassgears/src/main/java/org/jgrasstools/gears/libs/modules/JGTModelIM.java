@@ -17,6 +17,9 @@
  */
 package org.jgrasstools.gears.libs.modules;
 
+import static java.lang.Math.round;
+
+import java.awt.geom.Point2D;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -40,7 +43,9 @@ import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.jts.JTS;
 import org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter;
 import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.libs.monitor.DummyProgressMonitor;
@@ -51,11 +56,16 @@ import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
 import org.jgrasstools.gears.utils.files.FileUtilities;
+import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -80,6 +90,8 @@ public abstract class JGTModelIM extends JGTModel {
     protected int cellBuffer = 0;
 
     protected GridGeometry2D readGridGeometry;
+    private boolean isSingleInX = true;
+    private boolean isSingleInY = true;
 
     protected void addSource( File imageMosaicSource ) throws IOException {
 
@@ -107,6 +119,19 @@ public abstract class JGTModelIM extends JGTModel {
 
             SimpleFeatureCollection vectorBounds = OmsVectorReader.readVector(imageMosaicSource.getAbsolutePath());
             boundsGeometries = FeatureUtilities.featureCollectionToGeometriesList(vectorBounds, true, locationField);
+
+            Envelope singleTileEnv = boundsGeometries.get(0).getEnvelopeInternal();
+            Envelope allTilesEnv = new Envelope();
+            for( Geometry boundsGeometry : boundsGeometries ) {
+                allTilesEnv.expandToInclude(boundsGeometry.getEnvelopeInternal());
+            }
+            if (allTilesEnv.getWidth() > singleTileEnv.getWidth()) {
+                isSingleInX = false;
+            }
+            if (allTilesEnv.getHeight() > singleTileEnv.getHeight()) {
+                isSingleInY = false;
+            }
+
         }
         readers.add(imReader);
     }
@@ -256,25 +281,48 @@ public abstract class JGTModelIM extends JGTModel {
             }
         }
 
+        // Envelope allBoundsEnv = new Envelope(new Coordinate(llCorner[0], llCorner[1]), new
+        // Coordinate(urCorner[0], urCorner[1]));
+        // MathTransform crsToGrid = readGridGeometry.getCRSToGrid2D(PixelOrientation.LOWER_RIGHT);
+        //
+        // Envelope transformed = JTS.transform(allBoundsEnv, crsToGrid);
+        // int minX = (int) round(transformed.getMinX());
+        // int maxY = (int) round(transformed.getMaxY()); // y grid is inverse
+        // int maxX = (int) round(transformed.getMaxX());
+        // int minY = (int) round(transformed.getMinY());
+
         GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
         GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new DirectPosition2D(urCorner[0], urCorner[1]));
         int minX = llGrid.x;
         int maxY = llGrid.y; // y grid is inverse
         int maxX = urGrid.x;
         int minY = urGrid.y;
+
         // is there a gridrange shift?
         GridEnvelope2D gridRange2D = readGridGeometry.getGridRange2D();
-        int readCols = gridRange2D.width;
         int readRows = gridRange2D.height;
         minY = minY + gridRange2D.y;
-        maxY = maxY + gridRange2D.y;
+        // TODO check this out properly
+        if (isSingleInY) {
+            maxY = maxY - gridRange2D.y;
+        } else {
+            maxY = maxY + gridRange2D.y;
+        }
+        int readCols = gridRange2D.width;
         minX = minX + gridRange2D.x;
-        maxX = maxX + gridRange2D.x;
+        if (isSingleInX) {
+            maxX = maxX - gridRange2D.x;
+        } else {
+            maxX = maxX + gridRange2D.x;
+        }
 
         try {
+            final GridCoordinates2D gridCoordinates2D = new GridCoordinates2D();
             for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
                 for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
-                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(new GridCoordinates2D(writeCol, writeRow));
+                    gridCoordinates2D.x = writeCol;
+                    gridCoordinates2D.y = writeRow;
+                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(gridCoordinates2D);
                     GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
                     int readCol = worldToReadGrid.x;
                     int readRow = worldToReadGrid.y;
