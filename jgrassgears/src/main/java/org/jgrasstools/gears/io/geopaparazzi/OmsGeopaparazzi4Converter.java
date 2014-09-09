@@ -141,15 +141,6 @@ public class OmsGeopaparazzi4Converter extends JGTModel {
 
     private File chartsFolderFile;
 
-    public static void main(String[] args) throws Exception {
-        OmsGeopaparazzi4Converter conv = new OmsGeopaparazzi4Converter();
-        conv.inGeopaparazzi = "/home/hydrologis/TMP/geopap/export4/geopaparazzi_test_4_conversion.gpap";
-        conv.outFolder = "/home/hydrologis/TMP/geopap/export4/outfolder/";
-        conv.doLogpoints = true;
-        conv.process();
-
-    }
-
     @Execute
     public void process() throws Exception {
         checkNull(inGeopaparazzi);

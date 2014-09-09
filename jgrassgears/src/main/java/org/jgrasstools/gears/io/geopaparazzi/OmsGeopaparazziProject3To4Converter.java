@@ -555,11 +555,4 @@ public class OmsGeopaparazziProject3To4Converter extends JGTModel {
 
     }
 
-    public static void main(String[] args) throws Exception {
-        OmsGeopaparazziProject3To4Converter conv = new OmsGeopaparazziProject3To4Converter();
-        conv.inGeopaparazzi = "/home/hydrologis/TMP/geopap/geopaparazzi_test_4_conversion/";
-        conv.process();
-
-    }
-
 }
