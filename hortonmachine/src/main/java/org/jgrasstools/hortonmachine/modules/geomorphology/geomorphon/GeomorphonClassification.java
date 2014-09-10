@@ -56,6 +56,19 @@ public class GeomorphonClassification {
             {1001, -1, -1, -1, -1, -1, -1, -1, -1},// 8
     };
 
+    private static int[][] colorsRGB = new int[][]{//
+    /*    */{127, 127, 127},// 1000
+            {108, 0, 0},// 1001
+            {255, 0, 0},// 1002
+            {255, 165, 0},// 1003
+            {255, 219, 61},// 1004
+            {255, 255, 0},// 1005
+            {143, 203, 44},// 1006
+            {50, 189, 160},// 1007
+            {0, 0, 255},// 1008
+            {0, 0, 0},// 1009
+    };
+
     /**
      * Returns the right classification value for the plus and minus counts.
      * 
@@ -65,6 +78,16 @@ public class GeomorphonClassification {
      */
     public static int getClassification( int plusCount, int minusCount ) {
         return categories[minusCount][plusCount];
+    }
+
+    /**
+     * Return an rgb array as classification color.
+     * 
+     * @param category the category between 1000 and 1009.
+     * @return the rgb triplet between 0 and 255.
+     */
+    public static int[] getColor( int category ) {
+        return colorsRGB[category - 1000];
     }
 
 }
