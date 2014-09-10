@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.lesto.modules.filter;
 import java.io.File;
 
@@ -25,7 +42,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that applies threshold and filters on a value inside the las")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, threshold, filter")
-@Label(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.LAS + "/filter")
 @Name("lasthreshold")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
@@ -48,9 +65,9 @@ public class LasThresholder extends JGTModel {
     @In
     public String pType = LasUtils.INTENSITY;
 
-    @Description("Output file.")
+    @Description("Output las file.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outLas;
 
     public void process() throws Exception {
@@ -104,30 +121,4 @@ public class LasThresholder extends JGTModel {
         pm.done();
     }
 
-    public static void main( String[] args ) throws Exception {
-
-         LasThresholder norm = new LasThresholder();
-         norm.pLower = 70.0;
-         norm.pType = LasUtils.INTENSITY;
-         norm.inLas =
-         "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4.las";
-         norm.outLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4_range70_350.las";
-         norm.process();
-
-//        int delta = 100;
-//        for( int i = 80; i < 1000; i = i + delta ) {
-//            int from = i;
-//            int to = i + delta;
-//
-//            LasThresholder norm = new LasThresholder();
-//            norm.pLower = (double) from;
-//            norm.pUpper = (double) to;
-//            norm.pType = LasUtils.INTENSITY;
-//            norm.inLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4.las";
-//            norm.outLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4_range" + from + "_" + to
-//                    + ".las";
-//            norm.process();
-//        }
-
-    }
 }

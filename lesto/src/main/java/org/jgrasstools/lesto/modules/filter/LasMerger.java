@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.lesto.modules.filter;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -14,16 +31,14 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
+import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ALasWriter;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
-import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.las.core.v_1_0.LasWriter;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -32,7 +47,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that merges las files to a single one.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, merge")
-@Label(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.LAS + "/filter")
 @Name("lasmerge")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
@@ -44,7 +59,7 @@ public class LasMerger extends JGTModel {
 
     @Description("The merged las output file.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
-    @Out
+    @In
     public String outLas;
 
     public void process() throws Exception {
@@ -107,10 +122,4 @@ public class LasMerger extends JGTModel {
         pm.done();
     }
 
-    public static void main( String[] args ) throws Exception {
-        LasMerger norm = new LasMerger();
-        norm.inFolder = "/home/moovida/geologico_2013/flightlines/norm/";
-        norm.outLas = "/home/moovida/geologico_2013/flightlines/norm/merged.las";
-        norm.process();
-    }
 }

@@ -1,3 +1,20 @@
+/*
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * JGrasstools is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.jgrasstools.lesto.modules.filter;
 import java.io.File;
 
@@ -11,10 +28,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
 import org.jgrasstools.gears.io.las.utils.LasUtils;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -24,7 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that creates a histogram from a las file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, histogram ")
-@Label(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.LAS + "/filter")
 @Name("lashistogram")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
@@ -53,23 +69,24 @@ public class LasHistogram extends JGTModel {
 
         CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
-        ALasReader reader = ALasReader.getReader(lasFile, crs);
-        ILasHeader header = reader.getHeader();
-
-        pm.beginTask("Calculating range...", (int) header.getRecordsCount());
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
-        while( reader.hasNextPoint() ) {
-            LasRecord readNextLasDot = reader.getNextPoint();
-            double value = readNextLasDot.z;
-            if (doIntensity) {
-                value = readNextLasDot.intensity;
+        int recordsCount = 0;
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs)) {
+            ILasHeader header = reader.getHeader();
+            recordsCount = (int) header.getRecordsCount();
+            pm.beginTask("Calculating range...", (int) header.getRecordsCount());
+            while( reader.hasNextPoint() ) {
+                LasRecord readNextLasDot = reader.getNextPoint();
+                double value = readNextLasDot.z;
+                if (doIntensity) {
+                    value = readNextLasDot.intensity;
+                }
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+                pm.worked(1);
             }
-            min = Math.min(min, value);
-            max = Math.max(max, value);
-            pm.worked(1);
         }
-        reader.close();
         pm.done();
 
         pm.message("Max: " + max);
@@ -83,45 +100,36 @@ public class LasHistogram extends JGTModel {
             markers[i] = min + step * (i + 1);
         }
 
-        pm.beginTask("Creating histogram...", (int) header.getRecordsCount());
+        pm.beginTask("Creating histogram...", recordsCount);
         // now read them all and split them into files following the markers
-        reader = ALasReader.getReader(lasFile, crs);
-        reader.open();
-        while( reader.hasNextPoint() ) {
-            LasRecord readNextLasDot = reader.getNextPoint();
-            double value = readNextLasDot.z;
-            if (doIntensity) {
-                value = readNextLasDot.intensity;
-            }
-            for( int j = 0; j < markers.length; j++ ) {
-                if (value <= markers[j]) {
-                    count[j] = count[j] + 1;
-                    break;
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs)) {
+            reader.open();
+            while( reader.hasNextPoint() ) {
+                LasRecord readNextLasDot = reader.getNextPoint();
+                double value = readNextLasDot.z;
+                if (doIntensity) {
+                    value = readNextLasDot.intensity;
                 }
+                for( int j = 0; j < markers.length; j++ ) {
+                    if (value <= markers[j]) {
+                        count[j] = count[j] + 1;
+                        break;
+                    }
+                }
+                pm.worked(1);
             }
-            pm.worked(1);
         }
-        reader.close();
         pm.done();
 
+        pm.message("value, \tcount");
         String[] markersLabels = new String[pBin];
         for( int i = 0; i < markersLabels.length; i++ ) {
             double center = markers[i] - step / 2.0;
             markersLabels[i] = String.valueOf(center);
+            pm.message(markersLabels[i] + ",\t" + count[i]);
         }
 
         CategoryHistogram hi = new CategoryHistogram(markersLabels, count);
         hi.plot();
-    }
-
-    public static void main( String[] args ) throws Exception {
-        LasHistogram fl = new LasHistogram();
-//         fl.inLas =
-//         "/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001059_3.las";
-//        fl.inLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl.las";
-        fl.inLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4.las";
-        fl.pBin = 100;
-        fl.pType = LasUtils.INTENSITY;
-        fl.process();
     }
 }
