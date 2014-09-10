@@ -22,6 +22,7 @@
 	<module>oms3</module>
         <module>jgrassgears</module>
         <module>hortonmachine</module>
+        <module>lesto</module>
         <module>grass</module>
     <module>modules</module>
   </modules>

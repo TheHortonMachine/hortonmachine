@@ -1,0 +1,127 @@
+package org.jgrasstools.lesto.modules.filter;
+import java.io.File;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+
+import org.jgrasstools.gears.io.las.core.ILasHeader;
+import org.jgrasstools.gears.io.las.core.ALasReader;
+import org.jgrasstools.gears.io.las.core.LasRecord;
+import org.jgrasstools.gears.io.las.core.v_1_0.LasReader;
+import org.jgrasstools.gears.io.las.utils.LasUtils;
+import org.jgrasstools.gears.libs.modules.JGTConstants;
+import org.jgrasstools.gears.libs.modules.JGTModel;
+import org.jgrasstools.gears.utils.chart.CategoryHistogram;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+@Description("A module that creates a histogram from a las file.")
+@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Keywords("las, histogram ")
+@Label(JGTConstants.VECTORPROCESSING)
+@Name("lashistogram")
+@Status(Status.EXPERIMENTAL)
+@License(JGTConstants.GPL3_LICENSE)
+public class LasHistogram extends JGTModel {
+    @Description("A las file to analyze.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
+    @In
+    public String inLas;
+
+    @Description("Number of bins to use.")
+    @In
+    public int pBin = 100;
+
+    @Description("The value to analyze.")
+    @UI("combo:" + LasUtils.INTENSITY + "," + LasUtils.ELEVATION)
+    @In
+    public String pType = LasUtils.INTENSITY;
+
+    public void process() throws Exception {
+        checkNull(inLas);
+
+        boolean doIntensity = false;
+        if (pType.equals(LasUtils.INTENSITY)) {
+            doIntensity = true;
+        }
+
+        CoordinateReferenceSystem crs = null;
+        File lasFile = new File(inLas);
+        ALasReader reader = ALasReader.getReader(lasFile, crs);
+        ILasHeader header = reader.getHeader();
+
+        pm.beginTask("Calculating range...", (int) header.getRecordsCount());
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        while( reader.hasNextPoint() ) {
+            LasRecord readNextLasDot = reader.getNextPoint();
+            double value = readNextLasDot.z;
+            if (doIntensity) {
+                value = readNextLasDot.intensity;
+            }
+            min = Math.min(min, value);
+            max = Math.max(max, value);
+            pm.worked(1);
+        }
+        reader.close();
+        pm.done();
+
+        pm.message("Max: " + max);
+        pm.message("Min: " + min);
+
+        double range = max - min;
+        double step = range / pBin;
+        double[] count = new double[pBin];
+        double[] markers = new double[pBin];
+        for( int i = 0; i < markers.length; i++ ) {
+            markers[i] = min + step * (i + 1);
+        }
+
+        pm.beginTask("Creating histogram...", (int) header.getRecordsCount());
+        // now read them all and split them into files following the markers
+        reader = ALasReader.getReader(lasFile, crs);
+        reader.open();
+        while( reader.hasNextPoint() ) {
+            LasRecord readNextLasDot = reader.getNextPoint();
+            double value = readNextLasDot.z;
+            if (doIntensity) {
+                value = readNextLasDot.intensity;
+            }
+            for( int j = 0; j < markers.length; j++ ) {
+                if (value <= markers[j]) {
+                    count[j] = count[j] + 1;
+                    break;
+                }
+            }
+            pm.worked(1);
+        }
+        reader.close();
+        pm.done();
+
+        String[] markersLabels = new String[pBin];
+        for( int i = 0; i < markersLabels.length; i++ ) {
+            double center = markers[i] - step / 2.0;
+            markersLabels[i] = String.valueOf(center);
+        }
+
+        CategoryHistogram hi = new CategoryHistogram(markersLabels, count);
+        hi.plot();
+    }
+
+    public static void main( String[] args ) throws Exception {
+        LasHistogram fl = new LasHistogram();
+//         fl.inLas =
+//         "/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001059_3.las";
+//        fl.inLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl.las";
+        fl.inLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl_thres350_elev4.las";
+        fl.pBin = 100;
+        fl.pType = LasUtils.INTENSITY;
+        fl.process();
+    }
+}
