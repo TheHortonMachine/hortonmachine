@@ -20,6 +20,7 @@ import java.io.File;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -59,6 +60,7 @@ public class LasHistogram extends JGTModel {
     @In
     public String pType = LasUtils.INTENSITY;
 
+    @Execute
     public void process() throws Exception {
         checkNull(inLas);
 

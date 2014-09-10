@@ -27,6 +27,7 @@ import java.util.TreeMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -98,6 +99,7 @@ public class FlightLinesNormalizer extends JGTModel {
     @In
     public String outLas;
 
+    @Execute
     public void process() throws Exception {
         checkNull(inLas, inFlightpoints, pDateTimePattern);
 

@@ -31,6 +31,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
@@ -113,6 +114,8 @@ public class LasHeightDistribution extends JGTModel {
     private boolean doChart = false;
 
     private File outChartsFolderFile;
+    
+    @Execute
     public void process() throws Exception {
         checkNull(inIndexFile, inVector);
 
