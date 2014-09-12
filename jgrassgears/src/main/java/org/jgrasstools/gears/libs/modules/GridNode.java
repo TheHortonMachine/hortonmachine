@@ -320,6 +320,19 @@ public class GridNode extends Node {
     }
 
     /**
+     * Get a neighbor node at a certain direction.
+     * 
+     * @param direction the direction to get the node at.
+     * @return the node.
+     */
+    public GridNode getNodeAt( Direction direction ) {
+        int newCol = col + direction.col;
+        int newRow = row + direction.row;
+        GridNode node = new GridNode(gridIter, cols, rows, xRes, yRes, newCol, newRow);
+        return node;
+    }
+
+    /**
      * Checks if the supplied node is adjacent to the current.
      * 
      * @return the {@link Direction} if the two cells touch, else <code>null</code>.
