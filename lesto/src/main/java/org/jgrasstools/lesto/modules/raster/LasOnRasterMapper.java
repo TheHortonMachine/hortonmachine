@@ -28,6 +28,9 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.List;
 
+import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.WritableRandomIter;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -67,7 +70,7 @@ public class LasOnRasterMapper extends JGTModel {
     @In
     public String inIndexFile = null;
 
-    @Description("A dtm raster to use for the area of interest.")
+    @Description("A dtm raster to use for the area of interest and lower threshold.")
     @In
     public GridCoverage2D inDtm;
 
@@ -83,6 +86,10 @@ public class LasOnRasterMapper extends JGTModel {
     @Out
     public GridCoverage2D outRaster = null;
 
+    @Description("The input dtm, resampled on the new resolution.")
+    @Out
+    public GridCoverage2D outDtm = null;
+
     @Execute
     public void process() throws Exception {
         checkNull(inIndexFile, inDtm);
@@ -92,16 +99,16 @@ public class LasOnRasterMapper extends JGTModel {
         double south = regionMap.getSouth();
         double east = regionMap.getEast();
         double west = regionMap.getWest();
-        if (pXres == null) {
+        if (pXres == null || pYres == null) {
             pXres = regionMap.getXres();
-        }
-        if (pYres == null) {
             pYres = regionMap.getYres();
+            outDtm = inDtm;
         }
 
         CoordinateReferenceSystem crs = null;
         Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
         crs = inDtm.getCoordinateReferenceSystem();
+        GridGeometry2D dtmGridGeometry = inDtm.getGridGeometry();
 
         final int newRows = (int) round((north - south) / pYres);
         int newCols = (int) round((east - west) / pXres);
@@ -112,6 +119,8 @@ public class LasOnRasterMapper extends JGTModel {
         final WritableRaster newWR = CoverageUtilities.createDoubleWritableRaster(newCols, newRows, null, null,
                 JGTConstants.doubleNovalue);
 
+        RandomIter dtmIter = CoverageUtilities.getRandomIterator(inDtm);
+
         try (LasDataManager lasData = new LasDataManager(new File(inIndexFile), null, 0.0, crs)) {
             lasData.open();
             pm.beginTask("Reading points on region...", IJGTProgressMonitor.UNKNOWN);
@@ -120,13 +129,20 @@ public class LasOnRasterMapper extends JGTModel {
 
             pm.beginTask("Setting raster points...", lasPoints.size());
             final Point gridPoint = new Point();
+            final Point dtmPoint = new Point();
             for( LasRecord lasRecord : lasPoints ) {
                 double z = lasRecord.z;
                 Coordinate coordinate = new Coordinate(lasRecord.x, lasRecord.y, z);
                 CoverageUtilities.colRowFromCoordinate(coordinate, newGridGeometry2D, gridPoint);
 
                 double value = newWR.getSampleDouble(gridPoint.x, gridPoint.y, 0);
+
+                CoverageUtilities.colRowFromCoordinate(coordinate, dtmGridGeometry, dtmPoint);
+                double dtmValue = dtmIter.getSampleDouble(dtmPoint.x, dtmPoint.y, 0);
                 if (JGTConstants.isNovalue(value) || value < z) {
+                    if (!JGTConstants.isNovalue(dtmValue) && dtmValue > z) {
+                        z = dtmValue;
+                    }
                     newWR.setSample(gridPoint.x, gridPoint.y, 0, z);
                 }
                 pm.worked(1);
@@ -135,6 +151,31 @@ public class LasOnRasterMapper extends JGTModel {
         }
 
         outRaster = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
+
+        if (pXres != null && pYres != null) {
+            WritableRaster[] holder = new WritableRaster[1];
+            outDtm = CoverageUtilities.createCoverageFromTemplate(outRaster, JGTConstants.doubleNovalue, holder);
+
+            GridGeometry2D outGridGeometry = outDtm.getGridGeometry();
+
+            WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(holder[0]);
+
+            RegionMap outRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outDtm);
+            int cols = outRegionMap.getCols();
+            int rows = outRegionMap.getRows();
+
+            final Point p = new Point();
+            for( int c = 0; c < cols; c++ ) {
+                for( int r = 0; r < rows; r++ ) {
+                    Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, outGridGeometry);
+                    CoverageUtilities.colRowFromCoordinate(coordinate, dtmGridGeometry, p);
+                    double dtmValue = dtmIter.getSampleDouble(p.x, p.y, 0);
+                    outIter.setSample(c, r, 0, dtmValue);
+                }
+            }
+            outIter.done();
+        }
+        dtmIter.done();
 
     }
 

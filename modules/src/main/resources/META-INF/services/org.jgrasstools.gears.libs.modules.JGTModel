@@ -72,6 +72,7 @@ org.jgrasstools.modules.RasterCatToFeatureAttribute
 org.jgrasstools.modules.RasterConverter
 org.jgrasstools.modules.RasterCorrector
 org.jgrasstools.modules.RasterDiff
+org.jgrasstools.modules.RasterGenerator
 org.jgrasstools.modules.RasterNull
 org.jgrasstools.modules.RasterReader
 org.jgrasstools.modules.RasterReprojector

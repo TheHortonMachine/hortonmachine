@@ -38,7 +38,6 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -48,6 +47,7 @@ import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.Variables;
 import org.jgrasstools.gears.modules.r.interpolation2d.OmsSurfaceInterpolator;
+import org.jgrasstools.gears.modules.r.rastergenerator.OmsRasterGenerator;
 import org.jgrasstools.gears.utils.RegionMap;
 import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
@@ -99,9 +99,8 @@ public class Las2RasterInterpolator extends JGTModel {
     public void process() throws Exception {
         checkNull(inIndexFile, inDtm);
 
-        CoordinateReferenceSystem crs = null;
         Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
-        crs = inDtm.getCoordinateReferenceSystem();
+        CoordinateReferenceSystem crs = inDtm.getCoordinateReferenceSystem();
 
         try (LasDataManager lasData = new LasDataManager(new File(inIndexFile), inDtm, pThreshold, crs)) {
             lasData.open();
@@ -118,9 +117,6 @@ public class Las2RasterInterpolator extends JGTModel {
 
             int newRows = (int) round((north - south) / pYres);
             int newCols = (int) round((east - west) / pXres);
-
-            GridGeometry2D newGridGeometry2D = CoverageUtilities.gridGeometryFromRegionValues(north, south, east, west, newCols,
-                    newRows, crs);
 
             DefaultFeatureCollection newCollection = new DefaultFeatureCollection();
             final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -142,9 +138,20 @@ public class Las2RasterInterpolator extends JGTModel {
             }
             pm.done();
 
+            OmsRasterGenerator omsRasterGenerator = new OmsRasterGenerator();
+            omsRasterGenerator.pNorth = north;
+            omsRasterGenerator.pSouth = south;
+            omsRasterGenerator.pWest = west;
+            omsRasterGenerator.pEast = east;
+            omsRasterGenerator.pXres = (east - west) / newCols;
+            omsRasterGenerator.pYres = (north - south) / newRows;
+            omsRasterGenerator.inCrs = crs;
+            omsRasterGenerator.doRandom = false;
+            omsRasterGenerator.process();
+
             OmsSurfaceInterpolator idwInterpolator = new OmsSurfaceInterpolator();
             idwInterpolator.inVector = newCollection;
-            idwInterpolator.inGrid = newGridGeometry2D;
+            idwInterpolator.inGrid = omsRasterGenerator.outRaster;
             idwInterpolator.inMask = null;
             idwInterpolator.fCat = "elev";
             idwInterpolator.pMode = Variables.IDW;

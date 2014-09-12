@@ -25,6 +25,8 @@ org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyWriter
 org.jgrasstools.gears.io.grasslegacy.modules.GrassMosaicLegacy
 org.jgrasstools.gears.io.gridgeometryreader.OmsGridGeometryReader
 org.jgrasstools.gears.io.json.OmsJsonFeatureReader
+org.jgrasstools.gears.io.las.index.LasIndexReader
+org.jgrasstools.gears.io.las.index.LasIndexer
 org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader
 org.jgrasstools.gears.io.rasterreader.OmsRasterReader
 org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter
@@ -59,6 +61,7 @@ org.jgrasstools.gears.modules.r.raster4xyz.OmsXyz2Raster
 org.jgrasstools.gears.modules.r.rasterconverter.OmsRasterConverter
 org.jgrasstools.gears.modules.r.rastercorrector.OmsRasterCorrector
 org.jgrasstools.gears.modules.r.rasterdiff.OmsRasterDiff
+org.jgrasstools.gears.modules.r.rastergenerator.OmsRasterGenerator
 org.jgrasstools.gears.modules.r.rasternull.OmsRasterNull
 org.jgrasstools.gears.modules.r.rasterreprojector.OmsRasterReprojector
 org.jgrasstools.gears.modules.r.rastervaluerounder.OmsRasterValueRounder
@@ -81,7 +84,8 @@ org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor
 org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator
 org.jgrasstools.gears.modules.v.intersections.OmsIntersectionFinder
 org.jgrasstools.gears.modules.v.intersections.OmsLineIntersectionCorrector
-org.jgrasstools.gears.modules.v.laspointdensity.OmsLasPointDensityExtractor
+org.jgrasstools.gears.modules.v.las.OmsLasPointDensityExtractor
+org.jgrasstools.gears.modules.v.las.OmsLasSubsetExtractor
 org.jgrasstools.gears.modules.v.marchingsquares.OmsMarchingSquaresVectorializer
 org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer
 org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute

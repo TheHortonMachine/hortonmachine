@@ -111,10 +111,16 @@ public class OmsRasterDiff extends JGTModel {
             for( int r = 0; r < rows; r++ ) {
                 double r1 = r1Iter.getSampleDouble(c, r, 0);
                 double r2 = r2Iter.getSampleDouble(c, r, 0);
-                if (isNovalue(r1) || isNovalue(r2)) {
+                double diff;
+                if (isNovalue(r1) && isNovalue(r2)) {
                     continue;
+                } else if (isNovalue(r1)) {
+                    diff = r2;
+                } else if (isNovalue(r2)) {
+                    diff = r1;
+                } else {
+                    diff = r1 - r2;
                 }
-                double diff = r1 - r2;
                 if (!doNegatives && diff < 0) {
                     diff = doubleNovalue;
                 }
