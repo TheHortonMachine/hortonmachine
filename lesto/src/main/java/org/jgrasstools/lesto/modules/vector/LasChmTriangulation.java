@@ -91,7 +91,7 @@ public class LasChmTriangulation extends JGTModel {
         }
 
         List<Coordinate> lasCoordinates = new ArrayList<Coordinate>();
-        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLasFile), null, 0.0, crs)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLasFile), inDtm, 0.0, crs)) {
             pm.beginTask("Reading data...", -1);
             lasData.open();
             if (polygon == null) {
@@ -99,8 +99,14 @@ public class LasChmTriangulation extends JGTModel {
                 polygon = LasIndexer.envelopeToPolygon(overallEnvelope);
             }
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, true);
-            for( LasRecord lasRecord : lasPoints ) {
-                lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
+            if (inDtm != null) {
+                for( LasRecord lasRecord : lasPoints ) {
+                    lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.groundElevation));
+                }
+            } else {
+                for( LasRecord lasRecord : lasPoints ) {
+                    lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
+                }
             }
             pm.done();
         }
