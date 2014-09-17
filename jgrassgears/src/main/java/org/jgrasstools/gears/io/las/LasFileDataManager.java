@@ -82,7 +82,7 @@ class LasFileDataManager extends ALasDataManager {
 
         try {
             // prj file rules if available
-            inCrs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "lasfolder");
+            inCrs = CrsUtilities.readProjectionFile(lasFile.getAbsolutePath(), "las");
         } catch (Exception e) {
             // ignore and try to read
         }
