@@ -66,7 +66,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @Description("A module that normalizes flightlines based on the aircraft position. TODO")
 @Author(name = "Andrea Antonello, ", contact = "www.hydrologis.com")
 @Keywords("las, normalize, flightlines")
-@Label(JGTConstants.LAS + "/flightlines")
+@Label(JGTConstants.LESTO + "/flightlines")
 @Name("lasflightlinesnormalization")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

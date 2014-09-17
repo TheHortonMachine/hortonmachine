@@ -61,7 +61,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Convert a las to a raster through IDW interpolation.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("raster, IDW, interpolation, lidar")
-@Label(JGTConstants.LAS + "/raster")
+@Label(JGTConstants.LESTO + "/raster")
 @Name("las2rasterinterpolator")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

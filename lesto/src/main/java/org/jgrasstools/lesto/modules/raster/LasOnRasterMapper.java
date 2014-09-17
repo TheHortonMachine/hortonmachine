@@ -59,7 +59,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Module that creates a raster by mapping maximum elevation las points.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("raster, lidar")
-@Label(JGTConstants.LAS + "/raster")
+@Label(JGTConstants.LESTO + "/raster")
 @Name("lasonrastermapper")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

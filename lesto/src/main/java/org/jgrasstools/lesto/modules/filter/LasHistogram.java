@@ -41,7 +41,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that creates a histogram from a las file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, histogram ")
-@Label(JGTConstants.LAS + "/filter")
+@Label(JGTConstants.LESTO + "/filter")
 @Name("lashistogram")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

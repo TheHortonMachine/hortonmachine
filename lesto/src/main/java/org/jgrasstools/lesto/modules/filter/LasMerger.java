@@ -48,7 +48,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that merges las files to a single one.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, merge")
-@Label(JGTConstants.LAS + "/filter")
+@Label(JGTConstants.LESTO + "/filter")
 @Name("lasmerge")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

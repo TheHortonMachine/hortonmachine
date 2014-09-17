@@ -69,7 +69,7 @@ import com.vividsolutions.jts.geom.Geometry;
 @Description("Module that analyzes the height distribution of a las file and categorizes the forest type.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, distribution ")
-@Label(JGTConstants.LAS + "/filter")
+@Label(JGTConstants.LESTO + "/filter")
 @Name("lasheightdistribution")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

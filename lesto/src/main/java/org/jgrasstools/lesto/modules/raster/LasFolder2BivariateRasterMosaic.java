@@ -77,7 +77,7 @@ import com.vividsolutions.jts.geom.Polygon;
 @Description("Module that converts a lasfolder into a set of mosaiced rasters using a bivariate function.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, lidar, raster, bivariate, mosaic")
-@Label(JGTConstants.LAS+"/raster")
+@Label(JGTConstants.LESTO+"/raster")
 @Name("lasfolder2bivariaterastermosaic")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

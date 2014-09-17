@@ -41,7 +41,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that normalizes a value inside the las")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, normalize")
-@Label(JGTConstants.LAS + "/filter")
+@Label(JGTConstants.LESTO + "/filter")
 @Name("lasnorm")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

@@ -62,7 +62,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Description("Module that can create subsets of a las file.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, lidar, extract")
-@Label(JGTConstants.LAS)
+@Label(JGTConstants.LESTO)
 @Name("lassubsetextractor")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

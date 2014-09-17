@@ -70,7 +70,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @Description("Creates a vector map of the point cloud density over a given grid.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, density, vector")
-@Label(JGTConstants.LAS)
+@Label(JGTConstants.LESTO)
 @Name("pointdensityextractor")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

@@ -50,7 +50,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 @Description("A module that splits las files in its flightlines")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, split, flightlines")
-@Label(JGTConstants.LAS + "/flightlines")
+@Label(JGTConstants.LESTO + "/flightlines")
 @Name("lasflightlines")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)

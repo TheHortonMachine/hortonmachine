@@ -68,7 +68,7 @@ import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 @Description("Module that creates a DSM from the triangulation of point clouds.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("triangulation, lidar, dsm")
-@Label(JGTConstants.LAS + "/raster")
+@Label(JGTConstants.LESTO + "/raster")
 @Name("lastraingulation2dsm")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
