@@ -54,8 +54,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasDataManager;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -133,7 +133,7 @@ public class LasFolder2BivariateRasterMosaic extends JGTModel {
 
         final File outFolderFile = new File(outFolder);
 
-        try (LasDataManager lasData = new LasDataManager(new File(inIndexFile), null, 0, null)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), null, 0, null)) {
             lasData.open();
 
             ReferencedEnvelope roiEnvelope = lasData.getOverallEnvelope();
@@ -212,7 +212,7 @@ public class LasFolder2BivariateRasterMosaic extends JGTModel {
     }
 
     @SuppressWarnings({"unchecked"})
-    private void processTile( File outFolderFile, CoordinateReferenceSystem crs, LasDataManager lasData, int x, int y, double w,
+    private void processTile( File outFolderFile, CoordinateReferenceSystem crs, ALasDataManager lasData, int x, int y, double w,
             double e, double s, double n ) throws Exception {
 
         StringBuilder sb = new StringBuilder();

@@ -41,8 +41,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasDataManager;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.modules.Variables;
@@ -102,7 +102,7 @@ public class Las2RasterInterpolator extends JGTModel {
         Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
         CoordinateReferenceSystem crs = inDtm.getCoordinateReferenceSystem();
 
-        try (LasDataManager lasData = new LasDataManager(new File(inIndexFile), inDtm, pThreshold, crs)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), inDtm, pThreshold, crs)) {
             lasData.open();
             lasData.setClassesConstraint(new double[]{3.0});
             lasData.setImpulsesConstraint(new double[]{1.0});

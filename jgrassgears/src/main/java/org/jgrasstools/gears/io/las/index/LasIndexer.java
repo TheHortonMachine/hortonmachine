@@ -36,7 +36,9 @@
 package org.jgrasstools.gears.io.las.index;
 
 import com.vividsolutions.jts.geom.*;
+
 import oms3.annotations.*;
+
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -78,11 +80,13 @@ import static java.lang.Math.round;
 @Description("Creates indexes for Las files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, lidar")
-@Label("Vector Processing")
+@Label(JGTConstants.LESTO)
 @Name("lasindexer")
 @Status(5)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class LasIndexer extends JGTModel {
+
+    public static final String INDEX_LASFOLDER = "index.lasfolder";
 
     @Description("The folder containing the las files to index.")
     @UI(JGTConstants.FOLDERIN_UI_HINT)
@@ -91,7 +95,7 @@ public class LasIndexer extends JGTModel {
 
     @Description("The name for the main index file.")
     @In
-    public String pIndexname = "index.lasfolder";
+    public String pIndexname = INDEX_LASFOLDER;
 
     @Description("The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file.")
     @UI(JGTConstants.CRS_UI_HINT)

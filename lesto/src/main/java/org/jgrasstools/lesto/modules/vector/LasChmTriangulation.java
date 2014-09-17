@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.lesto.modules.raster;
+package org.jgrasstools.lesto.modules.vector;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
@@ -65,15 +65,15 @@ import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 
-@Description("Module that creates a DSM from the triangulation of point clouds.")
+@Description("Module that creates a CHM triangulation from point clouds.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("triangulation, lidar, dsm")
-@Label(JGTConstants.LESTO + "/raster")
-@Name("lastraingulation2dsm")
+@Keywords("triangulation, lidar, chm")
+@Label(JGTConstants.LESTO + "/vector")
+@Name("laschmtriangulation")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 @SuppressWarnings("nls")
-public class LasTriangulation2Dsm extends JGTModel {
+public class LasChmTriangulation extends JGTModel {
 
     @Description("Las files folder main index file path.")
     @In

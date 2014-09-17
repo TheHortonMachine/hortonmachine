@@ -44,8 +44,8 @@ import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasDataManager;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.libs.monitor.IJGTProgressMonitor;
@@ -121,7 +121,7 @@ public class LasOnRasterMapper extends JGTModel {
 
         RandomIter dtmIter = CoverageUtilities.getRandomIterator(inDtm);
 
-        try (LasDataManager lasData = new LasDataManager(new File(inIndexFile), null, 0.0, crs)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), null, 0.0, crs)) {
             lasData.open();
             pm.beginTask("Reading points on region...", IJGTProgressMonitor.UNKNOWN);
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, false);

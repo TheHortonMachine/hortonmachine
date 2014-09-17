@@ -37,7 +37,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -48,8 +47,8 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.jgrasstools.gears.io.las.ALasDataManager;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasDataManager;
 import org.jgrasstools.gears.io.las.utils.LasRecordElevationComparator;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
@@ -114,7 +113,7 @@ public class LasHeightDistribution extends JGTModel {
     private boolean doChart = false;
 
     private File outChartsFolderFile;
-    
+
     @Execute
     public void process() throws Exception {
         checkNull(inIndexFile, inVector);
@@ -138,7 +137,7 @@ public class LasHeightDistribution extends JGTModel {
         GridCoverage2D outCatsGC = CoverageUtilities.createCoverageFromTemplate(inDemGC, JGTConstants.doubleNovalue,
                 finalCoverageWRH);
 
-        try (LasDataManager dataManager = new LasDataManager(indexFile, inDemGC, pThres, null)) {
+        try (ALasDataManager dataManager = ALasDataManager.getDataManager(indexFile, inDemGC, pThres, null)) {
             dataManager.open();
             dataManager.setClassesConstraint(pClass);
 
@@ -161,7 +160,7 @@ public class LasHeightDistribution extends JGTModel {
                 GridGeometry2D tileGridGeometry = null;
                 for( double[] range : negativeRanges ) {
 
-                    List<LasRecord> pointsInVerticalRange = LasDataManager.getPointsInVerticalRange(pointsListForTile, range[0],
+                    List<LasRecord> pointsInVerticalRange = ALasDataManager.getPointsInVerticalRange(pointsListForTile, range[0],
                             range[1]);
 
                     WritableRaster[] wrH = new WritableRaster[1];

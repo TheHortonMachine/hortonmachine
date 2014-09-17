@@ -65,7 +65,7 @@ import java.util.List;
 @Description("Reads indexes of Las files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, lidar")
-@Label("Vector Processing")
+@Label(JGTConstants.LESTO)
 @Name("lasindexreader")
 @Status(5)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
