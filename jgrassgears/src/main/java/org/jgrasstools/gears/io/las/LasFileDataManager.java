@@ -64,6 +64,7 @@ class LasFileDataManager extends ALasDataManager {
     private ReferencedEnvelope3D referencedEnvelope3D;
     private ALasReader lasReader;
     private ILasHeader lasHeader;
+    private boolean isOpen;
 
     /**
      * Constructor.
@@ -110,6 +111,7 @@ class LasFileDataManager extends ALasDataManager {
         lasReader = ALasReader.getReader(lasFile, crs);
         lasReader.open();
         lasHeader = lasReader.getHeader();
+        isOpen = true;
     }
 
     @Override
@@ -154,6 +156,8 @@ class LasFileDataManager extends ALasDataManager {
                 pointsListForTile.add(lasDot);
             }
         }
+
+        close();
 
         return pointsListForTile;
     }
@@ -226,15 +230,14 @@ class LasFileDataManager extends ALasDataManager {
     }
 
     private void checkOpen() throws Exception {
-        try {
-            lasReader.getHeader();
-        } catch (Exception e) {
+        if (!isOpen) {
             open();
         }
     }
 
     @Override
     public void close() throws Exception {
+        isOpen = false;
         if (lasReader != null)
             lasReader.close();
     }
