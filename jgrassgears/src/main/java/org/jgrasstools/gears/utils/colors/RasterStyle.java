@@ -25,7 +25,7 @@ import org.jgrasstools.gears.utils.colors.RasterStyleUtilities;
 
 /**
  * A simple raster styling utility for scripting environment.
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class RasterStyle {
@@ -37,7 +37,7 @@ public class RasterStyle {
     public RasterStyle() {
     }
 
-    public RasterStyle( GridCoverage2D raster ) throws Exception {
+    public RasterStyle(GridCoverage2D raster) throws Exception {
         OmsRasterSummary summary = new OmsRasterSummary();
         summary.inRaster = raster;
         summary.process();
@@ -46,32 +46,26 @@ public class RasterStyle {
         max = summary.outMax;
     }
 
-    public RasterStyle( int min, int max ) throws Exception {
+    public RasterStyle(int min, int max) throws Exception {
         this.min = min;
         this.max = max;
     }
 
-    public void setAlpha( double alpha ) {
+    public void setAlpha(double alpha) {
         this.alpha = alpha;
     }
 
-    public String style( String colorTableName ) throws Exception {
-        ColorTables[] colorTables = ColorTables.values();
-        if (colorTableName != null) {
-            for( ColorTables colorTable : colorTables ) {
-                if (colorTable.name().equals(colorTableName.toLowerCase().trim())) {
-                    String createStyleForColortable = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max,
-                            null, alpha);
-                    return createStyleForColortable;
-                }
-            }
-        }
+    public String style(String colorTableName) throws Exception {
+        String createStyleForColortable = RasterStyleUtilities.createStyleForColortable(colorTableName, min, max,
+                null, alpha);
+        if (createStyleForColortable != null)
+            return createStyleForColortable;
         StringBuilder sb = new StringBuilder();
         sb.append("The colortable ");
         sb.append(colorTableName);
         sb.append(" could not be found in the default colortables.\n");
         sb.append("Available colortables are:\n");
-        for( ColorTables colorTable : colorTables ) {
+        for (ColorTables colorTable : ColorTables.values()) {
             sb.append("\t");
             sb.append(colorTable.name());
             sb.append("\n");

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.modules.v.laspointdensity;
+package org.jgrasstools.gears.modules.v.las;
 
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
@@ -28,9 +28,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -73,7 +70,7 @@ import com.vividsolutions.jts.index.strtree.STRtree;
 @Description("Creates a vector map of the point cloud density over a given grid.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, density, vector")
-@Label(JGTConstants.VECTORPROCESSING)
+@Label(JGTConstants.LAS)
 @Name("pointdensityextractor")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

@@ -20,11 +20,9 @@ package org.jgrasstools.gears.utils.colors;
 import java.util.HashMap;
 
 public class DefaultTables {
-    private HashMap<String, String> map;
+    private static HashMap<String, String> map = new HashMap<String, String>();
 
     public DefaultTables() {
-
-        map = new HashMap<String, String>();
         String rainbow = "255 255 0\n" + //
                 "0 255 0\n" + //
                 "0 255 255\n" + //
@@ -175,6 +173,16 @@ public class DefaultTables {
                 "1007.0 50 189 160\n" + //
                 "1008.0 0 0 255\n";
         map.put(ColorTables.geomorphon.name(), geomorphon);
+    }
+
+    /**
+     * Method to add a table at runtime to the tables available.
+     *
+     * @param name the name of the table.
+     * @param palette the colors and values.
+     */
+    public static void addRuntimeTable(String name, String palette){
+        map.put(name, palette);
     }
 
     public String getTableString( String name ) {

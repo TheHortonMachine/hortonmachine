@@ -19,7 +19,7 @@ package org.jgrasstools.gears.io.las.core;
 
 import java.io.IOException;
 
-public abstract class ALasWriter extends Las{
+public abstract class ALasWriter extends Las implements AutoCloseable{
     
     /**
      * Possibility to define the scale for the data.

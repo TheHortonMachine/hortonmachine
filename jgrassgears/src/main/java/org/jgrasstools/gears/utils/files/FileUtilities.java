@@ -35,11 +35,7 @@ import java.util.List;
 public class FileUtilities {
 
     public static void copyFile(String fromFile, String toFile) throws IOException {
-        File in = new File(fromFile);
-        File out = new File(toFile);
-
         Files.copy(Paths.get(fromFile), Paths.get(toFile));
-        copyFile(in, out);
     }
 
     public static void copyFile(File in, File out) throws IOException {

@@ -74,12 +74,14 @@ import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
 import org.jgrasstools.gears.io.las.utils.LasStats;
+import org.jgrasstools.gears.io.vectorreader.OmsVectorReader;
 import org.jgrasstools.gears.io.vectorwriter.OmsVectorWriter;
 import org.jgrasstools.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
 import org.jgrasstools.gears.utils.CrsUtilities;
 import org.jgrasstools.gears.utils.features.FeatureUtilities;
+import org.jgrasstools.gears.utils.features.FilterUtilities;
 import org.jgrasstools.gears.utils.geometry.GeometryUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -103,7 +105,7 @@ import com.vividsolutions.jts.geom.prep.PreparedGeometryFactory;
 @Name(OMSLASCONVERTER_NAME)
 @Status(OMSLASCONVERTER_STATUS)
 @License(OMSLASCONVERTER_LICENSE)
-public class OmsLasConverter extends JGTModel {
+public class OmsLasConverter extends JGTModel implements AutoCloseable {
 
     @Description(OMSLASCONVERTER_inFile_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -435,6 +437,7 @@ public class OmsLasConverter extends JGTModel {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }
     }
+    
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata )
             throws IOException {
         final ReferencedEnvelope3D envelope = lasReader.getHeader().getDataEnvelope();
@@ -460,6 +463,28 @@ public class OmsLasConverter extends JGTModel {
     public void close() throws Exception {
         if (lasReader != null)
             lasReader.close();
+    }
+
+    public static void main( String[] args ) throws Exception {
+        SimpleFeatureCollection plots = OmsVectorReader.readVector("/media/hydrologis/LESTO/unibz/plot_data/12_plots_32632.shp");
+        List<SimpleFeature> list = FeatureUtilities.featureCollectionToList(plots);
+        DefaultFeatureCollection d = new DefaultFeatureCollection();
+        for( SimpleFeature simpleFeature : list ) {
+            if (simpleFeature.getAttribute("ID").toString().equals("878")) {
+                d.add(simpleFeature);
+                break;
+            }
+        }
+        
+
+        String path = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_63.las";
+        try (OmsLasConverter c = new OmsLasConverter()) {
+            c.inFile = path;
+            c.inPolygons = d;
+            c.outFile = "/media/hydrologis/LESTO/unibz/LAS_Classificati/uni_bz_plot878.las";
+            c.process();
+        }
+
     }
 
 }

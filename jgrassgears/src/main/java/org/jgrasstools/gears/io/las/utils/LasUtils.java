@@ -623,4 +623,26 @@ public class LasUtils {
         }
         pm.done();
     }
+
+    /**
+     * Clone a {@link LasRecord}. 
+     * 
+     * @param lasRecord the record to clone.
+     * @return the duplicate new object.
+     */
+    public static LasRecord clone( LasRecord lasRecord ) {
+        LasRecord clone = new LasRecord();
+        clone.x = lasRecord.x;
+        clone.y = lasRecord.y;
+        clone.z = lasRecord.z;
+        clone.intensity = lasRecord.intensity;
+        clone.returnNumber = lasRecord.returnNumber;
+        clone.numberOfReturns = lasRecord.numberOfReturns;
+        clone.classification = lasRecord.classification;
+        clone.color = lasRecord.color;
+        clone.gpsTime = lasRecord.gpsTime;
+        clone.groundElevation = lasRecord.groundElevation;
+        clone.pointsDensity = lasRecord.pointsDensity;
+        return clone;
+    }
 }
