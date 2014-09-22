@@ -56,6 +56,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.Triangle;
 import com.vividsolutions.jts.index.strtree.STRtree;
 import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 
@@ -564,6 +565,26 @@ public class LasUtils {
             }
             pm.done();
         }
+        
+        pm.beginTask("Triangulation1...", -1);
+        List<Coordinate> lasCoordinates2 = new ArrayList<Coordinate>();
+        for( Geometry g : trianglesList ) {
+            Coordinate[] c = g.getCoordinates();
+            lasCoordinates2.add(c[0]);
+            lasCoordinates2.add(c[1]);
+            lasCoordinates2.add(c[2]);
+        }
+        trianglesList.clear();
+        DelaunayTriangulationBuilder triangulationBuilder1 = new DelaunayTriangulationBuilder();
+        triangulationBuilder1.setSites(lasCoordinates2);
+        Geometry triangles1 = triangulationBuilder1.getTriangles(gf);
+        pm.done();
+         numTriangles = triangles1.getNumGeometries();
+            // no true dsm to be calculated
+            for( int i = 0; i < numTriangles; i++ ) {
+                Geometry geometryN = triangles1.getGeometryN(i);
+                trianglesList.add(geometryN);
+            }
         return trianglesList;
     }
 
@@ -653,7 +674,7 @@ public class LasUtils {
      */
     public static double[] getLastVisiblePointData( LasRecord baseRecord, List<LasRecord> lasRecords, boolean useGround ) {
         if (lasRecords.size() < 1) {
-            throw new IllegalArgumentException("This needs to have at least 2 points.");
+            throw new IllegalArgumentException("This needs to have at least 1 point.");
         }
         double baseElev = useGround ? baseRecord.groundElevation : baseRecord.z;
         Coordinate baseCoord = new Coordinate(0, 0);
