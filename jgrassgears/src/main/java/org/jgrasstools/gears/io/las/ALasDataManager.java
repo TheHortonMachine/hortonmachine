@@ -94,11 +94,15 @@ public abstract class ALasDataManager implements AutoCloseable {
     public abstract void open() throws Exception;
 
     public void setIntensityConstraint( double[] minMax ) {
+        if (minMax == null)
+            return;
         intensityRange = minMax;
         hasConstraint = true;
     }
 
     public void setImpulsesConstraint( double[] impulsesToKeep ) {
+        if (impulsesToKeep == null)
+            return;
         impulses = impulsesToKeep;
         hasConstraint = true;
     }
@@ -109,6 +113,8 @@ public abstract class ALasDataManager implements AutoCloseable {
     }
 
     public void setClassesConstraint( double[] classesToKeep ) {
+        if (classesToKeep == null)
+            return;
         classes = classesToKeep;
         hasConstraint = true;
     }
