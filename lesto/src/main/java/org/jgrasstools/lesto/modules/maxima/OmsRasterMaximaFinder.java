@@ -116,6 +116,15 @@ public class OmsRasterMaximaFinder extends JGTModel {
     @In
     public double pBorderDistanceThres = -1.0;
 
+    @Description("Top buffer threshold")
+    @Unit("m")
+    @In
+    public double pTopBufferThres = 5.0;
+
+    @Description("Top buffer threshold cell count")
+    @In
+    public int pTopBufferThresCellCount = 2;
+
     @Description(outMaxima_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMaxima;
@@ -139,13 +148,13 @@ public class OmsRasterMaximaFinder extends JGTModel {
     public static final String pMaxRadius_DESCRIPTION = "Maximum radius to use in meters.";
     public static final String doCircular_DESCRIPTION = "Use circular window.";
     public static final String pBorderDistanceThres_DESCRIPTION = "Distance threshold to mark maxima as near a border. If <0 check is ignored.";
-    public static final String pSize_DESCRIPTION = "The windows size to use for cutom mode(default is 3).";
+    public static final String pSize_DESCRIPTION = "The windows size in cells to use for custom mode(default is 3).";
     public static final String outMaxima_DESCRIPTION = "The maxima vector.";
     public static final String outCircles_DESCRIPTION = "The maxima related areas vector.";
     // PARAMETERS DOCS END
 
     private DecimalFormat formatter = new DecimalFormat("0.0");
-    private static final String NOTE = "note";
+    public static final String NOTE = "note";
 
     @Execute
     public void process() throws Exception {
@@ -257,6 +266,7 @@ public class OmsRasterMaximaFinder extends JGTModel {
                 double[][] window = node.getWindow(size, tmpDoCircular);
                 // int center = (int) ((window.length - 1.0) / 2.0);
 
+                String note = "";
                 boolean isMax = true;
                 for( int mrow = 0; mrow < window.length; mrow++ ) {
                     for( int mcol = 0; mcol < window[0].length; mcol++ ) {
@@ -275,18 +285,30 @@ public class OmsRasterMaximaFinder extends JGTModel {
                     int nonValidCells = 0;
 
                     List<GridNode> surroundingNodes = node.getSurroundingNodes();
+                    int topBufferThresViolationCount = 0;
                     for( GridNode gridNode : surroundingNodes ) {
                         if (gridNode != null) {
-                            nonValidCells = 0;
+                            double elev = gridNode.elevation;
+                            double elevDiff = elevation - elev;
+                            if (elevDiff > pTopBufferThres) {
+                                topBufferThresViolationCount++;
+                            }
                         } else {
                             nonValidCells++;
                         }
                         if (nonValidCells > 1) {
+                            note = "exclude: found invalid neighbor cells = " + nonValidCells;
                             isMax = false;
                             break;
                         }
+
                     }
 
+                    if (isMax && pTopBufferThresCellCount > 0 && topBufferThresViolationCount >= pTopBufferThresCellCount) {
+                        isMax = false;
+                        note = "exclude: elevation diff of neighbors from top violates thres (" + pTopBufferThres + "/"
+                                + topBufferThresViolationCount + ")";
+                    }
                     // create circle
 
                     if (isMax) {
@@ -296,7 +318,7 @@ public class OmsRasterMaximaFinder extends JGTModel {
 
                             String elevStr = formatter.format(elevation);
                             elevation = Double.parseDouble(elevStr);
-                            Object[] values = new Object[]{point, id, elevation, ""};
+                            Object[] values = new Object[]{point, id, elevation, note};
                             maximaBuilder.addAll(values);
                             SimpleFeature feature = maximaBuilder.buildFeature(null);
                             ((DefaultFeatureCollection) outMaxima).add(feature);
@@ -315,6 +337,8 @@ public class OmsRasterMaximaFinder extends JGTModel {
             pm.worked(1);
         }
         pm.done();
+        
+        elevIter.done();
 
         if (pBorderDistanceThres > 0) {
             OmsVectorizer vectorizer = new OmsVectorizer();
@@ -323,7 +347,7 @@ public class OmsRasterMaximaFinder extends JGTModel {
             vectorizer.pValue = null;
             vectorizer.pThres = 0;
             vectorizer.doMask = true;
-            vectorizer.pMaskThreshold = 1.3;
+            vectorizer.pMaskThreshold = pThreshold;
             vectorizer.fDefault = "rast";
             vectorizer.process();
             SimpleFeatureCollection diffPolygons = vectorizer.outVector;
@@ -351,9 +375,10 @@ public class OmsRasterMaximaFinder extends JGTModel {
                 Geometry maximaGeometry = (Geometry) maxima.getDefaultGeometry();
                 double distance = DistanceOp.distance(allBorders, maximaGeometry);
                 if (distance < pBorderDistanceThres) {
-                    maxima.setAttribute(NOTE, "near border: " + distance);
+                    maxima.setAttribute(NOTE, "exclude: near border: " + distance);
                 }
             }
+            maximaIter.close();
 
         }
 
