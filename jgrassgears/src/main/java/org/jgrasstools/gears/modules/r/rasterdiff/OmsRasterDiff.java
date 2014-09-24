@@ -132,7 +132,11 @@ public class OmsRasterDiff extends JGTModel {
             pm.worked(1);
         }
         pm.done();
-
+        
+        r1Iter.done();
+        r2Iter.done();
+        outIter.done();
+        
         outRaster = CoverageUtilities.buildCoverage("corrected", outWR, regionMap, inRaster1.getCoordinateReferenceSystem());
     }
 
