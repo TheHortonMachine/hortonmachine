@@ -122,7 +122,8 @@ public class OmsRasterDiff extends JGTModel {
                     diff = r1 - r2;
                 }
                 if (!doNegatives && diff < 0) {
-                    diff = doubleNovalue;
+                    diff = 0.0;
+//                    diff = doubleNovalue;
                 }
                 if (pThreshold != null && diff < thres) {
                     diff = doubleNovalue;
