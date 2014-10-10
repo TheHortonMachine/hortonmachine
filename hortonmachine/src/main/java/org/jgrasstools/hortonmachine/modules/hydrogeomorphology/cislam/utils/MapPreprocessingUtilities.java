@@ -44,7 +44,7 @@ public class MapPreprocessingUtilities {
      * and is assigned to the slope cell. More, when a valid but zero value is found in Slope map, the  is substituted
      * @param inSlope The Slope map from OmsSlope module
      * @param inPit The depitted elevation map from OmsPit module
-     * @param minimumAllowedSlope the value to substitute to zero values (if left zero defaults to 0,009 [== tan(0.5°) ] )
+     * @param minimumAllowedSlope the value to substitute to zero values (if left zero defaults to 0,009 [== tan(0.5 degree) ] )
      * @return outSlope the fixed Slope map ready for OmsCislam model
      * @prerequisite The two Grids must have the same RegionMap
      */
@@ -96,7 +96,7 @@ public class MapPreprocessingUtilities {
                         elevationNode.setValueInMap(inSlopeIter, newSlope);
                     } else if (slopeValue == 0.0) {
                         // We are inside the basin but on a 'plateau' of the elevation model
-                        // Implement fixing: zero values cells are given value 0.009 [tan(0.5°)]
+                        // Implement fixing: zero values cells are given value 0.009 [tan(0.5degree)]
                         elevationNode.setValueInMap(inSlopeIter, minimumAllowedSlope);
                     }
                 }

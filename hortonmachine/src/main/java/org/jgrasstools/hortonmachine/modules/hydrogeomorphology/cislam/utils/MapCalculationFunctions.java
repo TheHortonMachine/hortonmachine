@@ -336,7 +336,7 @@ public class MapCalculationFunctions {
                             (( mapTheta_SIter.getSampleDouble(c, r, 0) + mapTheta_SIter.getSampleDouble(cnew, rnew, 0) )/2)//OK 0.23
                     )/
                     (
-                            // quello che segue è la K saturo nella direzione del flusso (Ksat è in origine espressa orizzontalmente)
+                            // quello che segue e' la K saturo nella direzione del flusso (Ksat e' in origine espressa orizzontalmente)
                             Math.cos(Math.atan(Math.max(0.01,(d_quota))/(d_ll)))* //OK 0.740582
                             Math.sin(Math.atan(Math.max(0.01,(d_quota))/(d_ll)))* //OK 0.671966
                             ((mapKsatIter.getSampleDouble(c, r, 0)+mapKsatIter.getSampleDouble(cnew, rnew, 0))/2) //OK 1.0E-5
