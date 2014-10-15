@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.lesto.modules.maxima;
+package org.jgrasstools.lesto.modules.vegetation;
 
 import static org.jgrasstools.gears.libs.modules.Variables.CONIFER;
 import static org.jgrasstools.gears.libs.modules.Variables.CUSTOM;
@@ -36,7 +36,7 @@ import oms3.annotations.Unit;
 import org.jgrasstools.gears.i18n.GearsMessages;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.libs.modules.JGTModel;
-import org.jgrasstools.lesto.modules.maxima.OmsRasterMaximaFinder;
+import org.jgrasstools.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFinder;
 
 @Description(OmsRasterMaximaFinder.OMSMAXIMAFINDER_DESCRIPTION)
 @Author(name = GearsMessages.OMSHYDRO_AUTHORNAMES, contact = GearsMessages.OMSHYDRO_AUTHORCONTACTS)

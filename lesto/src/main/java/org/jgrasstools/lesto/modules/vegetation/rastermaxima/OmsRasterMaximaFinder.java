@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.lesto.modules.maxima;
+package org.jgrasstools.lesto.modules.vegetation.rastermaxima;
 
 import static java.lang.Math.ceil;
 import static java.lang.Math.pow;
@@ -138,7 +138,7 @@ public class OmsRasterMaximaFinder extends JGTModel {
     // PARAMETERS DOCS START
     public static final String OMSMAXIMAFINDER_DESCRIPTION = "Module to find local maxima.";
     public static final String OMSMAXIMAFINDER_KEYWORDS = "Raster, Maxima";
-    public static final String OMSMAXIMAFINDER_LABEL = JGTConstants.LESTO + "/maxima";
+    public static final String OMSMAXIMAFINDER_LABEL = JGTConstants.LESTO + "/vegetation";
     public static final String OMSMAXIMAFINDER_NAME = "rastermaximafinder";
     public static final int OMSMAXIMAFINDER_STATUS = 5;
     public static final String inGeodata_DESCRIPTION = "The input coverage.";
