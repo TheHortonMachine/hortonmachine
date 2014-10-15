@@ -34,8 +34,8 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -68,12 +68,14 @@ import com.vividsolutions.jts.geom.Polygon;
 public class Las2RasterInterpolator extends JGTModel {
 
     @Description("Las files folder main index file path.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
     public String inIndexFile = null;
 
     @Description("A dtm raster to use for the area of interest and to calculate the elevation threshold.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inDtm;
+    public String inDtm;
 
     @Description("Flag to normalize with the dtm.")
     @In
@@ -91,25 +93,32 @@ public class Las2RasterInterpolator extends JGTModel {
     @In
     public double pThreshold = 0.0;
 
+    @Description("The impulse to use (if empty everything is used).")
+    @In
+    public Integer pImpulse = 1;
+
     @Description("The output raster.")
-    @Out
-    public GridCoverage2D outRaster = null;
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outRaster = null;
 
     @Execute
     public void process() throws Exception {
         checkNull(inIndexFile, inDtm);
 
-        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
-        CoordinateReferenceSystem crs = inDtm.getCoordinateReferenceSystem();
+        GridCoverage2D inDtmGC = getRaster(inDtm);
+        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtmGC);
+        CoordinateReferenceSystem crs = inDtmGC.getCoordinateReferenceSystem();
 
-        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), inDtm, pThreshold, crs)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), inDtmGC, pThreshold, crs)) {
             lasData.open();
-            lasData.setClassesConstraint(new double[]{3.0});
-            lasData.setImpulsesConstraint(new double[]{1.0});
+            if (pImpulse != null) {
+                lasData.setImpulsesConstraint(new double[]{pImpulse});
+            }
 
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, false);
 
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtm);
+            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
             double north = regionMap.getNorth();
             double south = regionMap.getSouth();
             double east = regionMap.getEast();
@@ -159,7 +168,8 @@ public class Las2RasterInterpolator extends JGTModel {
             idwInterpolator.pBuffer = 10.0;
             idwInterpolator.pm = pm;
             idwInterpolator.process();
-            outRaster = idwInterpolator.outRaster;
+            GridCoverage2D outRasterGC = idwInterpolator.outRaster;
+            dumpRaster(outRasterGC, outRaster);
 
         }
     }

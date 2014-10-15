@@ -119,33 +119,33 @@ public class AdaptiveTinFilter extends JGTModel {
     @Description("The start seed triangles.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public SimpleFeatureCollection outSeeds;
+    public String outSeeds;
 
     @Description("Final output tin.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public SimpleFeatureCollection outTin;
+    public String outTin;
 
     @Description("Output non ground points.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public SimpleFeatureCollection outNonGround;
+    public String outNonGround;
 
     @Description("Output tiles.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public SimpleFeatureCollection outTiles;
+    public String outTiles;
 
     @Description("The interpolated output raster.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
-    public GridCoverage2D outDem;
+    public String outDem;
 
     private GridCoverage2D inTemplateGC;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inLas, inTemplate);
+        checkNull(inLas, inTemplate, outDem);
 
         inTemplateGC = getRaster(inTemplate);
 
@@ -159,8 +159,11 @@ public class AdaptiveTinFilter extends JGTModel {
         gridGenerator.pCols = (int) newCols;
         gridGenerator.pRows = (int) newRows;
         gridGenerator.process();
-        outTiles = gridGenerator.outMap;
-        List<Geometry> secGridGeoms = FeatureUtilities.featureCollectionToGeometriesList(outTiles, true, null);
+        SimpleFeatureCollection outTilesFC = gridGenerator.outMap;
+        if (outTiles != null) {
+            dumpVector(outTilesFC, outTiles);
+        }
+        List<Geometry> secGridGeoms = FeatureUtilities.featureCollectionToGeometriesList(outTilesFC, true, null);
 
         // find seeds, i.e. lowest points in the sec grids
         List<Coordinate> seedsList = getSeeds(secGridGeoms);
@@ -172,11 +175,13 @@ public class AdaptiveTinFilter extends JGTModel {
         tinHandler.setStartCoordinates(seedsList);
 
         // dump the first seed based tin
-        outSeeds = tinHandler.toFeatureCollection();
+        if (outSeeds != null) {
+            SimpleFeatureCollection outSeedsFC = tinHandler.toFeatureCollection();
+            dumpVector(outSeedsFC, outSeeds);
+        }
 
-        final ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
-                inTemplateGC.getCoordinateReferenceSystem());
-        try {
+        try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
+                inTemplateGC.getCoordinateReferenceSystem())) {
             lasHandler.open();
 
             tinHandler.filterOnAllData(lasHandler);
@@ -207,9 +212,6 @@ public class AdaptiveTinFilter extends JGTModel {
                 }
                 iteration++;
             } while( iteration <= pIterations );
-
-        } finally {
-            lasHandler.close();
         }
 
         tinHandler.getTriangles();
@@ -224,9 +226,15 @@ public class AdaptiveTinFilter extends JGTModel {
         pm.message("Tin triangles min and max elevation:" + Arrays.toString(minMaxElev));
 
         if (doTin) {
-            outTin = tinHandler.toFeatureCollection();
+            if (outTin != null) {
+                SimpleFeatureCollection outTinFC = tinHandler.toFeatureCollection();
+                dumpVector(outTinFC, outTin);
+            }
 
-            outNonGround = tinHandler.toFeatureCollectionOthers();
+            if (outNonGround != null) {
+                SimpleFeatureCollection outNonGroundFC = tinHandler.toFeatureCollectionOthers();
+                dumpVector(outNonGroundFC, outNonGround);
+            }
 
             double[] minMaxElev0 = tinHandler.getMinMaxElev();
             doRaster(tinHandler, regionMap, minMaxElev0, 0);
@@ -251,7 +259,7 @@ public class AdaptiveTinFilter extends JGTModel {
     private void doRaster( TinHandler tinHandler, RegionMap regionMap, final double[] minMaxElev, int iteration )
             throws Exception {
         final WritableRaster[] rasterHandler = new WritableRaster[1];
-        outDem = CoverageUtilities.createCoverageFromTemplate(inTemplateGC, doubleNovalue, rasterHandler);
+        GridCoverage2D outDemGC = CoverageUtilities.createCoverageFromTemplate(inTemplateGC, doubleNovalue, rasterHandler);
 
         final STRtree tinTree = tinHandler.generateTinIndex(null);
         final GridGeometry2D gridGeometry = inTemplateGC.getGridGeometry();
@@ -318,6 +326,8 @@ public class AdaptiveTinFilter extends JGTModel {
         }
         tRun.waitAndClose();
         pm.done();
+
+        dumpRaster(outDemGC, outDem);
     }
 
     private SimpleFeatureCollection featureCollectionFromNonGroundCoordinates( CoordinateReferenceSystem crs,
@@ -343,9 +353,8 @@ public class AdaptiveTinFilter extends JGTModel {
 
     private List<Coordinate> getSeeds( List<Geometry> secGridGeoms ) throws Exception {
         final List<Coordinate> seedsList = new ArrayList<Coordinate>();
-        final ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
-                inTemplateGC.getCoordinateReferenceSystem());
-        try {
+        try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
+                inTemplateGC.getCoordinateReferenceSystem())) {
             lasHandler.open();
             pm.beginTask("Extracting seed points...", secGridGeoms.size());
             ThreadedRunnable tRun = new ThreadedRunnable(getDefaultThreadsNum(), null);
@@ -372,8 +381,6 @@ public class AdaptiveTinFilter extends JGTModel {
             pm.done();
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            lasHandler.close();
         }
         return seedsList;
     }

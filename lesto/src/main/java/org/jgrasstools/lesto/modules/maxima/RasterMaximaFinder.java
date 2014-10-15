@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.modules;
+package org.jgrasstools.lesto.modules.maxima;
 
 import static org.jgrasstools.gears.libs.modules.Variables.CONIFER;
 import static org.jgrasstools.gears.libs.modules.Variables.CUSTOM;

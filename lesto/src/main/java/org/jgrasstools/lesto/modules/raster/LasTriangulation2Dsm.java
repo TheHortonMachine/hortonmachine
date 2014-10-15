@@ -38,8 +38,8 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -75,13 +75,15 @@ import com.vividsolutions.jts.triangulate.DelaunayTriangulationBuilder;
 @SuppressWarnings("nls")
 public class LasTriangulation2Dsm extends JGTModel {
 
-    @Description("Las files folder main index file path.")
+    @Description("Las file path.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String inIndexFile = null;
+    public String inLas = null;
 
     @Description("A dtm raster to use for the area of interest.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inDtm;
+    public String inDtm;
 
     @Description("New x resolution (if null, the dtm is used).")
     @In
@@ -96,21 +98,22 @@ public class LasTriangulation2Dsm extends JGTModel {
     public double pElevThres = 0.5;
 
     @Description("The output raster.")
-    @Out
-    public GridCoverage2D outRaster = null;
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outRaster = null;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inIndexFile, inDtm);
+        checkNull(inLas, inDtm, outRaster);
 
-        CoordinateReferenceSystem crs = null;
-        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
-        crs = inDtm.getCoordinateReferenceSystem();
+        GridCoverage2D inDtmGC = getRaster(inDtm);
+        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtmGC);
+        CoordinateReferenceSystem crs = inDtmGC.getCoordinateReferenceSystem();
 
         List<Coordinate> lasCoordinates = new ArrayList<Coordinate>();
-        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), null, 0.0, crs)) {
+        pm.beginTask("Preparing triangulation...", -1);
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), null, 0.0, crs)) {
             lasData.open();
-            pm.beginTask("Preparing triangulation...", -1);
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, false);
             for( LasRecord lasRecord : lasPoints ) {
                 lasCoordinates.add(new Coordinate(lasRecord.x, lasRecord.y, lasRecord.z));
@@ -160,7 +163,7 @@ public class LasTriangulation2Dsm extends JGTModel {
         }
         pm.done();
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtm);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
         double north = regionMap.getNorth();
         double south = regionMap.getSouth();
         double east = regionMap.getEast();
@@ -193,8 +196,8 @@ public class LasTriangulation2Dsm extends JGTModel {
         runner.waitAndClose();
         pm.done();
 
-        outRaster = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
-
+        GridCoverage2D outRasterGC = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
+        dumpRaster(outRasterGC, outRaster);
     }
 
     private void makeRow( STRtree tree, int newRows, GridGeometry2D newGridGeometry2D, WritableRaster newWR, int c )
@@ -226,8 +229,8 @@ public class LasTriangulation2Dsm extends JGTModel {
                     if (intersection.z > maxZ) {
                         boolean equals = NumericsUtilities.dEq(intersection.z, maxZ, 0.0001);
                         if (!equals) {
-                            System.out.println(triangle.toText());
-                            System.out.println(gf.createPoint(intersection).toText());
+                            pm.errorMessage(triangle.toText());
+                            pm.errorMessage(gf.createPoint(intersection).toText());
                             throw new RuntimeException("Intersection can't be  > than the triangle.");
                         }
                     }

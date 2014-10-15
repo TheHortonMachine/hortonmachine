@@ -39,8 +39,8 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -66,13 +66,15 @@ import com.vividsolutions.jts.geom.Polygon;
 @SuppressWarnings("nls")
 public class LasOnRasterMapper extends JGTModel {
 
-    @Description("Las files folder main index file path.")
+    @Description("Las file path.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String inIndexFile = null;
+    public String inLas = null;
 
     @Description("A dtm raster to use for the area of interest and lower threshold.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public GridCoverage2D inDtm;
+    public String inDtm;
 
     @Description("New x resolution (if null, the dtm is used).")
     @In
@@ -83,18 +85,21 @@ public class LasOnRasterMapper extends JGTModel {
     public Double pYres;
 
     @Description("The output raster.")
-    @Out
-    public GridCoverage2D outRaster = null;
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outRaster = null;
 
     @Description("The input dtm, resampled on the new resolution.")
-    @Out
-    public GridCoverage2D outDtm = null;
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
+    public String outDtm = null;
 
     @Execute
     public void process() throws Exception {
-        checkNull(inIndexFile, inDtm);
+        checkNull(inLas, inDtm, outDtm, outRaster);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtm);
+        GridCoverage2D inDtmGC = getRaster(inDtm);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDtmGC);
         double north = regionMap.getNorth();
         double south = regionMap.getSouth();
         double east = regionMap.getEast();
@@ -102,13 +107,12 @@ public class LasOnRasterMapper extends JGTModel {
         if (pXres == null || pYres == null) {
             pXres = regionMap.getXres();
             pYres = regionMap.getYres();
-            outDtm = inDtm;
         }
 
         CoordinateReferenceSystem crs = null;
-        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
-        crs = inDtm.getCoordinateReferenceSystem();
-        GridGeometry2D dtmGridGeometry = inDtm.getGridGeometry();
+        Polygon polygon = CoverageUtilities.getRegionPolygon(inDtmGC);
+        crs = inDtmGC.getCoordinateReferenceSystem();
+        GridGeometry2D dtmGridGeometry = inDtmGC.getGridGeometry();
 
         final int newRows = (int) round((north - south) / pYres);
         int newCols = (int) round((east - west) / pXres);
@@ -119,9 +123,9 @@ public class LasOnRasterMapper extends JGTModel {
         final WritableRaster newWR = CoverageUtilities.createDoubleWritableRaster(newCols, newRows, null, null,
                 JGTConstants.doubleNovalue);
 
-        RandomIter dtmIter = CoverageUtilities.getRandomIterator(inDtm);
+        RandomIter dtmIter = CoverageUtilities.getRandomIterator(inDtmGC);
 
-        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), null, 0.0, crs)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), null, 0.0, crs)) {
             lasData.open();
             pm.beginTask("Reading points on region...", IJGTProgressMonitor.UNKNOWN);
             List<LasRecord> lasPoints = lasData.getPointsInGeometry(polygon, false);
@@ -150,17 +154,19 @@ public class LasOnRasterMapper extends JGTModel {
             pm.done();
         }
 
-        outRaster = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
+        GridCoverage2D outRasterGC = CoverageUtilities.buildCoverage("outraster", newWR, newRegionMap, crs);
+        dumpRaster(outRasterGC, outRaster);
 
         if (pXres != null && pYres != null) {
             WritableRaster[] holder = new WritableRaster[1];
-            outDtm = CoverageUtilities.createCoverageFromTemplate(outRaster, JGTConstants.doubleNovalue, holder);
+            GridCoverage2D outDtmGC = CoverageUtilities.createCoverageFromTemplate(outRasterGC, JGTConstants.doubleNovalue,
+                    holder);
 
-            GridGeometry2D outGridGeometry = outDtm.getGridGeometry();
+            GridGeometry2D outGridGeometry = outDtmGC.getGridGeometry();
 
             WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(holder[0]);
 
-            RegionMap outRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outDtm);
+            RegionMap outRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outDtmGC);
             int cols = outRegionMap.getCols();
             int rows = outRegionMap.getRows();
 
@@ -174,6 +180,8 @@ public class LasOnRasterMapper extends JGTModel {
                 }
             }
             outIter.done();
+
+            dumpRaster(outDtmGC, outDtm);
         }
         dtmIter.done();
 

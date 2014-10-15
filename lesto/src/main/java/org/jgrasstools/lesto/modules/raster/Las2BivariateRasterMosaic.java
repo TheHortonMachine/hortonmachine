@@ -41,8 +41,9 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -74,35 +75,43 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Polygon;
 
-@Description("Module that converts a lasfolder into a set of mosaiced rasters using a bivariate function.")
+@Description("Module that converts a las data into a set of mosaic rasters using a bivariate function.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, lidar, raster, bivariate, mosaic")
-@Label(JGTConstants.LESTO+"/raster")
+@Label(JGTConstants.LESTO + "/raster")
 @Name("lasfolder2bivariaterastermosaic")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 @SuppressWarnings("nls")
-public class LasFolder2BivariateRasterMosaic extends JGTModel {
+public class Las2BivariateRasterMosaic extends JGTModel {
 
     @Description("Las files folder main index file path.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public String inIndexFile = null;
+    public String inLas = null;
 
-    @Description("A region of interest. If not supplied the whole lasfolder is used.")
+    @Description("A region of interest. If not supplied the whole dataset is used.")
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public SimpleFeatureCollection inRoi;
+    public String inRoi;
 
     @Description("The tilesize of the subrasters.")
+    @Unit("m")
     @In
     public double pTilesize = 5000;
 
     @Description("New resolution used for the tiles.")
+    @Unit("m")
     @In
     public double pRes = 1;
 
     @Description("Buffer of influence for points interpolation in number of cells.")
     @In
     public int pBuffer = 2;
+    
+    @Description("The impulse to use (if empty everything is used).")
+    @In
+    public Integer pImpulse = 1;
 
     @Description("Number of threads to use.")
     @In
@@ -117,7 +126,8 @@ public class LasFolder2BivariateRasterMosaic extends JGTModel {
     public int pMinpoints = 6;
 
     @Description("The output folder.")
-    @Out
+    @UI(JGTConstants.FILEOUT_UI_HINT)
+    @In
     public String outFolder = null;
 
     private static final double NOINTENSITY = -9999.0;
@@ -129,12 +139,15 @@ public class LasFolder2BivariateRasterMosaic extends JGTModel {
     @SuppressWarnings("rawtypes")
     @Execute
     public void process() throws Exception {
-        checkNull(inIndexFile, outFolder);
+        checkNull(inLas, outFolder);
 
         final File outFolderFile = new File(outFolder);
 
-        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inIndexFile), null, 0, null)) {
+        try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), null, 0, null)) {
             lasData.open();
+            if (pImpulse != null) {
+                lasData.setImpulsesConstraint(new double[]{pImpulse});
+            }
 
             ReferencedEnvelope roiEnvelope = lasData.getOverallEnvelope();
             crs = roiEnvelope.getCoordinateReferenceSystem();
@@ -144,7 +157,8 @@ public class LasFolder2BivariateRasterMosaic extends JGTModel {
                 }
             }
             if (inRoi != null) {
-                roiEnvelope = inRoi.getBounds();
+                SimpleFeatureCollection inRoiFC = getVector(inRoi);
+                roiEnvelope = inRoiFC.getBounds();
             }
 
             double overallW = roiEnvelope.getMinX();
