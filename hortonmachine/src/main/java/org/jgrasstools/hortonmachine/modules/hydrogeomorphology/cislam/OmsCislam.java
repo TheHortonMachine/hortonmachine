@@ -1,8 +1,8 @@
 /*
- * This file is part of the "CI-slam module": an addition to JGrassTools
- * It has been entirely contributed by Marco Foi (www.mcfoi.it)
+ * This file is part of JGrasstools (http://www.jgrasstools.org)
+ * (C) HydroloGIS - www.hydrologis.com 
  * 
- * "CI-slam module" is free software: you can redistribute it and/or modify
+ * JGrasstools is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.

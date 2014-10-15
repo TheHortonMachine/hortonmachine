@@ -5,6 +5,7 @@ org.jgrasstools.modules.Buffer
 org.jgrasstools.modules.CannyEdgeDetector
 org.jgrasstools.modules.Carver
 org.jgrasstools.modules.Cb
+org.jgrasstools.modules.Cislam
 org.jgrasstools.modules.ContourExtractor
 org.jgrasstools.modules.Curvatures
 org.jgrasstools.modules.CurvaturesBivariate
