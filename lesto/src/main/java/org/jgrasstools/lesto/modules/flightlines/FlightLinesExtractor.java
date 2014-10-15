@@ -211,10 +211,9 @@ public class FlightLinesExtractor extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         FlightLinesExtractor fl = new FlightLinesExtractor();
-        fl.inLas = "/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001059_3.las";
-        // fl.inLas = "/home/moovida/geologico_2013/flightlines/001059_3.las";
+        fl.inLas = "*.las";
         fl.pGpsTimeType = FlightLinesExtractor.ADJUSTED_STANDARD_GPS_TIME;
-        fl.outFolder = "/home/moovida/geologico_2013/flightlines/";
+        fl.outFolder = "/home/flightlines/";
         fl.process();
     }
 }

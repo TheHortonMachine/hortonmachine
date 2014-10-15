@@ -55,6 +55,10 @@ public class LasHistogram extends JGTModel {
     @In
     public int pBin = 100;
 
+    @Description("Do plot.")
+    @In
+    public boolean doPlot = true;
+
     @Description("The value to analyze.")
     @UI("combo:" + LasUtils.INTENSITY + "," + LasUtils.ELEVATION)
     @In
@@ -131,7 +135,9 @@ public class LasHistogram extends JGTModel {
             pm.message(markersLabels[i] + ",\t" + count[i]);
         }
 
-        CategoryHistogram hi = new CategoryHistogram(markersLabels, count);
-        hi.plot();
+        if (doPlot) {
+            CategoryHistogram hi = new CategoryHistogram(markersLabels, count);
+            hi.plot();
+        }
     }
 }

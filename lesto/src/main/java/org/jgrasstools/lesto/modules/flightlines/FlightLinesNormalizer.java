@@ -236,11 +236,11 @@ public class FlightLinesNormalizer extends JGTModel {
 
     public static void main( String[] args ) throws Exception {
         FlightLinesNormalizer fl = new FlightLinesNormalizer();
-        fl.inLas = "/home/moovida/geologico_2013/fino_a_1400m/Prodotti_quota_ortometrica/Dati_Grezzi/001059_3.las";
-        fl.inFlightpoints = "/home/moovida/geologico_2013/traiettorie/punti_traiettoria_time.shp";
+        fl.inLas = "*.las";
+        fl.inFlightpoints = "flightline_points.shp";
         fl.pDateTimePattern = "dd/MM/yyyy HH:mm:ss.00";
         fl.pGpsTimeType = FlightLinesExtractor.ADJUSTED_STANDARD_GPS_TIME;
-        fl.outLas = "/home/moovida/geologico_2013/flightlines/001059_3_normfl.las";
+        fl.outLas = "*_normfl.las";
         fl.process();
     }
 }

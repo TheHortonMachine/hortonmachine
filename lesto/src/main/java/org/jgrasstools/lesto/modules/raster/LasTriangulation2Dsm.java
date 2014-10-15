@@ -242,36 +242,4 @@ public class LasTriangulation2Dsm extends JGTModel {
         }
     }
 
-    // public static void main( String[] args ) throws Exception {
-    // int plot = 1223;
-    //
-    // double xRes = 0.5;
-    // double yRes = 0.5;
-    // double pElevThres = 100.0;
-    //
-    // String lasIndex = "/home/moovida/dati_unibz/Dati_LiDAR/LAS_Classificati/index.lasfolder";
-    // String raster = "/media/FATBOTTOMED/dati_unibz/grassdb/unibz_utm32n/plots/cell/dtm_zone" +
-    // plot;
-    // // String outRaster = "/media/FATBOTTOMED/dati_unibz/grassdb/unibz_utm32n/plots/cell/dtm" +
-    // // makeSafe(xRes) + "_3zone" + plot + ".tif";
-    // String outRaster = "/media/FATBOTTOMED/dati_unibz/RILIEVI/plot_" + plot + "/dtm" +
-    // makeSafe(xRes) + "_zone" + plot
-    // + ".tif";
-    //
-    // EggClock timer = new EggClock("Time check: ", " min\n");
-    // timer.start();
-    //
-    // LasTriangulation2Dsm l2r = new LasTriangulation2Dsm();
-    // l2r.inIndexFile = lasIndex;
-    // l2r.inDtm = getRaster(raster);
-    // l2r.pElevThres = pElevThres;
-    // l2r.pXres = xRes;
-    // l2r.pYres = yRes;
-    // l2r.process();
-    //
-    // dumpRaster(l2r.outRaster, outRaster);
-    //
-    // timer.printTimePassedInMinutes(System.err);
-    // }
-
 }
