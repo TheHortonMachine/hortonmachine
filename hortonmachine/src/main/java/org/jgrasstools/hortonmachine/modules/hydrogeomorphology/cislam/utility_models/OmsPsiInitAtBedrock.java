@@ -17,18 +17,18 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_outPsiInitAtBedrock_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_pPsiInitAtBedrockConstant_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inPit_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_outPsiInitAtBedrock_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_pPsiInitAtBedrockConstant_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSPSIINITATBEDROCK_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inPit_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 

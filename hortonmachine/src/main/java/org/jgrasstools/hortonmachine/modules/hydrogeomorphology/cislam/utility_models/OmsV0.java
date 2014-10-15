@@ -17,21 +17,21 @@
  */
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models;
 
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inAlfaVanGen_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inNVanGen_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_inPsiInitAtBedrock_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSV0_outV0_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inTheta_r_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inTheta_s_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inAlfaVanGen_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inNVanGen_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_inPsiInitAtBedrock_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSV0_outV0_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inTheta_r_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inTheta_s_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 

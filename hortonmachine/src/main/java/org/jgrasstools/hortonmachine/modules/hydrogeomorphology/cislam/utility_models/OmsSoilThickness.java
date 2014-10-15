@@ -19,16 +19,16 @@ package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_
 
 //import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSSHALSTAB_inSlope_DESCRIPTION;
 //import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSASPECT_doRound_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSLOPEFORCISLAM_inSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_outSoilThickness_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSLOPEFORCISLAM_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSSOILTHICKNESS_outSoilThickness_DESCRIPTION;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;

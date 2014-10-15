@@ -1,23 +1,23 @@
 package org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.utility_models;
 
 import static org.jgrasstools.gears.libs.modules.JGTConstants.isNovalue;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_AUTHORNAMES;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_LICENSE;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_KEYWORDS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_NAME;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_STATUS;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_outSafetyactorGeoMechanic_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inCohesion_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inGamma_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inKsat_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inPhi_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inSlope_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inTheta_r_DESCRIPTION;
-import static org.jgrasstools.hortonmachine.modules.hydrogeomorphology.cislam.HortonMessages.OMSCISLAM_inTheta_s_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORCONTACTS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_AUTHORNAMES;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_LICENSE;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_KEYWORDS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_NAME;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_STATUS;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_OMSAFETYFACTORGEOMECHANIC_outSafetyactorGeoMechanic_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_SUBMODULES_LABEL;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inCohesion_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inGamma_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inKsat_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inPhi_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inSlope_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inSoilThickness_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inTheta_r_DESCRIPTION;
+import static org.jgrasstools.hortonmachine.i18n.HortonMessages.OMSCISLAM_inTheta_s_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
 
