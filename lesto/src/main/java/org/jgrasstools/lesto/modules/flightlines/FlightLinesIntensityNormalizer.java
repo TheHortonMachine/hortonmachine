@@ -63,14 +63,14 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 import com.vividsolutions.jts.index.strtree.STRtree;
 
-@Description("A module that normalizes flightlines based on the aircraft position. TODO")
-@Author(name = "Andrea Antonello, ", contact = "www.hydrologis.com")
+@Description("A module that normalizes flightlines based on the aircraft position.")
+@Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("las, normalize, flightlines")
 @Label(JGTConstants.LESTO + "/flightlines")
 @Name("lasflightlinesnormalization")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
-public class FlightLinesNormalizer extends JGTModel {
+public class FlightLinesIntensityNormalizer extends JGTModel {
     @Description("A las file.")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
@@ -180,13 +180,12 @@ public class FlightLinesNormalizer extends JGTModel {
 
         CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
-        ALasReader reader = ALasReader.getReader(lasFile, crs);
-        reader.setOverrideGpsTimeType(timeType);
-        ILasHeader header = reader.getHeader();
-        int gpsTimeType = header.getGpsTimeType();
         File outLasFile = new File(outLas);
-        ALasWriter writer = new LasWriter(outLasFile, crs);
-        try {
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
+                ALasWriter writer = new LasWriter(outLasFile, crs);) {
+            reader.setOverrideGpsTimeType(timeType);
+            ILasHeader header = reader.getHeader();
+            int gpsTimeType = header.getGpsTimeType();
             writer.setBounds(header);
             writer.open();
 
@@ -225,17 +224,12 @@ public class FlightLinesNormalizer extends JGTModel {
 
                 pm.worked(1);
             }
-        } finally {
-            if (reader != null)
-                reader.close();
-            if (writer != null)
-                writer.close();
             pm.done();
         }
     }
-
+    
     public static void main( String[] args ) throws Exception {
-        FlightLinesNormalizer fl = new FlightLinesNormalizer();
+        FlightLinesIntensityNormalizer fl = new FlightLinesIntensityNormalizer();
         fl.inLas = "*.las";
         fl.inFlightpoints = "flightline_points.shp";
         fl.pDateTimePattern = "dd/MM/yyyy HH:mm:ss.00";

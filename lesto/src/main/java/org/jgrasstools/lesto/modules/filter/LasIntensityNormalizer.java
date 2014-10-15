@@ -66,26 +66,24 @@ public class LasIntensityNormalizer extends JGTModel {
 
         CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
-        ALasReader reader = ALasReader.getReader(lasFile, crs);
-        reader.open();
-        ILasHeader header = reader.getHeader();
-        long recordsNum = header.getRecordsCount();
-
         File outFile = new File(outLas);
-        ALasWriter writer = new LasWriter(outFile, crs);
-        pm.beginTask("Normalizing...", (int) recordsNum);
-        reader = ALasReader.getReader(lasFile, crs);
-        reader.open();
-        writer.open();
-        while( reader.hasNextPoint() ) {
-            LasRecord readNextLasDot = reader.getNextPoint();
-            double newValue = readNextLasDot.intensity * pFactor;
-            readNextLasDot.intensity = (short) newValue;
-            writer.addPoint(readNextLasDot);
-            pm.worked(1);
+
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
+                ALasWriter writer = new LasWriter(outFile, crs);) {
+            reader.open();
+            ILasHeader header = reader.getHeader();
+            long recordsNum = header.getRecordsCount();
+
+            pm.beginTask("Normalizing...", (int) recordsNum);
+            writer.open();
+            while( reader.hasNextPoint() ) {
+                LasRecord readNextLasDot = reader.getNextPoint();
+                double newValue = readNextLasDot.intensity * pFactor;
+                readNextLasDot.intensity = (short) newValue;
+                writer.addPoint(readNextLasDot);
+                pm.worked(1);
+            }
         }
-        reader.close();
-        writer.close();
         pm.done();
     }
 }

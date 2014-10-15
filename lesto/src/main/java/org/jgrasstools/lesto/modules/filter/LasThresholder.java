@@ -26,7 +26,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
@@ -82,44 +81,44 @@ public class LasThresholder extends JGTModel {
 
         CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
-        ALasReader reader = ALasReader.getReader(lasFile, crs);
-        reader.open();
-        ILasHeader header = reader.getHeader();
-        long recordsNum = header.getRecordsCount();
-
         File outFile = new File(outLas);
-        ALasWriter writer = new LasWriter(outFile, crs);
-        writer.setBounds(header);
-        writer.open();
 
-        pm.beginTask("Filtering", (int) recordsNum);
-        double min = Double.NEGATIVE_INFINITY;
-        if (pLower != null) {
-            min = pLower;
-        }
-        double max = Double.POSITIVE_INFINITY;
-        if (pUpper != null) {
-            max = pUpper;
-        }
-        while( reader.hasNextPoint() ) {
-            LasRecord readNextLasDot = reader.getNextPoint();
-            double value = readNextLasDot.z;
-            if (doIntensity) {
-                value = readNextLasDot.intensity;
+        try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
+                ALasWriter writer = new LasWriter(outFile, crs);) {
+            reader.open();
+            ILasHeader header = reader.getHeader();
+            long recordsNum = header.getRecordsCount();
+
+            writer.setBounds(header);
+            writer.open();
+
+            pm.beginTask("Filtering", (int) recordsNum);
+            double min = Double.NEGATIVE_INFINITY;
+            if (pLower != null) {
+                min = pLower;
             }
-            if (value < min) {
+            double max = Double.POSITIVE_INFINITY;
+            if (pUpper != null) {
+                max = pUpper;
+            }
+            while( reader.hasNextPoint() ) {
+                LasRecord readNextLasDot = reader.getNextPoint();
+                double value = readNextLasDot.z;
+                if (doIntensity) {
+                    value = readNextLasDot.intensity;
+                }
+                if (value < min) {
+                    pm.worked(1);
+                    continue;
+                }
+                if (value > max) {
+                    pm.worked(1);
+                    continue;
+                }
+                writer.addPoint(readNextLasDot);
                 pm.worked(1);
-                continue;
             }
-            if (value > max) {
-                pm.worked(1);
-                continue;
-            }
-            writer.addPoint(readNextLasDot);
-            pm.worked(1);
         }
-        reader.close();
-        writer.close();
         pm.done();
     }
 

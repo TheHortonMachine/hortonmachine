@@ -116,7 +116,7 @@ public class LasHeightDistribution extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inIndexFile, inVector);
+        checkNull(inIndexFile, inVector, inDem);
 
         if (outChartsFolder != null) {
             outChartsFolderFile = new File(outChartsFolder);

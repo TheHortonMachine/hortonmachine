@@ -5,6 +5,10 @@ org.jgrasstools.lesto.modules.filter.LasMerger
 org.jgrasstools.lesto.modules.filter.LasThresholder
 org.jgrasstools.lesto.modules.flightlines.FlightLinesExtractor
 org.jgrasstools.lesto.modules.flightlines.FlightLinesNormalizer
+org.jgrasstools.lesto.modules.maxima.OmsRasterMaximaFinder
+org.jgrasstools.lesto.modules.raster.AdaptiveTinFilter
 org.jgrasstools.lesto.modules.raster.Las2RasterInterpolator
 org.jgrasstools.lesto.modules.raster.LasFolder2BivariateRasterMosaic
+org.jgrasstools.lesto.modules.raster.LasOnRasterMapper
 org.jgrasstools.lesto.modules.raster.LasTriangulation2Dsm
+org.jgrasstools.lesto.modules.vector.LasChmTriangulation

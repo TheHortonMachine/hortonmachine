@@ -68,6 +68,10 @@ public class FlightLinesExtractor extends JGTModel {
     @In
     public String pGpsTimeType = ADJUSTED_STANDARD_GPS_TIME;
 
+    @Description("Plot time markers.")
+    @In
+    public boolean doPlot = true;
+
     @Description("Optional output folder.")
     @UI(JGTConstants.FOLDEROUT_UI_HINT)
     @In
@@ -205,8 +209,10 @@ public class FlightLinesExtractor extends JGTModel {
             }
         }
 
-        CategoryHistogram hi = new CategoryHistogram(cat, values);
-        hi.plot();
+        if (doPlot) {
+            CategoryHistogram hi = new CategoryHistogram(cat, values);
+            hi.plot();
+        }
     }
 
     public static void main( String[] args ) throws Exception {
