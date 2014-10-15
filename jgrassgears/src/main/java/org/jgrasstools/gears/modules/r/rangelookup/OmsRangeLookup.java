@@ -94,7 +94,11 @@ public class OmsRangeLookup extends JGTModel {
 
         RenderedImage inRI = inRaster.getRenderedImage();
 
-        RangeLookupTable<Double, Double> table = new RangeLookupTable<Double, Double>(JGTConstants.doubleNovalue);
+        RangeLookupTable.Builder<Double, Double> builder =
+                new RangeLookupTable.Builder<Double, Double>();
+        
+        
+//        RangeLookupTable<Double, Double> table = new RangeLookupTable<Double, Double>(JGTConstants.doubleNovalue);
 
         String[] rangesSplit = pRanges.trim().split(",");
         String[] classesSplit = pClasses.trim().split(",");
@@ -131,12 +135,16 @@ public class OmsRangeLookup extends JGTModel {
             }
 
             Range<Double> r = new Range<Double>(min, minIncluded, max, maxIncluded);
-            table.add(r, classNum);
+            
+            builder.add(r, classNum);
         }
+        
+        RangeLookupTable<Double, Double> table = builder.build();
 
         ParameterBlockJAI pb = new ParameterBlockJAI("RangeLookup");
         pb.setSource("source0", inRI);
         pb.setParameter("table", table);
+        pb.setParameter("default", JGTConstants.doubleNovalue);
         RenderedImage lookupImg = JAI.create("RangeLookup", pb);
 
         HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
