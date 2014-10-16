@@ -21,8 +21,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_doNegatives_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSRASTERDIFF_outRaster_DESCRIPTION;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
