@@ -84,6 +84,10 @@ public class LasOnRasterMapper extends JGTModel {
     @In
     public Double pYres;
 
+    @Description("If true, the maxima are mapped else the minima.")
+    @In
+    public boolean doMax = true;
+
     @Description("The output raster.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
@@ -135,19 +139,29 @@ public class LasOnRasterMapper extends JGTModel {
             final Point gridPoint = new Point();
             final Point dtmPoint = new Point();
             for( LasRecord lasRecord : lasPoints ) {
-                double z = lasRecord.z;
-                Coordinate coordinate = new Coordinate(lasRecord.x, lasRecord.y, z);
+                double dotZ = lasRecord.z;
+                Coordinate coordinate = new Coordinate(lasRecord.x, lasRecord.y, dotZ);
                 CoverageUtilities.colRowFromCoordinate(coordinate, newGridGeometry2D, gridPoint);
 
-                double value = newWR.getSampleDouble(gridPoint.x, gridPoint.y, 0);
+                double newRasterValue = newWR.getSampleDouble(gridPoint.x, gridPoint.y, 0);
 
                 CoverageUtilities.colRowFromCoordinate(coordinate, dtmGridGeometry, dtmPoint);
                 double dtmValue = dtmIter.getSampleDouble(dtmPoint.x, dtmPoint.y, 0);
-                if (JGTConstants.isNovalue(value) || value < z) {
-                    if (!JGTConstants.isNovalue(dtmValue) && dtmValue > z) {
-                        z = dtmValue;
+
+                if (doMax) {
+                    if (JGTConstants.isNovalue(newRasterValue) || newRasterValue < dotZ) {
+                        if (!JGTConstants.isNovalue(dtmValue) && dtmValue > dotZ) {
+                            dotZ = dtmValue;
+                        }
+                        newWR.setSample(gridPoint.x, gridPoint.y, 0, dotZ);
                     }
-                    newWR.setSample(gridPoint.x, gridPoint.y, 0, z);
+                } else {
+                    if (JGTConstants.isNovalue(newRasterValue) || newRasterValue > dotZ) {
+                        if (!JGTConstants.isNovalue(dtmValue) && dtmValue > dotZ) {
+                            dotZ = dtmValue;
+                        }
+                        newWR.setSample(gridPoint.x, gridPoint.y, 0, dotZ);
+                    }
                 }
                 pm.worked(1);
             }

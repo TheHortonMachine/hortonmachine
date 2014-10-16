@@ -43,7 +43,7 @@ import org.jgrasstools.gears.utils.coverage.CoverageUtilities;
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("vector, raster, add")
 @Label(JGTConstants.RASTERPROCESSING)
-@Name("RasterExtruder")
+@Name("rasterextruder")
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
 public class RasterExtruder extends JGTModel {

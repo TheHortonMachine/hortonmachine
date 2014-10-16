@@ -156,10 +156,4 @@ public class LasConverter extends JGTModel {
         lasconverter.process();
     }
 
-    @Finalize
-    public void close() throws Exception {
-        if (lasconverter != null)
-            lasconverter.close();
-    }
-
 }

@@ -73,7 +73,7 @@ import com.vividsolutions.jts.simplify.TopologyPreservingSimplifier;
 @Name("lasondembuildingsextractor")
 @Status(Status.EXPERIMENTAL)
 @License(JGTConstants.GPL3_LICENSE)
-public class LasOnDemBuildingsExtractor extends JGTModel {
+public class LasOnDtmBuildingsExtractor extends JGTModel {
     @Description("The las file")
     @UI(JGTConstants.FILEIN_UI_HINT)
     @In
