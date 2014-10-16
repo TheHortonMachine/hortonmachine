@@ -17,13 +17,6 @@
  */
 package org.jgrasstools.modules;
 
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION;
-import static org.jgrasstools.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORCONTACTS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_AUTHORNAMES;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_DESCRIPTION;
@@ -33,6 +26,7 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_LI
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_NAME;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_STATUS;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_fCat_DESCRIPTION;
+import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_inVector_DESCRIPTION;
 import static org.jgrasstools.gears.i18n.GearsMessages.OMSSURFACEINTERPOLATOR_outRaster_DESCRIPTION;
@@ -73,40 +67,10 @@ public class SurfaceInterpolator extends JGTModel {
     @In
     public String inVector;
 
-    @Description(OMSGRIDGEOMETRYREADER_pNorth_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_NORTH_UI_HINT)
+    @Description(OMSSURFACEINTERPOLATOR_inGrid_DESCRIPTION)
+    @UI(JGTConstants.FILEIN_UI_HINT)
     @In
-    public Double pNorth = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pSouth_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_SOUTH_UI_HINT)
-    @In
-    public Double pSouth = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pWest_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_WEST_UI_HINT)
-    @In
-    public Double pWest = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pEast_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_EAST_UI_HINT)
-    @In
-    public Double pEast = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pXres_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_XRES_UI_HINT)
-    @In
-    public Double pXres = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pYres_DESCRIPTION)
-    @UI(JGTConstants.PROCESS_YRES_UI_HINT)
-    @In
-    public Double pYres = null;
-
-    @Description(OMSGRIDGEOMETRYREADER_pCode_DESCRIPTION)
-    @UI(JGTConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
+    public String inGrid;
 
     @Description(OMSSURFACEINTERPOLATOR_inMask_DESCRIPTION)
     @UI(JGTConstants.FILEIN_UI_HINT)
@@ -138,23 +102,9 @@ public class SurfaceInterpolator extends JGTModel {
 
     @Execute
     public void process() throws Exception {
-        OmsGridGeometryReader gridgeometryreader = new OmsGridGeometryReader();
-        gridgeometryreader.pNorth = pNorth;
-        gridgeometryreader.pSouth = pSouth;
-        gridgeometryreader.pWest = pWest;
-        gridgeometryreader.pEast = pEast;
-        gridgeometryreader.pXres = pXres;
-        gridgeometryreader.pYres = pYres;
-        gridgeometryreader.pCode = pCode;
-        gridgeometryreader.pm = pm;
-        gridgeometryreader.doProcess = doProcess;
-        gridgeometryreader.doReset = doReset;
-        gridgeometryreader.process();
-        GridGeometry2D outGridgeom = gridgeometryreader.outGridgeom;
-
         OmsSurfaceInterpolator surfaceinterpolator = new OmsSurfaceInterpolator();
         surfaceinterpolator.inVector = getVector(inVector);
-        surfaceinterpolator.inGrid = outGridgeom;
+        surfaceinterpolator.inGrid = getRaster(inGrid);
         surfaceinterpolator.inMask = getRaster(inMask);
         surfaceinterpolator.fCat = fCat;
         surfaceinterpolator.pMode = pMode;
