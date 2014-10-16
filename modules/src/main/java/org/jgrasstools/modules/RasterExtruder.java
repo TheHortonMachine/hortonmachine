@@ -64,11 +64,7 @@ public class RasterExtruder extends JGTModel {
     @In
     public String pAddingField;
 
-    @Description(OMSRASTERDIFF_doNegatives_DESCRIPTION)
-    @In
-    public boolean doNegatives = true;
-
-    @Description(OMSRASTERDIFF_outRaster_DESCRIPTION)
+    @Description("The output raster.")
     @UI(JGTConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;
