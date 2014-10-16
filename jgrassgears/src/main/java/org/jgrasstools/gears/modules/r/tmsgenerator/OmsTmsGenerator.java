@@ -46,7 +46,6 @@ import static org.jgrasstools.gears.i18n.GearsMessages.OMSTMSGENERATOR_pWest_DES
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -200,18 +199,20 @@ public class OmsTmsGenerator extends JGTModel {
 
     private MBTilesHelper mbtilesHelper;
 
+    public CoordinateReferenceSystem dataCrs;
+
     @Execute
     public void process() throws Exception {
         checkNull(inPath, pMinzoom, pMaxzoom, pWest, pEast, pSouth, pNorth);
 
-        CoordinateReferenceSystem dataCrs;
-        if (pEpsg != null) {
-            dataCrs = CRS.decode(pEpsg);
-        } else {
-            String wkt = FileUtilities.readFile(inPrj);
-            dataCrs = CRS.parseWKT(wkt);
+        if (dataCrs == null) {
+            if (pEpsg != null) {
+                dataCrs = CRS.decode(pEpsg);
+            } else {
+                String wkt = FileUtilities.readFile(inPrj);
+                dataCrs = CRS.parseWKT(wkt);
+            }
         }
-
         String format = null;
         if (doMbtiles) {
             mbtilesHelper = new MBTilesHelper();
