@@ -12,6 +12,7 @@ org.jgrasstools.modules.CutOut
 org.jgrasstools.modules.DebrisFlow
 org.jgrasstools.modules.DebrisTriggerCnr
 org.jgrasstools.modules.DebrisVandre
+org.jgrasstools.modules.DelaunayTriangulation
 org.jgrasstools.modules.DistanceToOutlet
 org.jgrasstools.modules.DrainDir
 org.jgrasstools.modules.DwgConverter
@@ -114,6 +115,7 @@ org.jgrasstools.modules.VectorTableJoiner
 org.jgrasstools.modules.VectorTransformer
 org.jgrasstools.modules.VectorWriter
 org.jgrasstools.modules.Vectorizer
+org.jgrasstools.modules.VoronoiDiagram
 org.jgrasstools.modules.Wateroutlet
 org.jgrasstools.modules.WindowSampler
 org.jgrasstools.modules.Xyz2Raster

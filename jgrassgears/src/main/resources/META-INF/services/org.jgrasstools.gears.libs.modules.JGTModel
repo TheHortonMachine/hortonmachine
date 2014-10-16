@@ -84,8 +84,6 @@ org.jgrasstools.gears.modules.v.contoursextractor.OmsContourExtractor
 org.jgrasstools.gears.modules.v.grids.OmsGridsGenerator
 org.jgrasstools.gears.modules.v.intersections.OmsIntersectionFinder
 org.jgrasstools.gears.modules.v.intersections.OmsLineIntersectionCorrector
-org.jgrasstools.gears.modules.v.las.OmsLasPointDensityExtractor
-org.jgrasstools.gears.modules.v.las.OmsLasSubsetExtractor
 org.jgrasstools.gears.modules.v.marchingsquares.OmsMarchingSquaresVectorializer
 org.jgrasstools.gears.modules.v.polygonize.OmsLinesPolygonizer
 org.jgrasstools.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute
@@ -93,6 +91,8 @@ org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherJaitools
 org.jgrasstools.gears.modules.v.smoothing.OmsLineSmootherMcMaster
 org.jgrasstools.gears.modules.v.smoothing.OmsPolygonSmootherJaitools
 org.jgrasstools.gears.modules.v.sourcesdirection.OmsPointDirectionCalculator
+org.jgrasstools.gears.modules.v.triangulation.OmsDelaunayTriangulation
+org.jgrasstools.gears.modules.v.triangulation.OmsVoronoiDiagram
 org.jgrasstools.gears.modules.v.vectorclipper.OmsVectorClipper
 org.jgrasstools.gears.modules.v.vectorconverter.OmsDwgConverter
 org.jgrasstools.gears.modules.v.vectorconverter.OmsDxfConverter
