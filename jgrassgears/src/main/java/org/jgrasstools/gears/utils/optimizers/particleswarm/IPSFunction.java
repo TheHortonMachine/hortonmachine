@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.jgrasstools.gears.utils.optimizers.particleswarming;
+package org.jgrasstools.gears.utils.optimizers.particleswarm;
 
 /**
  * Interface for a particle swarm fitting function that is supposed to return a value to minimize. 
