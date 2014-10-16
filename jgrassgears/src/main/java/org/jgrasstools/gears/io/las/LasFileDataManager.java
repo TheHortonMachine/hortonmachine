@@ -31,7 +31,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.ILasHeader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasIndexReader;
+import org.jgrasstools.gears.io.las.index.OmsLasIndexReader;
 import org.jgrasstools.gears.io.las.index.LasIndexer;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
 import org.jgrasstools.gears.utils.CrsUtilities;
@@ -219,7 +219,7 @@ class LasFileDataManager extends ALasDataManager {
             for( int i = 0; i < envelopeList.size(); i++ ) {
                 String name = fileNamesList.get(i);
                 ReferencedEnvelope envelope = envelopeList.get(i);
-                Polygon polygon = LasIndexReader.envelopeToPolygon(envelope);
+                Polygon polygon = OmsLasIndexReader.envelopeToPolygon(envelope);
                 Object[] objs = new Object[]{polygon, name};
                 builder.addAll(objs);
                 SimpleFeature feature = builder.buildFeature(null);

@@ -32,7 +32,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.util.WeakValueHashMap;
 import org.jgrasstools.gears.io.las.core.ALasReader;
 import org.jgrasstools.gears.io.las.core.LasRecord;
-import org.jgrasstools.gears.io.las.index.LasIndexReader;
+import org.jgrasstools.gears.io.las.index.OmsLasIndexReader;
 import org.jgrasstools.gears.io.las.index.LasIndexer;
 import org.jgrasstools.gears.io.las.index.strtree.STRtreeJGT;
 import org.jgrasstools.gears.libs.modules.JGTConstants;
@@ -125,7 +125,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
      */
     @Override
     public void open() throws Exception {
-        mainLasFolderIndex = LasIndexReader.readIndex(lasFolderIndexFile.getAbsolutePath());
+        mainLasFolderIndex = OmsLasIndexReader.readIndex(lasFolderIndexFile.getAbsolutePath());
     }
 
     /**
@@ -162,7 +162,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
                         ALasReader reader = ALasReader.getReader(lasFile, crs);
                         reader.open();
                         reader.getHeader();
-                        STRtreeJGT lasIndex = LasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
+                        STRtreeJGT lasIndex = OmsLasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
                         pair = new Pair();
                         pair.reader = reader;
                         pair.strTree = lasIndex;
@@ -253,7 +253,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
                 String absolutePath = lasIndexFile.getAbsolutePath();
                 STRtreeJGT lasIndex = fileName2IndexMap.get(absolutePath);
                 if (lasIndex == null) {
-                    lasIndex = LasIndexReader.readIndex(absolutePath);
+                    lasIndex = OmsLasIndexReader.readIndex(absolutePath);
                     fileName2IndexMap.put(absolutePath, lasIndex);
                 }
                 List< ? > queryBoundables = lasIndex.queryBoundables(env);
@@ -362,7 +362,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
             for( int i = 0; i < envelopeList.size(); i++ ) {
                 String name = fileNamesList.get(i);
                 ReferencedEnvelope envelope = envelopeList.get(i);
-                Polygon polygon = LasIndexReader.envelopeToPolygon(envelope);
+                Polygon polygon = OmsLasIndexReader.envelopeToPolygon(envelope);
                 Object[] objs = new Object[]{polygon, name};
                 builder.addAll(objs);
                 SimpleFeature feature = builder.buildFeature(null);
@@ -390,7 +390,7 @@ class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable
                             ALasReader reader = ALasReader.getReader(lasFile, crs);
                             reader.open();
                             reader.getHeader();
-                            STRtreeJGT lasIndex = LasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
+                            STRtreeJGT lasIndex = OmsLasIndexReader.readIndex(lasIndexFile.getAbsolutePath());
                             pair = new Pair();
                             pair.reader = reader;
                             pair.strTree = lasIndex;

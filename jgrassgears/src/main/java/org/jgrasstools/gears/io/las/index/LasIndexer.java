@@ -80,7 +80,7 @@ import static java.lang.Math.round;
 @Description("Creates indexes for Las files.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, lidar")
-@Label(JGTConstants.LESTO)
+@Label(JGTConstants.LESTO + "/utilities")
 @Name("lasindexer")
 @Status(5)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
@@ -108,7 +108,7 @@ public class LasIndexer extends JGTModel {
 
     @Description("Create overview shapefile (this creates a convexhull of the points).")
     @In
-    public boolean doOverview = true;
+    public boolean doOverview = false;
 
     public Integer pThreads = getDefaultThreadsNum();
 
@@ -137,8 +137,8 @@ public class LasIndexer extends JGTModel {
         pm.message("Las files to be added to the index:");
         OmsFileIterator iter = new OmsFileIterator();
         iter.inFolder = inFolder;
-        iter.fileFilter = new FileFilter() {
-            public boolean accept(File file) {
+        iter.fileFilter = new FileFilter(){
+            public boolean accept( File file ) {
                 String name = file.getName();
                 if (name.endsWith("indexed.las")) {
                     return false;
@@ -155,8 +155,8 @@ public class LasIndexer extends JGTModel {
         List<File> filesList = iter.filesList;
         pm.beginTask("Creating readers index...", filesList.size());
         STRtreeJGT mainTree = new STRtreeJGT();
-        for (File file : filesList) {
-            try (ALasReader reader = ALasReader.getReader(file, crs)){
+        for( File file : filesList ) {
+            try (ALasReader reader = ALasReader.getReader(file, crs)) {
                 reader.open();
                 ReferencedEnvelope3D envelope = reader.getHeader().getDataEnvelope();
                 File newLasFile = getNewLasFile(file);
@@ -180,8 +180,8 @@ public class LasIndexer extends JGTModel {
             envelopesQueue = new ConcurrentLinkedQueue<>();
         if (pThreads > 1) {
             ExecutorService fixedThreadPool = Executors.newFixedThreadPool(pThreads);
-            for (final File file : filesList) {
-                Runnable runner = new Runnable() {
+            for( final File file : filesList ) {
+                Runnable runner = new Runnable(){
                     public void run() {
                         try {
                             processFile(file, true);
@@ -201,7 +201,7 @@ public class LasIndexer extends JGTModel {
                 e.printStackTrace();
             }
         } else {
-            for (final File file : filesList) {
+            for( final File file : filesList ) {
                 processFile(file, false);
             }
         }
@@ -217,7 +217,7 @@ public class LasIndexer extends JGTModel {
             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
             DefaultFeatureCollection overviewFC = new DefaultFeatureCollection();
 
-            for (Polygon polygon : envelopesQueue) {
+            for( Polygon polygon : envelopesQueue ) {
                 Object[] values = new Object[]{polygon, polygon.getUserData()};
                 builder.addAll(values);
                 SimpleFeature feature = builder.buildFeature(null);
@@ -228,7 +228,7 @@ public class LasIndexer extends JGTModel {
     }
 
     @SuppressWarnings("unchecked")
-    private void processFile(File file, boolean isMultiThreaded) throws Exception {
+    private void processFile( File file, boolean isMultiThreaded ) throws Exception {
         String name = file.getName();
         File newLasFile = getNewLasFile(file);
         File indexFile = getNetIndexFile(file);
@@ -295,7 +295,7 @@ public class LasIndexer extends JGTModel {
             } else {
                 pm.message("Sorting points for " + name + "...");
             }
-            while (reader.hasNextPoint()) {
+            while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
                 DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
@@ -329,8 +329,8 @@ public class LasIndexer extends JGTModel {
                     pm.message("Write and index new las...");
                 }
                 long pointCount = 0;
-                for (int c = 0; c < cols; c++) {
-                    for (int r = 0; r < rows; r++) {
+                for( int c = 0; c < cols; c++ ) {
+                    for( int r = 0; r < rows; r++ ) {
                         List<LasRecord> dotsList = dotOnMatrix[c][r];
                         if (dotsList == null || dotsList.size() == 0) {
                             continue;
@@ -343,7 +343,7 @@ public class LasIndexer extends JGTModel {
                         double avgIntensityValue = 0.0;
                         int count = 0;
 
-                        for (LasRecord dot : dotsList) {
+                        for( LasRecord dot : dotsList ) {
                             writer.addPoint(dot);
                             pointCount++;
                             avgElevValue += dot.z;
@@ -377,19 +377,19 @@ public class LasIndexer extends JGTModel {
 
     }
 
-    private File getNetIndexFile(File file) {
+    private File getNetIndexFile( File file ) {
         String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
         File indexFile = new File(file.getParentFile(), nameWithoutExtention + "_indexed.lasfix");
         return indexFile;
     }
 
-    private File getNewLasFile(File file) {
+    private File getNewLasFile( File file ) {
         String nameWithoutExtention = FileUtilities.getNameWithoutExtention(file);
         File newLasFile = new File(file.getParentFile(), nameWithoutExtention + "_indexed.las");
         return newLasFile;
     }
 
-    public static Polygon envelopeToPolygon(Envelope envelope) {
+    public static Polygon envelopeToPolygon( Envelope envelope ) {
         double w = envelope.getMinX();
         double e = envelope.getMaxX();
         double s = envelope.getMinY();
@@ -412,7 +412,7 @@ public class LasIndexer extends JGTModel {
     public void close() throws Exception {
     }
 
-    private static byte[] serialize(Object obj) throws IOException {
+    private static byte[] serialize( Object obj ) throws IOException {
         try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             ObjectOutputStream out = new ObjectOutputStream(bos);
             out.writeObject(obj);
@@ -421,7 +421,7 @@ public class LasIndexer extends JGTModel {
         }
     }
 
-    private static void dumpBytes(File file, byte[] bytes) throws Exception {
+    private static void dumpBytes( File file, byte[] bytes ) throws Exception {
         try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
             raf.write(bytes);
         }

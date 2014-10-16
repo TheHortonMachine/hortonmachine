@@ -25,8 +25,8 @@ org.jgrasstools.gears.io.grasslegacy.OmsGrassLegacyWriter
 org.jgrasstools.gears.io.grasslegacy.modules.GrassMosaicLegacy
 org.jgrasstools.gears.io.gridgeometryreader.OmsGridGeometryReader
 org.jgrasstools.gears.io.json.OmsJsonFeatureReader
-org.jgrasstools.gears.io.las.index.LasIndexReader
 org.jgrasstools.gears.io.las.index.LasIndexer
+org.jgrasstools.gears.io.las.index.OmsLasIndexReader
 org.jgrasstools.gears.io.properties.OmsPropertiesFeatureReader
 org.jgrasstools.gears.io.rasterreader.OmsRasterReader
 org.jgrasstools.gears.io.rasterwriter.OmsRasterWriter

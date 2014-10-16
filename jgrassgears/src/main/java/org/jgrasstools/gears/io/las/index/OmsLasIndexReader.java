@@ -69,7 +69,7 @@ import java.util.List;
 @Name("lasindexreader")
 @Status(5)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class LasIndexReader extends JGTModel {
+public class OmsLasIndexReader extends JGTModel {
 
     @Description("The las index file.")
     @UI(JGTConstants.FOLDERIN_UI_HINT)

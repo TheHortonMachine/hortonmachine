@@ -98,7 +98,6 @@ org.jgrasstools.modules.SurfaceInterpolator
 org.jgrasstools.modules.Tc
 org.jgrasstools.modules.Tca
 org.jgrasstools.modules.Tca3d
-org.jgrasstools.modules.TmsGenerator
 org.jgrasstools.modules.TopIndex
 org.jgrasstools.modules.Variogram
 org.jgrasstools.modules.VectorClipper
